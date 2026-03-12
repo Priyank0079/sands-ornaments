@@ -1,0 +1,128 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Lato:wght@300;400;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+    --font-display: 'Cinzel', serif;
+    --font-body: 'Lato', sans-serif;
+    --font-serif: 'Cormorant Garamond', serif;
+
+    --color-pure-white: #FFFFFF;
+    --color-primary: #D39A9F;
+    --color-dark: #1F1F1F;
+    --color-muted: #6B6B6B;
+    --color-gold: #C9A24D;
+    --color-wine: #7A2E3A;
+    --color-beige: #F7F2EF;
+}
+
+/* Disable Zooming on Mobile & Horizontal Scroll */
+html,
+body {
+    touch-action: pan-y;
+    -webkit-text-size-adjust: 100%;
+    overflow-x: hidden;
+    width: 100%;
+}
+
+/* Custom Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes dropdownOpen {
+    0% {
+        opacity: 0;
+        transform: scaleY(0.8) translateY(-20px);
+        filter: blur(10px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scaleY(1) translateY(0);
+        filter: blur(0);
+    }
+}
+
+.animate-fade-in-up {
+    animation: fadeInUp 1s ease-out forwards;
+}
+
+.animate-fade-in-left {
+    animation: fadeInLeft 1s ease-out forwards;
+}
+
+.animate-scale-in {
+    animation: scaleIn 0.8s ease-out forwards;
+}
+
+.animate-dropdown-open {
+    animation: dropdownOpen 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transform-origin: top center;
+}
+
+.delay-200 {
+    animation-delay: 0.2s;
+}
+
+.delay-400 {
+    animation-delay: 0.4s;
+}
+
+.delay-600 {
+    animation-delay: 0.6s;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+@keyframes slowZoom {
+    0% {
+        transform: scale(1);
+    }
+
+    100% {
+        transform: scale(1.1);
+    }
+}
+
+.animate-slow-zoom {
+    animation: slowZoom 8s linear infinite alternate;
+}
