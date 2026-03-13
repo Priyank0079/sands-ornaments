@@ -5,7 +5,7 @@ import {
     Bell, ChevronRight, ChevronDown, Star, HelpCircle, LogOut, Menu, X, ListTree,
     FileText, MessageSquare, Ticket, Settings, Plus, List, BookOpen,
     Clock, RefreshCw, RefreshCcw, RotateCcw, Boxes, ClipboardList, MapPin, Truck, CheckCircle2, XCircle,
-    AlertTriangle, FileBarChart
+    AlertTriangle, FileBarChart, Store
 } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
 import logo from '../assets/sands-logo.png';
@@ -23,7 +23,7 @@ const AdminLayout = ({ children }) => {
     const menuItems = [
         { name: 'Dashboard', icon: LayoutDashboard, path: '/admin' },
         { name: 'Categories', icon: ImageIcon, path: '/admin/categories' },
-        { name: 'Subcategories', icon: ListTree, path: '/admin/subcategories' },
+
         {
             name: 'Products',
             icon: Package,
@@ -62,6 +62,7 @@ const AdminLayout = ({ children }) => {
                 { name: 'Reports', path: '/admin/inventory/reports', icon: FileBarChart }
             ]
         },
+        { name: 'Sellers', icon: Store, path: '/admin/sellers' },
         { name: 'Users', icon: Users, path: '/admin/users' },
         { name: 'Reviews', icon: Star, path: '/admin/reviews' },
         { name: 'Banners', icon: ImageIcon, path: '/admin/banners' },
@@ -83,7 +84,7 @@ const AdminLayout = ({ children }) => {
                 { name: 'Contact Inquiries', path: '/admin/support/inquiries', icon: MessageSquare }
             ]
         },
-        { name: 'FAQ', icon: MessageSquare, path: '/admin/faq' },
+
         {
             name: 'Pages',
             icon: FileText,
@@ -106,6 +107,42 @@ const AdminLayout = ({ children }) => {
         { name: 'Global Settings', icon: Settings, path: '/admin/settings' },
     ];
 
+    // Notification state with ref for count tracking
+    const [notifications, setNotifications] = useState([]);
+    const [showPopup, setShowPopup] = useState(false);
+    const [latestNotif, setLatestNotif] = useState(null);
+    const prevCountRef = React.useRef(0);
+
+    React.useEffect(() => {
+        const checkNotifications = () => {
+            const allNotifs = JSON.parse(localStorage.getItem('admin_notifications') || '[]');
+            const unreadCount = allNotifs.filter(n => n.unread).length;
+            
+            if (unreadCount > prevCountRef.current) {
+                // New notification arrived
+                const newest = allNotifs.find(n => n.unread);
+                if (newest) {
+                    setLatestNotif(newest);
+                    setShowPopup(true);
+                    setTimeout(() => setShowPopup(false), 8000);
+                }
+            }
+            prevCountRef.current = unreadCount;
+            setNotifications(allNotifs);
+        };
+
+        checkNotifications();
+        const interval = setInterval(checkNotifications, 3000); // Poll every 3 seconds
+
+        window.addEventListener('storage', checkNotifications);
+        return () => {
+            clearInterval(interval);
+            window.removeEventListener('storage', checkNotifications);
+        };
+    }, []);
+
+    const unreadCount = notifications.filter(n => n.unread).length;
+
     // State for expanded menus
     const [expandedMenu, setExpandedMenu] = useState(() => {
         // Auto-expand if current path matches a subitem
@@ -123,7 +160,10 @@ const AdminLayout = ({ children }) => {
     const handleMenuClick = (item) => {
         if (item.subItems) {
             setExpandedMenu(expandedMenu === item.name ? null : item.name);
-            if (!isSidebarOpen) setIsSidebarOpen(true); // Auto-open sidebar if expanding menu
+            if (!isSidebarOpen) setIsSidebarOpen(true);
+            
+            // If the item itself has a path, navigate to it too
+            if (item.path) navigate(item.path);
         } else {
             navigate(item.path);
             if (window.innerWidth <= 1024) {
@@ -273,19 +313,64 @@ const AdminLayout = ({ children }) => {
                         </h2>
                     </div>
 
-                    <div className="flex items-center gap-2 lg:gap-3">
-                        <div className="text-right hidden sm:block font-medium">
-                            <p className="text-[11px] lg:text-sm text-gray-900 font-bold">Admin User</p>
-                            <p className="text-[9px] lg:text-xs text-gray-500 font-bold uppercase tracking-wider">Super Admin</p>
-                        </div>
-                        <div className="w-8 h-8 lg:w-10 lg:h-10 bg-[#FDFBF7] rounded-xl lg:rounded-full border border-gray-200 flex items-center justify-center text-[#5D4037] font-bold shadow-sm">
-                            A
+                    <div className="flex items-center gap-4 lg:gap-6">
+                        {/* Notification Icon */}
+                        <button 
+                            onClick={() => navigate('/admin/notifications')}
+                            className="relative p-2.5 hover:bg-gray-50 rounded-xl transition-all border border-gray-100 shadow-sm group"
+                        >
+                            <Bell className={`w-5 h-5 ${unreadCount > 0 ? 'text-amber-600' : 'text-gray-500'} group-hover:scale-110 transition-transform`} />
+                            {unreadCount > 0 && (
+                                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-black flex items-center justify-center rounded-full border-2 border-white shadow-sm animate-bounce">
+                                    {unreadCount}
+                                </span>
+                            )}
+                        </button>
+
+                        <div className="h-8 w-px bg-gray-100 mx-1 hidden sm:block" />
+
+                        <div className="flex items-center gap-2 lg:gap-3">
+                            <div className="text-right hidden sm:block font-medium">
+                                <p className="text-[11px] lg:text-sm text-gray-900 font-bold tracking-tight">Admin User</p>
+                                <p className="text-[9px] lg:text-xs text-gray-500 font-black uppercase tracking-widest mt-0.5">Super Admin</p>
+                            </div>
+                            <div className="w-8 h-8 lg:w-10 lg:h-10 bg-[#3E2723] text-white rounded-xl flex items-center justify-center font-black shadow-lg shadow-[#3E2723]/20 border border-white/10">
+                                A
+                            </div>
                         </div>
                     </div>
                 </header>
 
                 {/* Scrollable Page Content */}
-                <div className="flex-grow overflow-y-auto bg-gray-50 p-4 lg:p-8 space-y-6">
+                <div className="flex-grow overflow-y-auto bg-gray-50 p-4 lg:p-8 space-y-6 relative">
+                    {/* Floating Notification Popup */}
+                    {showPopup && latestNotif && (
+                        <div className="fixed top-20 right-8 z-[200] w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 animate-in slide-in-from-right-8 fade-in duration-500 overflow-hidden">
+                            <div className="absolute top-0 left-0 w-1 h-full bg-amber-500" />
+                            <div className="flex gap-4">
+                                <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center shrink-0">
+                                    <Bell className="w-5 h-5 text-amber-500" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <h4 className="text-xs font-black text-gray-900 uppercase tracking-tight truncate">{latestNotif.title}</h4>
+                                    <p className="text-[11px] text-gray-500 font-bold mt-1 line-clamp-2 leading-relaxed uppercase tracking-tight">{latestNotif.message}</p>
+                                    <button 
+                                        onClick={() => {
+                                            navigate(latestNotif.link || '/admin/notifications');
+                                            setShowPopup(false);
+                                        }}
+                                        className="text-[10px] font-black text-[#3E2723] uppercase tracking-widest mt-3 hover:underline"
+                                    >
+                                        View Details
+                                    </button>
+                                </div>
+                                <button onClick={() => setShowPopup(false)} className="text-gray-400 hover:text-gray-600">
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="max-w-[1600px] mx-auto animate-in fade-in duration-500">
                         {children}
                     </div>

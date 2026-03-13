@@ -1,6 +1,6 @@
 import React from 'react';
 
-const AdminTable = ({ columns, data, onRowClick }) => {
+const AdminTable = ({ columns, data, onRowClick, emptyMessage = "No Data Available" }) => {
     return (
         <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -37,8 +37,8 @@ const AdminTable = ({ columns, data, onRowClick }) => {
                         ))
                     ) : (
                         <tr>
-                            <td colSpan={columns.length} className="py-8 text-center text-xs font-semibold text-gray-400 uppercase tracking-widest">
-                                No Data Available
+                            <td colSpan={columns.length} className="py-8 text-center text-xs font-semibold text-gray-400 uppercase tracking-widest px-4">
+                                {emptyMessage}
                             </td>
                         </tr>
                     )}

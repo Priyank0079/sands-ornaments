@@ -4,13 +4,46 @@ import {
     Plus, Ticket, Clock, RotateCcw, AlertTriangle, Image as ImageIcon,
     Users, IndianRupee, ListTree, Package, ShoppingBag,
     Truck, MapPin, XCircle, Activity, Ban, BatteryWarning,
-    RefreshCw, CheckCircle2, MessageSquare
+    RefreshCw, CheckCircle2, MessageSquare, Store
 } from 'lucide-react';
 import AdminStatsCard from '../components/AdminStatsCard';
 import AdminTable from '../components/AdminTable';
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
+    const [statsData, setStatsData] = React.useState({
+        users: 0,
+        orders: 0,
+        pendingOrders: 0,
+        sellers: 0,
+        revenue: 0,
+        recent: []
+    });
+
+    React.useEffect(() => {
+        const loadStats = () => {
+            const users = JSON.parse(localStorage.getItem('users_data') || '[]');
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            const sellers = JSON.parse(localStorage.getItem('seller_data') || '[]');
+            const revenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+
+            setStatsData({
+                users: users.length || 3, // Fallback to mock count if empty
+                orders: orders.length,
+                pendingOrders: orders.filter(o => o.status === 'Processing' || o.status === 'Pending').length,
+                sellers: sellers.length,
+                revenue: revenue,
+                recent: orders.slice(0, 5).map(o => ({
+                    id: o.id,
+                    date: new Date(o.date).toLocaleDateString(),
+                    customer: o.customerName || 'Customer',
+                    amount: `₹${(o.total || 0).toLocaleString()}`,
+                    status: (o.status || 'PENDING').toUpperCase()
+                }))
+            });
+        };
+        loadStats();
+    }, []);
 
     const quickActions = [
         { label: 'ADD PRODUCT', icon: Plus, bg: 'bg-[#F0FDF4]', text: 'text-emerald-500', path: '/admin/products/new' },
@@ -18,37 +51,15 @@ const AdminDashboard = () => {
         { label: 'PENDING ORDERS', icon: Clock, bg: 'bg-[#FFF7ED]', text: 'text-orange-500', path: '/admin/orders?status=pending' },
         { label: 'CHECK RETURNS', icon: RotateCcw, bg: 'bg-[#FFF1F2]', text: 'text-rose-500', path: '/admin/returns' },
         { label: 'STOCK ALERTS', icon: AlertTriangle, bg: 'bg-[#FEF2F2]', text: 'text-red-500', path: '/admin/inventory/alerts' },
-        { label: 'MANAGE BANNERS', icon: ImageIcon, bg: 'bg-[#EFF6FF]', text: 'text-blue-500', path: '/admin/banners' },
+        { label: 'MANAGE SELLERS', icon: Store, bg: 'bg-[#EFF6FF]', text: 'text-blue-500', path: '/admin/sellers' },
     ];
 
     const stats = [
-        { label: 'TOTAL USERS', value: '0', icon: Users, color: 'text-blue-500', bgColor: 'bg-blue-50' },
-        { label: 'TOTAL REVENUE', value: '₹6,839', icon: IndianRupee, color: 'text-emerald-500', bgColor: 'bg-emerald-50' },
-        { label: 'TOTAL CATEGORIES', value: '4', icon: ListTree, color: 'text-purple-500', bgColor: 'bg-purple-50' },
-        { label: 'TOTAL SUBCATEGORIES', value: '12', icon: ListTree, color: 'text-purple-500', bgColor: 'bg-purple-50' },
-        { label: 'TOTAL PRODUCTS', value: '2', icon: Package, color: 'text-amber-500', bgColor: 'bg-amber-50' },
-        { label: 'TOTAL ORDERS', value: '9', icon: ShoppingBag, color: 'text-blue-500', bgColor: 'bg-blue-50' },
-        { label: 'PENDING ORDERS', value: '1', icon: Clock, color: 'text-orange-500', bgColor: 'bg-orange-50', badge: 'ACTION REQUIRED', badgeColor: 'text-red-500' },
-        { label: 'DELIVERED ORDERS', value: '1', icon: CheckCircle2, color: 'text-emerald-500', bgColor: 'bg-emerald-50' },
-        { label: 'SHIPPED ORDERS', value: '0', icon: Truck, color: 'text-indigo-500', bgColor: 'bg-indigo-50' },
-        { label: 'OUT FOR DELIVERY', value: '0', icon: MapPin, color: 'text-purple-500', bgColor: 'bg-purple-50' },
-        { label: 'CANCELLED ORDERS', value: '0', icon: XCircle, color: 'text-red-500', bgColor: 'bg-red-50' },
-        { label: 'IN-PROCESS', value: '0', icon: Activity, color: 'text-cyan-500', bgColor: 'bg-cyan-50' },
-        { label: 'SOLD OUT', value: '1', icon: Ban, color: 'text-red-500', bgColor: 'bg-red-50', badge: 'URGENT', badgeColor: 'text-red-500' },
-        { label: 'LOW STOCK', value: '0', icon: BatteryWarning, color: 'text-amber-500', bgColor: 'bg-amber-50' },
-        { label: 'PENDING RETURNS', value: '0', icon: RotateCcw, color: 'text-orange-500', bgColor: 'bg-orange-50' },
-        { label: 'ACTIVE REPLACEMENTS', value: '0', icon: RefreshCw, color: 'text-blue-500', bgColor: 'bg-blue-50' },
-        { label: 'COMPLETED RETURNS', value: '0', icon: CheckCircle2, color: 'text-emerald-500', bgColor: 'bg-emerald-50' },
-        { label: 'ACTIVE COUPONS', value: '2', icon: Ticket, color: 'text-pink-500', bgColor: 'bg-pink-50' },
-        { label: 'USER REVIEWS', value: '0', icon: MessageSquare, color: 'text-blue-400', bgColor: 'bg-blue-50' },
-    ];
-
-    const recentOrders = [
-        { id: '#60c4a3d2', date: '07/02/2025', customer: 'Om Parteki', amount: '₹400', status: 'PENDING' },
-        { id: '#6499c6d1', date: '07/02/2025', customer: 'Om Parteki', amount: '₹400', status: 'PENDING' },
-        { id: '#7c7f4799', date: '07/02/2025', customer: 'Om Parteki', amount: '₹400', status: 'PENDING' },
-        { id: '#72c7b12d', date: '07/02/2025', customer: 'Om Parteki', amount: '₹400', status: 'PENDING' },
-        { id: '#5e6289b2', date: '07/02/2025', customer: 'Om Parteki', amount: '₹600', status: 'PENDING' },
+        { label: 'TOTAL USERS', value: statsData.users, icon: Users, color: 'text-blue-500', bgColor: 'bg-blue-50' },
+        { label: 'TOTAL REVENUE', value: `₹${statsData.revenue.toLocaleString()}`, icon: IndianRupee, color: 'text-emerald-500', bgColor: 'bg-emerald-50' },
+        { label: 'TOTAL SELLERS', value: statsData.sellers, icon: Store, color: 'text-indigo-500', bgColor: 'bg-indigo-50' },
+        { label: 'TOTAL ORDERS', value: statsData.orders, icon: ShoppingBag, color: 'text-blue-500', bgColor: 'bg-blue-50' },
+        { label: 'PENDING ORDERS', value: statsData.pendingOrders, icon: Clock, color: 'text-orange-500', bgColor: 'bg-orange-50', badge: statsData.pendingOrders > 0 ? 'ACTION REQUIRED' : '', badgeColor: 'text-red-500' },
     ];
 
     const orderColumns = [
@@ -90,14 +101,14 @@ const AdminDashboard = () => {
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
             {/* Header */}
-            <div>
+            <div className="text-left">
                 <h1 className="text-2xl font-bold text-gray-900 uppercase tracking-tight">ADMIN DASHBOARD</h1>
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mt-1">PLATFORM ANALYTICS & QUICK CONTROLS</p>
             </div>
 
             {/* Quick Management Section */}
             <div>
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">QUICK MANAGEMENT</p>
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 text-left">QUICK MANAGEMENT</p>
                 <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
                     {quickActions.map((action, idx) => (
                         <button
@@ -134,16 +145,50 @@ const AdminDashboard = () => {
 
             {/* Bottom Section: Recent Orders & Stock Alerts */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <button 
+                    onClick={() => {
+                        const notifs = JSON.parse(localStorage.getItem('admin_notifications') || '[]');
+                        notifs.unshift({
+                            id: Date.now(),
+                            title: 'New Seller Registration',
+                            message: 'A new merchant has just registered for a seller account.',
+                            date: new Date().toISOString(),
+                            unread: true,
+                            isRead: false,
+                            type: 'SELLER_REQUEST',
+                            priority: 'High',
+                            time: 'just now',
+                            link: '/admin/sellers'
+                        });
+                        localStorage.setItem('admin_notifications', JSON.stringify(notifs));
+                        alert('Simulation started! You should see a popup in a few seconds.');
+                    }}
+                    className="flex flex-col items-center justify-center p-6 bg-indigo-50 rounded-2xl border border-indigo-100 hover:shadow-md transition-all group lg:col-span-1 h-full"
+                >
+                    <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 transition-transform">
+                        <Store className="w-6 h-6 text-indigo-500" />
+                    </div>
+                    <span className="text-[10px] font-black text-indigo-900 uppercase tracking-widest text-center">Simulate Seller</span>
+                </button>
+                <button 
+                    onClick={() => navigate('/admin/sellers')}
+                    className="flex flex-col items-center justify-center p-6 bg-sky-50 rounded-2xl border border-sky-100 hover:shadow-md transition-all group lg:col-span-1 h-full"
+                >
+                    <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 transition-transform">
+                        <ShoppingBag className="w-6 h-6 text-sky-500" />
+                    </div>
+                    <span className="text-[10px] font-black text-sky-900 uppercase tracking-widest text-center">Manage Sellers</span>
+                </button>
                 {/* Recent Orders */}
                 <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                     <div className="flex justify-between items-center mb-6">
-                        <div>
+                        <div className="text-left">
                             <h2 className="text-base font-bold text-gray-900 uppercase tracking-wide">RECENT ORDERS</h2>
                             <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mt-1">QUEUE OF LATEST CUSTOMER ORDERS</p>
                         </div>
                         <button onClick={() => navigate('/admin/orders')} className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest hover:text-emerald-700">VIEW ALL</button>
                     </div>
-                    <AdminTable columns={orderColumns} data={recentOrders} />
+                    <AdminTable columns={orderColumns} data={statsData.recent} />
                 </div>
 
                 {/* Stock Alerts Widget */}

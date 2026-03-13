@@ -33,18 +33,27 @@ const UserDetailPage = () => {
         return storedUsers.find(u => u.id === id);
     }, [storedUsers, id]);
 
+    // Handle approval
+    const handleApprove = () => {
+        const updatedUsers = storedUsers.map(u =>
+            u.id === id ? { ...u, status: 'Active' } : u
+        );
+        localStorage.setItem('users_data', JSON.stringify(updatedUsers));
+        setStoredUsers(updatedUsers);
+    };
+
     // Handle blocking/unblocking
     const handleToggleBlock = () => {
         const updatedUsers = storedUsers.map(u =>
-            u.id === id ? { ...u, isBlocked: !u.isBlocked } : u
+            u.id === id ? { ...u, status: u.status === 'Active' ? 'Disabled' : 'Active' } : u
         );
-        localStorage.setItem('farmlyf_users', JSON.stringify(updatedUsers));
+        localStorage.setItem('users_data', JSON.stringify(updatedUsers));
         setStoredUsers(updatedUsers);
     };
 
     // Get user orders
     const userOrders = useMemo(() => {
-        return Object.values(orders).flat().filter(o => o.userId === id);
+        return Object.values(orders || {}).flat().filter(o => o.userId === id);
     }, [orders, id]);
 
     if (!user) {
@@ -59,7 +68,7 @@ const UserDetailPage = () => {
     }
 
     return (
-        <div className="space-y-8 pb-20">
+        <div className="space-y-8 pb-20 p-8 font-sans">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-6">
@@ -70,20 +79,31 @@ const UserDetailPage = () => {
                         <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
                     </button>
                     <div>
-                        <h1 className="text-xl font-black text-footerBg uppercase tracking-tight">User Profile</h1>
-                        <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-[0.2em]">Detailed overview of customer #{user.id?.slice(-6)}</p>
+                        <h1 className="text-xl font-black text-footerBg uppercase tracking-tight">
+                            {user.type === 'customer' ? 'User Profile' : `${user.type} Profile`}
+                        </h1>
+                        <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-[0.2em]">Detailed overview of {user.type} #{user.id?.slice(-6)}</p>
                     </div>
                 </div>
                 <div className="flex gap-3">
+                    {user.status === 'Pending' && (
+                        <button
+                            onClick={handleApprove}
+                            className="px-6 py-3 bg-emerald-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center gap-2 shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 active:scale-95"
+                        >
+                            <ShieldCheck size={16} />
+                            Approve Registration
+                        </button>
+                    )}
                     <button
                         onClick={handleToggleBlock}
-                        className={`px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center gap-2 shadow-sm ${user.isBlocked
+                        className={`px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center gap-2 shadow-sm ${user.status !== 'Active'
                             ? 'bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-500 hover:text-white'
                             : 'bg-red-50 text-red-600 border border-red-200 hover:bg-red-500 hover:text-white'
                             }`}
                     >
-                        {user.isBlocked ? <ShieldCheck size={16} /> : <ShieldOff size={16} />}
-                        {user.isBlocked ? 'Unblock Account' : 'Block Account'}
+                        {user.status !== 'Active' ? <ShieldCheck size={16} /> : <ShieldOff size={16} />}
+                        {user.status !== 'Active' ? 'Enable Account' : 'Block Account'}
                     </button>
                 </div>
             </div>

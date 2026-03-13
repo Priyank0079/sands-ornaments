@@ -13,6 +13,7 @@ import {
     LogOut,
     ChevronDown,
     ChevronRight,
+    Store,
     Plus,
     List,
     Share2,
@@ -72,6 +73,7 @@ const AdminSidebar = () => {
     const mainMenuItems = [
         { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
         { icon: Users, label: 'Users', path: '/admin/users' },
+        { icon: Store, label: 'Sellers', path: '/admin/sellers' },
         { icon: Layers, label: 'Categories', path: '/admin/categories' },
         { icon: Layers, label: 'Sub-categories', path: '/admin/sub-categories' },
     ];

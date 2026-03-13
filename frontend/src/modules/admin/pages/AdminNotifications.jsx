@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-    Bell, ShoppingBag, UserPlus, Star,
+    Bell, ShoppingBag, UserPlus, Star, Store,
     AlertTriangle, Check, Trash2,
     Filter, MoreVertical, Clock, Package,
     CheckCircle2, Eye, X
@@ -8,67 +9,46 @@ import {
 import PageHeader from '../components/common/PageHeader';
 
 const AdminNotifications = () => {
+    const navigate = useNavigate();
     // Mock Admin Notifications Data
-    const [notifications, setNotifications] = useState([
-        {
-            id: 'NOT-001',
-            type: 'Order',
-            title: 'New Order Received',
-            message: 'Order #ORD-82745 has been placed by Aditi Singh.',
-            time: '2 mins ago',
-            isRead: false,
-            priority: 'High'
-        },
-        {
-            id: 'NOT-002',
-            type: 'Inventory',
-            title: 'Low Stock Alert',
-            message: 'Classic Solitaire Ring is down to 2 units in stock.',
-            time: '45 mins ago',
-            isRead: false,
-            priority: 'Urgent'
-        },
-        {
-            id: 'NOT-003',
-            type: 'Review',
-            title: 'New Review Submitted',
-            message: 'Sneha Kapoor left a 5-star review for Infinity Bracelet.',
-            time: '2 hours ago',
-            isRead: true,
-            priority: 'Medium'
-        },
-        {
-            id: 'NOT-004',
-            type: 'User',
-            title: 'New User Registered',
-            message: 'Rahul Verma has just created an account.',
-            time: '5 hours ago',
-            isRead: true,
-            priority: 'Low'
-        }
-    ]);
+    const [notifications, setNotifications] = useState([]);
 
-
+    React.useEffect(() => {
+        const fetchNotifs = () => {
+            const data = JSON.parse(localStorage.getItem('admin_notifications') || '[]');
+            setNotifications(data);
+        };
+        fetchNotifs();
+        const interval = setInterval(fetchNotifs, 3000);
+        return () => clearInterval(interval);
+    }, []);
 
     const markAsRead = (id) => {
-        setNotifications(notifications.map(n =>
-            n.id === id ? { ...n, isRead: true } : n
-        ));
+        const updated = notifications.map(n =>
+            n.id === id ? { ...n, isRead: true, unread: false } : n
+        );
+        setNotifications(updated);
+        localStorage.setItem('admin_notifications', JSON.stringify(updated));
     };
 
     const markAllAsRead = () => {
-        setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+        const updated = notifications.map(n => ({ ...n, isRead: true, unread: false }));
+        setNotifications(updated);
+        localStorage.setItem('admin_notifications', JSON.stringify(updated));
     };
 
     const deleteNotification = (id) => {
-        setNotifications(notifications.filter(n => n.id !== id));
+        const updated = notifications.filter(n => n.id !== id);
+        setNotifications(updated);
+        localStorage.setItem('admin_notifications', JSON.stringify(updated));
     };
 
     const typeIcons = {
         'Order': <ShoppingBag className="w-4 h-4 text-blue-600" />,
         'Inventory': <AlertTriangle className="w-4 h-4 text-red-600" />,
         'Review': <Star className="w-4 h-4 text-amber-600" />,
-        'User': <UserPlus className="w-4 h-4 text-green-600" />
+        'User': <UserPlus className="w-4 h-4 text-green-600" />,
+        'SELLER_REQUEST': <Store className="w-4 h-4 text-indigo-600" />
     };
 
     const priorityStyles = {
@@ -115,7 +95,7 @@ const AdminNotifications = () => {
                                 {notifications.map((notif) => (
                                     <tr
                                         key={notif.id}
-                                        className={`group hover:bg-gray-50 transition-colors ${!notif.isRead ? 'bg-[#FDFBF7]' : ''}`}
+                                        className={`group hover:bg-gray-50 transition-colors ${notif.unread || !notif.isRead ? 'bg-[#FDFBF7]' : ''}`}
                                     >
                                         <td className="p-4 text-center align-top pt-5">
                                             <div className="bg-white p-2 rounded-lg border border-gray-100 shadow-sm inline-flex items-center justify-center">
@@ -157,6 +137,18 @@ const AdminNotifications = () => {
                                         </td>
                                         <td className="p-4 text-right align-top pt-5">
                                             <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                {notif.link && (
+                                                    <button
+                                                        onClick={() => {
+                                                            markAsRead(notif.id);
+                                                            navigate(notif.link);
+                                                        }}
+                                                        className="p-2 bg-white border border-gray-200 rounded-lg text-gray-400 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm"
+                                                        title="View Details"
+                                                    >
+                                                        <Eye className="w-4 h-4" />
+                                                    </button>
+                                                )}
                                                 {!notif.isRead && (
                                                     <button
                                                         onClick={() => markAsRead(notif.id)}

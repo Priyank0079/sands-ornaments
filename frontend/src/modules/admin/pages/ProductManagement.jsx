@@ -165,10 +165,15 @@ const ProductManagement = () => {
         {
             options: [
                 { label: 'All Categories', value: 'all' },
-                { label: 'Necklaces', value: 'necklaces' },
-                { label: 'Rings', value: 'rings' },
-                { label: 'Earrings', value: 'earrings' },
-                { label: 'Bangles', value: 'bangles' }
+                { label: 'Rings', value: 'Rings' },
+                { label: 'Earrings', value: 'Earrings' },
+                { label: 'Chain Pendant', value: 'Chain Pendant' },
+                { label: 'Bracelets', value: 'Bracelets' },
+                { label: 'Anklets', value: 'Anklets' },
+                { label: 'Toe Rings', value: 'Toe Rings' },
+                { label: 'Studs', value: 'Studs' },
+                { label: 'Pendants', value: 'Pendants' },
+                { label: 'Chains', value: 'Chains' }
             ],
             onChange: (val) => setSelectedCategory(val)
         }

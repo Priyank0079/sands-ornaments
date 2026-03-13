@@ -39,6 +39,7 @@ const Navbar = () => {
 
     // Sidebar Accordion State
     const [openSection, setOpenSection] = useState('shopByCategory'); // Default open
+    const [mobileSelectedMetal, setMobileSelectedMetal] = useState(null); // null, 'gold', 'silver'
 
     const toggleSection = (section) => {
         setOpenSection(openSection === section ? null : section);
@@ -138,7 +139,7 @@ const Navbar = () => {
                                 {/* Header */}
                                 <div className="flex justify-between items-center mb-8">
                                     <span className="font-display text-xl font-bold tracking-widest text-black">MENU</span>
-                                    <button onClick={() => toggleMenu(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                                    <button onClick={() => { toggleMenu(false); setMobileSelectedMetal(null); }} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                                         <X className="w-6 h-6 text-black" />
                                     </button>
                                 </div>
@@ -163,15 +164,50 @@ const Navbar = () => {
                                                     exit={{ height: 0, opacity: 0 }}
                                                     className="overflow-hidden"
                                                 >
-                                                    <ul className="pl-4 py-2 space-y-3">
-                                                        {sidebarMenu.shopByCategory.map((item, idx) => (
-                                                            <li key={idx}>
-                                                                <Link to={item.path} onClick={() => toggleMenu(false)} className="text-gray-600 text-sm hover:text-[#D39A9F] block">
-                                                                    {item.name}
-                                                                </Link>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
+                                                    {!mobileSelectedMetal ? (
+                                                        <div className="grid grid-cols-2 gap-3 pl-4 py-3">
+                                                            <Link 
+                                                                to="/gold-collection"
+                                                                onClick={() => { toggleMenu(false); setMobileSelectedMetal(null); }}
+                                                                className="flex flex-col items-center justify-center p-4 bg-[#FDFBF7] border border-gray-100 rounded-2xl hover:bg-[#D4AF37]/5 transition-colors text-center"
+                                                            >
+                                                                <div className="w-10 h-10 bg-[#D4AF37] rounded-full flex items-center justify-center mb-2 shadow-sm">
+                                                                    <span className="text-white font-black text-xs">Au</span>
+                                                                </div>
+                                                                <span className="text-[10px] font-black text-black uppercase">GOLD</span>
+                                                            </Link>
+                                                            <button 
+                                                                onClick={() => setMobileSelectedMetal('silver')}
+                                                                className="flex flex-col items-center justify-center p-4 bg-[#FDFBF7] border border-gray-100 rounded-2xl hover:bg-gray-100 transition-colors"
+                                                            >
+                                                                <div className="w-10 h-10 bg-[#8D6E63] rounded-full flex items-center justify-center mb-2 shadow-sm">
+                                                                    <span className="text-white font-black text-xs">Ag</span>
+                                                                </div>
+                                                                <span className="text-[10px] font-black text-black uppercase">SILVER</span>
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="space-y-3">
+                                                            <div className="flex items-center justify-between pl-4 pr-2">
+                                                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Silver Items</span>
+                                                                <button 
+                                                                    onClick={() => setMobileSelectedMetal(null)}
+                                                                    className="text-xs text-[#D39A9F]"
+                                                                >
+                                                                    Change
+                                                                </button>
+                                                            </div>
+                                                            <ul className="pl-4 py-2 space-y-3">
+                                                                {sidebarMenu.shopByCategory.map((item, idx) => (
+                                                                    <li key={idx}>
+                                                                        <Link to={item.path} onClick={() => { toggleMenu(false); setMobileSelectedMetal(null); }} className="text-gray-600 text-sm hover:text-[#D39A9F] block">
+                                                                            {item.name}
+                                                                        </Link>
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    )}
                                                 </motion.div>
                                             )}
                                         </AnimatePresence>

@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
 import { ChevronRight, Package, ArrowLeft, RefreshCw, Check, CheckCircle, Clock } from 'lucide-react';
+import FAQSection from '../components/FAQSection';
 
 const OrderTracking = () => {
     const { orderId, view } = useParams();
@@ -328,6 +329,11 @@ const OrderTracking = () => {
                             </div>
                         </div>
                     </div>
+                </div>
+
+                {/* FAQ Section Integrated at the bottom */}
+                <div className="mt-20 border-t border-gray-100 pt-16">
+                    <FAQSection />
                 </div>
             </div>
         </div>

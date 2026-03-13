@@ -1,19 +1,46 @@
 import React from 'react';
-import { Search, Bell, User, ChevronDown } from 'lucide-react';
+import { Bell, User } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 
 const AdminHeader = () => {
     const { user } = useAuth();
+    const navigate = useNavigate();
+    const [counts, setCounts] = React.useState({ sellers: 0, customers: 0, notifications: 0 });
+
+    React.useEffect(() => {
+        const updateCounts = () => {
+            const sellers = JSON.parse(localStorage.getItem('seller_data') || '[]');
+            const users = JSON.parse(localStorage.getItem('users_data') || '[]');
+            const notifs = JSON.parse(localStorage.getItem('admin_notifications') || '[]');
+            
+            const pendingSellers = sellers.filter(s => s.status === 'PENDING').length;
+            const pendingUsers = users.filter(u => u.status === 'Pending' && (u.type === 'retailer' || u.type === 'horeca')).length;
+            const unreadNotifs = notifs.filter(n => n.unread || !n.isRead).length;
+            
+            setCounts({ sellers: pendingSellers, customers: pendingUsers, notifications: unreadNotifs });
+        };
+        updateCounts();
+        const interval = setInterval(updateCounts, 5000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const totalPending = counts.sellers + counts.customers + counts.notifications;
 
     return (
         <header className="h-20 bg-footerBg border-b border-white/5 flex items-center justify-end sticky top-0 z-40 text-left">
-
-
             {/* Right Actions with Dark Background */}
             <div className="h-full bg-white/5 px-8 flex items-center gap-6 border-l border-white/5">
-                <button className="relative p-2.5 bg-white/5 text-gray-400 rounded-xl hover:text-white border border-white/10 shadow-sm transition-all focus:ring-2 focus:ring-primary/10">
+                <button 
+                    onClick={() => navigate('/admin/notifications')}
+                    className="relative p-2.5 bg-white/5 text-gray-400 rounded-xl hover:text-white border border-white/10 shadow-sm transition-all focus:ring-2 focus:ring-primary/10"
+                >
                     <Bell size={20} />
-                    <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-footerBg shadow-sm"></span>
+                    {totalPending > 0 && (
+                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-black flex items-center justify-center rounded-full border-2 border-footerBg shadow-sm animate-bounce">
+                            {totalPending}
+                        </span>
+                    )}
                 </button>
 
                 <div className="h-8 w-px bg-white/10 mx-1" />

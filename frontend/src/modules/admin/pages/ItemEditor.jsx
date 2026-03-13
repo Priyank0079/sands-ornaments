@@ -15,7 +15,8 @@ const CATEGORY_HIERARCHY = {
     'anklets': ['Silver Anklets', 'Gold Anklets', 'Chain Anklets'],
     'sets': ['Bridal Sets', 'Party Wear', 'Minimal Sets'],
     'combos-packs': ['Office Wear', 'Gift Sets', 'Daily Wear'],
-    'nose-pins': ['Gold', 'Diamond', 'Silver']
+    'nose-pins': ['Gold', 'Diamond', 'Silver'],
+    'other': []
 };
 
 const quillModules = {
@@ -77,6 +78,7 @@ const ItemEditor = () => {
         cardBadge: '',
         // Product Specific Fields
         material: '925 Silver',
+        weight: '', // New field
         specifications: '', // New field
         supplierInfo: '',  // New field
         originalPrice: '',
@@ -280,6 +282,39 @@ const ItemEditor = () => {
 
                                 <FormSection title="Specifications & Pricing" className="space-y-6">
                                     <div className="grid grid-cols-1 gap-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <Input
+                                                label="Material"
+                                                value={formData.material}
+                                                onChange={(e) => setFormData({ ...formData, material: e.target.value })}
+                                                placeholder="925 Sterling Silver"
+                                                disabled={isViewMode}
+                                            />
+                                            <div className="space-y-1.5">
+                                                <label className="block text-xs font-semibold text-gray-700 tracking-wide">Weight & Unit</label>
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="number"
+                                                        step="0.01"
+                                                        value={formData.weight}
+                                                        onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+                                                        placeholder="5.40"
+                                                        disabled={isViewMode}
+                                                        className="flex-1 bg-white border border-gray-300 rounded-lg py-2.5 px-3.5 text-sm text-gray-900 focus:outline-none focus:border-[#3E2723] focus:ring-2 focus:ring-[#3E2723]/10 transition-all shadow-sm"
+                                                    />
+                                                    <select
+                                                        value={formData.weightUnit || 'Grams'}
+                                                        onChange={(e) => setFormData({ ...formData, weightUnit: e.target.value })}
+                                                        disabled={isViewMode}
+                                                        className="w-24 bg-white border border-gray-300 rounded-lg py-2.5 px-2 text-xs font-bold text-[#3E2723] focus:outline-none focus:border-[#3E2723] focus:ring-2 focus:ring-[#3E2723]/10 transition-all shadow-sm cursor-pointer"
+                                                    >
+                                                        <option value="Grams">Grams</option>
+                                                        <option value="Carats">Carat</option>
+                                                        <option value="Milligrams">mg</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
                                         <Input
                                             label="Original Price (₹)"
                                             type="number"
@@ -426,7 +461,7 @@ const ItemEditor = () => {
                                                         <select
                                                             value={cat.subcategory}
                                                             onChange={(e) => handleCategoryChange(cat.id, 'subcategory', e.target.value)}
-                                                            disabled={!cat.category || isViewMode}
+                                                            disabled={!cat.category || cat.category === 'other' || cat.category === 'Other' || isViewMode}
                                                             className="w-full bg-white border border-gray-300 rounded-lg p-2.5 text-sm font-medium outline-none focus:border-[#3E2723] focus:ring-1 focus:ring-[#3E2723]/20 transition-all disabled:bg-gray-100 disabled:text-gray-400 disabled:bg-gray-100"
                                                         >
                                                             <option value="">Select Sub-Category...</option>
@@ -436,6 +471,35 @@ const ItemEditor = () => {
                                                         </select>
                                                     </div>
                                                 </div>
+
+                                                {/* Custom Category/Subcategory Inputs */}
+                                                {(cat.category === 'other' || cat.category === 'Other') && (
+                                                    <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4 animate-in slide-in-from-top-1 duration-200">
+                                                        <div className="space-y-1.5">
+                                                            <label className="text-[9px] font-bold text-[#8D6E63] uppercase tracking-wider">Custom Category Name</label>
+                                                            <input
+                                                                type="text"
+                                                                value={cat.customCategory || ''}
+                                                                onChange={(e) => handleCategoryChange(cat.id, 'customCategory', e.target.value)}
+                                                                className="w-full bg-white border border-[#EFEBE9] rounded-lg p-2.5 text-sm font-medium outline-none focus:border-[#3E2723] focus:ring-1 focus:ring-[#3E2723]/20 transition-all"
+                                                                placeholder="e.g. Traditional Bangles"
+                                                                disabled={isViewMode}
+                                                                required
+                                                            />
+                                                        </div>
+                                                        <div className="space-y-1.5">
+                                                            <label className="text-[9px] font-bold text-[#8D6E63] uppercase tracking-wider">Custom Sub-Category</label>
+                                                            <input
+                                                                type="text"
+                                                                value={cat.customSubcategory || ''}
+                                                                onChange={(e) => handleCategoryChange(cat.id, 'customSubcategory', e.target.value)}
+                                                                className="w-full bg-white border border-[#EFEBE9] rounded-lg p-2.5 text-sm font-medium outline-none focus:border-[#3E2723] focus:ring-1 focus:ring-[#3E2723]/20 transition-all"
+                                                                placeholder="e.g. Handmade"
+                                                                disabled={isViewMode}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
                                                 {!isViewMode && formData.categories.length > 1 && (
                                                     <button
                                                         type="button"
