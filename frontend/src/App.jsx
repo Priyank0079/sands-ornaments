@@ -21,6 +21,7 @@ import PrivacyPolicy from './modules/user/pages/PrivacyPolicy';
 import Notifications from './modules/user/pages/Notifications';
 import AnnouncementBar from './modules/user/components/AnnouncementBar';
 import BlogsPage from './modules/user/pages/BlogsPage';
+import GoldComingSoon from './modules/user/pages/GoldComingSoon';
 
 // Admin Imports
 import AdminLogin from './modules/admin/pages/Login';
@@ -28,8 +29,7 @@ import AdminLayout from './modules/admin/components/AdminLayout';
 import AdminProtectedRoute from './modules/admin/components/AdminProtectedRoute';
 import CategoryPage from './modules/admin/pages/categories/CategoryPage';
 import CategoryView from './modules/admin/pages/categories/CategoryView';
-import SubcategoryManagement from './modules/admin/pages/SubcategoryManagement';
-import SubcategoryView from './modules/admin/pages/SubcategoryView';
+
 import ProductManagement from './modules/admin/pages/ProductManagement';
 import ProductView from './modules/admin/pages/ProductView';
 import ItemEditor from './modules/admin/pages/ItemEditor';
@@ -61,14 +61,21 @@ import GlobalSettings from './modules/admin/pages/GlobalSettings';
 import SectionManagement from './modules/admin/pages/SectionManagement';
 import SectionEditor from './modules/admin/pages/SectionEditor';
 import DynamicPageEditor from './modules/admin/pages/DynamicPageEditor';
+import AdminSellersPage from './modules/admin/pages/AdminSellersPage';
+import AdminSellerDetails from './modules/admin/pages/AdminSellerDetails';
+import AdminNotifications from './modules/admin/pages/AdminNotifications';
+
+// Seller Imports
+import SellerRoutes from './modules/seller/routes/sellerRoutes';
 
 const AppContent = () => {
   const location = useLocation();
   const isAdminPath = location.pathname.startsWith('/admin');
+  const isSellerPath = location.pathname.startsWith('/seller');
 
   return (
     <div className="min-h-screen flex flex-col font-sans text-gray-900 bg-[#FDF5F6]">
-      {!isAdminPath && (
+      {!isAdminPath && !isSellerPath && (
         <>
           <div className="fixed top-0 left-0 right-0 z-[100] w-full">
             <AnnouncementBar />
@@ -77,8 +84,8 @@ const AppContent = () => {
           <div className="h-[84px] md:h-[104px] w-full"></div>
         </>
       )}
-      {!isAdminPath && <CategoryNav />}
-      <main className={`flex-grow ${!isAdminPath ? 'pb-16 md:pb-0' : ''}`}>
+      {!isAdminPath && !isSellerPath && <CategoryNav />}
+      <main className={`flex-grow ${!isAdminPath && !isSellerPath ? 'pb-16 md:pb-0' : ''}`}>
         <Routes>
           {/* User Routes */}
           <Route path="/" element={<Home />} />
@@ -102,6 +109,7 @@ const AppContent = () => {
           <Route path="/new-arrivals" element={<Shop />} />
           <Route path="/trending" element={<Shop />} />
           <Route path="/category/:category" element={<Shop />} />
+          <Route path="/gold-collection" element={<GoldComingSoon />} />
           <Route path="/blogs" element={<BlogsPage />} />
 
           {/* Admin Routes */}
@@ -115,10 +123,7 @@ const AppContent = () => {
                   <Route path="/categories/view/:id" element={<CategoryView />} />
                   <Route path="/categories/new" element={<ItemEditor />} />
                   <Route path="/categories/edit/:id" element={<ItemEditor />} />
-                  <Route path="/subcategories" element={<SubcategoryManagement />} />
-                  <Route path="/subcategories/view/:id" element={<SubcategoryView />} />
-                  <Route path="/subcategories/new" element={<ItemEditor />} />
-                  <Route path="/subcategories/edit/:id" element={<ItemEditor />} />
+
                   <Route path="/products" element={<ProductManagement />} />
                   <Route path="/products/view/:id" element={<ItemEditor />} />
                   <Route path="/products/new" element={<ItemEditor />} />
@@ -143,7 +148,8 @@ const AppContent = () => {
                   <Route path="/support" element={<SupportManagement />} />
                   <Route path="/support/inquiries" element={<ContactInquiries />} />
                   <Route path="/banners" element={<BannerManagement />} />
-                  <Route path="/notifications" element={<GlobalNotificationManager />} />
+                  <Route path="/notifications" element={<AdminNotifications />} />
+                  <Route path="/broadcasts" element={<GlobalNotificationManager />} />
                   <Route path="/notifications/add" element={<AddNotification />} />
                   <Route path="/faq" element={<FAQManagement />} />
                   <Route path="/about-us" element={<ContentManagement />} />
@@ -151,16 +157,21 @@ const AppContent = () => {
                   <Route path="/sections" element={<SectionManagement />} />
                   <Route path="/sections/:id" element={<SectionEditor />} />
                   <Route path="/pages/:pageId" element={<DynamicPageEditor />} />
+                  <Route path="/sellers" element={<AdminSellersPage />} />
+                  <Route path="/seller-details/:id" element={<AdminSellerDetails />} />
                   <Route path="/settings" element={<GlobalSettings />} />
                 </Routes>
               </AdminLayout>
             </AdminProtectedRoute>
           } />
 
+          {/* Seller Routes */}
+          <Route path="/seller/*" element={<SellerRoutes />} />
+
           <Route path="*" element={<Home />} />
         </Routes>
       </main>
-      {!isAdminPath && <Footer />}
+      {!isAdminPath && !isSellerPath && <Footer />}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { Check } from 'lucide-react';
 import { PRODUCTS as initialProducts, COUPONS as initialCoupons } from '../mockData/data';
 
@@ -170,8 +170,9 @@ export const ShopProvider = ({ children }) => {
     };
 
     const placeOrder = (orderDetails) => {
+        const orderId = 'ORD-' + Date.now();
         const newOrder = {
-            id: 'ORD-' + Date.now(),
+            id: orderId,
             date: new Date().toISOString(),
             items: cart,
             total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
@@ -179,9 +180,51 @@ export const ShopProvider = ({ children }) => {
             ...orderDetails
         };
         setOrders(prev => [newOrder, ...prev]);
+
+        // Seller Bridge: Add to seller orders and notifications
+        try {
+            const sellerOrders = JSON.parse(localStorage.getItem('seller_orders') || '[]');
+            const sellerNotifications = JSON.parse(localStorage.getItem('seller_notifications') || '[]');
+
+            // In a real app, products would be split by seller. 
+            // For this simulation, we'll add the entire order to the seller's view.
+            cart.forEach(item => {
+                sellerOrders.unshift({
+                    id: orderId,
+                    customerName: orderDetails.customerName || user?.name || 'Guest User',
+                    // Privacy Restriction: Seller only gets Name and Address
+                    customerPhone: 'REDACTED', 
+                    customerAddress: orderDetails.customerAddress || 'N/A',
+                    product: item.name,
+                    productId: item.id,
+                    barcode: item.id.toString().slice(0, 8), // Simulation
+                    quantity: item.quantity,
+                    price: item.price,
+                    paymentStatus: orderDetails.paymentMethod === 'COD' ? 'PENDING' : 'PAID',
+                    paymentMethod: orderDetails.paymentMethod || 'Credit Card',
+                    orderStatus: 'PENDING',
+                    orderDate: new Date().toISOString()
+                });
+            });
+
+            sellerNotifications.unshift({
+                id: Date.now(),
+                title: 'New Order Received',
+                message: `Order #${orderId} has been placed by ${user?.name || 'a customer'}.`,
+                date: new Date().toISOString(),
+                unread: true,
+                type: 'ORDER'
+            });
+
+            localStorage.setItem('seller_orders', JSON.stringify(sellerOrders));
+            localStorage.setItem('seller_notifications', JSON.stringify(sellerNotifications));
+        } catch (e) {
+            console.error("Seller simulation error:", e);
+        }
+
         setCart([]); // Clear cart after order
         showNotification("Order placed successfully!");
-        return newOrder.id;
+        return orderId;
     };
 
     const addToCart = (product) => {
