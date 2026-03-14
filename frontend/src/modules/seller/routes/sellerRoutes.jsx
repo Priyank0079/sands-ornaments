@@ -27,7 +27,7 @@ const SellerProtectedRoute = ({ children }) => {
         return <Navigate to="/seller/login" replace />;
     }
 
-    if (currentSeller && currentSeller.status !== 'APPROVED') {
+    if (currentSeller && currentSeller.status !== 'APPROVED' && currentSeller.status !== 'PENDING') {
         return (
             <div className="min-h-screen bg-[#FDF5F6] flex items-center justify-center p-6 font-sans">
                 <div className="max-w-md w-full bg-white rounded-[2.5rem] p-12 shadow-2xl text-center space-y-6 border border-white">

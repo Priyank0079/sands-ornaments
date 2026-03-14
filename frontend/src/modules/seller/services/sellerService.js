@@ -32,13 +32,13 @@ export const sellerService = {
     // Ensure test account exists
     initTestAccount: () => {
         const sellers = JSON.parse(localStorage.getItem('seller_data') || '[]');
-        if (!sellers.find(s => s.email === 'seller@gmail.com')) {
+        if (!sellers.find(s => s.mobileNumber === '9111966732')) {
             sellers.push({
                 id: 'test-seller-1',
                 fullName: 'Default Seller',
                 shopName: 'Sands Ornaments Test Store',
                 email: 'seller@gmail.com',
-                mobileNumber: '9999999999',
+                mobileNumber: '9111966732',
                 password: '123456',
                 status: 'APPROVED',
                 registrationDate: new Date().toISOString(),
@@ -62,15 +62,11 @@ export const sellerService = {
             return { success: false, message: "Invalid email/mobile or password" };
         }
 
-        if (seller.status === 'PENDING') {
-            return { success: false, message: "Your seller account is under review by admin." };
-        }
-
         if (seller.status === 'REJECTED') {
             return { success: false, message: "Your seller registration was rejected. Please contact support." };
         }
 
-        if (seller.status === 'APPROVED') {
+        if (seller.status === 'APPROVED' || seller.status === 'PENDING') {
             localStorage.setItem('sellerAuth', 'true');
             localStorage.setItem('currentSeller', JSON.stringify(seller));
             return { success: true };
