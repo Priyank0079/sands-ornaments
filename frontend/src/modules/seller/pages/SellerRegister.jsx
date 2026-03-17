@@ -4,11 +4,12 @@ import {
     User, Phone, Mail, Lock, Store, MapPin, Building, Hash, 
     CreditCard, Landmark, FileUp, ArrowRight, AlertCircle, CheckCircle2, ShieldCheck 
 } from 'lucide-react';
-import { sellerService } from '../services/sellerService';
+import { useAuth } from '../../../context/AuthContext';
 import loginBg from '../assets/admin-login-bg.png';
 
 const SellerRegister = () => {
     const navigate = useNavigate();
+    const { sellerRegister } = useAuth();
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
@@ -55,14 +56,28 @@ const SellerRegister = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        // Simulate API call
-        setTimeout(async () => {
-            const res = await sellerService.register(formData);
+        
+        try {
+            // Mapping nested bank data
+            const payload = {
+                ...formData,
+                bankAccount: {
+                    accountNumber: formData.accountNumber,
+                    ifscCode: formData.ifscCode
+                }
+            };
+            
+            const res = await sellerRegister(payload);
             if (res.success) {
                 setSubmitted(true);
+            } else {
+                alert(res.message || "Registration failed. Please check your details.");
             }
+        } catch (err) {
+            alert("Connection error. Please try again.");
+        } finally {
             setLoading(false);
-        }, 1500);
+        }
     };
 
     const inputClasses = "w-full bg-[#FDFBF7] border border-[#EFEBE9] rounded-xl py-4 px-12 text-sm focus:outline-none focus:border-[#8D6E63] focus:ring-4 focus:ring-[#8D6E63]/5 transition-all shadow-inner";

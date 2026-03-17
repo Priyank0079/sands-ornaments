@@ -1,25 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Store, User, MapPin, CreditCard, ShieldCheck, FileText, CheckCircle, XCircle } from 'lucide-react';
-import { sellerService } from '../../seller/services/sellerService';
+import { adminService } from '../services/adminService';
 
 const AdminSellerDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [seller, setSeller] = useState(null);
 
+    const fetchSeller = async () => {
+        try {
+            const data = await adminService.getSellerDetails(id);
+            setSeller(data);
+        } catch (err) {
+            console.error("Seller load failed");
+        }
+    };
+
     useEffect(() => {
-        setSeller(sellerService.getSellerById(id));
+        fetchSeller();
     }, [id]);
 
     const [showRejectModal, setShowRejectModal] = useState(false);
     const [rejectReason, setRejectReason] = useState('');
 
     const handleAction = async (status, reason = null) => {
-        const res = await sellerService.updateSellerStatus(id, status, reason);
-        if (res.success) {
+        const success = await adminService.updateSellerStatus(id, status, reason);
+        if (success) {
             if (status === 'REJECTED') setShowRejectModal(false);
-            setSeller(sellerService.getSellerById(id));
+            fetchSeller();
         }
     };
 

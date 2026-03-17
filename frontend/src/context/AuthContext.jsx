@@ -1,4 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import api from '../services/api';
+import toast from 'react-hot-toast';
 
 const AuthContext = createContext();
 
@@ -8,68 +10,123 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    // Load user on startup
     useEffect(() => {
-        const storedUser = JSON.parse(localStorage.getItem('farmlyf_current_user'));
-        if (storedUser) setUser(storedUser);
-        setLoading(false);
+        const token = localStorage.getItem('sands_token');
+        if (token) {
+            loadUser();
+        } else {
+            setLoading(false);
+        }
     }, []);
 
-    const login = (email, password) => {
-        // In a real app, verify password hash. Here we mock it by checking the users list.
-        const users = JSON.parse(localStorage.getItem('farmlyf_users')) || [];
-        const validUser = users.find(u => u.email === email && u.password === password);
-
-        if (validUser) {
-            const { password, ...userWithoutPass } = validUser;
-            setUser(userWithoutPass);
-            localStorage.setItem('farmlyf_current_user', JSON.stringify(userWithoutPass));
-            return { success: true };
+    const loadUser = async () => {
+        try {
+            const res = await api.get('auth/me');
+            if (res.data.success) {
+                // The backend success utility wraps everything in a 'data' field
+                const userData = res.data.data?.user || res.data.user;
+                if (userData) {
+                    setUser(userData);
+                    localStorage.setItem('sands_current_user', JSON.stringify(userData));
+                }
+            }
+        } catch (err) {
+            console.error("Failed to load user:", err.message);
+            logout();
+        } finally {
+            setLoading(false);
         }
-
-        // Admin Backdoor for testing
-        if (email === 'admin@farmlyf.com' && password === 'admin') {
-            const adminUser = { id: 'admin_01', name: 'Super Admin', email, role: 'admin' };
-            setUser(adminUser);
-            localStorage.setItem('farmlyf_current_user', JSON.stringify(adminUser));
-            return { success: true };
-        }
-
-        return { success: false, message: 'Invalid credentials' };
     };
 
-    const signup = (userData) => {
-        const users = JSON.parse(localStorage.getItem('farmlyf_users')) || [];
-
-        if (users.find(u => u.email === userData.email)) {
-            return { success: false, message: 'User already exists' };
+    // --- USER AUTH (OTP) ---
+    const sendOtp = async (phone) => {
+        try {
+            const res = await api.post('auth/send-otp', { phone });
+            return res.data;
+        } catch (err) {
+            return { success: false, message: err.response?.data?.message || "Failed to send OTP" };
         }
+    };
 
-        const newUser = {
-            id: `user_${Date.now()}`,
-            role: 'user',
-            points: 0,
-            usedCoupons: [],
-            ...userData
-        };
+    const verifyOtp = async (phone, otp) => {
+        try {
+            const res = await api.post('auth/verify-otp', { phone, otp });
+            if (res.data.success) {
+                const { user: userData, token } = res.data.data;
+                setUser(userData);
+                localStorage.setItem('sands_token', token);
+                localStorage.setItem('sands_current_user', JSON.stringify(userData));
+                toast.success("Login successful!");
+            }
+            return res.data;
+        } catch (err) {
+            return { success: false, message: err.response?.data?.message || "Invalid OTP" };
+        }
+    };
 
-        users.push(newUser);
-        localStorage.setItem('farmlyf_users', JSON.stringify(users));
+    // --- ADMIN AUTH ---
+    const adminLogin = async (email, password) => {
+        try {
+            const res = await api.post('auth/admin/login', { email, password });
+            if (res.data.success) {
+                // Backend returns { success: true, data: { token, user } }
+                const { user: userData, token } = res.data.data;
+                setUser(userData);
+                localStorage.setItem('sands_token', token);
+                localStorage.setItem('sands_current_user', JSON.stringify(userData));
+                toast.success("Admin login successful!");
+            }
+            return res.data;
+        } catch (err) {
+            return { success: false, message: err.response?.data?.message || "Invalid admin credentials" };
+        }
+    };
 
-        // Auto login after signup
-        const { password, ...userWithoutPass } = newUser;
-        setUser(userWithoutPass);
-        localStorage.setItem('farmlyf_current_user', JSON.stringify(userWithoutPass));
+    // --- SELLER AUTH ---
+    const sellerRegister = async (sellerData) => {
+        try {
+            const res = await api.post('auth/seller/register', sellerData);
+            return res.data;
+        } catch (err) {
+            return { success: false, message: err.response?.data?.message || "Seller registration failed" };
+        }
+    };
 
-        return { success: true };
+    const sellerLogin = async (email, password) => {
+        try {
+            const res = await api.post('auth/seller/login', { email, password });
+            if (res.data.success) {
+                const { user: userData, token } = res.data.data;
+                setUser(userData);
+                localStorage.setItem('sands_token', token);
+                localStorage.setItem('sands_current_user', JSON.stringify(userData));
+                toast.success("Seller login successful!");
+            }
+            return res.data;
+        } catch (err) {
+            return { success: false, message: err.response?.data?.message || "Invalid seller credentials" };
+        }
     };
 
     const logout = () => {
         setUser(null);
-        localStorage.removeItem('farmlyf_current_user');
+        localStorage.removeItem('sands_token');
+        localStorage.removeItem('sands_current_user');
+        toast.success("Logged out successfully");
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, signup, logout, loading }}>
+        <AuthContext.Provider value={{ 
+            user, 
+            loading, 
+            sendOtp, 
+            verifyOtp, 
+            adminLogin, 
+            sellerRegister, 
+            sellerLogin, 
+            logout 
+        }}>
             {children}
         </AuthContext.Provider>
     );

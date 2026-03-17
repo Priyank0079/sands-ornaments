@@ -8,31 +8,41 @@ import {
 } from 'lucide-react';
 import PageHeader from '../components/common/PageHeader';
 import AdminStatsCard from '../components/AdminStatsCard';
+import { adminService } from '../services/adminService';
+import { toast } from 'react-hot-toast';
 
 const UserManagement = () => {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('customers');
-
-    // Mock Users Data
-    const [users, setUsers] = useState([
-        { id: 'USR-1001', name: 'Aditi Singh', email: 'aditi.s@gmail.com', phone: '+91 98123 45678', joinedDate: 'Dec 12, 2024', ordersCount: 12, spentAmount: '45,690', status: 'Active', type: 'customer' },
-        { id: 'USR-1002', name: 'Rahul Verma', email: 'rahul.v@yahoo.com', phone: '+91 77654 32109', joinedDate: 'Nov 05, 2024', ordersCount: 3, spentAmount: '8,200', status: 'Active', type: 'customer' },
-        { id: 'RET-1001', name: 'Apex Jewellers', email: 'contact@apex.com', phone: '+91 99000 11000', joinedDate: 'Feb 10, 2025', ordersCount: 45, spentAmount: '2,45,690', status: 'Active', type: 'retailer' },
-        { id: 'RET-1002', name: 'Shree Ornaments', email: 'info@shree.com', phone: '+91 88000 22000', joinedDate: 'Jan 15, 2025', ordersCount: 22, spentAmount: '1,12,000', status: 'Pending', type: 'retailer' },
-        { id: 'HOR-1001', name: 'Grand Palace Hotel', email: 'events@grandpalace.com', phone: '+91 77000 33000', joinedDate: 'Mar 01, 2025', ordersCount: 8, spentAmount: '5,12,000', status: 'Active', type: 'horeca' },
-        { id: 'USR-1003', name: 'Sneha Kapoor', email: 'sneha.k@gmail.com', phone: '+91 88990 11223', joinedDate: 'Jan 15, 2025', ordersCount: 0, spentAmount: '0', status: 'Disabled', type: 'customer' }
-    ]);
-
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
 
-    const toggleUserStatus = (id) => {
-        setUsers(users.map(user => {
-            if (user.id === id) {
-                const newStatus = user.status === 'Active' ? 'Disabled' : 'Active';
-                return { ...user, status: newStatus };
-            }
-            return user;
-        }));
+    const fetchUsers = async () => {
+        setLoading(true);
+        try {
+            // Map tab to backend types if necessary, assuming backend supports these
+            const data = await adminService.getUsers(activeTab);
+            setUsers(data);
+        } catch (err) {
+            console.error("Users fetch failed");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    React.useEffect(() => {
+        fetchUsers();
+    }, [activeTab]);
+
+    const toggleUserStatus = async (id) => {
+        const success = await adminService.toggleUserStatus(id);
+        if (success) {
+            toast.success("Status updated");
+            fetchUsers();
+        } else {
+            toast.error("Failed to update status");
+        }
     };
 
     const tabs = [
@@ -42,12 +52,9 @@ const UserManagement = () => {
     ];
 
     const filteredUsers = users.filter(user => {
-        const matchesTab = (activeTab === 'customers' && user.type === 'customer') || 
-                          (activeTab === 'retailers' && user.type === 'retailer') || 
-                          (activeTab === 'horeca' && user.type === 'horeca');
-        const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            user.email.toLowerCase().includes(searchTerm.toLowerCase());
-        return matchesTab && matchesSearch;
+        const matchesSearch = (user.fullName || user.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            (user.email || '').toLowerCase().includes(searchTerm.toLowerCase());
+        return matchesSearch;
     });
 
     return (
@@ -134,55 +141,55 @@ const UserManagement = () => {
                         </thead>
                         <tbody className="divide-y divide-gray-100 uppercase tracking-tighter text-[10px] md:text-[11px] text-gray-900">
                             {filteredUsers.length > 0 ? filteredUsers.map((user) => (
-                                <tr key={user.id} className="hover:bg-gray-50/50 transition-colors group">
+                                <tr key={user._id || user.id} className="hover:bg-gray-50/50 transition-colors group">
                                     <td className="px-4 md:px-6 py-3 md:py-4">
                                         <div className="flex items-center gap-2 md:gap-3">
                                             <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 font-bold border border-gray-200 shadow-sm shrink-0 text-[10px] md:text-sm">
-                                                {user.name.charAt(0)}
+                                                {(user.fullName || user.name || 'U').charAt(0)}
                                             </div>
                                             <div className="min-w-0">
-                                                <p className="font-bold text-black truncate">{user.name}</p>
+                                                <p className="font-bold text-black truncate">{user.fullName || user.name}</p>
                                                 <p className="text-[9px] md:text-[11px] text-gray-400 font-bold truncate lowercase">{user.email}</p>
                                             </div>
                                         </div>
                                     </td>
                                     <td className="px-4 md:px-6 py-3 md:py-4 text-gray-600 font-bold">
-                                        {user.joinedDate}
+                                        {new Date(user.createdAt).toLocaleDateString()}
                                     </td>
                                     <td className="px-4 md:px-6 py-3 md:py-4 font-bold text-gray-700">
-                                        {user.ordersCount}
+                                        {user.ordersCount || 0}
                                     </td>
                                     <td className="px-4 md:px-6 py-3 md:py-4 font-bold text-gray-900">
-                                        ₹{user.spentAmount}
+                                        ₹{(user.spentAmount || 0).toLocaleString()}
                                     </td>
                                     <td className="px-4 md:px-6 py-3 md:py-4">
-                                        <span className={`px-2 md:px-2.5 py-0.5 md:py-1 rounded text-[9px] md:text-[11px] font-bold border ${user.status === 'Active'
+                                        <span className={`px-2 md:px-2.5 py-0.5 md:py-1 rounded text-[9px] md:text-[11px] font-bold border ${user.status === 'Active' || user.isActive
                                             ? 'bg-green-50 text-green-600 border-green-100'
                                             : user.status === 'Pending' 
                                             ? 'bg-amber-50 text-amber-600 border-amber-100'
                                             : 'bg-red-50 text-red-600 border-red-100'
                                             }`}>
-                                            {user.status}
+                                            {user.status || (user.isActive ? 'Active' : 'Disabled')}
                                         </span>
                                     </td>
                                     <td className="px-4 md:px-6 py-3 md:py-4 text-right">
                                         <div className="flex items-center justify-end gap-1 md:gap-2">
                                             <button
-                                                onClick={() => navigate(`/admin/users/view/${user.id}`)}
+                                                onClick={() => navigate(`/admin/users/view/${user._id || user.id}`)}
                                                 className="p-1.5 md:p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-[#3E2723] transition-all"
                                                 title="View Profile"
                                             >
                                                 <Eye className="w-4 h-4 md:w-5 md:h-5" />
                                             </button>
                                             <button
-                                                onClick={() => toggleUserStatus(user.id)}
-                                                className={`p-1.5 md:p-2 rounded-lg transition-all ${user.status === 'Active'
+                                                onClick={() => toggleUserStatus(user._id || user.id)}
+                                                className={`p-1.5 md:p-2 rounded-lg transition-all ${user.isActive
                                                     ? 'hover:bg-red-50 text-gray-400 hover:text-red-600'
                                                     : 'hover:bg-green-50 text-gray-400 hover:text-green-600'
                                                     }`}
-                                                title={user.status === 'Active' ? 'Disable Account' : 'Enable Account'}
+                                                title={user.isActive ? 'Disable Account' : 'Enable Account'}
                                             >
-                                                {user.status === 'Active' ? <UserX className="w-4 h-4 md:w-5 md:h-5" /> : <UserCheck className="w-4 h-4 md:w-5 md:h-5" />}
+                                                {user.isActive ? <UserX className="w-4 h-4 md:w-5 md:h-5" /> : <UserCheck className="w-4 h-4 md:w-5 md:h-5" />}
                                             </button>
                                         </div>
                                     </td>

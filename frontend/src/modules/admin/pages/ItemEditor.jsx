@@ -1,23 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useNavigate, useParams, useLocation, useSearchParams } from 'react-router-dom';
 import { Upload, X, Save, Plus, ChevronRight } from 'lucide-react';
 import { Trash2 } from 'lucide-react';
 import PageHeader from '../components/common/PageHeader';
 import { FormSection, Input, Select } from '../components/common/FormControls';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
-
-const CATEGORY_HIERARCHY = {
-    'necklaces': ['Kundan', 'Oxidized', 'Gold Chain', 'Temple', 'Diamond', 'Choker', 'Pendant', 'Mangalsutra'],
-    'rings': ['Solitaire', 'Gold Band', 'Diamond Ring', 'Engagement', 'Cocktail', 'Couple Rings'],
-    'earrings': ['Studs', 'Jhumkas', 'Drops', 'Hoops', 'Sui Dhaga', 'Chandbali'],
-    'bangles': ['Temple Jewellery', 'Gold Bangles', 'Bracelets', 'Kada', 'Cuff'],
-    'anklets': ['Silver Anklets', 'Gold Anklets', 'Chain Anklets'],
-    'sets': ['Bridal Sets', 'Party Wear', 'Minimal Sets'],
-    'combos-packs': ['Office Wear', 'Gift Sets', 'Daily Wear'],
-    'nose-pins': ['Gold', 'Diamond', 'Silver'],
-    'other': []
-};
+import { adminService } from '../services/adminService';
+import toast from 'react-hot-toast';
 
 const quillModules = {
     toolbar: [
@@ -39,40 +29,40 @@ const quillFormats = [
 const ItemEditor = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const location = useLocation();
+    const [searchParams] = useSearchParams();
+    const typeParam = searchParams.get('type');
 
     // Determine context
-    const isCategory = location.pathname.includes('/categories');
-    const isSubcategory = location.pathname.includes('/subcategories');
+    const isCategoryPath = location.pathname.includes('/categories');
+    const isSubcategory = typeParam === 'subcategory';
+    const isCategory = isCategoryPath && !isSubcategory;
     const isProduct = location.pathname.includes('/products');
     const isViewMode = location.pathname.includes('/view/');
 
     const resourceType = isCategory ? 'Category' : (isSubcategory ? 'Subcategory' : 'Product');
-    const backPath = isCategory ? '/admin/categories' : (isSubcategory ? '/admin/subcategories' : '/admin/products');
+    const backPath = isProduct 
+        ? '/admin/products' 
+        : (isSubcategory && formData.parentId 
+            ? `/admin/categories/view/${formData.parentId}` 
+            : '/admin/categories');
 
     const isEditMode = Boolean(id) && !isViewMode;
 
     // Mock initial data for lists
-    const [categories] = useState([
-        { id: '101', name: 'Rings' },
-        { id: '102', name: 'Earrings' },
-        { id: '103', name: 'Necklaces' }
-    ]);
-    const [subcategories] = useState([
-        { id: '1', name: 'Solitaire', parentId: '101' },
-        { id: '2', name: 'Band', parentId: '101' },
-        { id: '3', name: 'Hoops', parentId: '102' }
-    ]);
+    const [categories, setCategories] = useState([]);
+    const [subcategories, setSubcategories] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [imageFiles, setImageFiles] = useState([]); // Store actual File objects
 
     const [formData, setFormData] = useState({
         name: '',
         parentId: '',
         subCategoryId: '',
-        subCategoryId: '',
         description: '',
         stylingTips: '',
         showInCollection: true,
         showInNavbar: true,
+        metal: metalParam || 'silver', // Default to param or silver
         // Product Display Labels
         cardLabel: '',
         cardBadge: '',
@@ -116,40 +106,74 @@ const ItemEditor = () => {
     }, [formData.originalPrice, formData.sellingPrice, isProduct]);
 
     useEffect(() => {
+        const fetchMetadata = async () => {
+            try {
+                const cats = await adminService.getCategories();
+                setCategories(cats);
+                // Flatten subcategories for easy access
+                const allSubs = cats.flatMap(c => c.subcategories || []);
+                setSubcategories(allSubs);
+            } catch (err) {
+                toast.error("Failed to load categories");
+            }
+        };
+        fetchMetadata();
+
         if (isEditMode || isViewMode) {
-            // Mock fetching existing data
-            setFormData({
-                name: isCategory ? 'Earrings' : (isSubcategory ? 'Solitaire' : 'Classic Diamond Solitaire'),
-                parentId: '1',
-                subCategoryId: isProduct ? '1' : '',
-                description: '<p>A masterpiece created with precision and care, representing timeless beauty.</p>',
-                stylingTips: '<p>Pair with a black dress for maximum impact.</p>',
-                cardLabel: '9 TO 5 SILVER JEWELLERY',
-                cardBadge: 'NEW',
-                material: '925 Sterling Silver',
-                specifications: 'Weight: 4.5g, Purity: 92.5%, Stone: Cubic Zirconia',
-                supplierInfo: 'Everlast Jewelry Wholesalers',
-                originalPrice: '5000',
-                sellingPrice: '3999',
-                discount: 20,
-                stock: '25',
-                status: 'Active',
-                images: [
-                    'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&h=400&fit=crop',
-                    'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&h=400&fit=crop'
-                ],
-                sizes: ['7', '8', 'Adjustable'],
-                variantStock: { '7': 10, '8': 15, 'Adjustable': 5 },
-                tags: {
-                    isNewArrival: true,
-                    isMostGifted: true,
-                    isNewLaunch: false
-                },
-                categories: [{ id: Date.now(), category: 'rings', subcategory: 'solitaire' }]
-            });
+            const fetchData = async () => {
+                setLoading(true);
+                try {
+                    let data; // Declare data here
+                    if (isCategory) {
+                        data = await adminService.getCategoryById(id);
+                        setFormData({
+                            name: data.name,
+                            description: data.description || '',
+                            showInCollection: data.showInCollection,
+                            showInNavbar: data.showInNavbar,
+                            isActive: data.isActive,
+                            metal: data.metal || 'silver', // Populate metal from fetched data
+                            images: data.image ? [data.image] : []
+                        });
+                    } else if (isSubcategory) {
+                        // We need a getSubcategoryById or similar, but often it's included in parent or fetched directly
+                        // For now assuming adminService has getSubcategoryById or we can find it in categories
+                        const cats = await adminService.getCategories();
+                        const sub = cats.flatMap(c => c.subcategories || []).find(s => s._id === id);
+                        if (sub) {
+                            setFormData({
+                                name: sub.name,
+                                parentId: sub.parentCategory?._id || sub.parentCategory,
+                                showInCollection: sub.showInCollection !== false,
+                                showInNavbar: sub.showInNavbar !== false,
+                                isActive: sub.isActive !== false,
+                                images: sub.image ? [sub.image] : []
+                            });
+                        }
+                    } else if (isProduct) {
+                        data = await adminService.getProductById(id);
+                        setFormData({
+                            ...data,
+                            originalPrice: data.variants?.[0]?.mrp || '',
+                            sellingPrice: data.variants?.[0]?.price || '',
+                            stock: data.variants?.[0]?.stock || '',
+                            discount: data.variants?.[0]?.discount || 0,
+                            categories: data.categories.map(c => ({
+                                id: Math.random(),
+                                category: c.categoryId?._id || c.categoryId,
+                                subcategoryId: c.subcategoryId?._id || c.subcategoryId
+                            }))
+                        });
+                    }
+                } catch (err) {
+                    toast.error("Failed to fetch data");
+                } finally {
+                    setLoading(false);
+                }
+            };
+            fetchData();
         }
 
-        // Handle pre-selection from query params (e.g. ?parent=101)
         const searchParams = new URLSearchParams(location.search);
         const parentParam = searchParams.get('parent');
         if (!isEditMode && !isViewMode && parentParam) {
@@ -159,10 +183,12 @@ const ItemEditor = () => {
 
     const handleImageUpload = (e) => {
         const files = Array.from(e.target.files);
-        const newImages = files.map(file => URL.createObjectURL(file));
+        setImageFiles(prev => [...prev, ...files].slice(0, 5));
+        
+        const previews = files.map(file => URL.createObjectURL(file));
         setFormData(prev => ({
             ...prev,
-            images: [...prev.images, ...newImages].slice(0, 5) // Limit to 5
+            images: [...prev.images, ...previews].slice(0, 5)
         }));
     };
 
@@ -197,13 +223,13 @@ const ItemEditor = () => {
         }));
     };
 
-    const handleCategoryChange = (id, field, value) => {
+    const handleCategoryChange = (valId, field, value) => {
         setFormData(prev => ({
             ...prev,
             categories: prev.categories.map(c => {
-                if (c.id === id) {
+                if (c.id === valId) {
                     if (field === 'category') {
-                        return { ...c, category: value, subcategory: '' }; // Reset subcategory on category change
+                        return { ...c, category: value, subcategory: '' }; // Reset subcategory
                     }
                     return { ...c, [field]: value };
                 }
@@ -212,10 +238,106 @@ const ItemEditor = () => {
         }));
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        alert(`${resourceType} saved successfully!`);
-        navigate(backPath);
+    const getAvailableSubcategories = (categoryId) => {
+        const cat = categories.find(c => c._id === categoryId);
+        return cat ? cat.subcategories : [];
+    };
+
+    const handleSubmit = async (e) => {
+        if (e) e.preventDefault();
+        setLoading(true);
+
+        try {
+            let res;
+            if (isCategory) {
+                const form = new FormData();
+                form.append('name', formData.name);
+                form.append('description', formData.description);
+                form.append('metal', formData.metal); // Append metal to form data
+                form.append('showInNavbar', formData.showInNavbar);
+                form.append('showInCollection', formData.showInCollection);
+                if (imageFiles.length > 0) {
+                    imageFiles.forEach(file => form.append('image', file));
+                }
+
+                if (isEditMode) {
+                    const success = await adminService.updateCategory(id, form);
+                    if (success) toast.success("Category updated");
+                    else throw new Error("Update failed");
+                } else {
+                    res = await adminService.createCategory(form);
+                    if (res.success) toast.success("Category created");
+                    else throw new Error(res.message);
+                }
+            } else if (isSubcategory) {
+                const form = new FormData();
+                form.append('name', formData.name);
+                form.append('description', formData.description);
+                form.append('parentCategory', formData.parentId);
+                form.append('showInNavbar', formData.showInNavbar);
+                form.append('showInCollection', formData.showInCollection);
+                if (imageFiles.length > 0) {
+                    imageFiles.forEach(file => form.append('image', file));
+                }
+
+                if (isEditMode) {
+                    const success = await adminService.updateSubcategory(id, form);
+                    if (success) toast.success("Subcategory updated");
+                    else throw new Error("Update failed");
+                } else {
+                    res = await adminService.createSubcategory(form);
+                    if (res.success) toast.success("Subcategory created");
+                    else throw new Error(res.message);
+                }
+            } else {
+                // Product Management
+                const mappedCategories = formData.categories
+                    .filter(c => c.category)
+                    .map(c => ({
+                        categoryId: c.category,
+                        subcategoryId: c.subcategoryId || null
+                    }));
+
+                const variants = [{
+                    name: 'Default',
+                    mrp: parseFloat(formData.originalPrice) || 0,
+                    price: parseFloat(formData.sellingPrice) || 0,
+                    stock: parseInt(formData.stock) || 0,
+                    discount: parseInt(formData.discount) || 0
+                }];
+
+                const productForm = new FormData();
+                Object.keys(formData).forEach(key => {
+                    if (!['images', 'categories', 'tags', 'variants', 'originalPrice', 'sellingPrice', 'stock', 'discount'].includes(key)) {
+                        if (formData[key] !== undefined) productForm.append(key, formData[key]);
+                    }
+                });
+
+                productForm.append('categories', JSON.stringify(mappedCategories));
+                productForm.append('variants', JSON.stringify(variants));
+                productForm.append('tags', JSON.stringify(formData.tags));
+
+                if (imageFiles.length > 0) {
+                    imageFiles.forEach(file => productForm.append('images', file));
+                }
+
+                if (isEditMode) {
+                    res = await adminService.updateProduct(id, productForm);
+                    if (res.success) toast.success("Product updated");
+                    else throw new Error(res.message);
+                } else {
+                    res = await adminService.createProduct(productForm);
+                    if (res.success) toast.success("Product published");
+                    else throw new Error(res.message);
+                }
+            }
+            navigate(backPath);
+        } catch (err) {
+            toast.error(err.message || "Operation failed");
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -359,52 +481,66 @@ const ItemEditor = () => {
                                 label={isCategory ? "Category Name" : (isSubcategory ? "Subcategory Name" : "Product Title")}
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                placeholder={isCategory ? "e.g. Rings" : (isSubcategory ? "e.g. Solitaire" : "e.g. 925 Silver Solitaire Ring")}
+                                placeholder={isCategory ? "e.g. Gold" : (isSubcategory ? "e.g. Rings" : "e.g. Gold Floral Ring")}
                                 disabled={isViewMode}
                             />
 
                             {isCategory && (
-                                <div className="flex flex-col sm:flex-row gap-4 pt-2">
-                                    <label className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-all flex-1 ${formData.showInCollection
-                                        ? 'border-[#8D6E63] bg-[#8D6E63]/5 ring-1 ring-[#8D6E63]/20'
-                                        : 'border-gray-200 hover:border-[#8D6E63]/30 hover:bg-gray-50'
-                                        } ${isViewMode ? 'pointer-events-none opacity-80' : ''}`}>
-                                        <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${formData.showInCollection
-                                            ? 'bg-[#8D6E63] border-[#8D6E63]'
-                                            : 'bg-white border-gray-300'
-                                            }`}>
-                                            {formData.showInCollection && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
-                                        </div>
-                                        <input
-                                            type="checkbox"
-                                            checked={formData.showInCollection}
-                                            onChange={(e) => setFormData({ ...formData, showInCollection: e.target.checked })}
-                                            className="hidden"
-                                            disabled={isViewMode}
-                                        />
-                                        <span className={`text-sm font-medium ${formData.showInCollection ? 'text-[#3E2723]' : 'text-gray-700'}`}>Show in Collection</span>
-                                    </label>
+                                <>
+                                    <div className="flex flex-col sm:flex-row gap-4 pt-2">
+                                        <label className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-all flex-1 ${formData.showInCollection
+                                            ? 'border-[#8D6E63] bg-[#8D6E63]/5 ring-1 ring-[#8D6E63]/20'
+                                            : 'border-gray-200 hover:border-[#8D6E63]/30 hover:bg-gray-50'
+                                            } ${isViewMode ? 'pointer-events-none opacity-80' : ''}`}>
+                                            <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${formData.showInCollection
+                                                ? 'bg-[#8D6E63] border-[#8D6E63]'
+                                                : 'bg-white border-gray-300'
+                                                }`}>
+                                                {formData.showInCollection && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                                            </div>
+                                            <input
+                                                type="checkbox"
+                                                checked={formData.showInCollection}
+                                                onChange={(e) => setFormData({ ...formData, showInCollection: e.target.checked })}
+                                                className="hidden"
+                                                disabled={isViewMode}
+                                            />
+                                            <span className={`text-sm font-medium ${formData.showInCollection ? 'text-[#3E2723]' : 'text-gray-700'}`}>Show in Collection</span>
+                                        </label>
 
-                                    <label className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-all flex-1 ${formData.showInNavbar
-                                        ? 'border-[#8D6E63] bg-[#8D6E63]/5 ring-1 ring-[#8D6E63]/20'
-                                        : 'border-gray-200 hover:border-[#8D6E63]/30 hover:bg-gray-50'
-                                        } ${isViewMode ? 'pointer-events-none opacity-80' : ''}`}>
-                                        <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${formData.showInNavbar
-                                            ? 'bg-[#8D6E63] border-[#8D6E63]'
-                                            : 'bg-white border-gray-300'
-                                            }`}>
-                                            {formData.showInNavbar && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
-                                        </div>
-                                        <input
-                                            type="checkbox"
-                                            checked={formData.showInNavbar}
-                                            onChange={(e) => setFormData({ ...formData, showInNavbar: e.target.checked })}
-                                            className="hidden"
-                                            disabled={isViewMode}
-                                        />
-                                        <span className={`text-sm font-medium ${formData.showInNavbar ? 'text-[#3E2723]' : 'text-gray-700'}`}>Show in Navbar</span>
-                                    </label>
-                                </div>
+                                        <label className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-all flex-1 ${formData.showInNavbar
+                                            ? 'border-[#8D6E63] bg-[#8D6E63]/5 ring-1 ring-[#8D6E63]/20'
+                                            : 'border-gray-200 hover:border-[#8D6E63]/30 hover:bg-gray-50'
+                                            } ${isViewMode ? 'pointer-events-none opacity-80' : ''}`}>
+                                            <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${formData.showInNavbar
+                                                ? 'bg-[#8D6E63] border-[#8D6E63]'
+                                                : 'bg-white border-gray-300'
+                                                }`}>
+                                                {formData.showInNavbar && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                                            </div>
+                                            <input
+                                                type="checkbox"
+                                                checked={formData.showInNavbar}
+                                                onChange={(e) => setFormData({ ...formData, showInNavbar: e.target.checked })}
+                                                className="hidden"
+                                                disabled={isViewMode}
+                                            />
+                                            <span className={`text-sm font-medium ${formData.showInNavbar ? 'text-[#3E2723]' : 'text-gray-700'}`}>Show in Navbar</span>
+                                        </label>
+                                    </div>
+
+                                    <Select
+                                        label="Category Metal (Internal)"
+                                        value={formData.metal}
+                                        onChange={(e) => setFormData({ ...formData, metal: e.target.value })}
+                                        options={[
+                                            { label: 'Silver (Ag)', value: 'silver' },
+                                            { label: 'Gold (Au)', value: 'gold' },
+                                            { label: 'Platinum (Pt)', value: 'platinum' }
+                                        ]}
+                                        disabled={isViewMode}
+                                    />
+                                </>
                             )}
 
                             {isSubcategory && (
@@ -414,8 +550,8 @@ const ItemEditor = () => {
                                         value={formData.parentId}
                                         onChange={(e) => setFormData({ ...formData, parentId: e.target.value })}
                                         options={[
-                                            { label: 'Select Category...', value: '' },
-                                            ...categories.map(c => ({ label: c.name, value: c.id }))
+                                            { label: 'Select Parent Category...', value: '' },
+                                            ...categories.map(c => ({ label: c.name, value: c.id || c._id }))
                                         ]}
                                         disabled={isViewMode}
                                     />
@@ -441,32 +577,32 @@ const ItemEditor = () => {
                                             <div key={cat.id} className="p-4 rounded-xl bg-gray-50 border border-gray-200 relative group animate-in fade-in slide-in-from-top-2">
                                                 <div className="flex gap-4">
                                                     <div className="flex-1 space-y-1.5">
-                                                        <label className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Parent Category</label>
+                                                        <label className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Select Category</label>
                                                         <select
                                                             value={cat.category}
                                                             onChange={(e) => handleCategoryChange(cat.id, 'category', e.target.value)}
                                                             className="w-full bg-white border border-gray-300 rounded-lg p-2.5 text-sm font-medium outline-none focus:border-[#3E2723] focus:ring-1 focus:ring-[#3E2723]/20 transition-all disabled:bg-gray-100 disabled:text-gray-500"
                                                             disabled={isViewMode}
                                                         >
-                                                            <option value="">Select Category...</option>
-                                                            {Object.keys(CATEGORY_HIERARCHY).map(key => (
-                                                                <option key={key} value={key}>
-                                                                    {key.charAt(0).toUpperCase() + key.slice(1).replace('-', ' ')}
+                                                            <option value="">Choose Material...</option>
+                                                            {categories.map(c => (
+                                                                <option key={c._id} value={c._id}>
+                                                                    {c.name}
                                                                 </option>
                                                             ))}
                                                         </select>
                                                     </div>
                                                     <div className="flex-1 space-y-1.5">
-                                                        <label className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Sub-Category</label>
+                                                        <label className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Select Subcategory</label>
                                                         <select
-                                                            value={cat.subcategory}
-                                                            onChange={(e) => handleCategoryChange(cat.id, 'subcategory', e.target.value)}
-                                                            disabled={!cat.category || cat.category === 'other' || cat.category === 'Other' || isViewMode}
-                                                            className="w-full bg-white border border-gray-300 rounded-lg p-2.5 text-sm font-medium outline-none focus:border-[#3E2723] focus:ring-1 focus:ring-[#3E2723]/20 transition-all disabled:bg-gray-100 disabled:text-gray-400 disabled:bg-gray-100"
+                                                            value={cat.subcategoryId}
+                                                            onChange={(e) => handleCategoryChange(cat.id, 'subcategoryId', e.target.value)}
+                                                            className="w-full bg-white border border-gray-300 rounded-lg p-2.5 text-sm font-medium outline-none focus:border-[#3E2723] focus:ring-1 focus:ring-[#3E2723]/20 transition-all disabled:bg-gray-100 disabled:text-gray-500"
+                                                            disabled={isViewMode || !cat.category}
                                                         >
-                                                            <option value="">Select Sub-Category...</option>
-                                                            {cat.category && CATEGORY_HIERARCHY[cat.category]?.map(sub => (
-                                                                <option key={sub} value={sub}>{sub}</option>
+                                                            <option value="">Choose Subcategory...</option>
+                                                            {getAvailableSubcategories(cat.category).map(s => (
+                                                                <option key={s._id} value={s._id}>{s.name}</option>
                                                             ))}
                                                         </select>
                                                     </div>

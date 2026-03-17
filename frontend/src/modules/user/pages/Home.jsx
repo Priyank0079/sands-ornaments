@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowRight, Play, ShoppingBag, ChevronDown, MoveRight, Plus, Minus, ChevronLeft, ChevronRight } from 'lucide-react';
-import { banners, categories, products } from '../assets/data';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import CategoryShowcase from '../components/CategoryShowcase';
@@ -18,24 +17,30 @@ import BrandPromises from '../components/BrandPromises';
 import FAQSection from '../components/FAQSection';
 import ChitChatSection from '../components/ChitChatSection';
 
+// Assets
+import trendingHeritage from '../assets/trending_heritage.png';
+import trendingModern from '../assets/trending_modern.png';
 import heroSlide1 from '../assets/hero_slide_1.png';
 import heroSlide2 from '../assets/hero_slide_2.png';
 import heroSlide3 from '../assets/hero_slide_3.png';
-import spotlightMain from '../assets/spotlight_silver_main.png';
-import spotlightHover from '../assets/spotlight_silver_hover.png';
-
-import trendingHeritage from '../assets/trending_heritage.png';
-import trendingModern from '../assets/trending_modern.png';
-
-// Product Images
 import prodEarringsMain from '../assets/prod_earrings_main.png';
 import prodEarringsHover from '../assets/prod_earrings_hover.png';
 import prodRingMain from '../assets/prod_ring_main.png';
-import prodRingHover from '../assets/cat_rings.png';
-import prodChainMain from '../assets/cat_pendant.png'; // Reusing as it fits
+import prodRingHover from '../assets/spotlight_silver_hover.png';
+import prodChainMain from '../assets/silver_chain_product.png';
+import spotlightMain from '../assets/spotlight_silver_main.png';
+import spotlightHover from '../assets/spotlight_silver_hover.png';
+
+import { useShop } from '../../../context/ShopContext';
 
 const Home = () => {
-    const featuredProducts = products.slice(0, 3);
+    const { products, categories, banners, isLoading } = useShop();
+    
+    useEffect(() => {
+        document.title = "Sands Ornaments | Pure 925 Silver Jewellery - Timeless Elegance";
+    }, []);
+
+    const featuredProducts = (products || []).slice(0, 3);
     const [hoveredCategory, setHoveredCategory] = useState(null);
     const [activeFaq, setActiveFaq] = useState(null);
     const [currentSlide, setCurrentSlide] = useState(0);
@@ -164,6 +169,13 @@ const Home = () => {
             hover: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?auto=format&fit=crop&q=80&w=400"  // Silver Rings Collection (Hero Image - 100% Works)
         }
     ];
+    if (isLoading) {
+        return (
+            <div className="bg-white min-h-screen flex items-center justify-center">
+                <div className="w-12 h-12 border-4 border-[#4A1015] border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-white font-body text-black relative selection:bg-[#D39A9F] selection:text-white">

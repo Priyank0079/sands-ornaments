@@ -23,22 +23,12 @@ import { FormSection, Input, Select, TextArea } from '../components/common/FormC
 const CouponFormPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { products, coupons, addCoupon, updateCoupon } = useShop();
+    const { products, categories, coupons, addCoupon, updateCoupon } = useShop();
     const isEdit = Boolean(id);
 
-    // Hardcoded Categories for simplicty (usually from context)
-    const CATEGORIES = [
-        { id: 'nuts', name: 'Nuts' },
-        { id: 'dried-fruits', name: 'Dried Fruits' },
-        { id: 'seeds-mixes', name: 'Seeds & Mixes' },
-        { id: 'combos-packs', name: 'Combos & Packs' }
-    ];
-
-    const SUBCATEGORIES = [
-        'Almonds', 'Cashews', 'Walnuts (Akhrot)', 'Pistachios',
-        'Raisins', 'Dates', 'Dried Figs (Anjeer)',
-        'Seeds', 'Mixes', 'Daily Packs', 'Gifting'
-    ];
+    // Dynamic Lists from Context
+    const ALL_CATEGORIES = categories || [];
+    const ALL_SUBCATEGORIES = categories.flatMap(cat => cat.subcategories || []) || [];
 
     const [formData, setFormData] = useState({
         code: '',
@@ -91,30 +81,34 @@ const CouponFormPage = () => {
         });
     };
 
-    const handleSave = (e) => {
+    const handleSave = async (e) => {
         e.preventDefault();
 
+        // Map targetItems to specific backend fields
         const payload = {
-            ...formData,
-            // Map to standard structure
-            amount: Number(formData.value),
-            minOrder: Number(formData.minOrderValue),
-            desc: formData.description,
-            // Keep original fields too for compatibility if needed, but standardize on above
+            code: formData.code.toUpperCase(),
+            type: formData.type,
             value: Number(formData.value),
-            minOrderValue: Number(formData.minOrderValue),
+            minOrderValue: Number(formData.minOrderValue) || 0,
+            maxDiscount: formData.type === 'percentage' ? (Number(formData.maxDiscount) || null) : null,
+            validFrom: formData.validFrom ? new Date(formData.validFrom).toISOString() : null,
+            validUntil: formData.validUntil ? new Date(formData.validUntil).toISOString() : null,
+            usageLimit: formData.usageLimit ? Number(formData.usageLimit) : null,
+            perUserLimit: Number(formData.perUserLimit) || 1,
+            active: formData.active,
+            userEligibility: formData.userEligibility,
             description: formData.description,
-
-            usageCount: isEdit ? formData.usageCount : 0,
-            maxDiscount: Number(formData.maxDiscount) || null,
-            usageLimit: Number(formData.usageLimit) || 1000,
-            perUserLimit: Number(formData.perUserLimit) || 1
+            applicabilityType: formData.applicabilityType,
+            // Map targetItems based on applicabilityType
+            applicableCategories: formData.applicabilityType === 'category' ? formData.targetItems : [],
+            applicableSubcategories: formData.applicabilityType === 'subcategory' ? formData.targetItems : [],
+            applicableProducts: formData.applicabilityType === 'product' ? formData.targetItems : []
         };
 
         if (isEdit) {
-            updateCoupon(id, payload);
+            await updateCoupon(id, payload);
         } else {
-            addCoupon(payload);
+            await addCoupon(payload);
         }
         navigate('/admin/coupons');
     };
@@ -211,6 +205,7 @@ const CouponFormPage = () => {
                                     { id: 'all', label: 'All Orders' },
                                     { id: 'new_user', label: 'New Users' },
                                     { id: 'category', label: 'Category' },
+                                    { id: 'subcategory', label: 'Subcategory' },
                                     { id: 'product', label: 'Product' }
                                 ].map(scope => {
                                     const isActive = (scope.id === 'new_user' && formData.userEligibility === 'new') ||
@@ -262,7 +257,7 @@ const CouponFormPage = () => {
 
                                 {formData.applicabilityType === 'category' && formData.userEligibility !== 'new' && (
                                     <div className="space-y-2">
-                                        {CATEGORIES.map(cat => (
+                                        {ALL_CATEGORIES.map(cat => (
                                             <label key={cat.id} className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-[#3E2723]/30 transition-all">
                                                 <div className={`w-5 h-5 rounded border flex items-center justify-center ${formData.targetItems.includes(cat.id) ? 'bg-[#3E2723] border-[#3E2723]' : 'border-gray-300'}`}>
                                                     {formData.targetItems.includes(cat.id) && <CheckCircle2 size={12} className="text-white" />}

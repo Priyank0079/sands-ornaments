@@ -3,31 +3,35 @@ import { useNavigate } from 'react-router-dom';
 import { Store, Eye, CheckCircle, XCircle, FileText, ShieldCheck, Search, Users, UserCheck, UserPlus, UserX, Clock } from 'lucide-react';
 import AdminTable from '../components/AdminTable';
 import AdminStatsCard from '../components/AdminStatsCard';
-import { sellerService } from '../../seller/services/sellerService';
+import { adminService } from '../services/adminService';
 
 const AdminSellersPage = () => {
     const navigate = useNavigate();
+    const [sellers, setSellers] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [activeFilter, setActiveFilter] = useState('ALL');
 
-    const refreshSellers = () => {
-        setSellers(sellerService.getAllSellers());
+    const fetchSellers = async () => {
+        setLoading(true);
+        try {
+            const data = await adminService.getSellers();
+            setSellers(data);
+        } catch (err) {
+            console.error("Sellers fetch failed");
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
-        refreshSellers();
-        const interval = setInterval(refreshSellers, 3000);
-        window.addEventListener('storage', refreshSellers);
-        return () => {
-            clearInterval(interval);
-            window.removeEventListener('storage', refreshSellers);
-        };
+        fetchSellers();
     }, []);
 
     const handleAction = async (id, status) => {
-        const res = await sellerService.updateSellerStatus(id, status);
-        if (res.success) {
-            refreshSellers();
+        const success = await adminService.updateSellerStatus(id, status);
+        if (success) {
+            fetchSellers();
         }
     };
 
@@ -122,7 +126,7 @@ const AdminSellersPage = () => {
             render: (row) => (
                 <div className="flex justify-end gap-2">
                     <button 
-                        onClick={() => navigate(`/admin/seller-details/${row.id}`)}
+                        onClick={() => navigate(`/admin/seller-details/${row._id || row.id}`)}
                         className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-[#3E2723] transition-all"
                         title="View Details"
                     >
@@ -131,14 +135,14 @@ const AdminSellersPage = () => {
                     {row.status === 'PENDING' && (
                         <>
                             <button 
-                                onClick={() => handleAction(row.id, 'APPROVED')}
+                                onClick={() => handleAction(row._id || row.id, 'APPROVED')}
                                 className="p-1.5 hover:bg-emerald-50 rounded-lg text-gray-400 hover:text-emerald-600 transition-all"
                                 title="Approve"
                             >
                                 <CheckCircle size={18} />
                             </button>
                             <button 
-                                onClick={() => handleAction(row.id, 'REJECTED')}
+                                onClick={() => handleAction(row._id || row.id, 'REJECTED')}
                                 className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition-all"
                                 title="Reject"
                             >

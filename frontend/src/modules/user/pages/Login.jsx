@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import loginHero from '../assets/login_hero_silver.png';
-import { useShop } from '../../../context/ShopContext';
+import { useAuth } from '../../../context/AuthContext';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Crown, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import logo from '../assets/SANDS JEWELS PINK (1).png';
 
 const Login = () => {
-    const { login } = useShop();
+    const { sendOtp, verifyOtp } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -32,29 +32,31 @@ const Login = () => {
         setEmail('');
     }, [isSignup]);
 
-    const handleSendOtp = (e) => {
+    const handleSendOtp = async (e) => {
         e.preventDefault();
         if (phoneNumber.length === 10) {
-            setLoginStep(2);
+            const res = await sendOtp(phoneNumber);
+            if (res.success) {
+                setLoginStep(2);
+            } else {
+                alert(res.message);
+            }
         } else {
             alert("Please enter a valid 10-digit phone number");
         }
     };
 
-    const handleVerifyOtp = (e) => {
+    const handleVerifyOtp = async (e) => {
         e.preventDefault();
         const enteredOtp = otp.join('');
         if (enteredOtp.length === 4) {
-            // Mock Login/Signup
-            const userData = {
-                name: isSignup ? fullName : 'Guest User',
-                phone: phoneNumber,
-                email: isSignup ? email : 'guest@example.com'
-            };
-
-            login(userData);
-            // Redirect to Profile page after successful login/signup as requested
-            navigate('/profile');
+            const res = await verifyOtp(phoneNumber, enteredOtp);
+            if (res.success) {
+                // Redirect to Profile page after successful login/signup
+                navigate('/profile');
+            } else {
+                alert(res.message);
+            }
         } else {
             alert("Please enter the 4-digit OTP");
         }

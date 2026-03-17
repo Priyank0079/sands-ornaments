@@ -19,14 +19,27 @@ import Pagination from '../components/Pagination';
 
 const ReturnRequestsPage = () => {
     const navigate = useNavigate();
-    const { returns, getPackById } = useShop();
+    const [returns, setReturns] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
 
-    // Flatten all returns from all users
-    const allReturns = useMemo(() => {
-        return Object.values(returns).flat().sort((a, b) => new Date(b.requestDate) - new Date(a.requestDate));
-    }, [returns]);
+    React.useEffect(() => {
+        const fetchReturns = async () => {
+            try {
+                const data = await adminService.getReturns();
+                setReturns(data);
+            } catch (err) {
+                console.error("Returns failed");
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchReturns();
+    }, []);
+
+    // Flatten logic removed as backend returns an array
+    const allReturns = returns;
 
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
@@ -34,8 +47,8 @@ const ReturnRequestsPage = () => {
     const filteredReturns = useMemo(() => {
         return allReturns.filter(ret => {
             const matchesSearch =
-                ret.orderId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                ret.userName?.toLowerCase().includes(searchTerm.toLowerCase());
+                (ret.order?.orderId || ret.orderId || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (ret.user?.fullName || ret.userName || '').toLowerCase().includes(searchTerm.toLowerCase());
 
             const matchesStatus = statusFilter === 'All' || ret.status === statusFilter;
 
@@ -61,9 +74,12 @@ const ReturnRequestsPage = () => {
         }
     };
 
-    const handleAction = (retId, action) => {
-        alert(`Request ${retId} ${action}! (Mock Action)`);
-        // In real app, this would update the return status in context
+    const handleAction = async (retId, status) => {
+        const success = await adminService.processReturn(retId, status);
+        if (success) {
+            const data = await adminService.getReturns();
+            setReturns(data);
+        }
     };
 
     return (

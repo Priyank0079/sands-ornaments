@@ -1,30 +1,50 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useShop } from '../../../context/ShopContext';
 import ProductCard from '../components/ProductCard';
-import { products, categories } from '../assets/data'; // Import categories to map paths
-import { Filter, ChevronDown, ArrowUpDown, ArrowLeft } from 'lucide-react';
-import { useLocation, useParams, useNavigate } from 'react-router-dom';
+import ProductSkeleton from '../components/ProductSkeleton';
+import { 
+    Filter, ChevronDown, Check, Star, 
+    ArrowRight, ShoppingBag, X, SlidersHorizontal,
+    ArrowLeft, ArrowUpDown
+} from 'lucide-react';
 
 const Shop = () => {
+    const { products, categories, isLoading } = useShop();
     const location = useLocation();
     const navigate = useNavigate();
     const { category } = useParams();
-    const [isFilterOpen, setIsFilterOpen] = useState(false); // State for Sidebar
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('All');
-    const [selectedSubCategory, setSelectedSubCategory] = useState(null); // New State for Subcategory
+    const [selectedSubCategory, setSelectedSubCategory] = useState(null);
     const [filterNewArrivals, setFilterNewArrivals] = useState(false);
     const [filterTrending, setFilterTrending] = useState(false);
     const [isSortOpen, setIsSortOpen] = useState(false);
-    const [isWebSortOpen, setIsWebSortOpen] = useState(false); // New state for Web Sort Dropdown
+    const [isWebSortOpen, setIsWebSortOpen] = useState(false);
     const [sortBy, setSortBy] = useState('Newest');
-    const [priceRange, setPriceRange] = useState(10000); // Mock max price
-    const [filteredProducts, setFilteredProducts] = useState(products);
+    const [priceRange, setPriceRange] = useState(50000); 
+    const [filteredProducts, setFilteredProducts] = useState(products || []);
     const [pageTitle, setPageTitle] = useState('All Jewellery');
 
     // Effect to handle URL-based Logic + Local Category Filter
     useEffect(() => {
         const path = location.pathname;
+        const queryParams = new URLSearchParams(location.search);
+        const categoryQuery = queryParams.get('category');
+        const metalQuery = queryParams.get('metal');
+        
         let baseProducts = products;
         let title = 'All Jewellery';
+
+        // Set selected category from query param if present
+        if (categoryQuery && selectedCategory === 'All') {
+            const catObj = categories.find(c => c._id === categoryQuery || c.name === categoryQuery);
+            if (catObj) {
+                setSelectedCategory(catObj.name);
+            }
+        }
+
+        const isComingSoonQuery = queryParams.get('status') === 'coming-soon';
 
         // 1. Determine Base Products & Title from URL
         if (path === '/new-arrivals') {
@@ -33,6 +53,9 @@ const Shop = () => {
         } else if (path === '/trending') {
             title = 'Trending Now';
             baseProducts = products.filter(p => p.rating >= 4.5);
+        } else if (metalQuery) {
+            title = `${metalQuery.charAt(0).toUpperCase() + metalQuery.slice(1)} Collection`;
+            baseProducts = products.filter(p => p.metal?.toLowerCase() === metalQuery.toLowerCase());
         } else if (category) {
             const currentCat = categories.find(c => c.path === category);
             title = currentCat ? currentCat.name : category.charAt(0).toUpperCase() + category.slice(1);
@@ -60,14 +83,7 @@ const Shop = () => {
 
             // 2.1 Apply Subcategory Filter
             if (selectedSubCategory) {
-                // Assuming product names or descriptions usually contain the subcategory type for matching 
-                // OR in a real app, products would have a 'subcategory' field.
-                // For this demo, we'll try to match exact string if possible, or fuzzy match if product has that property.
-                // Since data.js products don't specifically have 'subcategory' field, we might match name string roughly?
-                // Wait, looking at data.js, products don't have subcategory field.
-                // However, `data.js` structure has subcategories with specific names.
-                // Let's assume for now we filter by checking if product NAME contains the subcategory name (e.g. "Solitaire").
-                result = result.filter(p => p.name.includes(selectedSubCategory));
+                result = result.filter(p => p.subcategory === selectedSubCategory);
             }
         }
 
@@ -95,7 +111,11 @@ const Shop = () => {
 
         setFilteredProducts([...result]); // Create new array to force re-render
 
-    }, [location, category, selectedCategory, selectedSubCategory, priceRange, filterNewArrivals, filterTrending, sortBy]);
+    }, [location, category, selectedCategory, selectedSubCategory, priceRange, filterNewArrivals, filterTrending, sortBy, categories, products]);
+
+    useEffect(() => {
+        document.title = `${pageTitle} | Sands Ornaments - Pure 925 Silver Jewellery`;
+    }, [pageTitle]);
 
     // Handle Category Change to reset subcategory
     const handleCategoryChange = (val) => {
@@ -164,19 +184,63 @@ const Shop = () => {
 
 
                 {/* Product Grid */}
-                {filteredProducts.length > 0 ? (
+                {isLoading ? (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8 gap-y-8 md:gap-y-12">
-                        {filteredProducts.map((product) => (
-                            <ProductCard key={product.id} product={product} />
+                        {[...Array(8)].map((_, i) => (
+                            <ProductSkeleton key={i} />
                         ))}
                     </div>
-                ) : (
-                    <div className="flex flex-col items-center justify-center py-20 text-center">
-                        <h3 className="text-2xl font-serif text-black mb-2">No products found</h3>
-                        <p className="text-black">Try adjusting your filters.</p>
-                        <button onClick={() => { setSelectedCategory('All'); setSelectedSubCategory(null); setPriceRange(10000); }} className="mt-4 underline text-gray-600 hover:text-black">Clear all filters</button>
-                    </div>
-                )}
+                ) : (() => {
+                    const currentCategoryData = categories.find(c => 
+                        c.name === selectedCategory || c.path === category
+                    );
+                    const isComingSoon = isComingSoonQuery || (selectedCategory !== 'All' && 
+                                       currentCategoryData && 
+                                       (!currentCategoryData.subcategories || currentCategoryData.subcategories.length === 0));
+
+                    if (isComingSoon) {
+                        return (
+                            <div className="flex flex-col items-center justify-center py-24 text-center animate-in fade-in zoom-in duration-500">
+                                <div className="w-20 h-20 bg-[#D39A9F]/10 rounded-full flex items-center justify-center mb-6">
+                                    <ShoppingBag className="w-10 h-10 text-[#D39A9F]" />
+                                </div>
+                                <h3 className="text-3xl font-serif text-black mb-3 italic">Coming Soon</h3>
+                                <p className="text-gray-500 max-w-md mx-auto mb-8">
+                                    We're currently handcrafting new exquisite designs for <span className="text-black font-semibold">{selectedCategory}</span>. Stay tuned!
+                                </p>
+                                <button 
+                                    onClick={() => { setSelectedCategory('All'); navigate('/shop'); }}
+                                    className="bg-black text-white px-8 py-3 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-[#D39A9F] transition-all shadow-lg"
+                                >
+                                    Explore Other Collections
+                                </button>
+                            </div>
+                        );
+                    }
+
+                    if (filteredProducts.length > 0) {
+                        return (
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8 gap-y-8 md:gap-y-12">
+                                {filteredProducts.map((product) => (
+                                    <ProductCard key={product.id} product={product} />
+                                ))}
+                            </div>
+                        );
+                    }
+
+                    return (
+                        <div className="flex flex-col items-center justify-center py-20 text-center">
+                            <h3 className="text-2xl font-serif text-black mb-2">No products found</h3>
+                            <p className="text-gray-500">Try adjusting your filters to find your perfect match.</p>
+                            <button 
+                                onClick={() => { setSelectedCategory('All'); setSelectedSubCategory(null); setPriceRange(10000); navigate('/shop'); }} 
+                                className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#D39A9F] hover:underline"
+                            >
+                                <SlidersHorizontal className="w-4 h-4" /> Clear all filters
+                            </button>
+                        </div>
+                    );
+                })()}
             </div>
 
             {/* Mobile Bottom Action Bar (Nykaa Style) */}

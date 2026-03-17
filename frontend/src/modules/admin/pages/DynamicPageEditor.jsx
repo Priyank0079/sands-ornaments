@@ -4,6 +4,8 @@ import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { Save, ArrowLeft, Layout, Type, Image as ImageIcon } from 'lucide-react';
 import PageHeader from '../components/common/PageHeader';
+import { adminService } from '../services/adminService';
+import toast from 'react-hot-toast';
 
 // Page configuration map to handle titles and keys dynamically
 const PAGE_CONFIG = {
@@ -19,8 +21,9 @@ const PAGE_CONFIG = {
     'about-us': { title: 'About Us', subtitle: 'Company history and mission' },
 };
 
-const DynamicPageEditor = () => {
-    const { pageId } = useParams();
+const DynamicPageEditor = ({ pageId: propPageId }) => {
+    const { pageId: paramPageId } = useParams();
+    const pageId = propPageId || paramPageId;
     const navigate = useNavigate();
     const config = PAGE_CONFIG[pageId];
 
@@ -33,20 +36,51 @@ const DynamicPageEditor = () => {
 
     const [content, setContent] = useState('');
     const [title, setTitle] = useState(config?.title || '');
+    const [loading, setLoading] = useState(true);
 
-    // Simulate fetching data
+    // Fetch data from backend
     useEffect(() => {
-        // In a real app, fetch content from backend based on pageId
-        setTitle(config?.title || '');
-        setContent(`<p>Start editing content for <strong>${config?.title}</strong>...</p>`);
+        const fetchPageContent = async () => {
+            if (!config) return;
+            setLoading(true);
+            try {
+                const res = await adminService.getPageBySlug(pageId);
+                if (res.success && res.data.page) {
+                    setTitle(res.data.page.title);
+                    setContent(res.data.page.content);
+                } else {
+                    // If not found, use defaults from config
+                    setTitle(config.title);
+                    setContent('');
+                }
+            } catch (err) {
+                console.error("Fetch page content failed:", err);
+                toast.error("Failed to load page content");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPageContent();
     }, [pageId, config]);
 
-    const handleSave = () => {
-        console.log('Saving content for:', pageId);
-        console.log('Title:', title);
-        console.log('Content:', content);
-        // Add backend API call here
-        alert('Page content saved successfully!');
+    const handleSave = async () => {
+        try {
+            const res = await adminService.savePage({
+                slug: pageId,
+                title,
+                content
+            });
+
+            if (res.success) {
+                toast.success('Page content saved successfully!');
+            } else {
+                toast.error(res.message || "Failed to save page");
+            }
+        } catch (err) {
+            console.error("Save page failed:", err);
+            toast.error("An error occurred while saving");
+        }
     };
 
     const modules = {
@@ -62,7 +96,7 @@ const DynamicPageEditor = () => {
     const formats = [
         'header',
         'bold', 'italic', 'underline', 'strike', 'blockquote',
-        'list', 'bullet', 'indent',
+        'list', 'indent',
         'link', 'image', 'video'
     ];
 
@@ -93,8 +127,15 @@ const DynamicPageEditor = () => {
                 </button>
             </div>
 
-            {/* Editor Container */}
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            {loading ? (
+                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-12 flex flex-col items-center justify-center space-y-4">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3E2723]"></div>
+                    <p className="text-gray-500 font-medium">Loading page content...</p>
+                </div>
+            ) : (
+                <>
+                    {/* Editor Container */}
+                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                 <div className="p-6 border-b border-gray-100 bg-gray-50/50">
                     <div className="max-w-3xl space-y-4">
                         <div className="space-y-2">
@@ -130,6 +171,8 @@ const DynamicPageEditor = () => {
                     </div>
                 </div>
             </div>
+            </>
+            )}
 
             {/* Helper Info */}
             <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-start gap-3">

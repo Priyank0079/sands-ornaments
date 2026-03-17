@@ -1,91 +1,113 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Plus, Search, Edit2, Trash2, Image as ImageIcon, X, Save, ArrowLeft, Calendar, FileText
 } from 'lucide-react';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import PageHeader from '../components/common/PageHeader';
+import { adminService } from '../services/adminService';
+import toast from 'react-hot-toast';
 
 const BlogManagement = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
-
-    // Mock Data
-    const [blogs, setBlogs] = useState([
-        {
-            id: 1,
-            title: 'The Art of Layering Silver Necklaces',
-            category: 'Style Guide',
-            image: 'https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?auto=format&fit=crop&q=80&w=600',
-            excerpt: 'Discover how to create the perfect layered look with our guide to mixing and matching silver chains.',
-            content: '<p>Discover how to create the perfect layered look with our guide to mixing and matching silver chains and pendants.</p>',
-            date: '2024-02-15',
-            author: 'Admin'
-        },
-        {
-            id: 2,
-            title: 'Caring for Your Sterling Silver',
-            category: 'Care Tips',
-            image: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&q=80&w=600',
-            excerpt: 'Learn the essential tips to keep your silver jewelry shining bright for years to come.',
-            content: '<p>Silver requires special care...</p>',
-            date: '2024-02-10',
-            author: 'Admin'
-        }
-    ]);
+    const [blogs, setBlogs] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     const [formData, setFormData] = useState({
-        id: null,
+        _id: null,
         title: '',
-        category: '',
-        image: '',
+        category: 'Style Guide',
+        image: null, // This will be a File object
+        imagePreview: '', // For UI preview
         excerpt: '',
         content: '',
-        author: 'Admin'
+        author: 'SANDS Admin'
     });
 
-    // Categories
-    const categories = ['Style Guide', 'Care Tips', 'New Collections', 'Trends', 'Behind the Scenes'];
+    const [categories] = useState(['Style Guide', 'Care Tips', 'New Collections', 'Trends', 'Education', 'Behind the Scenes']);
+
+    const fetchBlogs = async () => {
+        setLoading(true);
+        const data = await adminService.getAdminBlogs();
+        setBlogs(data);
+        setLoading(false);
+    };
+
+    React.useEffect(() => {
+        fetchBlogs();
+    }, []);
 
     const handleEdit = (blog) => {
-        setFormData(blog);
+        setFormData({
+            _id: blog._id,
+            title: blog.title,
+            category: blog.category,
+            image: null,
+            imagePreview: blog.coverImage,
+            excerpt: blog.excerpt,
+            content: blog.content,
+            author: blog.author || 'SANDS Admin'
+        });
         setIsEditing(true);
     };
 
-    const handleDelete = (id) => {
+    const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this blog post?')) {
-            setBlogs(blogs.filter(blog => blog.id !== id));
+            const success = await adminService.deleteBlog(id);
+            if (success) {
+                toast.success("Blog deleted successfully");
+                fetchBlogs();
+            } else {
+                toast.error("Failed to delete blog");
+            }
         }
     };
 
     const handleAddNew = () => {
         setFormData({
-            id: null,
+            _id: null,
             title: '',
             category: categories[0],
-            image: '',
+            image: null,
+            imagePreview: '',
             excerpt: '',
             content: '',
-            author: 'Admin'
+            author: 'SANDS Admin'
         });
         setIsEditing(true);
     };
 
-    const handleSave = (e) => {
+    const handleSave = async (e) => {
         e.preventDefault();
-        const newBlog = {
-            ...formData,
-            id: formData.id || Date.now(),
-            date: formData.id ? formData.date : new Date().toISOString().split('T')[0]
-        };
-
-        if (formData.id) {
-            setBlogs(blogs.map(b => b.id === formData.id ? newBlog : b));
-        } else {
-            setBlogs([newBlog, ...blogs]);
+        
+        const data = new FormData();
+        data.append('title', formData.title);
+        data.append('category', formData.category);
+        data.append('excerpt', formData.excerpt);
+        data.append('content', formData.content);
+        data.append('author', formData.author);
+        if (formData.image) {
+            data.append('image', formData.image);
+        } else if (!formData.imagePreview) {
+            data.append('removeImage', 'true');
         }
-        setIsEditing(false);
+
+        let res;
+        if (formData._id) {
+            res = await adminService.updateBlog(formData._id, data);
+        } else {
+            res = await adminService.createBlog(data);
+        }
+
+        if (res.success) {
+            toast.success(formData._id ? "Blog updated!" : "Blog created!");
+            setIsEditing(false);
+            fetchBlogs();
+        } else {
+            toast.error(res.message);
+        }
     };
 
     // Quill Modules
@@ -162,7 +184,7 @@ const BlogManagement = () => {
                                 {/* Image */}
                                 <div className="h-48 overflow-hidden relative">
                                     <img
-                                        src={blog.image}
+                                        src={blog.coverImage || 'https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?auto=format&fit=crop&q=80&w=600'}
                                         alt={blog.title}
                                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                     />
@@ -171,13 +193,15 @@ const BlogManagement = () => {
                                     </div>
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                         <button
+                                            type="button"
                                             onClick={() => handleEdit(blog)}
                                             className="p-2 bg-white rounded-full text-gray-900 shadow-lg hover:scale-110 transition-transform"
                                         >
                                             <Edit2 size={16} />
                                         </button>
                                         <button
-                                            onClick={() => handleDelete(blog.id)}
+                                            type="button"
+                                            onClick={() => handleDelete(blog._id)}
                                             className="p-2 bg-red-500 rounded-full text-white shadow-lg hover:scale-110 transition-transform"
                                         >
                                             <Trash2 size={16} />
@@ -188,7 +212,7 @@ const BlogManagement = () => {
                                 <div className="p-5 flex-1 flex flex-col">
                                     <div className="flex items-center gap-2 mb-3 text-xs text-gray-400 font-bold uppercase tracking-wider">
                                         <Calendar size={12} />
-                                        <span>{blog.date}</span>
+                                        <span>{new Date(blog.createdAt).toLocaleDateString()}</span>
                                         <span>•</span>
                                         <span>{blog.author}</span>
                                     </div>
@@ -196,6 +220,7 @@ const BlogManagement = () => {
                                     <p className="text-sm text-gray-600 line-clamp-2 mb-4 flex-1">{blog.excerpt}</p>
 
                                     <button
+                                        type="button"
                                         onClick={() => handleEdit(blog)}
                                         className="w-full py-2.5 rounded-lg bg-gray-50 text-gray-900 text-xs font-bold hover:bg-[#3E2723] hover:text-white transition-colors"
                                     >
@@ -323,12 +348,12 @@ const BlogManagement = () => {
                             <div className="space-y-2">
                                 <label className="text-xs font-bold text-gray-900 uppercase tracking-wider">Banner Image</label>
                                 <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:bg-gray-50 transition-colors group">
-                                    {formData.image ? (
+                                    {formData.imagePreview ? (
                                         <div className="relative aspect-video rounded-lg overflow-hidden mb-4">
-                                            <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
+                                            <img src={formData.imagePreview} alt="Preview" className="w-full h-full object-cover" />
                                             <button
                                                 type="button"
-                                                onClick={() => setFormData({ ...formData, image: '' })}
+                                                onClick={() => setFormData({ ...formData, image: null, imagePreview: '' })}
                                                 className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full shadow-lg hover:scale-110 transition-transform"
                                             >
                                                 <X size={14} />
@@ -341,14 +366,29 @@ const BlogManagement = () => {
                                         </div>
                                     )}
                                     <input
-                                        type="text"
-                                        placeholder="Paste Image URL..."
-                                        className="w-full p-3 bg-white border border-gray-200 rounded-lg text-xs font-medium focus:border-[#3E2723] outline-none"
-                                        value={formData.image}
-                                        onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        id="blog-image-upload"
+                                        onChange={(e) => {
+                                            const file = e.target.files[0];
+                                            if (file) {
+                                                setFormData({ 
+                                                    ...formData, 
+                                                    image: file, 
+                                                    imagePreview: URL.createObjectURL(file) 
+                                                });
+                                            }
+                                        }}
                                     />
+                                    <label
+                                        htmlFor="blog-image-upload"
+                                        className="block w-full py-3 bg-white border border-gray-200 rounded-lg text-xs font-bold cursor-pointer hover:bg-gray-50 transition-colors"
+                                    >
+                                        CHOOSE FILE
+                                    </label>
                                     <p className="text-[10px] text-gray-400 mt-2 font-bold uppercase tracking-wide">
-                                        Adding uploads soon
+                                        Images are uploaded to Cloudinary
                                     </p>
                                 </div>
                             </div>

@@ -1,50 +1,35 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Mail } from 'lucide-react';
+import { useAuth } from '../../../context/AuthContext';
 
 const AdminLogin = () => {
     const navigate = useNavigate();
+    const { adminLogin } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    // Mock Admin Credentials
-    const MOCK_ADMIN_EMAIL = 'admin@example.com';
-    const MOCK_ADMIN_PASSWORD = 'admin123';
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        setError(''); // Clear previous errors
+        setError('');
 
-        // Validation
-        if (!email.trim()) {
-            setError('Email is required');
+        if (!email.trim() || !password.trim()) {
+            setError('All fields are required');
             return;
         }
 
-        if (!password.trim()) {
-            setError('Password is required');
-            return;
-        }
-
-        // Mock loading state
         setLoading(true);
+        const res = await adminLogin(email, password);
+        setLoading(false);
 
-        // Simulate API delay
-        setTimeout(() => {
-            // Mock authentication logic
-            if (email === MOCK_ADMIN_EMAIL && password === MOCK_ADMIN_PASSWORD) {
-                // Store login state
-                localStorage.setItem('isAdminLoggedIn', 'true');
-
-                // Redirect to admin dashboard
-                navigate('/admin/dashboard');
-            } else {
-                setError('Invalid credentials');
-                setLoading(false);
-            }
-        }, 800);
+        if (res.success) {
+            navigate('/admin/dashboard');
+        } else {
+            setError(res.message || 'Login failed');
+        }
     };
 
     return (
@@ -122,12 +107,6 @@ const AdminLogin = () => {
                         </button>
                     </form>
 
-                    {/* Simple Credential Text */}
-                    <div className="mt-6 text-center space-y-2">
-                        <p className="text-gray-500 text-sm">Use these credentials to login:</p>
-                        <p className="font-mono text-gray-800 font-medium">admin@example.com</p>
-                        <p className="font-mono text-gray-800 font-medium">admin123</p>
-                    </div>
                 </div>
 
                 {/* Footer */}

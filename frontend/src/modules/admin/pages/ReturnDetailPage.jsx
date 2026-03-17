@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { adminService } from '../services/adminService';
 import {
     ArrowLeft,
     Box,
@@ -35,410 +35,39 @@ import banglesImg from '../../../assets/gold_bangles.png';
 const ReturnDetailPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const queryClient = useQueryClient();
+    const [ret, setRet] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [adminComment, setAdminComment] = useState('');
 
-    // DUMMY DATA CASES - JEWELRY THEMED
-    const DUMMY_CASES = {
-        // CASE 101: PENDING
-        '101': {
-            id: '101',
-            orderId: '5001',
-            type: 'Refund',
-            status: 'Pending',
-            requestDate: '2025-02-06T09:00:00Z',
-            amount: 120000,
-            refundAmount: 120000,
-            reason: 'Damaged Product',
-            userName: 'Rahul Sharma',
-            phone: '+91 98765 00001',
-            email: 'rahul.s@example.com',
-            address: {
-                line1: 'A-12, Green Park',
-                city: 'New Delhi',
-                state: 'Delhi',
-                pincode: '110016',
-                fullName: 'Rahul Sharma'
-            },
-            items: [
-                {
-                    name: "Bridal Gold Necklace Set 22k",
-                    sku: "JWL-NCK-001",
-                    qty: 1,
-                    reason: "Clasp Broken",
-                    condition: "Defective",
-                    price: 120000,
-                    image: necklaceImg
-                }
-            ],
-            evidence: {
-                comment: "The clasp of the necklace was broken when I opened the box.",
-                images: [necklaceImg],
-                video: null
-            },
-            timeline: [
-                { status: 'Return Requested', date: '2025-02-06', done: true },
-                { status: 'Admin Approved', date: null, done: false },
-                { status: 'Pickup Scheduled', date: null, done: false }
-            ],
-            logs: [
-                { type: 'Email', msg: 'Return Request Received', date: '06 Feb 2025, 09:00 AM' }
-            ]
-        },
-
-        // CASE 102: APPROVED (Pickup Scheduled)
-        '102': {
-            id: '102',
-            orderId: '5002',
-            type: 'Refund',
-            status: 'Approved',
-            requestDate: '2025-02-04T14:30:00Z',
-            amount: 85000,
-            refundAmount: 85000,
-            reason: 'Wrong Item Received',
-            userName: 'Priya Singh',
-            phone: '+91 98765 00002',
-            email: 'priya.s@example.com',
-            address: {
-                line1: 'B-402, Lotus Tower, Andheri West',
-                city: 'Mumbai',
-                state: 'Maharashtra',
-                pincode: '400053',
-                fullName: 'Priya Singh'
-            },
-            items: [
-                {
-                    name: "22k Gold Bangles (Set of 4)",
-                    sku: "JWL-BNG-002",
-                    qty: 1,
-                    reason: "Wrong Design",
-                    condition: "Unopened",
-                    price: 85000,
-                    image: banglesImg
-                }
-            ],
-            evidence: {
-                comment: "I ordered the floral design but received the geometric pattern instead.",
-                images: [banglesImg],
-                video: null
-            },
-            courier: {
-                partner: 'Delhivery',
-                awb: 'RT987654321',
-                pickupDate: '2025-02-07',
-                status: 'Scheduled'
-            },
-            timeline: [
-                { status: 'Return Requested', date: '2025-02-04', done: true },
-                { status: 'Admin Approved', date: '2025-02-05', done: true },
-                { status: 'Pickup Scheduled', date: '2025-02-05', done: true },
-                { status: 'Picked Up', date: null, done: false }
-            ],
-            logs: [
-                { type: 'Email', msg: 'Return Request Received', date: '04 Feb 2025, 02:30 PM' },
-                { type: 'System', msg: 'Pickup Scheduled via Delhivery', date: '05 Feb 2025, 10:00 AM' }
-            ]
-        },
-
-        // CASE 103: REFUNDED (Completed)
-        '103': {
-            id: '103',
-            orderId: '5003',
-            type: 'Refund',
-            status: 'Refunded',
-            requestDate: '2025-01-20T09:15:00Z',
-            amount: 250000,
-            refundAmount: 250000,
-            reason: 'Quality Issue',
-            userName: 'Amit Verma',
-            phone: '+91 98765 00003',
-            email: 'amit.v@example.com',
-            address: {
-                line1: 'C-15, Golf Links',
-                city: 'Bangalore',
-                state: 'Karnataka',
-                pincode: '560071',
-                fullName: 'Amit Verma'
-            },
-            items: [
-                {
-                    name: "Diamond Engagement Ring 1.5 Carat",
-                    sku: "JWL-RNG-003",
-                    qty: 1,
-                    reason: "Polish Issue",
-                    condition: "Opened",
-                    price: 250000,
-                    image: ringImg
-                }
-            ],
-            evidence: {
-                comment: "The diamond seems slightly loose and setting is not as expected.",
-                images: [ringImg],
-                video: null
-            },
-            courier: {
-                partner: 'BlueDart',
-                awb: 'RT555666777',
-                pickupDate: '2025-01-22',
-                status: 'Delivered'
-            },
-            refund: {
-                method: 'UPI',
-                amount: 250000,
-                transactionId: 'UPI-1234567890',
-                date: '2025-01-25'
-            },
-            timeline: [
-                { status: 'Return Requested', date: '2025-01-20', done: true },
-                { status: 'Admin Approved', date: '2025-01-21', done: true },
-                { status: 'Picked Up', date: '2025-01-22', done: true },
-                { status: 'Received', date: '2025-01-24', done: true },
-                { status: 'Refund Completed', date: '2025-01-25', done: true }
-            ],
-            logs: [
-                { type: 'Email', msg: 'Refund Processed successfully', date: '25 Jan 2025, 02:00 PM' }
-            ]
-        },
-
-        // CASE 104: REJECTED
-        '104': {
-            id: '104',
-            orderId: '5004',
-            type: 'Refund',
-            status: 'Rejected',
-            requestDate: '2025-02-01T16:45:00Z',
-            amount: 45000,
-            refundAmount: 0,
-            reason: 'Changed Mind',
-            userName: 'Sneha Gupta',
-            phone: '+91 98765 00004',
-            email: 'sneha.g@example.com',
-            address: {
-                line1: 'D-5, Civil Lines',
-                city: 'Jaipur',
-                state: 'Rajasthan',
-                pincode: '302006',
-                fullName: 'Sneha Gupta'
-            },
-            items: [
-                {
-                    name: "Gold Chain 18k (20 inches)",
-                    sku: "JWL-CHN-004",
-                    qty: 1,
-                    reason: "Changed Mind",
-                    condition: "Unopened",
-                    price: 45000,
-                    image: necklaceImg
-                }
-            ],
-            evidence: {
-                comment: "I don't need it anymore.",
-                images: [],
-                video: null
-            },
-            adminComment: 'Return policy does not cover "Change of Mind" for jewelry items.',
-            timeline: [
-                { status: 'Return Requested', date: '2025-02-01', done: true },
-                { status: 'Rejected', date: '2025-02-02', done: true }
-            ],
-            logs: [
-                { type: 'Email', msg: 'Return Request Rejected', date: '02 Feb 2025, 09:30 AM' }
-            ]
-        },
-
-        // CASE 201: REPLACEMENT APPROVED
-        '201': {
-            id: '201',
-            orderId: '6001',
-            type: 'Replacement',
-            status: 'Approved',
-            requestDate: '2025-02-02T14:30:00Z',
-            amount: 180000,
-            reason: 'Wrong Size',
-            userName: 'Priya Verma',
-            phone: '+91 98765 00005',
-            email: 'priya.v@example.com',
-            address: {
-                line1: 'E-20, Park Street',
-                city: 'Kolkata',
-                state: 'West Bengal',
-                pincode: '700016',
-                fullName: 'Priya Verma'
-            },
-            items: [
-                {
-                    name: "Diamond Engagement Ring 1.0 Carat",
-                    sku: "JWL-RNG-005",
-                    qty: 1,
-                    reason: "Wrong Size",
-                    condition: "Unopened",
-                    price: 180000,
-                    image: ringImg
-                }
-            ],
-            evidence: {
-                comment: "The ring is too small for my finger.",
-                images: [ringImg],
-                video: null
-            },
-            courier: {
-                partner: 'Delhivery',
-                awb: 'RPL123456',
-                pickupDate: '2025-02-03',
-                status: 'Scheduled'
-            },
-            timeline: [
-                { status: 'Return Requested', date: '2025-02-02', done: true },
-                { status: 'Approved', date: '2025-02-03', done: true },
-                { status: 'Pickup Scheduled', date: '2025-02-03', done: true }
-            ],
-            logs: []
-        },
-
-        // CASE 202: REPLACEMENT PENDING
-        '202': {
-            id: '202',
-            orderId: '6002',
-            type: 'Replacement',
-            status: 'Pending',
-            requestDate: '2025-02-04T12:00:00Z',
-            amount: 125000,
-            reason: 'Defective',
-            userName: 'Neha Gupta',
-            phone: '+91 99999 88888',
-            email: 'neha.g@example.com',
-            address: {
-                line1: 'F-45, Hitech City',
-                city: 'Hyderabad',
-                state: 'Telangana',
-                pincode: '500081',
-                fullName: 'Neha Gupta'
-            },
-            items: [
-                {
-                    name: "Gold Necklace Set 22k",
-                    sku: "JWL-NCK-006",
-                    qty: 1,
-                    reason: "Defective",
-                    condition: "Opened",
-                    price: 125000,
-                    image: necklaceImg
-                }
-            ],
-            evidence: {
-                comment: "Clasp is not working properly.",
-                images: [necklaceImg],
-                video: null
-            },
-            timeline: [
-                { status: 'Return Requested', date: '2025-02-04', done: true }
-            ],
-            logs: []
-        },
-
-        // CASE 203: REPLACEMENT SHIPPED
-        '203': {
-            id: '203',
-            orderId: '6003',
-            type: 'Replacement',
-            status: 'Shipped',
-            requestDate: '2025-02-06T09:00:00Z',
-            amount: 85000,
-            reason: 'Damaged',
-            userName: 'Rahul Roy',
-            phone: '+91 77777 66666',
-            email: 'rahul.r@example.com',
-            address: {
-                line1: 'G-10, Salt Lake',
-                city: 'Kolkata',
-                state: 'West Bengal',
-                pincode: '700091',
-                fullName: 'Rahul Roy'
-            },
-            items: [
-                {
-                    name: "22k Gold Bangles (Set of 4)",
-                    sku: "JWL-BNG-007",
-                    qty: 1,
-                    reason: "Damaged",
-                    condition: "Opened",
-                    price: 85000,
-                    image: banglesImg
-                }
-            ],
-            evidence: {
-                comment: "Surface has visible scratches.",
-                images: [banglesImg],
-                video: null
-            },
-            courier: {
-                partner: 'BlueDart',
-                awb: 'RPL987654',
-                pickupDate: '2025-02-07',
-                status: 'Picked Up'
-            },
-            timeline: [
-                { status: 'Return Requested', date: '2025-02-06', done: true },
-                { status: 'Approved', date: '2025-02-06', done: true },
-                { status: 'Shipped', date: '2025-02-07', done: true }
-            ],
-            logs: []
+    const fetchReturnData = async () => {
+        setLoading(true);
+        try {
+            const data = await adminService.getReturnDetails(id);
+            setRet(data);
+            if (data?.adminComment) setAdminComment(data.adminComment);
+        } catch (err) {
+            console.error("Return load failed");
+        } finally {
+            setLoading(false);
         }
     };
 
-    const currentDummyData = DUMMY_CASES[id] || DUMMY_CASES['101'];
+    useEffect(() => {
+        fetchReturnData();
+    }, [id]);
 
-    // Fetch Return Details (with fallback to dummy data)
-    const { data: ret = currentDummyData, isLoading } = useQuery({
-        queryKey: ['return', id],
-        queryFn: async () => {
-            try {
-                const res = await fetch(`http://localhost:5000/api/returns/${id}`);
-                if (!res.ok) throw new Error('Failed');
-                const data = await res.json();
-                return data || (DUMMY_CASES[id] || DUMMY_CASES['101']);
-            } catch (err) {
-                console.log("Using Dummy Data for ID:", id);
-                return DUMMY_CASES[id] || DUMMY_CASES['101'];
-            }
+    const handleAction = async (status) => {
+        const success = await adminService.processReturn(id, status);
+        if (success) {
+            toast.success(`Return request ${status}`);
+            fetchReturnData();
+        } else {
+            toast.error('Failed to update status');
         }
-    });
+    };
 
-    // Update Status Mutation
-    // Update Status Mutation
-    const updateStatusMutation = useMutation({
-        mutationFn: async ({ status, comment }) => {
-            await new Promise(r => setTimeout(r, 600)); // Simulate API
-            const updatedData = {
-                ...ret,
-                status,
-                adminComment: comment,
-                // Add dummy courier info if Approved
-                ...(status === 'Approved' && {
-                    courier: {
-                        partner: 'Delhivery',
-                        awb: 'RT987654321',
-                        pickupDate: new Date().toISOString().split('T')[0],
-                        status: 'Scheduled'
-                    },
-                    timeline: ret.timeline.map(t =>
-                        t.status === 'Admin Approved' || t.status === 'Pickup Scheduled'
-                            ? { ...t, date: new Date().toISOString().split('T')[0], done: true }
-                            : t
-                    )
-                })
-            };
-            return updatedData;
-        },
-        onSuccess: (newData) => {
-            queryClient.setQueryData(['return', id], newData);
-            toast.success(`Return request ${newData.status}`);
-        },
-        onError: () => toast.error('Failed to update status')
-    });
-
-    const [adminComment, setAdminComment] = useState('');
-
-    if (isLoading) return <div className="p-20 text-center">Loading Return Details...</div>;
+    if (loading) return <div className="p-20 text-center font-black uppercase tracking-widest animate-pulse">Analyzing Return Assets...</div>;
+    if (!ret) return <div className="p-20 text-center text-gray-400 font-black uppercase tracking-widest">Return Request Not Found</div>;
 
     const isReplacement = ret.type === 'Replacement';
 
@@ -481,8 +110,8 @@ const ReturnDetailPage = () => {
                 </div>
                 <div>
                     <p className="text-[10px] font-bold text-footerBg uppercase tracking-widest mb-1">Order ID</p>
-                    <p className="text-sm font-medium text-primary cursor-pointer hover:underline" onClick={() => navigate(`/admin/orders/${ret.orderId}`)}>
-                        #{ret.orderId}
+                    <p className="text-sm font-medium text-primary cursor-pointer hover:underline" onClick={() => navigate(`/admin/orders/${ret.order?._id || ret.orderId}`)}>
+                        #{ret.order?.orderId || ret.orderId}
                     </p>
                 </div>
                 <div>
@@ -618,13 +247,13 @@ const ReturnDetailPage = () => {
                             ></textarea>
                             <div className="grid grid-cols-2 gap-3">
                                 <button
-                                    onClick={() => updateStatusMutation.mutate({ status: 'Approved', comment: adminComment })}
+                                    onClick={() => handleAction('Approved')}
                                     className="flex items-center justify-center gap-2 bg-emerald-600 text-white py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200"
                                 >
                                     <Check size={16} /> Approve
                                 </button>
                                 <button
-                                    onClick={() => updateStatusMutation.mutate({ status: 'Rejected', comment: adminComment })}
+                                    onClick={() => handleAction('Rejected')}
                                     className="flex items-center justify-center gap-2 bg-white text-red-500 border border-red-100 py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-red-50 transition-all"
                                 >
                                     <X size={16} /> Reject
@@ -667,15 +296,15 @@ const ReturnDetailPage = () => {
                             </h3>
                             <div className="flex items-center gap-4 p-2 -ml-2 rounded-xl transition-all">
                                 <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center font-black text-sm text-gray-400 uppercase border border-gray-200 shrink-0">
-                                    {ret.userName?.charAt(0)}
+                                    {(ret.user?.fullName || ret.userName || 'U')?.charAt(0)}
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <h3 className="font-bold text-footerBg text-sm truncate">{ret.userName}</h3>
+                                    <h3 className="font-bold text-footerBg text-sm truncate">{ret.user?.fullName || ret.userName}</h3>
                                     <p className="text-xs text-gray-500 flex items-center gap-1.5 mt-1 truncate">
-                                        <Phone size={12} /> {ret.phone}
+                                        <Phone size={12} /> {ret.user?.phone || ret.phone}
                                     </p>
                                     <p className="text-xs text-gray-500 flex items-center gap-1.5 mt-0.5 truncate">
-                                        <Mail size={12} /> {ret.email}
+                                        <Mail size={12} /> {ret.user?.email || ret.email}
                                     </p>
                                 </div>
                             </div>

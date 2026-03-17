@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, LogIn, AlertCircle, ArrowRight, ShieldCheck, Phone } from 'lucide-react';
-import { sellerService } from '../services/sellerService';
+import { useAuth } from '../../../context/AuthContext';
 import loginBg from '../assets/admin-login-bg.png';
 
 const SellerLogin = () => {
     const navigate = useNavigate();
+    const { sellerLogin } = useAuth();
     const [loginType, setLoginType] = useState('email'); // 'email' or 'mobile'
     const [formData, setFormData] = useState({ identifier: '', password: '' });
     const [error, setError] = useState('');
@@ -25,16 +26,18 @@ const SellerLogin = () => {
         setLoading(true);
         setError('');
 
-        // Simulation delay
-        setTimeout(async () => {
-            const res = await sellerService.login(formData.identifier, formData.password);
+        try {
+            const res = await sellerLogin(formData.identifier, formData.password);
             if (res.success) {
                 navigate('/seller/dashboard');
             } else {
-                setError(res.message);
+                setError(res.message || 'Invalid merchant credentials');
             }
+        } catch (err) {
+            setError('Connection failed. Please try again.');
+        } finally {
             setLoading(false);
-        }, 1200);
+        }
     };
 
     const inputClasses = "w-full bg-[#FDFBF7] border border-[#EFEBE9] rounded-xl py-4 px-12 text-sm focus:outline-none focus:border-[#8D6E63] focus:ring-4 focus:ring-[#8D6E63]/5 transition-all shadow-inner";

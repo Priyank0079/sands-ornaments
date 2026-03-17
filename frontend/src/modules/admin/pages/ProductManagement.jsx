@@ -5,10 +5,13 @@ import PageHeader from '../components/common/PageHeader';
 import DataTable from '../components/common/DataTable';
 import { useShop } from '../../../context/ShopContext';
 import BulkUpdateModal from '../components/BulkUpdateModal';
+import { adminService } from '../services/adminService';
+import toast from 'react-hot-toast';
 
 const ProductManagement = () => {
     const navigate = useNavigate();
-    const { products, deleteProduct, bulkUpdatePrices } = useShop();
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [searchParams] = useSearchParams();
     const isSelectMode = searchParams.get('selectMode') === 'true';
     const returnUrl = searchParams.get('returnUrl') || '/admin/products';
@@ -17,6 +20,20 @@ const ProductManagement = () => {
     const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [selectedIds, setSelectedIds] = useState([]);
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const data = await adminService.getProducts();
+                setProducts(data);
+            } catch (err) {
+                toast.error("Failed to load products");
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProducts();
+    }, []);
 
     const toggleSelection = (id) => {
         setSelectedIds(prev =>
@@ -30,9 +47,15 @@ const ProductManagement = () => {
         navigate(returnUrl);
     };
 
-    const handleDelete = (id) => {
+    const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this product?')) {
-            // Logic placeholder
+            const success = await adminService.deleteProduct(id);
+            if (success) {
+                setProducts(prev => prev.filter(p => p._id !== id));
+                toast.success("Product deleted successfully");
+            } else {
+                toast.error("Failed to delete product");
+            }
         }
     };
 
@@ -189,12 +212,19 @@ const ProductManagement = () => {
         return matchesSearch && matchesCategory;
     });
 
-    const handleBulkApply = (config) => {
-        // config already contains productIds selected in the modal
-        bulkUpdatePrices({
+    const handleBulkApply = async (config) => {
+        const success = await adminService.bulkUpdatePrices({
             category: selectedCategory,
             ...config
         });
+        if (success) {
+            toast.success("Bulk update applied successfully");
+            // Refresh products
+            const data = await adminService.getProducts();
+            setProducts(data);
+        } else {
+            toast.error("Bulk update failed");
+        }
     };
 
     return (

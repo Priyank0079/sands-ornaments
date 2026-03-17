@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../context/AuthContext';
 import { Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react';
 import loginBg from '../assets/admin-login-bg.png';
 import logoName from '../assets/sands-logoname.png';
@@ -11,21 +12,25 @@ const AdminLogin = () => {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    const handleLogin = (e) => {
+    const { adminLogin } = useAuth();
+
+    const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
         setLoading(true);
 
-        // Simulated login
-        setTimeout(() => {
-            if (email === 'admin@sands.com' && password === 'admin123') {
-                localStorage.setItem('adminAuth', 'true');
+        try {
+            const result = await adminLogin(email, password);
+            if (result.success) {
                 navigate('/admin');
             } else {
-                setError('Invalid credentials');
-                setLoading(false);
+                setError(result.message || 'Invalid credentials');
             }
-        }, 800);
+        } catch (err) {
+            setError('An error occurred during login');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (

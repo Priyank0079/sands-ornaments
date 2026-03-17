@@ -17,17 +17,19 @@ import SellerCustomerDetail from '../pages/SellerCustomerDetail';
 import SellerProfile from '../pages/SellerProfile';
 import { sellerService } from '../services/sellerService';
 import { ShieldAlert } from 'lucide-react';
+import { useAuth } from '../../../context/AuthContext';
 
 // Protected Route Component for Seller
 const SellerProtectedRoute = ({ children }) => {
-    const isAuth = localStorage.getItem('sellerAuth');
-    const currentSeller = sellerService.getCurrentSeller();
+    const { user, loading, logout } = useAuth();
 
-    if (!isAuth) {
+    if (loading) return <div>Loading...</div>;
+
+    if (!user || user.role !== 'seller') {
         return <Navigate to="/seller/login" replace />;
     }
 
-    if (currentSeller && currentSeller.status !== 'APPROVED' && currentSeller.status !== 'PENDING') {
+    if (user.status !== 'APPROVED') {
         return (
             <div className="min-h-screen bg-[#FDF5F6] flex items-center justify-center p-6 font-sans">
                 <div className="max-w-md w-full bg-white rounded-[2.5rem] p-12 shadow-2xl text-center space-y-6 border border-white">
@@ -40,7 +42,7 @@ const SellerProtectedRoute = ({ children }) => {
                     </p>
                     <button 
                         onClick={() => {
-                            sellerService.logout();
+                            logout();
                             window.location.href = '/seller/login';
                         }}
                         className="w-full bg-[#3E2723] text-white py-4 rounded-xl font-black uppercase tracking-[0.2em] text-xs shadow-xl shadow-[#3E2723]/20 hover:bg-[#2D1B18] transition-all"

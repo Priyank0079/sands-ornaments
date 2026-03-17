@@ -4,9 +4,8 @@ import {
     IndianRupee, Clock, CheckCircle2, Boxes, AlertCircle,
     ArrowRight, ShoppingCart, Calendar, ChevronRight, Eye
 } from 'lucide-react';
-import { sellerProductService } from '../services/sellerProductService';
-import { sellerOrderService } from '../services/sellerOrderService';
 import { useNavigate } from 'react-router-dom';
+import api from '../../../services/api';
 
 const SellerDashboard = () => {
     const navigate = useNavigate();
@@ -23,32 +22,40 @@ const SellerDashboard = () => {
     const [analytics, setAnalytics] = useState(null);
     const [recentOrders, setRecentOrders] = useState([]);
 
+    const [loading, setLoading] = useState(true);
+
     useEffect(() => {
-        const products = sellerProductService.getSellerProducts();
-        const orders = sellerOrderService.getSellerOrders();
-        const returns = sellerOrderService.getReturns();
-        const analyticalData = sellerOrderService.getAnalytics();
-
-        const pending = orders.filter(o => o.orderStatus === 'PENDING').length;
-        const accepted = orders.filter(o => o.orderStatus === 'ACCEPTED' || o.orderStatus === 'SHIPPED').length;
-        const delivered = orders.filter(o => o.orderStatus === 'DELIVERED').length;
-        const totalRev = orders.reduce((acc, curr) => acc + (curr.price), 0);
-        
-        const lowStock = products.filter(p => parseInt(p.availableStock) < 5);
-
-        setStats({
-            totalProducts: products.length,
-            totalInventory: products.reduce((acc, curr) => acc + parseInt(curr.availableStock), 0),
-            pendingOrders: pending,
-            acceptedOrders: accepted,
-            deliveredOrders: delivered,
-            returnRequests: returns.length,
-            totalRevenue: totalRev,
-            lowStockItems: lowStock
-        });
-
-        setAnalytics(analyticalData);
-        setRecentOrders(orders.slice(0, 5));
+        const fetchSellerStats = async () => {
+            try {
+                const res = await api.get('seller/stats');
+                if (res.data.success) {
+                    const { stats: s, recentOrders: o, analytics: a } = res.data;
+                    setStats({
+                        totalProducts: s.totalProducts || 0,
+                        totalInventory: s.totalStock || 0,
+                        pendingOrders: s.pendingOrders || 0,
+                        acceptedOrders: s.acceptedOrders || 0,
+                        deliveredOrders: s.deliveredOrders || 0,
+                        returnRequests: s.returnRequests || 0,
+                        totalRevenue: s.totalRevenue || 0,
+                        lowStockItems: s.lowStockProducts || []
+                    });
+                    setAnalytics(a);
+                    setRecentOrders(o.map(order => ({
+                        id: order._id,
+                        customerName: order.user?.fullName || order.shippingAddress?.firstName || 'Customer',
+                        product: order.items[0]?.product?.name || 'Jewellery Item',
+                        price: order.totalAmount,
+                        paymentStatus: order.paymentStatus.toUpperCase()
+                    })));
+                }
+            } catch (err) {
+                console.error("Failed to fetch seller stats:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchSellerStats();
     }, []);
 
     const statCards = [
