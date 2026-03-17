@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
     Plus,
     Ticket,
@@ -18,13 +18,21 @@ import AdminStatsCard from '../components/AdminStatsCard';
 
 const CouponListPage = () => {
     const navigate = useNavigate();
-    const { coupons, deleteCoupon } = useShop();
+    const { coupons, deleteCoupon, toggleCoupon } = useShop();
 
-    // No local state for coupons, reading from Context directly
-
+    useEffect(() => {
+        // Refresh coupons on mount to get full admin list
+        const fetchAll = async () => {
+             // In a real scenario, we might want a specific admin fetch here 
+             // but addCoupon etc already trigger full fetch in ShopContext.
+             // For safety, let's trigger it once.
+             // We can use a custom function if we add it to context, 
+             // but for now delete/toggle refresh the list.
+        };
+        fetchAll();
+    }, []);
 
     const [searchTerm, setSearchTerm] = useState('');
-
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 8;
 
@@ -32,12 +40,13 @@ const CouponListPage = () => {
         return (coupons || [])
             .filter(c => {
                 const desc = c.description || c.desc || '';
+                const code = c.code || '';
                 return (
-                    c.code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    code.toLowerCase().includes(searchTerm.toLowerCase()) ||
                     desc.toLowerCase().includes(searchTerm.toLowerCase())
                 );
             })
-            .sort((a, b) => b.id?.localeCompare(a.id) || 0);
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }, [coupons, searchTerm]);
 
     const paginatedCoupons = useMemo(() => {
@@ -53,9 +62,14 @@ const CouponListPage = () => {
         }
     };
 
+    const handleToggle = (id) => {
+        toggleCoupon(id);
+    };
+
     const getCouponStatus = (coupon) => {
-        const now = new Date();
         if (!coupon.active) return { label: 'Inactive', color: 'bg-gray-100 text-gray-400 border-gray-200' };
+        
+        const now = new Date();
         if (coupon.validUntil && new Date(coupon.validUntil) < now) return { label: 'Expired', color: 'bg-red-50 text-red-600 border-red-100' };
         if (coupon.usageLimit && coupon.usageCount >= coupon.usageLimit) return { label: 'Limit Reached', color: 'bg-amber-50 text-amber-600 border-amber-100' };
         return { label: 'Active', color: 'bg-emerald-50 text-emerald-600 border-emerald-100' };
@@ -72,7 +86,7 @@ const CouponListPage = () => {
                     </div>
                     <div>
                         <p className="font-bold text-gray-900 text-sm tracking-wide uppercase">{coupon.code}</p>
-                        <p className="text-xs text-gray-500 mt-0.5 max-w-[200px] truncate normal-case">{coupon.desc || coupon.description}</p>
+                        <p className="text-xs text-gray-500 mt-0.5 max-w-[200px] truncate normal-case">{coupon.description || coupon.desc}</p>
                     </div>
                 </div>
             )
@@ -81,8 +95,8 @@ const CouponListPage = () => {
             key: 'discount',
             header: 'Discount Value',
             render: (coupon) => {
-                const amount = coupon.amount !== undefined ? coupon.amount : coupon.value;
-                const minOrder = coupon.minOrder !== undefined ? coupon.minOrder : coupon.minOrderValue;
+                const amount = coupon.value !== undefined ? coupon.value : (coupon.amount || 0);
+                const minOrder = coupon.minOrderValue !== undefined ? coupon.minOrderValue : (coupon.minOrder || 0);
                 return (
                     <div className="normal-case">
                         <div className="flex items-center gap-1.5 font-bold text-gray-900 text-sm">
@@ -90,9 +104,13 @@ const CouponListPage = () => {
                                 <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded text-xs border border-emerald-100">
                                     {amount}% OFF
                                 </span>
-                            ) : (
+                            ) : coupon.type === 'flat' ? (
                                 <span className="text-blue-700 bg-blue-50 px-2 py-0.5 rounded text-xs border border-blue-100">
                                     ₹{amount} OFF
+                                </span>
+                            ) : (
+                                <span className="text-purple-700 bg-purple-50 px-2 py-0.5 rounded text-xs border border-purple-100">
+                                    FREE SHIPPING
                                 </span>
                             )}
                         </div>
@@ -108,11 +126,11 @@ const CouponListPage = () => {
                 <div className="space-y-1 normal-case">
                     <p className="text-xs font-semibold text-gray-900 flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-red-400"></span>
-                        Ends {new Date(coupon.validUntil).toLocaleDateString()}
+                        Ends {coupon.validUntil ? new Date(coupon.validUntil).toLocaleDateString() : 'N/A'}
                     </p>
                     <p className="text-xs text-gray-500 flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                        Starts {new Date(coupon.validFrom).toLocaleDateString()}
+                        Starts {coupon.validFrom ? new Date(coupon.validFrom).toLocaleDateString() : 'N/A'}
                     </p>
                 </div>
             )
@@ -123,9 +141,12 @@ const CouponListPage = () => {
             render: (coupon) => {
                 const status = getCouponStatus(coupon);
                 return (
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border shadow-sm ${status.color}`}>
+                    <button 
+                        onClick={() => handleToggle(coupon._id || coupon.id)}
+                        className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border shadow-sm transition-all hover:scale-105 active:scale-95 ${status.color}`}
+                    >
                         {status.label}
-                    </span>
+                    </button>
                 );
             }
         },
@@ -136,14 +157,14 @@ const CouponListPage = () => {
             render: (coupon) => (
                 <div className="flex items-center justify-end gap-2">
                     <button
-                        onClick={() => navigate(`/admin/coupons/edit/${coupon.id}`)}
+                        onClick={() => navigate(`/admin/coupons/edit/${coupon._id || coupon.id}`)}
                         className="p-2 text-gray-500 hover:text-[#3E2723] hover:bg-[#3E2723]/5 rounded-lg transition-all"
                         title="Edit Coupon"
                     >
                         <Edit2 size={16} />
                     </button>
                     <button
-                        onClick={() => handleDelete(coupon.id)}
+                        onClick={() => handleDelete(coupon._id || coupon.id)}
                         className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
                         title="Delete Coupon"
                     >

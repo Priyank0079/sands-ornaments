@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../../../services/api';
 import {
     Plus, Ticket, Clock, RotateCcw, AlertTriangle, Image as ImageIcon,
     Users, IndianRupee, ListTree, Package, ShoppingBag,
@@ -20,29 +21,36 @@ const AdminDashboard = () => {
         recent: []
     });
 
-    React.useEffect(() => {
-        const loadStats = () => {
-            const users = JSON.parse(localStorage.getItem('users_data') || '[]');
-            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-            const sellers = JSON.parse(localStorage.getItem('seller_data') || '[]');
-            const revenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+    const [loading, setLoading] = React.useState(true);
 
-            setStatsData({
-                users: users.length || 3, // Fallback to mock count if empty
-                orders: orders.length,
-                pendingOrders: orders.filter(o => o.status === 'Processing' || o.status === 'Pending').length,
-                sellers: sellers.length,
-                revenue: revenue,
-                recent: orders.slice(0, 5).map(o => ({
-                    id: o.id,
-                    date: new Date(o.date).toLocaleDateString(),
-                    customer: o.customerName || 'Customer',
-                    amount: `₹${(o.total || 0).toLocaleString()}`,
-                    status: (o.status || 'PENDING').toUpperCase()
-                }))
-            });
+    React.useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const res = await api.get('admin/stats');
+                if (res.data.success) {
+                    const { stats, recentOrders } = res.data;
+                    setStatsData({
+                        users: stats.totalUsers || 0,
+                        orders: stats.totalOrders || 0,
+                        pendingOrders: stats.pendingOrders || 0,
+                        sellers: stats.totalSellers || 0,
+                        revenue: stats.totalRevenue || 0,
+                        recent: recentOrders.map(o => ({
+                            id: o._id,
+                            date: new Date(o.createdAt).toLocaleDateString(),
+                            customer: o.user?.fullName || o.shippingAddress?.firstName || 'Customer',
+                            amount: `₹${(o.totalAmount || 0).toLocaleString()}`,
+                            status: (o.orderStatus || 'PENDING').toUpperCase()
+                        }))
+                    });
+                }
+            } catch (err) {
+                console.error("Failed to fetch admin stats:", err);
+            } finally {
+                setLoading(false);
+            }
         };
-        loadStats();
+        fetchStats();
     }, []);
 
     const quickActions = [

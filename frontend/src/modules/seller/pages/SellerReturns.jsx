@@ -8,14 +8,27 @@ const SellerReturns = () => {
     const [returns, setReturns] = useState([]);
     const navigate = useNavigate();
 
+    const [loading, setLoading] = useState(true);
+
     useEffect(() => {
-        setReturns(sellerOrderService.getReturns());
+        const fetchReturns = async () => {
+            try {
+                const data = await sellerOrderService.getReturns();
+                setReturns(data);
+            } catch (err) {
+                console.error("Returns load failed");
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchReturns();
     }, []);
 
     const handleAction = async (id, status) => {
         const res = await sellerOrderService.processReturn(id, status);
         if (res.success) {
-            setReturns(sellerOrderService.getReturns());
+            const data = await sellerOrderService.getReturns();
+            setReturns(data);
         }
     };
 

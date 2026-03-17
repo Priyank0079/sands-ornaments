@@ -19,100 +19,58 @@ import {
     X
 } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useShop } from '../../../context/ShopContext';
+import { adminService } from '../services/adminService';
+import toast from 'react-hot-toast';
 
 const OrderDetailPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { orders } = useShop();
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
 
     // Approval Workflow State
-    const [showRejectInput, setShowRejectInput] = useState(false); // In-card state
+    const [showRejectInput, setShowRejectInput] = useState(false);
     const [rejectionReason, setRejectionReason] = useState('');
 
-    // Fetch order logic (with robust dummy scenarios)
     useEffect(() => {
-        setLoading(true);
-        const cleanId = id.replace('#', '');
-
-        const allOrders = Object.values(orders || {}).flat();
-        const foundOrder = allOrders.find(o => o.id === cleanId || o.id === `#${cleanId}`);
-
-        if (foundOrder) {
-            setOrder(foundOrder);
-            setLoading(false);
-        } else {
-            // Dummy Data Logic
-            let mockStatus = 'Delivered';
-            let mockShipment = { courier: 'Delhivery Express', awb: '123456789012', estimated: '30 Jan 2026' };
-            let mockRejection = null;
-
-            if (cleanId.includes('PEND') || cleanId.includes('1561')) {
-                mockStatus = 'Pending';
-                mockShipment = null;
-            } else if (cleanId.includes('REJ') || cleanId.includes('0998')) {
-                mockStatus = 'Rejected';
-                mockShipment = null;
-                mockRejection = {
-                    reason: 'Payment verification failed. Customer requested cancellation.',
-                    by: 'Admin User',
-                    date: new Date().toISOString()
-                };
-            } else if (cleanId.includes('SHIP')) {
-                mockStatus = 'Shipped';
-            }
-
-            setTimeout(() => {
-                setOrder({
-                    id: cleanId,
-                    date: new Date().toISOString(),
-                    status: mockStatus,
-                    paymentMethod: 'Online Payment',
-                    amount: 2344,
-                    items: [
-                        { id: 1, name: 'Premium Almond Jumbo Size', sku: 'SKU-1-V2', quantity: 2, price: 782, image: 'https://via.placeholder.com/50' },
-                        { id: 2, name: 'Premium Jumbo Roasted Cashew', sku: 'SKU-2-V2', quantity: 1, price: 980, image: 'https://via.placeholder.com/50' }
-                    ],
-                    subtotal: 2544,
-                    discount: 200,
-                    gst: 450,
-                    shipping: 0,
-                    couponCode: 'WELCOME200',
-                    user: { name: 'Aditya Raj', email: 'aditya@example.com', type: 'Individual' },
-                    address: { name: 'Aditya Raj', street: '123 Sky Tower', city: 'Mumbai', state: 'Maharashtra', zip: '400001', phone: '+91 9876543210' },
-                    timeline: [],
-                    shipment: mockShipment,
-                    rejection: mockRejection
-                });
+        const fetchOrder = async () => {
+            try {
+                setLoading(true);
+                const data = await adminService.getOrderDetails(id);
+                setOrder(data);
+            } catch (err) {
+                toast.error("Order not found");
+                navigate('/admin/orders');
+            } finally {
                 setLoading(false);
-            }, 500);
-        }
-    }, [id, orders]);
+            }
+        };
+        fetchOrder();
+    }, [id]);
 
-    const handleApprove = () => {
-        setOrder(prev => ({
-            ...prev,
-            status: 'Approved',
-            shipment: { courier: 'Pending Assignment', awb: 'Pending', estimated: 'Calculating...' }
-        }));
+    const handleApprove = async () => {
+        const success = await adminService.updateOrderStatus(id, 'SHIPPED');
+        if (success) {
+            toast.success("Order marked as shipped");
+            const data = await adminService.getOrderDetails(id);
+            setOrder(data);
+        } else {
+            toast.error("Update failed");
+        }
     };
 
-    const confirmReject = () => {
+    const confirmReject = async () => {
         if (!rejectionReason.trim()) return;
-
-        setOrder(prev => ({
-            ...prev,
-            status: 'Rejected',
-            rejection: {
-                reason: rejectionReason,
-                by: 'Admin User',
-                date: new Date().toISOString()
-            }
-        }));
-        setShowRejectInput(false);
-        setRejectionReason('');
+        const success = await adminService.updateOrderStatus(id, 'CANCELLED');
+        if (success) {
+            toast.success("Order rejected");
+            const data = await adminService.getOrderDetails(id);
+            setOrder(data);
+            setShowRejectInput(false);
+            setRejectionReason('');
+        } else {
+            toast.error("Update failed");
+        }
     };
 
     if (loading) return <div className="p-10 text-center text-gray-400 font-bold uppercase tracking-widest">Loading Order Details...</div>;
@@ -127,19 +85,19 @@ const OrderDetailPage = () => {
 
     const getTimeline = () => {
         const steps = [
-            { status: 'Order Placed', completed: true, date: new Date(order.date).toLocaleDateString() },
-            { status: 'Payment Confirmed', completed: true, date: new Date(order.date).toLocaleDateString() },
+            { status: 'Order Placed', completed: true, date: new Date(order.createdAt).toLocaleDateString() },
+            { status: 'Payment Confirmed', completed: !!order.paymentInfo?.paidAt, date: order.paymentInfo?.paidAt ? new Date(order.paymentInfo.paidAt).toLocaleDateString() : 'N/A' },
         ];
 
-        if (order.status === 'Rejected' || order.status === 'Cancelled') {
-            steps.push({ status: 'Order Rejected', completed: true, date: order.rejection?.date ? new Date(order.rejection.date).toLocaleDateString() : 'Today', isError: true });
-        } else if (order.status === 'Pending') {
-            steps.push({ status: 'Admin Approval', completed: false, date: 'Pending' });
+        const s = order.orderStatus;
+        if (s === 'CANCELLED') {
+            steps.push({ status: 'Order Cancelled', completed: true, date: order.cancellation?.date ? new Date(order.cancellation.date).toLocaleDateString() : 'Today', isError: true });
+        } else if (s === 'PENDING') {
+            steps.push({ status: 'Processing', completed: false, date: 'Pending' });
         } else {
-            steps.push({ status: 'Admin Approved', completed: true, date: 'Today' });
-            steps.push({ status: 'Shipment Created', completed: ['Shipped', 'Delivered', 'Out For Delivery'].includes(order.status), date: order.shipment ? 'Today' : 'Pending' });
-            steps.push({ status: 'Out for Delivery', completed: ['Out For Delivery', 'Delivered'].includes(order.status), date: 'Pending' });
-            steps.push({ status: 'Delivered', completed: order.status === 'Delivered', date: 'Pending' });
+            steps.push({ status: 'Processing', completed: true, date: 'OK' });
+            steps.push({ status: 'Shipped', completed: ['SHIPPED', 'DELIVERED'].includes(s), date: order.shippedAt ? new Date(order.shippedAt).toLocaleDateString() : 'Pending' });
+            steps.push({ status: 'Delivered', completed: s === 'DELIVERED', date: order.deliveredAt ? new Date(order.deliveredAt).toLocaleDateString() : 'Pending' });
         }
         return steps;
     };
@@ -168,29 +126,29 @@ const OrderDetailPage = () => {
             <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                 <div>
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Order ID</p>
-                    <p className="text-xl font-black text-gray-900">#{order.id}</p>
+                    <p className="text-xl font-black text-gray-900">#{order.orderId}</p>
                 </div>
                 <div>
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Date & Time</p>
                     <p className="text-sm font-bold text-gray-900">
-                        {new Date(order.date).toLocaleDateString('en-GB')} <span className="text-gray-400 text-xs font-normal ml-1">10:30 AM</span>
+                        {new Date(order.createdAt).toLocaleDateString('en-GB')} <span className="text-gray-400 text-xs font-normal ml-1">{new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                     </p>
                 </div>
                 <div>
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Status</p>
-                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${statusColor(order.status)}`}>
-                        {order.status}
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${statusColor(order.orderStatus)}`}>
+                        {order.orderStatus}
                     </span>
                 </div>
                 <div>
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Payment Mode</p>
                     <p className={`text-sm font-black uppercase tracking-wider ${order.paymentMethod?.toLowerCase().includes('cod') ? 'text-amber-600' : 'text-emerald-600'}`}>
-                        {order.paymentMethod || 'Online Payment'}
+                        {order.paymentMethod || 'Online'}
                     </p>
                 </div>
                 <div>
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Order Value</p>
-                    <p className="text-2xl font-black text-gray-900">₹{order.amount?.toLocaleString()}</p>
+                    <p className="text-2xl font-black text-gray-900">₹{order.totalAmount?.toLocaleString()}</p>
                 </div>
             </div>
 

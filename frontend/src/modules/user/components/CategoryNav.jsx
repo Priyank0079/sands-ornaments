@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { MoveRight, ArrowRight, Menu } from 'lucide-react';
+import { MoveRight, ArrowRight, Menu, ArrowLeft } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
-import { categories } from '../assets/data';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import navGiftWomen from '../assets/nav_gift_women.png';
@@ -19,21 +18,17 @@ import navOccasionValentine from '../assets/nav_occasion_valentine.png';
 
 const CategoryNav = () => {
     const [hoveredCategory, setHoveredCategory] = useState(null);
-    const [selectedMetal, setSelectedMetal] = useState(null); // null, 'gold', 'silver'
-    const { toggleMenu } = useShop();
+    const [selectedMetal, setSelectedMetal] = useState(null);
+    const { categories: dynamicCategories } = useShop();
 
-    // 1. Shop By Category (Mega Menu)
+    // SHOP BY CATEGORY (Original Form)
     const shopByCategoryItem = {
         id: 'shop-by-category',
         name: 'Shop By Category',
         path: '/shop',
-        subcategories: categories,
-        type: 'mega-menu',
-        introTitle: "Complete Collection",
-        introDesc: "Browse our entire catalogue of handcrafted silver pieces, from everyday essentials to statement luxury."
+        type: 'mega-menu'
     };
 
-    // 2. Gifts For (Mega Menu)
     const giftsForItem = {
         id: 'gifts-for',
         name: 'Gifts For',
@@ -50,7 +45,6 @@ const CategoryNav = () => {
         ]
     };
 
-    // 3. Occasions (Mega Menu)
     const occasionsItem = {
         id: 'occasions',
         name: 'Occasions',
@@ -67,20 +61,17 @@ const CategoryNav = () => {
         ]
     };
 
-    // 4. Other Links
-    const super1999Item = { id: 'super-1999', name: 'Super 1,999', path: '/shop?maxPrice=1999', type: 'link' };
-    const blogsItem = { id: 'blogs', name: 'Blogs', path: '/blogs', type: 'link' };
-    const aboutUsItem = { id: 'about', name: 'About Us', path: '/about', type: 'link' };
-
-    // Combine all
     const navItems = [
         shopByCategoryItem,
         giftsForItem,
         occasionsItem,
-        super1999Item,
-        blogsItem,
-        aboutUsItem
+        { id: 'blogs', name: 'Blogs', path: '/blogs', type: 'link' },
+        { id: 'about', name: 'About Us', path: '/about', type: 'link' }
     ];
+
+    const getCategoriesByMetal = (metal) => {
+        return dynamicCategories.filter(c => c.metal?.toLowerCase() === metal.toLowerCase());
+    };
 
     return (
         <div className="bg-[#FDF5F6] border-b border-[#EBCDD0] hidden md:block sticky top-[65px] z-40 shadow-sm font-sans">
@@ -101,11 +92,9 @@ const CategoryNav = () => {
                                 `}
                             >
                                 {item.name}
-                                {/* Underline Effect */}
                                 <span className={`absolute bottom-0 left-0 w-full h-[2px] bg-[#D39A9F] transform transition-transform duration-300 ${hoveredCategory === item.id ? 'scale-x-100' : 'scale-x-0'}`}></span>
                             </Link>
 
-                            {/* MEGA MENU - Unified for all 3 types */}
                             <AnimatePresence>
                                 {hoveredCategory === item.id && item.type === 'mega-menu' && (
                                     <motion.div
@@ -124,108 +113,125 @@ const CategoryNav = () => {
                                                             animate={{ opacity: 1 }}
                                                             className="grid grid-cols-2 gap-12 max-w-4xl mx-auto w-full"
                                                         >
-                                                            {/* Gold Option - Navigates to new page */}
-                                                            <Link 
-                                                                to="/gold-collection"
-                                                                onClick={() => setHoveredCategory(null)}
-                                                                className="group bg-[#FDFBF7] border border-gray-100 rounded-3xl p-10 text-center transition-all hover:bg-white hover:shadow-xl hover:-translate-y-1 block"
+                                                            {/* Gold Collection */}
+                                                            <button 
+                                                                onClick={() => setSelectedMetal('gold')}
+                                                                className="group relative bg-[#FDFBF7] border border-gray-100 rounded-[2rem] p-10 text-center transition-all hover:shadow-2xl hover:shadow-[#D4AF37]/10 hover:-translate-y-1 overflow-hidden"
                                                             >
-                                                                <div className="w-20 h-20 bg-gradient-to-br from-[#D4AF37] to-[#AA8C2C] rounded-full mx-auto mb-6 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                                                                    <span className="text-2xl font-black text-white italic">Au</span>
+                                                                <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                                                                <div className="relative z-10 space-y-4">
+                                                                    <div className="w-20 h-20 bg-gradient-to-br from-[#D4AF37] to-[#AA8C2C] rounded-full mx-auto flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                                                        <span className="text-2xl font-black text-white italic">Au</span>
+                                                                    </div>
+                                                                    <div>
+                                                                        <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">Gold Collection</h3>
+                                                                        <p className="text-[9px] font-bold text-[#AA8C2C] uppercase tracking-[0.2em] mt-1">Premium 18K & 22K Hallmarked</p>
+                                                                    </div>
                                                                 </div>
-                                                                <h3 className="text-xl font-bold text-black uppercase tracking-tight">Gold Collection</h3>
-                                                                <p className="text-[10px] font-bold text-[#AA8C2C] uppercase tracking-widest mt-2">Coming Soon</p>
-                                                            </Link>
+                                                            </button>
 
-                                                            {/* Silver Option */}
-                                                            <div 
-                                                                onClick={(e) => { e.preventDefault(); setSelectedMetal('silver'); }}
-                                                                className="group cursor-pointer bg-white border border-gray-100 rounded-3xl p-10 text-center transition-all hover:shadow-xl hover:-translate-y-1"
+                                                            {/* Silver Collection */}
+                                                            <button 
+                                                                onClick={() => setSelectedMetal('silver')}
+                                                                className="group relative bg-white border border-gray-100 rounded-[2rem] p-10 text-center transition-all hover:shadow-2xl hover:shadow-[#D39A9F]/10 hover:-translate-y-1 overflow-hidden"
                                                             >
-                                                                <div className="w-20 h-20 bg-gradient-to-br from-[#C0C0C0] to-[#8D8D8D] rounded-full mx-auto mb-6 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                                                                    <span className="text-2xl font-black text-white italic">Ag</span>
+                                                                <div className="absolute top-0 right-0 w-32 h-32 bg-[#D39A9F]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                                                                <div className="relative z-10 space-y-4">
+                                                                    <div className="w-20 h-20 bg-gradient-to-br from-[#C0C0C0] to-[#8D8D8D] rounded-full mx-auto flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                                                        <span className="text-2xl font-black text-white italic">Ag</span>
+                                                                    </div>
+                                                                    <div>
+                                                                        <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">Silver Collection</h3>
+                                                                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-1">Sterling 925 Hallmarked</p>
+                                                                    </div>
                                                                 </div>
-                                                                <h3 className="text-xl font-bold text-black uppercase tracking-tight">Silver Collection</h3>
-                                                                <p className="text-[10px] font-bold text-[#D39A9F] uppercase tracking-widest mt-2">925 Sterling Silver</p>
-                                                            </div>
+                                                            </button>
                                                         </motion.div>
                                                     ) : (
-                                                        <div className="space-y-8">
-                                                            <div className="flex items-center justify-between border-b border-gray-50 pb-4">
-                                                                <h3 className="font-display text-2xl text-black">Silver Collection</h3>
+                                                        <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-300">
+                                                            <div className="flex items-center justify-between border-b border-gray-100 pb-6">
+                                                            <Link 
+                                                                to={`/shop?metal=${selectedMetal}`}
+                                                                onClick={() => { setHoveredCategory(null); setSelectedMetal(null); }}
+                                                                className="flex items-center gap-4 group/header"
+                                                            >
+                                                                <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-transform group-hover/header:rotate-12 ${selectedMetal === 'gold' ? 'bg-[#D4AF37]' : 'bg-gray-300'}`}>
+                                                                    <span className="text-white font-black text-xs italic">{selectedMetal === 'gold' ? 'Au' : 'Ag'}</span>
+                                                                </div>
+                                                                <div>
+                                                                    <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight group-hover/header:text-[#D39A9F] transition-colors">{selectedMetal} Collection</h3>
+                                                                    <p className="text-[10px] font-bold text-[#D39A9F] uppercase tracking-[0.2em]">Explore our dynamic {selectedMetal} range</p>
+                                                                </div>
+                                                            </Link>
                                                                 <button 
                                                                     onClick={() => setSelectedMetal(null)}
-                                                                    className="text-[10px] font-black uppercase tracking-widest text-[#D39A9F] hover:text-black transition-colors"
+                                                                    className="text-[10px] font-black uppercase tracking-widest text-[#D39A9F] hover:text-black transition-colors flex items-center gap-2"
                                                                 >
-                                                                    ← Back to Selection
+                                                                    <ArrowLeft className="w-4 h-4" /> Back to Metals
                                                                 </button>
                                                             </div>
-                                                            <motion.div 
-                                                                initial={{ opacity: 0, y: 20 }}
-                                                                animate={{ opacity: 1, y: 0 }}
-                                                                className="grid grid-cols-5 gap-x-6 gap-y-10"
-                                                            >
-                                                                {item.subcategories.map((subCat) => (
-                                                                    <div key={subCat.id} className="flex flex-col items-center text-center gap-3 group">
-                                                                        <Link to={`/category/${subCat.path}`} onClick={() => { setHoveredCategory(null); setSelectedMetal(null); }}>
-                                                                            <div className="w-20 h-20 rounded-full overflow-hidden border border-gray-100 shadow-sm transition-shadow group-hover:shadow-md mx-auto">
-                                                                                <img src={subCat.image} alt={subCat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+
+                                                            {getCategoriesByMetal(selectedMetal).length > 0 ? (
+                                                                <motion.div 
+                                                                    initial={{ opacity: 0, y: 20 }}
+                                                                    animate={{ opacity: 1, y: 0 }}
+                                                                    className="grid grid-cols-5 gap-x-6 gap-y-10"
+                                                                >
+                                                                    {getCategoriesByMetal(selectedMetal).map((cat) => (
+                                                                        <Link 
+                                                                            key={cat._id} 
+                                                                            to={cat.subcategories?.length > 0 ? `/shop?category=${cat.name}` : `/shop?category=${cat.name}&status=coming-soon`}
+                                                                            onClick={() => { setHoveredCategory(null); setSelectedMetal(null); }}
+                                                                            className="flex flex-col items-center text-center gap-3 group"
+                                                                        >
+                                                                            <div className="w-20 h-20 rounded-full overflow-hidden border border-gray-100 shadow-sm transition-all group-hover:shadow-md mx-auto group-hover:-translate-y-1 ring-4 ring-white">
+                                                                                <img src={cat.image || 'https://via.placeholder.com/150'} alt={cat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                                                             </div>
+                                                                            <h4 className="font-display font-bold text-black text-[11px] group-hover:text-[#D39A9F] transition-colors uppercase tracking-widest">{cat.name}</h4>
                                                                         </Link>
-                                                                        <div className="flex flex-col items-center">
-                                                                            <Link to={`/category/${subCat.path}`} onClick={() => { setHoveredCategory(null); setSelectedMetal(null); }}>
-                                                                                <h4 className="font-display font-bold text-black text-sm group-hover:text-[#D39A9F] transition-colors">{subCat.name}</h4>
-                                                                            </Link>
-                                                                        </div>
+                                                                    ))}
+                                                                </motion.div>
+                                                            ) : (
+                                                                <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                                                                    <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center">
+                                                                        <div className="w-10 h-10 border-2 border-dashed border-[#D39A9F] rounded-full animate-spin" />
                                                                     </div>
-                                                                ))}
-                                                            </motion.div>
+                                                                    <div className="text-center">
+                                                                        <h4 className="font-display text-2xl text-black">Coming Soon</h4>
+                                                                        <p className="text-gray-400 font-serif italic text-sm">We're expanding our {selectedMetal} collection. Stay tuned!</p>
+                                                                    </div>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     )}
                                                 </div>
                                             ) : (
                                                 <div className="grid grid-cols-5 gap-8">
-                                                    {/* Left Column: Intro */}
-                                                    <motion.div
-                                                        initial={{ opacity: 0, x: -50 }}
-                                                        animate={{ opacity: 1, x: 0 }}
-                                                        transition={{ duration: 0.4, ease: "easeOut" }}
-                                                        className="col-span-1 pr-6 border-r border-gray-100"
-                                                    >
+                                                    <div className="col-span-1 pr-6 border-r border-gray-100">
                                                         <h3 className="font-display text-3xl text-black mb-4">{item.introTitle}</h3>
-                                                        <p className="text-gray-500 font-serif italic mb-6 leading-relaxed">
+                                                        <p className="text-gray-500 font-serif italic mb-6 leading-relaxed text-sm">
                                                             {item.introDesc}
                                                         </p>
                                                         <Link to="/shop" onClick={() => setHoveredCategory(null)} className="inline-flex items-center text-xs font-bold uppercase tracking-widest text-[#D39A9F] hover:text-black transition-colors group">
                                                             View All Products <MoveRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                                                         </Link>
-                                                    </motion.div>
+                                                    </div>
 
-                                                    {/* Right Grid: Subcategories */}
-                                                    <motion.div
-                                                        initial={{ opacity: 0, x: 50 }}
-                                                        animate={{ opacity: 1, x: 0 }}
-                                                        transition={{ duration: 0.4, ease: "easeOut", delay: 0.1 }}
-                                                        className="col-span-4 grid grid-cols-5 gap-x-6 gap-y-10"
-                                                    >
+                                                    <div className="col-span-4 grid grid-cols-5 gap-x-6 gap-y-10">
                                                         {item.subcategories.map((subCat) => (
-                                                            <div key={subCat.id} className="flex flex-col items-center text-center gap-3 group">
-                                                                <Link to={item.id === 'shop-by-category' ? `/category/${subCat.path}` : `/shop?filter=${subCat.path}`} onClick={() => setHoveredCategory(null)}>
-                                                                    <div className="w-20 h-20 rounded-full overflow-hidden border border-gray-100 shadow-sm transition-shadow group-hover:shadow-md mx-auto">
-                                                                        <img src={subCat.image} alt={subCat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                                                                    </div>
-                                                                </Link>
-                                                                <div className="flex flex-col items-center">
-                                                                    <Link to={item.id === 'shop-by-category' ? `/category/${subCat.path}` : `/shop?filter=${subCat.path}`} onClick={() => setHoveredCategory(null)}>
-                                                                        <h4 className="font-display font-bold text-black text-sm group-hover:text-[#D39A9F] transition-colors">{subCat.name}</h4>
-                                                                    </Link>
-                                                                    <Link to={item.id === 'shop-by-category' ? `/category/${subCat.path}` : `/shop?filter=${subCat.path}`} onClick={() => setHoveredCategory(null)} className="text-[10px] font-bold text-[#D39A9F] uppercase tracking-wider mt-2 hover:underline opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-1 group-hover:translate-y-0">
-                                                                        View Collection
-                                                                        </Link>
+                                                            <Link 
+                                                                key={subCat.id} 
+                                                                to={`/shop?filter=${subCat.path}`} 
+                                                                onClick={() => setHoveredCategory(null)}
+                                                                className="flex flex-col items-center text-center gap-3 group"
+                                                            >
+                                                                <div className="w-20 h-20 rounded-full overflow-hidden border border-gray-100 shadow-sm transition-all group-hover:shadow-md group-hover:-translate-y-1 mx-auto ring-4 ring-white">
+                                                                    <img src={subCat.image} alt={subCat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                                                 </div>
-                                                            </div>
+                                                                <h4 className="font-display font-bold text-black text-[11px] group-hover:text-[#D39A9F] transition-colors uppercase tracking-widest">{subCat.name}</h4>
+                                                            </Link>
                                                         ))}
-                                                    </motion.div>
+                                                    </div>
                                                 </div>
                                             )}
                                         </div>

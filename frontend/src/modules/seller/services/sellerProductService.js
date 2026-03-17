@@ -1,61 +1,45 @@
-export const sellerProductService = {
-  getSellerProducts: () => {
-    return JSON.parse(localStorage.getItem('sellerProducts') || '[]');
-  },
-  addProduct: (product) => {
-    const products = JSON.parse(localStorage.getItem('sellerProducts') || '[]');
-    const newProduct = {
-      ...product,
-      id: Date.now().toString(),
-      barcodes: generateBarcodes(product.name, parseInt(product.quantity || 0))
-    };
-    products.push(newProduct);
-    localStorage.setItem('sellerProducts', JSON.stringify(products));
-    return Promise.resolve(newProduct);
-  },
-  updateBarcodeStatus: (productId, barcodeNumber, status) => {
-    const products = JSON.parse(localStorage.getItem('sellerProducts') || '[]');
-    const updatedProducts = products.map(p => {
-      if (p.id === productId) {
-        return {
-          ...p,
-          barcodes: p.barcodes.map(b => b.number === barcodeNumber ? { ...b, status } : b)
-        };
-      }
-      return p;
-    });
-    localStorage.setItem('sellerProducts', JSON.stringify(updatedProducts));
-    return Promise.resolve(true);
-  },
-  sellByBarcode: (barcodeNumber, isOnline = false) => {
-    const products = JSON.parse(localStorage.getItem('sellerProducts') || '[]');
-    let found = false;
-    const updatedProducts = products.map(p => {
-      const barcodeIndex = p.barcodes.findIndex(b => b.number === barcodeNumber && b.status === 'AVAILABLE');
-      if (barcodeIndex !== -1 && !found) {
-        p.barcodes[barcodeIndex].status = isOnline ? 'SOLD ONLINE' : 'SOLD OFFLINE';
-        p.availableStock = (parseInt(p.availableStock) - 1).toString();
-        p.soldItems = (parseInt(p.soldItems || 0) + 1).toString();
-        found = true;
-      }
-      return p;
-    });
-    if (found) {
-      localStorage.setItem('sellerProducts', JSON.stringify(updatedProducts));
-      return Promise.resolve({ success: true });
-    }
-    return Promise.resolve({ success: false, message: 'Barcode not found or already sold' });
-  }
-};
+import api from '../../../services/api';
 
-const generateBarcodes = (productName, quantity) => {
-  const prefix = productName.substring(0, 4).toUpperCase();
-  const barcodes = [];
-  for (let i = 1; i <= quantity; i++) {
-    barcodes.push({
-      number: `${prefix}${String(i).padStart(3, '0')}`,
-      status: 'AVAILABLE'
-    });
+export const sellerProductService = {
+  getSellerProducts: async () => {
+    try {
+      const res = await api.get('seller/products');
+      return res.data.products || [];
+    } catch (err) {
+      console.error("Failed to fetch seller products:", err);
+      return [];
+    }
+  },
+  addProduct: async (product) => {
+    try {
+      const res = await api.post('/seller/products', product);
+      return res.data.product;
+    } catch (err) {
+      console.error("Failed to add product:", err);
+      throw err;
+    }
+  },
+  updateBarcodeStatus: async (productId, barcodeNumber, status) => {
+    try {
+      const res = await api.patch(`/seller/products/${productId}/barcodes/${barcodeNumber}`, { status });
+      return res.data.success;
+    } catch (err) {
+      console.error("Failed to update barcode status:", err);
+      return false;
+    }
+  },
+  sellByBarcode: async (barcodeNumber, isOnline = false) => {
+    try {
+      if (isOnline) {
+         return { success: false, message: 'Online sales handled by storefront' };
+      }
+      const res = await api.post('/seller/orders/offline', { barcodeNumber });
+      return res.data;
+    } catch (err) {
+      return { 
+        success: false, 
+        message: err.response?.data?.message || 'Barcode not found or already sold' 
+      };
+    }
   }
-  return barcodes;
 };

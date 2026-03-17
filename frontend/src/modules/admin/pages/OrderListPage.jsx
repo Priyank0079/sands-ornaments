@@ -16,48 +16,57 @@ import {
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Pagination from '../components/Pagination';
 import AdminStatsCard from '../components/AdminStatsCard';
+import { adminService } from '../services/adminService';
+import toast from 'react-hot-toast';
 
 const OrderListPage = () => {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const statusParam = searchParams.get('status') || 'all';
+    const [orders, setOrders] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
-    // ------------------------------------------------------------------
-    // DUMMY DATA (Matching Screenshot & Extended for Approval Workflow)
-    // ------------------------------------------------------------------
-    const mockOrders = [
-        { id: '#ORD-PEND-001', date: '2026-02-08', customer: 'Rahul Kumar', type: 'New', payment: 'COD', items: 2, value: 1200, status: 'Pending', shipment: 'Pending' },
-        { id: '#ORD-REJ-002', date: '2026-02-07', customer: 'Sita Verma', type: 'Returning', payment: 'Online', items: 1, value: 850, status: 'Rejected', shipment: 'Cancelled' },
-        { id: '#ORD-SHIP-003', date: '2026-02-06', customer: 'Amit Singh', type: 'New', payment: 'Online', items: 3, value: 2400, status: 'Shipped', shipment: 'In Transit' },
-        { id: '#ORD-DEL-004', date: '2026-02-05', customer: 'Priya Sharma', type: 'Returning', payment: 'COD', items: 1, value: 500, status: 'Delivered', shipment: 'Delivered' },
-        { id: '#1561-941', date: '2026-02-07', customer: 'Unknown', type: 'New', payment: 'COD', items: 1, value: 400, status: 'Pending', shipment: 'Pending' },
-        { id: '#ORD-0998', date: '2026-01-20', customer: 'Amit Shah', type: 'New', payment: 'COD', items: 3, value: 5400, status: 'Cancelled', shipment: 'Cancelled' },
-    ];
+    React.useEffect(() => {
+        const fetchOrders = async () => {
+            try {
+                const data = await adminService.getOrders();
+                setOrders(data);
+            } catch (err) {
+                toast.error("Failed to load orders");
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchOrders();
+    }, []);
 
     // Filter Logic
     const filteredOrders = useMemo(() => {
-        return mockOrders.filter(order => {
+        return orders.filter(order => {
             // Text Search
+            const customerName = (order.user?.fullName || order.shippingAddress?.firstName || 'Customer').toLowerCase();
+            const orderId = (order.orderId || '').toLowerCase();
             const matchesSearch =
-                order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                order.customer.toLowerCase().includes(searchTerm.toLowerCase());
+                orderId.includes(searchTerm.toLowerCase()) ||
+                customerName.includes(searchTerm.toLowerCase());
 
             // Status Filter matches (Tabs)
             let matchesStatus = true;
             if (statusParam !== 'all') {
-                if (statusParam === 'pending') matchesStatus = order.status === 'Pending' || order.status === 'Processing';
-                else if (statusParam === 'shipped') matchesStatus = order.status === 'Shipped';
-                else if (statusParam === 'delivered') matchesStatus = order.status === 'Delivered';
-                else if (statusParam === 'cancelled') matchesStatus = order.status === 'Cancelled' || order.status === 'Rejected';
-                else matchesStatus = order.status.toLowerCase() === statusParam;
+                const status = (order.orderStatus || '').toLowerCase();
+                if (statusParam === 'pending') {
+                    matchesStatus = status === 'pending' || status === 'processing';
+                } else {
+                    matchesStatus = status === statusParam;
+                }
             }
 
             return matchesSearch && matchesStatus;
         });
-    }, [mockOrders, searchTerm, statusParam]);
+    }, [orders, searchTerm, statusParam]);
 
     // Pagination Logic
     const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
@@ -68,9 +77,9 @@ const OrderListPage = () => {
 
     // Stats Logic
     const stats = {
-        total: mockOrders.length,
-        pending: mockOrders.filter(o => o.status === 'Pending' || o.status === 'Processing').length,
-        completed: mockOrders.filter(o => o.status === 'Delivered').length
+        total: orders.length,
+        pending: orders.filter(o => o.orderStatus === 'PENDING' || o.orderStatus === 'PROCESSING').length,
+        completed: orders.filter(o => o.orderStatus === 'DELIVERED').length
     };
 
     const handleFilterChange = (status) => {
@@ -186,45 +195,45 @@ const OrderListPage = () => {
                                         {(currentPage - 1) * itemsPerPage + idx + 1}
                                     </td>
                                     <td className="px-6 py-5">
-                                        <span className="font-bold text-xs text-black">{order.id}</span>
+                                        <span className="font-bold text-xs text-black">#{order.orderId}</span>
                                     </td>
                                     <td className="px-6 py-5 text-xs font-bold text-gray-500">
-                                        {order.date}
+                                        {new Date(order.createdAt).toLocaleDateString()}
                                     </td>
                                     <td className="px-6 py-5">
-                                        <div className="font-bold text-xs text-black">{order.customer}</div>
+                                        <div className="font-bold text-xs text-black">{order.user?.fullName || order.shippingAddress?.firstName || 'Customer'}</div>
                                     </td>
                                     <td className="px-6 py-5">
-                                        <span className={`px-3 py-1 rounded-md text-[9px] font-bold uppercase tracking-widest ${order.type === 'Returning' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'
+                                        <span className={`px-3 py-1 rounded-md text-[9px] font-bold uppercase tracking-widest ${order.items?.length > 1 ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'
                                             }`}>
-                                            {order.type}
+                                            {order.items?.length > 1 ? 'Multi-Item' : 'Single Item'}
                                         </span>
                                     </td>
                                     <td className="px-6 py-5">
-                                        <span className={`font-bold text-xs ${order.payment === 'COD' ? 'text-orange-600' : 'text-emerald-600'}`}>
-                                            {order.payment}
+                                        <span className={`font-bold text-xs ${order.paymentMethod === 'COD' ? 'text-orange-600' : 'text-emerald-600'}`}>
+                                            {order.paymentMethod}
                                         </span>
                                     </td>
                                     <td className="px-6 py-5 text-center font-bold text-xs text-gray-600">
-                                        {order.items}
+                                        {order.items?.length}
                                     </td>
                                     <td className="px-6 py-5 font-black text-xs text-gray-900">
-                                        ₹{order.value.toLocaleString()}
+                                        ₹{order.totalAmount.toLocaleString()}
                                     </td>
                                     <td className="px-6 py-5">
-                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${getStatusColor(order.status)}`}>
+                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${getStatusColor(order.orderStatus)}`}>
                                             <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
-                                            {order.status}
+                                            {order.orderStatus}
                                         </span>
                                     </td>
                                     <td className="px-6 py-5">
-                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                                            {order.shipment}
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-right">
+                                            {order.shippingCarrier || 'PENDING'}
                                         </span>
                                     </td>
                                     <td className="px-6 py-5 text-right">
                                         <button
-                                            onClick={() => navigate(`/admin/orders/${order.id.replace('#', '')}`)}
+                                            onClick={() => navigate(`/admin/orders/${order._id}`)}
                                             className="px-4 py-2 bg-[#1a1a1a] text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-md shadow-gray-200"
                                         >
                                             View

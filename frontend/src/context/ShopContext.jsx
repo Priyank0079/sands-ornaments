@@ -1,10 +1,16 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { Check } from 'lucide-react';
+import api from '../services/api';
+import toast from 'react-hot-toast';
 import { PRODUCTS as initialProducts, COUPONS as initialCoupons } from '../mockData/data';
+import { useAuth } from './AuthContext';
+import { useCatalogue } from '../hooks/useCatalogue';
+import { adminService } from '../modules/admin/services/adminService';
 
 const ShopContext = createContext();
 
 export const ShopProvider = ({ children }) => {
+    const { user, logout: authLogout } = useAuth();
     // Initialize from LocalStorage if available
     const [cart, setCart] = useState(() => {
         const saved = localStorage.getItem('cart');
@@ -13,10 +19,6 @@ export const ShopProvider = ({ children }) => {
     const [wishlist, setWishlist] = useState(() => {
         const saved = localStorage.getItem('wishlist');
         return saved ? JSON.parse(saved) : [];
-    });
-    const [user, setUser] = useState(() => {
-        const saved = localStorage.getItem('user');
-        return saved ? JSON.parse(saved) : null;
     });
     const [orders, setOrders] = useState(() => {
         const saved = localStorage.getItem('orders');
@@ -64,18 +66,22 @@ export const ShopProvider = ({ children }) => {
             }
         ];
     });
-    const [coupons, setCoupons] = useState(() => {
-        // Force refresh coupons from updated mock data
-        return initialCoupons;
-    });
+    const { 
+        products, 
+        categories, 
+        banners, 
+        coupons: apiCoupons, 
+        isLoading: isCatalogueLoading 
+    } = useCatalogue();
+
+    const [coupons, setCoupons] = useState([]);
     const [defaultAddressId, setDefaultAddressId] = useState(() => {
         return localStorage.getItem('defaultAddressId') || null;
     });
-
-    const [products, setProducts] = useState(() => {
-        // Force refresh products from updated mock data (Bypassing LocalStorage to show new Jewellery data)
-        return initialProducts;
-    });
+    
+    useEffect(() => {
+        if (apiCoupons.length > 0) setCoupons(apiCoupons);
+    }, [apiCoupons]);
 
     const [notification, setNotification] = useState(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -110,20 +116,41 @@ export const ShopProvider = ({ children }) => {
         }
     }, [notification]);
 
+    // FETCH USER DATA ON LOGIN
+    useEffect(() => {
+        if (user) {
+            fetchAddresses();
+            fetchWishlist();
+        } else {
+            setAddresses([]);
+            setWishlist([]);
+        }
+    }, [user]);
+
+    const fetchAddresses = async () => {
+        try {
+            const res = await api.get('user/addresses');
+            if (res.data.success) {
+                setAddresses(res.data.addresses);
+                const defaultAddr = res.data.addresses.find(a => a.isDefault);
+                if (defaultAddr) setDefaultAddressId(defaultAddr._id);
+            }
+        } catch (err) { console.error("Fetch addresses failed", err); }
+    };
+
+    const fetchWishlist = async () => {
+        try {
+            const res = await api.get('user/wishlist');
+            if (res.data.success) {
+                setWishlist(res.data.products);
+            }
+        } catch (err) { console.error("Fetch wishlist failed", err); }
+    };
+
     // Persist Cart
     useEffect(() => {
         localStorage.setItem('cart', JSON.stringify(cart));
     }, [cart]);
-
-    // Persist Wishlist
-    useEffect(() => {
-        localStorage.setItem('wishlist', JSON.stringify(wishlist));
-    }, [wishlist]);
-
-    // Persist Orders
-    useEffect(() => {
-        localStorage.setItem('orders', JSON.stringify(orders));
-    }, [orders]);
 
     // Persist Support Tickets
     useEffect(() => {
@@ -143,8 +170,6 @@ export const ShopProvider = ({ children }) => {
     useEffect(() => {
         if (defaultAddressId) {
             localStorage.setItem('defaultAddressId', defaultAddressId);
-        } else {
-            localStorage.removeItem('defaultAddressId');
         }
     }, [defaultAddressId]);
 
@@ -153,78 +178,95 @@ export const ShopProvider = ({ children }) => {
     };
 
     const login = (userData) => {
-        setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
-        showNotification(`Welcome back, ${userData.name || 'User'}!`);
+        // Obsolete: Auth handled by AuthContext now
     };
 
     const logout = () => {
-        setUser(null);
-        localStorage.removeItem('user');
-        // localStorage.removeItem('cart'); // Optional choice
-        // localStorage.removeItem('wishlist'); 
-        // localStorage.removeItem('orders'); // Usually keep orders history
+        authLogout();
         setCart([]);
         setWishlist([]);
-        showNotification("Logged out successfully");
     };
 
-    const placeOrder = (orderDetails) => {
-        const orderId = 'ORD-' + Date.now();
-        const newOrder = {
-            id: orderId,
-            date: new Date().toISOString(),
-            items: cart,
-            total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
-            status: 'Processing',
-            ...orderDetails
-        };
-        setOrders(prev => [newOrder, ...prev]);
-
-        // Seller Bridge: Add to seller orders and notifications
+    const placeOrder = async (orderDetails) => {
         try {
-            const sellerOrders = JSON.parse(localStorage.getItem('seller_orders') || '[]');
-            const sellerNotifications = JSON.parse(localStorage.getItem('seller_notifications') || '[]');
-
-            // In a real app, products would be split by seller. 
-            // For this simulation, we'll add the entire order to the seller's view.
-            cart.forEach(item => {
-                sellerOrders.unshift({
-                    id: orderId,
-                    customerName: orderDetails.customerName || user?.name || 'Guest User',
-                    // Privacy Restriction: Seller only gets Name and Address
-                    customerPhone: 'REDACTED', 
-                    customerAddress: orderDetails.customerAddress || 'N/A',
-                    product: item.name,
-                    productId: item.id,
-                    barcode: item.id.toString().slice(0, 8), // Simulation
-                    quantity: item.quantity,
-                    price: item.price,
-                    paymentStatus: orderDetails.paymentMethod === 'COD' ? 'PENDING' : 'PAID',
-                    paymentMethod: orderDetails.paymentMethod || 'Credit Card',
-                    orderStatus: 'PENDING',
-                    orderDate: new Date().toISOString()
-                });
+            // 1. Create order on backend
+            const res = await api.post('/user/orders', {
+                items: cart.map(item => ({
+                    productId: item.id || item._id,
+                    variantId: item.variantId || item.variants?.[0]?.id, // Adjust based on your cart structure
+                    quantity: item.quantity
+                })),
+                addressId: orderDetails.addressId || defaultAddressId,
+                paymentMethod: orderDetails.paymentMethod,
+                couponCode: orderDetails.couponCode
             });
 
-            sellerNotifications.unshift({
-                id: Date.now(),
-                title: 'New Order Received',
-                message: `Order #${orderId} has been placed by ${user?.name || 'a customer'}.`,
-                date: new Date().toISOString(),
-                unread: true,
-                type: 'ORDER'
-            });
+            if (!res.data.success) {
+                toast.error(res.data.message);
+                return null;
+            }
 
-            localStorage.setItem('seller_orders', JSON.stringify(sellerOrders));
-            localStorage.setItem('seller_notifications', JSON.stringify(sellerNotifications));
-        } catch (e) {
-            console.error("Seller simulation error:", e);
+            const { order } = res.data;
+
+            // 2. Handle Razorpay if selected
+            if (orderDetails.paymentMethod === 'razorpay' && res.data.razorpayOrderId) {
+                return await handleRazorpayPayment(res.data.razorpayOrderId, order);
+            }
+
+            // 3. For COD or other methods, complete local flow
+            setOrders(prev => [order, ...prev]);
+            setCart([]);
+            showNotification("Order placed successfully!");
+            return order._id;
+
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Checkout failed");
+            return null;
         }
+    };
 
-        setCart([]); // Clear cart after order
-        showNotification("Order placed successfully!");
-        return orderId;
+    const handleRazorpayPayment = (razorpayOrderId, backendOrder) => {
+        return new Promise((resolve) => {
+            const options = {
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+                amount: backendOrder.totalAmount * 100,
+                currency: "INR",
+                name: "Sands Ornaments",
+                description: "Order #" + backendOrder.orderId,
+                order_id: razorpayOrderId,
+                handler: async (response) => {
+                    try {
+                        const verifyRes = await api.post('/user/payments/verify', {
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature
+                        });
+
+                        if (verifyRes.data.success) {
+                            setOrders(prev => [verifyRes.data.order, ...prev]);
+                            setCart([]);
+                            toast.success("Payment successful!");
+                            resolve(backendOrder._id);
+                        } else {
+                            toast.error("Payment verification failed");
+                            resolve(null);
+                        }
+                    } catch (err) {
+                        toast.error("Verification error");
+                        resolve(null);
+                    }
+                },
+                prefill: {
+                    name: user?.name,
+                    email: user?.email,
+                    contact: user?.phone
+                },
+                theme: { color: "#EBCDD0" }
+            };
+
+            const rzp = new window.Razorpay(options);
+            rzp.open();
+        });
     };
 
     const addToCart = (product) => {
@@ -249,47 +291,76 @@ export const ShopProvider = ({ children }) => {
         }));
     };
 
-    const addToWishlist = (product) => {
-        if (wishlist.find(item => item.id === product.id)) {
+    const addToWishlist = async (product) => {
+        if (!user) {
+            toast.error("Please login to add to wishlist");
             return;
         }
-        setWishlist((prev) => [...prev, product]);
+        try {
+            const res = await api.post('/user/wishlist/toggle', { productId: product.id || product._id });
+            if (res.data.success) {
+                fetchWishlist();
+                showNotification("Wishlist updated");
+            }
+        } catch (err) { showNotification("Failed to update wishlist"); }
     };
 
     const removeFromCart = (productId) => {
         setCart((prev) => prev.filter(item => item.id !== productId));
     };
 
-    const removeFromWishlist = (productId) => {
-        setWishlist((prev) => prev.filter(item => item.id !== productId));
+    const removeFromWishlist = async (productId) => {
+        try {
+            const res = await api.post('/user/wishlist/toggle', { productId });
+            if (res.data.success) {
+                fetchWishlist();
+                showNotification("Removed from wishlist");
+            }
+        } catch (err) { showNotification("Failed to remove item"); }
     };
 
     const clearCart = () => {
         setCart([]);
     };
 
-    const addAddress = (address) => {
-        const newAddress = { ...address, id: Date.now().toString() };
-        setAddresses(prev => [newAddress, ...prev]);
-        if (addresses.length === 0 || address.isDefault) {
-            setDefaultAddressId(newAddress.id);
-        }
-        showNotification("Address added successfully");
+    const addAddress = async (address) => {
+        try {
+            const res = await api.post('/user/addresses', address);
+            if (res.data.success) {
+                fetchAddresses();
+                showNotification("Address added successfully");
+            }
+        } catch (err) { showNotification("Failed to add address"); }
     };
 
-    const setDefaultAddress = (addressId) => {
-        setDefaultAddressId(addressId);
-        showNotification("Marked as default address");
+    const setDefaultAddress = async (addressId) => {
+        try {
+            const res = await api.patch(`/user/addresses/${addressId}/set-default`);
+            if (res.data.success) {
+                fetchAddresses();
+                showNotification("Marked as default address");
+            }
+        } catch (err) { showNotification("Failed to set default address"); }
     };
 
-    const removeAddress = (addressId) => {
-        setAddresses(prev => prev.filter(a => a.id !== addressId));
-        showNotification("Address removed");
+    const removeAddress = async (addressId) => {
+        try {
+            const res = await api.delete(`/user/addresses/${addressId}`);
+            if (res.data.success) {
+                fetchAddresses();
+                showNotification("Address removed");
+            }
+        } catch (err) { showNotification("Failed to remove address"); }
     };
 
-    const updateAddress = (updatedAddress) => {
-        setAddresses(prev => prev.map(a => a.id === updatedAddress.id ? updatedAddress : a));
-        showNotification("Address updated");
+    const updateAddress = async (updatedAddress) => {
+        try {
+            const res = await api.patch(`/user/addresses/${updatedAddress.id || updatedAddress._id}`, updatedAddress);
+            if (res.data.success) {
+                fetchAddresses();
+                showNotification("Address updated");
+            }
+        } catch (err) { showNotification("Failed to update address"); }
     };
 
     const createTicket = (ticketData) => {
@@ -345,19 +416,92 @@ export const ShopProvider = ({ children }) => {
     };
 
     // Coupon Management
-    const addCoupon = (coupon) => {
-        setCoupons(prev => [...prev, { ...coupon, id: Date.now().toString() }]);
-        showNotification("Coupon created successfully");
+    const addCoupon = async (couponData) => {
+        const res = await adminService.createCoupon(couponData);
+        if (res.success) {
+            const allCoupons = await adminService.getCoupons();
+            setCoupons(allCoupons);
+            showNotification("Coupon created successfully");
+        } else {
+            toast.error(res.message);
+        }
     };
 
-    const updateCoupon = (id, updatedData) => {
-        setCoupons(prev => prev.map(c => c.id === id ? { ...c, ...updatedData } : c));
-        showNotification("Coupon updated successfully");
+    const updateCoupon = async (id, updatedData) => {
+        const res = await adminService.updateCoupon(id, updatedData);
+        if (res.success) {
+            const allCoupons = await adminService.getCoupons();
+            setCoupons(allCoupons);
+            showNotification("Coupon updated successfully");
+        } else {
+            toast.error(res.message);
+        }
     };
 
-    const deleteCoupon = (id) => {
-        setCoupons(prev => prev.filter(c => c.id !== id));
-        showNotification("Coupon deleted successfully");
+    const deleteCoupon = async (id) => {
+        const success = await adminService.deleteCoupon(id);
+        if (success) {
+            const allCoupons = await adminService.getCoupons();
+            setCoupons(allCoupons);
+            showNotification("Coupon deleted successfully");
+        } else {
+            toast.error("Failed to delete coupon");
+        }
+    };
+
+    const toggleCoupon = async (id) => {
+        const res = await adminService.toggleCoupon(id);
+        if (res.success) {
+            const allCoupons = await adminService.getCoupons();
+            setCoupons(allCoupons);
+            showNotification(res.message);
+        } else {
+            toast.error(res.message);
+        }
+    };
+
+    const validateCoupon = async (code, cartTotal, items) => {
+        try {
+            // Format items for backend: { productId, variantId, quantity, price, categoryId, subcategoryId }
+            const formattedItems = items.map(item => ({
+                productId: item.productId || item.id,
+                variantId: item.variantId || item.id,
+                quantity: item.qty || item.quantity,
+                price: item.price,
+                categoryId: item.categoryId || '',
+                subcategoryId: item.subcategoryId || ''
+            }));
+
+            const res = await api.post('/user/coupons/validate', {
+                code,
+                cartTotal,
+                items: formattedItems
+            });
+
+            if (res.data.success) {
+                return {
+                    valid: true,
+                    discount: res.data.data.discount,
+                    coupon: {
+                        code: res.data.data.code,
+                        type: res.data.data.type,
+                        value: res.data.data.value,
+                        isFreeShipping: res.data.data.isFreeShipping
+                    }
+                };
+            } else {
+                return {
+                    valid: false,
+                    error: res.data.message
+                };
+            }
+        } catch (err) {
+            console.error("Coupon validation error:", err);
+            return {
+                valid: false,
+                error: err.response?.data?.message || "Failed to validate coupon"
+            };
+        }
     };
 
     // Homepage Sections Management
@@ -572,11 +716,12 @@ export const ShopProvider = ({ children }) => {
             defaultAddressId, createTicket, updateTicketStatus, addTicketReply, deleteTicket,
 
             showNotification, deleteAccount,
-            coupons, addCoupon, updateCoupon, deleteCoupon, getActiveCoupons,
+            coupons, addCoupon, updateCoupon, deleteCoupon, toggleCoupon, getActiveCoupons, validateCoupon,
             notificationsEnabled, userNotifications, toggleNotificationSettings, deleteUserNotification,
             isMenuOpen, toggleMenu,
 
             products, updateProduct, bulkUpdatePrices,
+            categories, banners, isLoading: isCatalogueLoading,
 
             // Homepage Sections Management
             homepageSections, updateSection

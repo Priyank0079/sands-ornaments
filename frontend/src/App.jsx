@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { ShopProvider } from './context/ShopContext';
+import { AuthProvider } from './context/AuthContext';
 import Navbar from './modules/user/components/Navbar';
 import Footer from './modules/user/components/Footer';
 import Home from './modules/user/pages/Home';
@@ -21,6 +22,7 @@ import PrivacyPolicy from './modules/user/pages/PrivacyPolicy';
 import Notifications from './modules/user/pages/Notifications';
 import AnnouncementBar from './modules/user/components/AnnouncementBar';
 import BlogsPage from './modules/user/pages/BlogsPage';
+import DynamicPage from './modules/user/pages/DynamicPage';
 import GoldComingSoon from './modules/user/pages/GoldComingSoon';
 
 // Admin Imports
@@ -100,12 +102,18 @@ const AppContent = () => {
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/profile/:activeTab?/:subId?" element={<Profile />} />
           <Route path="/notifications" element={<Notifications />} />
-          <Route path="/about" element={<AboutUs />} />
+          <Route path="/about" element={<DynamicPage slug="about-us" />} />
           <Route path="/help" element={<HelpCenter />} />
-          <Route path="/terms" element={<TermsAndConditions />} />
-          <Route path="/return-policy" element={<TermsAndConditions />} />
-          <Route path="/replacement-policy" element={<TermsAndConditions />} />
-          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<DynamicPage slug="terms-conditions" />} />
+          <Route path="/privacy" element={<DynamicPage slug="privacy-policy" />} />
+          <Route path="/shipping-policy" element={<DynamicPage slug="shipping-policy" />} />
+          <Route path="/cancellation-policy" element={<DynamicPage slug="cancellation-policy" />} />
+          <Route path="/return-policy" element={<DynamicPage slug="return-refund-policy" />} />
+          <Route path="/care-guide" element={<DynamicPage slug="jewelry-care" />} />
+          <Route path="/warranty-info" element={<DynamicPage slug="warranty-info" />} />
+          <Route path="/craft" element={<DynamicPage slug="our-craftsmanship" />} />
+          <Route path="/customization" element={<DynamicPage slug="customization" />} />
+          <Route path="/page/:slug" element={<DynamicPage />} />
           <Route path="/new-arrivals" element={<Shop />} />
           <Route path="/trending" element={<Shop />} />
           <Route path="/category/:category" element={<Shop />} />
@@ -152,7 +160,7 @@ const AppContent = () => {
                   <Route path="/broadcasts" element={<GlobalNotificationManager />} />
                   <Route path="/notifications/add" element={<AddNotification />} />
                   <Route path="/faq" element={<FAQManagement />} />
-                  <Route path="/about-us" element={<ContentManagement />} />
+                  <Route path="/about-us" element={<DynamicPageEditor pageId="about-us" />} />
                   <Route path="/blogs" element={<BlogManagement />} />
                   <Route path="/sections" element={<SectionManagement />} />
                   <Route path="/sections/:id" element={<SectionEditor />} />
@@ -178,11 +186,13 @@ const AppContent = () => {
 
 function App() {
   return (
-    <ShopProvider>
-      <Router>
-        <AppContent />
-      </Router>
-    </ShopProvider>
+    <AuthProvider>
+      <ShopProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </ShopProvider>
+    </AuthProvider>
   );
 }
 

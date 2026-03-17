@@ -1,0 +1,49 @@
+const Blog = require("../../../models/Blog");
+const FAQ = require("../../../models/FAQ");
+const Banner = require("../../../models/Banner");
+const HomepageSection = require("../../../models/HomepageSection");
+const { success, error } = require("../../../utils/apiResponse");
+
+exports.getBanners = async (req, res) => {
+  try {
+    const banners = await Banner.find({ isActive: true }).sort({ sortOrder: 1 });
+    return success(res, { banners });
+  } catch (err) { return error(res, err.message); }
+};
+
+exports.getBlogs = async (req, res) => {
+  try {
+    const blogs = await Blog.find({ status: "Published" }).sort({ createdAt: -1 });
+    return success(res, { blogs });
+  } catch (err) { return error(res, err.message); }
+};
+
+exports.getBlogDetail = async (req, res) => {
+  try {
+    const blog = await Blog.findOne({ slug: req.params.slug, status: "Published" });
+    if (!blog) return error(res, "Blog not found", 404);
+    return success(res, { blog });
+  } catch (err) { return error(res, err.message); }
+};
+
+exports.getFAQs = async (req, res) => {
+  try {
+    const faqs = await FAQ.find({ isActive: true }).sort({ category: 1, sortOrder: 1 });
+    return success(res, { faqs });
+  } catch (err) { return error(res, err.message); }
+};
+
+exports.getHomepageData = async (req, res) => {
+  try {
+    const banners = await Banner.find({ isActive: true }).sort({ sortOrder: 1 });
+    const sections = await HomepageSection.find()
+      .populate({
+        path: "items.productId",
+        select: "name slug brand images variants rating tags",
+        match: { status: "Active" }
+      })
+      .sort({ createdAt: 1 });
+
+    return success(res, { banners, sections });
+  } catch (err) { return error(res, err.message); }
+};

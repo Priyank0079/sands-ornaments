@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
 import { useShop } from '../../../context/ShopContext';
+import { useAuth } from '../../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Truck, CreditCard, Banknote, ShieldCheck, Lock, Plus, Check, MapPin, ChevronRight, LayoutDashboard, Gift, ArrowRight, X, Tag } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const Checkout = () => {
-    const { cart, placeOrder, user, login, addresses, addAddress, defaultAddressId, coupons } = useShop();
+    const { cart, placeOrder, addresses, addAddress, defaultAddressId, coupons } = useShop();
+    const { user, sendOtp, verifyOtp } = useAuth();
     const navigate = useNavigate();
 
     // Login State
@@ -65,25 +67,33 @@ const Checkout = () => {
     };
 
     // --- Login Handlers ---
-    const handleSendOtp = (e) => {
+    const handleSendOtp = async (e) => {
         e.preventDefault();
         if (phoneNumber.length === 10) {
-            setLoginStep(2);
+            const res = await sendOtp(phoneNumber);
+            if (res.success) {
+                setLoginStep(2);
+            } else {
+                toast.error(res.message);
+            }
         } else {
-            alert("Please enter a valid 10-digit phone number");
+            toast.error("Please enter a valid 10-digit phone number");
         }
     };
 
-    const handleVerifyOtp = (e) => {
+    const handleVerifyOtp = async (e) => {
         e.preventDefault();
         const enteredOtp = otp.join('');
         if (enteredOtp.length === 4) {
-            // Mock Login Success
-            login({ names: 'Guest User', phone: phoneNumber });
-            // Pre-fill phone in checkout form
-            setFormData(prev => ({ ...prev, phone: phoneNumber }));
+            const res = await verifyOtp(phoneNumber, enteredOtp);
+            if (res.success) {
+                // User is now logged in, pre-fill phone
+                setFormData(prev => ({ ...prev, phone: phoneNumber }));
+            } else {
+                toast.error(res.message);
+            }
         } else {
-            alert("Please enter the 4-digit OTP");
+            toast.error("Please enter the 4-digit OTP");
         }
     };
 
@@ -101,13 +111,13 @@ const Checkout = () => {
     };
 
     // --- Checkout Handler ---
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
 
-        // If new address and "Save Address" is checked
+        // 1. Save address if needed
         if ((addressSelection === 'new' || addresses.length === 0) && saveNewAddress) {
-            addAddress({
+            await addAddress({
                 name: `${formData.firstName} ${formData.lastName}`,
                 phone: formData.phone,
                 flatNo: formData.flatNo,
@@ -120,27 +130,23 @@ const Checkout = () => {
             });
         }
 
-        // Simulate API call
-        if (paymentMethod === 'online') {
-            setTimeout(() => {
-                setLoading(false);
-                placeOrder({ shippingAddress: formData, paymentMethod: 'razorpay', amount: total });
-                navigate('/order-success');
-            }, 3000);
-            return;
-        }
+        // 2. Place Order (Handles Razorpay internally if online)
+        const orderId = await placeOrder({
+            addressId: addresses.find(a => a._id === defaultAddressId)?._id, // Use ID if selected from list
+            paymentMethod: paymentMethod === 'online' ? 'razorpay' : 'cod',
+            couponCode: appliedCoupon?.code
+        });
 
-        setTimeout(() => {
-            setLoading(false);
-            placeOrder({ shippingAddress: formData, paymentMethod: 'cod', amount: total });
+        setLoading(false);
+        if (orderId) {
             navigate('/order-success');
-        }, 2000);
+        }
     };
 
     // Pre-fill default address if it exists
     React.useEffect(() => {
         if (user && addresses.length > 0 && defaultAddressId) {
-            const defaultAddr = addresses.find(a => a.id === defaultAddressId);
+            const defaultAddr = addresses.find(a => a._id === defaultAddressId);
             if (defaultAddr) {
                 setFormData({
                     firstName: defaultAddr.name.split(' ')[0] || '',
@@ -274,7 +280,7 @@ const Checkout = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {addresses.map((addr) => (
                                         <div
-                                            key={addr.id}
+                                            key={addr._id}
                                             onClick={() => {
                                                 setFormData({
                                                     firstName: addr.name.split(' ')[0] || '',
@@ -295,7 +301,7 @@ const Checkout = () => {
                                             <div className="flex justify-between mb-3">
                                                 <div className="flex gap-2">
                                                     <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 bg-gray-200 text-black rounded-sm">{addr.type}</span>
-                                                    {defaultAddressId === addr.id && (
+                                                    {defaultAddressId === addr._id && (
                                                         <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 bg-[#D39A9F] text-white rounded-sm">Default</span>
                                                     )}
                                                 </div>

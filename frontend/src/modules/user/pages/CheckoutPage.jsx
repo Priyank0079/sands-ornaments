@@ -11,7 +11,7 @@ const CheckoutPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { user } = useAuth();
-    const { getCart, placeOrder, packs, getVariantById, getPackById, validateCoupon, recordCouponUsage, getActiveCoupons } = useShop();
+    const { getCart, placeOrder, packs, getVariantById, getPackById, validateCoupon, getActiveCoupons } = useShop();
 
     const directBuyItem = location.state?.directBuyItem;
     const cartItems = directBuyItem
@@ -24,12 +24,16 @@ const CheckoutPage = () => {
             return {
                 ...item,
                 id: variantData.id,
+                variantId: variantData.id,
                 name: variantData.product.name,
                 weight: variantData.weight,
                 price: variantData.price,
                 mrp: variantData.mrp,
                 image: variantData.product.image,
                 category: variantData.product.category,
+                categoryId: variantData.product.categoryId,
+                subcategory: variantData.product.subcategory,
+                subcategoryId: variantData.product.subcategoryId,
                 productId: variantData.product.id
             };
         }
@@ -100,13 +104,15 @@ const CheckoutPage = () => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleApplyCoupon = () => {
+    const handleApplyCoupon = async () => {
         if (!couponCode.trim()) {
             setCouponError('Please enter a coupon code');
             return;
         }
 
-        const result = validateCoupon(user.id, couponCode, subtotal, enrichedCart);
+        setLoading(true);
+        const result = await validateCoupon(couponCode, subtotal, enrichedCart);
+        setLoading(false);
 
         if (result.valid) {
             setAppliedCoupon(result.coupon);
@@ -141,11 +147,6 @@ const CheckoutPage = () => {
                 appliedCoupon: appliedCoupon ? appliedCoupon.code : null,
                 discount: couponDiscount
             };
-
-            // Record coupon usage
-            if (appliedCoupon) {
-                recordCouponUsage(user.id, appliedCoupon.id);
-            }
 
             const orderId = placeOrder(user.id, orderData, !directBuyItem);
             setLoading(false);

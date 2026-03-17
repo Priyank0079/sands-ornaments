@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { products } from '../assets/data';
 import { useShop } from '../../../context/ShopContext';
 import ProductCard from '../components/ProductCard';
 import { Heart, ShoppingBag, Star, Share2, Plus, Minus, Truck, ShieldCheck, Smile, Gift, ChevronDown, SlidersHorizontal, X, Camera, Check, ArrowLeft } from 'lucide-react';
 
-// ... AccordionItem component ...
-
-// ... AccordionItem component ...
 const AccordionItem = ({ title, children, isOpen, onClick }) => (
     <div className="border-b border-[#EBCDD0]/50">
         <button
@@ -34,8 +30,14 @@ const AccordionItem = ({ title, children, isOpen, onClick }) => (
 const ProductDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { addToCart, removeFromCart, cart, addToWishlist, removeFromWishlist, wishlist } = useShop();
-    const product = products.find(p => p.id === parseInt(id));
+    const { addToCart, removeFromCart, cart, addToWishlist, removeFromWishlist, wishlist, products, isLoading } = useShop();
+    const product = (products || []).find(p => String(p.id || p._id) === String(id));
+
+    useEffect(() => {
+        if (product) {
+            document.title = `${product.name} | Sands Ornaments - Pure 925 Silver Jewellery`;
+        }
+    }, [product]);
 
     // State for Animations
     const [flying, setFlying] = useState(false);
@@ -98,7 +100,6 @@ const ProductDetails = () => {
         setOpenSection(openSection === section ? null : section);
     };
 
-    if (!product) return <div>Product not found</div>;
 
     // ... (rest of the file)
 
@@ -139,6 +140,29 @@ const ProductDetails = () => {
     };
 
 
+    if (isLoading) {
+        return (
+            <div className="bg-white min-h-screen flex items-center justify-center">
+                <div className="w-12 h-12 border-4 border-[#D39A9F] border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        );
+    }
+
+    if (!product) {
+        return (
+            <div className="bg-white min-h-screen flex flex-col items-center justify-center p-4 text-center">
+                <ShoppingBag className="w-16 h-16 text-gray-200 mb-4" />
+                <h3 className="text-2xl font-serif text-black mb-2">Product Not Found</h3>
+                <p className="text-gray-600 mb-8 max-w-md">The jewellery piece you are looking for might have been moved or is no longer available.</p>
+                <button 
+                    onClick={() => navigate('/shop')}
+                    className="bg-black text-white px-8 py-3 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-[#D39A9F] transition-colors"
+                >
+                    Back to Shop
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-white min-h-screen py-8 pb-24 md:pb-8 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out fill-mode-both selection:bg-[#D39A9F] selection:text-white">

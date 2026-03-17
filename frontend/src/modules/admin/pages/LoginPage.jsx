@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import logo from '../../../assets/logo.png';
 
 const LoginPage = () => {
-    const { login } = useAuth();
+    const { adminLogin } = useAuth();
     const navigate = useNavigate();
 
     const [email, setEmail] = useState('');
@@ -20,23 +20,18 @@ const LoginPage = () => {
         setError('');
         setIsSubmitting(true);
 
-        // Simulate a slight delay for "Processing" feel
-        setTimeout(() => {
-            const res = login(email, password);
+        try {
+            const res = await adminLogin(email, password);
             if (res.success) {
-                // Double check if the logged in user is actually an admin
-                const user = JSON.parse(localStorage.getItem('farmlyf_current_user'));
-                if (user && user.role === 'admin') {
-                    navigate('/admin/dashboard');
-                } else {
-                    setError('Unauthorized Access: Administrative credentials required.');
-                    setIsSubmitting(false);
-                }
+                navigate('/admin/dashboard');
             } else {
                 setError(res.message || 'Invalid administrative credentials');
-                setIsSubmitting(false);
             }
-        }, 1000);
+        } catch (err) {
+            setError('Connection failed. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (

@@ -11,8 +11,20 @@ const SellerReturnDetail = () => {
     const navigate = useNavigate();
     const [returnReq, setReturnReq] = useState(null);
 
+    const [loading, setLoading] = useState(true);
+
     useEffect(() => {
-        setReturnReq(sellerOrderService.getReturnDetails(id));
+        const fetchReturn = async () => {
+            try {
+                const data = await sellerOrderService.getReturnDetails(id);
+                setReturnReq(data);
+            } catch (err) {
+                console.error("Return load failed");
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchReturn();
     }, [id]);
 
     const handleAction = async (status) => {
@@ -22,6 +34,7 @@ const SellerReturnDetail = () => {
         }
     };
 
+    if (loading) return <div className="p-20 text-center text-gray-400 font-black uppercase tracking-widest animate-pulse">Analyzing Claim Assets...</div>;
     if (!returnReq) return <div className="p-20 text-center text-gray-400 font-black uppercase tracking-widest">Return Request Not Found</div>;
 
     const cardClasses = "bg-white rounded-[2.5rem] border border-gray-100 p-10 shadow-sm h-full";
@@ -78,20 +91,20 @@ const SellerReturnDetail = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 p-6 bg-gray-50/50 rounded-3xl border border-gray-100/50 mb-10">
                             <div>
                                 <p className={labelClasses}>Original Order</p>
-                                <p className="text-lg font-black text-gray-900 mt-1 tracking-tight">#{returnReq.orderId}</p>
+                                <p className="text-lg font-black text-gray-900 mt-1 tracking-tight">#{returnReq.order?.orderId || returnReq.orderId}</p>
                             </div>
                             <div>
                                 <p className={labelClasses}>Request Date</p>
-                                <p className={valueClasses}>{new Date(returnReq.date).toLocaleDateString()} {new Date(returnReq.date).toLocaleTimeString()}</p>
+                                <p className={valueClasses}>{new Date(returnReq.createdAt).toLocaleDateString()} {new Date(returnReq.createdAt).toLocaleTimeString()}</p>
                             </div>
                             <div>
                                 <p className={labelClasses}>Item for Return</p>
-                                <p className={valueClasses}>{returnReq.product}</p>
-                                <p className="text-[10px] font-black text-[#8D6E63] mt-1">SN: {returnReq.barcode}</p>
+                                <p className={valueClasses}>{returnReq.item?.product?.name || returnReq.product}</p>
+                                <p className="text-[10px] font-black text-[#8D6E63] mt-1">SN: {returnReq.item?.sku || returnReq.barcode}</p>
                             </div>
                             <div>
                                 <p className={labelClasses}>Unit Count</p>
-                                <p className={valueClasses}>{returnReq.quantity} UNIT</p>
+                                <p className={valueClasses}>{returnReq.item?.quantity || returnReq.quantity} UNIT</p>
                             </div>
                         </div>
 
@@ -160,8 +173,8 @@ const SellerReturnDetail = () => {
                                     <User size={24} className="text-[#3E2723]" />
                                 </div>
                                 <div>
-                                    <p className="text-lg font-black text-gray-900 tracking-tight">{returnReq.customerName}</p>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tier: Premium Member</p>
+                                    <p className="text-lg font-black text-gray-900 tracking-tight">{returnReq.user?.fullName || returnReq.customerName}</p>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tier: {returnReq.user?.role || 'Premium Member'}</p>
                                 </div>
                             </div>
                             
@@ -172,7 +185,7 @@ const SellerReturnDetail = () => {
                                 </div>
                                 <div>
                                     <p className={labelClasses}>Transaction Value</p>
-                                    <p className="text-xl font-black text-[#3E2723] mt-1 tracking-tighter">₹25,000.00</p>
+                                    <p className="text-xl font-black text-[#3E2723] mt-1 tracking-tighter">₹{returnReq.order?.totalAmount?.toLocaleString() || 'N/A'}</p>
                                 </div>
                                 <div className="p-4 bg-red-50/50 rounded-2xl border border-red-100/30">
                                     <p className="text-[8px] font-black text-red-400 uppercase tracking-widest mb-1">Security Risk Assessment</p>
