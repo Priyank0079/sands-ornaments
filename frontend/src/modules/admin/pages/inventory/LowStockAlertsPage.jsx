@@ -13,10 +13,10 @@ const LowStockAlertsPage = () => {
         // Mock API call
         setTimeout(() => {
             setAlerts([
-                { id: 1, name: 'Gold Plated Necklace', category: 'Necklace', stock: 0, threshold: 15, image: 'https://via.placeholder.com/40' },
-                { id: 2, name: 'Diamond Stud Earrings', category: 'Earrings', stock: 2, threshold: 5, image: 'https://via.placeholder.com/40' },
-                { id: 3, name: 'Silver Anklet', category: 'Anklet', stock: 15, threshold: 20, image: 'https://via.placeholder.com/40' },
-                { id: 4, name: 'Rose Gold Bracelet', category: 'Bracelet', stock: 8, threshold: 10, image: 'https://via.placeholder.com/40' },
+                { id: 1, name: 'Gold Plated Necklace', category: 'Necklace', stock: 0, threshold: 15, image: 'https://placehold.co/40' },
+                { id: 2, name: 'Diamond Stud Earrings', category: 'Earrings', stock: 2, threshold: 5, image: 'https://placehold.co/40' },
+                { id: 3, name: 'Silver Anklet', category: 'Anklet', stock: 15, threshold: 20, image: 'https://placehold.co/40' },
+                { id: 4, name: 'Rose Gold Bracelet', category: 'Bracelet', stock: 8, threshold: 10, image: 'https://placehold.co/40' },
             ]);
             setLoading(false);
         }, 500);

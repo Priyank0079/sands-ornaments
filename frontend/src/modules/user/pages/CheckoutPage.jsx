@@ -32,8 +32,7 @@ const CheckoutPage = () => {
                 image: variantData.product.image,
                 category: variantData.product.category,
                 categoryId: variantData.product.categoryId,
-                subcategory: variantData.product.subcategory,
-                subcategoryId: variantData.product.subcategoryId,
+                categoryId: variantData.product.categoryId,
                 productId: variantData.product.id
             };
         }
@@ -68,36 +67,33 @@ const CheckoutPage = () => {
     const [couponError, setCouponError] = useState('');
     const [showCouponsModal, setShowCouponsModal] = useState(false);
 
-    useEffect(() => {
-        if (user) {
-            const storedUsers = JSON.parse(localStorage.getItem('farmlyf_users')) || [];
-            const currentUser = storedUsers.find(u => u.id === user.id);
-            if (currentUser) {
-                // Pre-fill address from saved addresses
-                if (currentUser.addresses && currentUser.addresses.length > 0) {
-                    const defaultAddr = currentUser.addresses.find(a => a.isDefault) || currentUser.addresses[0];
-                    setFormData({
-                        fullName: defaultAddr.fullName || currentUser.name || '',
-                        phone: defaultAddr.phone || currentUser.phone || '',
-                        address: defaultAddr.address || '',
-                        city: defaultAddr.city || '',
-                        state: defaultAddr.state || '',
-                        pincode: defaultAddr.pincode || '',
-                    });
-                } else {
-                    // Fallback to basic user info
-                    setFormData(prev => ({
-                        ...prev,
-                        fullName: currentUser.name || '',
-                        phone: currentUser.phone || '',
-                    }));
-                }
-            }
-        }
-    }, [user]);
-
     const total = subtotal - couponDiscount;
     const availableCoupons = getActiveCoupons();
+
+    const [addresses, setAddresses] = useState([]);
+
+    useEffect(() => {
+        const fetchAddresses = async () => {
+            try {
+                const res = await api.get('user/addresses');
+                if (res.data.success) {
+                    setAddresses(res.data.addresses);
+                    const defaultAddr = res.data.addresses.find(a => a.isDefault);
+                    if (defaultAddr) {
+                        setFormData({
+                            fullName: `${defaultAddr.firstName} ${defaultAddr.lastName}`,
+                            phone: defaultAddr.phone || '',
+                            address: defaultAddr.streetAddress || '',
+                            city: defaultAddr.city || '',
+                            state: defaultAddr.state || '',
+                            pincode: defaultAddr.zipCode || '',
+                        });
+                    }
+                }
+            } catch (err) { console.error("Failed to fetch addresses"); }
+        };
+        if (user) fetchAddresses();
+    }, [user]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -136,22 +132,42 @@ const CheckoutPage = () => {
         e.preventDefault();
         setLoading(true);
 
-        // Simulate network delay
-        setTimeout(() => {
-            const orderData = {
-                items: enrichedCart,
-                shippingAddress: formData,
-                paymentMethod: paymentMethod,
-                amount: total,
-                currency: 'INR',
-                appliedCoupon: appliedCoupon ? appliedCoupon.code : null,
-                discount: couponDiscount
+        try {
+            // Map simple formData to the object backend expects
+            const nameParts = formData.fullName.split(' ');
+            const firstName = nameParts[0] || '';
+            const lastName = nameParts.slice(1).join(' ') || ' ';
+
+            const shippingAddress = {
+                firstName,
+                lastName,
+                phone: formData.phone,
+                email: user?.email || '',
+                streetAddress: formData.address,
+                city: formData.city,
+                state: formData.state,
+                country: 'India',
+                zipCode: formData.pincode,
+                isDefault: false
             };
 
-            const orderId = placeOrder(user.id, orderData, !directBuyItem);
+            const orderData = {
+                items: enrichedCart,
+                shippingAddress,
+                paymentMethod: paymentMethod,
+                couponCode: appliedCoupon ? appliedCoupon.code : null
+            };
+
+            const orderId = await placeOrder(orderData);
             setLoading(false);
-            navigate(`/order-success/${orderId}`);
-        }, 1500);
+            
+            if (orderId) {
+                navigate(`/order-success/${orderId}`);
+            }
+        } catch (err) {
+            console.error("Checkout submission failed", err);
+            setLoading(false);
+        }
     };
 
     if (enrichedCart.length === 0) {

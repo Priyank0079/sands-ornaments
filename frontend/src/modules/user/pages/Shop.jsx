@@ -11,12 +11,14 @@ import {
 
 const Shop = () => {
     const { products, categories, isLoading } = useShop();
+    const visibleCategories = categories.filter(
+        (cat) => cat.isActive !== false && cat.showInCollection !== false
+    );
     const location = useLocation();
     const navigate = useNavigate();
     const { category } = useParams();
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('All');
-    const [selectedSubCategory, setSelectedSubCategory] = useState(null);
     const [filterNewArrivals, setFilterNewArrivals] = useState(false);
     const [filterTrending, setFilterTrending] = useState(false);
     const [isSortOpen, setIsSortOpen] = useState(false);
@@ -38,7 +40,7 @@ const Shop = () => {
 
         // Set selected category from query param if present
         if (categoryQuery && selectedCategory === 'All') {
-            const catObj = categories.find(c => c._id === categoryQuery || c.name === categoryQuery);
+            const catObj = categories.find(c => c._id === categoryQuery || c.id === categoryQuery || c.name === categoryQuery);
             if (catObj) {
                 setSelectedCategory(catObj.name);
             }
@@ -57,15 +59,13 @@ const Shop = () => {
             title = `${metalQuery.charAt(0).toUpperCase() + metalQuery.slice(1)} Collection`;
             baseProducts = products.filter(p => p.metal?.toLowerCase() === metalQuery.toLowerCase());
         } else if (category) {
-            const currentCat = categories.find(c => c.path === category);
+            const currentCat = categories.find(c => c.path === category || c.slug === category);
             title = currentCat ? currentCat.name : category.charAt(0).toUpperCase() + category.slice(1);
             baseProducts = products.filter(p => p.category.toLowerCase() === category.toLowerCase() || (currentCat && p.category === currentCat.name));
         }
 
         // Apply Title overrides from Local Filters
-        if (selectedSubCategory) {
-            title = selectedSubCategory;
-        } else if (selectedCategory !== 'All') {
+        if (selectedCategory !== 'All') {
             title = selectedCategory;
         } else if (filterNewArrivals && path === '/shop') {
             title = 'Just Arrived';
@@ -80,11 +80,6 @@ const Shop = () => {
         // 2. Apply Local Category Filter (if selected)
         if (selectedCategory !== 'All') {
             result = result.filter(p => p.category === selectedCategory);
-
-            // 2.1 Apply Subcategory Filter
-            if (selectedSubCategory) {
-                result = result.filter(p => p.subcategory === selectedSubCategory);
-            }
         }
 
         // 2.2 Apply Collection Filters
@@ -111,16 +106,15 @@ const Shop = () => {
 
         setFilteredProducts([...result]); // Create new array to force re-render
 
-    }, [location, category, selectedCategory, selectedSubCategory, priceRange, filterNewArrivals, filterTrending, sortBy, categories, products]);
+    }, [location, category, selectedCategory, priceRange, filterNewArrivals, filterTrending, sortBy, categories, products]);
 
     useEffect(() => {
         document.title = `${pageTitle} | Sands Ornaments - Pure 925 Silver Jewellery`;
     }, [pageTitle]);
 
-    // Handle Category Change to reset subcategory
+    // Handle Category Change
     const handleCategoryChange = (val) => {
         setSelectedCategory(val);
-        setSelectedSubCategory(null);
     };
 
     return (
@@ -196,7 +190,7 @@ const Shop = () => {
                     );
                     const isComingSoon = isComingSoonQuery || (selectedCategory !== 'All' && 
                                        currentCategoryData && 
-                                       (!currentCategoryData.subcategories || currentCategoryData.subcategories.length === 0));
+                                       (!currentCategoryData.products || currentCategoryData.products.length === 0));
 
                     if (isComingSoon) {
                         return (
@@ -233,7 +227,7 @@ const Shop = () => {
                             <h3 className="text-2xl font-serif text-black mb-2">No products found</h3>
                             <p className="text-gray-500">Try adjusting your filters to find your perfect match.</p>
                             <button 
-                                onClick={() => { setSelectedCategory('All'); setSelectedSubCategory(null); setPriceRange(10000); navigate('/shop'); }} 
+                                onClick={() => { setSelectedCategory('All'); setPriceRange(10000); navigate('/shop'); }} 
                                 className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#D39A9F] hover:underline"
                             >
                                 <SlidersHorizontal className="w-4 h-4" /> Clear all filters
@@ -262,7 +256,7 @@ const Shop = () => {
                         <Filter className="w-3 h-3" /> Filter
                     </span>
                     <span className="text-[10px] text-gray-600 font-medium mt-0.5">
-                        {(selectedCategory !== 'All' || selectedSubCategory || filterNewArrivals || filterTrending || priceRange < 10000) ? 'Filters applied' : 'No filter applied'}
+                        {(selectedCategory !== 'All' || filterNewArrivals || filterTrending || priceRange < 10000) ? 'Filters applied' : 'No filter applied'}
                     </span>
                 </button>
             </div>
@@ -305,7 +299,7 @@ const Shop = () => {
                                     />
                                     <span className={`text-sm group-hover:text-black transition-colors ${selectedCategory === 'All' ? 'text-black font-medium' : 'text-gray-600'}`}>All Categories</span>
                                 </label>
-                                {categories.map(cat => (
+                                {visibleCategories.map(cat => (
                                     <div key={cat.id}>
                                         <label className="flex items-center space-x-3 cursor-pointer group mb-2">
                                             <input
@@ -318,21 +312,6 @@ const Shop = () => {
                                             />
                                             <span className={`text-sm group-hover:text-black transition-colors ${selectedCategory === cat.name ? 'text-black font-medium' : 'text-gray-600'}`}>{cat.name}</span>
                                         </label>
-
-                                        {/* Show Subcategories if Selected */}
-                                        {selectedCategory === cat.name && cat.subcategories && (
-                                            <div className="ml-7 space-y-2 border-l-2 border-[#EBCDD0] pl-3 animate-in slide-in-from-left-2 duration-300">
-                                                {cat.subcategories.map(sub => (
-                                                    <button
-                                                        key={sub.name}
-                                                        onClick={() => setSelectedSubCategory(sub.name === selectedSubCategory ? null : sub.name)}
-                                                        className={`block text-xs text-left w-full hover:text-black transition-colors ${selectedSubCategory === sub.name ? 'text-black font-bold' : 'text-gray-600'}`}
-                                                    >
-                                                        {sub.name}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -406,7 +385,7 @@ const Shop = () => {
                     {/* Sidebar Footer */}
                     <div className="p-6 border-t border-[#EBCDD0] bg-white">
                         <button
-                            onClick={() => { setSelectedCategory('All'); setSelectedSubCategory(null); setFilterNewArrivals(false); setFilterTrending(false); setPriceRange(10000); }}
+                            onClick={() => { setSelectedCategory('All'); setFilterNewArrivals(false); setFilterTrending(false); setPriceRange(10000); }}
                             className="w-full py-3 border border-[#EBCDD0] text-black font-medium rounded-lg hover:bg-[#FDF5F6] hover:shadow-sm transition-all text-sm mb-3"
                         >
                             Reset Filters

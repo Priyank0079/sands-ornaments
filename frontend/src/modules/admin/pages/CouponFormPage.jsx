@@ -26,9 +26,7 @@ const CouponFormPage = () => {
     const { products, categories, coupons, addCoupon, updateCoupon } = useShop();
     const isEdit = Boolean(id);
 
-    // Dynamic Lists from Context
     const ALL_CATEGORIES = categories || [];
-    const ALL_SUBCATEGORIES = categories.flatMap(cat => cat.subcategories || []) || [];
 
     const [formData, setFormData] = useState({
         code: '',
@@ -44,7 +42,7 @@ const CouponFormPage = () => {
         userEligibility: 'all',
         description: '',
         // New Fields
-        applicabilityType: 'all', // 'all', 'category', 'subcategory', 'product'
+        applicabilityType: 'all', // 'all', 'category', 'product'
         targetItems: [] // Array of IDs or Names
     });
 
@@ -101,7 +99,6 @@ const CouponFormPage = () => {
             applicabilityType: formData.applicabilityType,
             // Map targetItems based on applicabilityType
             applicableCategories: formData.applicabilityType === 'category' ? formData.targetItems : [],
-            applicableSubcategories: formData.applicabilityType === 'subcategory' ? formData.targetItems : [],
             applicableProducts: formData.applicabilityType === 'product' ? formData.targetItems : []
         };
 
@@ -205,7 +202,6 @@ const CouponFormPage = () => {
                                     { id: 'all', label: 'All Orders' },
                                     { id: 'new_user', label: 'New Users' },
                                     { id: 'category', label: 'Category' },
-                                    { id: 'subcategory', label: 'Subcategory' },
                                     { id: 'product', label: 'Product' }
                                 ].map(scope => {
                                     const isActive = (scope.id === 'new_user' && formData.userEligibility === 'new') ||

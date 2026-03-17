@@ -189,16 +189,19 @@ export const ShopProvider = ({ children }) => {
 
     const placeOrder = async (orderDetails) => {
         try {
+            const { items, shippingAddress, paymentMethod, couponCode } = orderDetails;
+            
             // 1. Create order on backend
+            // Note: backend expects { items: [{productId, variantId, quantity}], shippingAddress, paymentMethod, couponCode }
             const res = await api.post('/user/orders', {
-                items: cart.map(item => ({
+                items: (items || cart).map(item => ({
                     productId: item.id || item._id,
-                    variantId: item.variantId || item.variants?.[0]?.id, // Adjust based on your cart structure
-                    quantity: item.quantity
+                    variantId: item.variantId || item.variants?.[0]?.id || item.variants?.[0]?._id,
+                    quantity: item.qty || item.quantity
                 })),
-                addressId: orderDetails.addressId || defaultAddressId,
-                paymentMethod: orderDetails.paymentMethod,
-                couponCode: orderDetails.couponCode
+                shippingAddress,
+                paymentMethod,
+                couponCode
             });
 
             if (!res.data.success) {
@@ -269,26 +272,77 @@ export const ShopProvider = ({ children }) => {
         });
     };
 
-    const addToCart = (product) => {
+    const addToCart = (arg1, arg2, arg3) => {
+        let productId, variantId, qty = 1, productData = null;
+
+        if (typeof arg1 === 'object') {
+            // Logic for addToCart(product)
+            productData = arg1;
+            productId = productData.id || productData._id;
+            variantId = productData.selectedVariant?.id || productData.selectedVariant?._id || productData.variants?.[0]?.id || productData.variants?.[0]?._id;
+        } else {
+            // Logic for addToCart(userId, productId, quantity)
+            productId = arg2;
+            qty = arg3 || 1;
+            productData = products.find(p => p.id === productId);
+        }
+
+        if (!productId) return;
+
         setCart((prev) => {
-            const existing = prev.find((item) => item.id === product.id);
+            const existing = prev.find((item) => item.id === productId && item.variantId === variantId);
             if (existing) {
                 return prev.map((item) =>
-                    item.id === product.id ? { ...item, quantity: (item.quantity || 1) + 1 } : item
+                    (item.id === productId && item.variantId === variantId) ? { ...item, quantity: item.quantity + qty, qty: item.quantity + qty } : item
                 );
             }
-            return [...prev, { ...product, quantity: 1 }];
+            // If productData not found in list, try to use whatever we have
+            const itemBase = productData || { id: productId, name: 'Product', price: 0 };
+            return [...prev, { 
+                ...itemBase, 
+                id: productId, 
+                variantId: variantId, 
+                packId: variantId || productId, // For CartPage compatibility
+                quantity: qty,
+                qty: qty // For CartPage compatibility
+            }];
         });
+        showNotification("Added to bag");
     };
 
-    const updateQuantity = (productId, amount) => {
+    const updateQuantity = (productId, amount, variantId) => {
         setCart((prev) => prev.map((item) => {
-            if (item.id === productId) {
-                const newQuantity = Math.max(1, (item.quantity || 1) + amount);
-                return { ...item, quantity: newQuantity };
+            if (item.id === productId && (!variantId || item.variantId === variantId)) {
+                const newQuantity = Math.max(1, item.quantity + amount);
+                return { ...item, quantity: newQuantity, qty: newQuantity };
             }
             return item;
         }));
+    };
+
+    // Helper for CartPage compatibility
+    const updateCartQty = (userId, packId, newQty) => {
+        setCart(prev => prev.map(item => {
+            if (item.packId === packId || item.id === packId || item.variantId === packId) {
+                return { ...item, quantity: Math.max(1, newQty), qty: Math.max(1, newQty) };
+            }
+            return item;
+        }));
+    };
+
+    const getCart = () => cart;
+
+    const getVariantById = (variantId) => {
+        for (const prod of products) {
+            const v = (prod.variants || []).find(v => v.id === variantId || v._id === variantId);
+            if (v) return { ...v, product: prod };
+        }
+        return null;
+    };
+
+    const getPackById = (packId) => {
+        // Fallback for legacy packs
+        return products.find(p => p.id === packId) || null;
     };
 
     const addToWishlist = async (product) => {
@@ -305,8 +359,10 @@ export const ShopProvider = ({ children }) => {
         } catch (err) { showNotification("Failed to update wishlist"); }
     };
 
-    const removeFromCart = (productId) => {
-        setCart((prev) => prev.filter(item => item.id !== productId));
+    const removeFromCart = (userId, productId) => {
+        // Handle both (productId) and (userId, productId)
+        const idToRemove = typeof userId === 'string' && productId ? productId : userId;
+        setCart((prev) => prev.filter(item => item.id !== idToRemove && item.packId !== idToRemove && item.variantId !== idToRemove));
     };
 
     const removeFromWishlist = async (productId) => {
@@ -462,14 +518,13 @@ export const ShopProvider = ({ children }) => {
 
     const validateCoupon = async (code, cartTotal, items) => {
         try {
-            // Format items for backend: { productId, variantId, quantity, price, categoryId, subcategoryId }
+            // Format items for backend: { productId, variantId, quantity, price, categoryId }
             const formattedItems = items.map(item => ({
                 productId: item.productId || item.id,
                 variantId: item.variantId || item.id,
                 quantity: item.qty || item.quantity,
                 price: item.price,
-                categoryId: item.categoryId || '',
-                subcategoryId: item.subcategoryId || ''
+                categoryId: item.categoryId || ''
             }));
 
             const res = await api.post('/user/coupons/validate', {
@@ -711,7 +766,8 @@ export const ShopProvider = ({ children }) => {
         <ShopContext.Provider value={{
             cart, wishlist, user, orders, addresses, supportTickets,
             login, logout, placeOrder, addToCart, addToWishlist,
-            removeFromCart, removeFromWishlist, updateQuantity, clearCart,
+            removeFromCart, removeFromWishlist, updateQuantity, updateCartQty, clearCart,
+            getCart, getVariantById, getPackById, getRecommendations: (uid, n) => products.slice(0, n), // Basic stub
             addAddress, removeAddress, updateAddress, setDefaultAddress,
             defaultAddressId, createTicket, updateTicketStatus, addTicketReply, deleteTicket,
 

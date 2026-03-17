@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation, useSearchParams } from 'react-router-dom';
-import { Upload, X, Save, Plus, ChevronRight } from 'lucide-react';
-import { Trash2 } from 'lucide-react';
+import { Upload, X, Save, Plus, ChevronRight, Trash2, Box } from 'lucide-react';
 import PageHeader from '../components/common/PageHeader';
 import { FormSection, Input, Select } from '../components/common/FormControls';
 import ReactQuill from 'react-quill-new';
@@ -14,7 +13,7 @@ const quillModules = {
         [{ 'header': [1, 2, 3, false] }],
         ['bold', 'italic', 'underline', 'strike'],
         [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-        ['link', 'image'],
+        ['link'],
         ['clean']
     ],
 };
@@ -22,9 +21,11 @@ const quillModules = {
 const quillFormats = [
     'header',
     'bold', 'italic', 'underline', 'strike',
-    'list', 'bullet',
-    'link', 'image'
+    'list',
+    'link'
 ];
+
+
 
 const ItemEditor = () => {
     const { id } = useParams();
@@ -34,35 +35,32 @@ const ItemEditor = () => {
 
     // Determine context
     const isCategoryPath = location.pathname.includes('/categories');
-    const isSubcategory = typeParam === 'subcategory';
-    const isCategory = isCategoryPath && !isSubcategory;
+    const isCategory = isCategoryPath;
     const isProduct = location.pathname.includes('/products');
     const isViewMode = location.pathname.includes('/view/');
 
-    const resourceType = isCategory ? 'Category' : (isSubcategory ? 'Subcategory' : 'Product');
+    const resourceType = isCategory ? 'Category' : 'Product';
     const backPath = isProduct 
         ? '/admin/products' 
-        : (isSubcategory && formData.parentId 
-            ? `/admin/categories/view/${formData.parentId}` 
-            : '/admin/categories');
+        : '/admin/categories';
 
     const isEditMode = Boolean(id) && !isViewMode;
 
     // Mock initial data for lists
-    const [categories, setCategories] = useState([]);
-    const [subcategories, setSubcategories] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [categories, setCategories] = useState([]); // List of all categories from DB
+    const [loading, setLoading] = useState(isEditMode || isViewMode);
     const [imageFiles, setImageFiles] = useState([]); // Store actual File objects
+    const [previewImages, setPreviewImages] = useState([]); // Store image URLs for display
 
     const [formData, setFormData] = useState({
         name: '',
         parentId: '',
-        subCategoryId: '',
         description: '',
         stylingTips: '',
         showInCollection: true,
         showInNavbar: true,
-        metal: metalParam || 'silver', // Default to param or silver
+        isActive: true,
+        metal: 'silver', // Default to silver
         // Product Display Labels
         cardLabel: '',
         cardBadge: '',
@@ -79,13 +77,34 @@ const ItemEditor = () => {
         images: [], // Multiple images
         sizes: [], // Selected sizes
         variantStock: {}, // Stock per variant
-        categories: [{ id: Date.now(), category: '', subcategory: '' }], // Multiple categories for product
+        categories: [{ category: '' }], // Single category for product
         tags: {
             isNewArrival: false,
             isMostGifted: false,
             isNewLaunch: false
-        }
+        },
+        faqs: [],
+        variants: [
+            { id: Date.now(), name: '', mrp: '', price: '', stock: '' }
+        ],
+        deletedImages: []
     });
+    const [errors, setErrors] = useState({});
+    const [isSaving, setIsSaving] = useState(false);
+
+    const getFriendlyError = (err, fallback = "Something went wrong. Please try again.") => {
+        const responseMessage = err?.response?.data?.message;
+        const responseError = err?.response?.data?.error;
+        const rawMessage = responseMessage || err?.message || fallback;
+
+        if (responseError === "VALIDATION_ERROR") {
+            return "Please review the form fields and try again.";
+        }
+        if (typeof rawMessage === 'string') {
+            return rawMessage.replace(/^"|"$/g, '').replace(/\\"/g, '"');
+        }
+        return fallback;
+    };
 
     const sizeOptions = isProduct ? [
         '5', '6', '7', '8', '9', '10', '2.2', '2.4', '2.6', 'Adjustable'
@@ -106,97 +125,104 @@ const ItemEditor = () => {
     }, [formData.originalPrice, formData.sellingPrice, isProduct]);
 
     useEffect(() => {
-        const fetchMetadata = async () => {
+        const loadData = async () => {
             try {
-                const cats = await adminService.getCategories();
+                const results = await Promise.all([
+                    adminService.getCategories(),
+                    (isEditMode || isViewMode) ? (isCategory ? adminService.getCategoryById(id) : adminService.getProductById(id)) : Promise.resolve(null)
+                ]);
+
+                const [cats, data] = results;
                 setCategories(cats);
-                // Flatten subcategories for easy access
-                const allSubs = cats.flatMap(c => c.subcategories || []);
-                setSubcategories(allSubs);
+
+                if (data) {
+                    // Normalize categories if it's a product
+                    if (isProduct && data.categories) {
+                        const normalized = data.categories.map(c => ({
+                            category: typeof c === 'object' ? (c._id || c.name || '') : c
+                        }));
+                        data.categories = normalized.slice(0, 1);
+                    }
+                    
+                    setFormData(prev => ({ 
+                        ...prev, 
+                        ...data,
+                        originalPrice: data.variants?.[0]?.mrp || '',
+                        sellingPrice: data.variants?.[0]?.price || '',
+                        stock: data.variants?.[0]?.stock || '',
+                        discount: data.variants?.[0]?.discount || 0,
+                        faqs: data.faqs || [],
+                        variants: data.variants?.map(v => ({ ...v, id: v._id || Math.random() })) || [
+                            { id: Date.now(), name: '', mrp: '', price: '', stock: '' }
+                        ]
+                    }));
+                    if (data.images) setPreviewImages(data.images);
+                }
             } catch (err) {
-                toast.error("Failed to load categories");
+                console.error("Load failed:", err);
+                toast.error("Failed to load data");
+            } finally {
+                setLoading(false);
             }
         };
-        fetchMetadata();
+        loadData();
+    }, [id, isEditMode, isViewMode, isCategory, isProduct]);
 
-        if (isEditMode || isViewMode) {
-            const fetchData = async () => {
-                setLoading(true);
-                try {
-                    let data; // Declare data here
-                    if (isCategory) {
-                        data = await adminService.getCategoryById(id);
-                        setFormData({
-                            name: data.name,
-                            description: data.description || '',
-                            showInCollection: data.showInCollection,
-                            showInNavbar: data.showInNavbar,
-                            isActive: data.isActive,
-                            metal: data.metal || 'silver', // Populate metal from fetched data
-                            images: data.image ? [data.image] : []
-                        });
-                    } else if (isSubcategory) {
-                        // We need a getSubcategoryById or similar, but often it's included in parent or fetched directly
-                        // For now assuming adminService has getSubcategoryById or we can find it in categories
-                        const cats = await adminService.getCategories();
-                        const sub = cats.flatMap(c => c.subcategories || []).find(s => s._id === id);
-                        if (sub) {
-                            setFormData({
-                                name: sub.name,
-                                parentId: sub.parentCategory?._id || sub.parentCategory,
-                                showInCollection: sub.showInCollection !== false,
-                                showInNavbar: sub.showInNavbar !== false,
-                                isActive: sub.isActive !== false,
-                                images: sub.image ? [sub.image] : []
-                            });
-                        }
-                    } else if (isProduct) {
-                        data = await adminService.getProductById(id);
-                        setFormData({
-                            ...data,
-                            originalPrice: data.variants?.[0]?.mrp || '',
-                            sellingPrice: data.variants?.[0]?.price || '',
-                            stock: data.variants?.[0]?.stock || '',
-                            discount: data.variants?.[0]?.discount || 0,
-                            categories: data.categories.map(c => ({
-                                id: Math.random(),
-                                category: c.categoryId?._id || c.categoryId,
-                                subcategoryId: c.subcategoryId?._id || c.subcategoryId
-                            }))
-                        });
-                    }
-                } catch (err) {
-                    toast.error("Failed to fetch data");
-                } finally {
-                    setLoading(false);
-                }
-            };
-            fetchData();
-        }
-
-        const searchParams = new URLSearchParams(location.search);
+    // Handle initial params from URL (e.g. parent category for new creation)
+    useEffect(() => {
         const parentParam = searchParams.get('parent');
         if (!isEditMode && !isViewMode && parentParam) {
             setFormData(prev => ({ ...prev, parentId: parentParam }));
         }
-    }, [id, isEditMode, isViewMode, isCategory, isSubcategory, isProduct, location.search]);
+    }, [searchParams, isEditMode, isViewMode]);
 
     const handleImageUpload = (e) => {
         const files = Array.from(e.target.files);
-        setImageFiles(prev => [...prev, ...files].slice(0, 5));
-        
-        const previews = files.map(file => URL.createObjectURL(file));
-        setFormData(prev => ({
-            ...prev,
-            images: [...prev.images, ...previews].slice(0, 5)
-        }));
+        if (isCategory) {
+            // For category, only one image at a time
+            const file = files[0];
+            if (file) {
+                setImageFiles([file]);
+                const preview = URL.createObjectURL(file);
+                setFormData(prev => ({
+                    ...prev,
+                    images: [preview]
+                }));
+                setPreviewImages([preview]);
+            }
+        } else {
+            // For product, allow multiple
+            const newFiles = files.slice(0, 5 - imageFiles.length); // Limit new files
+            setImageFiles(prev => [...prev, ...newFiles]);
+            const previews = newFiles.map(file => URL.createObjectURL(file));
+            setFormData(prev => ({
+                ...prev,
+                images: [...prev.images, ...previews].slice(0, 5)
+            }));
+            setPreviewImages(prev => [...prev, ...previews].slice(0, 5));
+        }
     };
 
-    const removeImage = (index) => {
-        setFormData(prev => ({
-            ...prev,
-            images: prev.images.filter((_, i) => i !== index)
-        }));
+    const handleRemoveImage = (index) => {
+        const removedImage = previewImages[index]; // Use previewImages for display
+        const newPreviewImages = previewImages.filter((_, i) => i !== index);
+        
+        const updates = { images: newPreviewImages }; // Update formData.images to reflect current previews
+        
+        // If it's an existing image (string URL, not a blob URL from new upload), track for backend deletion
+        if (typeof removedImage === 'string' && !removedImage.startsWith('blob:')) {
+            updates.deletedImages = [...formData.deletedImages, removedImage];
+        } else if (removedImage.startsWith('blob:')) {
+            // If it's a new image (blob URL), remove the corresponding file from imageFiles
+            // This requires careful indexing. A better approach would be to store {file, previewUrl} pairs.
+            // For now, we'll assume new files are added to the end of imageFiles and previewImages.
+            // This logic might be imperfect if existing images are removed from the middle.
+            const newFileIndex = previewImages.slice(0, index).filter(img => img.startsWith('blob:')).length;
+            setImageFiles(prev => prev.filter((_, i) => i !== newFileIndex));
+        }
+        
+        setFormData(prev => ({ ...prev, ...updates }));
+        setPreviewImages(newPreviewImages);
     };
 
     const toggleSize = (size) => {
@@ -208,119 +234,207 @@ const ItemEditor = () => {
         }));
     };
 
-    // Category Management for Products
-    const addCategory = () => {
+    // Category Management for Products (New)
+    const addCategoryRow = () => {
         setFormData(prev => ({
             ...prev,
-            categories: [...prev.categories, { id: Date.now(), category: '', subcategory: '' }]
+            categories: [...(prev.categories || []), { category: '' }]
         }));
     };
 
-    const removeCategory = (id) => {
+    const removeCategoryRow = (index) => {
         setFormData(prev => ({
             ...prev,
-            categories: prev.categories.filter(c => c.id !== id)
+            categories: prev.categories.filter((_, i) => i !== index)
         }));
     };
 
-    const handleCategoryChange = (valId, field, value) => {
+    const handleCategoryChange = (index, value) => {
+        const newCats = [...formData.categories];
+        newCats[index].category = value;
+        setFormData({ ...formData, categories: newCats });
+    };
+
+    const addFaq = () => {
         setFormData(prev => ({
             ...prev,
-            categories: prev.categories.map(c => {
-                if (c.id === valId) {
-                    if (field === 'category') {
-                        return { ...c, category: value, subcategory: '' }; // Reset subcategory
+            faqs: [...prev.faqs, { question: '', answer: '' }]
+        }));
+    };
+
+    const removeFaq = (index) => {
+        setFormData(prev => ({
+            ...prev,
+            faqs: prev.faqs.filter((_, i) => i !== index)
+        }));
+    };
+
+    const handleFaqChange = (index, field, value) => {
+        setFormData(prev => ({
+            ...prev,
+            faqs: prev.faqs.map((faq, i) => i === index ? { ...faq, [field]: value } : faq)
+        }));
+    };
+
+    const addVariant = () => {
+        setFormData(prev => ({
+            ...prev,
+            variants: [...prev.variants, { id: Date.now(), name: '', mrp: '', price: '', stock: '' }]
+        }));
+    };
+
+    const removeVariant = (id) => {
+        if (formData.variants.length > 1) {
+            setFormData(prev => ({
+                ...prev,
+                variants: prev.variants.filter(v => v.id !== id)
+            }));
+        }
+    };
+
+    const handleVariantChange = (id, field, value) => {
+        setFormData(prev => ({
+            ...prev,
+            variants: prev.variants.map(v => {
+                if (v.id === id) {
+                    const updated = { ...v, [field]: value };
+                    // Auto-calculate discount if mrp and price changed
+                    if ((field === 'mrp' || field === 'price') && updated.mrp && updated.price) {
+                        const m = parseFloat(updated.mrp);
+                        const p = parseFloat(updated.price);
+                        if (m > p) {
+                            updated.discount = Math.round(((m - p) / m) * 100);
+                        } else {
+                            updated.discount = 0;
+                        }
                     }
-                    return { ...c, [field]: value };
+                    return updated;
                 }
-                return c;
+                return v;
             })
         }));
     };
 
-    const getAvailableSubcategories = (categoryId) => {
-        const cat = categories.find(c => c._id === categoryId);
-        return cat ? cat.subcategories : [];
+    const validateForm = () => {
+        const newErrors = {};
+        if (!formData.name) newErrors.name = "Name is required";
+        
+        if (isProduct) {
+            if (!formData.description || formData.description.trim() === '') {
+                newErrors.description = "Description is required";
+            }
+            const selectedCategories = (formData.categories || []).filter(c => c.category);
+            if (selectedCategories.length === 0) {
+                newErrors.categories = "At least one category is required";
+            }
+            if (!formData.variants || formData.variants.length === 0) {
+                newErrors.variants = "At least one variant is required";
+            } else {
+                formData.variants.forEach((v, i) => {
+                    if (!v.name) newErrors[`variant_${i}_name`] = "Size/Name is required";
+                    if (!v.mrp) newErrors[`variant_${i}_mrp`] = "MRP is required";
+                    if (!v.price) newErrors[`variant_${i}_price`] = "Price is required";
+                    if (v.stock === '' || v.stock === null || v.stock === undefined) {
+                        newErrors[`variant_${i}_stock`] = "Stock is required";
+                    }
+                    if (v.mrp && Number(v.price) > Number(v.mrp)) {
+                        newErrors[`variant_${i}_price`] = "Price cannot exceed MRP";
+                    }
+                });
+            }
+        }
+        
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
     };
 
     const handleSubmit = async (e) => {
-        if (e) e.preventDefault();
-        setLoading(true);
+        e.preventDefault();
+        if (!validateForm()) {
+            toast.error("Please fix the errors before saving");
+            return;
+        }
 
+        setIsSaving(true);
         try {
-            let res;
             if (isCategory) {
                 const form = new FormData();
-                form.append('name', formData.name);
+                form.append('name', formData.name.trim());
                 form.append('description', formData.description);
-                form.append('metal', formData.metal); // Append metal to form data
+                form.append('metal', formData.metal);
                 form.append('showInNavbar', formData.showInNavbar);
                 form.append('showInCollection', formData.showInCollection);
+                form.append('isActive', formData.isActive);
                 if (imageFiles.length > 0) {
                     imageFiles.forEach(file => form.append('image', file));
                 }
+                if (isEditMode && (formData.deletedImages || []).length > 0) {
+                    form.append('deletedImages', JSON.stringify(formData.deletedImages));
+                }
 
+                let res;
                 if (isEditMode) {
-                    const success = await adminService.updateCategory(id, form);
-                    if (success) toast.success("Category updated");
-                    else throw new Error("Update failed");
+                    res = await adminService.updateCategory(id, form);
+                    if (res.success) toast.success("Category updated");
+                    else throw new Error(res.message || "Update failed");
                 } else {
                     res = await adminService.createCategory(form);
                     if (res.success) toast.success("Category created");
-                    else throw new Error(res.message);
-                }
-            } else if (isSubcategory) {
-                const form = new FormData();
-                form.append('name', formData.name);
-                form.append('description', formData.description);
-                form.append('parentCategory', formData.parentId);
-                form.append('showInNavbar', formData.showInNavbar);
-                form.append('showInCollection', formData.showInCollection);
-                if (imageFiles.length > 0) {
-                    imageFiles.forEach(file => form.append('image', file));
-                }
-
-                if (isEditMode) {
-                    const success = await adminService.updateSubcategory(id, form);
-                    if (success) toast.success("Subcategory updated");
-                    else throw new Error("Update failed");
-                } else {
-                    res = await adminService.createSubcategory(form);
-                    if (res.success) toast.success("Subcategory created");
-                    else throw new Error(res.message);
+                    else throw new Error(res.message || "Operation failed");
                 }
             } else {
-                // Product Management
-                const mappedCategories = formData.categories
+                // Product Management Logic (Keep existing)
+                const mappedCategories = (formData.categories || [])
                     .filter(c => c.category)
-                    .map(c => ({
-                        categoryId: c.category,
-                        subcategoryId: c.subcategoryId || null
-                    }));
-
-                const variants = [{
-                    name: 'Default',
-                    mrp: parseFloat(formData.originalPrice) || 0,
-                    price: parseFloat(formData.sellingPrice) || 0,
-                    stock: parseInt(formData.stock) || 0,
-                    discount: parseInt(formData.discount) || 0
-                }];
+                    .map(c => c.category);
 
                 const productForm = new FormData();
                 Object.keys(formData).forEach(key => {
-                    if (!['images', 'categories', 'tags', 'variants', 'originalPrice', 'sellingPrice', 'stock', 'discount'].includes(key)) {
-                        if (formData[key] !== undefined) productForm.append(key, formData[key]);
+                    const productExcludes = [
+                        'images', 'categories', 'tags', 'variants', 
+                        'originalPrice', 'sellingPrice', 'stock', 
+                        'discount', 'faqs', 'deletedImages',
+                        'parentId', 'metal', 'sizes', 'variantStock',
+                        'isActive',
+                        '_id', 'createdAt', 'updatedAt', '__v',
+                        'rating', 'reviewCount', 'sellerId'
+                    ];
+                    const categoryExcludes = [
+                        'images', 'parentId', 'deletedImages', 'originalPrice', 
+                        'sellingPrice', 'stock', 'discount', 'variants', 
+                        'categories', 'tags', 'faqs', 'sizes', 'variantStock'
+                    ];
+
+                    const excludes = isProduct ? productExcludes : categoryExcludes;
+
+                    if (!excludes.includes(key)) {
+                        if (formData[key] !== undefined && formData[key] !== '') {
+                            let value = formData[key];
+                            if (isProduct && key === 'weight') value = parseFloat(value) || 0;
+                            productForm.append(key, value);
+                        }
                     }
                 });
 
                 productForm.append('categories', JSON.stringify(mappedCategories));
-                productForm.append('variants', JSON.stringify(variants));
+                productForm.append('variants', JSON.stringify(formData.variants.map(({ id, _id, sold, ...rest }) => ({
+                    ...rest,
+                    mrp: parseFloat(rest.mrp) || 0,
+                    price: parseFloat(rest.price) || 0,
+                    stock: parseInt(rest.stock) || 0,
+                    discount: parseInt(rest.discount) || 0
+                }))));
                 productForm.append('tags', JSON.stringify(formData.tags));
+                productForm.append('faqs', JSON.stringify((formData.faqs || []).map(({ _id, ...rest }) => ({
+                    ...rest
+                }))));
+                productForm.append('deletedImages', JSON.stringify(formData.deletedImages));
 
                 if (imageFiles.length > 0) {
                     imageFiles.forEach(file => productForm.append('images', file));
                 }
 
+                let res;
                 if (isEditMode) {
                     res = await adminService.updateProduct(id, productForm);
                     if (res.success) toast.success("Product updated");
@@ -331,12 +445,13 @@ const ItemEditor = () => {
                     else throw new Error(res.message);
                 }
             }
-            navigate(backPath);
+            toast.success(isEditMode ? "Updated successfully" : "Created successfully");
+            navigate(-1);
         } catch (err) {
-            toast.error(err.message || "Operation failed");
-            console.error(err);
+            console.error("Submit failed:", err);
+            toast.error(getFriendlyError(err));
         } finally {
-            setLoading(false);
+            setIsSaving(false);
         }
     };
 
@@ -348,8 +463,9 @@ const ItemEditor = () => {
                     subtitle={isViewMode ? `Viewing details for ${formData.name || id}` : (isEditMode ? `ID: ${id || 'N/A'}` : `Setup your new ${resourceType.toLowerCase()} details`)}
                     backPath={backPath}
                     action={!isViewMode ? {
-                        label: isEditMode ? 'Save Changes' : `Publish ${resourceType}`,
-                        onClick: handleSubmit
+                        label: loading ? (isEditMode ? 'Saving...' : 'Publishing...') : (isEditMode ? 'Save Changes' : `Publish ${resourceType}`),
+                        onClick: handleSubmit,
+                        disabled: loading
                     } : undefined}
                 />
 
@@ -358,12 +474,12 @@ const ItemEditor = () => {
                     <div className="lg:col-span-4 space-y-6">
                         <FormSection title={isProduct ? "Visual Gallery (Max 5)" : "Cover Image"}>
                             <div className="grid grid-cols-2 gap-3">
-                                {formData.images.map((img, idx) => (
+                                {previewImages.map((img, idx) => (
                                     <div key={idx} className="relative aspect-square rounded-xl overflow-hidden group border border-gray-100 shadow-sm">
                                         <img src={img} alt="" className="w-full h-full object-cover" />
                                         {!isViewMode && (
                                             <button
-                                                onClick={() => removeImage(idx)}
+                                                onClick={() => handleRemoveImage(idx)}
                                                 className="absolute top-1.5 right-1.5 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                                             >
                                                 <X className="w-3 h-3" />
@@ -371,7 +487,7 @@ const ItemEditor = () => {
                                         )}
                                     </div>
                                 ))}
-                                {!isViewMode && formData.images.length < (isProduct ? 5 : 1) && (
+                                {!isViewMode && previewImages.length < (isProduct ? 5 : 1) && (
                                     <label className="aspect-square rounded-xl bg-gray-50 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer hover:border-[#3E2723] hover:bg-[#3E2723]/5 transition-all group">
                                         <Upload className="w-5 h-5 text-gray-300 group-hover:text-[#3E2723]" />
                                         <span className="text-[9px] font-bold text-gray-400 mt-1">Add Shot</span>
@@ -402,72 +518,95 @@ const ItemEditor = () => {
                                     </div>
                                 </FormSection>
 
-                                <FormSection title="Specifications & Pricing" className="space-y-6">
-                                    <div className="grid grid-cols-1 gap-4">
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <Input
-                                                label="Material"
-                                                value={formData.material}
-                                                onChange={(e) => setFormData({ ...formData, material: e.target.value })}
-                                                placeholder="925 Sterling Silver"
-                                                disabled={isViewMode}
-                                            />
-                                            <div className="space-y-1.5">
-                                                <label className="block text-xs font-semibold text-gray-700 tracking-wide">Weight & Unit</label>
-                                                <div className="flex gap-2">
-                                                    <input
-                                                        type="number"
-                                                        step="0.01"
-                                                        value={formData.weight}
-                                                        onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
-                                                        placeholder="5.40"
-                                                        disabled={isViewMode}
-                                                        className="flex-1 bg-white border border-gray-300 rounded-lg py-2.5 px-3.5 text-sm text-gray-900 focus:outline-none focus:border-[#3E2723] focus:ring-2 focus:ring-[#3E2723]/10 transition-all shadow-sm"
-                                                    />
-                                                    <select
-                                                        value={formData.weightUnit || 'Grams'}
-                                                        onChange={(e) => setFormData({ ...formData, weightUnit: e.target.value })}
-                                                        disabled={isViewMode}
-                                                        className="w-24 bg-white border border-gray-300 rounded-lg py-2.5 px-2 text-xs font-bold text-[#3E2723] focus:outline-none focus:border-[#3E2723] focus:ring-2 focus:ring-[#3E2723]/10 transition-all shadow-sm cursor-pointer"
-                                                    >
-                                                        <option value="Grams">Grams</option>
-                                                        <option value="Carats">Carat</option>
-                                                        <option value="Milligrams">mg</option>
-                                                    </select>
-                                                </div>
-                                            </div>
+                                <FormSection title="Product Variants (Size/Stock)">
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center px-1">
+                                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Define stock per size/variant</p>
+                                            {!isViewMode && (
+                                                <button
+                                                    type="button"
+                                                    onClick={addVariant}
+                                                    className="text-[10px] font-bold text-[#3E2723] uppercase tracking-wider flex items-center gap-1 hover:underline"
+                                                >
+                                                    <Plus size={14} /> Add Variant
+                                                </button>
+                                            )}
                                         </div>
-                                        <Input
-                                            label="Original Price (₹)"
-                                            type="number"
-                                            value={formData.originalPrice}
-                                            onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
-                                            placeholder="5000"
-                                            disabled={isViewMode}
-                                        />
-                                        <Input
-                                            label="Offer Price (₹)"
-                                            type="number"
-                                            value={formData.sellingPrice}
-                                            onChange={(e) => setFormData({ ...formData, sellingPrice: e.target.value })}
-                                            placeholder="3999"
-                                            disabled={isViewMode}
-                                        />
-                                        <div className="space-y-1.5">
-                                            <label className="block ml-1 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Computed Discount</label>
-                                            <div className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-4 text-sm font-bold text-[#3E2723] flex items-center justify-between shadow-sm">
-                                                <span className="text-[10px] text-gray-400">OFFER:</span>
-                                                <span>{formData.discount}% OFF</span>
-                                            </div>
+                                        <div className="overflow-x-auto -mx-4 md:mx-0">
+                                            <table className="w-full text-left border-collapse">
+                                                <thead>
+                                                    <tr className="border-b border-gray-100">
+                                                        <th className="py-3 px-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest">Size/Name</th>
+                                                        <th className="py-3 px-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest">MRP (₹)</th>
+                                                        <th className="py-3 px-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest">Price (₹)</th>
+                                                        <th className="py-3 px-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest">Stock</th>
+                                                        {!isViewMode && <th className="py-3 px-4 text-[9px] font-bold text-center text-gray-400 uppercase tracking-widest">Action</th>}
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {formData.variants.map((variant, idx) => (
+                                                        <tr key={variant.id} className="border-b border-gray-50 group hover:bg-white transition-all">
+                                                            <td className="py-3 px-2">
+                                                                <input
+                                                                    type="text"
+                                                                    value={variant.name}
+                                                                    onChange={(e) => handleVariantChange(variant.id, 'name', e.target.value)}
+                                                                    placeholder="e.g. Size 6"
+                                                                    className={`w-full bg-white/50 border rounded-lg py-1.5 px-3 text-sm focus:outline-none focus:bg-white transition-all ${errors[`variant_${idx}_name`] ? 'border-red-500' : 'border-gray-200 focus:border-[#3E2723]'}`}
+                                                                    disabled={isViewMode}
+                                                                />
+                                                                {errors[`variant_${idx}_name`] && <p className="text-[8px] text-red-500 font-bold mt-0.5 ml-1">{errors[`variant_${idx}_name`]}</p>}
+                                                            </td>
+                                                            <td className="py-3 px-2">
+                                                                <input
+                                                                    type="number"
+                                                                    value={variant.mrp}
+                                                                    onChange={(e) => handleVariantChange(variant.id, 'mrp', e.target.value)}
+                                                                    placeholder="5000"
+                                                                    className={`w-full bg-white/50 border rounded-lg py-1.5 px-3 text-sm focus:outline-none focus:bg-white transition-all tabular-nums ${errors[`variant_${idx}_mrp`] ? 'border-red-500' : 'border-gray-200 focus:border-[#3E2723]'}`}
+                                                                    disabled={isViewMode}
+                                                                />
+                                                                {errors[`variant_${idx}_mrp`] && <p className="text-[8px] text-red-500 font-bold mt-0.5 ml-1">{errors[`variant_${idx}_mrp`]}</p>}
+                                                            </td>
+                                                            <td className="py-3 px-2">
+                                                                <input
+                                                                    type="number"
+                                                                    value={variant.price}
+                                                                    onChange={(e) => handleVariantChange(variant.id, 'price', e.target.value)}
+                                                                    placeholder="3999"
+                                                                    className={`w-full bg-white/50 border rounded-lg py-1.5 px-3 text-sm font-bold text-[#3E2723] focus:outline-none focus:bg-white transition-all tabular-nums ${errors[`variant_${idx}_price`] ? 'border-red-500' : 'border-gray-200 focus:border-[#3E2723]'}`}
+                                                                    disabled={isViewMode}
+                                                                />
+                                                                {errors[`variant_${idx}_price`] && <p className="text-[8px] text-red-500 font-bold mt-0.5 ml-1">{errors[`variant_${idx}_price`]}</p>}
+                                                            </td>
+                                                            <td className="py-3 px-2">
+                                                                <input
+                                                                    type="number"
+                                                                    value={variant.stock}
+                                                                    onChange={(e) => handleVariantChange(variant.id, 'stock', e.target.value)}
+                                                                    placeholder="100"
+                                                                    className={`w-full bg-white/50 border rounded-lg py-1.5 px-3 text-sm focus:outline-none focus:bg-white transition-all ${errors[`variant_${idx}_stock`] ? 'border-red-500' : 'border-gray-200 focus:border-[#3E2723]'}`}
+                                                                    disabled={isViewMode}
+                                                                />
+                                                                {errors[`variant_${idx}_stock`] && <p className="text-[8px] text-red-500 font-bold mt-0.5 ml-1">{errors[`variant_${idx}_stock`]}</p>}
+                                                            </td>
+                                                            {!isViewMode && (
+                                                                <td className="py-3 px-2 text-center">
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => removeVariant(variant.id)}
+                                                                        disabled={formData.variants.length <= 1}
+                                                                        className="p-1.5 text-gray-300 hover:text-red-500 disabled:opacity-0 transition-all"
+                                                                    >
+                                                                        <Trash2 size={14} />
+                                                                    </button>
+                                                                </td>
+                                                            )}
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
                                         </div>
-                                        <Input
-                                            label="Stock Quantity"
-                                            type="number"
-                                            value={formData.stock}
-                                            onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-                                            placeholder="100"
-                                            disabled={isViewMode}
-                                        />
                                     </div>
                                 </FormSection>
                             </>
@@ -478,16 +617,17 @@ const ItemEditor = () => {
                     <div className="lg:col-span-8 space-y-6">
                         <FormSection title="Core Information" className="space-y-6">
                             <Input
-                                label={isCategory ? "Category Name" : (isSubcategory ? "Subcategory Name" : "Product Title")}
+                                label={isCategory ? "Category Name" : "Product Title"}
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                placeholder={isCategory ? "e.g. Gold" : (isSubcategory ? "e.g. Rings" : "e.g. Gold Floral Ring")}
+                                placeholder={isCategory ? "e.g. Gold" : "e.g. Gold Floral Ring"}
                                 disabled={isViewMode}
+                                error={errors.name}
                             />
 
                             {isCategory && (
                                 <>
-                                    <div className="flex flex-col sm:flex-row gap-4 pt-2">
+                                    <div className="flex flex-col sm:flex-row flex-wrap gap-4 pt-2">
                                         <label className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-all flex-1 ${formData.showInCollection
                                             ? 'border-[#8D6E63] bg-[#8D6E63]/5 ring-1 ring-[#8D6E63]/20'
                                             : 'border-gray-200 hover:border-[#8D6E63]/30 hover:bg-gray-50'
@@ -527,138 +667,30 @@ const ItemEditor = () => {
                                             />
                                             <span className={`text-sm font-medium ${formData.showInNavbar ? 'text-[#3E2723]' : 'text-gray-700'}`}>Show in Navbar</span>
                                         </label>
-                                    </div>
 
-                                    <Select
-                                        label="Category Metal (Internal)"
-                                        value={formData.metal}
-                                        onChange={(e) => setFormData({ ...formData, metal: e.target.value })}
-                                        options={[
-                                            { label: 'Silver (Ag)', value: 'silver' },
-                                            { label: 'Gold (Au)', value: 'gold' },
-                                            { label: 'Platinum (Pt)', value: 'platinum' }
-                                        ]}
-                                        disabled={isViewMode}
-                                    />
-                                </>
-                            )}
-
-                            {isSubcategory && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <Select
-                                        label="Parent Category"
-                                        value={formData.parentId}
-                                        onChange={(e) => setFormData({ ...formData, parentId: e.target.value })}
-                                        options={[
-                                            { label: 'Select Parent Category...', value: '' },
-                                            ...categories.map(c => ({ label: c.name, value: c.id || c._id }))
-                                        ]}
-                                        disabled={isViewMode}
-                                    />
-                                </div>
-                            )}
-
-                            {isProduct && (
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <label className="block ml-1 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Product Categories</label>
-                                        {!isViewMode && (
-                                            <button
-                                                type="button"
-                                                onClick={addCategory}
-                                                className="text-[10px] font-bold text-[#3E2723] uppercase tracking-wider flex items-center gap-1 hover:underline"
-                                            >
-                                                <Plus size={14} /> Add Category
-                                            </button>
-                                        )}
-                                    </div>
-                                    <div className="space-y-3">
-                                        {formData.categories.map((cat, index) => (
-                                            <div key={cat.id} className="p-4 rounded-xl bg-gray-50 border border-gray-200 relative group animate-in fade-in slide-in-from-top-2">
-                                                <div className="flex gap-4">
-                                                    <div className="flex-1 space-y-1.5">
-                                                        <label className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Select Category</label>
-                                                        <select
-                                                            value={cat.category}
-                                                            onChange={(e) => handleCategoryChange(cat.id, 'category', e.target.value)}
-                                                            className="w-full bg-white border border-gray-300 rounded-lg p-2.5 text-sm font-medium outline-none focus:border-[#3E2723] focus:ring-1 focus:ring-[#3E2723]/20 transition-all disabled:bg-gray-100 disabled:text-gray-500"
-                                                            disabled={isViewMode}
-                                                        >
-                                                            <option value="">Choose Material...</option>
-                                                            {categories.map(c => (
-                                                                <option key={c._id} value={c._id}>
-                                                                    {c.name}
-                                                                </option>
-                                                            ))}
-                                                        </select>
-                                                    </div>
-                                                    <div className="flex-1 space-y-1.5">
-                                                        <label className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Select Subcategory</label>
-                                                        <select
-                                                            value={cat.subcategoryId}
-                                                            onChange={(e) => handleCategoryChange(cat.id, 'subcategoryId', e.target.value)}
-                                                            className="w-full bg-white border border-gray-300 rounded-lg p-2.5 text-sm font-medium outline-none focus:border-[#3E2723] focus:ring-1 focus:ring-[#3E2723]/20 transition-all disabled:bg-gray-100 disabled:text-gray-500"
-                                                            disabled={isViewMode || !cat.category}
-                                                        >
-                                                            <option value="">Choose Subcategory...</option>
-                                                            {getAvailableSubcategories(cat.category).map(s => (
-                                                                <option key={s._id} value={s._id}>{s.name}</option>
-                                                            ))}
-                                                        </select>
-                                                    </div>
-                                                </div>
-
-                                                {/* Custom Category/Subcategory Inputs */}
-                                                {(cat.category === 'other' || cat.category === 'Other') && (
-                                                    <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4 animate-in slide-in-from-top-1 duration-200">
-                                                        <div className="space-y-1.5">
-                                                            <label className="text-[9px] font-bold text-[#8D6E63] uppercase tracking-wider">Custom Category Name</label>
-                                                            <input
-                                                                type="text"
-                                                                value={cat.customCategory || ''}
-                                                                onChange={(e) => handleCategoryChange(cat.id, 'customCategory', e.target.value)}
-                                                                className="w-full bg-white border border-[#EFEBE9] rounded-lg p-2.5 text-sm font-medium outline-none focus:border-[#3E2723] focus:ring-1 focus:ring-[#3E2723]/20 transition-all"
-                                                                placeholder="e.g. Traditional Bangles"
-                                                                disabled={isViewMode}
-                                                                required
-                                                            />
-                                                        </div>
-                                                        <div className="space-y-1.5">
-                                                            <label className="text-[9px] font-bold text-[#8D6E63] uppercase tracking-wider">Custom Sub-Category</label>
-                                                            <input
-                                                                type="text"
-                                                                value={cat.customSubcategory || ''}
-                                                                onChange={(e) => handleCategoryChange(cat.id, 'customSubcategory', e.target.value)}
-                                                                className="w-full bg-white border border-[#EFEBE9] rounded-lg p-2.5 text-sm font-medium outline-none focus:border-[#3E2723] focus:ring-1 focus:ring-[#3E2723]/20 transition-all"
-                                                                placeholder="e.g. Handmade"
-                                                                disabled={isViewMode}
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                )}
-                                                {!isViewMode && formData.categories.length > 1 && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeCategory(cat.id)}
-                                                        className="absolute -top-2 -right-2 p-1.5 bg-white text-gray-400 hover:text-red-500 border border-gray-200 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-all"
-                                                    >
-                                                        <Trash2 size={14} />
-                                                    </button>
-                                                )}
+                                        <label className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-all flex-1 ${formData.isActive
+                                            ? 'border-[#8D6E63] bg-[#8D6E63]/5 ring-1 ring-[#8D6E63]/20'
+                                            : 'border-gray-200 hover:border-[#8D6E63]/30 hover:bg-gray-50'
+                                            } ${isViewMode ? 'pointer-events-none opacity-80' : ''}`}>
+                                            <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${formData.isActive
+                                                ? 'bg-[#8D6E63] border-[#8D6E63]'
+                                                : 'bg-white border-gray-300'
+                                                }`}>
+                                                {formData.isActive && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
                                             </div>
-                                        ))}
+                                            <input
+                                                type="checkbox"
+                                                checked={formData.isActive}
+                                                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                                                className="hidden"
+                                                disabled={isViewMode}
+                                            />
+                                            <span className={`text-sm font-medium ${formData.isActive ? 'text-[#3E2723]' : 'text-gray-700'}`}>Active Category</span>
+                                        </label>
                                     </div>
-                                </div>
-                            )}
-                        </FormSection>
 
-
-
-                        {isProduct && (
-                            <FormSection title="Product Narrative & Styling">
-                                <div className="space-y-8">
                                     <div className="space-y-2">
-                                        <label className="block ml-1 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Product Description</label>
+                                        <label className="block ml-1 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Category Description</label>
                                         <div className="bg-white rounded-lg overflow-hidden border border-gray-200">
                                             <ReactQuill
                                                 theme="snow"
@@ -671,23 +703,148 @@ const ItemEditor = () => {
                                             />
                                         </div>
                                     </div>
+ 
+                                    <Select
+                                        label="Category Metal (Internal)"
+                                        value={formData.metal}
+                                        onChange={(e) => setFormData({ ...formData, metal: e.target.value })}
+                                        options={[
+                                            { label: 'Silver (Ag)', value: 'silver' },
+                                            { label: 'Gold (Au)', value: 'gold' }
+                                        ]}
+                                        disabled={isViewMode}
+                                    />
+                                </>
+                            )}
 
-                                    <div className="space-y-2">
-                                        <label className="block ml-1 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Styling Tips</label>
-                                        <div className="bg-white rounded-lg overflow-hidden border border-gray-200">
-                                            <ReactQuill
-                                                theme="snow"
-                                                value={formData.stylingTips}
-                                                onChange={(value) => setFormData({ ...formData, stylingTips: value })}
-                                                readOnly={isViewMode}
-                                                modules={quillModules}
-                                                formats={quillFormats}
-                                                style={{ height: '150px', marginBottom: '50px' }}
-                                            />
+
+                            {isProduct && (
+                                <div className="space-y-4 pt-2">
+                                    <div className="flex justify-between items-center px-1">
+                                        <div className="flex flex-col">
+                                            <label className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Product Category</label>
+                                            {errors.categories && <span className="text-[10px] text-red-500 font-bold mt-0.5">{errors.categories}</span>}
                                         </div>
                                     </div>
+                                    <div className="space-y-3">
+                                        {(formData.categories && formData.categories.length > 0 ? formData.categories : [{ category: '' }]).map((catRow, index) => (
+                                            <div key={index} className="flex flex-col sm:flex-row gap-3 p-4 bg-gray-50/50 rounded-xl border border-gray-100 group transition-all hover:bg-white hover:border-gray-200">
+                                                <div className="flex-1 space-y-1">
+                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest px-1">Main Category</span>
+                                                    <select
+                                                        value={catRow.category}
+                                                        onChange={(e) => handleCategoryChange(index, e.target.value)}
+                                                        className="w-full bg-white border border-gray-200 rounded-lg py-2 px-3 text-sm focus:outline-none focus:border-[#3E2723] transition-all focus:ring-1 focus:ring-[#3E2723]/20"
+                                                        disabled={isViewMode}
+                                                    >
+                                                        <option value="">Select Category</option>
+                                                        {categories.map(cat => (
+                                                            <option key={cat._id} value={cat._id} disabled={cat.isActive === false}>
+                                                                {cat.name}{cat.isActive === false ? ' (Inactive)' : ''}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
-                            </FormSection>
+                            )}
+                        </FormSection>
+
+                        {isProduct && (
+                            <>
+                                <FormSection title="Product Narrative & Styling">
+                                    <div className="space-y-8">
+                                        <div className="space-y-2">
+                                            <label className="block ml-1 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Product Description</label>
+                                            {errors.description && (
+                                                <p className="text-[10px] text-red-500 font-bold ml-1">{errors.description}</p>
+                                            )}
+                                            <div className="bg-white rounded-lg overflow-hidden border border-gray-200">
+                                                <ReactQuill
+                                                    theme="snow"
+                                                    value={formData.description}
+                                                    onChange={(value) => setFormData({ ...formData, description: value })}
+                                                    readOnly={isViewMode}
+                                                    modules={quillModules}
+                                                    formats={quillFormats}
+                                                    style={{ height: '200px', marginBottom: '50px' }}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="block ml-1 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Styling Tips</label>
+                                            <div className="bg-white rounded-lg overflow-hidden border border-gray-200">
+                                                <ReactQuill
+                                                    theme="snow"
+                                                    value={formData.stylingTips}
+                                                    onChange={(value) => setFormData({ ...formData, stylingTips: value })}
+                                                    readOnly={isViewMode}
+                                                    modules={quillModules}
+                                                    formats={quillFormats}
+                                                    style={{ height: '150px', marginBottom: '50px' }}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </FormSection>
+
+                                <FormSection title="Product Questions (FAQ)">
+                                    <div className="space-y-4">
+                                        <div className="flex justify-end">
+                                            {!isViewMode && (
+                                                <button
+                                                    type="button"
+                                                    onClick={addFaq}
+                                                    className="text-[10px] font-bold text-[#3E2723] uppercase tracking-wider flex items-center gap-1 hover:underline"
+                                                >
+                                                    <Plus size={14} /> Add FAQ
+                                                </button>
+                                            )}
+                                        </div>
+                                        <div className="space-y-4">
+                                            {formData.faqs.map((faq, index) => (
+                                                <div key={index} className="p-4 rounded-xl bg-gray-50 border border-gray-200 relative group animate-in fade-in slide-in-from-top-2 space-y-3">
+                                                    <Input
+                                                        label="Question"
+                                                        value={faq.question}
+                                                        onChange={(e) => handleFaqChange(index, 'question', e.target.value)}
+                                                        placeholder="e.g. Is it high quality silver?"
+                                                        disabled={isViewMode}
+                                                    />
+                                                    <div className="space-y-1.5">
+                                                        <label className="block ml-1 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Answer</label>
+                                                        <textarea
+                                                            value={faq.answer}
+                                                            onChange={(e) => handleFaqChange(index, 'answer', e.target.value)}
+                                                            placeholder="Yes, it is 925 Hallmark..."
+                                                            disabled={isViewMode}
+                                                            className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3.5 text-sm text-gray-900 focus:outline-none focus:border-[#3E2723] focus:ring-2 focus:ring-[#3E2723]/10 transition-all shadow-sm"
+                                                            rows={2}
+                                                        />
+                                                    </div>
+                                                    {!isViewMode && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeFaq(index)}
+                                                            className="absolute -top-2 -right-2 p-1.5 bg-white text-gray-400 hover:text-red-500 border border-gray-200 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-all"
+                                                        >
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ))}
+                                            {formData.faqs.length === 0 && (
+                                                <div className="text-center py-6 border-2 border-dashed border-gray-100 rounded-xl">
+                                                    <p className="text-xs text-gray-400">No FAQs added yet.</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </FormSection>
+                            </>
                         )}
                     </div>
                 </div>

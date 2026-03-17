@@ -15,36 +15,13 @@ import {
 } from 'lucide-react';
 import { PRODUCTS as productsData, PACKS as packsData } from '../../../mockData/data'; // Import grouped products with variants
 import ProductCard from '../components/ProductCard';
-
-const categoriesData = [
-    {
-        id: 'nuts',
-        name: 'Nuts',
-        subcategories: ['Walnuts (Akhrot)', 'Almonds (Badam)', 'Cashew (Kaju)', 'Pistachio (Pista)', 'Hazelnuts', 'Macadamia Nuts', 'Pecan Nuts']
-    },
-    {
-        id: 'dried-fruits',
-        name: 'Dried Fruits',
-        subcategories: ['Raisins (Kishmish)', 'Dried Figs (Anjeer)', 'Dried Apricots (Khubani)', 'Dried Kiwi', 'Dried Prunes', 'Wet Dates', 'Dry Dates']
-    },
-    {
-        id: 'seeds-mixes',
-        name: 'Seeds & Mixes',
-        subcategories: ['Chia Seeds', 'Pumpkin Seeds', 'Flax Seeds', 'Sunflower Seeds', 'Berries Mix', 'Nut Mix', 'Trail Mix']
-    },
-    {
-        id: 'combos-packs',
-        name: 'Combos & Packs',
-        subcategories: ['Daily Packs', 'Family Packs', 'Party Packs', 'Festival Packs', 'Health & Fitness Packs', 'Wedding Gifting Packs']
-    }
-];
+const categoriesData = [];
 
 const CatalogPage = () => {
     const navigate = useNavigate();
     const { category } = useParams();
     const { user } = useAuth();
     const [selectedCategory, setSelectedCategory] = useState('all');
-    const [selectedSubcategory, setSelectedSubcategory] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [hoveredCategory, setHoveredCategory] = useState(null);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -54,23 +31,11 @@ const CatalogPage = () => {
             const mainCat = categoriesData.find(c => c.id === category || c.name.toLowerCase().replace(/ /g, '-') === category);
             if (mainCat) {
                 setSelectedCategory(mainCat.id);
-                setSelectedSubcategory('all');
-                return;
+            } else {
+                setSelectedCategory('all');
             }
-
-            for (const cat of categoriesData) {
-                const sub = cat.subcategories.find(s => s.toLowerCase().replace(/ /g, '-') === category);
-                if (sub) {
-                    setSelectedCategory(cat.id);
-                    setSelectedSubcategory(sub);
-                    return;
-                }
-            }
-            setSelectedCategory('all');
-            setSelectedSubcategory('all');
         } else {
             setSelectedCategory('all');
-            setSelectedSubcategory('all');
         }
     }, [category]);
 
@@ -87,12 +52,11 @@ const CatalogPage = () => {
             const productCatId = catIdMap[product.category] || product.category.toLowerCase();
             const isCatMatch = selectedCategory === 'all' || productCatId === selectedCategory;
 
-            const matchesSubcategory = selectedSubcategory === 'all' || product.subcategory === selectedSubcategory;
             const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 product.brand.toLowerCase().includes(searchQuery.toLowerCase());
-            return isCatMatch && matchesSubcategory && matchesSearch;
+            return isCatMatch && matchesSearch;
         });
-    }, [selectedCategory, selectedSubcategory, searchQuery]);
+    }, [selectedCategory, searchQuery]);
 
     const handleCategoryClick = (catId) => {
         if (selectedCategory === catId) {
@@ -174,32 +138,7 @@ const CatalogPage = () => {
                                         className={`w-full flex items-center justify-between px-6 py-3.5 text-[13px] font-bold transition-all border-l-4 ${selectedCategory === cat.id ? 'text-primary border-primary bg-white/30' : 'text-footerBg/70 border-transparent hover:text-footerBg hover:bg-white/30'}`}
                                     >
                                         {cat.name}
-                                        <ChevronDown size={14} className={`transition-transform duration-300 ${selectedCategory === cat.id || hoveredCategory === cat.id ? 'rotate-180 text-primary' : 'text-footerBg/30 opacity-0 group-hover/cat:opacity-100'}`} />
                                     </button>
-
-                                    <AnimatePresence>
-                                        {(selectedCategory === cat.id || hoveredCategory === cat.id) && (
-                                            <motion.div
-                                                initial={{ opacity: 0, height: 0 }}
-                                                animate={{ opacity: 1, height: 'auto' }}
-                                                exit={{ opacity: 0, height: 0 }}
-                                                className="overflow-hidden bg-white/40"
-                                            >
-                                                {cat.subcategories.map(sub => (
-                                                    <button
-                                                        key={sub}
-                                                        onClick={() => {
-                                                            navigate(`/category/${sub.toLowerCase().replace(/ /g, '-')}`);
-                                                            setIsMobileMenuOpen(false);
-                                                        }}
-                                                        className={`w-full text-left pl-10 pr-4 py-3 text-[11px] font-bold transition-all ${selectedSubcategory === sub ? 'text-primary bg-white shadow-sm' : 'text-footerBg/50 hover:text-primary hover:bg-white/40'}`}
-                                                    >
-                                                        {sub}
-                                                    </button>
-                                                ))}
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
                                 </div>
                             ))}
                         </nav>

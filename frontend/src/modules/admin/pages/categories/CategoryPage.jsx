@@ -13,6 +13,7 @@ const CategoryPage = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedMetal, setSelectedMetal] = useState(null);
+    const [statusFilter, setStatusFilter] = useState('all');
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -41,13 +42,18 @@ const CategoryPage = () => {
     };
 
     const toggleVisibility = async (id, field) => {
-        const cat = categories.find(c => c._id === id);
-        const success = await adminService.updateCategory(id, { [field]: !cat[field] });
-        if (success) {
-            setCategories(categories.map(cat =>
-                cat._id === id ? { ...cat, [field]: !cat[field] } : cat
-            ));
+        // Optimistic Update
+        const originalCategories = [...categories];
+        setCategories(categories.map(cat =>
+            cat._id === id ? { ...cat, [field]: !cat[field] } : cat
+        ));
+
+        const res = await adminService.updateCategory(id, { [field]: !categories.find(c => c._id === id)[field] });
+        if (res.success) {
             toast.success("Updated visibility");
+        } else {
+            setCategories(originalCategories); // Rollback
+            toast.error(res.message || "Update failed");
         }
     };
 
@@ -55,17 +61,17 @@ const CategoryPage = () => {
         {
             header: 'Category',
             render: (item) => (
-                <div className="flex items-center gap-4 text-gray-700">
-                    <div className="w-12 h-12 rounded-lg bg-gray-100 border border-gray-200 overflow-hidden shrink-0">
-                        <img src={item.image || 'https://via.placeholder.com/100'} alt={item.name} className="w-full h-full object-cover" />
+                    <div className="flex items-center gap-4 text-gray-700">
+                        <div className="w-12 h-12 rounded-lg bg-gray-100 border border-gray-200 overflow-hidden shrink-0">
+                            <img src={item.image || 'https://placehold.co/100'} alt={item.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div>
+                            <p className="font-bold text-gray-800">{item.name}</p>
+                            <p className="text-[10px] text-gray-400">{item.productCount || 0} Products</p>
+                        </div>
                     </div>
-                    <div>
-                        <p className="font-bold text-gray-800">{item.name}</p>
-                        <p className="text-[10px] text-gray-400 uppercase tracking-widest">{item.subcategories?.length || 0} Subcategories</p>
-                    </div>
-                </div>
-            )
-        },
+                )
+            },
         {
             header: 'In Collection',
             render: (item) => (
@@ -107,13 +113,6 @@ const CategoryPage = () => {
             render: (item) => (
                 <div className="flex items-center justify-end gap-2">
                     <button
-                        onClick={() => navigate(`/admin/categories/view/${item._id}`)}
-                        className="p-2 text-gray-600 hover:text-[#8D6E63] hover:bg-[#8D6E63]/5 rounded-lg transition-all"
-                        title="View Category"
-                    >
-                        <Eye className="w-4 h-4" />
-                    </button>
-                    <button
                         onClick={() => navigate(`/admin/categories/edit/${item._id}`)}
                         className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
                     >
@@ -137,30 +136,38 @@ const CategoryPage = () => {
                 { label: 'Active', value: 'active' },
                 { label: 'Hidden', value: 'hidden' }
             ],
-            onChange: (val) => console.log('Filter by status:', val)
+            onChange: (val) => setStatusFilter(val)
         }
     ];
 
     const filteredByMetal = categories.filter(c => c.metal?.toLowerCase() === selectedMetal?.toLowerCase());
+    const baseList = selectedMetal === 'all' ? categories : filteredByMetal;
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+    const filteredData = baseList.filter(cat => {
+        const matchesSearch = !normalizedSearch || cat.name?.toLowerCase().includes(normalizedSearch);
+        const isActive = cat.isActive !== false;
+        const matchesStatus = statusFilter === 'all' || (statusFilter === 'active' ? isActive : !isActive);
+        return matchesSearch && matchesStatus;
+    });
 
     const stats = [
         {
             label: 'Total Categories',
-            value: filteredByMetal.length,
+            value: selectedMetal === 'all' ? categories.length : filteredByMetal.length,
             icon: Box,
             color: 'text-blue-600',
             bgColor: 'bg-blue-50'
         },
         {
             label: 'Active Categories',
-            value: filteredByMetal.filter(c => c.isActive !== false).length,
+            value: (selectedMetal === 'all' ? categories : filteredByMetal).filter(c => c.isActive !== false).length,
             icon: CheckCircle,
             color: 'text-green-600',
             bgColor: 'bg-green-50'
         },
         {
             label: 'Hidden Categories',
-            value: filteredByMetal.filter(c => c.isActive === false).length,
+            value: (selectedMetal === 'all' ? categories : filteredByMetal).filter(c => c.isActive === false).length,
             icon: EyeOff,
             color: 'text-orange-600',
             bgColor: 'bg-orange-50'
@@ -217,6 +224,22 @@ const CategoryPage = () => {
                             </div>
                         </div>
                     </button>
+                    {/* All Collections */}
+                    <button
+                        onClick={() => setSelectedMetal('all')}
+                        className="group relative bg-[#F8F9FA] border border-gray-100 rounded-[2.5rem] p-12 text-center transition-all hover:shadow-2xl hover:shadow-gray-200/50 hover:-translate-y-2 overflow-hidden md:col-span-2"
+                    >
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-gray-200/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-gray-200/10 transition-colors" />
+                        <div className="relative z-10 flex flex-col items-center gap-6">
+                            <div className="w-24 h-24 bg-gradient-to-br from-gray-700 to-black rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                <Box className="w-10 h-10 text-white" />
+                            </div>
+                            <div>
+                                <h3 className="text-2xl font-black text-gray-900 uppercase tracking-tight">All Collections</h3>
+                                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mt-2">Complete Catalog Overview</p>
+                            </div>
+                        </div>
+                    </button>
                 </div>
             </div>
         );
@@ -233,11 +256,11 @@ const CategoryPage = () => {
                     <AlertCircle className="w-5 h-5" />
                 </button>
                 <PageHeader
-                    title={`${selectedMetal.toUpperCase()} Category Management`}
-                    subtitle={`Manage ${selectedMetal === 'gold' ? '18K/22K gold' : 'sterling silver'} collections.`}
+                    title={selectedMetal === 'all' ? "Master Category Management" : `${selectedMetal.toUpperCase()} Category Management`}
+                    subtitle={selectedMetal === 'all' ? "Overview of all collections across metals." : `Manage ${selectedMetal === 'gold' ? '18K/22K gold' : 'sterling silver'} collections.`}
                     action={{
                         label: "Add New Category",
-                        onClick: () => navigate(`/admin/categories/new?metal=${selectedMetal}`)
+                        onClick: () => navigate(`/admin/categories/new${selectedMetal !== 'all' ? `?metal=${selectedMetal}` : ''}`)
                     }}
                 />
             </div>
@@ -258,7 +281,7 @@ const CategoryPage = () => {
 
             <DataTable
                 columns={columns}
-                data={filteredByMetal.filter(cat => cat.name.toLowerCase().includes(searchTerm.toLowerCase()))}
+                data={filteredData}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
                 searchPlaceholder="Search categories..."

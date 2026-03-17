@@ -25,7 +25,6 @@ const ComboListPage = () => {
     const combos = useMemo(() => {
         return packs.filter(p =>
             p.category === 'combos-packs' ||
-            p.subcategory?.toLowerCase().includes('pack') ||
             p.name?.toLowerCase().includes('combo')
         );
     }, [packs]);

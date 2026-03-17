@@ -177,7 +177,7 @@ const OrderDetailPage = () => {
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-4">
                                                     <div className="w-12 h-12 bg-gray-50 rounded-lg border border-gray-100 p-1 flex-shrink-0">
-                                                        <img src={item.image || 'https://via.placeholder.com/50'} alt="" className="w-full h-full object-contain mix-blend-multiply" />
+                                                        <img src={item.image || 'https://placehold.co/100'} alt="" className="w-full h-full object-contain mix-blend-multiply" />
                                                     </div>
                                                     <p className="text-sm font-bold text-gray-900 line-clamp-2">{item.name}</p>
                                                 </div>

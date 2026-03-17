@@ -32,7 +32,6 @@ const ComboFormPage = () => {
 
         // Classification
         category: 'combos-packs',
-        subcategory: 'Festival Combos',
         occasionTag: '',
 
         // Combo Contents
@@ -336,23 +335,6 @@ const ComboFormPage = () => {
                                     disabled
                                     className="w-full bg-gray-100 border border-gray-200 rounded-xl p-4 text-sm font-bold text-gray-400 cursor-not-allowed"
                                 />
-                            </div>
-
-                            {/* Subcategory */}
-                            <div className="flex flex-col gap-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 text-left">Subcategory *</label>
-                                <select
-                                    name="subcategory"
-                                    value={formData.subcategory}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full bg-gray-50 border border-transparent rounded-xl p-4 text-sm font-bold outline-none focus:bg-white focus:border-primary transition-all cursor-pointer"
-                                >
-                                    <option value="Festival Combos">Festival Combos</option>
-                                    <option value="Gift Hampers">Gift Hampers</option>
-                                    <option value="Family Packs">Family Packs</option>
-                                    <option value="Nutrition Combos">Nutrition Combos</option>
-                                </select>
                             </div>
 
                             {/* Occasion Tag */}

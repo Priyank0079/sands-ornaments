@@ -1,14 +1,20 @@
 import api from '../../../services/api';
 
+const isFormData = (payload) =>
+  typeof FormData !== 'undefined' && payload instanceof FormData;
+
 export const adminService = {
   // Product Orchestration
-  getProducts: async () => {
+  getProducts: async (params = {}) => {
     try {
-      const res = await api.get('admin/products');
-      return res.data.products || [];
+      const res = await api.get('admin/products', { params });
+      return {
+        products: res.data.data?.products || res.data.products || [],
+        pagination: res.data.data?.pagination || res.data.pagination
+      };
     } catch (err) {
       console.error("Admin fetch products failed:", err);
-      return [];
+      return { products: [], pagination: null };
     }
   },
   deleteProduct: async (id) => {
@@ -32,7 +38,7 @@ export const adminService = {
   getProductById: async (id) => {
     try {
       const res = await api.get(`admin/products/${id}`);
-      return res.data.product;
+      return res.data.data?.product || res.data.product;
     } catch (err) {
       console.error("Admin fetch product details failed:", err);
       throw err;
@@ -40,7 +46,10 @@ export const adminService = {
   },
   createProduct: async (data) => {
     try {
-      const res = await api.post('admin/products', data);
+      const config = isFormData(data)
+        ? { headers: { 'Content-Type': 'multipart/form-data' } }
+        : undefined;
+      const res = await api.post('admin/products', data, config);
       return res.data;
     } catch (err) {
       console.error("Admin create product failed:", err);
@@ -49,11 +58,23 @@ export const adminService = {
   },
   updateProduct: async (id, data) => {
     try {
-      const res = await api.put(`admin/products/${id}`, data);
+      const config = isFormData(data)
+        ? { headers: { 'Content-Type': 'multipart/form-data' } }
+        : undefined;
+      const res = await api.put(`admin/products/${id}`, data, config);
       return res.data;
     } catch (err) {
       console.error("Admin update product failed:", err);
       return { success: false, message: err.response?.data?.message || "Failed to update product" };
+    }
+  },
+  toggleProductStatus: async (id) => {
+    try {
+      const res = await api.patch(`admin/products/${id}/toggle-status`);
+      return res.data.success;
+    } catch (err) {
+      console.error("Admin toggle product status failed:", err);
+      return false;
     }
   },
 
@@ -78,8 +99,10 @@ export const adminService = {
   },
   createCategory: async (data) => {
     try {
-      // data might be FormData for image upload
-      const res = await api.post('admin/categories', data);
+      const config = isFormData(data)
+        ? { headers: { 'Content-Type': 'multipart/form-data' } }
+        : undefined;
+      const res = await api.post('admin/categories', data, config);
       return res.data;
     } catch (err) {
       console.error("Admin create category failed:", err);
@@ -88,11 +111,14 @@ export const adminService = {
   },
   updateCategory: async (id, data) => {
     try {
-      const res = await api.put(`admin/categories/${id}`, data);
-      return res.data.success;
+      const config = isFormData(data)
+        ? { headers: { 'Content-Type': 'multipart/form-data' } }
+        : undefined;
+      const res = await api.put(`admin/categories/${id}`, data, config);
+      return res.data;
     } catch (err) {
       console.error("Admin update category failed:", err);
-      return false;
+      return { success: false, message: err.response?.data?.message || "Failed to update category" };
     }
   },
   deleteCategory: async (id) => {
@@ -105,34 +131,6 @@ export const adminService = {
     }
   },
 
-  // Subcategory Management
-  createSubcategory: async (data) => {
-    try {
-      const res = await api.post('admin/categories/subcategories', data);
-      return res.data;
-    } catch (err) {
-      console.error("Admin create subcategory failed:", err);
-      return { success: false, message: err.response?.data?.message || "Failed to create subcategory" };
-    }
-  },
-  updateSubcategory: async (id, data) => {
-    try {
-      const res = await api.put(`admin/categories/subcategories/${id}`, data);
-      return res.data.success;
-    } catch (err) {
-      console.error("Admin update subcategory failed:", err);
-      return false;
-    }
-  },
-  deleteSubcategory: async (id) => {
-    try {
-      const res = await api.delete(`admin/categories/subcategories/${id}`);
-      return res.data.success;
-    } catch (err) {
-      console.error("Admin delete subcategory failed:", err);
-      return false;
-    }
-  },
 
   // Coupon Management
   getCoupons: async () => {

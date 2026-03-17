@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Trash2, Link as LinkIcon, Image as ImageIcon, Tag, Search, CheckCircle, Edit2 } from 'lucide-react';
 import { Input } from '../common/FormControls';
-import ProductBrowserModal from './ProductBrowserModal';
+import { adminService } from '../../services/adminService';
+import toast from 'react-hot-toast';
 
 // Import default assets
 import catPendant from '../../../user/assets/cat_pendant_wine.png';
@@ -30,6 +31,15 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
 
     const [items, setItems] = useState(initialItemsFromProps);
     const [editingId, setEditingId] = useState(null);
+    const [categories, setCategories] = useState([]);
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            const data = await adminService.getCategories();
+            setCategories(data || []);
+        };
+        fetchCategories();
+    }, []);
 
     // Initial Load & Restoration Logic
     useEffect(() => {
@@ -46,10 +56,11 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
 
             if (products.length > 0) {
                 const product = products[0]; // Take first product
+                const productId = product._id || product.id;
                 const newItemData = {
-                    productId: product.id,
+                    productId,
                     name: product.name,
-                    path: `/product/${product.id}`,
+                    path: `/product/${productId}`,
                     image: product.image || (product.images && product.images[0]) || '',
                     tag: product.discount || ''
                 };
@@ -115,7 +126,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         const newItems = items.filter(item => item.id !== id);
         setItems(newItems);
         if (editingId === id) setEditingId(null);
-        onSave({ items: newItems });
+        handleSave(newItems);
     };
 
     const handleRedirectToSelect = (itemId) => {
@@ -125,6 +136,41 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             localStorage.setItem(`${sectionId}_targetId`, itemId);
         }
         navigate(`/admin/products?selectMode=true&returnUrl=/admin/sections/${sectionId}`);
+    };
+
+    const getCategoryFromPath = (path) => {
+        if (!path || categories.length === 0) return null;
+        try {
+            if (path.startsWith('/category/')) {
+                const slug = path.replace('/category/', '').split('?')[0];
+                return categories.find(c => c.slug === slug) || null;
+            }
+            if (path.includes('category=')) {
+                const query = path.split('category=')[1]?.split('&')[0];
+                return categories.find(c => c.slug === query || c.name === query) || null;
+            }
+        } catch (err) {
+            return null;
+        }
+        return null;
+    };
+
+    const validateItems = (nextItems) => {
+        const invalid = nextItems
+            .map(item => ({ item, category: getCategoryFromPath(item.path) }))
+            .filter(({ category }) => category && (category.isActive === false || category.showInCollection === false));
+
+        if (invalid.length > 0) {
+            const names = invalid.map(({ category }) => category.name).join(', ');
+            toast.error(`These categories are hidden or inactive: ${names}`);
+            return false;
+        }
+        return true;
+    };
+
+    const handleSave = (nextItems) => {
+        if (!validateItems(nextItems)) return;
+        onSave({ items: nextItems });
     };
 
     // SPECIAL UI FOR LATEST DROP (Streamlined List + Add Button)
@@ -234,7 +280,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                     <button
                                         onClick={() => {
                                             if (isEditing) {
-                                                onSave({ items });
+                                                handleSave(items);
                                             }
                                             setEditingId(isEditing ? null : item.id);
                                         }}

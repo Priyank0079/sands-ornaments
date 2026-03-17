@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
     Plus,
     Search,
@@ -14,13 +14,14 @@ import {
     Copy
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useShop } from '../../../context/ShopContext';
+import { adminService } from '../services/adminService';
 import Pagination from '../components/Pagination';
 import AdminStatsCard from '../components/AdminStatsCard';
 
 const ProductListPage = () => {
     const navigate = useNavigate();
-    const { products, deleteProduct, updateProduct } = useShop();
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterCategory, setFilterCategory] = useState('All');
 
@@ -48,7 +49,7 @@ const ProductListPage = () => {
 
     const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
-    const categories = ['All', ...new Set(products.map(p => p.category))];
+    const categories = ['All', ...new Set(products.map(p => p.category).filter(Boolean))];
 
     const getStockStatus = (variants) => {
         if (!variants || variants.length === 0) return { label: 'No Variants', color: 'text-gray-400 bg-gray-50' };
@@ -60,11 +61,42 @@ const ProductListPage = () => {
         return { label: 'In Stock', color: 'text-emerald-600 bg-emerald-50 border-emerald-100' };
     };
 
-    const handleDelete = (id) => {
+    const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this product?')) {
-            deleteProduct(id);
+            const success = await adminService.deleteProduct(id);
+            if (success) {
+                setProducts(prev => prev.filter(p => p.id !== id));
+            }
         }
     };
+
+    const toggleActive = async (id) => {
+        const success = await adminService.toggleProductStatus(id);
+        if (success) {
+            setProducts(prev => prev.map(p => p.id === id ? { ...p, active: p.active === false } : p));
+        }
+    };
+
+    useEffect(() => {
+        const loadProducts = async () => {
+            setLoading(true);
+            const { products: data } = await adminService.getProducts({ limit: 100 });
+            const normalized = (data || []).map(p => ({
+                id: p._id || p.id,
+                name: p.name,
+                brand: p.brand,
+                image: p.images?.[0] || '',
+                tag: p.cardBadge || p.cardLabel || '',
+                category: p.categories?.[0]?.name || 'Uncategorized',
+                variants: p.variants || [],
+                active: p.active !== false,
+                isActive: p.active !== false
+            }));
+            setProducts(normalized);
+            setLoading(false);
+        };
+        loadProducts();
+    }, []);
 
     return (
         <div className="space-y-8">
@@ -134,6 +166,9 @@ const ProductListPage = () => {
 
             {/* Product Table Container */}
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                {loading && (
+                    <div className="px-6 py-12 text-center text-gray-400 text-sm">Loading products...</div>
+                )}
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead className="bg-white border-b border-gray-200">
@@ -170,7 +205,6 @@ const ProductListPage = () => {
                                         <td className="px-6 py-5">
                                             <div className="space-y-1 text-left">
                                                 <p className="text-[10px] font-black text-footerBg uppercase tracking-tight">{product.category}</p>
-                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{product.subcategory}</p>
                                             </div>
                                         </td>
                                         <td className="px-6 py-5 text-left">
@@ -191,8 +225,7 @@ const ProductListPage = () => {
                                         <td className="px-6 py-5 text-center">
                                             <button
                                                 onClick={() => {
-                                                    const currentStatus = product.isActive !== false; // Default to true if undefined
-                                                    updateProduct(product.id, { isActive: !currentStatus });
+                                                    toggleActive(product.id);
                                                 }}
                                                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${product.isActive !== false ? 'bg-[#3E2723]' : 'bg-gray-200'}`}
                                             >
@@ -230,6 +263,13 @@ const ProductListPage = () => {
                                     </tr>
                                 );
                             })}
+                            {!loading && paginatedProducts.length === 0 && (
+                                <tr>
+                                    <td colSpan={6} className="px-6 py-12 text-center text-gray-400 text-sm">
+                                        No products found.
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>

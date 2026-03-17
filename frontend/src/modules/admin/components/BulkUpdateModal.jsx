@@ -11,9 +11,11 @@ const BulkUpdateModal = ({ isOpen, onClose, onApply, products = [] }) => {
     const [collapsedCategories, setCollapsedCategories] = useState({});
 
     // Reset selection when modal opens or products change
+    const getProductId = (product) => product.id || product._id;
+
     React.useEffect(() => {
         if (isOpen && products.length > 0) {
-            setSelectedIds(products.map(p => p.id));
+            setSelectedIds(products.map(p => getProductId(p)).filter(Boolean));
         }
         setSearchQuery('');
         setCollapsedCategories({});
@@ -52,7 +54,7 @@ const BulkUpdateModal = ({ isOpen, onClose, onApply, products = [] }) => {
     };
 
     const toggleCategory = (category, items) => {
-        const itemIds = items.map(i => i.id);
+        const itemIds = items.map(i => getProductId(i)).filter(Boolean);
         const allSelected = itemIds.every(id => selectedIds.includes(id));
 
         if (allSelected) {
@@ -70,7 +72,7 @@ const BulkUpdateModal = ({ isOpen, onClose, onApply, products = [] }) => {
     };
 
     const toggleAll = () => {
-        const allVisibleIds = Object.values(groupedProducts).flat().map(p => p.id);
+        const allVisibleIds = Object.values(groupedProducts).flat().map(p => getProductId(p)).filter(Boolean);
         const allSelected = allVisibleIds.every(id => selectedIds.includes(id));
 
         if (allSelected) {
@@ -173,12 +175,14 @@ const BulkUpdateModal = ({ isOpen, onClose, onApply, products = [] }) => {
                                             {/* Items */}
                                             {!isCollapsed && (
                                                 <div className="divide-y divide-gray-50">
-                                                    {items.map(product => (
-                                                        <label key={product.id} className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 cursor-pointer transition-colors group">
+                                                    {items.map(product => {
+                                                        const productId = getProductId(product);
+                                                        return (
+                                                        <label key={productId} className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 cursor-pointer transition-colors group">
                                                             <input
                                                                 type="checkbox"
-                                                                checked={selectedIds.includes(product.id)}
-                                                                onChange={() => toggleProduct(product.id)}
+                                                                checked={selectedIds.includes(productId)}
+                                                                onChange={() => toggleProduct(productId)}
                                                                 className="w-3.5 h-3.5 rounded border-gray-300 text-[#3E2723] focus:ring-[#3E2723]"
                                                             />
                                                             <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -190,11 +194,12 @@ const BulkUpdateModal = ({ isOpen, onClose, onApply, products = [] }) => {
                                                                             <span className="text-[10px] font-bold text-gray-400 tabular-nums">₹{product.variants[0].price}</span>
                                                                         )}
                                                                     </div>
-                                                                    <p className="text-[9px] text-gray-400 font-medium truncate uppercase tracking-tighter">ID: {product.id}</p>
+                                                                    <p className="text-[9px] text-gray-400 font-medium truncate uppercase tracking-tighter">ID: {productId}</p>
                                                                 </div>
                                                             </div>
                                                         </label>
-                                                    ))}
+                                                        );
+                                                    })}
                                                 </div>
                                             )}
                                         </div>

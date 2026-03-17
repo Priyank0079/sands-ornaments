@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Edit2, Trash2, Eye, Package, TrendingUp, Check } from 'lucide-react';
+import { Edit2, Trash2, Eye, Package, TrendingUp, Check, Plus } from 'lucide-react';
 import PageHeader from '../components/common/PageHeader';
 import DataTable from '../components/common/DataTable';
 import { useShop } from '../../../context/ShopContext';
@@ -20,20 +20,82 @@ const ProductManagement = () => {
     const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [selectedIds, setSelectedIds] = useState([]);
+    const [categoryOptions, setCategoryOptions] = useState([]);
+    
+    // Advanced Filters & Pagination
+    const [filtersObj, setFiltersObj] = useState({
+        minPrice: '',
+        maxPrice: '',
+        inStock: 'all',
+        sortBy: 'newest',
+        page: 1,
+        limit: 20
+    });
+    const [pagination, setPagination] = useState(null);
+
+    const fetchProducts = async (isLoadMore = false) => {
+        try {
+            if (!isLoadMore) setLoading(true);
+            const params = {
+                search: searchTerm,
+                category: selectedCategory === 'all' ? '' : selectedCategory,
+                minPrice: filtersObj.minPrice,
+                maxPrice: filtersObj.maxPrice,
+                inStock: filtersObj.inStock === 'all' ? '' : filtersObj.inStock,
+                sortBy: filtersObj.sortBy,
+                page: isLoadMore ? filtersObj.page + 1 : 1,
+                limit: filtersObj.limit
+            };
+            
+            const { products: data, pagination: pagin } = await adminService.getProducts(params);
+            
+            if (isLoadMore) {
+                setProducts(prev => [...prev, ...data]);
+                setFiltersObj(prev => ({ ...prev, page: prev.page + 1 }));
+            } else {
+                setProducts(data);
+                setFiltersObj(prev => ({ ...prev, page: 1 }));
+            }
+            setPagination(pagin);
+        } catch (err) {
+            toast.error("Failed to load products");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchProducts = async () => {
-            try {
-                const data = await adminService.getProducts();
-                setProducts(data);
-            } catch (err) {
-                toast.error("Failed to load products");
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchProducts();
+    }, [selectedCategory, filtersObj.minPrice, filtersObj.maxPrice, filtersObj.inStock, filtersObj.sortBy]);
+
+    useEffect(() => {
+        const loadCategories = async () => {
+            const cats = await adminService.getCategories();
+            const sorted = [...cats].sort((a, b) => {
+                const metalA = (a.metal || '').toLowerCase();
+                const metalB = (b.metal || '').toLowerCase();
+                if (metalA !== metalB) return metalA.localeCompare(metalB);
+                return (a.name || '').localeCompare(b.name || '');
+            });
+            const options = [
+                { label: 'All Categories', value: 'all' },
+                ...sorted.map(cat => ({
+                    label: `${cat.name}${cat.isActive === false ? ' (Inactive)' : ''}`,
+                    value: cat._id
+                }))
+            ];
+            setCategoryOptions(options);
+        };
+        loadCategories();
     }, []);
+
+    // Use a separate debounced effect for search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            fetchProducts();
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
 
     const toggleSelection = (id) => {
         setSelectedIds(prev =>
@@ -42,7 +104,7 @@ const ProductManagement = () => {
     };
 
     const handleConfirmSelection = () => {
-        const selectedProducts = products.filter(p => selectedIds.includes(p.id));
+        const selectedProducts = products.filter(p => selectedIds.includes(p._id));
         localStorage.setItem('temp_selected_products', JSON.stringify(selectedProducts));
         navigate(returnUrl);
     };
@@ -63,9 +125,9 @@ const ProductManagement = () => {
         ...(isSelectMode ? [{
             header: '',
             render: (item) => (
-                <div onClick={(e) => { e.stopPropagation(); toggleSelection(item.id); }} className="cursor-pointer">
-                    <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${selectedIds.includes(item.id) ? 'bg-[#3E2723] border-[#3E2723] text-white' : 'border-gray-300 bg-white'}`}>
-                        {selectedIds.includes(item.id) && <Check size={12} strokeWidth={3} />}
+                <div onClick={(e) => { e.stopPropagation(); toggleSelection(item._id); }} className="cursor-pointer">
+                    <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${selectedIds.includes(item._id) ? 'bg-[#3E2723] border-[#3E2723] text-white' : 'border-gray-300 bg-white'}`}>
+                        {selectedIds.includes(item._id) && <Check size={12} strokeWidth={3} />}
                     </div>
                 </div>
             )
@@ -81,12 +143,11 @@ const ProductManagement = () => {
         {
             header: 'Category',
             render: (item) => {
-                const categories = item.categories || (item.category ? [{ category: item.category, subcategory: item.subcategory }] : []);
-                const primary = categories[0] || { category: 'Uncategorized', subcategory: '' };
+                const categories = item.categories || [];
+                const primary = categories[0] || { name: 'Uncategorized' };
                 return (
                     <div className="min-w-[140px] flex flex-col justify-center">
-                        <span className="font-medium text-gray-900 text-xs">{primary.category}</span>
-                        {primary.subcategory && <span className="text-[10px] text-gray-500 mt-0.5">{primary.subcategory}</span>}
+                        <span className="font-medium text-gray-900 text-xs">{primary.name || primary.category || 'Uncategorized'}</span>
                     </div>
                 );
             }
@@ -120,7 +181,7 @@ const ProductManagement = () => {
             render: (item) => (
                 <div className="flex items-center gap-1 min-w-[60px]">
                     <span className="text-amber-500 text-xs">★</span>
-                    <span className="font-bold text-gray-900 text-xs">4.2</span>
+                    <span className="font-bold text-gray-900 text-xs">{(item.rating || 0).toFixed(1)}</span>
                 </div>
             )
         },
@@ -128,30 +189,47 @@ const ProductManagement = () => {
             header: 'Status',
             render: (item) => {
                 const isActive = item.active !== false;
-                const toggleStatus = (e) => {
+                const status = item.status || 'Active';
+
+                const toggleStatus = async (e) => {
                     e.stopPropagation();
-                    // Mock toggle logic - in reality would call API
-                    item.active = !isActive;
-                    // Force update would happen via state change usually
+                    const success = await adminService.toggleProductStatus(item._id);
+                    if (success) {
+                        toast.success(`Product ${!isActive ? 'activated' : 'deactivated'}`);
+                        setProducts(prev => prev.map(p => 
+                            p._id === item._id ? { ...p, active: !isActive } : p
+                        ));
+                    } else {
+                        toast.error("Failed to update status");
+                    }
                 };
 
                 return (
-                    <div className="min-w-[80px]">
+                    <div className="min-w-[100px] flex gap-2 items-center">
                         <button
                             onClick={toggleStatus}
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-all hover:scale-105 active:scale-95 ${isActive
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-all ${isActive
                                 ? 'bg-green-100 text-green-800 border-green-200 hover:bg-green-200'
                                 : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'
                                 }`}>
                             {isActive ? 'Active' : 'Inactive'}
                         </button>
+                        <span className={`text-[9px] font-bold uppercase tracking-tighter ${
+                            status === 'Draft' ? 'text-amber-500' : 'text-blue-500'
+                        }`}>
+                            {status}
+                        </span>
                     </div>
                 );
             }
         },
         {
             header: 'Date',
-            render: () => <span className="text-gray-900 text-xs font-semibold">20/01/2024</span>
+            render: (item) => {
+                if (!item.createdAt) return <span className="text-gray-400 text-xs font-semibold">-</span>;
+                const date = new Date(item.createdAt);
+                return <span className="text-gray-900 text-xs font-semibold">{date.toLocaleDateString()}</span>;
+            }
         },
         ...(!isSelectMode ? [{
             header: 'Actions',
@@ -159,21 +237,21 @@ const ProductManagement = () => {
             render: (item) => (
                 <div className="flex items-center justify-end gap-3 min-w-[100px]">
                     <button
-                        onClick={() => navigate(`/admin/products/view/${item.id}`)}
+                        onClick={() => navigate(`/admin/products/view/${item._id}`)}
                         className="p-1 text-gray-700 hover:text-black transition-colors"
                         title="View Details"
                     >
                         <Eye className="w-4 h-4" />
                     </button>
                     <button
-                        onClick={() => navigate(`/admin/products/edit/${item.id}`)}
+                        onClick={() => navigate(`/admin/products/edit/${item._id}`)}
                         className="p-1 text-gray-700 hover:text-black transition-colors"
                         title="Edit"
                     >
                         <Edit2 className="w-4 h-4" />
                     </button>
                     <button
-                        onClick={() => handleDelete(item.id)}
+                        onClick={() => handleDelete(item._id)}
                         className="p-1 text-gray-700 hover:text-red-700 transition-colors"
                         title="Delete"
                     >
@@ -186,42 +264,40 @@ const ProductManagement = () => {
 
     const filters = [
         {
-            options: [
-                { label: 'All Categories', value: 'all' },
-                { label: 'Rings', value: 'Rings' },
-                { label: 'Earrings', value: 'Earrings' },
-                { label: 'Chain Pendant', value: 'Chain Pendant' },
-                { label: 'Bracelets', value: 'Bracelets' },
-                { label: 'Anklets', value: 'Anklets' },
-                { label: 'Toe Rings', value: 'Toe Rings' },
-                { label: 'Studs', value: 'Studs' },
-                { label: 'Pendants', value: 'Pendants' },
-                { label: 'Chains', value: 'Chains' }
-            ],
+            options: categoryOptions.length > 0
+                ? categoryOptions
+                : [{ label: 'All Categories', value: 'all' }],
             onChange: (val) => setSelectedCategory(val)
+        },
+        {
+            options: [
+                { label: 'All Stock', value: 'all' },
+                { label: 'In Stock', value: 'true' },
+                { label: 'Out of Stock', value: 'false' }
+            ],
+            onChange: (val) => setFiltersObj(prev => ({ ...prev, inStock: val, page: 1 }))
+        },
+        {
+            options: [
+                { label: 'Sort: Newest', value: 'newest' },
+                { label: 'Price: Low-High', value: 'price_low' },
+                { label: 'Price: High-Low', value: 'price_high' },
+                { label: 'Name: A-Z', value: 'name_asc' }
+            ],
+            onChange: (val) => setFiltersObj(prev => ({ ...prev, sortBy: val, page: 1 }))
         }
     ];
 
-    const filteredProducts = products.filter(p => {
-        const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
-
-        // Support both old format (category) and new format (categories array)
-        const categories = p.categories || (p.category ? [{ category: p.category, subcategory: p.subcategory }] : []);
-        const matchesCategory = selectedCategory === 'all' || categories.some(cat => cat.category === selectedCategory);
-
-        return matchesSearch && matchesCategory;
-    });
 
     const handleBulkApply = async (config) => {
+        const categoryId = selectedCategory === 'all' ? undefined : selectedCategory;
         const success = await adminService.bulkUpdatePrices({
-            category: selectedCategory,
+            ...(categoryId ? { categoryId } : {}),
             ...config
         });
         if (success) {
             toast.success("Bulk update applied successfully");
-            // Refresh products
-            const data = await adminService.getProducts();
-            setProducts(data);
+            await fetchProducts();
         } else {
             toast.error("Bulk update failed");
         }
@@ -240,24 +316,57 @@ const ProductManagement = () => {
 
             <DataTable
                 columns={columns}
-                data={filteredProducts}
+                data={products} 
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
                 searchPlaceholder="Search products by name..."
                 filters={filters}
             >
-                {!isSelectMode && (
-                    <button
-                        onClick={() => setIsBulkModalOpen(true)}
-                        className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-bold text-gray-600 hover:bg-[#3E2723] hover:text-white hover:border-[#3E2723] transition-all flex items-center gap-2 shrink-0"
-                        title="Bulk Update Prices"
-                    >
-                        <TrendingUp size={14} />
-                        <span className="hidden md:inline">Bulk Actions</span>
-                        <span className="md:hidden">Bulk</span>
-                    </button>
-                )}
+                <div className="flex gap-2 items-center">
+                    <div className="flex items-center bg-white border border-gray-200 rounded-lg px-2 py-1 shadow-sm focus-within:ring-2 focus-within:ring-[#3E2723]/10 focus-within:border-[#3E2723] transition-all">
+                        <span className="text-[10px] font-bold text-gray-400 mr-2">₹</span>
+                        <input 
+                            type="number" 
+                            placeholder="Min" 
+                            className="w-16 bg-transparent text-xs focus:outline-none"
+                            value={filtersObj.minPrice}
+                            onChange={(e) => setFiltersObj(prev => ({ ...prev, minPrice: e.target.value, page: 1 }))}
+                        />
+                        <span className="text-gray-300 mx-1">-</span>
+                        <input 
+                            type="number" 
+                            placeholder="Max" 
+                            className="w-16 bg-transparent text-xs focus:outline-none"
+                            value={filtersObj.maxPrice}
+                            onChange={(e) => setFiltersObj(prev => ({ ...prev, maxPrice: e.target.value, page: 1 }))}
+                        />
+                    </div>
+                    {!isSelectMode && (
+                        <button
+                            onClick={() => setIsBulkModalOpen(true)}
+                            className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-bold text-gray-600 hover:bg-[#3E2723] hover:text-white hover:border-[#3E2723] transition-all flex items-center gap-2 shrink-0"
+                            title="Bulk Update Prices"
+                        >
+                            <TrendingUp size={14} />
+                            <span className="hidden md:inline">Bulk Actions</span>
+                            <span className="md:hidden">Bulk</span>
+                        </button>
+                    )}
+                </div>
             </DataTable>
+
+            {pagination && pagination.page < pagination.pages && (
+                <div className="flex justify-center pt-4">
+                    <button
+                        onClick={() => fetchProducts(true)}
+                        disabled={loading}
+                        className="flex items-center gap-2 px-6 py-2.5 bg-white border border-gray-200 rounded-full text-xs font-bold text-[#3E2723] hover:bg-[#3E2723] hover:text-white transition-all shadow-sm disabled:opacity-50"
+                    >
+                        {loading ? 'Loading...' : 'Load More Products'}
+                        {!loading && <Plus size={14} />}
+                    </button>
+                </div>
+            )}
 
             {isSelectMode && selectedIds.length > 0 && (
                 <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#3E2723] text-white px-6 py-3 rounded-full shadow-xl flex items-center gap-4 z-50 animate-in slide-in-from-bottom-5">
@@ -275,7 +384,7 @@ const ProductManagement = () => {
                 isOpen={isBulkModalOpen}
                 onClose={() => setIsBulkModalOpen(false)}
                 onApply={handleBulkApply}
-                products={filteredProducts}
+                products={products}
             />
         </div>
     );

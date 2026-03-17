@@ -9,17 +9,7 @@ import { sellerProductService } from '../services/sellerProductService';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 
-const CATEGORY_HIERARCHY = {
-    'necklaces': ['Kundan', 'Oxidized', 'Gold Chain', 'Temple', 'Diamond', 'Choker', 'Pendant', 'Mangalsutra'],
-    'rings': ['Solitaire', 'Gold Band', 'Diamond Ring', 'Engagement', 'Cocktail', 'Couple Rings'],
-    'earrings': ['Studs', 'Jhumkas', 'Drops', 'Hoops', 'Sui Dhaga', 'Chandbali'],
-    'bangles': ['Temple Jewellery', 'Gold Bangles', 'Bracelets', 'Kada', 'Cuff'],
-    'anklets': ['Silver Anklets', 'Gold Anklets', 'Chain Anklets'],
-    'sets': ['Bridal Sets', 'Party Wear', 'Minimal Sets'],
-    'combos-packs': ['Office Wear', 'Gift Sets', 'Daily Wear'],
-    'nose-pins': ['Gold', 'Diamond', 'Silver'],
-    'other': []
-};
+import api from '../../../services/api';
 
 const quillModules = {
     toolbar: [
@@ -45,6 +35,8 @@ const sizeOptions = [
 const AddProduct = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
+    const [categoriesList, setCategoriesList] = useState([]);
+    const [imageFiles, setImageFiles] = useState([]);
     const [formData, setFormData] = useState({
         name: '',
         description: '',
@@ -58,9 +50,9 @@ const AddProduct = () => {
         sellingPrice: '',
         discount: 0,
         quantity: '',
-        images: [],
+        images: [], // for previews
         sizes: [],
-        categories: [{ id: Date.now(), category: '', subcategory: '' }],
+        categories: [{ id: Date.now(), category: '' }],
         tags: {
             isNewArrival: false,
             isMostGifted: false,
@@ -68,8 +60,23 @@ const AddProduct = () => {
         }
     });
 
+    // Fetch dynamic categories
+    useEffect(() => {
+        const fetchCats = async () => {
+            try {
+                const res = await api.get('/categories');
+                if (res.data.success) {
+                    setCategoriesList(res.data.data.categories);
+                }
+            } catch (err) {
+                console.error("Failed to fetch categories:", err);
+            }
+        };
+        fetchCats();
+    }, []);
+
     // Auto-calculate discount
-    React.useEffect(() => {
+    useEffect(() => {
         if (formData.originalPrice && formData.sellingPrice) {
             const original = parseFloat(formData.originalPrice);
             const selling = parseFloat(formData.sellingPrice);
@@ -89,10 +96,12 @@ const AddProduct = () => {
 
     const handleImageUpload = (e) => {
         const files = Array.from(e.target.files);
-        const newImages = files.map(file => URL.createObjectURL(file));
+        const newPreviews = files.map(file => URL.createObjectURL(file));
+        
+        setImageFiles(prev => [...prev, ...files].slice(0, 5));
         setFormData(prev => ({
             ...prev,
-            images: [...prev.images, ...newImages].slice(0, 5)
+            images: [...prev.images, ...newPreviews].slice(0, 5)
         }));
     };
 
@@ -101,6 +110,7 @@ const AddProduct = () => {
             ...prev,
             images: prev.images.filter((_, i) => i !== index)
         }));
+        setImageFiles(prev => prev.filter((_, i) => i !== index));
     };
 
     const toggleSize = (size) => {
@@ -118,7 +128,7 @@ const AddProduct = () => {
             categories: prev.categories.map(c => {
                 if (c.id === id) {
                     if (field === 'category') {
-                        return { ...c, category: value, subcategory: '' };
+                        return { ...c, category: value };
                     }
                     return { ...c, [field]: value };
                 }
@@ -130,7 +140,7 @@ const AddProduct = () => {
     const addCategory = () => {
         setFormData(prev => ({
             ...prev,
-            categories: [...prev.categories, { id: Date.now(), category: '', subcategory: '' }]
+            categories: [...prev.categories, { id: Date.now(), category: '' }]
         }));
     };
 
@@ -141,22 +151,54 @@ const AddProduct = () => {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
 
-        const productData = {
-            ...formData,
-            price: formData.sellingPrice,
-            availableStock: formData.quantity,
-            soldItems: '0',
-            image: formData.images.length > 0 ? formData.images[0] : 'https://placehold.co/100x100?text=Jewellery'
-        };
+        try {
+            const productForm = new FormData();
+            
+            // Append flat fields
+            productForm.append('name', formData.name);
+            productForm.append('description', formData.description);
+            productForm.append('stylingTips', formData.stylingTips);
+            productForm.append('cardLabel', formData.cardLabel);
+            productForm.append('cardBadge', formData.cardBadge);
+            productForm.append('weight', parseFloat(formData.weight) || 0);
+            productForm.append('weightUnit', formData.weightUnit);
+            productForm.append('metal', formData.metalType); // Map metalType to metal for consistency
 
-        sellerProductService.addProduct(productData).then(() => {
+            // Map categories to IDs
+            const categoryIds = formData.categories
+                .filter(c => c.category && c.category !== 'other')
+                .map(c => c.category);
+            productForm.append('categories', JSON.stringify(categoryIds));
+
+            // Map Variants
+            const variants = [{
+                name: "Standard",
+                mrp: parseFloat(formData.originalPrice) || 0,
+                price: parseFloat(formData.sellingPrice) || 0,
+                stock: parseInt(formData.quantity) || 0,
+                discount: parseInt(formData.discount) || 0
+            }];
+            productForm.append('variants', JSON.stringify(variants));
+
+            // Append Tags & Sizes
+            productForm.append('tags', JSON.stringify(formData.tags));
+            productForm.append('sizes', JSON.stringify(formData.sizes));
+
+            // Append Images
+            imageFiles.forEach(file => productForm.append('images', file));
+
+            await sellerProductService.addProduct(productForm);
             setLoading(false);
             navigate('/seller/products');
-        });
+        } catch (err) {
+            console.error("Submit failed:", err);
+            alert("Failed to publish product. Please check all fields.");
+            setLoading(false);
+        }
     };
 
     const inputClasses = "w-full bg-[#FDFBF7] border border-[#EFEBE9] rounded-xl py-4 px-12 text-sm focus:outline-none focus:border-[#8D6E63] focus:ring-4 focus:ring-[#8D6E63]/5 transition-all shadow-inner";
@@ -322,49 +364,29 @@ const AddProduct = () => {
                                     <div key={cat.id} className="p-6 rounded-3xl bg-[#FDFBF7] border border-[#EFEBE9] relative group animate-in slide-in-from-top-4">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="space-y-2">
-                                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Parent Category</p>
+                                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Main Category</p>
                                                 <select
                                                     value={cat.category}
                                                     onChange={(e) => handleCategoryChange(cat.id, 'category', e.target.value)}
                                                     className="w-full bg-white border border-[#EFEBE9] rounded-xl p-3 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] transition-all"
                                                 >
                                                     <option value="">Select Category...</option>
-                                                    {Object.keys(CATEGORY_HIERARCHY).map(key => (
-                                                        <option key={key} value={key}>{key.toUpperCase().replace('-', ' ')}</option>
+                                                    {categoriesList.map(catItem => (
+                                                        <option key={catItem._id} value={catItem._id}>{catItem.name}</option>
                                                     ))}
-                                                </select>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Sub-Category</p>
-                                                <select
-                                                    value={cat.subcategory}
-                                                    onChange={(e) => handleCategoryChange(cat.id, 'subcategory', e.target.value)}
-                                                    disabled={!cat.category || cat.category === 'other'}
-                                                    className="w-full bg-white border border-[#EFEBE9] rounded-xl p-3 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] transition-all disabled:opacity-50"
-                                                >
-                                                    <option value="">Select Sub...</option>
-                                                    {cat.category && CATEGORY_HIERARCHY[cat.category]?.map(sub => (
-                                                        <option key={sub} value={sub}>{sub}</option>
-                                                    ))}
+                                                    <option value="other">Other</option>
                                                 </select>
                                             </div>
                                         </div>
 
                                         {cat.category === 'other' && (
-                                            <div className="mt-4 grid grid-cols-2 gap-4 animate-in zoom-in-95">
+                                            <div className="mt-4 animate-in zoom-in-95">
                                                 <input
                                                     type="text"
                                                     value={cat.customCategory || ''}
                                                     onChange={(e) => handleCategoryChange(cat.id, 'customCategory', e.target.value)}
                                                     className="w-full bg-white border border-[#EFEBE9] rounded-xl p-3 text-[11px] font-bold uppercase"
                                                     placeholder="Custom Category..."
-                                                />
-                                                <input
-                                                    type="text"
-                                                    value={cat.customSubcategory || ''}
-                                                    onChange={(e) => handleCategoryChange(cat.id, 'customSubcategory', e.target.value)}
-                                                    className="w-full bg-white border border-[#EFEBE9] rounded-xl p-3 text-[11px] font-bold uppercase"
-                                                    placeholder="Custom Sub..."
                                                 />
                                             </div>
                                         )}

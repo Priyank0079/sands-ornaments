@@ -10,7 +10,6 @@ const categorySchema = new mongoose.Schema({
   sortOrder: { type: Number, default: 0 },
   isActive: { type: Boolean, default: true },
   metal: { type: String, default: 'silver' },
-  subcategories: [{ type: mongoose.Schema.Types.ObjectId, ref: "Subcategory" }],
 }, { timestamps: true });
 
 module.exports = mongoose.model("Category", categorySchema);

@@ -460,7 +460,7 @@ const ProductDetailPage = () => {
                                                 }`}
                                         >
                                             <div className={`text-xs font-black ${selectedVariant.id === variant.id ? 'text-primary' : 'text-footerBg'}`}>
-                                                {variant.weight}
+                                                {variant.name || variant.weight}
                                             </div>
                                             <div className={`text-[10px] font-bold ${selectedVariant.id === variant.id ? 'text-footerBg' : 'text-gray-400'}`}>
                                                 ₹{variant.price}
@@ -810,11 +810,11 @@ const ProductDetailPage = () => {
                             {activeTab === 'FAQ' && (
                                 <div className="text-left space-y-4">
                                     {(product.faqs || [
-                                        { q: 'How to store?', a: 'Store in a cool, dry place away from sunlight.' }
+                                        { question: 'How to store?', answer: 'Store in a cool, dry place away from sunlight.' }
                                     ]).map((item, idx) => (
                                         <div key={idx} className="pb-4 border-b border-gray-50 last:border-0">
-                                            <h4 className="text-primary font-medium text-sm mb-2">{item.q}</h4>
-                                            <p className="text-sm text-gray-600 leading-relaxed">{item.a}</p>
+                                            <h4 className="text-primary font-medium text-sm mb-2">{item.question || item.q}</h4>
+                                            <p className="text-sm text-gray-600 leading-relaxed">{item.answer || item.a}</p>
                                         </div>
                                     ))}
                                 </div>

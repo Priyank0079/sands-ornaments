@@ -10,10 +10,14 @@ export const useCatalogue = () => {
             const data = res.data.data.categories || [];
             return data.map(cat => ({
                 id: cat._id,
+                _id: cat._id,
                 name: cat.name,
                 path: cat.slug,
                 image: cat.image,
                 metal: cat.metal,
+                showInNavbar: cat.showInNavbar,
+                showInCollection: cat.showInCollection,
+                isActive: cat.isActive,
                 subcategories: (cat.subcategories || []).map(sub => ({
                     id: sub._id,
                     name: sub.name,
@@ -43,11 +47,13 @@ export const useCatalogue = () => {
                 reviews: prod.reviewCount || 0,
                 isNew: prod.tags?.isNewArrival || false,
                 isTrending: prod.tags?.isTrending || false,
-                category: prod.categories?.[0]?.categoryId?.name || '',
-                categoryId: prod.categories?.[0]?.categoryId?._id || '',
-                subcategory: prod.categories?.[0]?.subcategoryId?.name || '',
-                subcategoryId: prod.categories?.[0]?.subcategoryId?._id || '',
-                variants: prod.variants || []
+                category: prod.categories?.[0]?.name || '', // Updated for flat populate
+                categoryId: prod.categories?.[0]?._id || '',
+                faqs: prod.faqs || [], // Added FAQs
+                variants: (prod.variants || []).map(v => ({
+                    ...v,
+                    id: v._id || Math.random() // Ensure ID for selection logic
+                }))
             }));
         },
         staleTime: 5 * 60 * 1000,

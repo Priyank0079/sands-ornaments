@@ -28,7 +28,6 @@ const ProductView = () => {
         id: id,
         name: 'Classic Solitaire Diamond Ring',
         category: 'Rings',
-        subcategory: 'Solitaire',
         material: '925 Sterling Silver',
         price: '3,999',
         originalPrice: '5,000',
@@ -118,7 +117,6 @@ const ProductView = () => {
                                     <h2 className="text-xl font-bold text-gray-800 mb-1">{product.name}</h2>
                                     <div className="flex gap-2">
                                         <span className="text-[9px] font-bold px-2 py-0.5 bg-[#3E2723] text-white rounded uppercase">{product.category}</span>
-                                        <span className="text-[9px] font-bold px-2 py-0.5 bg-gray-100 text-gray-500 rounded uppercase">{product.subcategory}</span>
                                     </div>
                                 </div>
                                 <div className="flex items-baseline gap-2">

@@ -37,7 +37,7 @@ const ProductFormPage = () => {
         name: '',
         brand: 'FARMLYF',
         categories: [
-            { id: Date.now(), category: 'nuts', subcategory: '' }
+            { id: Date.now(), category: 'nuts' }
         ],
         tag: '',
         image: '',
@@ -82,8 +82,7 @@ const ProductFormPage = () => {
                     // Migrate old format to new array format
                     normalizedCategories = [{
                         id: Date.now(),
-                        category: product.category,
-                        subcategory: product.subcategory || ''
+                        category: product.category
                     }];
                 }
 
@@ -92,7 +91,7 @@ const ProductFormPage = () => {
                     variants: product.variants || [],
                     nutrition: normalizedNutrition || [],
                     contents: product.contents || [],
-                    categories: normalizedCategories || [{ id: Date.now(), category: 'nuts', subcategory: '' }]
+                    categories: normalizedCategories || [{ id: Date.now(), category: 'nuts' }]
                 });
             }
         }
@@ -129,7 +128,7 @@ const ProductFormPage = () => {
     const addCategory = () => {
         setFormData(prev => ({
             ...prev,
-            categories: [...prev.categories, { id: Date.now(), category: 'nuts', subcategory: '' }]
+            categories: [...prev.categories, { id: Date.now(), category: 'nuts' }]
         }));
     };
 
@@ -172,6 +171,7 @@ const ProductFormPage = () => {
 
         const finalData = {
             ...formData,
+            categories: formData.categories.filter(c => c.category).map(c => c.category),
             id: isEdit ? id : formData.name.toLowerCase().replace(/\s+/g, '-'),
             updatedAt: Date.now()
         };
@@ -601,66 +601,37 @@ const ProductFormPage = () => {
 
                         <div className="space-y-4">
                             {formData.categories.map((cat, index) => (
-                                <div key={cat.id} className="p-4 rounded-2xl bg-gray-50 border border-gray-100 space-y-3 relative group">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Category #{index + 1}</span>
-                                        {formData.categories.length > 1 && (
-                                            <button
-                                                type="button"
-                                                onClick={() => removeCategory(cat.id)}
-                                                className="p-1.5 text-gray-300 hover:text-red-500 transition-colors"
-                                                title="Remove category"
-                                            >
-                                                <Trash2 size={14} />
-                                            </button>
-                                        )}
-                                    </div>
+                                    <div key={cat.id} className="p-4 rounded-2xl bg-gray-50 border border-gray-100 space-y-3 relative group">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Category #{index + 1}</span>
+                                            {formData.categories.length > 1 && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeCategory(cat.id)}
+                                                    className="p-1.5 text-gray-300 hover:text-red-500 transition-colors"
+                                                    title="Remove category"
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            )}
+                                        </div>
 
-                                    <div className="flex flex-col gap-2">
-                                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Parent Category</label>
-                                        <select
-                                            value={cat.category}
-                                            onChange={(e) => {
-                                                const newCategory = e.target.value;
-                                                // Reset subcategory when category changes
-                                                setFormData(prev => ({
-                                                    ...prev,
-                                                    categories: prev.categories.map(c =>
-                                                        c.id === cat.id ? { ...c, category: newCategory, subcategory: '' } : c
-                                                    )
-                                                }));
-                                            }}
-                                            className="w-full bg-white border border-gray-100 rounded-xl p-3 text-xs font-bold outline-none focus:border-footerBg transition-all cursor-pointer"
-                                        >
-                                            <option value="">-- Select Category --</option>
-                                            {Object.keys(CATEGORY_HIERARCHY).map(key => (
-                                                <option key={key} value={key}>
-                                                    {key.charAt(0).toUpperCase() + key.slice(1).replace('-', ' ')}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-
-                                    <div className="flex flex-col gap-2">
-                                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Sub-Category</label>
-                                        <div className="relative">
+                                        <div className="flex flex-col gap-2">
+                                            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Category</label>
                                             <select
-                                                value={cat.subcategory}
-                                                onChange={(e) => handleCategoryChange(cat.id, 'subcategory', e.target.value)}
-                                                className="w-full bg-white border border-gray-100 rounded-xl p-3 text-xs font-bold outline-none focus:border-footerBg transition-all appearance-none cursor-pointer"
-                                                disabled={!cat.category}
+                                                value={cat.category}
+                                                onChange={(e) => handleCategoryChange(cat.id, 'category', e.target.value)}
+                                                className="w-full bg-white border border-gray-100 rounded-xl p-3 text-xs font-bold outline-none focus:border-footerBg transition-all cursor-pointer"
                                             >
-                                                <option value="">-- Select Sub-Category --</option>
-                                                {CATEGORY_HIERARCHY[cat.category]?.map(sub => (
-                                                    <option key={sub} value={sub}>{sub}</option>
+                                                <option value="">-- Select Category --</option>
+                                                {Object.keys(CATEGORY_HIERARCHY).map(key => (
+                                                    <option key={key} value={key}>
+                                                        {key.charAt(0).toUpperCase() + key.slice(1).replace('-', ' ')}
+                                                    </option>
                                                 ))}
                                             </select>
-                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                                                <ChevronRight size={14} className="rotate-90" />
-                                            </div>
                                         </div>
                                     </div>
-                                </div>
                             ))}
                         </div>
                     </div>

@@ -15,7 +15,7 @@ const StockHistoryPage = () => {
                 {
                     id: 1,
                     date: '2025-02-07 14:30',
-                    product: { name: 'Gold Plated Necklace', image: 'https://via.placeholder.com/40' },
+                    product: { name: 'Gold Plated Necklace', image: 'https://placehold.co/40' },
                     type: 'Manual Adjustment',
                     change: 50,
                     effect: { from: 70, to: 120 },
@@ -25,7 +25,7 @@ const StockHistoryPage = () => {
                 {
                     id: 2,
                     date: '2025-02-07 12:15',
-                    product: { name: 'Diamond Stud Earrings', image: 'https://via.placeholder.com/40' },
+                    product: { name: 'Diamond Stud Earrings', image: 'https://placehold.co/40' },
                     type: 'Order Fulfilled',
                     change: -2,
                     effect: { from: 47, to: 45 },
@@ -35,7 +35,7 @@ const StockHistoryPage = () => {
                 {
                     id: 3,
                     date: '2025-02-06 09:45',
-                    product: { name: 'Silver Anklet', image: 'https://via.placeholder.com/40' },
+                    product: { name: 'Silver Anklet', image: 'https://placehold.co/40' },
                     type: 'Return Restock',
                     change: 5,
                     effect: { from: 10, to: 15 },
@@ -45,7 +45,7 @@ const StockHistoryPage = () => {
                 {
                     id: 4,
                     date: '2025-02-05 16:20',
-                    product: { name: 'Rose Gold Bracelet', image: 'https://via.placeholder.com/40' },
+                    product: { name: 'Rose Gold Bracelet', image: 'https://placehold.co/40' },
                     type: 'Order Fulfilled',
                     change: -10,
                     effect: { from: 10, to: 0 },
@@ -55,7 +55,7 @@ const StockHistoryPage = () => {
                 {
                     id: 5,
                     date: '2025-02-05 10:00',
-                    product: { name: 'Pearl Choker', image: 'https://via.placeholder.com/40' },
+                    product: { name: 'Pearl Choker', image: 'https://placehold.co/40' },
                     type: 'Manual Adjustment',
                     change: -5,
                     effect: { from: 90, to: 85 },

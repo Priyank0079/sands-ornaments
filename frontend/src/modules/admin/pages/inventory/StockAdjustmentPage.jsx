@@ -14,11 +14,11 @@ const StockAdjustmentPage = () => {
         // Simulating API fetch
         setTimeout(() => {
             setProducts([
-                { id: 1, name: 'Gold Plated Necklace', category: 'Necklace', stock: 120, image: 'https://via.placeholder.com/40' },
-                { id: 2, name: 'Diamond Stud Earrings', category: 'Earrings', stock: 45, image: 'https://via.placeholder.com/40' },
-                { id: 3, name: 'Silver Anklet', category: 'Anklet', stock: 0, image: 'https://via.placeholder.com/40' },
-                { id: 4, name: 'Rose Gold Bracelet', category: 'Bracelet', stock: 85, image: 'https://via.placeholder.com/40' },
-                { id: 5, name: 'Pearl Choker', category: 'Necklace', stock: 15, image: 'https://via.placeholder.com/40' },
+                { id: 1, name: 'Gold Plated Necklace', category: 'Necklace', stock: 120, image: 'https://placehold.co/40' },
+                { id: 2, name: 'Diamond Stud Earrings', category: 'Earrings', stock: 45, image: 'https://placehold.co/40' },
+                { id: 3, name: 'Silver Anklet', category: 'Anklet', stock: 0, image: 'https://placehold.co/40' },
+                { id: 4, name: 'Rose Gold Bracelet', category: 'Bracelet', stock: 85, image: 'https://placehold.co/40' },
+                { id: 5, name: 'Pearl Choker', category: 'Necklace', stock: 15, image: 'https://placehold.co/40' },
             ]);
             setLoading(false);
         }, 500);

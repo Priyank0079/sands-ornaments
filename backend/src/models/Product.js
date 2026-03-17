@@ -4,10 +4,7 @@ const productSchema = new mongoose.Schema({
   name: { type: String, required: true, index: "text" },
   slug: { type: String, unique: true, index: true },
   brand: { type: String, default: "SANDS" },
-  categories: [{
-    categoryId: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
-    subcategoryId: { type: mongoose.Schema.Types.ObjectId, ref: "Subcategory" }
-  }],
+  categories: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" }],
   description: { type: String },
   stylingTips: { type: String },
   material: { type: String, default: "925 Silver" },
@@ -38,7 +35,12 @@ const productSchema = new mongoose.Schema({
   status: { type: String, enum: ["Active", "Draft", "Archived"], default: "Active" },
   showInNavbar: { type: Boolean, default: true },
   showInCollection: { type: Boolean, default: true },
+  active: { type: Boolean, default: true },
   sellerId: { type: mongoose.Schema.Types.ObjectId, ref: "Seller", default: null },
+  faqs: [{
+    question: { type: String, trim: true },
+    answer: { type: String, trim: true }
+  }]
 }, { timestamps: true });
 
 module.exports = mongoose.model("Product", productSchema);

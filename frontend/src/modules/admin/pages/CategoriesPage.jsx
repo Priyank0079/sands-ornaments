@@ -32,25 +32,17 @@ const CategoriesPage = () => {
                     name: p.category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
                     image: p.image, // Just as a placeholder
                     status: 'Active',
-                    subCategories: new Set(),
                     productCount: 0,
                     createdAt: Date.now()
                 };
             }
-            cats[p.category].subCategories.add(p.subcategory);
             cats[p.category].productCount++;
         });
 
         return Object.values(cats).map(c => ({
             ...c,
             showInNavbar: true,
-            showInShopByCategory: true,
-            subCategories: Array.from(c.subCategories).map(sc => ({
-                id: sc.toLowerCase().replace(/\s+/g, '-'),
-                name: sc,
-                image: '', // Initialize as empty for sub-categories
-                status: 'Active'
-            }))
+            showInShopByCategory: true
         }));
     }, [products]);
 
@@ -127,7 +119,7 @@ const CategoriesPage = () => {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900 uppercase tracking-tight">Category Management</h1>
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mt-1">Organize your products with categories and sub-categories</p>
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mt-1">Organize your products with categories</p>
                 </div>
                 <button
                     onClick={() => setShowAddModal(true)}
@@ -172,7 +164,7 @@ const CategoriesPage = () => {
                         <thead>
                             <tr className="border-b border-gray-50 bg-gray-50/50">
                                 <th className="px-6 py-5 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Category Info</th>
-                                <th className="px-6 py-5 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-center">Stats</th>
+                                <th className="px-6 py-5 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-center">Products</th>
                                 <th className="px-6 py-5 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Visibility</th>
                                 <th className="px-6 py-5 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Status</th>
                                 <th className="px-6 py-5 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-right">Actions</th>
@@ -193,8 +185,8 @@ const CategoriesPage = () => {
                                     </td>
                                     <td className="px-6 py-4 text-center">
                                         <div className="inline-flex flex-col items-center">
-                                            <span className="text-xs font-black text-footerBg">{category.subCategories.length}</span>
-                                            <span className="text-[8px] font-bold text-gray-400 uppercase tracking-tighter">Sub-levels</span>
+                                            <span className="text-xs font-black text-footerBg">{category.productCount}</span>
+                                            <span className="text-[8px] font-bold text-gray-400 uppercase tracking-tighter">Items</span>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">

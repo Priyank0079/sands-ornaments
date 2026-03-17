@@ -1,4 +1,5 @@
 const Product = require("../../../models/Product");
+const StockLog = require("../../../models/StockLog");
 const slugify = require("../../../utils/slugify");
 const { success, error } = require("../../../utils/apiResponse");
 
@@ -15,6 +16,20 @@ exports.createProduct = async (req, res) => {
     let images = [];
     if (req.files && req.files.length > 0) {
       images = req.files.map(file => file.path);
+    } else if (data.image) {
+      // Fallback for cases where images are sent as URLs/Placeholders (e.g. from AddProduct.jsx currently)
+      images = [data.image];
+    }
+
+    // Ensure variants array exists (for seller dashboard simple form)
+    if (!data.variants || data.variants.length === 0) {
+       data.variants = [{
+          name: "Standard",
+          mrp: parseFloat(data.originalPrice) || 0,
+          price: parseFloat(data.price || data.sellingPrice) || 0,
+          stock: parseInt(data.availableStock || data.quantity) || 0,
+          discount: parseInt(data.discount) || 0
+       }];
     }
 
     const product = await Product.create({
@@ -22,10 +37,26 @@ exports.createProduct = async (req, res) => {
       sellerId,
       slug: productSlug,
       images,
-      status: "Draft" // New seller products require admin approval/audit in production
+      status: "Active", // Enable auto-activation for now as per plan
+      active: true
     });
 
-    return success(res, { product }, "Product created successfully. Awaiting review.", 201);
+    // Create Initial Stock Logs
+    if (product.variants && product.variants.length > 0) {
+      const stockLogs = product.variants.map(v => ({
+        productId: product._id,
+        variantId: v._id,
+        changeType: "purchase", // or "initial"
+        previousStock: 0,
+        newStock: v.stock,
+        change: v.stock,
+        reason: "Initial seller listing",
+        sellerId: sellerId
+      }));
+      await StockLog.insertMany(stockLogs);
+    }
+
+    return success(res, { product }, "Product created successfully.", 201);
   } catch (err) { return error(res, err.message); }
 };
 

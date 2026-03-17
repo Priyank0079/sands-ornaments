@@ -3,6 +3,7 @@ const StockLog = require("../../../models/StockLog");
 const Review = require("../../../models/Review");
 const HomepageSection = require("../../../models/HomepageSection");
 const slugify = require("../../../utils/slugify");
+const { deleteFromCloudinary } = require("../../../utils/cloudinaryUtils");
 const { success, error } = require("../../../utils/apiResponse");
 
 // BUG-10 FIX: explicit whitelist of fields that can be updated via API
@@ -10,7 +11,8 @@ const PRODUCT_UPDATE_WHITELIST = [
   "name", "description", "slug", "tags", "stylingTips",
   "variants", "status", "categories", "sellerId",
   "isFeatured", "isTrending", "isNewArrival",
-  "returnEligibilities", "weight", "material",
+  "returnEligibilities", "weight", "material", "faqs",
+  "showInNavbar", "showInCollection", "active"
 ];
 
 
@@ -19,8 +21,14 @@ const PRODUCT_UPDATE_WHITELIST = [
 // ─────────────────────────────────────────────────────────────────
 exports.createProduct = async (req, res) => {
   try {
-    const data = req.body;
-
+    const data = { ...req.body };
+    if (data.categories) {
+      if (Array.isArray(data.categories)) {
+        data.categories = data.categories.length > 0 ? [data.categories[0]] : [];
+      } else if (typeof data.categories === "string") {
+        data.categories = [data.categories];
+      }
+    }
     const productSlug = data.slug ? slugify(data.slug) : slugify(data.name);
     const existing = await Product.findOne({ slug: productSlug });
     if (existing) return error(res, "Product with this slug already exists.", 409);
@@ -66,7 +74,7 @@ exports.getProducts = async (req, res) => {
     const page = Math.max(1, Number(req.query.page) || 1);
     // BUG-13 FIX: cap limit to 100 to prevent memory-exhaustion attacks
     const limit = Math.min(Number(req.query.limit) || 20, 100);
-    const { search, category, status } = req.query;
+    const { search, category, status, minPrice, maxPrice, inStock, sortBy } = req.query;
 
     const query = {};
     if (search) {
@@ -74,14 +82,32 @@ exports.getProducts = async (req, res) => {
       const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       query.name = { $regex: escaped, $options: "i" };
     }
-    if (category) query["categories.categoryId"] = category;
+    if (category) query.categories = category;
     if (status)   query.status = status;
+
+    // Advanced Filters
+    if (minPrice || maxPrice) {
+      query["variants.price"] = {};
+      if (minPrice) query["variants.price"].$gte = Number(minPrice);
+      if (maxPrice) query["variants.price"].$lte = Number(maxPrice);
+    }
+
+    if (inStock === 'true') {
+      query["variants.stock"] = { $gt: 0 };
+    } else if (inStock === 'false') {
+      query["variants.stock"] = { $lte: 0 };
+    }
+
+    // Sort Options
+    let sortOptions = { createdAt: -1 };
+    if (sortBy === 'price_low') sortOptions = { "variants.price": 1 };
+    else if (sortBy === 'price_high') sortOptions = { "variants.price": -1 };
+    else if (sortBy === 'name_asc') sortOptions = { name: 1 };
 
     const [products, total] = await Promise.all([
       Product.find(query)
-        .populate("categories.categoryId",    "name")
-        .populate("categories.subcategoryId", "name")
-        .sort({ createdAt: -1 })
+        .populate("categories",    "name")
+        .sort(sortOptions)
         .limit(limit)
         .skip((page - 1) * limit),
       Product.countDocuments(query),
@@ -101,8 +127,7 @@ exports.getProducts = async (req, res) => {
 exports.getProductDetail = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
-      .populate("categories.categoryId",    "name")
-      .populate("categories.subcategoryId", "name");
+      .populate("categories",    "name");
     if (!product) return error(res, "Product not found", 404);
     return success(res, { product }, "Product details retrieved");
   } catch (err) { return error(res, err.message); }
@@ -117,13 +142,32 @@ exports.updateProduct = async (req, res) => {
     const product = await Product.findById(req.params.id);
     if (!product) return error(res, "Product not found", 404);
 
-    const data = req.body;
+    const data = { ...req.body };
+    if (data.categories) {
+      if (Array.isArray(data.categories)) {
+        data.categories = data.categories.length > 0 ? [data.categories[0]] : [];
+      } else if (typeof data.categories === "string") {
+        data.categories = [data.categories];
+      }
+    }
 
     // Handle slug update if name changes
     if (data.name && !data.slug) {
       data.slug = slugify(data.name);
     } else if (data.slug) {
       data.slug = slugify(data.slug);
+    }
+
+    // Handle specific image deletions
+    if (data.deletedImages && Array.isArray(data.deletedImages)) {
+      for (const imageUrl of data.deletedImages) {
+        try {
+          await deleteFromCloudinary(imageUrl);
+          product.images = product.images.filter(img => img !== imageUrl);
+        } catch (err) {
+          console.error(`Failed to delete image ${imageUrl} from Cloudinary:`, err);
+        }
+      }
     }
 
     // Append new images (don't allow overwrite via body)
@@ -170,30 +214,89 @@ exports.deleteProduct = async (req, res) => {
   } catch (err) { return error(res, err.message); }
 };
 
+// ─────────────────────────────────────────────────────────────────
+// PATCH /api/admin/products/:id/toggle-status
+// ─────────────────────────────────────────────────────────────────
+exports.toggleProductStatus = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) return error(res, "Product not found", 404);
 
+    product.active = product.active === false ? true : false;
+    await product.save();
+
+    return success(res, { active: product.active }, `Product ${product.active ? 'activated' : 'deactivated'} successfully`);
+  } catch (err) { return error(res, err.message); }
+};
 // ─────────────────────────────────────────────────────────────────
 // PATCH /api/admin/products/bulk/prices
 // ─────────────────────────────────────────────────────────────────
 exports.bulkPriceUpdate = async (req, res) => {
   try {
-    const { categoryId, percentage, type } = req.body;
+    const { categoryId, productIds = [], type, value } = req.body;
 
-    if (!percentage || percentage <= 0 || percentage > 100) {
-      return error(res, "Percentage must be a positive number between 1 and 100.", 400);
-    }
-    if (!["increase", "decrease"].includes(type)) {
-      return error(res, "Type must be 'increase' or 'decrease'.", 400);
+    const numericValue = Number(value);
+    if (!type || Number.isNaN(numericValue) || numericValue <= 0) {
+      return error(res, "A valid positive 'value' and 'type' are required.", 400);
     }
 
-    const query = categoryId ? { "categories.categoryId": categoryId } : {};
+    const allowedTypes = [
+      "increase_amount",
+      "decrease_amount",
+      "increase_percent",
+      "decrease_percent",
+      "set_price"
+    ];
+    if (!allowedTypes.includes(type)) {
+      return error(res, "Invalid update type provided.", 400);
+    }
+
+    const query = {};
+    if (Array.isArray(productIds) && productIds.length > 0) {
+      query._id = { $in: productIds };
+    } else if (categoryId) {
+      query.categories = categoryId;
+    }
+
     const products = await Product.find(query);
 
     for (const prod of products) {
       prod.variants = prod.variants.map(v => {
-        const factor = type === "increase" ? (1 + percentage / 100) : (1 - percentage / 100);
-        // BUG-08 FIX: ensure price never drops below 1 (prevent negative/zero price)
-        v.price = Math.max(1, Math.round(v.price * factor));
-        // Recalculate discount percentage relative to MRP
+        let newPrice = v.price;
+        let newMrp = v.mrp;
+
+        switch (type) {
+          case "increase_amount":
+            newPrice = v.price + numericValue;
+            newMrp = v.mrp + numericValue;
+            break;
+          case "decrease_amount":
+            newPrice = v.price - numericValue;
+            newMrp = v.mrp - numericValue;
+            break;
+          case "increase_percent":
+            newPrice = Math.round(v.price * (1 + numericValue / 100));
+            newMrp = Math.round(v.mrp * (1 + numericValue / 100));
+            break;
+          case "decrease_percent":
+            newPrice = Math.round(v.price * (1 - numericValue / 100));
+            newMrp = Math.round(v.mrp * (1 - numericValue / 100));
+            break;
+          case "set_price":
+            newPrice = numericValue;
+            newMrp = Math.max(v.mrp, newPrice);
+            break;
+          default:
+            break;
+        }
+
+        // Prevent non-positive values
+        newPrice = Math.max(1, newPrice);
+        newMrp = Math.max(newPrice, newMrp);
+
+        v.price = newPrice;
+        v.mrp = newMrp;
+
         if (v.mrp && v.mrp > v.price) {
           v.discount = Math.round(((v.mrp - v.price) / v.mrp) * 100);
         } else {

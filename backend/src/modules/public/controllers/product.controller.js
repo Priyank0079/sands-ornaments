@@ -8,11 +8,11 @@ const { success, error } = require("../../../utils/apiResponse");
 exports.getProducts = async (req, res) => {
   try {
     const { 
-      search, category, subcategory, minPrice, maxPrice, 
+      search, category, minPrice, maxPrice, 
       tags, sort, page = 1, limit = 20 
     } = req.query;
 
-    const query = { status: "Active" };
+    const query = { status: "Active", active: { $ne: false } };
 
     // 1. Text Search
     if (search) {
@@ -23,9 +23,8 @@ exports.getProducts = async (req, res) => {
       ];
     }
 
-    // 2. Category & Subcategory Filter
-    if (category) query["categories.categoryId"] = category;
-    if (subcategory) query["categories.subcategoryId"] = subcategory;
+    // 2. Category Filter
+    if (category) query.categories = category;
 
     // 3. Price Range Filter (matches any variant price)
     if (minPrice || maxPrice) {
@@ -58,7 +57,7 @@ exports.getProducts = async (req, res) => {
     // 6. Execute Query with Pagination
     const products = await Product.find(query)
       .select("name slug brand images variants tags rating reviewCount categories")
-      .populate("categories.categoryId", "name")
+      .populate("categories", "name")
       .sort(sortOption)
       .limit(limit * 1)
       .skip((page - 1) * limit);
@@ -83,9 +82,8 @@ exports.getProducts = async (req, res) => {
  */
 exports.getProductDetail = async (req, res) => {
   try {
-    const product = await Product.findOne({ slug: req.params.slug, status: "Active" })
-      .populate("categories.categoryId", "name")
-      .populate("categories.subcategoryId", "name");
+    const product = await Product.findOne({ slug: req.params.slug, status: "Active", active: { $ne: false } })
+      .populate("categories", "name");
 
     if (!product) return error(res, "Product not found", 404);
 
@@ -103,7 +101,8 @@ exports.searchProducts = async (req, res) => {
     if (!q) return success(res, { suggestions: [] });
 
     const suggestions = await Product.find({ 
-      status: "Active", 
+      status: "Active",
+      active: { $ne: false },
       name: { $regex: q, $options: "i" } 
     })
     .select("name slug images")

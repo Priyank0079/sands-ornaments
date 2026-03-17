@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { memo } from 'react';
 
-export const Input = ({ label, ...props }) => (
+export const Input = memo(({ label, ...props }) => (
     <div className="space-y-1.5">
         {label && (
             <label className="block text-xs font-semibold text-gray-700 tracking-wide">
@@ -12,9 +12,9 @@ export const Input = ({ label, ...props }) => (
             className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#3E2723] focus:ring-2 focus:ring-[#3E2723]/10 transition-all shadow-sm"
         />
     </div>
-);
+));
 
-export const Select = ({ label, options, ...props }) => (
+export const Select = memo(({ label, options, ...props }) => (
     <div className="space-y-1.5">
         {label && (
             <label className="block text-xs font-semibold text-gray-700 tracking-wide">
@@ -35,9 +35,9 @@ export const Select = ({ label, options, ...props }) => (
             </div>
         </div>
     </div>
-);
+));
 
-export const TextArea = ({ label, ...props }) => (
+export const TextArea = memo(({ label, ...props }) => (
     <div className="space-y-1.5">
         {label && (
             <label className="block text-xs font-semibold text-gray-700 tracking-wide">
@@ -50,9 +50,9 @@ export const TextArea = ({ label, ...props }) => (
             className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#3E2723] focus:ring-2 focus:ring-[#3E2723]/10 transition-all shadow-sm resize-none"
         ></textarea>
     </div>
-);
+));
 
-export const FormSection = ({ title, children, className = "" }) => (
+export const FormSection = memo(({ title, children, className = "" }) => (
     <div className={`bg-white p-6 rounded-xl border border-gray-200 shadow-sm ${className}`}>
         {title && (
             <h3 className="text-sm font-bold text-gray-900 mb-5 pb-3 border-b border-gray-100 flex items-center gap-2">
@@ -63,4 +63,4 @@ export const FormSection = ({ title, children, className = "" }) => (
             {children}
         </div>
     </div>
-);
+));

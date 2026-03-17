@@ -1,20 +1,57 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { X, Search, Check, Filter } from 'lucide-react';
 import { useShop } from '../../../../context/ShopContext';
-import { PRODUCTS } from '../../../../mockData/data'; // Fallback / Mock Data
+import { adminService } from '../../services/adminService';
 
 const ProductBrowserModal = ({ isOpen, onClose, onSelect, selectedIds = [], maxSelection = 1 }) => {
     if (!isOpen) return null;
 
-    const { products } = useShop(); // Use context products (which includes admin updates) or fallback to mock
+    const { products } = useShop(); // Public catalogue fallback
+    const [adminProducts, setAdminProducts] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [localSelectedIds, setLocalSelectedIds] = useState(selectedIds);
 
-    // Combine context products with mock products if context is empty (just in case)
-    const allProducts = products && products.length > 0 ? products : PRODUCTS;
+    useEffect(() => {
+        if (!isOpen) return;
+        const fetchAdminProducts = async () => {
+            setIsLoading(true);
+            try {
+                const { products: data } = await adminService.getProducts({ limit: 100 });
+                const normalized = (data || []).map(p => ({
+                    id: p._id || p.id,
+                    name: p.name || '',
+                    category: p.categories?.[0]?.name || p.category || 'Uncategorized',
+                    image: p.images?.[0] || p.image || '',
+                    images: p.images || [],
+                    price: p.variants?.[0]?.price || 0,
+                    discount: p.variants?.[0]?.discount ? `${p.variants[0].discount}%off` : ''
+                }));
+                setAdminProducts(normalized);
+            } catch (err) {
+                setAdminProducts([]);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchAdminProducts();
+    }, [isOpen]);
 
-    const categories = ['All', ...new Set(allProducts.map(p => p.category))];
+    const fallbackProducts = (products || []).map(p => ({
+        id: p.id || p._id,
+        name: p.name || '',
+        category: p.category || 'Uncategorized',
+        image: p.image || p.images?.[0] || '',
+        images: p.images || [],
+        price: p.price || 0,
+        discount: p.discount || ''
+    }));
+
+    // Prefer admin products when available
+    const allProducts = adminProducts.length > 0 ? adminProducts : fallbackProducts;
+
+    const categories = ['All', ...new Set(allProducts.map(p => p.category).filter(Boolean))];
 
     const filteredProducts = useMemo(() => {
         return allProducts.filter(product => {
@@ -112,7 +149,14 @@ const ProductBrowserModal = ({ isOpen, onClose, onSelect, selectedIds = [], maxS
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {filteredProducts.map(product => {
+                            {isLoading && (
+                                <tr>
+                                    <td colSpan="4" className="py-12 text-center text-gray-400">
+                                        Loading products...
+                                    </td>
+                                </tr>
+                            )}
+                            {!isLoading && filteredProducts.map(product => {
                                 const isSelected = localSelectedIds.includes(product.id);
                                 const image = product.image || product.images?.[0]; // Handle different structures
 
@@ -167,7 +211,7 @@ const ProductBrowserModal = ({ isOpen, onClose, onSelect, selectedIds = [], maxS
                                 );
                             })}
 
-                            {filteredProducts.length === 0 && (
+                            {!isLoading && filteredProducts.length === 0 && (
                                 <tr>
                                     <td colSpan="4" className="py-12 text-center text-gray-400">
                                         No products found matching your search.

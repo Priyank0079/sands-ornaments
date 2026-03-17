@@ -69,8 +69,12 @@ const CategoryNav = () => {
         { id: 'about', name: 'About Us', path: '/about', type: 'link' }
     ];
 
+    const visibleCategories = dynamicCategories.filter(
+        (c) => c.isActive !== false && c.showInNavbar !== false
+    );
+
     const getCategoriesByMetal = (metal) => {
-        return dynamicCategories.filter(c => c.metal?.toLowerCase() === metal.toLowerCase());
+        return visibleCategories.filter(c => c.metal?.toLowerCase() === metal.toLowerCase());
     };
 
     return (
@@ -180,12 +184,12 @@ const CategoryNav = () => {
                                                                     {getCategoriesByMetal(selectedMetal).map((cat) => (
                                                                         <Link 
                                                                             key={cat._id} 
-                                                                            to={cat.subcategories?.length > 0 ? `/shop?category=${cat.name}` : `/shop?category=${cat.name}&status=coming-soon`}
+                                                                            to={`/shop?category=${cat.name}`}
                                                                             onClick={() => { setHoveredCategory(null); setSelectedMetal(null); }}
                                                                             className="flex flex-col items-center text-center gap-3 group"
                                                                         >
                                                                             <div className="w-20 h-20 rounded-full overflow-hidden border border-gray-100 shadow-sm transition-all group-hover:shadow-md mx-auto group-hover:-translate-y-1 ring-4 ring-white">
-                                                                                <img src={cat.image || 'https://via.placeholder.com/150'} alt={cat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                                                                 <img src={cat.image || 'https://placehold.co/150?text=No+Image'} alt={cat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                                                             </div>
                                                                             <h4 className="font-display font-bold text-black text-[11px] group-hover:text-[#D39A9F] transition-colors uppercase tracking-widest">{cat.name}</h4>
                                                                         </Link>

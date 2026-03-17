@@ -61,7 +61,7 @@ const ContentManagement = () => {
         const newId = aboutContent.instagramImages.length + 1;
         setAboutContent({
             ...aboutContent,
-            instagramImages: [...aboutContent.instagramImages, { id: newId, url: 'https://via.placeholder.com/400' }]
+            instagramImages: [...aboutContent.instagramImages, { id: newId, url: 'https://placehold.co/400' }]
         });
     };
 

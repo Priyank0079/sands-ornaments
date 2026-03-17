@@ -88,7 +88,7 @@ const DynamicPageEditor = ({ pageId: propPageId }) => {
             [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
             ['bold', 'italic', 'underline', 'strike', 'blockquote'],
             [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'indent': '-1' }, { 'indent': '+1' }],
-            ['link', 'image', 'video'],
+            ['link'],
             ['clean']
         ],
     };
@@ -97,7 +97,7 @@ const DynamicPageEditor = ({ pageId: propPageId }) => {
         'header',
         'bold', 'italic', 'underline', 'strike', 'blockquote',
         'list', 'indent',
-        'link', 'image', 'video'
+        'link'
     ];
 
     if (!config) return null;
@@ -182,7 +182,7 @@ const DynamicPageEditor = ({ pageId: propPageId }) => {
                 <div>
                     <h4 className="text-sm font-bold text-blue-900">Pro Tip</h4>
                     <p className="text-xs text-blue-700 mt-1">
-                        You can drag and drop images directly into the editor. Use the toolbar to format headers, lists, and links.
+                        Use the toolbar to format headers, lists, and links.
                         Changes will be reflected on the live website immediately after saving.
                     </p>
                 </div>

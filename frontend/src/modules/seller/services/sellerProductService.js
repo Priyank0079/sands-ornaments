@@ -10,9 +10,12 @@ export const sellerProductService = {
       return [];
     }
   },
-  addProduct: async (product) => {
+  addProduct: async (data) => {
     try {
-      const res = await api.post('/seller/products', product);
+      const isFormData = data instanceof FormData;
+      const res = await api.post('/seller/products', data, {
+        headers: isFormData ? { 'Content-Type': 'multipart/form-data' } : {}
+      });
       return res.data.product;
     } catch (err) {
       console.error("Failed to add product:", err);
