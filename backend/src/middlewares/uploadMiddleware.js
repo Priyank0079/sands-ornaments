@@ -1,5 +1,5 @@
 const multer = require("multer");
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const { CloudinaryStorage } = require("@fluidjs/multer-cloudinary");
 const cloudinary = require("../config/cloudinary");
 
 const makeStorage = (folder) =>

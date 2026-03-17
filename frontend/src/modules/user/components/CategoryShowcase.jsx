@@ -31,35 +31,41 @@ const CategoryShowcase = () => {
         : categories;
 
     return (
-        <section className="py-4 bg-white">
+        <section className="py-4 bg-white overflow-hidden">
             <div className="container mx-auto px-0 md:px-4">
-                <div className="flex flex-nowrap overflow-x-auto justify-start gap-4 md:gap-8 px-4 md:p-10 pb-2 md:pb-12 scrollbar-hide snap-x snap-mandatory">
+                <div className="flex flex-nowrap overflow-x-auto justify-start gap-4 md:gap-8 px-4 md:p-10 pb-4 md:pb-12 scrollbar-hide snap-x snap-mandatory">
                     {displayItems.map((cat, index) => (
                         <Link to={cat.path} key={cat.id} className="group flex flex-col items-center flex-shrink-0 snap-start">
-                            {/* Card with Wine Background */}
-                            <div className="relative w-36 h-36 md:w-52 md:h-52 bg-[#4A1015] rounded-2xl md:rounded-[2rem] shadow-md border md:border-2 border-[#C9A24D] overflow-hidden transition-transform duration-300 transform group-hover:-translate-y-2 group-hover:shadow-xl">
+                            {/* Card with Premium Gradient and Shimmer Effect */}
+                            <div className="relative w-36 h-36 md:w-52 md:h-52 bg-gradient-to-br from-[#D39A9F] to-[#4A1015] rounded-2xl md:rounded-[2.5rem] shadow-lg border md:border-2 border-[#C9A24D]/30 overflow-hidden transition-all duration-500 transform group-hover:-translate-y-3 group-hover:shadow-[0_20px_40px_rgba(74,16,21,0.2)] group-hover:border-[#C9A24D]">
+                                
+                                {/* Shimmer Overlay Effect */}
+                                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-1000 ease-in-out z-20"></div>
 
-                                {/* Top Tag - Gold/Beige */}
-                                <div className="absolute top-0 left-0 right-0 bg-[#F5E6D3] py-1 text-center font-bold text-[10px] md:text-xs text-[#4A1015] tracking-wider z-10">
+                                {/* Top Tag - Gold/Beige with Glow */}
+                                <div className="absolute top-0 left-0 right-0 bg-[#F5E6D3] py-1 text-center font-black text-[9px] md:text-[11px] text-[#4A1015] tracking-[0.15em] z-30 shadow-sm uppercase group-hover:bg-white transition-colors duration-300">
                                     {cat.tag || 'UPTO 15% OFF'}
                                 </div>
 
-                                {/* Image */}
-                                <div className="absolute inset-0 pt-0 flex items-center justify-center p-3 md:p-0">
+                                {/* Image with Zoom Effect */}
+                                <div className="absolute inset-0 pt-2 flex items-center justify-center p-3 md:p-0">
                                     <img
                                         src={cat.image}
                                         alt={cat.name}
-                                        className="w-full h-full object-contain md:object-cover"
+                                        className="w-full h-full object-contain md:object-cover transition-transform duration-700 ease-out group-hover:scale-110"
                                     />
                                 </div>
+
+                                {/* Subtle Darkening Overlay for Text Contrast */}
+                                <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                             </div>
 
-                            {/* Category Name Below */}
-                            <div className="mt-2 md:mt-3 flex items-center justify-center gap-1 md:gap-2">
-                                <span className="font-display font-medium text-sm md:text-lg text-black group-hover:text-[#4A1015] transition-colors">
+                            {/* Category Name Below - Animated */}
+                            <div className="mt-3 md:mt-4 flex flex-col items-center gap-1">
+                                <span className="font-display font-bold text-xs md:text-base text-gray-500 uppercase tracking-widest group-hover:text-[#4A1015] transition-colors duration-300">
                                     {cat.name}
                                 </span>
-                                <ArrowRight className="w-3 h-3 md:w-5 md:h-5 text-[#4A1015] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 hidden md:block" />
+                                <div className="w-0 h-[2px] bg-[#4A1015] group-hover:w-full transition-all duration-300"></div>
                             </div>
                         </Link>
                     ))}

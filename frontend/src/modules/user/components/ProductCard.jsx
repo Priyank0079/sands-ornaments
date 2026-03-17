@@ -83,17 +83,17 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
 
                     {/* Dynamic Badges */}
                     {product.isNew ? (
-                        <span className="absolute top-2 md:top-4 right-0 bg-[#D39A9F] text-white text-[7px] md:text-[10px] font-bold px-2 py-0.5 md:px-3 md:py-1 shadow-sm tracking-widest z-10" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%, 8px 50%)', paddingLeft: '12px' }}>
+                        <span className="absolute top-2 md:top-4 right-0 bg-gradient-to-r from-[#D39A9F] to-[#4A1015] text-white text-[7px] md:text-[10px] font-bold px-2 py-0.5 md:px-3 md:py-1 shadow-sm tracking-widest z-10" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%, 8px 50%)', paddingLeft: '12px' }}>
                             NEW
                         </span>
                     ) : product.rating >= 4.5 ? (
-                        <span className="absolute top-2 md:top-4 right-0 bg-[#D39A9F] text-white text-[7px] md:text-[10px] font-bold px-2 py-0.5 md:px-3 md:py-1 shadow-sm tracking-widest z-10" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%, 8px 50%)', paddingLeft: '12px' }}>
+                        <span className="absolute top-2 md:top-4 right-0 bg-gradient-to-r from-[#D39A9F] to-[#4A1015] text-white text-[7px] md:text-[10px] font-bold px-2 py-0.5 md:px-3 md:py-1 shadow-sm tracking-widest z-10" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%, 8px 50%)', paddingLeft: '12px' }}>
                             TRENDING
                         </span>
                     ) : null}
 
                     {/* Tag: 9 to 5 Silver Jewellery - Top Left (Hidden on Mobile) */}
-                    <div className="hidden md:block absolute top-4 left-2 bg-white/95 backdrop-blur-md px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-[#722F37] rounded-sm shadow-md z-20 border border-[#722F37]/10">
+                    <div className="hidden md:block absolute top-4 left-2 bg-white/95 backdrop-blur-md px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-[#4A1015] rounded-sm shadow-md z-20 border border-[#4A1015]/10">
                         9 to 5 Silver Jewellery
                     </div>
 
@@ -130,10 +130,10 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
                     </h3>
                 </div>
 
-                {/* Add to Cart Button - Full Width Flush Bottom */}
+                {/* Add to Cart Button - Full Width Flush Bottom with Premium Gradient */}
                 <button
                     onClick={handleAddToCart}
-                    className="w-full bg-[#EBCDD0] text-black py-2.5 md:py-3 text-[10px] md:text-sm font-bold hover:bg-[#D39A9F] hover:text-white transition-colors uppercase tracking-widest mt-auto mb-0 rounded-none border-t border-transparent"
+                    className="w-full bg-gradient-to-r from-[#D39A9F] to-[#4A1015] text-white py-2.5 md:py-3 text-[10px] md:text-sm font-bold hover:brightness-110 active:scale-[0.98] transition-all uppercase tracking-widest mt-auto mb-0 rounded-none border-t border-transparent shadow-lg"
                 >
                     Add to Cart
                 </button>

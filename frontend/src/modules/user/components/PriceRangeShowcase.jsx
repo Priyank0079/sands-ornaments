@@ -58,7 +58,7 @@ const PriceRangeShowcase = () => {
                             >
                                 <Link
                                     to={item.path}
-                                    className="group relative block w-full aspect-[3/4] md:aspect-[3/4] lg:aspect-[4/3] rounded-2xl md:rounded-[2rem] overflow-hidden shadow-md md:shadow-lg hover:shadow-2xl transition-all duration-500"
+                                    className="group relative block w-full aspect-[3/4] md:aspect-[3/4] lg:aspect-[4/3] rounded-2xl md:rounded-[2.5rem] overflow-hidden shadow-md md:shadow-lg hover:shadow-[0_20px_50px_rgba(74,16,21,0.3)] transition-all duration-500 border-[3px] border-transparent hover:border-[#4A1015]"
                                 >
                                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-500 z-10" />
 
