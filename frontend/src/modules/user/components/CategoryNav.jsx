@@ -83,7 +83,7 @@ const CategoryNav = () => {
     ];
 
     return (
-        <div className="bg-[#FDF5F6] border-b border-[#EBCDD0] hidden md:block sticky top-[65px] z-40 shadow-sm font-sans">
+        <div className="bg-[#4A1015] border-b border-white/5 hidden md:block sticky top-[65px] z-40 shadow-xl font-sans">
             <div className="container mx-auto px-4">
                 <ul className="flex justify-center items-center h-12 space-x-12 relative">
                     {navItems.map((item) => (
@@ -96,24 +96,24 @@ const CategoryNav = () => {
                             <Link
                                 to={item.path}
                                 onClick={() => setHoveredCategory(null)}
-                                className={`font-display text-sm tracking-[0.15em] font-semibold flex items-center gap-1 transition-all duration-300 relative py-2
-                                    ${hoveredCategory === item.id ? 'text-[#D39A9F]' : 'text-black'}
+                                className={`font-display text-xs tracking-[0.2em] font-bold flex items-center gap-1 transition-all duration-300 relative py-2 uppercase
+                                    ${hoveredCategory === item.id ? 'text-white' : 'text-white/70'}
                                 `}
                             >
                                 {item.name}
                                 {/* Underline Effect */}
-                                <span className={`absolute bottom-0 left-0 w-full h-[2px] bg-[#D39A9F] transform transition-transform duration-300 ${hoveredCategory === item.id ? 'scale-x-100' : 'scale-x-0'}`}></span>
+                                <span className={`absolute bottom-0 left-0 w-full h-[2px] bg-[#C9A24D] transform transition-transform duration-300 ${hoveredCategory === item.id ? 'scale-x-100' : 'scale-x-0'}`}></span>
                             </Link>
 
                             {/* MEGA MENU - Unified for all 3 types */}
                             <AnimatePresence>
                                 {hoveredCategory === item.id && item.type === 'mega-menu' && (
                                     <motion.div
-                                        initial={{ opacity: 0, y: 10 }}
+                                        initial={{ opacity: 0, y: 5 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: 10 }}
+                                        exit={{ opacity: 0, y: 5 }}
                                         transition={{ duration: 0.2 }}
-                                        className="absolute left-0 top-full w-full bg-white shadow-xl border-t border-[#EBCDD0] py-12 min-h-[400px] z-50"
+                                        className="absolute left-0 top-full w-full bg-white shadow-2xl border-t border-gray-100 py-12 min-h-[400px] z-50 rounded-b-3xl"
                                     >
                                         <div className="container mx-auto px-8">
                                             {item.id === 'shop-by-category' ? (

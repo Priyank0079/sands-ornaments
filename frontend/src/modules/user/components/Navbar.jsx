@@ -47,14 +47,12 @@ const Navbar = () => {
 
     return (
         <>
-            <nav className={`w-full transition-all duration-300 border-b bg-white/95 backdrop-blur-md shadow-sm ${isHome ? 'border-transparent md:border-[#EBCDD0]' : 'border-[#EBCDD0]'}`}>
+            <nav className="w-full transition-all duration-300 bg-white/95 backdrop-blur-md shadow-sm relative">
                 {/* Top Bar - Asymmetric padding: Top 6, Bottom 3 */}
                 <div className="container mx-auto px-4 md:px-6 pt-1 md:pt-1.5 pb-1 md:pb-1 flex items-center justify-between gap-4">
 
                     {/* Left: Menu Button & Logo */}
                     <div className="flex items-center gap-4 flex-1 md:flex-none">
-
-
 
                         {/* Logo */}
                         <Link to="/" className="relative h-10 w-10 md:h-14 md:w-14 flex items-center justify-center flex-shrink-0 group z-50">
@@ -72,9 +70,9 @@ const Navbar = () => {
                         <input
                             type="text"
                             placeholder="Search for silver jewellery..."
-                            className="w-full bg-white border border-gray-200 rounded-full py-2.5 px-6 pl-12 text-sm focus:outline-none focus:border-[#EBCDD0] focus:ring-1 focus:ring-[#EBCDD0] transition-all shadow-sm group-hover:shadow-md text-black placeholder-gray-400"
+                            className="w-full bg-white border border-gray-100 rounded-full py-2.5 px-6 pl-12 text-sm focus:outline-none focus:border-[#D39A9F] focus:ring-2 focus:ring-[#D39A9F]/20 transition-all shadow-sm group-hover:shadow-md text-black placeholder-gray-400"
                         />
-                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-[#EBCDD0] transition-colors" />
+                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-[#D39A9F] transition-colors" />
                     </div>
 
                     {/* Icons - Simplified on mobile */}
@@ -95,7 +93,7 @@ const Navbar = () => {
                         <Link to="/cart" className="hover:opacity-70 relative">
                             <ShoppingBag className="w-5 h-5 md:w-6 md:h-6" />
                             {cart?.length > 0 && (
-                                <span className="absolute -top-2 -right-2 bg-[#D39A9F] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full border-2 border-white">{cart.length}</span>
+                                <span className="absolute -top-2 -right-2 bg-gradient-to-br from-[#D39A9F] to-[#4A1015] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full border-2 border-white">{cart.length}</span>
                             )}
                         </Link>
 
@@ -103,7 +101,7 @@ const Navbar = () => {
                         <Link to="/wishlist" className="hidden md:block hover:opacity-70 relative">
                             <Heart className="w-6 h-6" />
                             {wishlist?.length > 0 && (
-                                <span className="absolute -top-2 -right-2 bg-[#D39A9F] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full border-2 border-white">{wishlist.length}</span>
+                                <span className="absolute -top-2 -right-2 bg-gradient-to-br from-[#D39A9F] to-[#4A1015] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full border-2 border-white">{wishlist.length}</span>
                             )}
                         </Link>
 
@@ -112,6 +110,9 @@ const Navbar = () => {
                         </Link>
                     </div>
                 </div>
+
+                {/* Decorative Bottom Gradient Line */}
+                <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#D39A9F] via-[#4A1015] to-[#D39A9F] opacity-80"></div>
             </nav>
 
             {/* Sidebar / Drawer */}
@@ -151,7 +152,7 @@ const Navbar = () => {
                                     <div className="border-b border-gray-100 pb-2">
                                         <button
                                             onClick={() => toggleSection('shopByCategory')}
-                                            className="w-full flex items-center justify-between py-2 text-left font-display font-semibold text-black hover:text-[#D39A9F] transition-colors"
+                                            className="w-full flex items-center justify-between py-2 text-left font-display font-semibold text-black hover:text-[#4A1015] transition-colors"
                                         >
                                             SHOP BY CATEGORY
                                             <ChevronDown className={`w-4 h-4 transition-transform ${openSection === 'shopByCategory' ? 'rotate-180' : ''}`} />
@@ -217,7 +218,7 @@ const Navbar = () => {
                                     <div className="border-b border-gray-100 pb-2">
                                         <button
                                             onClick={() => toggleSection('giftsFor')}
-                                            className="w-full flex items-center justify-between py-2 text-left font-display font-semibold text-black hover:text-[#D39A9F] transition-colors"
+                                            className="w-full flex items-center justify-between py-2 text-left font-display font-semibold text-black hover:text-[#4A1015] transition-colors"
                                         >
                                             GIFTS FOR
                                             <ChevronDown className={`w-4 h-4 transition-transform ${openSection === 'giftsFor' ? 'rotate-180' : ''}`} />
@@ -248,7 +249,7 @@ const Navbar = () => {
                                     <div className="border-b border-gray-100 pb-2">
                                         <button
                                             onClick={() => toggleSection('occasions')}
-                                            className="w-full flex items-center justify-between py-2 text-left font-display font-semibold text-black hover:text-[#D39A9F] transition-colors"
+                                            className="w-full flex items-center justify-between py-2 text-left font-display font-semibold text-black hover:text-[#4A1015] transition-colors"
                                         >
                                             OCCASIONS
                                             <ChevronDown className={`w-4 h-4 transition-transform ${openSection === 'occasions' ? 'rotate-180' : ''}`} />
