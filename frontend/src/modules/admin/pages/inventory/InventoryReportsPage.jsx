@@ -1,28 +1,100 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Calendar, Download, PieChart, TrendingUp, DollarSign, Package } from 'lucide-react';
+import { adminService } from '../../services/adminService';
+import toast from 'react-hot-toast';
 
 const InventoryReportsPage = () => {
     const activeTabState = useState('category'); // 'category' or 'sales'
     const activeTab = activeTabState[0];
     const setActiveTab = activeTabState[1];
     const [loading, setLoading] = useState(false);
+    const [categoryData, setCategoryData] = useState([]);
+    const [salesData, setSalesData] = useState([]);
 
-    // Mock Data
-    const categoryData = [
-        { category: 'Necklaces', uniqueProducts: 24, totalQty: 1250, value: 450000 },
-        { category: 'Earrings', uniqueProducts: 12, totalQty: 500, value: 120000 },
-        { category: 'Bracelets', uniqueProducts: 18, totalQty: 800, value: 240000 },
-        { category: 'Rings', uniqueProducts: 8, totalQty: 300, value: 45000 },
-        { category: 'Anklets', uniqueProducts: 15, totalQty: 600, value: 90000 },
-    ];
+    useEffect(() => {
+        const loadInventory = async () => {
+            setLoading(true);
+            try {
+                const [inventory, logs] = await Promise.all([
+                    adminService.getInventory(),
+                    adminService.getStockHistory()
+                ]);
+                const categoryMap = new Map();
+                const productPriceMap = new Map();
+                const productCategoryMap = new Map();
 
-    const salesData = [
-        { name: 'Gold Plated Necklace', category: 'Necklaces', sold: 450, avgPrice: 350, revenue: 157500 },
-        { name: 'Diamond Stud Earrings', category: 'Earrings', sold: 380, avgPrice: 400, revenue: 152000 },
-        { name: 'Silver Anklet', category: 'Anklets', sold: 320, avgPrice: 400, revenue: 128000 },
-        { name: 'Rose Gold Bracelet', category: 'Bracelets', sold: 280, avgPrice: 850, revenue: 238000 },
-        { name: 'Pearl Choker', category: 'Necklaces', sold: 150, avgPrice: 1100, revenue: 165000 },
-    ];
+                (inventory || []).forEach(p => {
+                    const categoryName = p.categories?.[0]?.name || 'Uncategorized';
+                    const variants = p.variants || [];
+                    const totalQty = variants.reduce((acc, v) => acc + (v.stock || 0), 0);
+                    const avgPrice = variants.length > 0
+                        ? variants.reduce((acc, v) => acc + (v.price || 0), 0) / variants.length
+                        : 0;
+                    const value = Math.round(totalQty * avgPrice);
+
+                    if (!categoryMap.has(categoryName)) {
+                        categoryMap.set(categoryName, { category: categoryName, uniqueProducts: 0, totalQty: 0, value: 0 });
+                    }
+                    const current = categoryMap.get(categoryName);
+                    current.uniqueProducts += 1;
+                    current.totalQty += totalQty;
+                    current.value += value;
+
+                    const avgUnitPrice = variants.length > 0
+                        ? variants.reduce((acc, v) => acc + (v.price || 0), 0) / variants.length
+                        : 0;
+                    const productKey = (p._id || p.id)?.toString();
+                    if (productKey) {
+                        productPriceMap.set(productKey, avgUnitPrice);
+                        productCategoryMap.set(productKey, categoryName);
+                    }
+                });
+
+                setCategoryData(Array.from(categoryMap.values()));
+
+                const salesMap = new Map();
+                (logs || []).forEach(log => {
+                    if (log.changeType !== 'sale') return;
+                    const productKey = (log.productId?._id || log.productId)?.toString();
+                    if (!productKey) return;
+                    const current = salesMap.get(productKey) || {
+                        id: productKey,
+                        name: log.productId?.name || 'Unknown',
+                        category: productCategoryMap.get(productKey) || 'Uncategorized',
+                        sold: 0,
+                        avgPrice: Math.round(productPriceMap.get(productKey) || 0),
+                        revenue: 0
+                    };
+                    const soldQty = Math.abs(log.change || 0);
+                    current.sold += soldQty;
+                    current.revenue = current.sold * current.avgPrice;
+                    salesMap.set(productKey, current);
+                });
+
+                setSalesData(Array.from(salesMap.values()));
+            } catch (err) {
+                toast.error("Failed to load inventory reports");
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadInventory();
+    }, []);
+
+    const totalInventoryValue = useMemo(
+        () => categoryData.reduce((acc, item) => acc + (item.value || 0), 0),
+        [categoryData]
+    );
+
+    const totalItemsInStock = useMemo(
+        () => categoryData.reduce((acc, item) => acc + (item.totalQty || 0), 0),
+        [categoryData]
+    );
+
+    const topCategory = useMemo(() => {
+        if (categoryData.length === 0) return null;
+        return categoryData.reduce((top, current) => (current.value > (top?.value || 0) ? current : top), null);
+    }, [categoryData]);
 
     return (
         <div className="space-y-8 font-sans animate-in fade-in duration-500">
@@ -67,14 +139,14 @@ const InventoryReportsPage = () => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Inventory Value</p>
-                            <p className="text-3xl font-black text-gray-900">₹9,45,000</p>
+                            <p className="text-3xl font-black text-gray-900">INR {totalInventoryValue.toLocaleString()}</p>
                             <div className="w-full bg-gray-100 h-1.5 rounded-full mt-3 overflow-hidden">
                                 <div className="bg-emerald-500 h-full rounded-full w-[75%]"></div>
                             </div>
                         </div>
                         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Items in Stock</p>
-                            <p className="text-3xl font-black text-gray-900">3,450</p>
+                            <p className="text-3xl font-black text-gray-900">{totalItemsInStock.toLocaleString()}</p>
                             <div className="w-full bg-gray-100 h-1.5 rounded-full mt-3 overflow-hidden">
                                 <div className="bg-blue-500 h-full rounded-full w-[60%]"></div>
                             </div>
@@ -82,8 +154,12 @@ const InventoryReportsPage = () => {
                         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Top Category</p>
                             <div className="flex items-center gap-3 mt-1">
-                                <div className="px-3 py-1 bg-purple-50 text-purple-600 rounded-lg text-xs font-black uppercase tracking-widest">Necklaces</div>
-                                <span className="text-xs font-bold text-gray-400">45% of Value</span>
+                                <div className="px-3 py-1 bg-purple-50 text-purple-600 rounded-lg text-xs font-black uppercase tracking-widest">
+                                    {topCategory?.category || 'N/A'}
+                                </div>
+                                <span className="text-xs font-bold text-gray-400">
+                                    {topCategory ? `${Math.round((topCategory.value / Math.max(totalInventoryValue, 1)) * 100)}% of Value` : ''}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -100,12 +176,16 @@ const InventoryReportsPage = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
-                                {categoryData.map((item, idx) => (
+                                {loading ? (
+                                    <tr><td colSpan="4" className="px-6 py-12 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">Loading report...</td></tr>
+                                ) : categoryData.length === 0 ? (
+                                    <tr><td colSpan="4" className="px-6 py-12 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">No data available</td></tr>
+                                ) : categoryData.map((item, idx) => (
                                     <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
                                         <td className="px-6 py-4 text-xs font-black text-gray-900">{item.category}</td>
                                         <td className="px-6 py-4 text-center text-xs font-bold text-gray-600">{item.uniqueProducts}</td>
                                         <td className="px-6 py-4 text-center text-xs font-bold text-gray-600">{item.totalQty.toLocaleString()} units</td>
-                                        <td className="px-6 py-4 text-right text-sm font-black text-gray-900">₹{item.value.toLocaleString()}</td>
+                                        <td className="px-6 py-4 text-right text-sm font-black text-gray-900">INR {item.value.toLocaleString()}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -122,7 +202,7 @@ const InventoryReportsPage = () => {
                         <div className="bg-emerald-50 rounded-2xl border border-emerald-100 p-6 shadow-sm flex items-center justify-between">
                             <div>
                                 <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Total Revenue</p>
-                                <p className="text-4xl font-black text-emerald-900">₹8,51,500</p>
+                                <p className="text-4xl font-black text-emerald-900">INR {salesData.reduce((acc, item) => acc + (item.revenue || 0), 0).toLocaleString()}</p>
                             </div>
                             <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-emerald-500 shadow-sm">
                                 <DollarSign size={24} />
@@ -131,7 +211,7 @@ const InventoryReportsPage = () => {
                         <div className="bg-blue-50 rounded-2xl border border-blue-100 p-6 shadow-sm flex items-center justify-between">
                             <div>
                                 <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">Total Units Sold</p>
-                                <p className="text-4xl font-black text-blue-900">2,150</p>
+                                <p className="text-4xl font-black text-blue-900">{salesData.reduce((acc, item) => acc + (item.sold || 0), 0).toLocaleString()}</p>
                             </div>
                             <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-blue-500 shadow-sm">
                                 <Package size={24} />
@@ -152,13 +232,17 @@ const InventoryReportsPage = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
-                                {salesData.map((item, idx) => (
+                                {loading ? (
+                                    <tr><td colSpan="5" className="px-6 py-12 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">Loading sales...</td></tr>
+                                ) : salesData.length === 0 ? (
+                                    <tr><td colSpan="5" className="px-6 py-12 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">No sales data yet</td></tr>
+                                ) : salesData.map((item, idx) => (
                                     <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
                                         <td className="px-6 py-4 text-xs font-black text-gray-900">{item.name}</td>
                                         <td className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">{item.category}</td>
                                         <td className="px-6 py-4 text-center text-xs font-black text-blue-600">{item.sold}</td>
-                                        <td className="px-6 py-4 text-right text-xs font-bold text-gray-500">₹{item.avgPrice}</td>
-                                        <td className="px-6 py-4 text-right text-sm font-black text-emerald-600">₹{item.revenue.toLocaleString()}</td>
+                                        <td className="px-6 py-4 text-right text-xs font-bold text-gray-500">INR {item.avgPrice}</td>
+                                        <td className="px-6 py-4 text-right text-sm font-black text-emerald-600">INR {item.revenue.toLocaleString()}</td>
                                     </tr>
                                 ))}
                             </tbody>

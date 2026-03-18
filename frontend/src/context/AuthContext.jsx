@@ -86,16 +86,19 @@ export const AuthProvider = ({ children }) => {
     // --- SELLER AUTH ---
     const sellerRegister = async (sellerData) => {
         try {
-            const res = await api.post('auth/seller/register', sellerData);
+            const config = sellerData instanceof FormData
+                ? { headers: { 'Content-Type': 'multipart/form-data' } }
+                : undefined;
+            const res = await api.post('auth/seller/register', sellerData, config);
             return res.data;
         } catch (err) {
             return { success: false, message: err.response?.data?.message || "Seller registration failed" };
         }
     };
 
-    const sellerLogin = async (email, password) => {
+    const sellerLogin = async (identifier, password) => {
         try {
-            const res = await api.post('auth/seller/login', { email, password });
+            const res = await api.post('auth/seller/login', { identifier, password });
             if (res.data.success) {
                 const { user: userData, token } = res.data.data;
                 setUser(userData);

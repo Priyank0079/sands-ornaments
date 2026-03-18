@@ -11,23 +11,23 @@ import {
     Trash2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useShop } from '../../../context/ShopContext';
+import { adminService } from '../services/adminService';
 import Pagination from '../components/Pagination';
 import DataTable from '../components/common/DataTable';
 import AdminStatsCard from '../components/AdminStatsCard';
 
 const CouponListPage = () => {
     const navigate = useNavigate();
-    const { coupons, deleteCoupon, toggleCoupon } = useShop();
+    const [coupons, setCoupons] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         // Refresh coupons on mount to get full admin list
         const fetchAll = async () => {
-             // In a real scenario, we might want a specific admin fetch here 
-             // but addCoupon etc already trigger full fetch in ShopContext.
-             // For safety, let's trigger it once.
-             // We can use a custom function if we add it to context, 
-             // but for now delete/toggle refresh the list.
+            setLoading(true);
+            const data = await adminService.getCoupons();
+            setCoupons(data || []);
+            setLoading(false);
         };
         fetchAll();
     }, []);
@@ -56,14 +56,22 @@ const CouponListPage = () => {
 
     const totalPages = Math.ceil(filteredCoupons.length / itemsPerPage);
 
-    const handleDelete = (id) => {
+    const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this coupon?')) {
-            deleteCoupon(id);
+            const success = await adminService.deleteCoupon(id);
+            if (success) {
+                setCoupons(prev => prev.filter(c => (c._id || c.id) !== id));
+            }
         }
     };
 
-    const handleToggle = (id) => {
-        toggleCoupon(id);
+    const handleToggle = async (id) => {
+        const res = await adminService.toggleCoupon(id);
+        if (res.success) {
+            setCoupons(prev => prev.map(c => 
+                (c._id || c.id) === id ? { ...c, active: !c.active } : c
+            ));
+        }
     };
 
     const getCouponStatus = (coupon) => {
@@ -228,7 +236,8 @@ const CouponListPage = () => {
                 searchPlaceholder="Search by code or description..."
             />
 
-            <Pagination
+            {!loading && (
+                <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}
                 onPageChange={(page) => {
@@ -237,7 +246,8 @@ const CouponListPage = () => {
                 }}
                 totalItems={filteredCoupons.length}
                 itemsPerPage={itemsPerPage}
-            />
+                />
+            )}
         </div>
     );
 };

@@ -8,10 +8,20 @@ const sellerSchema = new mongoose.Schema({
   password: { type: String, required: true },
   gstNumber: { type: String },
   panNumber: { type: String },
+  bisNumber: { type: String },
   shopAddress: String,
   city: String,
   state: String,
   pincode: String,
+  bankAccount: {
+    accountNumber: { type: String },
+    ifscCode: { type: String }
+  },
+  documents: {
+    aadharUrl: String,
+    shopLicenseUrl: String,
+    certificateUrl: String
+  },
   status: { type: String, enum: ["PENDING", "APPROVED", "REJECTED"], default: "PENDING", index: true },
   rejectionReason: String,
   registrationDate: { type: Date, default: Date.now },

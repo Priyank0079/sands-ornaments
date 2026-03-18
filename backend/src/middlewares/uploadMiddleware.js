@@ -13,6 +13,7 @@ const categoryUpload  = multer({ storage: makeStorage("categories"), limits: { f
 const bannerUpload    = multer({ storage: makeStorage("banners"),    limits: { fileSize: 10 * 1024 * 1024 } });
 const blogUpload      = multer({ storage: makeStorage("blogs"),      limits: { fileSize: 5  * 1024 * 1024 } });
 const evidenceUpload  = multer({ storage: makeStorage("returns"),    limits: { fileSize: 50 * 1024 * 1024 } });
+const sellerUpload    = multer({ storage: makeStorage("sellers"),    limits: { fileSize: 10 * 1024 * 1024 } });
 
 const upload = productUpload; // Alias for generic use
 
@@ -22,5 +23,6 @@ module.exports = {
   bannerUpload, 
   blogUpload, 
   evidenceUpload, 
+  sellerUpload,
   upload 
 };

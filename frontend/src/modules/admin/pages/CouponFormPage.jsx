@@ -1,31 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import {
-    ArrowLeft,
-    Save,
-    Plus,
-    Trash2,
-    Ticket,
-    Calendar,
-    Settings,
-    ShieldCheck,
-    Info,
-    CheckCircle2,
-    XCircle,
-    Copy,
-    AlertCircle
-} from 'lucide-react';
-import { useShop } from '../../../context/ShopContext';
-import { PRODUCTS as mockProducts } from '../../../mockData/data'; // Fallback / Helper
+import { Save, Calendar, Settings, ShieldCheck, Info, CheckCircle2 } from 'lucide-react';
+import { adminService } from '../services/adminService';
 import PageHeader from '../components/common/PageHeader';
 import { FormSection, Input, Select, TextArea } from '../components/common/FormControls';
+import toast from 'react-hot-toast';
 
 const CouponFormPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { products, categories, coupons, addCoupon, updateCoupon } = useShop();
     const isEdit = Boolean(id);
 
+    const [products, setProducts] = useState([]);
+    const [categories, setCategories] = useState([]);
     const ALL_CATEGORIES = categories || [];
 
     const [formData, setFormData] = useState({
@@ -47,18 +34,51 @@ const CouponFormPage = () => {
     });
 
     useEffect(() => {
-        if (isEdit && coupons) {
-            const coupon = coupons.find(c => c.id === id);
-            if (coupon) setFormData({
-                ...coupon,
-                value: coupon.amount || coupon.value || '', // Handle both structures
-                minOrderValue: coupon.minOrder || coupon.minOrderValue || '',
-                description: coupon.desc || coupon.description || '',
-                applicabilityType: coupon.applicabilityType || 'all',
-                targetItems: coupon.targetItems || []
-            });
-        }
-    }, [id, isEdit, coupons]);
+        const loadData = async () => {
+            try {
+                const [{ products: adminProducts }, adminCategories] = await Promise.all([
+                    adminService.getProducts({ limit: 100 }),
+                    adminService.getCategories()
+                ]);
+
+                const normalizedProducts = (adminProducts || []).map(p => ({
+                    id: p._id || p.id,
+                    name: p.name,
+                    image: p.images?.[0] || '',
+                    category: p.categories?.[0]?.name || 'Uncategorized'
+                }));
+
+                setProducts(normalizedProducts);
+                setCategories(adminCategories || []);
+
+                if (isEdit && id) {
+                    const coupon = await adminService.getCouponById(id);
+                    if (coupon) {
+                        const isNewUser = coupon.applicabilityType === 'new_user' || coupon.userEligibility === 'new';
+                        setFormData({
+                            code: coupon.code || '',
+                            type: coupon.type || 'flat',
+                            value: coupon.value ?? '',
+                            minOrderValue: coupon.minOrderValue ?? 0,
+                            maxDiscount: coupon.maxDiscount ?? '',
+                            validFrom: coupon.validFrom ? new Date(coupon.validFrom).toISOString().split('T')[0] : '',
+                            validUntil: coupon.validUntil ? new Date(coupon.validUntil).toISOString().split('T')[0] : '',
+                            usageLimit: coupon.usageLimit ?? '',
+                            perUserLimit: coupon.perUserLimit ?? 1,
+                            active: coupon.active !== false,
+                            userEligibility: isNewUser ? 'new' : (coupon.userEligibility || 'all'),
+                            description: coupon.description || '',
+                            applicabilityType: isNewUser ? 'all' : (coupon.applicabilityType || 'all'),
+                            targetItems: coupon.applicableCategories || coupon.applicableProducts || []
+                        });
+                    }
+                }
+            } catch (err) {
+                toast.error("Failed to load coupon data");
+            }
+        };
+        loadData();
+    }, [id, isEdit]);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -102,12 +122,19 @@ const CouponFormPage = () => {
             applicableProducts: formData.applicabilityType === 'product' ? formData.targetItems : []
         };
 
-        if (isEdit) {
-            await updateCoupon(id, payload);
-        } else {
-            await addCoupon(payload);
+        try {
+            const result = isEdit
+                ? await adminService.updateCoupon(id, payload)
+                : await adminService.createCoupon(payload);
+            if (result?.success === false) {
+                toast.error(result?.message || "Failed to save coupon");
+                return;
+            }
+            toast.success(isEdit ? "Coupon updated" : "Coupon created");
+            navigate('/admin/coupons');
+        } catch (err) {
+            toast.error("Failed to save coupon");
         }
-        navigate('/admin/coupons');
     };
 
     const handleSaveAction = {
@@ -157,7 +184,7 @@ const CouponFormPage = () => {
                                     value={formData.type}
                                     onChange={handleChange}
                                     options={[
-                                        { value: 'flat', label: 'Flat Amount (₹)' },
+                                        { value: 'flat', label: 'Flat Amount (INR)' },
                                         { value: 'percentage', label: 'Percentage (%)' },
                                         { value: 'free_shipping', label: 'Free Shipping' }
                                     ]}
@@ -253,20 +280,23 @@ const CouponFormPage = () => {
 
                                 {formData.applicabilityType === 'category' && formData.userEligibility !== 'new' && (
                                     <div className="space-y-2">
-                                        {ALL_CATEGORIES.map(cat => (
-                                            <label key={cat.id} className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-[#3E2723]/30 transition-all">
-                                                <div className={`w-5 h-5 rounded border flex items-center justify-center ${formData.targetItems.includes(cat.id) ? 'bg-[#3E2723] border-[#3E2723]' : 'border-gray-300'}`}>
-                                                    {formData.targetItems.includes(cat.id) && <CheckCircle2 size={12} className="text-white" />}
-                                                </div>
-                                                <input
-                                                    type="checkbox"
-                                                    className="hidden"
-                                                    checked={formData.targetItems.includes(cat.id)}
-                                                    onChange={() => toggleTargetItem(cat.id)}
-                                                />
-                                                <span className="text-sm font-medium text-gray-700">{cat.name}</span>
-                                            </label>
-                                        ))}
+                                        {ALL_CATEGORIES.map(cat => {
+                                            const catId = cat._id || cat.id;
+                                            return (
+                                                <label key={catId} className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-[#3E2723]/30 transition-all">
+                                                    <div className={`w-5 h-5 rounded border flex items-center justify-center ${formData.targetItems.includes(catId) ? 'bg-[#3E2723] border-[#3E2723]' : 'border-gray-300'}`}>
+                                                        {formData.targetItems.includes(catId) && <CheckCircle2 size={12} className="text-white" />}
+                                                    </div>
+                                                    <input
+                                                        type="checkbox"
+                                                        className="hidden"
+                                                        checked={formData.targetItems.includes(catId)}
+                                                        onChange={() => toggleTargetItem(catId)}
+                                                    />
+                                                    <span className="text-sm font-medium text-gray-700">{cat.name}</span>
+                                                </label>
+                                            );
+                                        })}
                                     </div>
                                 )}
 
@@ -286,7 +316,7 @@ const CouponFormPage = () => {
                                                 />
                                                 <div className="flex-1 min-w-0">
                                                     <div className="text-xs font-semibold text-gray-800 truncate">{p.name}</div>
-                                                    <div className="text-[10px] text-gray-500">{p.id} • {p.category}</div>
+                                                    <div className="text-[10px] text-gray-500">{p.id} - {p.category}</div>
                                                 </div>
                                             </label>
                                         )) : (
@@ -324,14 +354,14 @@ const CouponFormPage = () => {
                     <FormSection title="Limits & Caps" icon={<Settings size={18} className="text-gray-400" />}>
                         <div className="space-y-4">
                             <Input
-                                label="Min Order (₹)"
+                                label="Min Order (INR)"
                                 type="number"
                                 name="minOrderValue"
                                 value={formData.minOrderValue}
                                 onChange={handleChange}
                             />
                             <Input
-                                label="Max Discount (₹)"
+                                label="Max Discount (INR)"
                                 type="number"
                                 name="maxDiscount"
                                 value={formData.maxDiscount}

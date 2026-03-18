@@ -58,15 +58,17 @@ const SellerRegister = () => {
         setLoading(true);
         
         try {
-            // Mapping nested bank data
-            const payload = {
-                ...formData,
-                bankAccount: {
-                    accountNumber: formData.accountNumber,
-                    ifscCode: formData.ifscCode
+            const payload = new FormData();
+            Object.entries(formData).forEach(([key, value]) => {
+                if (value !== null && value !== undefined && value !== '') {
+                    payload.append(key, value);
                 }
-            };
-            
+            });
+            payload.append('bankAccount', JSON.stringify({
+                accountNumber: formData.accountNumber,
+                ifscCode: formData.ifscCode
+            }));
+
             const res = await sellerRegister(payload);
             if (res.success) {
                 setSubmitted(true);
@@ -162,7 +164,7 @@ const SellerRegister = () => {
                                 <div className="space-y-2">
                                     <label className={labelClasses}>Password <span className="text-red-500">*</span></label>
                                     <div className="relative group">
-                                        <input required type="password" name="password" value={formData.password} onChange={handleChange} className={inputClasses} placeholder="••••••••" />
+                                        <input required type="password" name="password" value={formData.password} onChange={handleChange} className={inputClasses} placeholder="********" />
                                         <Lock className={iconClasses} />
                                     </div>
                                 </div>

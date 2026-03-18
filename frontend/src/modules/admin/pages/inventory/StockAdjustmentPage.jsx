@@ -1,27 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Search, Save, RotateCcw, Plus, Minus, AlertCircle, CheckCircle2, Package } from 'lucide-react';
+import { adminService } from '../../services/adminService';
+import toast from 'react-hot-toast';
 
 const StockAdjustmentPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [products, setProducts] = useState([]);
-    const [adjustments, setAdjustments] = useState({}); // { productId: adjustmentAmount }
+    const [adjustments, setAdjustments] = useState({}); // { variantId: adjustmentAmount }
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
 
-    // Mock Data Load
-    useEffect(() => {
+    const loadInventory = async () => {
         setLoading(true);
-        // Simulating API fetch
-        setTimeout(() => {
-            setProducts([
-                { id: 1, name: 'Gold Plated Necklace', category: 'Necklace', stock: 120, image: 'https://placehold.co/40' },
-                { id: 2, name: 'Diamond Stud Earrings', category: 'Earrings', stock: 45, image: 'https://placehold.co/40' },
-                { id: 3, name: 'Silver Anklet', category: 'Anklet', stock: 0, image: 'https://placehold.co/40' },
-                { id: 4, name: 'Rose Gold Bracelet', category: 'Bracelet', stock: 85, image: 'https://placehold.co/40' },
-                { id: 5, name: 'Pearl Choker', category: 'Necklace', stock: 15, image: 'https://placehold.co/40' },
-            ]);
+        try {
+            const inventory = await adminService.getInventory();
+            const flattened = (inventory || []).flatMap(p => (p.variants || []).map(v => ({
+                productId: p._id || p.id,
+                variantId: v._id,
+                name: p.name,
+                category: p.categories?.[0]?.name || 'Uncategorized',
+                stock: v.stock,
+                variantName: v.name,
+                image: p.images?.[0] || 'https://placehold.co/40'
+            })));
+            setProducts(flattened);
+        } catch (err) {
+            toast.error("Failed to load inventory");
+        } finally {
             setLoading(false);
-        }, 500);
+        }
+    };
+
+    useEffect(() => {
+        loadInventory();
     }, []);
 
     const handleAdjustmentChange = (id, value) => {
@@ -35,29 +46,39 @@ const StockAdjustmentPage = () => {
         }
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         setSaving(true);
-        // Simulate API save
-        setTimeout(() => {
-            const newProducts = products.map(p => ({
-                ...p,
-                stock: p.stock + (adjustments[p.id] || 0)
-            }));
-            setProducts(newProducts);
+        try {
+            const entries = Object.entries(adjustments);
+            for (const [variantId, delta] of entries) {
+                const item = products.find(p => p.variantId === variantId);
+                if (!item) continue;
+                const newStock = item.stock + delta;
+                await adminService.adjustStock({
+                    productId: item.productId,
+                    variantId,
+                    newStock,
+                    reason: "Manual adjustment by Admin"
+                });
+            }
+            toast.success("Inventory updated");
             setAdjustments({});
+            await loadInventory();
+        } catch (err) {
+            toast.error("Failed to update inventory");
+        } finally {
             setSaving(false);
-            // Show toast/success message here if we had a toast system
-        }, 1000);
+        }
     };
 
     const resetAdjustments = () => {
         setAdjustments({});
     };
 
-    const filteredProducts = products.filter(p =>
+    const filteredProducts = useMemo(() => products.filter(p =>
         p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.category.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    ), [products, searchTerm]);
 
     const pendingCount = Object.keys(adjustments).length;
 
@@ -135,12 +156,12 @@ const StockAdjustmentPage = () => {
                                 </tr>
                             ) : (
                                 filteredProducts.map((product) => {
-                                    const adjustment = adjustments[product.id] || 0;
+                                    const adjustment = adjustments[product.variantId] || 0;
                                     const finalStock = product.stock + adjustment;
                                     const isModified = adjustment !== 0;
 
                                     return (
-                                        <tr key={product.id} className={`hover:bg-gray-50/50 transition-colors group ${isModified ? 'bg-blue-50/30' : ''}`}>
+                                        <tr key={product.variantId} className={`hover:bg-gray-50/50 transition-colors group ${isModified ? 'bg-blue-50/30' : ''}`}>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-4">
                                                     <div className="w-10 h-10 bg-gray-50 rounded-lg border border-gray-100 p-1 flex-shrink-0">
@@ -152,7 +173,7 @@ const StockAdjustmentPage = () => {
                                                     </div>
                                                     <div>
                                                         <p className="text-sm font-bold text-gray-900 line-clamp-1">{product.name}</p>
-                                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{product.category}</p>
+                                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{product.category} - {product.variantName || 'Standard'}</p>
                                                     </div>
                                                 </div>
                                             </td>
@@ -166,7 +187,7 @@ const StockAdjustmentPage = () => {
                                                     <input
                                                         type="number"
                                                         value={adjustment === 0 ? '' : adjustment}
-                                                        onChange={(e) => handleAdjustmentChange(product.id, e.target.value)}
+                                                        onChange={(e) => handleAdjustmentChange(product.variantId, e.target.value)}
                                                         placeholder="0"
                                                         className={`w-24 px-3 py-2 text-center rounded-xl border-2 text-sm font-black focus:outline-none focus:ring-0 transition-all
                                                             ${adjustment > 0 ? 'bg-emerald-50 border-emerald-200 text-emerald-600 placeholder:text-emerald-300' : ''}

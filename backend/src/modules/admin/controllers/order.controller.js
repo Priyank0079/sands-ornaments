@@ -3,10 +3,11 @@ const { success, error } = require("../../../utils/apiResponse");
 
 exports.getOrders = async (req, res) => {
   try {
-    const { page = 1, limit = 20, status, search } = req.query;
+    const { page = 1, limit = 20, status, search, userId } = req.query;
     const query = {};
 
     if (status) query.status = status;
+    if (userId) query.userId = userId;
     if (search) {
       query.$or = [
         { orderId: { $regex: search, $options: "i" } },

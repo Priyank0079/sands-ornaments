@@ -1,215 +1,223 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-    User, Mail, Phone, MapPin,
-    ShoppingBag, Heart, ArrowLeft,
-    Shield, CheckCircle2, XCircle,
-    Calendar, Clock, ChevronRight
+    ArrowLeft,
+    Mail,
+    Phone,
+    Calendar,
+    ShieldCheck,
+    ShieldOff,
+    Package,
+    Heart,
+    Ticket,
+    MapPin,
+    ChevronRight
 } from 'lucide-react';
 import PageHeader from '../components/common/PageHeader';
+import AdminStatsCard from '../components/AdminStatsCard';
+import { adminService } from '../services/adminService';
+import toast from 'react-hot-toast';
 
 const UserView = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const [user, setUser] = useState(null);
+    const [orders, setOrders] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [toggling, setToggling] = useState(false);
 
-    // Mock User Data
-    const [user, setUser] = useState({
-        id: id || 'USR-1001',
-        name: 'Aditi Singh',
-        email: 'aditi.s@gmail.com',
-        phone: '+91 98123 45678',
-        joinedDate: 'December 12, 2024',
-        status: 'Active',
-        totalOrders: 12,
-        totalSpent: '45,690',
-        addresses: [
-            { type: 'Home', address: 'B-402, Sunshine Heights, Andheri West, Mumbai - 400053', isDefault: true },
-            { type: 'Office', address: 'Times Square Tower, 8th Floor, BKC, Mumbai - 400051', isDefault: false }
-        ],
-        wishlist: [
-            { id: 201, name: '925 Silver Chain', price: 1545, image: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=200' },
-            { id: 202, name: 'Minimalist Bangle', price: 2800, image: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=200' }
-        ],
-        orderHistory: [
-            { id: 'ORD-82741', date: 'Dec 26, 2024', total: 5544, status: 'Ordered' },
-            { id: 'ORD-81120', date: 'Dec 10, 2024', total: 12000, status: 'Delivered' },
-            { id: 'ORD-79943', date: 'Nov 28, 2024', total: 3500, status: 'Delivered' }
-        ],
-        cart: [
-            { id: 301, name: 'Royal Solitaire Ring', price: 5999, quantity: 1, image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=200' },
-            { id: 302, name: 'Classic Silver Earrings', price: 1200, quantity: 2, image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=200' }
-        ]
-    });
+    useEffect(() => {
+        const loadUser = async () => {
+            setLoading(true);
+            try {
+                const [userData, userOrders] = await Promise.all([
+                    adminService.getUserById(id),
+                    adminService.getOrders({ userId: id, limit: 50 })
+                ]);
+                setUser(userData);
+                setOrders(userOrders || []);
+            } catch (err) {
+                toast.error("Failed to load user details");
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadUser();
+    }, [id]);
 
-    const statusColors = {
-        'Ordered': 'text-blue-600 bg-blue-50',
-        'Delivered': 'text-green-600 bg-green-50',
+    const totalSpend = useMemo(
+        () => orders.reduce((acc, order) => acc + (order.total || 0), 0),
+        [orders]
+    );
+
+    const lastOrder = orders[0];
+    const lastAddress = lastOrder?.shippingAddress;
+
+    const handleToggleBlock = async () => {
+        if (!user) return;
+        setToggling(true);
+        const success = await adminService.toggleUserStatus(user._id || user.id);
+        if (success) {
+            toast.success(user.isBlocked ? "User unblocked" : "User blocked");
+            const refreshed = await adminService.getUserById(user._id || user.id);
+            setUser(refreshed);
+        } else {
+            toast.error("Failed to update user status");
+        }
+        setToggling(false);
     };
 
+    if (loading) {
+        return (
+            <div className="p-20 text-center text-xs font-bold uppercase tracking-widest text-gray-400">
+                Loading user profile...
+            </div>
+        );
+    }
+
+    if (!user) {
+        return (
+            <div className="p-20 text-center">
+                <h2 className="text-2xl font-bold text-gray-400">User Not Found</h2>
+                <button
+                    onClick={() => navigate('/admin/users')}
+                    className="mt-4 text-primary font-bold hover:underline underline-offset-4 flex items-center gap-2 mx-auto"
+                >
+                    <ArrowLeft size={16} /> Back to Users
+                </button>
+            </div>
+        );
+    }
+
     return (
-        <div className="min-h-screen bg-gray-50 p-6 md:p-8">
-            <div className="max-w-[1400px] mx-auto space-y-8 animate-in fade-in duration-500 pb-20">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="space-y-1">
-                        <button
-                            onClick={() => navigate('/admin/users')}
-                            className="flex items-center gap-2 text-gray-500 hover:text-gray-800 transition-colors text-sm font-medium mb-4"
-                        >
-                            <ArrowLeft className="w-4 h-4" />
-                            Back to User List
-                        </button>
-                        <div className="flex items-center gap-3">
-                            <h1 className="text-2xl font-bold text-gray-900">{user.name}</h1>
-                            <span className={`px-3 py-1 rounded-full text-[11px] font-semibold border ${user.status === 'Active' ? 'bg-green-50 text-green-600 border-green-100' : 'bg-red-50 text-red-600 border-red-100'
-                                }`}>
-                                {user.status}
+        <div className="space-y-8 pb-20 text-left animate-in fade-in duration-500">
+            <PageHeader
+                title="User Profile"
+                subtitle={`Detailed overview of ${user.name || 'Customer'}`}
+                backPath="/admin/users"
+            />
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Profile Card */}
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
+                    <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center text-xl font-black text-gray-600">
+                            {(user.name || 'U').charAt(0)}
+                        </div>
+                        <div>
+                            <p className="text-lg font-black text-gray-900">{user.name || 'Unnamed User'}</p>
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{user.role || 'user'}</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-3">
+                        <div className="flex items-center gap-3 text-sm text-gray-600">
+                            <Mail size={14} className="text-gray-400" />
+                            <span className="font-semibold">{user.email || 'No email'}</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-sm text-gray-600">
+                            <Phone size={14} className="text-gray-400" />
+                            <span className="font-semibold">{user.phone || 'No phone'}</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-sm text-gray-600">
+                            <Calendar size={14} className="text-gray-400" />
+                            <span className="font-semibold">
+                                Joined {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown'}
                             </span>
                         </div>
-                        <p className="text-sm text-gray-500 flex items-center gap-2 font-medium">
-                            <Mail className="w-4 h-4 text-gray-400" />
-                            {user.email} • {user.id}
-                        </p>
+                    </div>
+
+                    <div className="pt-4 border-t border-gray-100">
+                        <button
+                            onClick={handleToggleBlock}
+                            disabled={toggling}
+                            className={`w-full px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${user.isBlocked
+                                ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white border border-emerald-200'
+                                : 'bg-red-50 text-red-600 hover:bg-red-500 hover:text-white border border-red-200'
+                                }`}
+                        >
+                            {user.isBlocked ? <ShieldCheck size={14} /> : <ShieldOff size={14} />}
+                            {user.isBlocked ? 'Enable Account' : 'Block Account'}
+                        </button>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                    {/* Sidebar */}
-                    <div className="space-y-6">
-                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-6">
-                            <div className="flex items-center justify-center py-4">
-                                <div className="w-24 h-24 rounded-full bg-[#F5F0EB] border-4 border-white shadow-md flex items-center justify-center text-[#8D6E63] text-3xl font-bold">
-                                    {user.name.charAt(0)}
-                                </div>
-                            </div>
-
-                            <div className="space-y-4 pt-4 border-t border-gray-50">
-                                <div className="flex items-center gap-3">
-                                    <Phone className="w-4 h-4 text-gray-400" />
-                                    <span className="text-sm text-gray-600 font-medium">{user.phone}</span>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <Calendar className="w-4 h-4 text-gray-400" />
-                                    <span className="text-sm text-gray-600 font-medium">Joined: {user.joinedDate}</span>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-50">
-                                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                                    <p className="text-xs font-semibold text-gray-400 mb-1">Total Orders</p>
-                                    <p className="text-lg font-bold text-gray-900">{user.totalOrders}</p>
-                                </div>
-                                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                                    <p className="text-xs font-semibold text-gray-400 mb-1">Total Spent</p>
-                                    <p className="text-lg font-bold text-gray-900">₹{user.totalSpent}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Addresses Box */}
-                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-                            <h3 className="text-sm font-semibold text-gray-800 mb-6 flex items-center gap-2">
-                                <MapPin className="w-4 h-4 text-[#8D6E63]" />
-                                Saved Addresses
-                            </h3>
-                            <div className="space-y-4">
-                                {user.addresses.map((addr, idx) => (
-                                    <div key={idx} className="p-4 bg-gray-50 rounded-xl border border-gray-100 space-y-2">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-xs font-semibold text-gray-400">{addr.type}</span>
-                                            {addr.isDefault && <span className="text-[10px] font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded">Default</span>}
-                                        </div>
-                                        <p className="text-[11px] text-gray-600 leading-relaxed font-medium font-sans">
-                                            {addr.address}
-                                        </p>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                {/* Stats */}
+                <div className="lg:col-span-2 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <AdminStatsCard
+                            label="Orders"
+                            value={orders.length}
+                            icon={Package}
+                            color="text-blue-600"
+                            bgColor="bg-blue-50"
+                        />
+                        <AdminStatsCard
+                            label="Total Spend"
+                            value={`INR ${totalSpend.toLocaleString()}`}
+                            icon={Package}
+                            color="text-emerald-600"
+                            bgColor="bg-emerald-50"
+                        />
+                        <AdminStatsCard
+                            label="Wishlist"
+                            value={user.wishlist?.length || 0}
+                            icon={Heart}
+                            color="text-rose-600"
+                            bgColor="bg-rose-50"
+                        />
+                        <AdminStatsCard
+                            label="Coupons Used"
+                            value={user.usedCoupons?.length || 0}
+                            icon={Ticket}
+                            color="text-amber-600"
+                            bgColor="bg-amber-50"
+                        />
                     </div>
 
-                    {/* Main Content */}
-                    <div className="lg:col-span-2 space-y-8">
-                        {/* Order History */}
-                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                            <div className="px-6 py-4 border-b border-gray-50 bg-gray-50/30 flex items-center justify-between">
-                                <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-                                    <ShoppingBag className="w-4 h-4 text-[#8D6E63]" />
-                                    Order History
-                                </h3>
-                                <span className="text-xs font-semibold text-gray-400">{user.orderHistory.length} Total Orders</span>
-                            </div>
-                            <div className="divide-y divide-gray-50">
-                                {user.orderHistory.map((order) => (
-                                    <div key={order.id} className="py-3 px-6 flex items-center justify-between hover:bg-gray-50/50 transition-colors">
-                                        <div className="space-y-0.5">
-                                            <p className="text-sm font-semibold text-gray-900">{order.id}</p>
-                                            <p className="text-xs text-gray-400 font-medium">{order.date}</p>
-                                        </div>
-                                        <div className="text-center">
-                                            <p className="text-sm font-semibold text-gray-900">₹{order.total.toLocaleString()}</p>
-                                        </div>
-                                        <div className="flex items-center gap-6">
-                                            <span className={`px-3 py-1 rounded-full text-[11px] font-semibold ${statusColors[order.status] || 'bg-gray-100 text-gray-500'}`}>
-                                                {order.status}
-                                            </span>
-                                            <button
-                                                onClick={() => navigate(`/admin/orders/view/${order.id}`)}
-                                                className="p-2 hover:bg-gray-100 rounded-lg text-gray-400"
-                                            >
-                                                <ChevronRight className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                    {/* Recent Address */}
+                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                        <div className="flex items-center gap-2 mb-4">
+                            <MapPin size={16} className="text-gray-400" />
+                            <h3 className="text-xs font-black uppercase tracking-widest text-gray-500">Last Shipping Address</h3>
                         </div>
+                        {lastAddress ? (
+                            <div className="text-sm font-semibold text-gray-700">
+                                {lastAddress.firstName} {lastAddress.lastName}, {lastAddress.flatNo} {lastAddress.area}, {lastAddress.city}, {lastAddress.state} - {lastAddress.pincode}
+                            </div>
+                        ) : (
+                            <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">No orders yet</div>
+                        )}
+                    </div>
 
-                        {/* Active Cart */}
-                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                            <div className="px-6 py-4 border-b border-gray-50 bg-gray-50/30 flex items-center justify-between">
-                                <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-                                    <ShoppingBag className="w-4 h-4 text-blue-500" />
-                                    Active Cart Items
-                                </h3>
-                                <span className="text-xs font-semibold text-blue-500">{user.cart.length} In Bag</span>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-gray-100">
-                                {user.cart.map((item) => (
-                                    <div key={item.id} className="bg-white p-6 flex items-center gap-4">
-                                        <div className="w-16 h-16 rounded-lg overflow-hidden border border-gray-100 bg-gray-50 flex-shrink-0">
-                                            <img src={item.image} alt="" className="w-full h-full object-cover" />
-                                        </div>
-                                        <div className="flex-1">
-                                            <h4 className="text-sm font-semibold text-gray-900">{item.name}</h4>
-                                            <div className="flex items-center justify-between mt-1">
-                                                <p className="text-sm font-bold text-[#3E2723]">₹{item.price.toLocaleString()}</p>
-                                                <p className="text-[11px] font-semibold text-gray-400">Qty: {item.quantity}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                    {/* Order History */}
+                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                        <div className="p-6 border-b border-gray-50 flex items-center justify-between">
+                            <h3 className="text-xs font-black uppercase tracking-widest text-gray-500">Order History</h3>
+                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{orders.length} orders</span>
                         </div>
-
-                        {/* Wishlist */}
-                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                            <div className="px-6 py-4 border-b border-gray-50 bg-gray-50/30 flex items-center gap-2">
-                                <Heart className="w-4 h-4 text-red-400" />
-                                <h3 className="text-sm font-semibold text-gray-800">Wishlist Items</h3>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-gray-100">
-                                {user.wishlist.map((item) => (
-                                    <div key={item.id} className="bg-white p-6 flex items-center gap-4">
-                                        <div className="w-16 h-16 rounded-lg overflow-hidden border border-gray-100 bg-gray-50 flex-shrink-0">
-                                            <img src={item.image} alt="" className="w-full h-full object-cover" />
-                                        </div>
-                                        <div>
-                                            <h4 className="text-sm font-semibold text-gray-900">{item.name}</h4>
-                                            <p className="text-sm font-bold text-[#3E2723]">₹{item.price.toLocaleString()}</p>
-                                        </div>
+                        <div className="divide-y divide-gray-50">
+                            {orders.length > 0 ? orders.slice(0, 10).map((order) => (
+                                <div
+                                    key={order._id}
+                                    className="p-5 hover:bg-slate-50 transition-colors flex items-center justify-between cursor-pointer"
+                                    onClick={() => navigate(`/admin/orders/${order._id}`)}
+                                >
+                                    <div>
+                                        <p className="text-xs font-black text-gray-900">#{order.orderId}</p>
+                                        <p className="text-[10px] font-bold text-gray-400">
+                                            {new Date(order.createdAt).toLocaleDateString()}
+                                        </p>
                                     </div>
-                                ))}
-                            </div>
+                                    <div className="text-right">
+                                        <p className="text-xs font-black text-gray-900">INR {order.total?.toLocaleString()}</p>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{order.status}</p>
+                                    </div>
+                                    <ChevronRight size={16} className="text-gray-300" />
+                                </div>
+                            )) : (
+                                <div className="p-10 text-center text-xs font-bold uppercase tracking-widest text-gray-400">No orders found</div>
+                            )}
                         </div>
                     </div>
                 </div>

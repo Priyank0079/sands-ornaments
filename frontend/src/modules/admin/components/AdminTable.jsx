@@ -20,7 +20,7 @@ const AdminTable = ({ columns, data, onRowClick, emptyMessage = "No Data Availab
                     {data.length > 0 ? (
                         data.map((row, rowIdx) => (
                             <tr
-                                key={row.id || rowIdx}
+                                key={row._id || row.id || rowIdx}
                                 onClick={() => onRowClick && onRowClick(row)}
                                 className={`group hover:bg-gray-50/50 transition-colors ${onRowClick ? 'cursor-pointer' : ''}`}
                             >

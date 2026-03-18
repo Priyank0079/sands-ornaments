@@ -142,6 +142,15 @@ export const adminService = {
       return [];
     }
   },
+  getCouponById: async (id) => {
+    try {
+      const res = await api.get(`admin/coupons/${id}`);
+      return res.data.data?.coupon || res.data.coupon;
+    } catch (err) {
+      console.error("Admin fetch coupon failed:", err);
+      throw err;
+    }
+  },
   createCoupon: async (data) => {
     try {
       const res = await api.post('admin/coupons', data);
@@ -179,6 +188,44 @@ export const adminService = {
     }
   },
 
+  // Inventory Management
+  getInventory: async (params = {}) => {
+    try {
+      const res = await api.get('admin/inventory', { params });
+      return res.data.data?.inventory || res.data.inventory || [];
+    } catch (err) {
+      console.error("Admin fetch inventory failed:", err);
+      return [];
+    }
+  },
+  adjustStock: async (payload) => {
+    try {
+      const res = await api.post('admin/inventory/adjust', payload);
+      return res.data;
+    } catch (err) {
+      console.error("Admin adjust stock failed:", err);
+      return { success: false, message: err.response?.data?.message || "Failed to adjust stock" };
+    }
+  },
+  getStockHistory: async (params = {}) => {
+    try {
+      const res = await api.get('admin/inventory/history', { params });
+      return res.data.data?.logs || res.data.logs || [];
+    } catch (err) {
+      console.error("Admin fetch stock history failed:", err);
+      return [];
+    }
+  },
+  getLowStockAlerts: async (params = {}) => {
+    try {
+      const res = await api.get('admin/inventory/alerts', { params });
+      return res.data.data?.alerts || res.data.alerts || [];
+    } catch (err) {
+      console.error("Admin fetch low stock alerts failed:", err);
+      return [];
+    }
+  },
+
   // Homepage Sections (CMS)
   getHomepageLayout: async () => {
     try {
@@ -200,10 +247,10 @@ export const adminService = {
   },
 
   // Order Management
-  getOrders: async () => {
+  getOrders: async (params = {}) => {
     try {
-      const res = await api.get('admin/orders');
-      return res.data.orders || [];
+      const res = await api.get('admin/orders', { params });
+      return res.data.data?.orders || res.data.orders || [];
     } catch (err) {
       console.error("Admin fetch orders failed:", err);
       return [];
@@ -261,7 +308,7 @@ export const adminService = {
   getSellers: async (params = {}) => {
     try {
       const res = await api.get('admin/sellers', { params });
-      return res.data.sellers || [];
+      return res.data.data?.sellers || res.data.sellers || [];
     } catch (err) {
       console.error("Admin fetch sellers failed:", err);
       return [];
@@ -270,7 +317,7 @@ export const adminService = {
   getSellerDetails: async (id) => {
     try {
       const res = await api.get(`admin/sellers/${id}`);
-      return res.data.seller;
+      return res.data.data?.seller || res.data.seller;
     } catch (err) {
       console.error("Admin fetch seller details failed:", err);
       throw err;
@@ -287,18 +334,27 @@ export const adminService = {
   },
 
   // User Management
-  getUsers: async (type = 'customer') => {
+  getUsers: async (params = {}) => {
     try {
-      const res = await api.get('admin/users', { params: { type } });
-      return res.data.users || [];
+      const res = await api.get('admin/users', { params });
+      return res.data.data?.users || res.data.users || [];
     } catch (err) {
       console.error("Admin fetch users failed:", err);
       return [];
     }
   },
+  getUserById: async (id) => {
+    try {
+      const res = await api.get(`admin/users/${id}`);
+      return res.data.data?.user || res.data.user;
+    } catch (err) {
+      console.error("Admin fetch user details failed:", err);
+      throw err;
+    }
+  },
   toggleUserStatus: async (id) => {
     try {
-      const res = await api.patch(`admin/users/${id}/toggle-status`);
+      const res = await api.patch(`admin/users/${id}/block`);
       return res.data.success;
     } catch (err) {
       console.error("Admin toggle user status failed:", err);
@@ -365,6 +421,44 @@ export const adminService = {
     } catch (err) {
       console.error("Save page failed:", err);
       return { success: false, message: err.response?.data?.message || "Failed to save page" };
+    }
+  },
+
+  // Admin Notifications
+  getAdminNotifications: async () => {
+    try {
+      const res = await api.get('admin/notifications');
+      return res.data.data?.notifications || res.data.notifications || [];
+    } catch (err) {
+      console.error("Admin fetch notifications failed:", err);
+      return [];
+    }
+  },
+  markAdminNotificationRead: async (id) => {
+    try {
+      const res = await api.patch(`admin/notifications/${id}/read`);
+      return res.data.success;
+    } catch (err) {
+      console.error("Admin mark notification read failed:", err);
+      return false;
+    }
+  },
+  markAllAdminNotificationsRead: async () => {
+    try {
+      const res = await api.patch('admin/notifications/read-all');
+      return res.data.success;
+    } catch (err) {
+      console.error("Admin mark all notifications read failed:", err);
+      return false;
+    }
+  },
+  deleteAdminNotification: async (id) => {
+    try {
+      const res = await api.delete(`admin/notifications/${id}`);
+      return res.data.success;
+    } catch (err) {
+      console.error("Admin delete notification failed:", err);
+      return false;
     }
   }
 };

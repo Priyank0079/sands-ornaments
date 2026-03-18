@@ -5,7 +5,9 @@ const notificationSchema = new mongoose.Schema({
   title: { type: String, required: true },
   message: { type: String, required: true },
   type: { type: String, enum: ["ORDER", "RETURN", "REPLACEMENT", "COUPON", "GENERAL", "SELLER_REQUEST"], default: "GENERAL" },
+  priority: { type: String, enum: ["Low", "Medium", "High", "Urgent"], default: "Medium" },
   link: String,
+  isBroadcast: { type: Boolean, default: false, index: true },
   isRead: { type: Boolean, default: false, index: true },
 }, { timestamps: true });
 

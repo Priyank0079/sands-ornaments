@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Download, Filter, ArrowUpRight, ArrowDownLeft, RefreshCcw, FileText } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Search, Download, ArrowUpRight, ArrowDownLeft, RefreshCcw, FileText, Package } from 'lucide-react';
+import { adminService } from '../../services/adminService';
+import toast from 'react-hot-toast';
 
 const StockHistoryPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -7,64 +9,34 @@ const StockHistoryPage = () => {
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    // Mock Data Load
     useEffect(() => {
-        setLoading(true);
-        setTimeout(() => {
-            setHistory([
-                {
-                    id: 1,
-                    date: '2025-02-07 14:30',
-                    product: { name: 'Gold Plated Necklace', image: 'https://placehold.co/40' },
-                    type: 'Manual Adjustment',
-                    change: 50,
-                    effect: { from: 70, to: 120 },
-                    user: 'Admin (Aditi)',
-                    reason: 'New Stock Arrival'
-                },
-                {
-                    id: 2,
-                    date: '2025-02-07 12:15',
-                    product: { name: 'Diamond Stud Earrings', image: 'https://placehold.co/40' },
-                    type: 'Order Fulfilled',
-                    change: -2,
-                    effect: { from: 47, to: 45 },
-                    user: 'System',
-                    reason: 'Order #ORD-5001'
-                },
-                {
-                    id: 3,
-                    date: '2025-02-06 09:45',
-                    product: { name: 'Silver Anklet', image: 'https://placehold.co/40' },
-                    type: 'Return Restock',
-                    change: 5,
-                    effect: { from: 10, to: 15 },
-                    user: 'Admin (Aditi)',
-                    reason: 'Return #RTN-105 (Unopened)'
-                },
-                {
-                    id: 4,
-                    date: '2025-02-05 16:20',
-                    product: { name: 'Rose Gold Bracelet', image: 'https://placehold.co/40' },
-                    type: 'Order Fulfilled',
-                    change: -10,
-                    effect: { from: 10, to: 0 },
-                    user: 'System',
-                    reason: 'Order #ORD-4998'
-                },
-                {
-                    id: 5,
-                    date: '2025-02-05 10:00',
-                    product: { name: 'Pearl Choker', image: 'https://placehold.co/40' },
-                    type: 'Manual Adjustment',
-                    change: -5,
-                    effect: { from: 90, to: 85 },
-                    user: 'Admin (Aditi)',
-                    reason: 'Damaged Item'
-                },
-            ]);
-            setLoading(false);
-        }, 500);
+        const loadHistory = async () => {
+            setLoading(true);
+            try {
+                const logs = await adminService.getStockHistory();
+                const normalized = (logs || []).map(log => ({
+                    id: log._id,
+                    date: log.createdAt,
+                    product: {
+                        name: log.productId?.name || 'Unknown',
+                        image: log.productId?.images?.[0] || ''
+                    },
+                    type: log.changeType === 'adjustment'
+                        ? 'Manual Adjustment'
+                        : (log.changeType === 'return' ? 'Return Restock' : (log.changeType === 'sale' ? 'Order Fulfilled' : 'Stock In')),
+                    change: log.change,
+                    effect: { from: log.previousStock, to: log.newStock },
+                    user: log.adminId?.name ? `Admin (${log.adminId.name})` : 'System',
+                    reason: log.reason || ''
+                }));
+                setHistory(normalized);
+            } catch (err) {
+                toast.error("Failed to load stock history");
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadHistory();
     }, []);
 
     const getTypeStyle = (type) => {
@@ -85,7 +57,7 @@ const StockHistoryPage = () => {
         }
     };
 
-    const filteredHistory = history.filter(item => {
+    const filteredHistory = useMemo(() => history.filter(item => {
         const matchesSearch = item.product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             item.reason.toLowerCase().includes(searchTerm.toLowerCase());
 
@@ -95,7 +67,7 @@ const StockHistoryPage = () => {
             (filterType === 'Return' && item.type === 'Return Restock');
 
         return matchesSearch && matchesFilter;
-    });
+    }), [history, searchTerm, filterType]);
 
     return (
         <div className="space-y-8 font-sans animate-in fade-in duration-500">
@@ -161,13 +133,21 @@ const StockHistoryPage = () => {
                                 filteredHistory.map((item) => (
                                     <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
                                         <td className="px-6 py-4">
-                                            <p className="text-xs font-bold text-gray-900 font-mono">{item.date.split(' ')[0]}</p>
-                                            <p className="text-[10px] font-bold text-gray-400">{item.date.split(' ')[1]}</p>
+                                            <p className="text-xs font-bold text-gray-900 font-mono">
+                                                {new Date(item.date).toLocaleDateString()}
+                                            </p>
+                                            <p className="text-[10px] font-bold text-gray-400">
+                                                {new Date(item.date).toLocaleTimeString()}
+                                            </p>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-8 h-8 bg-gray-50 rounded border border-gray-100 p-0.5 flex-shrink-0">
-                                                    <img src={item.product.image} className="w-full h-full object-contain mix-blend-multiply" />
+                                                    {item.product.image ? (
+                                                        <img src={item.product.image} className="w-full h-full object-contain mix-blend-multiply" />
+                                                    ) : (
+                                                        <Package size={16} className="text-gray-300 m-auto" />
+                                                    )}
                                                 </div>
                                                 <div>
                                                     <p className="text-xs font-black text-gray-900 line-clamp-1">{item.product.name}</p>
@@ -187,7 +167,7 @@ const StockHistoryPage = () => {
                                         <td className="px-6 py-4 text-center">
                                             <div className="flex items-center justify-center gap-2 text-xs font-mono font-bold text-gray-600">
                                                 <span className="opacity-50">{item.effect.from}</span>
-                                                <span className="text-gray-300">→</span>
+                                                <span className="text-gray-300">-&gt;</span>
                                                 <span className="text-gray-900">{item.effect.to}</span>
                                             </div>
                                         </td>

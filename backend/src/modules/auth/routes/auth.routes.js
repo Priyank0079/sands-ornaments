@@ -3,6 +3,7 @@ const { otpLimiter, verifyOtpLimiter } = require("../../../middlewares/rateLimit
 const userAuth   = require("../controllers/userAuth.controller");
 const adminAuth  = require("../controllers/adminAuth.controller");
 const sellerAuth = require("../controllers/sellerAuth.controller");
+const { sellerUpload } = require("../../../middlewares/uploadMiddleware");
 
 // User auth
 router.post("/send-otp",    otpLimiter,       userAuth.sendOtp);
@@ -15,7 +16,15 @@ router.post("/admin/login",  adminAuth.login);
 router.post("/admin/logout", adminAuth.logout);
 
 // Seller auth
-router.post("/seller/register", sellerAuth.register);
+router.post(
+  "/seller/register",
+  sellerUpload.fields([
+    { name: "aadhar", maxCount: 1 },
+    { name: "shopLicense", maxCount: 1 },
+    { name: "certificate", maxCount: 1 }
+  ]),
+  sellerAuth.register
+);
 router.post("/seller/login",    sellerAuth.login);
 router.post("/seller/logout",   sellerAuth.logout);
 

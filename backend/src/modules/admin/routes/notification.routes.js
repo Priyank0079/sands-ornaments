@@ -4,6 +4,10 @@ const authenticate = require("../../../middlewares/authenticate");
 const requireRole = require("../../../middlewares/requireRole");
 
 router.use(authenticate, requireRole("admin"));
+router.get("/", notificationController.getNotifications);
 router.post("/broadcast", notificationController.broadcastNotification);
+router.patch("/:id/read", notificationController.markNotificationRead);
+router.patch("/read-all", notificationController.markAllRead);
+router.delete("/:id", notificationController.deleteNotification);
 
 module.exports = router;

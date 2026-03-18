@@ -3,44 +3,59 @@ import { useNavigate } from 'react-router-dom';
 import {
     Bell, ShoppingBag, UserPlus, Star, Store,
     AlertTriangle, Check, Trash2,
-    Filter, MoreVertical, Clock, Package,
-    CheckCircle2, Eye, X
+    Clock, CheckCircle2, Eye
 } from 'lucide-react';
 import PageHeader from '../components/common/PageHeader';
+import { adminService } from '../services/adminService';
+import toast from 'react-hot-toast';
 
 const AdminNotifications = () => {
     const navigate = useNavigate();
-    // Mock Admin Notifications Data
     const [notifications, setNotifications] = useState([]);
+    const [loading, setLoading] = useState(false);
 
     React.useEffect(() => {
-        const fetchNotifs = () => {
-            const data = JSON.parse(localStorage.getItem('admin_notifications') || '[]');
-            setNotifications(data);
+        const fetchNotifs = async () => {
+            setLoading(true);
+            try {
+                const data = await adminService.getAdminNotifications();
+                setNotifications(data || []);
+            } catch (err) {
+                toast.error("Failed to load notifications");
+            } finally {
+                setLoading(false);
+            }
         };
         fetchNotifs();
-        const interval = setInterval(fetchNotifs, 3000);
+        const interval = setInterval(fetchNotifs, 10000);
         return () => clearInterval(interval);
     }, []);
 
-    const markAsRead = (id) => {
-        const updated = notifications.map(n =>
-            n.id === id ? { ...n, isRead: true, unread: false } : n
-        );
-        setNotifications(updated);
-        localStorage.setItem('admin_notifications', JSON.stringify(updated));
+    const markAsRead = async (id) => {
+        const success = await adminService.markAdminNotificationRead(id);
+        if (success) {
+            setNotifications((prev) => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
+        } else {
+            toast.error("Failed to update notification");
+        }
     };
 
-    const markAllAsRead = () => {
-        const updated = notifications.map(n => ({ ...n, isRead: true, unread: false }));
-        setNotifications(updated);
-        localStorage.setItem('admin_notifications', JSON.stringify(updated));
+    const markAllAsRead = async () => {
+        const success = await adminService.markAllAdminNotificationsRead();
+        if (success) {
+            setNotifications((prev) => prev.map(n => ({ ...n, isRead: true })));
+        } else {
+            toast.error("Failed to mark all as read");
+        }
     };
 
-    const deleteNotification = (id) => {
-        const updated = notifications.filter(n => n.id !== id);
-        setNotifications(updated);
-        localStorage.setItem('admin_notifications', JSON.stringify(updated));
+    const deleteNotification = async (id) => {
+        const success = await adminService.deleteAdminNotification(id);
+        if (success) {
+            setNotifications((prev) => prev.filter(n => n._id !== id));
+        } else {
+            toast.error("Failed to delete notification");
+        }
     };
 
     const typeIcons = {
@@ -48,7 +63,8 @@ const AdminNotifications = () => {
         'Inventory': <AlertTriangle className="w-4 h-4 text-red-600" />,
         'Review': <Star className="w-4 h-4 text-amber-600" />,
         'User': <UserPlus className="w-4 h-4 text-green-600" />,
-        'SELLER_REQUEST': <Store className="w-4 h-4 text-indigo-600" />
+        'SELLER_REQUEST': <Store className="w-4 h-4 text-indigo-600" />,
+        'GENERAL': <Bell className="w-4 h-4 text-gray-600" />
     };
 
     const priorityStyles = {
@@ -92,14 +108,20 @@ const AdminNotifications = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
-                                {notifications.map((notif) => (
+                                {loading ? (
+                                    <tr>
+                                        <td colSpan="6" className="p-12 text-center text-xs font-bold uppercase tracking-widest text-gray-400">
+                                            Loading notifications...
+                                        </td>
+                                    </tr>
+                                ) : notifications.map((notif) => (
                                     <tr
-                                        key={notif.id}
-                                        className={`group hover:bg-gray-50 transition-colors ${notif.unread || !notif.isRead ? 'bg-[#FDFBF7]' : ''}`}
+                                        key={notif._id}
+                                        className={`group hover:bg-gray-50 transition-colors ${!notif.isRead ? 'bg-[#FDFBF7]' : ''}`}
                                     >
                                         <td className="p-4 text-center align-top pt-5">
                                             <div className="bg-white p-2 rounded-lg border border-gray-100 shadow-sm inline-flex items-center justify-center">
-                                                {typeIcons[notif.type]}
+                                                {typeIcons[notif.type] || typeIcons.GENERAL}
                                             </div>
                                         </td>
                                         <td className="p-4 align-top pt-5">
@@ -113,14 +135,14 @@ const AdminNotifications = () => {
                                             </div>
                                         </td>
                                         <td className="p-4 align-top pt-5">
-                                            <span className={`px-2 py-1 rounded-md text-[10px] font-bold border ${priorityStyles[notif.priority]}`}>
-                                                {notif.priority}
+                                            <span className={`px-2 py-1 rounded-md text-[10px] font-bold border ${priorityStyles[notif.priority || 'Medium']}`}>
+                                                {notif.priority || 'Medium'}
                                             </span>
                                         </td>
                                         <td className="p-4 align-top pt-5">
                                             <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-400">
                                                 <Clock className="w-3.5 h-3.5" />
-                                                <span>{notif.time}</span>
+                                                <span>{notif.createdAt ? new Date(notif.createdAt).toLocaleString() : '--'}</span>
                                             </div>
                                         </td>
                                         <td className="p-4 text-center align-top pt-5">
@@ -140,7 +162,7 @@ const AdminNotifications = () => {
                                                 {notif.link && (
                                                     <button
                                                         onClick={() => {
-                                                            markAsRead(notif.id);
+                                                            markAsRead(notif._id);
                                                             navigate(notif.link);
                                                         }}
                                                         className="p-2 bg-white border border-gray-200 rounded-lg text-gray-400 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm"
@@ -151,7 +173,7 @@ const AdminNotifications = () => {
                                                 )}
                                                 {!notif.isRead && (
                                                     <button
-                                                        onClick={() => markAsRead(notif.id)}
+                                                        onClick={() => markAsRead(notif._id)}
                                                         className="p-2 bg-white border border-gray-200 rounded-lg text-gray-400 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm"
                                                         title="Mark as read"
                                                     >
@@ -159,7 +181,7 @@ const AdminNotifications = () => {
                                                     </button>
                                                 )}
                                                 <button
-                                                    onClick={() => deleteNotification(notif.id)}
+                                                    onClick={() => deleteNotification(notif._id)}
                                                     className="p-2 bg-white border border-gray-200 rounded-lg text-gray-400 hover:text-red-600 hover:border-red-200 transition-all shadow-sm"
                                                     title="Delete"
                                                 >
@@ -173,7 +195,7 @@ const AdminNotifications = () => {
                         </table>
                     </div>
 
-                    {notifications.length === 0 && (
+                    {notifications.length === 0 && !loading && (
                         <div className="p-20 text-center">
                             <div className="bg-gray-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <Bell className="w-6 h-6 text-gray-300" />

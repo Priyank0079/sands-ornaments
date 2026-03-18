@@ -47,7 +47,7 @@ const OrderListPage = () => {
     const filteredOrders = useMemo(() => {
         return orders.filter(order => {
             // Text Search
-            const customerName = (order.user?.fullName || order.shippingAddress?.firstName || 'Customer').toLowerCase();
+            const customerName = (order.customerName || order.user?.fullName || order.shippingAddress?.firstName || 'Customer').toLowerCase();
             const orderId = (order.orderId || '').toLowerCase();
             const matchesSearch =
                 orderId.includes(searchTerm.toLowerCase()) ||
@@ -56,7 +56,7 @@ const OrderListPage = () => {
             // Status Filter matches (Tabs)
             let matchesStatus = true;
             if (statusParam !== 'all') {
-                const status = (order.orderStatus || '').toLowerCase();
+                const status = (order.status || order.orderStatus || '').toLowerCase();
                 if (statusParam === 'pending') {
                     matchesStatus = status === 'pending' || status === 'processing';
                 } else {
@@ -78,8 +78,8 @@ const OrderListPage = () => {
     // Stats Logic
     const stats = {
         total: orders.length,
-        pending: orders.filter(o => o.orderStatus === 'PENDING' || o.orderStatus === 'PROCESSING').length,
-        completed: orders.filter(o => o.orderStatus === 'DELIVERED').length
+        pending: orders.filter(o => (o.status || o.orderStatus) === 'Pending' || (o.status || o.orderStatus) === 'Processing').length,
+        completed: orders.filter(o => (o.status || o.orderStatus) === 'Delivered').length
     };
 
     const handleFilterChange = (status) => {
@@ -210,20 +210,20 @@ const OrderListPage = () => {
                                         </span>
                                     </td>
                                     <td className="px-6 py-5">
-                                        <span className={`font-bold text-xs ${order.paymentMethod === 'COD' ? 'text-orange-600' : 'text-emerald-600'}`}>
-                                            {order.paymentMethod}
+                                        <span className={`font-bold text-xs ${(order.paymentMethod || '').toUpperCase() === 'COD' ? 'text-orange-600' : 'text-emerald-600'}`}>
+                                            {(order.paymentMethod || '').toUpperCase()}
                                         </span>
                                     </td>
                                     <td className="px-6 py-5 text-center font-bold text-xs text-gray-600">
                                         {order.items?.length}
                                     </td>
                                     <td className="px-6 py-5 font-black text-xs text-gray-900">
-                                        ₹{order.totalAmount.toLocaleString()}
+                                        INR {(order.total || order.totalAmount || 0).toLocaleString()}
                                     </td>
                                     <td className="px-6 py-5">
-                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${getStatusColor(order.orderStatus)}`}>
+                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${getStatusColor(order.status || order.orderStatus)}`}>
                                             <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
-                                            {order.orderStatus}
+                                            {order.status || order.orderStatus}
                                         </span>
                                     </td>
                                     <td className="px-6 py-5">

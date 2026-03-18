@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Store, User, MapPin, CreditCard, ShieldCheck, FileText, CheckCircle, XCircle } from 'lucide-react';
 import { adminService } from '../services/adminService';
+import toast from 'react-hot-toast';
 
 const AdminSellerDetails = () => {
     const { id } = useParams();
@@ -14,6 +15,7 @@ const AdminSellerDetails = () => {
             setSeller(data);
         } catch (err) {
             console.error("Seller load failed");
+            toast.error("Failed to load seller");
         }
     };
 
@@ -28,7 +30,10 @@ const AdminSellerDetails = () => {
         const success = await adminService.updateSellerStatus(id, status, reason);
         if (success) {
             if (status === 'REJECTED') setShowRejectModal(false);
+            toast.success(`Seller ${status.toLowerCase()}`);
             fetchSeller();
+        } else {
+            toast.error("Failed to update seller");
         }
     };
 
@@ -51,11 +56,17 @@ const AdminSellerDetails = () => {
                     </button>
                     <div>
                         <h1 className="text-2xl font-black text-gray-900 uppercase tracking-tight">SELLER DETAILS</h1>
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mt-1">VERIFICATION WORKFLOW • ID: {seller.id}</p>
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mt-1">VERIFICATION WORKFLOW - ID: {seller._id}</p>
                     </div>
                 </div>
 
                 <div className="flex flex-wrap gap-3">
+                    <button 
+                        onClick={() => navigate(`/admin/products?sellerId=${seller._id}`)}
+                        className="bg-white text-gray-600 px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest border border-gray-200 hover:bg-gray-50 transition-all"
+                    >
+                        View Products
+                    </button>
                     {seller.status === 'PENDING' ? (
                         <>
                             <button 
@@ -155,11 +166,11 @@ const AdminSellerDetails = () => {
                         <div className="space-y-6">
                             <div>
                                 <p className={infoLabelClasses}>Account Number</p>
-                                <p className={infoValueClasses}>{seller.accountNumber}</p>
+                                <p className={infoValueClasses}>{seller.bankAccount?.accountNumber || 'N/A'}</p>
                             </div>
                             <div>
                                 <p className={infoLabelClasses}>IFSC Code</p>
-                                <p className={infoValueClasses}>{seller.ifscCode}</p>
+                                <p className={infoValueClasses}>{seller.bankAccount?.ifscCode || 'N/A'}</p>
                             </div>
                         </div>
                     </div>
@@ -176,15 +187,15 @@ const AdminSellerDetails = () => {
                                 <div className="space-y-6">
                                     <div>
                                         <p className={infoLabelClasses}>Shop Name</p>
-                                        <p className={infoValueClasses}>{seller.shopName}</p>
+                                        <p className={infoValueClasses}>{seller.shopName || 'N/A'}</p>
                                     </div>
                                     <div>
                                         <p className={infoLabelClasses}>Address</p>
                                         <div className="mt-1">
                                             <p className="text-sm font-bold text-gray-900 uppercase leading-relaxed">
-                                                {seller.shopAddress}<br />
-                                                {seller.city}, {seller.state}<br />
-                                                PIN: {seller.pincode}
+                                                {seller.shopAddress || 'N/A'}<br />
+                                                {seller.city || 'N/A'}, {seller.state || 'N/A'}<br />
+                                                PIN: {seller.pincode || 'N/A'}
                                             </p>
                                         </div>
                                     </div>
@@ -198,15 +209,15 @@ const AdminSellerDetails = () => {
                                 <div className="space-y-6">
                                     <div>
                                         <p className={infoLabelClasses}>GST Number</p>
-                                        <p className={infoValueClasses}>{seller.gstNumber}</p>
+                                        <p className={infoValueClasses}>{seller.gstNumber || 'N/A'}</p>
                                     </div>
                                     <div>
                                         <p className={infoLabelClasses}>PAN Number</p>
-                                        <p className={infoValueClasses}>{seller.panNumber}</p>
+                                        <p className={infoValueClasses}>{seller.panNumber || 'N/A'}</p>
                                     </div>
                                     <div>
                                         <p className={infoLabelClasses}>BIS Hallmark License</p>
-                                        <p className={infoValueClasses}>{seller.bisNumber}</p>
+                                        <p className={infoValueClasses}>{seller.bisNumber || 'N/A'}</p>
                                     </div>
                                 </div>
                             </div>
@@ -217,19 +228,38 @@ const AdminSellerDetails = () => {
                         <h3 className={sectionTitleClasses}>
                             <FileText size={14} className="text-[#3E2723]" /> Document Verification
                         </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             <div className="space-y-3">
                                 <p className={infoLabelClasses}>Aadhar Card</p>
                                 <div className="aspect-video bg-gray-50 rounded-xl border border-dashed border-gray-200 flex items-center justify-center group overflow-hidden relative">
                                     <FileText size={32} className="text-gray-300 group-hover:scale-110 transition-transform" />
-                                    <button className="absolute bottom-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest underline decoration-dotted hover:text-[#3E2723]">View Full Document</button>
+                                    {seller.documents?.aadharUrl ? (
+                                        <a href={seller.documents.aadharUrl} target="_blank" rel="noreferrer" className="absolute bottom-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest underline decoration-dotted hover:text-[#3E2723]">View Full Document</a>
+                                    ) : (
+                                        <span className="absolute bottom-4 text-[9px] font-bold text-gray-300 uppercase tracking-widest">Not uploaded</span>
+                                    )}
                                 </div>
                             </div>
                             <div className="space-y-3">
                                 <p className={infoLabelClasses}>Shop License</p>
                                 <div className="aspect-video bg-gray-50 rounded-xl border border-dashed border-gray-200 flex items-center justify-center group overflow-hidden relative">
                                     <ShieldCheck size={32} className="text-gray-300 group-hover:scale-110 transition-transform" />
-                                    <button className="absolute bottom-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest underline decoration-dotted hover:text-[#3E2723]">View Full Document</button>
+                                    {seller.documents?.shopLicenseUrl ? (
+                                        <a href={seller.documents.shopLicenseUrl} target="_blank" rel="noreferrer" className="absolute bottom-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest underline decoration-dotted hover:text-[#3E2723]">View Full Document</a>
+                                    ) : (
+                                        <span className="absolute bottom-4 text-[9px] font-bold text-gray-300 uppercase tracking-widest">Not uploaded</span>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="space-y-3">
+                                <p className={infoLabelClasses}>Certificate</p>
+                                <div className="aspect-video bg-gray-50 rounded-xl border border-dashed border-gray-200 flex items-center justify-center group overflow-hidden relative">
+                                    <FileText size={32} className="text-gray-300 group-hover:scale-110 transition-transform" />
+                                    {seller.documents?.certificateUrl ? (
+                                        <a href={seller.documents.certificateUrl} target="_blank" rel="noreferrer" className="absolute bottom-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest underline decoration-dotted hover:text-[#3E2723]">View Full Document</a>
+                                    ) : (
+                                        <span className="absolute bottom-4 text-[9px] font-bold text-gray-300 uppercase tracking-widest">Not uploaded</span>
+                                    )}
                                 </div>
                             </div>
                         </div>

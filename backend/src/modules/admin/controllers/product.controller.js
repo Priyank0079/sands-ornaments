@@ -74,7 +74,7 @@ exports.getProducts = async (req, res) => {
     const page = Math.max(1, Number(req.query.page) || 1);
     // BUG-13 FIX: cap limit to 100 to prevent memory-exhaustion attacks
     const limit = Math.min(Number(req.query.limit) || 20, 100);
-    const { search, category, status, minPrice, maxPrice, inStock, sortBy } = req.query;
+    const { search, category, status, minPrice, maxPrice, inStock, sortBy, sellerId } = req.query;
 
     const query = {};
     if (search) {
@@ -84,6 +84,7 @@ exports.getProducts = async (req, res) => {
     }
     if (category) query.categories = category;
     if (status)   query.status = status;
+    if (sellerId) query.sellerId = sellerId;
 
     // Advanced Filters
     if (minPrice || maxPrice) {

@@ -7,13 +7,16 @@ exports.getInventory = async (req, res) => {
     const { search, category, lowStock } = req.query;
     const query = {};
 
-    if (search) query.name = { $regex: search, $options: "i" };
-    if (category) query["categories.categoryId"] = category;
+    if (search) {
+      const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      query.name = { $regex: escaped, $options: "i" };
+    }
+    if (category) query.categories = category;
     if (lowStock === "true") query["variants.stock"] = { $lte: 10 }; // Default low stock threshold
 
     const products = await Product.find(query)
       .select("name images variants categories")
-      .populate("categories.categoryId", "name");
+      .populate("categories", "name");
 
     return success(res, { inventory: products }, "Inventory retrieved");
   } catch (err) { return error(res, err.message); }
@@ -22,6 +25,9 @@ exports.getInventory = async (req, res) => {
 exports.adjustStock = async (req, res) => {
   try {
     const { productId, variantId, newStock, reason } = req.body;
+    if (newStock === undefined || newStock === null || Number.isNaN(Number(newStock))) {
+      return error(res, "Invalid stock value", 400);
+    }
 
     const product = await Product.findById(productId);
     if (!product) return error(res, "Product not found", 404);
@@ -30,7 +36,7 @@ exports.adjustStock = async (req, res) => {
     if (!variant) return error(res, "Variant not found", 404);
 
     const previousStock = variant.stock;
-    variant.stock = newStock;
+    variant.stock = Number(newStock);
     await product.save();
 
     // Log the manual adjustment
@@ -68,15 +74,25 @@ exports.getStockHistory = async (req, res) => {
 
 exports.getLowStockAlerts = async (req, res) => {
   try {
-    const threshold = 5;
+    const threshold = Number(req.query.threshold) || 5;
     const products = await Product.find({ "variants.stock": { $lte: threshold } })
-      .select("name variants");
+      .select("name images categories variants")
+      .populate("categories", "name");
     
     const alerts = [];
     products.forEach(p => {
       p.variants.forEach(v => {
         if (v.stock <= threshold) {
-          alerts.push({ productName: p.name, variantName: v.name, currentStock: v.stock });
+          alerts.push({
+            productId: p._id,
+            productName: p.name,
+            productImage: p.images?.[0] || '',
+            categoryName: p.categories?.[0]?.name || 'Uncategorized',
+            variantId: v._id,
+            variantName: v.name,
+            currentStock: v.stock,
+            threshold
+          });
         }
       });
     });

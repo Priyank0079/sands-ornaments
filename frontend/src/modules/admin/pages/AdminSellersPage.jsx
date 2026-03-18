@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Store, Eye, CheckCircle, XCircle, FileText, ShieldCheck, Search, Users, UserCheck, UserPlus, UserX, Clock } from 'lucide-react';
+import { Store, Eye, CheckCircle, XCircle, FileText, ShieldCheck, Search, Users, UserCheck, UserX, Clock } from 'lucide-react';
 import AdminTable from '../components/AdminTable';
 import AdminStatsCard from '../components/AdminStatsCard';
 import { adminService } from '../services/adminService';
+import toast from 'react-hot-toast';
 
 const AdminSellersPage = () => {
     const navigate = useNavigate();
@@ -16,9 +17,10 @@ const AdminSellersPage = () => {
         setLoading(true);
         try {
             const data = await adminService.getSellers();
-            setSellers(data);
+            setSellers(data || []);
         } catch (err) {
             console.error("Sellers fetch failed");
+            toast.error("Failed to load sellers");
         } finally {
             setLoading(false);
         }
@@ -28,10 +30,13 @@ const AdminSellersPage = () => {
         fetchSellers();
     }, []);
 
-    const handleAction = async (id, status) => {
-        const success = await adminService.updateSellerStatus(id, status);
+    const handleAction = async (id, status, reason) => {
+        const success = await adminService.updateSellerStatus(id, status, reason);
         if (success) {
+            toast.success(`Seller ${status.toLowerCase()}`);
             fetchSellers();
+        } else {
+            toast.error("Failed to update seller");
         }
     };
 
@@ -45,9 +50,9 @@ const AdminSellersPage = () => {
     const filteredSellers = sellers.filter(seller => {
         const matchesStatus = activeFilter === 'ALL' || seller.status === activeFilter;
         const matchesSearch = 
-            seller.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            seller.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            seller.shopName.toLowerCase().includes(searchTerm.toLowerCase());
+            (seller.fullName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (seller.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (seller.shopName || '').toLowerCase().includes(searchTerm.toLowerCase());
         return matchesStatus && matchesSearch;
     });
 
@@ -89,10 +94,10 @@ const AdminSellersPage = () => {
             className: 'w-[10%]',
             render: (row) => (
                 <div className="flex gap-1.5 items-center">
-                    <div title="AADHAR CARD" className={`w-7 h-7 rounded-lg flex items-center justify-center border ${row.aadhar ? 'bg-indigo-50 text-indigo-600 border-indigo-100' : 'bg-gray-50 text-gray-300 border-gray-100'}`}>
+                    <div title="AADHAR CARD" className={`w-7 h-7 rounded-lg flex items-center justify-center border ${row.documents?.aadharUrl ? 'bg-indigo-50 text-indigo-600 border-indigo-100' : 'bg-gray-50 text-gray-300 border-gray-100'}`}>
                         <FileText size={14} />
                     </div>
-                    <div title="SHOP LICENSE" className={`w-7 h-7 rounded-lg flex items-center justify-center border ${row.shopLicense ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-gray-50 text-gray-300 border-gray-100'}`}>
+                    <div title="SHOP LICENSE" className={`w-7 h-7 rounded-lg flex items-center justify-center border ${row.documents?.shopLicenseUrl ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-gray-50 text-gray-300 border-gray-100'}`}>
                         <ShieldCheck size={14} />
                     </div>
                 </div>
@@ -102,7 +107,7 @@ const AdminSellersPage = () => {
             header: 'DATE',
             render: (row) => (
                 <span className="text-[10px] font-bold text-gray-500 uppercase">
-                    {new Date(row.registrationDate).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}
+                    {new Date(row.registrationDate || row.createdAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}
                 </span>
             ),
             className: 'w-[10%]'
@@ -142,7 +147,7 @@ const AdminSellersPage = () => {
                                 <CheckCircle size={18} />
                             </button>
                             <button 
-                                onClick={() => handleAction(row._id || row.id, 'REJECTED')}
+                                onClick={() => handleAction(row._id || row.id, 'REJECTED', 'Rejected by admin')}
                                 className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition-all"
                                 title="Reject"
                             >
@@ -214,7 +219,7 @@ const AdminSellersPage = () => {
                 <AdminTable 
                     columns={columns} 
                     data={filteredSellers} 
-                    emptyMessage={`No ${activeFilter.toLowerCase()} sellers found matching your search.`}
+                    emptyMessage={loading ? "Loading sellers..." : `No ${activeFilter.toLowerCase()} sellers found matching your search.`}
                 />
             </div>
         </div>

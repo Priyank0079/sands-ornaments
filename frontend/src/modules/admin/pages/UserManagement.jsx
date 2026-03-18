@@ -1,11 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-    User, Search, Mail, Phone, Calendar,
-    MoreHorizontal, Eye, UserX, UserCheck,
-    Download, ArrowUpRight, Shield, ShoppingBag, Heart,
-    ShieldCheck, ShieldOff, UserPlus, Users, AlertCircle
-} from 'lucide-react';
+import { Search, Eye, UserX, UserCheck, Shield, Users, ShieldCheck, AlertCircle } from 'lucide-react';
 import PageHeader from '../components/common/PageHeader';
 import AdminStatsCard from '../components/AdminStatsCard';
 import { adminService } from '../services/adminService';
@@ -18,22 +13,26 @@ const UserManagement = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
 
-    const fetchUsers = async () => {
+    const fetchUsers = async (term = '') => {
         setLoading(true);
         try {
-            // Map tab to backend types if necessary, assuming backend supports these
-            const data = await adminService.getUsers(activeTab);
-            setUsers(data);
+            const role = activeTab === 'admins' ? 'admin' : 'user';
+            const data = await adminService.getUsers({ role, search: term || undefined });
+            setUsers(data || []);
         } catch (err) {
             console.error("Users fetch failed");
+            toast.error("Failed to load users");
         } finally {
             setLoading(false);
         }
     };
 
     React.useEffect(() => {
-        fetchUsers();
-    }, [activeTab]);
+        const handle = setTimeout(() => {
+            fetchUsers(searchTerm);
+        }, 300);
+        return () => clearTimeout(handle);
+    }, [activeTab, searchTerm]);
 
     const toggleUserStatus = async (id) => {
         const success = await adminService.toggleUserStatus(id);
@@ -46,9 +45,8 @@ const UserManagement = () => {
     };
 
     const tabs = [
-        { id: 'customers', label: 'Customers', icon: Users, count: users.filter(u => u.type === 'customer').length },
-        { id: 'retailers', label: 'Retailers', icon: Shield, count: users.filter(u => u.type === 'retailer').length },
-        { id: 'horeca', label: 'HORECA', icon: ShoppingBag, count: users.filter(u => u.type === 'horeca').length },
+        { id: 'customers', label: 'Customers', icon: Users },
+        { id: 'admins', label: 'Admins', icon: Shield }
     ];
 
     const filteredUsers = users.filter(user => {
@@ -78,7 +76,6 @@ const UserManagement = () => {
                     >
                         <tab.icon className="w-3.5 h-3.5" />
                         {tab.label}
-                        <span className="ml-1 px-1.5 py-0.5 bg-gray-100 rounded text-[9px] font-bold">{tab.count}</span>
                         {activeTab === tab.id && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#3E2723] rounded-full" />}
                     </button>
                 ))}
@@ -88,21 +85,21 @@ const UserManagement = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <AdminStatsCard
                     label={`Total ${activeTab}`}
-                    value={users.filter(u => (activeTab === 'customers' ? u.type === 'customer' : activeTab === 'retailers' ? u.type === 'retailer' : u.type === 'horeca')).length}
-                    icon={activeTab === 'customers' ? Users : activeTab === 'retailers' ? Shield : ShoppingBag}
+                    value={users.length}
+                    icon={activeTab === 'customers' ? Users : Shield}
                     color="text-blue-600"
                     bgColor="bg-blue-50"
                 />
                 <AdminStatsCard
                     label="Active"
-                    value={users.filter(u => u.status === 'Active' && filteredUsers.some(f => f.id === u.id)).length}
+                    value={users.filter(u => !u.isBlocked).length}
                     icon={ShieldCheck}
                     color="text-emerald-600"
                     bgColor="bg-emerald-50"
                 />
                 <AdminStatsCard
-                    label="Action Required"
-                    value={users.filter(u => u.status === 'Pending' && filteredUsers.some(f => f.id === u.id)).length}
+                    label="Blocked"
+                    value={users.filter(u => u.isBlocked).length}
                     icon={AlertCircle}
                     color="text-orange-600"
                     bgColor="bg-orange-50"
@@ -140,7 +137,13 @@ const UserManagement = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 uppercase tracking-tighter text-[10px] md:text-[11px] text-gray-900">
-                            {filteredUsers.length > 0 ? filteredUsers.map((user) => (
+                            {loading ? (
+                                <tr>
+                                    <td colSpan="6" className="px-6 py-12 text-center text-gray-400 font-bold uppercase tracking-widest text-[10px]">
+                                        Loading users...
+                                    </td>
+                                </tr>
+                            ) : filteredUsers.length > 0 ? filteredUsers.map((user) => (
                                 <tr key={user._id || user.id} className="hover:bg-gray-50/50 transition-colors group">
                                     <td className="px-4 md:px-6 py-3 md:py-4">
                                         <div className="flex items-center gap-2 md:gap-3">
@@ -154,22 +157,20 @@ const UserManagement = () => {
                                         </div>
                                     </td>
                                     <td className="px-4 md:px-6 py-3 md:py-4 text-gray-600 font-bold">
-                                        {new Date(user.createdAt).toLocaleDateString()}
+                                        {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '--'}
                                     </td>
                                     <td className="px-4 md:px-6 py-3 md:py-4 font-bold text-gray-700">
-                                        {user.ordersCount || 0}
+                                        {typeof user.ordersCount === 'number' ? user.ordersCount : '--'}
                                     </td>
                                     <td className="px-4 md:px-6 py-3 md:py-4 font-bold text-gray-900">
-                                        ₹{(user.spentAmount || 0).toLocaleString()}
+                                        {typeof user.spentAmount === 'number' ? `INR ${user.spentAmount.toLocaleString()}` : '--'}
                                     </td>
                                     <td className="px-4 md:px-6 py-3 md:py-4">
-                                        <span className={`px-2 md:px-2.5 py-0.5 md:py-1 rounded text-[9px] md:text-[11px] font-bold border ${user.status === 'Active' || user.isActive
-                                            ? 'bg-green-50 text-green-600 border-green-100'
-                                            : user.status === 'Pending' 
-                                            ? 'bg-amber-50 text-amber-600 border-amber-100'
-                                            : 'bg-red-50 text-red-600 border-red-100'
+                                        <span className={`px-2 md:px-2.5 py-0.5 md:py-1 rounded text-[9px] md:text-[11px] font-bold border ${user.isBlocked
+                                            ? 'bg-red-50 text-red-600 border-red-100'
+                                            : 'bg-green-50 text-green-600 border-green-100'
                                             }`}>
-                                            {user.status || (user.isActive ? 'Active' : 'Disabled')}
+                                            {user.isBlocked ? 'Blocked' : 'Active'}
                                         </span>
                                     </td>
                                     <td className="px-4 md:px-6 py-3 md:py-4 text-right">
@@ -183,13 +184,13 @@ const UserManagement = () => {
                                             </button>
                                             <button
                                                 onClick={() => toggleUserStatus(user._id || user.id)}
-                                                className={`p-1.5 md:p-2 rounded-lg transition-all ${user.isActive
+                                                className={`p-1.5 md:p-2 rounded-lg transition-all ${!user.isBlocked
                                                     ? 'hover:bg-red-50 text-gray-400 hover:text-red-600'
                                                     : 'hover:bg-green-50 text-gray-400 hover:text-green-600'
                                                     }`}
-                                                title={user.isActive ? 'Disable Account' : 'Enable Account'}
+                                                title={user.isBlocked ? 'Enable Account' : 'Disable Account'}
                                             >
-                                                {user.isActive ? <UserX className="w-4 h-4 md:w-5 md:h-5" /> : <UserCheck className="w-4 h-4 md:w-5 md:h-5" />}
+                                                {user.isBlocked ? <UserCheck className="w-4 h-4 md:w-5 md:h-5" /> : <UserX className="w-4 h-4 md:w-5 md:h-5" />}
                                             </button>
                                         </div>
                                     </td>

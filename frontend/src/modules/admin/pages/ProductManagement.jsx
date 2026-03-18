@@ -15,6 +15,7 @@ const ProductManagement = () => {
     const [searchParams] = useSearchParams();
     const isSelectMode = searchParams.get('selectMode') === 'true';
     const returnUrl = searchParams.get('returnUrl') || '/admin/products';
+    const sellerId = searchParams.get('sellerId') || '';
 
     const [searchTerm, setSearchTerm] = useState('');
     const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
@@ -43,6 +44,7 @@ const ProductManagement = () => {
                 maxPrice: filtersObj.maxPrice,
                 inStock: filtersObj.inStock === 'all' ? '' : filtersObj.inStock,
                 sortBy: filtersObj.sortBy,
+                sellerId: sellerId || '',
                 page: isLoadMore ? filtersObj.page + 1 : 1,
                 limit: filtersObj.limit
             };
@@ -66,7 +68,7 @@ const ProductManagement = () => {
 
     useEffect(() => {
         fetchProducts();
-    }, [selectedCategory, filtersObj.minPrice, filtersObj.maxPrice, filtersObj.inStock, filtersObj.sortBy]);
+    }, [selectedCategory, filtersObj.minPrice, filtersObj.maxPrice, filtersObj.inStock, filtersObj.sortBy, sellerId]);
 
     useEffect(() => {
         const loadCategories = async () => {
@@ -307,7 +309,11 @@ const ProductManagement = () => {
         <div className="max-w-[1400px] mx-auto space-y-4 md:space-y-6 pb-20 animate-in fade-in duration-500 relative">
             <PageHeader
                 title={isSelectMode ? "Select Products" : "Products"}
-                subtitle={isSelectMode ? `Select products to add to showcase (${selectedIds.length} selected)` : "Manage your inventory, pricing, and product details."}
+                subtitle={isSelectMode
+                    ? `Select products to add to showcase (${selectedIds.length} selected)`
+                    : sellerId
+                        ? "Showing products for selected seller."
+                        : "Manage your inventory, pricing, and product details."}
                 action={!isSelectMode ? {
                     label: "Add New Product",
                     onClick: () => navigate('/admin/products/new')

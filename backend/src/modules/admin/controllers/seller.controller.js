@@ -1,5 +1,6 @@
 const Seller = require("../../../models/Seller");
 const { success, error } = require("../../../utils/apiResponse");
+const { sendEmail } = require("../../../services/emailService");
 
 exports.getSellers = async (req, res) => {
   try {
@@ -40,11 +41,26 @@ exports.updateSellerStatus = async (req, res) => {
     if (!seller) return error(res, "Seller not found", 404);
 
     seller.status = status;
-    if (status === "REJECTED") seller.rejectionReason = rejectionReason;
+    if (status === "REJECTED") {
+      if (!rejectionReason || !rejectionReason.trim()) {
+        return error(res, "Rejection reason is required", 400);
+      }
+      seller.rejectionReason = rejectionReason;
+    } else {
+      seller.rejectionReason = null;
+    }
     
     await seller.save();
 
-    // In production: Send email/SMS notification to seller here
+    if (seller.email) {
+      await sendEmail({
+        email: seller.email,
+        subject: `Your seller account has been ${status.toLowerCase()}`,
+        message: status === "APPROVED"
+          ? `Hi ${seller.fullName}, your seller account is approved. You can now log in to the seller panel.`
+          : `Hi ${seller.fullName}, your seller account was rejected. Reason: ${rejectionReason || "Not specified"}.`,
+      });
+    }
     
     return success(res, { seller }, `Seller ${status.toLowerCase()} successfully`);
   } catch (err) { return error(res, err.message); }

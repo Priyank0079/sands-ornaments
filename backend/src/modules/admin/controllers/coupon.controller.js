@@ -18,6 +18,14 @@ exports.getCoupons = async (req, res) => {
   } catch (err) { return error(res, err.message); }
 };
 
+exports.getCouponById = async (req, res) => {
+  try {
+    const coupon = await Coupon.findById(req.params.id);
+    if (!coupon) return error(res, "Coupon not found", 404);
+    return success(res, { coupon });
+  } catch (err) { return error(res, err.message); }
+};
+
 exports.updateCoupon = async (req, res) => {
   try {
     const coupon = await Coupon.findByIdAndUpdate(req.params.id, req.body, { new: true });

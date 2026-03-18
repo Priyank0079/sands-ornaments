@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { AlertTriangle, Zap, Package, XCircle, ArrowRight, Clock, Ban } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AdminStatsCard from '../../components/AdminStatsCard';
+import { adminService } from '../../services/adminService';
+import toast from 'react-hot-toast';
 
 const LowStockAlertsPage = () => {
     const navigate = useNavigate();
@@ -9,21 +11,22 @@ const LowStockAlertsPage = () => {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        setLoading(true);
-        // Mock API call
-        setTimeout(() => {
-            setAlerts([
-                { id: 1, name: 'Gold Plated Necklace', category: 'Necklace', stock: 0, threshold: 15, image: 'https://placehold.co/40' },
-                { id: 2, name: 'Diamond Stud Earrings', category: 'Earrings', stock: 2, threshold: 5, image: 'https://placehold.co/40' },
-                { id: 3, name: 'Silver Anklet', category: 'Anklet', stock: 15, threshold: 20, image: 'https://placehold.co/40' },
-                { id: 4, name: 'Rose Gold Bracelet', category: 'Bracelet', stock: 8, threshold: 10, image: 'https://placehold.co/40' },
-            ]);
-            setLoading(false);
-        }, 500);
+        const loadAlerts = async () => {
+            setLoading(true);
+            try {
+                const data = await adminService.getLowStockAlerts();
+                setAlerts(data || []);
+            } catch (err) {
+                toast.error("Failed to load low stock alerts");
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadAlerts();
     }, []);
 
-    const outOfStockCount = alerts.filter(a => a.stock === 0).length;
-    const lowStockCount = alerts.filter(a => a.stock > 0 && a.stock <= a.threshold).length;
+    const outOfStockCount = useMemo(() => alerts.filter(a => a.currentStock === 0).length, [alerts]);
+    const lowStockCount = useMemo(() => alerts.filter(a => a.currentStock > 0 && a.currentStock <= a.threshold).length, [alerts]);
 
     return (
         <div className="space-y-8 font-sans animate-in fade-in duration-500">
@@ -81,16 +84,19 @@ const LowStockAlertsPage = () => {
                         <tbody className="divide-y divide-gray-100 uppercase tracking-tighter text-[10px] md:text-[11px] text-gray-900">
                             {loading ? (
                                 <tr><td colSpan="4" className="px-6 py-12 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">Loading Alerts...</td></tr>
+                            ) : alerts.length === 0 ? (
+                                <tr><td colSpan="4" className="px-6 py-12 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">No alerts found</td></tr>
                             ) : alerts.map((item) => {
-                                const isOOS = item.stock === 0;
-                                const percentage = Math.min((item.stock / item.threshold) * 100, 100);
+                                const isOOS = item.currentStock === 0;
+                                const safeThreshold = item.threshold || 1;
+                                const percentage = Math.min((item.currentStock / safeThreshold) * 100, 100);
 
                                 return (
-                                    <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
+                                    <tr key={`${item.productId}-${item.variantId}`} className="hover:bg-gray-50/50 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-4">
                                                 <div className={`w-12 h-12 bg-gray-50 rounded-lg border border-gray-100 p-1 flex-shrink-0 relative ${isOOS ? 'grayscale opacity-75' : ''}`}>
-                                                    <img src={item.image} className="w-full h-full object-contain mix-blend-multiply" />
+                                                    <img src={item.productImage} className="w-full h-full object-contain mix-blend-multiply" />
                                                     {isOOS && (
                                                         <div className="absolute inset-0 flex items-center justify-center bg-gray-100/50 rounded-lg">
                                                             <AlertTriangle size={16} className="text-red-500" />
@@ -98,20 +104,21 @@ const LowStockAlertsPage = () => {
                                                     )}
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-bold text-black line-clamp-1">{item.name}</p>
+                                                    <p className="text-sm font-bold text-black line-clamp-1">{item.productName}</p>
+                                                    <p className="text-[10px] text-gray-400 uppercase tracking-widest">{item.variantName || 'Standard'}</p>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className="px-2 py-1 bg-gray-100 rounded text-[10px] font-bold text-gray-600 uppercase tracking-wide">
-                                                {item.category}
+                                                {item.categoryName}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="max-w-[200px]">
                                                 <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-1.5">
                                                     <span className={isOOS ? 'text-red-600' : 'text-orange-600'}>
-                                                        {item.stock} Units Left
+                                                        {item.currentStock} Units Left
                                                     </span>
                                                     <span className="text-gray-400">Alert at {item.threshold}</span>
                                                 </div>
