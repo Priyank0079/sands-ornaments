@@ -133,8 +133,7 @@ exports.placeOrder = async (req, res) => {
         mrp:        variant.mrp,
         quantity:   item.quantity,
         sellerId:   product.sellerId,
-        categoryId: product.categories?.[0]?.categoryId,
-        subcategoryId: product.categories?.[0]?.subcategoryId
+        categoryId: product.categories?.[0] || undefined
       });
     }
 

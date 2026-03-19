@@ -1,4 +1,6 @@
 const Product = require("../../../models/Product");
+const Category = require("../../../models/Category");
+const mongoose = require("mongoose");
 const { success, error } = require("../../../utils/apiResponse");
 
 /**
@@ -24,7 +26,17 @@ exports.getProducts = async (req, res) => {
     }
 
     // 2. Category Filter
-    if (category) query.categories = category;
+    if (category) {
+      let categoryId = category;
+      if (!mongoose.isValidObjectId(category)) {
+        const resolved = await Category.findOne({
+          $or: [{ slug: category }, { name: new RegExp(`^${category}$`, "i") }],
+          isActive: true
+        }).select("_id");
+        categoryId = resolved?._id || category;
+      }
+      query.categories = categoryId;
+    }
 
     // 3. Price Range Filter (matches any variant price)
     if (minPrice || maxPrice) {
@@ -56,8 +68,8 @@ exports.getProducts = async (req, res) => {
 
     // 6. Execute Query with Pagination
     const products = await Product.find(query)
-      .select("name slug brand images variants tags rating reviewCount categories")
-      .populate("categories", "name")
+      .select("name slug brand images variants tags rating reviewCount categories navShopByCategory navGiftsFor navOccasions")
+      .populate("categories", "name slug metal")
       .sort(sortOption)
       .limit(limit * 1)
       .skip((page - 1) * limit);

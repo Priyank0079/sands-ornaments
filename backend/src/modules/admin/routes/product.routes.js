@@ -5,7 +5,17 @@ const { productSchema } = require("../validators/product.validator");
 const { productUpload } = require("../../../middlewares/uploadMiddleware");
 const parseFormData = require("../../../middlewares/parseFormData");
 
-const PRODUCT_COMPLEX_FIELDS = ["categories", "variants", "tags", "faqs", "deletedImages", "showInNavbar", "showInCollection"];
+const PRODUCT_COMPLEX_FIELDS = [
+  "categories",
+  "variants",
+  "tags",
+  "faqs",
+  "deletedImages",
+  "showInNavbar",
+  "showInCollection",
+  "navGiftsFor",
+  "navOccasions"
+];
 
 router.get("/", productController.getProducts);
 router.get("/:id", productController.getProductDetail);

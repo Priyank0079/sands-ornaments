@@ -29,24 +29,26 @@ const SellerDashboard = () => {
             try {
                 const res = await api.get('seller/stats');
                 if (res.data.success) {
-                    const { stats: s, recentOrders: o, analytics: a } = res.data;
+                    const payload = res.data.data || res.data;
+                    const { stats: s, recentOrders: o, analytics: a } = payload;
                     setStats({
-                        totalProducts: s.totalProducts || 0,
-                        totalInventory: s.totalStock || 0,
-                        pendingOrders: s.pendingOrders || 0,
-                        acceptedOrders: s.acceptedOrders || 0,
-                        deliveredOrders: s.deliveredOrders || 0,
-                        returnRequests: s.returnRequests || 0,
-                        totalRevenue: s.totalRevenue || 0,
-                        lowStockItems: s.lowStockProducts || []
+                        totalProducts: s?.totalProducts ?? payload.totalProducts ?? 0,
+                        totalInventory: s?.totalStock ?? 0,
+                        pendingOrders: s?.pendingOrders ?? 0,
+                        acceptedOrders: s?.acceptedOrders ?? 0,
+                        deliveredOrders: s?.deliveredOrders ?? 0,
+                        returnRequests: s?.returnRequests ?? 0,
+                        totalRevenue: s?.totalRevenue ?? payload.totalEarnings ?? 0,
+                        lowStockItems: s?.lowStockProducts ?? []
                     });
-                    setAnalytics(a);
-                    setRecentOrders(o.map(order => ({
+                    setAnalytics(a || null);
+                    setRecentOrders((o || []).map(order => ({
                         id: order._id,
                         customerName: order.user?.fullName || order.shippingAddress?.firstName || 'Customer',
-                        product: order.items[0]?.product?.name || 'Jewellery Item',
-                        price: order.totalAmount,
-                        paymentStatus: order.paymentStatus.toUpperCase()
+                        product: order.items?.[0]?.product?.name || 'Jewellery Item',
+                        price: order.totalAmount || 0,
+                        paymentStatus: (order.paymentStatus || 'PENDING').toUpperCase(),
+                        orderStatus: order.orderStatus || order.status || 'PENDING'
                     })));
                 }
             } catch (err) {
@@ -180,7 +182,7 @@ const SellerDashboard = () => {
                              />
                         </svg>
                         <div className="absolute inset-0 flex items-end justify-between px-2 pt-10">
-                            {analytics?.dailyOrders.slice(-7).map((d, i) => (
+                            {analytics?.dailyOrders?.slice(-7)?.map((d, i) => (
                                 <div key={i} className="flex flex-col items-center gap-2">
                                     <div className="text-[8px] font-bold text-gray-300 uppercase">{d.date.split(' ')[0]}</div>
                                 </div>
@@ -194,7 +196,7 @@ const SellerDashboard = () => {
                     <div className="relative z-10">
                         <h3 className="text-[11px] font-black text-white/40 uppercase tracking-[0.2em] mb-8 group-hover:text-white transition-colors">Category Composition</h3>
                         <div className="space-y-6">
-                            {analytics?.categoryPerformance.map((cat, i) => (
+                            {analytics?.categoryPerformance?.map((cat, i) => (
                                 <div key={i} className="space-y-2">
                                     <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
                                         <span className="opacity-80">{cat.name}</span>
@@ -246,7 +248,7 @@ const SellerDashboard = () => {
                              <IndianRupee size={16} className="text-gray-200" />
                         </div>
                         <div className="flex items-end justify-between h-32 gap-3 px-2">
-                            {analytics?.weeklyRevenue.map((w, i) => (
+                            {analytics?.weeklyRevenue?.map((w, i) => (
                                 <div key={i} className="flex-1 group relative">
                                     <div 
                                         className="w-full bg-[#EFEBE9] group-hover:bg-[#8D6E63] rounded-t-lg transition-all duration-500"

@@ -27,26 +27,63 @@ const Shop = () => {
     const [priceRange, setPriceRange] = useState(50000); 
     const [filteredProducts, setFilteredProducts] = useState(products || []);
     const [pageTitle, setPageTitle] = useState('All Jewellery');
+    const queryParams = new URLSearchParams(location.search);
+    const isComingSoonQuery = queryParams.get('status') === 'coming-soon';
+    const filterQuery = queryParams.get('filter');
+    const occasionQuery = queryParams.get('occasion');
 
     // Effect to handle URL-based Logic + Local Category Filter
     useEffect(() => {
         const path = location.pathname;
-        const queryParams = new URLSearchParams(location.search);
         const categoryQuery = queryParams.get('category');
         const metalQuery = queryParams.get('metal');
         
         let baseProducts = products;
         let title = 'All Jewellery';
 
-        // Set selected category from query param if present
-        if (categoryQuery && selectedCategory === 'All') {
-            const catObj = categories.find(c => c._id === categoryQuery || c.id === categoryQuery || c.name === categoryQuery);
-            if (catObj) {
-                setSelectedCategory(catObj.name);
+        let categoryQueryObj = null;
+        if (categoryQuery) {
+            categoryQueryObj = categories.find(c => (
+                c._id === categoryQuery ||
+                c.id === categoryQuery ||
+                c.name === categoryQuery ||
+                c.slug === categoryQuery ||
+                c.path === categoryQuery
+            )) || null;
+            if (categoryQueryObj && selectedCategory !== categoryQueryObj.name) {
+                setSelectedCategory(categoryQueryObj.name);
             }
         }
 
-        const isComingSoonQuery = queryParams.get('status') === 'coming-soon';
+        const matchesCategory = (product, value, cat) => {
+            if (!value && !cat) return true;
+            const valueStr = value ? String(value) : '';
+            const valueLower = valueStr.toLowerCase();
+            const productCategory = product.category || '';
+            const productCategorySlug = product.categorySlug || '';
+            const productCategoryId = product.categoryId || product.category_id || '';
+            const catId = cat?._id || cat?.id || '';
+            const catName = cat?.name || '';
+            const catSlug = cat?.path || cat?.slug || '';
+            const navCategoryIds = (product.navShopByCategory || []).map(id => String(id));
+
+            if (productCategoryId && valueStr && String(productCategoryId) === valueStr) return true;
+            if (productCategoryId && catId && String(productCategoryId) === String(catId)) return true;
+            if (valueStr && navCategoryIds.includes(valueStr)) return true;
+            if (catId && navCategoryIds.includes(String(catId))) return true;
+            if (productCategory && valueLower && productCategory.toLowerCase() === valueLower) return true;
+            if (productCategorySlug && valueLower && productCategorySlug.toLowerCase() === valueLower) return true;
+            if (productCategory && catName && productCategory === catName) return true;
+            if (productCategory && catSlug && productCategory.toLowerCase() === catSlug.toLowerCase()) return true;
+            if (productCategorySlug && catSlug && productCategorySlug.toLowerCase() === catSlug.toLowerCase()) return true;
+
+            return false;
+        };
+        const getProductMetal = (product) => {
+            const catId = product.categoryId || product.category_id || '';
+            const cat = categories.find(c => String(c._id || c.id) === String(catId));
+            return cat?.metal || product.metal;
+        };
 
         // 1. Determine Base Products & Title from URL
         if (path === '/new-arrivals') {
@@ -57,11 +94,22 @@ const Shop = () => {
             baseProducts = products.filter(p => p.rating >= 4.5);
         } else if (metalQuery) {
             title = `${metalQuery.charAt(0).toUpperCase() + metalQuery.slice(1)} Collection`;
-            baseProducts = products.filter(p => p.metal?.toLowerCase() === metalQuery.toLowerCase());
+            baseProducts = products.filter(p => {
+                const metal = getProductMetal(p);
+                return metal?.toLowerCase() === metalQuery.toLowerCase();
+            });
         } else if (category) {
             const currentCat = categories.find(c => c.path === category || c.slug === category);
             title = currentCat ? currentCat.name : category.charAt(0).toUpperCase() + category.slice(1);
-            baseProducts = products.filter(p => p.category.toLowerCase() === category.toLowerCase() || (currentCat && p.category === currentCat.name));
+            baseProducts = products.filter(p => matchesCategory(p, category, currentCat));
+        } else if (filterQuery) {
+            title = `Gifts for ${filterQuery.charAt(0).toUpperCase() + filterQuery.slice(1)}`;
+        } else if (occasionQuery) {
+            title = `${occasionQuery.charAt(0).toUpperCase() + occasionQuery.slice(1)} Picks`;
+        }
+
+        if (categoryQuery) {
+            baseProducts = baseProducts.filter(p => matchesCategory(p, categoryQuery, categoryQueryObj));
         }
 
         // Apply Title overrides from Local Filters
@@ -79,7 +127,29 @@ const Shop = () => {
 
         // 2. Apply Local Category Filter (if selected)
         if (selectedCategory !== 'All') {
-            result = result.filter(p => p.category === selectedCategory);
+            const selectedCat = categories.find(c => c.name === selectedCategory || c.slug === selectedCategory || c.path === selectedCategory);
+            result = result.filter(p => matchesCategory(p, selectedCategory, selectedCat));
+        }
+
+        // 2.1 Apply Audience/Occasion Text Filters (if present)
+        const filterTerm = filterQuery || occasionQuery;
+        if (filterTerm) {
+            const normalize = (value) => String(value || '')
+                .trim()
+                .toLowerCase()
+                .replace(/['"]/g, '')
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '');
+            const term = normalize(filterTerm);
+            const matchesNavTags = (product) => {
+                const giftTags = (product.navGiftsFor || []).map(t => normalize(t));
+                const occasionTags = (product.navOccasions || []).map(t => normalize(t));
+                if (filterQuery) return giftTags.includes(term);
+                if (occasionQuery) return occasionTags.includes(term);
+                return false;
+            };
+
+            result = result.filter(matchesNavTags);
         }
 
         // 2.2 Apply Collection Filters
@@ -185,12 +255,7 @@ const Shop = () => {
                         ))}
                     </div>
                 ) : (() => {
-                    const currentCategoryData = categories.find(c => 
-                        c.name === selectedCategory || c.path === category
-                    );
-                    const isComingSoon = isComingSoonQuery || (selectedCategory !== 'All' && 
-                                       currentCategoryData && 
-                                       (!currentCategoryData.products || currentCategoryData.products.length === 0));
+                    const isComingSoon = isComingSoonQuery || (selectedCategory !== 'All' && filteredProducts.length === 0);
 
                     if (isComingSoon) {
                         return (

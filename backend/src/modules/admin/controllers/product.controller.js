@@ -12,7 +12,8 @@ const PRODUCT_UPDATE_WHITELIST = [
   "variants", "status", "categories", "sellerId",
   "isFeatured", "isTrending", "isNewArrival",
   "returnEligibilities", "weight", "material", "faqs",
-  "showInNavbar", "showInCollection", "active"
+  "showInNavbar", "showInCollection", "active",
+  "navShopByCategory", "navGiftsFor", "navOccasions"
 ];
 
 

@@ -16,6 +16,7 @@ import catChain from '../../../user/assets/cat_chain_wine.png';
 const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     const navigate = useNavigate();
     const sectionId = sectionData?.id || 'category-showcase';
+    const isCategoryShowcase = sectionId === 'category-showcase';
 
     // Default items to show if new
     const initialItemsFromProps = sectionData.items && sectionData.items.length > 0
@@ -51,7 +52,9 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         const returnedProductsString = localStorage.getItem('temp_selected_products');
         const targetId = localStorage.getItem(`${sectionId}_targetId`);
 
-        if (returnedProductsString) {
+        const shouldApplyReturn = Boolean(returnedProductsString && draftItemsString);
+
+        if (shouldApplyReturn) {
             const products = JSON.parse(returnedProductsString);
 
             if (products.length > 0) {
@@ -84,7 +87,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                 }
             }
 
-            // Cleanup
+            // Cleanup (consume only for the originating section)
             localStorage.removeItem('temp_selected_products');
             localStorage.removeItem(`${sectionId}_draftItems`); // Clear draft after successful merge
             localStorage.removeItem(`${sectionId}_targetId`);
@@ -95,6 +98,22 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             setItems(currentItems);
         }
     }, [initialItemsFromProps, sectionId]);
+
+    useEffect(() => {
+        if (!isCategoryShowcase || categories.length === 0) return;
+        setItems(prev => prev.map(item => {
+            if (item.categoryId) return item;
+            const resolved = getCategoryFromPath(item.path);
+            if (!resolved) return item;
+            return {
+                ...item,
+                categoryId: resolved._id,
+                name: resolved.name,
+                path: `/shop?category=${resolved._id}`,
+                image: item.image || resolved.image || item.image
+            };
+        }));
+    }, [categories, isCategoryShowcase]);
 
     const handleItemChange = (id, field, value) => {
         setItems(prev => prev.map(item => {
@@ -112,14 +131,14 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         }));
     };
 
-    const handleImageUpload = (id, file, field = 'image') => {
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                handleItemChange(id, field, reader.result);
-            };
-            reader.readAsDataURL(file);
+    const handleImageUpload = async (id, file, field = 'image') => {
+        if (!file) return;
+        const uploadedUrl = await adminService.uploadSectionImage(file);
+        if (uploadedUrl) {
+            handleItemChange(id, field, uploadedUrl);
+            return;
         }
+        toast.error("Image upload failed. Please try again.");
     };
 
     const removeItem = (id) => {
@@ -127,6 +146,22 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         setItems(newItems);
         if (editingId === id) setEditingId(null);
         handleSave(newItems);
+    };
+
+    const addItem = () => {
+        const newItem = {
+            id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+            name: isCategoryShowcase ? '' : 'New Item',
+            path: isCategoryShowcase ? '' : '/shop',
+            image: '',
+            tag: ''
+        };
+        const nextItems = [...items, newItem];
+        setItems(nextItems);
+        setEditingId(newItem.id);
+        if (!isCategoryShowcase) {
+            handleSave(nextItems);
+        }
     };
 
     const handleRedirectToSelect = (itemId) => {
@@ -155,9 +190,18 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         return null;
     };
 
+    const getCategoryFromItem = (item) => {
+        if (!item) return null;
+        if (item.categoryId && categories.length > 0) {
+            const match = categories.find(c => String(c._id) === String(item.categoryId));
+            if (match) return match;
+        }
+        return getCategoryFromPath(item.path);
+    };
+
     const validateItems = (nextItems) => {
         const invalid = nextItems
-            .map(item => ({ item, category: getCategoryFromPath(item.path) }))
+            .map(item => ({ item, category: getCategoryFromItem(item) }))
             .filter(({ category }) => category && (category.isActive === false || category.showInCollection === false));
 
         if (invalid.length > 0) {
@@ -170,7 +214,44 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
 
     const handleSave = (nextItems) => {
         if (!validateItems(nextItems)) return;
-        onSave({ items: nextItems });
+        if (isCategoryShowcase) {
+            const missing = nextItems.filter(item => !getCategoryFromItem(item));
+            if (missing.length > 0) {
+                toast.error('Select a category for each item before saving.');
+                return;
+            }
+            const normalizedItems = nextItems.map((item) => {
+                const category = getCategoryFromItem(item);
+                if (!category) return item;
+                return {
+                    ...item,
+                    categoryId: category._id,
+                    name: category.name,
+                    path: `/shop?category=${category._id}`,
+                    image: item.image || category.image || item.image
+                };
+            });
+            onSave({ items: normalizedItems });
+            return;
+        }
+        const normalizedItems = nextItems.map((item) => {
+            if (sectionId === 'nav-gifts-for' || sectionId === 'nav-occasions') {
+                const label = item.name || item.label || '';
+                const slug = String(label || '')
+                    .trim()
+                    .toLowerCase()
+                    .replace(/['"]/g, '')
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/^-+|-+$/g, '');
+                const key = sectionId === 'nav-gifts-for' ? 'filter' : 'occasion';
+                const path = item.path && item.path.trim().length > 0
+                    ? item.path
+                    : `/shop?${key}=${encodeURIComponent(slug)}`;
+                return { ...item, path };
+            }
+            return item;
+        });
+        onSave({ items: normalizedItems });
     };
 
     // SPECIAL UI FOR LATEST DROP (Streamlined List + Add Button)
@@ -255,6 +336,18 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
 
     return (
         <div className="max-w-4xl mx-auto space-y-6 pb-20">
+            <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                <div>
+                    <h3 className="font-display text-sm md:text-base font-bold text-gray-800">Manage Items</h3>
+                    <p className="text-[10px] md:text-xs text-gray-400">Add, edit, or remove items in this section</p>
+                </div>
+                <button
+                    onClick={addItem}
+                    className="flex items-center gap-2 bg-[#3E2723] text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-[#2b1b18] transition-colors"
+                >
+                    <Plus size={14} /> Add Item
+                </button>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {items.map((item, index) => {
                     const isEditing = editingId === item.id;
@@ -318,21 +411,64 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                         </div>
                                     </div>
 
-                                    {/* Select Product Button */}
-                                    <button
-                                        onClick={() => handleRedirectToSelect(item.id)}
-                                        className="w-full py-2 bg-gray-50 text-gray-600 text-[10px] font-bold rounded-lg border border-gray-200 hover:bg-gray-100 flex items-center justify-center gap-2 uppercase tracking-widest"
-                                    >
-                                        <Search size={14} /> Product Link
-                                    </button>
+                                    {/* Select Product Button (skip for category showcase + nav gifts/occasions) */}
+                                    {!isCategoryShowcase && sectionId !== 'nav-gifts-for' && sectionId !== 'nav-occasions' && (
+                                        <button
+                                            onClick={() => handleRedirectToSelect(item.id)}
+                                            className="w-full py-2 bg-gray-50 text-gray-600 text-[10px] font-bold rounded-lg border border-gray-200 hover:bg-gray-100 flex items-center justify-center gap-2 uppercase tracking-widest"
+                                        >
+                                            <Search size={14} /> Product Link
+                                        </button>
+                                    )}
 
                                     <div className="space-y-3">
-                                        <Input
-                                            label={sectionId === 'style-it-your-way' ? "Title" : "Name"}
-                                            value={item.name}
-                                            onChange={(e) => handleItemChange(item.id, 'name', e.target.value)}
-                                            placeholder="Name"
-                                        />
+                                        {isCategoryShowcase && (
+                                            <div>
+                                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Category</label>
+                                                <select
+                                                    value={getCategoryFromItem(item)?._id || ''}
+                                                    onChange={(e) => {
+                                                        const selected = categories.find(c => String(c._id) === String(e.target.value));
+                                                        if (!selected) return;
+                                                        setItems(prev => prev.map(entry => {
+                                                            if (entry.id !== item.id) return entry;
+                                                            return {
+                                                                ...entry,
+                                                                categoryId: selected._id,
+                                                                name: selected.name,
+                                                                path: `/shop?category=${selected._id}`,
+                                                                image: entry.image || selected.image || entry.image
+                                                            };
+                                                        }));
+                                                    }}
+                                                    className="w-full bg-white border border-gray-200 rounded-lg py-2 px-3 text-xs focus:outline-none focus:border-[#3E2723] focus:ring-1 focus:ring-[#3E2723]/20"
+                                                >
+                                                    <option value="">Select Category</option>
+                                                    {categories.map(cat => (
+                                                        <option key={cat._id} value={cat._id}>
+                                                            {cat.name}{cat.isActive === false ? ' (Inactive)' : ''}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        )}
+                                        {!isCategoryShowcase && (
+                                            <Input
+                                                label={sectionId === 'style-it-your-way' ? "Title" : "Name"}
+                                                value={item.name}
+                                                onChange={(e) => handleItemChange(item.id, 'name', e.target.value)}
+                                                placeholder="Name"
+                                            />
+                                        )}
+                                        {isCategoryShowcase && (
+                                            <Input
+                                                label="Category Name"
+                                                value={item.name}
+                                                readOnly
+                                                placeholder="Select a category"
+                                                className="bg-gray-50 text-gray-500 cursor-not-allowed"
+                                            />
+                                        )}
                                         <Input
                                             label={sectionId === 'style-it-your-way' ? "Subtitle" : "Badge"}
                                             value={item.tag}

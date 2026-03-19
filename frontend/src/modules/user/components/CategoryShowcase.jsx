@@ -12,23 +12,74 @@ import catBracelet from '../assets/cat_bracelet_wine.png';
 import catAnklet from '../assets/cat_anklet_wine.png';
 import catChain from '../assets/cat_chain_wine.png';
 
-const categories = [
-    { id: 'pendants', name: "Pendants", image: catPendant, path: "/category/pendants" },
-    { id: 'rings', name: "Rings", image: catRing, path: "/category/rings" },
-    { id: 'earrings', name: "Earrings", image: catEarrings, path: "/category/earrings" },
-    { id: 'bracelets', name: "Bracelets", image: catBracelet, path: "/category/bracelets" },
-    { id: 'anklets', name: "Anklets", image: catAnklet, path: "/category/anklets" },
-    { id: 'chains', name: "Chains", image: catChain, path: "/category/chains" }
-];
+const fallbackImageMap = {
+    pendants: catPendant,
+    rings: catRing,
+    earrings: catEarrings,
+    bracelets: catBracelet,
+    anklets: catAnklet,
+    chains: catChain
+};
+
+const resolveFallbackImage = (slugOrName) => {
+    if (!slugOrName) return null;
+    const key = String(slugOrName).toLowerCase().replace(/\s+/g, '-');
+    return fallbackImageMap[key] || null;
+};
 
 const CategoryShowcase = () => {
-    const { homepageSections } = useShop();
+    const { homepageSections, categories, products } = useShop();
     const sectionConfig = homepageSections['category-showcase'];
 
-    // Use configured items if available and not empty, otherwise fallback to default
+    const activeCategories = (categories || []).filter(
+        (cat) => cat.isActive !== false && cat.showInCollection !== false
+    );
+    const productCategoryIds = new Set((products || []).map(p => String(p.categoryId || '')));
+
+    const getCategoryFromPath = (path) => {
+        if (!path || activeCategories.length === 0) return null;
+        try {
+            if (path.startsWith('/category/')) {
+                const slug = path.replace('/category/', '').split('?')[0];
+                return activeCategories.find(c => c.slug === slug || c.path === slug) || null;
+            }
+            if (path.includes('category=')) {
+                const query = path.split('category=')[1]?.split('&')[0];
+                return activeCategories.find(c => c._id === query || c.id === query || c.slug === query || c.path === query || c.name === query) || null;
+            }
+        } catch (err) {
+            return null;
+        }
+        return null;
+    };
+
     const displayItems = (sectionConfig?.items && sectionConfig.items.length > 0)
-        ? sectionConfig.items
-        : categories;
+        ? sectionConfig.items.map((item) => {
+            const resolvedCategory = getCategoryFromPath(item.path);
+            if (resolvedCategory) {
+                return {
+                    id: resolvedCategory._id,
+                    name: resolvedCategory.name,
+                    image: resolvedCategory.image || resolveFallbackImage(resolvedCategory.slug || resolvedCategory.name),
+                    path: `/shop?category=${resolvedCategory._id}`,
+                    tag: item.tag || ''
+                };
+            }
+            return {
+                ...item,
+                image: item.image || resolveFallbackImage(item.name)
+            };
+        })
+        : (() => {
+            const withProducts = activeCategories.filter(cat => productCategoryIds.has(String(cat._id)));
+            const baseList = withProducts.length > 0 ? withProducts : activeCategories;
+            return baseList.slice(0, 8).map(cat => ({
+                id: cat._id,
+                name: cat.name,
+                image: cat.image || resolveFallbackImage(cat.slug || cat.name),
+                path: `/shop?category=${cat._id}`
+            }));
+        })();
 
     return (
         <section className="py-4 bg-white overflow-hidden">

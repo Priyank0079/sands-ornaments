@@ -65,7 +65,7 @@ const Home = () => {
         }
     ];
 
-    const heroSlides = [
+    const staticHeroSlides = [
         {
             image: heroSlide1,
             badge: "New Collection 2024",
@@ -91,6 +91,12 @@ const Home = () => {
             link: "/shop"
         }
     ];
+    const heroSlides = (banners && banners.length > 0)
+        ? banners.map((banner) => ({
+            image: banner.image,
+            title: banner.title || "Sands Ornaments"
+        }))
+        : staticHeroSlides;
 
     useEffect(() => {
         const timer = setInterval(() => {

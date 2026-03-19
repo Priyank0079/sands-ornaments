@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-    ArrowLeft, User, Mail, Phone, MapPin, 
-    ShoppingBag, IndianRupee, TrendingUp, Calendar
-} from 'lucide-react';
+import { ArrowLeft, User, Mail, ShoppingBag, IndianRupee, TrendingUp, Calendar } from 'lucide-react';
 import { sellerCustomerService } from '../services/sellerCustomerService';
 import AdminTable from '../../admin/components/AdminTable';
 
@@ -14,19 +11,23 @@ const SellerCustomerDetail = () => {
     const [orders, setOrders] = useState([]);
 
     useEffect(() => {
-        const data = sellerCustomerService.getCustomerDetails(id);
-        if (data) {
-            setCustomer(data);
-            setOrders(sellerCustomerService.getCustomerOrders(id));
-        }
+        let active = true;
+        const loadCustomer = async () => {
+            const data = await sellerCustomerService.getCustomerDetails(id);
+            if (!active) return;
+            setCustomer(data.customer);
+            setOrders(data.orders || []);
+        };
+        loadCustomer();
+        return () => { active = false; };
     }, [id]);
 
     if (!customer) return <div className="p-20 text-center text-gray-400 font-black uppercase tracking-widest">Client Not Found</div>;
 
     const stats = [
-        { label: 'Total Acquisitions', value: customer.totalOrders, icon: ShoppingBag, color: 'text-blue-600', bg: 'bg-blue-50' },
-        { label: 'Lifetime Value', value: `₹${customer.totalSpend.toLocaleString()}`, icon: IndianRupee, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-        { label: 'Average Order', value: `₹${Math.round(customer.totalSpend / customer.totalOrders).toLocaleString()}`, icon: TrendingUp, color: 'text-purple-600', bg: 'bg-purple-50' }
+        { label: 'Total Acquisitions', value: customer.totalOrders || 0, icon: ShoppingBag, color: 'text-blue-600', bg: 'bg-blue-50' },
+        { label: 'Lifetime Value', value: `Rs. ${Number(customer.totalSpend || 0).toLocaleString()}`, icon: IndianRupee, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+        { label: 'Average Order', value: `Rs. ${Number(customer.averageOrder || 0).toLocaleString()}`, icon: TrendingUp, color: 'text-purple-600', bg: 'bg-purple-50' }
     ];
 
     const columns = [
@@ -48,7 +49,7 @@ const SellerCustomerDetail = () => {
         {
             header: 'VALUATION',
             className: 'w-[15%]',
-            render: (row) => <span className="text-[10px] font-black text-gray-900 tracking-tighter">₹{row.amount.toLocaleString()}</span>
+            render: (row) => <span className="text-[10px] font-black text-gray-900 tracking-tighter">Rs. {Number(row.amount || 0).toLocaleString()}</span>
         },
         {
             header: 'STATUS',
@@ -63,9 +64,8 @@ const SellerCustomerDetail = () => {
         }
     ];
 
-    const cardClasses = "bg-white rounded-[2rem] border border-gray-100 p-8 shadow-sm h-full";
     const labelClasses = "text-[9px] font-black text-gray-400 uppercase tracking-widest";
-    const valueClasses = "text-sm font-bold text-gray-900 mt-1 uppercase";
+    const valueClasses = "text-sm font-bold text-gray-900 mt-1 uppercase leading-relaxed";
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500 font-sans">
@@ -97,18 +97,15 @@ const SellerCustomerDetail = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Profile Card */}
                 <div className="lg:col-span-1">
-                    <div className={cardClasses}>
+                    <div className="bg-white rounded-[2rem] border border-gray-100 p-8 shadow-sm h-full">
                         <div className="flex flex-col items-center text-center pb-8 border-b border-gray-50 mb-8">
                             <div className="w-24 h-24 bg-[#3E2723]/5 rounded-[2rem] border border-[#3E2723]/10 flex items-center justify-center mb-4">
-                                <span className="text-3xl font-black text-[#3E2723]">{customer.name.charAt(0)}</span>
+                                <span className="text-3xl font-black text-[#3E2723]">{customer.name?.charAt(0) || 'C'}</span>
                             </div>
-                            <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">{customer.name}</h2>
-                            <span className={`mt-2 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border ${
-                                customer.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-red-50 text-red-600 border-red-100'
-                            }`}>
-                                {customer.status} ACCOUNT
+                            <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">{customer.name || 'Customer'}</h2>
+                            <span className="mt-2 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border bg-emerald-50 text-emerald-600 border-emerald-100">
+                                ACTIVE ACCOUNT
                             </span>
                         </div>
 
@@ -117,28 +114,20 @@ const SellerCustomerDetail = () => {
                                 <div className="p-2 bg-gray-50 rounded-lg"><Mail size={14} className="text-gray-400" /></div>
                                 <div>
                                     <p className={labelClasses}>Digital Endpoint</p>
-                                    <p className="text-sm font-bold text-gray-900">{customer.email}</p>
+                                    <p className="text-sm font-bold text-gray-900">{customer.email || 'Email not available'}</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-4">
-                                <div className="p-2 bg-gray-50 rounded-lg"><Phone size={14} className="text-gray-400" /></div>
+                                <div className="p-2 bg-gray-50 rounded-lg"><User size={14} className="text-gray-400" /></div>
                                 <div>
-                                    <p className={labelClasses}>Telecommunication</p>
-                                    <p className="text-sm font-bold text-gray-900">{customer.phone}</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <div className="p-2 bg-gray-50 rounded-lg"><MapPin size={14} className="text-gray-400" /></div>
-                                <div>
-                                    <p className={labelClasses}>Fulfillment Destination</p>
-                                    <p className="text-sm font-bold text-gray-900 uppercase leading-relaxed">{customer.address}</p>
+                                    <p className={labelClasses}>Customer Name</p>
+                                    <p className={valueClasses}>{customer.name || 'Customer'}</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Acquisition History */}
                 <div className="lg:col-span-2">
                     <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden min-h-full">
                         <div className="p-8 border-b border-gray-50">
@@ -146,7 +135,7 @@ const SellerCustomerDetail = () => {
                                 <Calendar size={14} className="text-[#3E2723]" /> Historic Acquisitions
                             </h3>
                         </div>
-                        <AdminTable columns={columns} data={orders} />
+                        <AdminTable columns={columns} data={orders} emptyMessage="No orders found" />
                     </div>
                 </div>
             </div>

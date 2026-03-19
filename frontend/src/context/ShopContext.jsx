@@ -2,7 +2,6 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { Check } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { PRODUCTS as initialProducts, COUPONS as initialCoupons } from '../mockData/data';
 import { useAuth } from './AuthContext';
 import { useCatalogue } from '../hooks/useCatalogue';
 import { adminService } from '../modules/admin/services/adminService';
@@ -20,52 +19,14 @@ export const ShopProvider = ({ children }) => {
         const saved = localStorage.getItem('wishlist');
         return saved ? JSON.parse(saved) : [];
     });
-    const [orders, setOrders] = useState(() => {
-        const saved = localStorage.getItem('orders');
-        return saved ? JSON.parse(saved) : [];
-    });
+    const [orders, setOrders] = useState([]);
     const [addresses, setAddresses] = useState(() => {
         const saved = localStorage.getItem('addresses');
         return saved ? JSON.parse(saved) : [];
     });
-    const [supportTickets, setSupportTickets] = useState(() => {
-        const saved = localStorage.getItem('supportTickets');
-        if (saved) return JSON.parse(saved);
-
-        // Initial Dummy Data to show the flow
-        return [
-            {
-                id: 'TKT-827415',
-                userName: 'Aditi Singh',
-                userEmail: 'aditi.s@gmail.com',
-                subject: 'Polishing issue with Silver Necklace',
-                category: 'Product Feedback',
-                orderId: '1735921',
-                message: 'The necklace I bought last week seems to be losing its shine already. Is this normal or can I get it polished?',
-                date: new Date(Date.now() - 86400000).toISOString(),
-                status: 'In Progress',
-                replies: [
-                    {
-                        from: 'admin',
-                        text: 'Hello Aditi! We are sorry to hear that. 925 Silver can sometimes tarnish due to humidity, but it shouldn\'t happen so soon. Please bring it to our store or ship it back, and we will polish it for free!',
-                        date: new Date(Date.now() - 43200000).toISOString()
-                    }
-                ]
-            },
-            {
-                id: 'TKT-192837',
-                userName: 'Rahul Verma',
-                userEmail: 'rahul.v@yahoo.com',
-                subject: 'Tracking showing "Returned to Origin"',
-                category: 'Order Tracking',
-                orderId: '1735123',
-                message: 'My order tracking says the package is being sent back to the warehouse. I was at home all day!',
-                date: new Date(Date.now() - 172800000).toISOString(),
-                status: 'Open',
-                replies: []
-            }
-        ];
-    });
+    const [supportTickets, setSupportTickets] = useState([]);
+    const [returns, setReturns] = useState([]);
+    const [replacements, setReplacements] = useState([]);
     const { 
         products, 
         categories, 
@@ -104,8 +65,13 @@ export const ShopProvider = ({ children }) => {
         setNotificationsEnabled(prev => !prev);
     };
 
-    const deleteUserNotification = (id) => {
-        setUserNotifications(prev => prev.filter(n => n.id !== id));
+    const deleteUserNotification = async (id) => {
+        try {
+            await api.patch(`/user/notifications/${id}/read`);
+            await fetchNotifications();
+        } catch (err) {
+            setUserNotifications(prev => prev.filter(n => (n._id || n.id) !== id));
+        }
     };
 
     // Auto-hide notification after 3 seconds
@@ -121,9 +87,19 @@ export const ShopProvider = ({ children }) => {
         if (user) {
             fetchAddresses();
             fetchWishlist();
+            fetchOrders();
+            fetchReturns();
+            fetchReplacements();
+            fetchSupportTickets();
+            fetchNotifications();
         } else {
             setAddresses([]);
             setWishlist([]);
+            setOrders([]);
+            setReturns([]);
+            setReplacements([]);
+            setSupportTickets([]);
+            setUserNotifications([]);
         }
     }, [user]);
 
@@ -131,8 +107,10 @@ export const ShopProvider = ({ children }) => {
         try {
             const res = await api.get('user/addresses');
             if (res.data.success) {
-                setAddresses(res.data.addresses);
-                const defaultAddr = res.data.addresses.find(a => a.isDefault);
+                const list = res.data.addresses || [];
+                const normalized = list.map(addr => ({ ...addr, id: addr._id || addr.id }));
+                setAddresses(normalized);
+                const defaultAddr = normalized.find(a => a.isDefault);
                 if (defaultAddr) setDefaultAddressId(defaultAddr._id);
             }
         } catch (err) { console.error("Fetch addresses failed", err); }
@@ -142,20 +120,87 @@ export const ShopProvider = ({ children }) => {
         try {
             const res = await api.get('user/wishlist');
             if (res.data.success) {
-                setWishlist(res.data.products);
+                const list = res.data.data?.wishlist || res.data.wishlist || res.data.products || [];
+                const normalized = (list || []).map((item) => {
+                    const variants = item.variants || [];
+                    const firstVariant = variants[0] || {};
+                    return {
+                        ...item,
+                        id: item._id || item.id,
+                        price: item.price ?? firstVariant.price ?? 0,
+                        originalPrice: item.originalPrice ?? firstVariant.mrp ?? 0,
+                        image: item.image || item.images?.[0] || '',
+                        images: item.images || [],
+                        rating: item.rating || 0,
+                        reviews: item.reviewCount || 0,
+                        variants: variants.map(v => ({ ...v, id: v._id || v.id }))
+                    };
+                });
+                setWishlist(normalized);
             }
         } catch (err) { console.error("Fetch wishlist failed", err); }
     };
+
+    const fetchOrders = async () => {
+        try {
+            const res = await api.get('user/orders');
+            if (res.data.success) {
+                const list = res.data.data?.orders || res.data.orders || [];
+                setOrders(list.map(order => ({ ...order, id: order._id || order.id, displayId: order.orderId || order._id })));
+            }
+        } catch (err) { console.error("Fetch orders failed", err); }
+    };
+
+    const fetchReturns = async () => {
+        try {
+            const res = await api.get('user/returns');
+            if (res.data.success) {
+                const list = res.data.data?.returns || res.data.returns || [];
+                setReturns(list.map(ret => ({ ...ret, id: ret._id || ret.id })));
+            }
+        } catch (err) { console.error("Fetch returns failed", err); }
+    };
+
+    const fetchReplacements = async () => {
+        try {
+            const res = await api.get('user/replacements');
+            if (res.data.success) {
+                const list = res.data.data?.replacements || res.data.replacements || [];
+                setReplacements(list.map(rep => ({ ...rep, id: rep._id || rep.id })));
+            }
+        } catch (err) { console.error("Fetch replacements failed", err); }
+    };
+
+    const fetchSupportTickets = async () => {
+        try {
+            const res = await api.get('user/support');
+            if (res.data.success) {
+                const list = res.data.data?.tickets || res.data.tickets || [];
+                setSupportTickets(list.map(ticket => ({ ...ticket, id: ticket._id || ticket.id || ticket.ticketId })));
+            }
+        } catch (err) { console.error("Fetch support tickets failed", err); }
+    };
+
+    const fetchNotifications = async () => {
+        try {
+            const res = await api.get('user/notifications');
+            if (res.data.success) {
+                const list = res.data.data?.notifications || res.data.notifications || [];
+                setUserNotifications(list.map(note => ({ ...note, id: note._id || note.id })));
+            }
+        } catch (err) { console.error("Fetch notifications failed", err); }
+    };
+
+    const refreshOrders = () => fetchOrders();
+    const refreshReturns = () => fetchReturns();
+    const refreshReplacements = () => fetchReplacements();
+    const refreshSupportTickets = () => fetchSupportTickets();
+    const refreshNotifications = () => fetchNotifications();
 
     // Persist Cart
     useEffect(() => {
         localStorage.setItem('cart', JSON.stringify(cart));
     }, [cart]);
-
-    // Persist Support Tickets
-    useEffect(() => {
-        localStorage.setItem('supportTickets', JSON.stringify(supportTickets));
-    }, [supportTickets]);
 
     // Persist Coupons
     useEffect(() => {
@@ -189,7 +234,8 @@ export const ShopProvider = ({ children }) => {
 
     const placeOrder = async (orderDetails) => {
         try {
-            const { items, shippingAddress, paymentMethod, couponCode } = orderDetails;
+            const { items, shippingAddress, paymentMethod, couponCode, addressId } = orderDetails;
+            const resolvedAddress = shippingAddress || addresses.find(a => a._id === addressId);
             
             // 1. Create order on backend
             // Note: backend expects { items: [{productId, variantId, quantity}], shippingAddress, paymentMethod, couponCode }
@@ -199,7 +245,7 @@ export const ShopProvider = ({ children }) => {
                     variantId: item.variantId || item.variants?.[0]?.id || item.variants?.[0]?._id,
                     quantity: item.qty || item.quantity
                 })),
-                shippingAddress,
+                shippingAddress: resolvedAddress,
                 paymentMethod,
                 couponCode
             });
@@ -217,7 +263,7 @@ export const ShopProvider = ({ children }) => {
             }
 
             // 3. For COD or other methods, complete local flow
-            setOrders(prev => [order, ...prev]);
+            await fetchOrders();
             setCart([]);
             showNotification("Order placed successfully!");
             return order._id;
@@ -246,7 +292,7 @@ export const ShopProvider = ({ children }) => {
                         });
 
                         if (verifyRes.data.success) {
-                            setOrders(prev => [verifyRes.data.order, ...prev]);
+                            await fetchOrders();
                             setCart([]);
                             toast.success("Payment successful!");
                             resolve(backendOrder._id);
@@ -275,11 +321,20 @@ export const ShopProvider = ({ children }) => {
     const addToCart = (arg1, arg2, arg3) => {
         let productId, variantId, qty = 1, productData = null;
 
+        if (!user) {
+            toast.error("Please login to add to cart");
+            window.location.href = "/login";
+            return;
+        }
+
         if (typeof arg1 === 'object') {
             // Logic for addToCart(product)
             productData = arg1;
             productId = productData.id || productData._id;
             variantId = productData.selectedVariant?.id || productData.selectedVariant?._id || productData.variants?.[0]?.id || productData.variants?.[0]?._id;
+            if (productData.price === undefined && productData.variants?.[0]?.price !== undefined) {
+                productData = { ...productData, price: productData.variants[0].price, originalPrice: productData.variants[0].mrp };
+            }
         } else {
             // Logic for addToCart(userId, productId, quantity)
             productId = arg2;
@@ -348,10 +403,11 @@ export const ShopProvider = ({ children }) => {
     const addToWishlist = async (product) => {
         if (!user) {
             toast.error("Please login to add to wishlist");
+            window.location.href = "/login";
             return;
         }
         try {
-            const res = await api.post('/user/wishlist/toggle', { productId: product.id || product._id });
+            const res = await api.post('/user/wishlist', { productId: product.id || product._id });
             if (res.data.success) {
                 fetchWishlist();
                 showNotification("Wishlist updated");
@@ -367,7 +423,7 @@ export const ShopProvider = ({ children }) => {
 
     const removeFromWishlist = async (productId) => {
         try {
-            const res = await api.post('/user/wishlist/toggle', { productId });
+            const res = await api.delete(`/user/wishlist/${productId}`);
             if (res.data.success) {
                 fetchWishlist();
                 showNotification("Removed from wishlist");
@@ -419,43 +475,38 @@ export const ShopProvider = ({ children }) => {
         } catch (err) { showNotification("Failed to update address"); }
     };
 
-    const createTicket = (ticketData) => {
-        const newTicket = {
-            id: 'TKT-' + Date.now().toString().slice(-6),
-            date: new Date().toISOString(),
-            status: 'Open',
-            replies: [],
-            ...ticketData
-        };
-        setSupportTickets(prev => [newTicket, ...prev]);
-        showNotification("Support ticket created. We will get back to you soon!");
-        return newTicket.id;
-    };
-
-    const updateTicketStatus = (ticketId, newStatus) => {
-        setSupportTickets(prev => prev.map(t =>
-            t.id === ticketId ? { ...t, status: newStatus } : t
-        ));
-    };
-
-    const addTicketReply = (ticketId, reply) => {
-        setSupportTickets(prev => prev.map(t => {
-            if (t.id === ticketId) {
-                return {
-                    ...t,
-                    status: reply.from === 'admin' ? 'In Progress' : t.status,
-                    replies: [...(t.replies || []), {
-                        ...reply,
-                        date: new Date().toISOString()
-                    }]
-                };
+    const createTicket = async (ticketData) => {
+        try {
+            const res = await api.post('/user/support', ticketData);
+            if (res.data.success) {
+                await fetchSupportTickets();
+                showNotification("Support ticket created. We will get back to you soon!");
+                return res.data.data?.ticket?._id || null;
             }
-            return t;
-        }));
+            toast.error(res.data.message || "Failed to create ticket");
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Failed to create ticket");
+        }
+        return null;
+    };
+
+    const addTicketReply = async (ticketId, reply) => {
+        try {
+            const res = await api.post(`/user/support/${ticketId}/reply`, { message: reply.text || reply.message || '' });
+            if (res.data.success) {
+                await fetchSupportTickets();
+                showNotification("Reply sent");
+                return true;
+            }
+            toast.error(res.data.message || "Failed to send reply");
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Failed to send reply");
+        }
+        return false;
     };
 
     const deleteTicket = (ticketId) => {
-        setSupportTickets(prev => prev.filter(t => t.id !== ticketId));
+        setSupportTickets(prev => prev.filter(t => (t._id || t.id || t.ticketId) !== ticketId));
         showNotification("Ticket removed successfully.");
     };
 
@@ -559,134 +610,32 @@ export const ShopProvider = ({ children }) => {
         }
     };
 
-    // Homepage Sections Management
-    const [homepageSections, setHomepageSections] = useState(() => {
-        try {
-            const saved = localStorage.getItem('homepageSections');
-            const parsed = saved ? JSON.parse(saved) : null;
-
-            const defaultState = {
-                'category-showcase': {
-                    id: 'category-showcase',
-                    label: 'Category Showcase',
-                    items: []
-                },
-                'price-range-showcase': {
-                    id: 'price-range-showcase',
-                    label: 'Luxury in Range',
-                    items: []
-                },
-                'perfect-gift': {
-                    id: 'perfect-gift',
-                    label: 'Find the Perfect Gift',
-                    items: []
-                },
-                'new-launch': {
-                    id: 'new-launch',
-                    label: 'Limited Edition',
-                    items: []
-                },
-                'latest-drop': {
-                    id: 'latest-drop',
-                    label: 'Latest Drop',
-                    items: []
-                },
-                'most-gifted': {
-                    id: 'most-gifted',
-                    label: 'Most Gifted Items',
-                    items: []
-                },
-                'proposal-rings': {
-                    id: 'proposal-rings',
-                    label: 'Proposal Rings',
-                    items: []
-                },
-                'curated-for-you': {
-                    id: 'curated-for-you',
-                    label: 'Curated For You',
-                    items: []
-                },
-                'style-it-your-way': {
-                    id: 'style-it-your-way',
-                    label: 'Style It Your Way',
-                    items: []
-                }
-            };
-
-            // Force merge 'category-showcase' if missing (e.g. from older state)
-            if (parsed && !parsed['category-showcase']) {
-                parsed['category-showcase'] = defaultState['category-showcase'];
-            }
-
-            // Force merge 'price-range-showcase' if missing
-            if (parsed && !parsed['price-range-showcase']) {
-                parsed['price-range-showcase'] = defaultState['price-range-showcase'];
-            }
-
-            // Force merge 'perfect-gift' if missing
-            if (parsed && !parsed['perfect-gift']) {
-                parsed['perfect-gift'] = defaultState['perfect-gift'];
-            }
-
-            // Force merge 'new-launch' if missing
-            if (parsed && !parsed['new-launch']) {
-                parsed['new-launch'] = defaultState['new-launch'];
-            }
-
-            // Force merge 'latest-drop' if missing
-            if (parsed && !parsed['latest-drop']) {
-                parsed['latest-drop'] = defaultState['latest-drop'];
-            }
-
-            // Force merge 'most-gifted' if missing
-            if (parsed && !parsed['most-gifted']) {
-                parsed['most-gifted'] = defaultState['most-gifted'];
-            }
-
-            // Force merge 'proposal-rings' if missing
-            if (parsed && !parsed['proposal-rings']) {
-                parsed['proposal-rings'] = defaultState['proposal-rings'];
-            }
-
-            // Force merge 'curated-for-you' if missing
-            if (parsed && !parsed['curated-for-you']) {
-                parsed['curated-for-you'] = defaultState['curated-for-you'];
-            }
-
-            // Force merge 'style-it-your-way' if missing
-            if (parsed && !parsed['style-it-your-way']) {
-                parsed['style-it-your-way'] = defaultState['style-it-your-way'];
-            }
-
-            // Migration: Remove (15% OFF) from label if present
-            if (parsed && parsed['category-showcase'] && parsed['category-showcase'].label.includes('(15% OFF)')) {
-                parsed['category-showcase'].label = 'Category Showcase';
-            }
-
-            return parsed || defaultState;
-        } catch (error) {
-            console.error("Error parsing homepageSections:", error);
-            return {
-                'category-showcase': {
-                    id: 'category-showcase',
-                    label: 'Category Showcase',
-                    items: []
-                }
-            };
-        }
-    });
+    const [homepageSections, setHomepageSections] = useState({});
 
     useEffect(() => {
-        localStorage.setItem('homepageSections', JSON.stringify(homepageSections));
-    }, [homepageSections]);
-
-    const updateSection = (sectionId, newData) => {
-        setHomepageSections(prev => ({
-            ...prev,
-            [sectionId]: { ...prev[sectionId], ...newData }
-        }));
-        showNotification("Section updated successfully");
-    };
+        const fetchHomepageSections = async () => {
+            try {
+                const res = await api.get('public/cms/homepage');
+                if (res.data.success) {
+                    const sections = res.data.data?.sections || [];
+                    const mapped = sections.reduce((acc, section) => {
+                        acc[section.sectionId] = {
+                            id: section.sectionId,
+                            label: section.label,
+                            isActive: section.isActive !== false,
+                            sortOrder: section.sortOrder || 0,
+                            items: section.items || []
+                        };
+                        return acc;
+                    }, {});
+                    setHomepageSections(mapped);
+                }
+            } catch (err) {
+                console.error("Failed to fetch homepage sections:", err);
+            }
+        };
+        fetchHomepageSections();
+    }, []);
 
     // Product & Bulk Management
     const updateProduct = (id, updatedData) => {
@@ -764,12 +713,13 @@ export const ShopProvider = ({ children }) => {
 
     return (
         <ShopContext.Provider value={{
-            cart, wishlist, user, orders, addresses, supportTickets,
+            cart, wishlist, user, orders, addresses, supportTickets, returns, replacements,
             login, logout, placeOrder, addToCart, addToWishlist,
             removeFromCart, removeFromWishlist, updateQuantity, updateCartQty, clearCart,
             getCart, getVariantById, getPackById, getRecommendations: (uid, n) => products.slice(0, n), // Basic stub
             addAddress, removeAddress, updateAddress, setDefaultAddress,
-            defaultAddressId, createTicket, updateTicketStatus, addTicketReply, deleteTicket,
+            defaultAddressId, createTicket, addTicketReply, deleteTicket,
+            refreshOrders, refreshReturns, refreshReplacements, refreshSupportTickets, refreshNotifications,
 
             showNotification, deleteAccount,
             coupons, addCoupon, updateCoupon, deleteCoupon, toggleCoupon, getActiveCoupons, validateCoupon,
@@ -780,7 +730,7 @@ export const ShopProvider = ({ children }) => {
             categories, banners, isLoading: isCatalogueLoading,
 
             // Homepage Sections Management
-            homepageSections, updateSection
+            homepageSections
         }}>
             {children}
             {/* Custom Toast Notification */}

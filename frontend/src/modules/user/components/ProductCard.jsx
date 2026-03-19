@@ -8,7 +8,14 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
     const [flying, setFlying] = useState(false);
     const [flyingType, setFlyingType] = useState('cart'); // 'cart' or 'heart'
 
-    const isWishlisted = wishlist.some(item => item.id === product.id);
+    const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
+    const isWishlisted = safeWishlist.some(item => item.id === product.id);
+
+    const variantPrices = (product.variants || [])
+        .map(v => Number(v.price))
+        .filter(v => !Number.isNaN(v) && v > 0);
+    const variantCount = (product.variants || []).length;
+    const fromPrice = variantPrices.length > 0 ? Math.min(...variantPrices) : product.price;
 
     // Calculate discount percentage if original price exists
     const discount = product.originalPrice > product.price
@@ -118,11 +125,19 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
 
                     {/* Price Section first */}
                     <div className="flex items-baseline gap-2 mb-1">
-                        <span className={`text-black font-bold ${isWishlistPage ? 'text-sm' : 'text-base'}`}>₹{product.price.toLocaleString()}</span>
+                        <span className={`text-black font-bold ${isWishlistPage ? 'text-sm' : 'text-base'}`}>
+                            {variantCount > 1 ? `From ₹${Number(fromPrice || 0).toLocaleString()}` : `₹${Number(product.price || 0).toLocaleString()}`}
+                        </span>
                         {product.originalPrice > product.price && (
-                            <span className="text-gray-400 line-through text-xs">₹{product.originalPrice.toLocaleString()}</span>
+                            <span className="text-gray-400 line-through text-xs">₹{Number(product.originalPrice || 0).toLocaleString()}</span>
                         )}
                     </div>
+
+                    {variantCount > 1 && (
+                        <div className="text-[10px] uppercase tracking-widest text-gray-500 font-semibold mb-1">
+                            Variants: {variantCount}
+                        </div>
+                    )}
 
                     {/* Title */}
                     <h3 className={`text-black font-serif ${isWishlistPage ? 'text-sm' : 'text-base md:text-lg'} font-medium leading-tight mb-1 line-clamp-2`}>

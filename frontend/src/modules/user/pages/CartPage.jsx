@@ -5,49 +5,6 @@ import { ShoppingBag, Trash2, Plus, Minus, ArrowLeft, Percent, Tag, ChevronRight
 import { Link, useNavigate } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 
-const DUMMY_PRODUCTS = [
-    {
-        id: 101,
-        name: 'Premium Kashmiri Saffron',
-        category: 'Spices',
-        price: 599,
-        mrp: 899,
-        brand: 'FARMLYF Premium',
-        image: 'https://images.unsplash.com/photo-1564417539002-3f1912a520cb?auto=format&fit=crop&q=80&w=400',
-        rating: 4.9
-    },
-    {
-        id: 102,
-        name: 'Organic Chia Seeds',
-        category: 'Seeds',
-        price: 249,
-        mrp: 349,
-        brand: 'FARMLYF Organics',
-        image: 'https://images.unsplash.com/photo-1550989460-0adf9ea622e2?auto=format&fit=crop&q=80&w=400',
-        rating: 4.5
-    },
-    {
-        id: 103,
-        name: 'Cold Pressed Coconut Oil',
-        category: 'Oils',
-        price: 399,
-        mrp: 599,
-        brand: 'FARMLYF Oils',
-        image: 'https://images.unsplash.com/photo-1585642652174-8b63e8a38a79?auto=format&fit=crop&q=80&w=400',
-        rating: 4.7
-    },
-    {
-        id: 104,
-        name: 'Raw Forest Honey',
-        category: 'Sweeteners',
-        price: 450,
-        mrp: 650,
-        brand: 'FARMLYF Naturals',
-        image: 'https://images.unsplash.com/photo-1587049352851-8d4e1613d285?auto=format&fit=crop&q=80&w=400',
-        rating: 4.8
-    }
-];
-
 const CartPage = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -55,30 +12,14 @@ const CartPage = () => {
         getCart,
         removeFromCart,
         updateCartQty,
-        packs,
         getVariantById,
         getPackById,
         getActiveCoupons,
         saveForLater,
-        moveToSaveForLater,
         moveToCartFromSaved,
         removeFromSaved,
-        getRecommendations,
-        addToCart
+        getRecommendations
     } = useShop();
-
-    const handleAddToCart = (e, item) => {
-        e.stopPropagation();
-        e.preventDefault();
-        addToCart(user?.id, item.id);
-    };
-
-    const handleBuyNow = (e, item) => {
-        e.stopPropagation();
-        e.preventDefault();
-        addToCart(user?.id, item.id);
-        navigate('/checkout');
-    };
 
     const cartItems = user ? getCart(user.id) : [];
 
@@ -130,11 +71,11 @@ const CartPage = () => {
     }).filter(Boolean);
 
     const subtotal = enrichedCart.reduce((acc, item) => acc + (item.price || 0) * item.qty, 0);
-    const cartCategories = [...new Set(enrichedCart.map(item => item.category))];
     const availableCoupons = getActiveCoupons().filter(c => {
         // Simple filter for coupons that are theoretically applicable (min order value check)
         return subtotal >= c.minOrderValue;
     });
+    const recommendations = user ? (getRecommendations(user.id, 5) || []) : [];
 
     if (enrichedCart.length === 0) {
         return (
@@ -142,7 +83,7 @@ const CartPage = () => {
                 <ShoppingBag size={80} className="text-gray-200 mb-6" />
                 <h2 className="text-2xl font-bold text-footerBg mb-2">Your Bag is Empty</h2>
                 <p className="text-gray-500 mb-8">Add something to your bag and it will show up here.</p>
-                <Link to="/catalog" className="bg-primary text-white px-8 py-3 rounded-full font-bold hover:bg-opacity-90 transition-all">
+                <Link to="/shop" className="bg-primary text-white px-8 py-3 rounded-full font-bold hover:bg-opacity-90 transition-all">
                     Shop Now
                 </Link>
             </div>
@@ -323,7 +264,7 @@ const CartPage = () => {
                 )}
 
                 {/* Recommended Section - "You might also like" */}
-                {user && (
+                {user && recommendations.length > 0 && (
                     <div className="mt-12 md:mt-20 border-t border-gray-100 pt-10 md:pt-16">
                         <div className="space-y-1 mb-6 md:mb-8 flex items-end justify-between">
                             <div className="text-center md:text-left w-full md:w-auto">
@@ -333,8 +274,8 @@ const CartPage = () => {
                             <button className="hidden md:block text-xs font-bold text-primary hover:underline">View All</button>
                         </div>
                         <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6">
-                            {(getRecommendations(user.id, 5).length > 0 ? getRecommendations(user.id, 5) : DUMMY_PRODUCTS).map((item) => (
-                                <ProductCard key={item.id} product={item} />
+                            {recommendations.map((item) => (
+                                <ProductCard key={item.id || item._id} product={item} />
                             ))}
                         </div>
                     </div>

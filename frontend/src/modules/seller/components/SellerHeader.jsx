@@ -13,18 +13,23 @@ const SellerHeader = ({ isSidebarOpen, setIsSidebarOpen }) => {
     const [unreadCount, setUnreadCount] = useState(0);
 
     useEffect(() => {
-        setSeller(sellerService.getCurrentSeller());
+        const refreshSeller = () => setSeller(sellerService.getCurrentSeller());
+        refreshSeller();
         loadNotifications();
-        
-        // Polling for simulation
+
         const interval = setInterval(loadNotifications, 5000);
-        return () => clearInterval(interval);
+        window.addEventListener('seller-profile-updated', refreshSeller);
+        return () => {
+            clearInterval(interval);
+            window.removeEventListener('seller-profile-updated', refreshSeller);
+        };
     }, []);
 
-    const loadNotifications = () => {
-        const notifs = sellerOrderService.getNotifications();
-        setNotifications(notifs);
-        setUnreadCount(notifs.filter(n => n.unread).length);
+    const loadNotifications = async () => {
+        const notifs = await sellerOrderService.getNotifications();
+        const safeList = Array.isArray(notifs) ? notifs : [];
+        setNotifications(safeList);
+        setUnreadCount(safeList.filter(n => n.unread).length);
     };
 
     const handleLogout = () => {

@@ -6,15 +6,39 @@ import FAQSection from '../components/FAQSection';
 
 const OrderTracking = () => {
     const { orderId, view } = useParams();
-    const { orders } = useShop();
+    const { orders, returns, replacements } = useShop();
     const navigate = useNavigate();
 
     // Normalize IDs for comparison
-    const order = orders.find(o => o.id === orderId || o.id === `ORD-${orderId}` || o.id.replace('ORD-', '') === orderId);
+    const order = orders.find(o => {
+        const id = String(o.id || o._id || '');
+        const displayId = String(o.displayId || o.orderId || '');
+        return id === orderId || displayId === orderId || displayId.replace('ORD-', '') === orderId;
+    });
 
-    // --- MOCK STATES ---
-    const [returnRequest, setReturnRequest] = React.useState(null);
-    const [mockReturnStep, setMockReturnStep] = React.useState(2);
+    const returnRecord = returns.find(r => String(r.orderId?._id || r.orderId) === String(order?.id || order?._id));
+    const replacementRecord = replacements.find(r => String(r.orderId?._id || r.orderId) === String(order?.id || order?._id));
+    const activeRequest = returnRecord || replacementRecord;
+    const requestType = returnRecord ? 'return' : replacementRecord ? 'exchange' : null;
+    const returnRequest = activeRequest ? {
+        ...activeRequest,
+        type: requestType,
+        date: activeRequest.createdAt || activeRequest.date,
+        id: activeRequest.returnId || activeRequest.replacementId || activeRequest._id,
+        items: activeRequest.items || activeRequest.originalItems || activeRequest.replacementItems || []
+    } : null;
+
+    const returnStatusMap = {
+        "Pending Approval": 1,
+        "Approved": 2,
+        "Pickup Scheduled": 3,
+        "Pickup Completed": 3,
+        "Replacement Shipped": 3,
+        "Delivered": 4,
+        "Closed": 4,
+        "Rejected": 4
+    };
+    const returnStep = returnRequest ? (returnStatusMap[returnRequest.status] || 1) : 0;
 
     // Standard Delivery Progress State
     const [currentStepIndex, setCurrentStepIndex] = React.useState(() => {
@@ -23,42 +47,9 @@ const OrderTracking = () => {
     });
 
     React.useEffect(() => {
-        if (order) {
-            // DEMO: Simulate an EXCHANGE request for visualization
-            // Switch to 'type: exchange' to demo the exchange flow
-            setReturnRequest({
-                id: `EXC-${order.id}`,
-                type: 'exchange', // CHANGED TO 'exchange' for demo
-                status: 'pickup_scheduled',
-                date: new Date(Date.now() - 172800000).toISOString(),
-                items: order.items.slice(0, 1)
-            });
-        }
+        if (!order) return;
+        setCurrentStepIndex(order.status === 'Delivered' ? 5 : 2);
     }, [order]);
-
-    React.useEffect(() => {
-        // Animate Delivery Steps (if not delivered)
-        const deliveryInterval = setInterval(() => {
-            setCurrentStepIndex(prev => {
-                if (prev < 5) return prev + 1;
-                return prev;
-            });
-        }, 10000);
-
-        // DEMO: Animate Return/Exchange Steps to show progress
-        const returnInterval = setInterval(() => {
-            setMockReturnStep(prev => {
-                const maxSteps = returnRequest?.type === 'exchange' ? 4 : 3;
-                if (prev < maxSteps) return prev + 1;
-                return prev; // Stop at completion, don't loop
-            });
-        }, 3000); // Updates every 3 seconds
-
-        return () => {
-            clearInterval(deliveryInterval);
-            clearInterval(returnInterval);
-        };
-    }, [returnRequest]);
 
     if (!order) {
         return (
@@ -74,15 +65,20 @@ const OrderTracking = () => {
     };
 
     // --- DELIVERY TIMELINE CALCULATION ---
-    const deliveryBaseDate = new Date(order.date).getTime();
-    const deliveryStepsRaw = [
-        { status: 'Order Placed', date: formatDateTime(deliveryBaseDate) },
-        { status: 'Processing', date: formatDateTime(deliveryBaseDate + 3600000) },
-        { status: 'Dispatched', date: formatDateTime(deliveryBaseDate + 86400000) },
-        { status: 'In Transit', date: formatDateTime(deliveryBaseDate + 172800000) },
-        { status: 'Out For Delivery', date: formatDateTime(deliveryBaseDate + 259200000) },
-        { status: 'Delivered', date: formatDateTime(deliveryBaseDate + 266400000), isLast: true }
-    ];
+    const deliveryBaseDate = new Date(order.createdAt || order.date || Date.now()).getTime();
+    const deliveryStepsRaw = (order.timeline && order.timeline.length > 0)
+        ? order.timeline.map(step => ({
+            status: step.status,
+            date: formatDateTime(step.date)
+        }))
+        : [
+            { status: 'Order Placed', date: formatDateTime(deliveryBaseDate) },
+            { status: 'Processing', date: formatDateTime(deliveryBaseDate + 3600000) },
+            { status: 'Dispatched', date: formatDateTime(deliveryBaseDate + 86400000) },
+            { status: 'In Transit', date: formatDateTime(deliveryBaseDate + 172800000) },
+            { status: 'Out For Delivery', date: formatDateTime(deliveryBaseDate + 259200000) },
+            { status: 'Delivered', date: formatDateTime(deliveryBaseDate + 266400000), isLast: true }
+        ];
 
     const deliverySteps = deliveryStepsRaw.map((step, index) => ({
         ...step,
@@ -117,7 +113,7 @@ const OrderTracking = () => {
     }
 
     const returnSteps = returnStepsRaw.map((step, index) => {
-        const isCompleted = index <= mockReturnStep;
+        const isCompleted = index <= returnStep;
 
         let displayDate = step.date;
         if (step.isFuture && isCompleted) {
@@ -127,11 +123,11 @@ const OrderTracking = () => {
         return {
             ...step,
             completed: isCompleted,
-            current: index === mockReturnStep,
+            current: index === returnStep,
             date: displayDate
         };
     });
-    const currentReturnStatus = returnSteps[Math.min(mockReturnStep, returnSteps.length - 1)] || returnSteps[0];
+    const currentReturnStatus = returnSteps[Math.min(returnStep, returnSteps.length - 1)] || returnSteps[0];
 
 
     // --- VIEW LOGIC ---
@@ -213,7 +209,7 @@ const OrderTracking = () => {
                 <Link to="/profile" className="p-2 -ml-2 text-black">
                     <ArrowLeft className="w-5 h-5" />
                 </Link>
-                <h1 className="text-lg font-bold font-display text-black">Order #{order.id.replace('ORD-', '')}</h1>
+                <h1 className="text-lg font-bold font-display text-black">Order #{(order.displayId || order.orderId || order.id || '').toString().replace('ORD-', '')}</h1>
             </div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-0">
@@ -237,7 +233,7 @@ const OrderTracking = () => {
                             <div className="p-3 md:p-5 border-b border-gray-50 bg-gray-50 flex justify-between items-center">
                                 <div className="flex items-center gap-2.5">
                                     {/* Icon Logic: Spin if processing, Green Check if complete */}
-                                    {mockReturnStep >= (returnRequest?.type === 'exchange' ? 4 : 3) ? (
+                                    {returnStep >= (returnRequest?.type === 'exchange' ? 4 : 3) ? (
                                         <div className="bg-green-50 text-green-600 p-1.5 rounded-full">
                                             <Check className="w-3.5 h-3.5" />
                                         </div>

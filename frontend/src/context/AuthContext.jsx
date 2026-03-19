@@ -101,9 +101,10 @@ export const AuthProvider = ({ children }) => {
             const res = await api.post('auth/seller/login', { identifier, password });
             if (res.data.success) {
                 const { user: userData, token } = res.data.data;
-                setUser(userData);
+                const normalizedUser = userData?.role ? userData : { ...userData, role: 'seller' };
+                setUser(normalizedUser);
                 localStorage.setItem('sands_token', token);
-                localStorage.setItem('sands_current_user', JSON.stringify(userData));
+                localStorage.setItem('sands_current_user', JSON.stringify(normalizedUser));
                 toast.success("Seller login successful!");
             }
             return res.data;

@@ -12,6 +12,7 @@ export const useCatalogue = () => {
                 id: cat._id,
                 _id: cat._id,
                 name: cat.name,
+                slug: cat.slug,
                 path: cat.slug,
                 image: cat.image,
                 metal: cat.metal,
@@ -35,7 +36,14 @@ export const useCatalogue = () => {
         queryFn: async () => {
             const res = await api.get('public/products');
             const data = res.data.data.products || [];
-            return data.map(prod => ({
+            return data.map(prod => {
+                const rawCategory = Array.isArray(prod.categories) ? prod.categories[0] : null;
+                const rawCategoryId = rawCategory?._id || (typeof rawCategory === 'string' ? rawCategory : '');
+                const rawCategoryName = typeof rawCategory === 'string' ? rawCategory : (rawCategory?.name || '');
+                const rawCategorySlug = rawCategory?.slug || '';
+                const rawCategoryMetal = rawCategory?.metal || '';
+
+                return ({
                 id: prod._id,
                 name: prod.name,
                 slug: prod.slug,
@@ -47,14 +55,20 @@ export const useCatalogue = () => {
                 reviews: prod.reviewCount || 0,
                 isNew: prod.tags?.isNewArrival || false,
                 isTrending: prod.tags?.isTrending || false,
-                category: prod.categories?.[0]?.name || '', // Updated for flat populate
-                categoryId: prod.categories?.[0]?._id || '',
+                category: rawCategoryName || '', // Updated for flat populate + legacy string fallback
+                categoryId: rawCategoryId || '',
+                categorySlug: rawCategorySlug || '',
+                metal: rawCategoryMetal || '',
+                navShopByCategory: prod.navShopByCategory || [],
+                navGiftsFor: prod.navGiftsFor || [],
+                navOccasions: prod.navOccasions || [],
                 faqs: prod.faqs || [], // Added FAQs
                 variants: (prod.variants || []).map(v => ({
                     ...v,
                     id: v._id || Math.random() // Ensure ID for selection logic
                 }))
-            }));
+            });
+            });
         },
         staleTime: 5 * 60 * 1000,
     });

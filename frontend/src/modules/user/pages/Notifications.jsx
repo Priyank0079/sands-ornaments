@@ -106,7 +106,7 @@ const Notifications = () => {
                         <AnimatePresence mode='popLayout'>
                             {userNotifications.map((note) => (
                                 <motion.div
-                                    key={note.id}
+                                    key={note._id || note.id}
                                     layout
                                     variants={itemVariants}
                                     exit={{ opacity: 0, x: -100, transition: { duration: 0.3 } }}
@@ -119,7 +119,9 @@ const Notifications = () => {
                                         <div className="flex-grow min-w-0">
                                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-1 mb-1 md:mb-2">
                                                 <h3 className="text-base md:text-lg font-display text-black">{note.title}</h3>
-                                                <span className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-wider">{note.date}</span>
+                                                <span className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-wider">
+                                                    {note.date || (note.createdAt ? new Date(note.createdAt).toLocaleDateString() : '')}
+                                                </span>
                                             </div>
                                             <p className="text-xs md:text-sm text-gray-600 leading-relaxed font-serif line-clamp-2 group-hover:line-clamp-none transition-all duration-300">
                                                 {note.message}
@@ -129,7 +131,7 @@ const Notifications = () => {
 
                                     {/* Delete Button */}
                                     <button
-                                        onClick={() => deleteUserNotification(note.id)}
+                                        onClick={() => deleteUserNotification(note._id || note.id)}
                                         className="absolute top-4 right-4 p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100"
                                         aria-label="Delete notification"
                                     >

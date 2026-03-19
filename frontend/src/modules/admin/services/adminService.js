@@ -236,6 +236,55 @@ export const adminService = {
       return null;
     }
   },
+  getSections: async () => {
+    try {
+      const res = await api.get('admin/sections');
+      return res.data.data?.sections || res.data.sections || [];
+    } catch (err) {
+      console.error("Admin fetch sections failed:", err);
+      return [];
+    }
+  },
+  getSectionById: async (id) => {
+    try {
+      const res = await api.get(`admin/sections/${id}`);
+      return res.data.data?.section || res.data.section;
+    } catch (err) {
+      console.error("Admin fetch section failed:", err);
+      throw err;
+    }
+  },
+  updateSection: async (id, payload) => {
+    try {
+      const res = await api.put(`admin/sections/${id}`, payload);
+      return res.data;
+    } catch (err) {
+      console.error("Admin update section failed:", err);
+      return { success: false, message: err.response?.data?.message || "Failed to update section" };
+    }
+  },
+  bulkUpsertSections: async (sections) => {
+    try {
+      const res = await api.post('admin/sections/bulk', { sections });
+      return res.data;
+    } catch (err) {
+      console.error("Admin bulk section upsert failed:", err);
+      return { success: false, message: err.response?.data?.message || "Failed to seed sections" };
+    }
+  },
+  uploadSectionImage: async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      const res = await api.post('admin/sections/upload-image', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return res.data?.data?.url || null;
+    } catch (err) {
+      console.error("Admin section image upload failed:", err);
+      return null;
+    }
+  },
   updateHomepageSection: async (sectionId, data) => {
     try {
       const res = await api.patch(`admin/cms/homepage/sections/${sectionId}`, data);

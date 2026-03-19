@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const Wishlist = () => {
     const { wishlist } = useShop();
+    const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
     const navigate = useNavigate();
 
     return (
@@ -24,7 +25,7 @@ const Wishlist = () => {
             {/* Page Header Removed as per request */}
 
             <div className="container mx-auto px-4 py-12">
-                {wishlist.length === 0 ? (
+                {safeWishlist.length === 0 ? (
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -47,9 +48,9 @@ const Wishlist = () => {
                 ) : (
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8 lg:gap-10">
                         <AnimatePresence mode="popLayout">
-                            {wishlist.map((product, idx) => (
+                            {safeWishlist.map((product, idx) => (
                                 <motion.div
-                                    key={product.id}
+                                    key={product.id || product._id || product.slug || idx}
                                     layout
                                     initial={{ opacity: 0, y: 30 }}
                                     animate={{ opacity: 1, y: 0 }}
@@ -72,7 +73,7 @@ const Wishlist = () => {
 
             {/* Aesthetic Footer Note */}
             {
-                wishlist.length > 0 && (
+                safeWishlist.length > 0 && (
                     <div className="container mx-auto px-4 pb-20">
                         <div className="text-center pt-12 border-t border-gray-100">
                             <p className="text-[#D39A9F] text-xs font-semibold uppercase tracking-widest opacity-60">

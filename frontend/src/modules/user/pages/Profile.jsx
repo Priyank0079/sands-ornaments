@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useShop } from '../../../context/ShopContext';
 import { User, Package, LogOut, ShoppingBag, ChevronRight, ArrowLeft, Edit2, Check, MapPin, Plus, Trash2, Heart, HelpCircle, CreditCard, Banknote, ShieldCheck, Bell, BellOff, FileText, Shield, AlertTriangle, Mail, Smartphone, X, RefreshCw } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import api from '../../../services/api';
+import toast from 'react-hot-toast';
 
 const ReturnActionModal = ({ isOpen, onClose, type, order, onSuccess }) => {
     const { showNotification } = useShop();
@@ -20,26 +22,37 @@ const ReturnActionModal = ({ isOpen, onClose, type, order, onSuccess }) => {
         }
     };
 
-    const handleSubmit = (e) => {
+    const orderDisplayId = order?.displayId || order?.orderId || order?.id || order?._id;
+    const orderDisplayShort = String(orderDisplayId || '').replace('ORD-', '');
+    const safeItems = Array.isArray(order?.items) ? order.items : [];
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (selectedItems.length === 0) {
-            alert("Please select at least one item to " + type);
+            toast.error(`Please select at least one item to ${type}`);
             return;
         }
 
-        // Simulate backend success
-        const requestData = {
-            type,
-            items: order.items.filter(i => selectedItems.includes(i.id)),
-            reason,
-            resolution,
-            date: new Date().toISOString(),
-            status: 'requested'
-        };
-
-        showNotification(`${type === 'return' ? 'Return' : 'Exchange'} request initiated for ${selectedItems.length} items.`);
-        onSuccess(requestData);
-        onClose();
+        try {
+            for (const itemId of selectedItems) {
+                const payload = {
+                    orderId: order?.id || order?._id,
+                    itemId,
+                    reason,
+                    description: comment
+                };
+                if (type === 'return') {
+                    await api.post('/user/returns', payload);
+                } else {
+                    await api.post('/user/replacements', payload);
+                }
+            }
+            showNotification(`${type === 'return' ? 'Return' : 'Exchange'} request initiated for ${selectedItems.length} items.`);
+            onSuccess?.();
+            onClose();
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Request failed');
+        }
     };
 
     return (
@@ -58,7 +71,7 @@ const ReturnActionModal = ({ isOpen, onClose, type, order, onSuccess }) => {
 
                     <div className="flex-1">
                         <h3 className="text-lg font-serif font-bold text-black capitalize">Request {type}</h3>
-                        <p className="text-[10px] text-gray-400 mt-0.5">Order #{order.id.replace('ORD-', '')}</p>
+                        <p className="text-[10px] text-gray-400 mt-0.5">Order #{orderDisplayShort}</p>
                     </div>
 
                     {/* Desktop Close Button */}
@@ -76,15 +89,15 @@ const ReturnActionModal = ({ isOpen, onClose, type, order, onSuccess }) => {
                             Select Items
                         </h4>
                         <div className="space-y-2">
-                            {order.items.map((item) => (
-                                <div key={item.id} onClick={() => handleToggleItem(item.id)} className={`flex items-center gap-3 p-2 rounded-lg border cursor-pointer transition-all ${selectedItems.includes(item.id) ? 'border-black bg-[#FDF5F6]' : 'border-gray-100 hover:border-gray-200'}`}>
-                                    <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${selectedItems.includes(item.id) ? 'bg-black border-black' : 'border-gray-300'}`}>
-                                        {selectedItems.includes(item.id) && <Check className="w-2.5 h-2.5 text-white" />}
-                                    </div>
+                        {safeItems.map((item) => (
+                            <div key={item._id || item.id} onClick={() => handleToggleItem(item._id || item.id)} className={`flex items-center gap-3 p-2 rounded-lg border cursor-pointer transition-all ${selectedItems.includes(item._id || item.id) ? 'border-black bg-[#FDF5F6]' : 'border-gray-100 hover:border-gray-200'}`}>
+                                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${selectedItems.includes(item._id || item.id) ? 'bg-black border-black' : 'border-gray-300'}`}>
+                                    {selectedItems.includes(item._id || item.id) && <Check className="w-2.5 h-2.5 text-white" />}
+                                </div>
                                     <img src={item.image} alt="" className="w-10 h-10 rounded-md object-cover" />
                                     <div className="flex-1 min-w-0">
                                         <p className="text-xs font-bold text-black line-clamp-1">{item.name}</p>
-                                        <p className="text-[10px] text-gray-500">₹{item.price.toLocaleString()}</p>
+                                        <p className="text-[10px] text-gray-500">₹{Number(item.price || 0).toLocaleString()}</p>
                                     </div>
                                 </div>
                             ))}
@@ -187,59 +200,45 @@ const OrderCard = ({ order, isExpanded, onToggle }) => {
     const [isActionModalOpen, setActionModalOpen] = useState(false);
     const [actionType, setActionType] = useState('return'); // 'return' or 'exchange'
 
-    // Initialize from localStorage if available
-    const [returnRequest, setReturnRequest] = useState(() => {
-        const saved = localStorage.getItem(`return_request_${order.id}`);
-        return saved ? JSON.parse(saved) : null;
-    });
+    const { returns, replacements, refreshReturns, refreshReplacements } = useShop();
+    const returnRequest = returns.find(r => String(r.orderId?._id || r.orderId) === String(order.id || order._id));
+    const replacementRequest = replacements.find(r => String(r.orderId?._id || r.orderId) === String(order.id || order._id));
+    const activeRequest = returnRequest || replacementRequest;
+    const requestType = returnRequest ? 'return' : replacementRequest ? 'exchange' : null;
 
     const showDetails = isExpanded !== undefined ? isExpanded : localShow;
     const setShowDetails = onToggle || setLocalShow;
 
-    const subtotal = order.items.reduce((acc, i) => acc + (i.price * i.quantity), 0);
+    const items = Array.isArray(order.items) ? order.items : [];
+    const subtotal = items.reduce((acc, i) => acc + ((i.price || 0) * (i.quantity || 0)), 0);
     const shipping = order.total - subtotal;
     const tax = order.total * 0.03;
+    const orderDisplayId = order.displayId || order.orderId || order.id || order._id;
+    const orderDisplayShort = String(orderDisplayId || '').replace('ORD-', '');
 
     const openAction = (type) => {
         setActionType(type);
         setActionModalOpen(true);
     };
 
-    const handleActionSuccess = (data) => {
-        setReturnRequest(data);
-        // Save to localStorage immediately
-        localStorage.setItem(`return_request_${order.id}`, JSON.stringify(data));
+    const handleActionSuccess = () => {
+        refreshReturns();
+        refreshReplacements();
     };
 
-    // Simulate Status Progression (Demo Mode) & Persist updates
-    useEffect(() => {
-        if (returnRequest) {
-            // Keep localStorage in sync
-            localStorage.setItem(`return_request_${order.id}`, JSON.stringify(returnRequest));
-
-            if (returnRequest.status !== 'completed') {
-                const timer = setTimeout(() => {
-                    setReturnRequest(prev => {
-                        let nextStatus = prev.status;
-                        if (prev.status === 'requested') nextStatus = 'pickup_scheduled';
-                        else if (prev.status === 'pickup_scheduled') nextStatus = 'completed';
-
-                        // Only update if changed prevents infinite loop
-                        if (nextStatus !== prev.status) {
-                            return { ...prev, status: nextStatus };
-                        }
-                        return prev;
-                    });
-                }, 5000);
-                return () => clearTimeout(timer);
-            }
-        }
-    }, [returnRequest, order.id]);
-
     const getStepStatus = (step) => {
-        if (!returnRequest) return 'pending';
-        const statusMap = { 'requested': 1, 'pickup_scheduled': 2, 'completed': 3 };
-        const currentStep = statusMap[returnRequest.status] || 1;
+        if (!activeRequest) return 'pending';
+        const statusMap = {
+            "Pending Approval": 1,
+            "Approved": 1,
+            "Pickup Scheduled": 2,
+            "Pickup Completed": 2,
+            "Replacement Shipped": 2,
+            "Delivered": 3,
+            "Closed": 3,
+            "Rejected": 3
+        };
+        const currentStep = statusMap[activeRequest.status] || 1;
         return currentStep >= step ? 'completed' : 'pending';
     };
 
@@ -251,7 +250,7 @@ const OrderCard = ({ order, isExpanded, onToggle }) => {
                 <div className="flex justify-between items-start border-b border-gray-50 pb-3">
                     <div>
                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Order ID</p>
-                        <h4 className="text-sm font-bold text-black">#{order.id.replace('ORD-', '')}</h4>
+                        <h4 className="text-sm font-bold text-black">#{orderDisplayShort}</h4>
                     </div>
                     <div className="text-right">
                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Date</p>
@@ -259,15 +258,15 @@ const OrderCard = ({ order, isExpanded, onToggle }) => {
                     </div>
                 </div>
 
-                {returnRequest ? (
+                {activeRequest ? (
                     <div className="bg-[#FDF5F6] p-4 rounded-xl border border-[#EBCDD0] flex justify-between items-center">
                         <div className="flex items-center gap-3">
                             <div className="bg-blue-50 text-blue-600 p-2 rounded-full">
                                 <RefreshCw className="w-4 h-4 animate-spin" />
                             </div>
                             <div>
-                                <h4 className="text-sm font-bold text-black capitalize">{returnRequest.type} In Progress</h4>
-                                <p className="text-[10px] text-gray-500">{new Date(returnRequest.date).toLocaleDateString()}</p>
+                                <h4 className="text-sm font-bold text-black capitalize">{requestType} In Progress</h4>
+                                <p className="text-[10px] text-gray-500">{new Date(activeRequest.createdAt || activeRequest.date).toLocaleDateString()}</p>
                             </div>
                         </div>
                         <Link
@@ -323,7 +322,7 @@ const OrderCard = ({ order, isExpanded, onToggle }) => {
                 )}
 
                 {/* Mobile Details View (Only if not tracking return, or simplified) */}
-                {showDetails && !returnRequest && (
+                {showDetails && !activeRequest && (
                     <div className="pt-2 animate-in fade-in slide-in-from-top-2 duration-300">
                         <div className="space-y-3 bg-[#FDF5F6] p-3 rounded-xl border border-[#EBCDD0]">
                             {order.items.map((item, idx) => (
@@ -356,7 +355,7 @@ const OrderCard = ({ order, isExpanded, onToggle }) => {
                         </div>
                         <div>
                             <span className="text-gray-500 mr-1">Order no.:</span>
-                            <span className="font-bold text-gray-900">#{order.id.replace('ORD-', '')}</span>
+                            <span className="font-bold text-gray-900">#{orderDisplayShort}</span>
                         </div>
                         <div>
                             <span className="text-gray-500 mr-1">Items:</span>
@@ -373,15 +372,15 @@ const OrderCard = ({ order, isExpanded, onToggle }) => {
                 </div>
 
                 {/* Return Tracker OR Action Buttons */}
-                {returnRequest ? (
+                {activeRequest ? (
                     <div className="p-4 md:p-6 bg-white border-b border-gray-100 flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <div className="bg-blue-50 p-3 rounded-full border border-blue-100">
                                 <RefreshCw className="w-6 h-6 text-blue-600 animate-spin" />
                             </div>
                             <div>
-                                <h4 className="text-base font-bold text-[#3E2723] capitalize">{returnRequest.type} In Progress</h4>
-                                <p className="text-xs text-[#8D6E63]">Requested on {new Date(returnRequest.date).toLocaleDateString()}</p>
+                                <h4 className="text-base font-bold text-[#3E2723] capitalize">{requestType} In Progress</h4>
+                                <p className="text-xs text-[#8D6E63]">Requested on {new Date(activeRequest.createdAt || activeRequest.date).toLocaleDateString()}</p>
                             </div>
                         </div>
                         <Link
@@ -460,6 +459,9 @@ const OrderCard = ({ order, isExpanded, onToggle }) => {
 
 const Profile = () => {
     const { user, login, logout, orders, wishlist, addresses, addAddress, removeAddress, setDefaultAddress, defaultAddressId, deleteAccount, notificationsEnabled, toggleNotificationSettings } = useShop();
+    const safeOrders = Array.isArray(orders) ? orders : [];
+    const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
+    const safeAddresses = Array.isArray(addresses) ? addresses : [];
     const { activeTab: tabParam, subId } = useParams();
     const activeTab = tabParam || 'profile';
     const navigate = useNavigate();
@@ -566,17 +568,17 @@ const Profile = () => {
                             <button onClick={() => navigate('/profile/orders')} className={`w-full flex items-center space-x-3 px-3 md:px-4 py-3 rounded-xl transition-all ${activeTab === 'orders' ? 'bg-black text-white shadow-md' : 'text-gray-600 hover:bg-[#F3F4F6]'}`}>
                                 <Package className="w-4 h-4 md:w-5 md:h-5" />
                                 <span className="font-medium text-sm md:text-base">My Orders</span>
-                                {orders.length > 0 && <span className={`ml-auto text-xs py-0.5 px-2 rounded-full ${activeTab === 'orders' ? 'bg-white/20' : 'bg-[#F3F4F6]'}`}>{orders.length}</span>}
+                                {safeOrders.length > 0 && <span className={`ml-auto text-xs py-0.5 px-2 rounded-full ${activeTab === 'orders' ? 'bg-white/20' : 'bg-[#F3F4F6]'}`}>{safeOrders.length}</span>}
                             </button>
                             <button onClick={() => navigate('/profile/addresses')} className={`w-full flex items-center space-x-3 px-3 md:px-4 py-3 rounded-xl transition-all ${activeTab === 'addresses' ? 'bg-black text-white shadow-md' : 'text-gray-600 hover:bg-[#F3F4F6]'}`}>
                                 <MapPin className="w-4 h-4 md:w-5 md:h-5" />
                                 <span className="font-medium text-sm md:text-base">My Addresses</span>
-                                {addresses.length > 0 && <span className={`ml-auto text-xs py-0.5 px-2 rounded-full ${activeTab === 'addresses' ? 'bg-white/20' : 'bg-[#F3F4F6]'}`}>{addresses.length}</span>}
+                                {safeAddresses.length > 0 && <span className={`ml-auto text-xs py-0.5 px-2 rounded-full ${activeTab === 'addresses' ? 'bg-white/20' : 'bg-[#F3F4F6]'}`}>{safeAddresses.length}</span>}
                             </button>
                             <button onClick={() => navigate('/wishlist')} className="w-full flex items-center space-x-3 px-3 md:px-4 py-3 text-gray-600 hover:bg-[#F3F4F6] rounded-xl transition-all">
                                 <Heart className="w-4 h-4 md:w-5 md:h-5 text-red-500" />
                                 <span className="font-medium text-sm md:text-base">My Wishlist</span>
-                                {wishlist.length > 0 && <span className="ml-auto text-xs py-0.5 px-2 rounded-full bg-[#F3F4F6]">{wishlist.length}</span>}
+                                {safeWishlist.length > 0 && <span className="ml-auto text-xs py-0.5 px-2 rounded-full bg-[#F3F4F6]">{safeWishlist.length}</span>}
                             </button>
                             <button onClick={() => navigate('/profile/payments')} className={`w-full flex items-center space-x-3 px-3 md:px-4 py-3 rounded-xl transition-all ${activeTab === 'payments' ? 'bg-black text-white shadow-md' : 'text-gray-600 hover:bg-[#F3F4F6]'}`}>
                                 <CreditCard className="w-4 h-4 md:w-5 md:h-5" />

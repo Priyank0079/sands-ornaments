@@ -14,7 +14,7 @@ exports.requestReplacement = async (req, res) => {
     const item = order.items.id(itemId);
     if (!item) return error(res, "Item not found in order", 404);
 
-    const existing = await Replacement.findOne({ orderId, itemId });
+    const existing = await Replacement.findOne({ orderId, "originalItems.variantId": item.variantId });
     if (existing) return error(res, "Replacement already requested", 409);
 
     const images = req.files ? req.files.map(f => f.path) : [];
@@ -23,11 +23,17 @@ exports.requestReplacement = async (req, res) => {
       replacementId: generateReplacementId(),
       userId,
       orderId,
-      itemId,
-      reason,
-      description,
-      evidence: images,
-      status: "Pending Approval",
+      originalItems: [{
+        productId: item.productId,
+        variantId: item.variantId,
+        name: item.name,
+        sku: item.sku,
+        qty: item.quantity,
+        price: item.price,
+        reason
+      }],
+      evidence: { reason, comment: description, images },
+      status: "Pending",
       timeline: [{ status: "Requested", note: "Replacement request submitted" }]
     });
 

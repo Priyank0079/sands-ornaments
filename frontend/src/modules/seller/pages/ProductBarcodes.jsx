@@ -10,9 +10,11 @@ const ProductBarcodes = () => {
     const [product, setProduct] = useState(null);
 
     useEffect(() => {
-        const products = sellerProductService.getSellerProducts();
-        const found = products.find(p => p.id === id);
-        setProduct(found);
+        const loadProduct = async () => {
+            const found = await sellerProductService.getSellerProductById(id);
+            setProduct(found);
+        };
+        loadProduct();
     }, [id]);
 
     if (!product) return <div className="p-8 text-center text-gray-500">Loading Product...</div>;
@@ -41,7 +43,7 @@ const ProductBarcodes = () => {
                         <h2 className="text-lg font-bold text-gray-800 uppercase tracking-tight">{product.name}</h2>
                         <div className="flex gap-4 mt-1">
                              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Inventory: {product.quantity}</span>
-                             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Metal: {product.metalType}</span>
+                             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Material: {product.metalType || 'N/A'}</span>
                         </div>
                     </div>
                 </div>
@@ -49,13 +51,19 @@ const ProductBarcodes = () => {
                 <div className="text-right">
                     <div className="flex items-center gap-2 justify-end text-emerald-600">
                         <BarcodeIcon className="w-4 h-4" />
-                        <span className="text-sm font-black uppercase tracking-[0.1em]">{product.barcodes?.length} ALLOCATED</span>
+                        <span className="text-sm font-black uppercase tracking-[0.1em]">{product.barcodes?.length || 0} ALLOCATED</span>
                     </div>
                     <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">Individual unit tracking via precision serials</p>
                 </div>
             </div>
 
-            <BarcodeList barcodes={product.barcodes || []} />
+            {product.barcodes && product.barcodes.length > 0 ? (
+                <BarcodeList barcodes={product.barcodes || []} />
+            ) : (
+                <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center text-xs font-semibold text-gray-400 uppercase tracking-widest">
+                    No barcodes generated for this product yet.
+                </div>
+            )}
         </div>
     );
 };

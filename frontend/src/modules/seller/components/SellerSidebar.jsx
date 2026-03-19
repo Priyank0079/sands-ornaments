@@ -12,6 +12,7 @@ import {
     ChevronDown,
     Boxes,
     RotateCcw,
+    AlertTriangle,
     Users,
     UserCircle
 } from 'lucide-react';
@@ -31,10 +32,21 @@ const SellerSidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
             path: '/seller/products',
             subItems: [
                 { name: 'Product List', path: '/seller/products', icon: List },
-                { name: 'Add Product', path: '/seller/add-product', icon: Plus }
+                { name: 'Add Product', path: '/seller/products/new', icon: Plus }
             ]
         },
-        { name: 'Inventory', icon: Boxes, path: '/seller/products' }, // Integrated with Products
+        {
+            name: 'Inventory',
+            icon: Boxes,
+            path: '/seller/inventory',
+            subItems: [
+                { name: 'Overview', path: '/seller/inventory', icon: Boxes },
+                { name: 'Adjust Stock', path: '/seller/inventory/adjust', icon: Plus },
+                { name: 'Stock History', path: '/seller/inventory/history', icon: RotateCcw },
+                { name: 'Low Stock Alerts', path: '/seller/inventory/alerts', icon: AlertTriangle },
+                { name: 'Reports', path: '/seller/inventory/reports', icon: Package }
+            ]
+        },
         { name: 'Shipments', icon: ShoppingBag, path: '/seller/orders' },
         { name: 'Returns', icon: RotateCcw, path: '/seller/returns' },
         { name: 'Customers', icon: Users, path: '/seller/customers' },

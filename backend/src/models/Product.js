@@ -37,6 +37,9 @@ const productSchema = new mongoose.Schema({
   showInCollection: { type: Boolean, default: true },
   active: { type: Boolean, default: true },
   sellerId: { type: mongoose.Schema.Types.ObjectId, ref: "Seller", default: null },
+  navShopByCategory: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" }],
+  navGiftsFor: [{ type: String }],
+  navOccasions: [{ type: String }],
   faqs: [{
     question: { type: String, trim: true },
     answer: { type: String, trim: true }

@@ -30,6 +30,7 @@ const quillFormats = [
 const ItemEditor = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const [searchParams] = useSearchParams();
     const typeParam = searchParams.get('type');
 
@@ -48,6 +49,8 @@ const ItemEditor = () => {
 
     // Mock initial data for lists
     const [categories, setCategories] = useState([]); // List of all categories from DB
+    const [navGiftOptions, setNavGiftOptions] = useState([]);
+    const [navOccasionOptions, setNavOccasionOptions] = useState([]);
     const [loading, setLoading] = useState(isEditMode || isViewMode);
     const [imageFiles, setImageFiles] = useState([]); // Store actual File objects
     const [previewImages, setPreviewImages] = useState([]); // Store image URLs for display
@@ -83,6 +86,8 @@ const ItemEditor = () => {
             isMostGifted: false,
             isNewLaunch: false
         },
+        navGiftsFor: [],
+        navOccasions: [],
         faqs: [],
         variants: [
             { id: Date.now(), name: '', mrp: '', price: '', stock: '' }
@@ -104,6 +109,33 @@ const ItemEditor = () => {
             return rawMessage.replace(/^"|"$/g, '').replace(/\\"/g, '"');
         }
         return fallback;
+    };
+
+    const toSlugValue = (label) => {
+        return String(label || '')
+            .trim()
+            .toLowerCase()
+            .replace(/['"]/g, '')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+    };
+
+    const getQueryParamValue = (path, key) => {
+        if (!path || !path.includes('?')) return '';
+        const query = path.split('?')[1] || '';
+        const params = new URLSearchParams(query);
+        return params.get(key) || '';
+    };
+
+    const buildNavOptions = (section, key, fallback) => {
+        if (section?.items?.length) {
+            return section.items.map(item => {
+                const label = item.name || item.label || '';
+                const value = getQueryParamValue(item.path, key) || toSlugValue(label);
+                return { label, value };
+            }).filter(opt => opt.value);
+        }
+        return fallback.map(label => ({ label, value: toSlugValue(label) }));
     };
 
     const sizeOptions = isProduct ? [
@@ -129,11 +161,15 @@ const ItemEditor = () => {
             try {
                 const results = await Promise.all([
                     adminService.getCategories(),
-                    (isEditMode || isViewMode) ? (isCategory ? adminService.getCategoryById(id) : adminService.getProductById(id)) : Promise.resolve(null)
+                    (isEditMode || isViewMode) ? (isCategory ? adminService.getCategoryById(id) : adminService.getProductById(id)) : Promise.resolve(null),
+                    adminService.getSectionById('nav-gifts-for').catch(() => null),
+                    adminService.getSectionById('nav-occasions').catch(() => null)
                 ]);
 
-                const [cats, data] = results;
+                const [cats, data, giftSection, occasionSection] = results;
                 setCategories(cats);
+                setNavGiftOptions(buildNavOptions(giftSection, 'filter', ['Womens', 'Girls', 'Mens', 'Couple', 'Kids']));
+                setNavOccasionOptions(buildNavOptions(occasionSection, 'occasion', ['Birthday', 'Anniversary', 'Wedding', "Mother's Day", 'Valentine Day']));
 
                 if (data) {
                     // Normalize categories if it's a product
@@ -142,6 +178,11 @@ const ItemEditor = () => {
                             category: typeof c === 'object' ? (c._id || c.name || '') : c
                         }));
                         data.categories = normalized.slice(0, 1);
+                    }
+
+                    if (isProduct) {
+                        data.navGiftsFor = Array.isArray(data.navGiftsFor) ? data.navGiftsFor : [];
+                        data.navOccasions = Array.isArray(data.navOccasions) ? data.navOccasions : [];
                     }
                     
                     setFormData(prev => ({ 
@@ -255,6 +296,15 @@ const ItemEditor = () => {
         setFormData({ ...formData, categories: newCats });
     };
 
+    const toggleNavValue = (field, value) => {
+        setFormData(prev => {
+            const current = Array.isArray(prev[field]) ? prev[field] : [];
+            const exists = current.includes(value);
+            const updated = exists ? current.filter(v => v !== value) : [...current, value];
+            return { ...prev, [field]: updated };
+        });
+    };
+
     const addFaq = () => {
         setFormData(prev => ({
             ...prev,
@@ -325,7 +375,7 @@ const ItemEditor = () => {
             }
             const selectedCategories = (formData.categories || []).filter(c => c.category);
             if (selectedCategories.length === 0) {
-                newErrors.categories = "At least one category is required";
+                newErrors.categories = "Please select a category before publishing.";
             }
             if (!formData.variants || formData.variants.length === 0) {
                 newErrors.variants = "At least one variant is required";
@@ -345,13 +395,20 @@ const ItemEditor = () => {
         }
         
         setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
+        return { valid: Object.keys(newErrors).length === 0, errors: newErrors };
+    };
+
+    const getFirstError = (errs) => {
+        const keys = Object.keys(errs || {});
+        if (keys.length === 0) return "Please review the form fields and try again.";
+        return errs[keys[0]];
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!validateForm()) {
-            toast.error("Please fix the errors before saving");
+        const validation = validateForm();
+        if (!validation.valid) {
+            toast.error(getFirstError(validation.errors));
             return;
         }
 
@@ -397,7 +454,8 @@ const ItemEditor = () => {
                         'parentId', 'metal', 'sizes', 'variantStock',
                         'isActive',
                         '_id', 'createdAt', 'updatedAt', '__v',
-                        'rating', 'reviewCount', 'sellerId'
+                        'rating', 'reviewCount', 'sellerId',
+                        'navGiftsFor', 'navOccasions', 'navShopByCategory'
                     ];
                     const categoryExcludes = [
                         'images', 'parentId', 'deletedImages', 'originalPrice', 
@@ -428,6 +486,10 @@ const ItemEditor = () => {
                 productForm.append('faqs', JSON.stringify((formData.faqs || []).map(({ _id, ...rest }) => ({
                     ...rest
                 }))));
+                const normalizedGifts = (formData.navGiftsFor || []).map(toSlugValue);
+                const normalizedOccasions = (formData.navOccasions || []).map(toSlugValue);
+                productForm.append('navGiftsFor', JSON.stringify(normalizedGifts));
+                productForm.append('navOccasions', JSON.stringify(normalizedOccasions));
                 productForm.append('deletedImages', JSON.stringify(formData.deletedImages));
 
                 if (imageFiles.length > 0) {
@@ -455,6 +517,9 @@ const ItemEditor = () => {
         }
     };
 
+    const isCategorySelected = isCategory || (formData.categories || []).some(c => c.category);
+    const isSubmitDisabled = loading || (isProduct && !isCategorySelected);
+
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
             <div className="max-w-[1400px] mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 p-6 md:p-8">
@@ -465,7 +530,7 @@ const ItemEditor = () => {
                     action={!isViewMode ? {
                         label: loading ? (isEditMode ? 'Saving...' : 'Publishing...') : (isEditMode ? 'Save Changes' : `Publish ${resourceType}`),
                         onClick: handleSubmit,
-                        disabled: loading
+                        disabled: isSubmitDisabled
                     } : undefined}
                 />
 
@@ -533,7 +598,7 @@ const ItemEditor = () => {
                                             )}
                                         </div>
                                         <div className="overflow-x-auto -mx-4 md:mx-0">
-                                            <table className="w-full text-left border-collapse">
+                                            <table className="w-full min-w-[520px] text-left border-collapse">
                                                 <thead>
                                                     <tr className="border-b border-gray-100">
                                                         <th className="py-3 px-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest">Size/Name</th>
@@ -719,14 +784,19 @@ const ItemEditor = () => {
 
 
                             {isProduct && (
-                                <div className="space-y-4 pt-2">
-                                    <div className="flex justify-between items-center px-1">
-                                        <div className="flex flex-col">
-                                            <label className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Product Category</label>
-                                            {errors.categories && <span className="text-[10px] text-red-500 font-bold mt-0.5">{errors.categories}</span>}
-                                        </div>
+                            <div className="space-y-4 pt-2">
+                                <div className="flex justify-between items-center px-1">
+                                    <div className="flex flex-col">
+                                        <label className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                                            Product Category <span className="text-red-500">*</span>
+                                        </label>
+                                        {errors.categories && <span className="text-[10px] text-red-500 font-bold mt-0.5">{errors.categories}</span>}
                                     </div>
-                                    <div className="space-y-3">
+                                    {!isViewMode && (
+                                        <span className="text-[10px] text-gray-400">Required</span>
+                                    )}
+                                </div>
+                                <div className="space-y-3">
                                         {(formData.categories && formData.categories.length > 0 ? formData.categories : [{ category: '' }]).map((catRow, index) => (
                                             <div key={index} className="flex flex-col sm:flex-row gap-3 p-4 bg-gray-50/50 rounded-xl border border-gray-100 group transition-all hover:bg-white hover:border-gray-200">
                                                 <div className="flex-1 space-y-1">
@@ -734,7 +804,7 @@ const ItemEditor = () => {
                                                     <select
                                                         value={catRow.category}
                                                         onChange={(e) => handleCategoryChange(index, e.target.value)}
-                                                        className="w-full bg-white border border-gray-200 rounded-lg py-2 px-3 text-sm focus:outline-none focus:border-[#3E2723] transition-all focus:ring-1 focus:ring-[#3E2723]/20"
+                                                        className={`w-full bg-white border rounded-lg py-2 px-3 text-sm focus:outline-none transition-all focus:ring-1 focus:ring-[#3E2723]/20 ${errors.categories ? 'border-red-300 focus:border-red-400' : 'border-gray-200 focus:border-[#3E2723]'}`}
                                                         disabled={isViewMode}
                                                     >
                                                         <option value="">Select Category</option>
@@ -754,6 +824,74 @@ const ItemEditor = () => {
 
                         {isProduct && (
                             <>
+                                <FormSection title="Navigation Placement">
+                                    <div className="space-y-6">
+                                        <div className="space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Gifts For</label>
+                                                <span className="text-[10px] text-gray-400">Optional</span>
+                                            </div>
+                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                                {(navGiftOptions || []).map(opt => {
+                                                    const checked = (formData.navGiftsFor || []).includes(opt.value);
+                                                    return (
+                                                        <label
+                                                            key={opt.value}
+                                                            className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold transition-all ${
+                                                                checked ? 'border-[#3E2723] bg-[#3E2723]/5 text-[#3E2723]' : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                                                            } ${isViewMode ? 'pointer-events-none opacity-70' : ''}`}
+                                                        >
+                                                            <input
+                                                                type="checkbox"
+                                                                className="h-3.5 w-3.5 rounded border-gray-300 text-[#3E2723] focus:ring-[#3E2723]"
+                                                                checked={checked}
+                                                                onChange={() => toggleNavValue('navGiftsFor', opt.value)}
+                                                                disabled={isViewMode}
+                                                            />
+                                                            <span>{opt.label}</span>
+                                                        </label>
+                                                    );
+                                                })}
+                                                {navGiftOptions.length === 0 && (
+                                                    <div className="text-xs text-gray-400">No gifts configured.</div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Occasions</label>
+                                                <span className="text-[10px] text-gray-400">Optional</span>
+                                            </div>
+                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                                {(navOccasionOptions || []).map(opt => {
+                                                    const checked = (formData.navOccasions || []).includes(opt.value);
+                                                    return (
+                                                        <label
+                                                            key={opt.value}
+                                                            className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold transition-all ${
+                                                                checked ? 'border-[#3E2723] bg-[#3E2723]/5 text-[#3E2723]' : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                                                            } ${isViewMode ? 'pointer-events-none opacity-70' : ''}`}
+                                                        >
+                                                            <input
+                                                                type="checkbox"
+                                                                className="h-3.5 w-3.5 rounded border-gray-300 text-[#3E2723] focus:ring-[#3E2723]"
+                                                                checked={checked}
+                                                                onChange={() => toggleNavValue('navOccasions', opt.value)}
+                                                                disabled={isViewMode}
+                                                            />
+                                                            <span>{opt.label}</span>
+                                                        </label>
+                                                    );
+                                                })}
+                                                {navOccasionOptions.length === 0 && (
+                                                    <div className="text-xs text-gray-400">No occasions configured.</div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </FormSection>
+
                                 <FormSection title="Product Narrative & Styling">
                                     <div className="space-y-8">
                                         <div className="space-y-2">

@@ -6,5 +6,6 @@ const requireRole = require("../../../middlewares/requireRole");
 router.use(authenticate, requireRole("seller"));
 
 router.get("/", customerController.getMyCustomers);
+router.get("/:id", customerController.getMyCustomerDetails);
 
 module.exports = router;

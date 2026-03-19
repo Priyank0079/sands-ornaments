@@ -36,14 +36,23 @@ exports.getFAQs = async (req, res) => {
 exports.getHomepageData = async (req, res) => {
   try {
     const banners = await Banner.find({ isActive: true }).sort({ sortOrder: 1 });
-    const sections = await HomepageSection.find()
+    const sections = await HomepageSection.find({ isActive: true })
       .populate({
         path: "items.productId",
-        select: "name slug brand images variants rating tags",
-        match: { status: "Active" }
+        select: "name slug brand images variants rating tags status active",
+        match: { status: "Active", active: { $ne: false } }
       })
-      .sort({ createdAt: 1 });
+      .sort({ sortOrder: 1, createdAt: 1 });
 
-    return success(res, { banners, sections });
+    const normalized = sections.map((section) => {
+      const raw = section.toObject();
+      const items = (raw.items || []).filter((item) => {
+        if (item.productId) return Boolean(item.productId);
+        return true;
+      });
+      return { ...raw, items };
+    });
+
+    return success(res, { banners, sections: normalized });
   } catch (err) { return error(res, err.message); }
 };

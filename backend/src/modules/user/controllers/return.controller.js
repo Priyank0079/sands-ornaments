@@ -19,7 +19,7 @@ exports.requestReturn = async (req, res) => {
     if (!item) return error(res, "Item not found in order", 404);
 
     // Check if already requested
-    const existing = await Return.findOne({ orderId, itemId });
+    const existing = await Return.findOne({ orderId, "items.variantId": item.variantId });
     if (existing) return error(res, "Return already requested for this item", 409);
 
     const images = req.files ? req.files.map(f => f.path) : [];
@@ -28,11 +28,17 @@ exports.requestReturn = async (req, res) => {
       returnId: generateReturnId(),
       userId,
       orderId,
-      itemId,
-      reason,
-      description,
-      evidence: images,
-      status: "Pending Approval",
+      items: [{
+        productId: item.productId,
+        variantId: item.variantId,
+        name: item.name,
+        sku: item.sku,
+        qty: item.quantity,
+        price: item.price,
+        reason
+      }],
+      evidence: { reason, comment: description, images },
+      status: "Pending",
       timeline: [{ status: "Requested", note: "Return request submitted" }]
     });
 

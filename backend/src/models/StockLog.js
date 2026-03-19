@@ -9,6 +9,7 @@ const stockLogSchema = new mongoose.Schema({
   change: { type: Number, required: true },
   reason: String,
   adminId: { type: mongoose.Schema.Types.ObjectId, ref: "User", index: true },
+  sellerId: { type: mongoose.Schema.Types.ObjectId, ref: "Seller", index: true }
 }, { timestamps: true });
 
 module.exports = mongoose.model("StockLog", stockLogSchema);

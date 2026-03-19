@@ -18,14 +18,22 @@ export const sellerService = {
     login: async (identifier, password) => {
         try {
             const res = await api.post('/auth/seller/login', { 
-                email: identifier, // Identifying if its email or phone happens at backend
+                identifier,
                 password 
             });
             
             if (res.data.success) {
+                const token = res.data?.data?.token || res.data?.token;
+                const user = res.data?.data?.user || res.data?.user;
                 localStorage.setItem('sellerAuth', 'true');
-                localStorage.setItem('sellerToken', res.data.token);
-                localStorage.setItem('currentSeller', JSON.stringify(res.data.user));
+                if (token) {
+                    localStorage.setItem('sellerToken', token);
+                    localStorage.setItem('sands_token', token);
+                }
+                if (user) {
+                    localStorage.setItem('currentSeller', JSON.stringify(user));
+                    localStorage.setItem('sands_current_user', JSON.stringify(user));
+                }
             }
             return res.data;
         } catch (err) {
@@ -40,10 +48,48 @@ export const sellerService = {
         localStorage.removeItem('sellerAuth');
         localStorage.removeItem('sellerToken');
         localStorage.removeItem('currentSeller');
+        localStorage.removeItem('sands_token');
+        localStorage.removeItem('sands_current_user');
     },
 
     getCurrentSeller: () => {
-        const seller = localStorage.getItem('currentSeller');
+        const seller = localStorage.getItem('sands_current_user') || localStorage.getItem('currentSeller');
         return seller ? JSON.parse(seller) : null;
+    },
+
+    setCurrentSeller: (seller) => {
+        if (!seller) return;
+        localStorage.setItem('currentSeller', JSON.stringify(seller));
+        localStorage.setItem('sands_current_user', JSON.stringify(seller));
+    },
+
+    getProfile: async () => {
+        try {
+            const res = await api.get('/seller/profile/me');
+            return res.data?.data?.seller || res.data?.seller || null;
+        } catch (err) {
+            console.error("Failed to fetch seller profile:", err);
+            return null;
+        }
+    },
+
+    updateProfile: async (payload) => {
+        try {
+            const res = await api.put('/seller/profile/me', payload);
+            return res.data;
+        } catch (err) {
+            console.error("Failed to update seller profile:", err);
+            return { success: false, message: err.response?.data?.message || "Profile update failed" };
+        }
+    },
+
+    changePassword: async (payload) => {
+        try {
+            const res = await api.put('/seller/profile/change-password', payload);
+            return res.data;
+        } catch (err) {
+            console.error("Failed to change password:", err);
+            return { success: false, message: err.response?.data?.message || "Password update failed" };
+        }
     }
 };

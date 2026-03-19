@@ -61,9 +61,10 @@ const PerfectGift = () => {
 
                         const itemLabel = item.name || item.label;
 
+                        const key = item.itemId || item._id || item.id || itemLabel || index;
                         return (
                             <motion.div
-                                key={item.id}
+                                key={key}
                                 initial={{ opacity: 0, y: 50 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true, margin: "-50px" }}

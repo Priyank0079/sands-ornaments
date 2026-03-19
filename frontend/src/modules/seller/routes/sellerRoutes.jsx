@@ -3,7 +3,7 @@ import { Route, Routes, Navigate } from 'react-router-dom';
 import SellerLayout from '../components/SellerLayout';
 import SellerDashboard from '../pages/SellerDashboard';
 import SellerProducts from '../pages/SellerProducts';
-import AddProduct from '../pages/AddProduct';
+import SellerProductEditor from '../pages/SellerProductEditor';
 import ProductBarcodes from '../pages/ProductBarcodes';
 import OfflineSale from '../pages/OfflineSale';
 import SellerLogin from '../pages/SellerLogin';
@@ -15,6 +15,11 @@ import SellerReturnDetail from '../pages/SellerReturnDetail';
 import SellerCustomers from '../pages/SellerCustomers';
 import SellerCustomerDetail from '../pages/SellerCustomerDetail';
 import SellerProfile from '../pages/SellerProfile';
+import SellerInventory from '../pages/SellerInventory';
+import SellerStockAdjustmentPage from '../pages/inventory/SellerStockAdjustmentPage';
+import SellerStockHistoryPage from '../pages/inventory/SellerStockHistoryPage';
+import SellerLowStockAlertsPage from '../pages/inventory/SellerLowStockAlertsPage';
+import SellerInventoryReportsPage from '../pages/inventory/SellerInventoryReportsPage';
 import { sellerService } from '../services/sellerService';
 import { ShieldAlert } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
@@ -62,6 +67,7 @@ const SellerRoutes = () => {
         <Routes>
             <Route path="/login" element={<SellerLogin />} />
             <Route path="/register" element={<SellerRegister />} />
+            <Route path="/add-product" element={<Navigate to="/seller/products/new" replace />} />
             
             <Route path="/*" element={
                 <SellerProtectedRoute>
@@ -69,9 +75,16 @@ const SellerRoutes = () => {
                         <Routes>
                             <Route path="/dashboard" element={<SellerDashboard />} />
                             <Route path="/products" element={<SellerProducts />} />
-                            <Route path="/add-product" element={<AddProduct />} />
+                            <Route path="/products/new" element={<SellerProductEditor />} />
+                            <Route path="/products/edit/:id" element={<SellerProductEditor />} />
+                            <Route path="/products/view/:id" element={<SellerProductEditor />} />
                             <Route path="/product-barcodes/:id" element={<ProductBarcodes />} />
                             <Route path="/offline-sale" element={<OfflineSale />} />
+                            <Route path="/inventory" element={<SellerInventory />} />
+                            <Route path="/inventory/adjust" element={<SellerStockAdjustmentPage />} />
+                            <Route path="/inventory/history" element={<SellerStockHistoryPage />} />
+                            <Route path="/inventory/alerts" element={<SellerLowStockAlertsPage />} />
+                            <Route path="/inventory/reports" element={<SellerInventoryReportsPage />} />
                             <Route path="/orders" element={<SellerOrders />} />
                             <Route path="/order-details/:id" element={<SellerOrderDetail />} />
                             <Route path="/returns" element={<SellerReturns />} />

@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
+import { useAuth } from '../../../context/AuthContext';
+import api from '../../../services/api';
+import toast from 'react-hot-toast';
 import ProductCard from '../components/ProductCard';
 import { Heart, ShoppingBag, Star, Share2, Plus, Minus, Truck, ShieldCheck, Smile, Gift, ChevronDown, SlidersHorizontal, X, Camera, Check, ArrowLeft } from 'lucide-react';
 
@@ -31,6 +34,7 @@ const ProductDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { addToCart, removeFromCart, cart, addToWishlist, removeFromWishlist, wishlist, products, isLoading } = useShop();
+    const { user } = useAuth();
     const product = (products || []).find(p => String(p.id || p._id) === String(id));
 
     useEffect(() => {
@@ -38,6 +42,28 @@ const ProductDetails = () => {
             document.title = `${product.name} | Sands Ornaments - Pure 925 Silver Jewellery`;
         }
     }, [product]);
+
+    useEffect(() => {
+        const loadReviews = async () => {
+            const productId = product?.id || product?._id;
+            if (!productId) return;
+            try {
+                const res = await api.get('public/reviews', { params: { productId } });
+                const list = res.data?.data?.reviews || res.data?.reviews || [];
+                setReviews(list.map(r => ({
+                    id: r._id,
+                    name: r.userId?.name || 'Customer',
+                    date: new Date(r.createdAt).toLocaleDateString('en-GB'),
+                    rating: r.rating || 0,
+                    title: r.title || 'Review',
+                    comment: r.body || ''
+                })));
+            } catch (err) {
+                console.error("Failed to load reviews", err);
+            }
+        };
+        loadReviews();
+    }, [product?.id, product?._id]);
 
     // State for Animations
     const [flying, setFlying] = useState(false);
@@ -54,46 +80,70 @@ const ProductDetails = () => {
     const [sortBy, setSortBy] = useState('Featured');
     const [rating, setRating] = useState(0);
 
-    const [reviews, setReviews] = useState([
-        { name: "Aditi S.", date: "23/12/2025", rating: 5, title: "Cute adorable", comment: "The ring fits perfectly and looks exactly like the pictures! Highly recommend." },
-        { name: "Rahul M.", date: "22/12/2025", rating: 5, title: "Excellent", comment: "Premium quality packaging and the product itself is stunning." },
-        { name: "Sneha K.", date: "21/12/2025", rating: 4, title: "Good", comment: "Really nice design, just wish the delivery was a bit faster." },
-        { name: "Priya R.", date: "20/12/2025", rating: 5, title: "Love it", comment: "Obsessed with this purchase. Will buy again!" }
-    ]);
+    const [reviews, setReviews] = useState([]);
     const [reviewTitle, setReviewTitle] = useState('');
     const [reviewComment, setReviewComment] = useState('');
 
-    const handleReviewSubmit = () => {
+    const handleReviewSubmit = async () => {
         if (!reviewTitle.trim() && !reviewComment.trim() && rating === 0) return;
+        if (!user) {
+            toast.error('Please login to submit a review');
+            return;
+        }
 
-        const newReview = {
-            name: "You",
-            date: new Date().toLocaleDateString('en-GB'),
-            rating: rating || 5, // Fallback to 5 if only text is provided
-            title: reviewTitle.trim() || (rating > 0 ? `${rating} Star Rating` : "My Review"),
-            comment: reviewComment.trim() || "No comment provided."
-        };
+        const productId = product?.id || product?._id;
+        if (!productId) return;
 
-        setReviews([newReview, ...reviews]);
-        setIsWriteReviewOpen(false);
-        setReviewTitle('');
-        setReviewComment('');
-        setRating(0);
-        setReviewStep(1);
+        try {
+            const res = await api.post('public/reviews', {
+                productId,
+                rating: rating || 5,
+                title: reviewTitle.trim() || 'Review',
+                body: reviewComment.trim() || 'No comment provided.'
+            });
+            if (res.data?.success) {
+                toast.success(res.data.message || 'Review submitted');
+                setIsWriteReviewOpen(false);
+                setReviewTitle('');
+                setReviewComment('');
+                setRating(0);
+                setReviewStep(1);
+                const refreshed = await api.get('public/reviews', { params: { productId } });
+                const list = refreshed.data?.data?.reviews || refreshed.data?.reviews || [];
+                setReviews(list.map(r => ({
+                    id: r._id,
+                    name: r.userId?.name || 'Customer',
+                    date: new Date(r.createdAt).toLocaleDateString('en-GB'),
+                    rating: r.rating || 0,
+                    title: r.title || 'Review',
+                    comment: r.body || ''
+                })));
+            } else {
+                toast.error(res.data?.message || 'Unable to submit review');
+            }
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Unable to submit review');
+        }
     };
 
 
 
     // Image Gallery State
     const [selectedImage, setSelectedImage] = useState(null);
+    const [selectedVariantId, setSelectedVariantId] = useState(null);
 
     useEffect(() => {
-        if (product) setSelectedImage(product.image);
+        if (product) {
+            setSelectedImage(product.image);
+            const firstVariant = product.variants?.[0];
+            setSelectedVariantId(firstVariant?.id || firstVariant?._id || null);
+        }
         setOpenSection('description'); // Reset to open description whenever ID changes
     }, [product, id]);
 
     // Derived State
-    const isWishlisted = wishlist.some(item => item.id === product?.id);
+    const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
+    const isWishlisted = safeWishlist.some(item => item.id === product?.id);
     const discount = product ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
 
     const toggleSection = (section) => {
@@ -117,6 +167,7 @@ const ProductDetails = () => {
         // Pass 'selectedSize' so the Cart component can display it
         addToCart({
             ...product,
+            selectedVariant: product?.variants?.find(v => String(v.id || v._id) === String(selectedVariantId))
         });
 
         setTimeout(() => {
@@ -163,6 +214,11 @@ const ProductDetails = () => {
             </div>
         );
     }
+
+    const selectedVariant = product?.variants?.find(v => String(v.id || v._id) === String(selectedVariantId)) || product?.variants?.[0];
+    const variantPrice = selectedVariant?.price ?? product.price;
+    const variantMrp = selectedVariant?.mrp ?? product.originalPrice;
+    const variantDiscount = variantMrp > variantPrice ? Math.round(((variantMrp - variantPrice) / variantMrp) * 100) : 0;
 
     return (
         <div className="bg-white min-h-screen py-8 pb-24 md:pb-8 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out fill-mode-both selection:bg-[#D39A9F] selection:text-white">
@@ -265,11 +321,11 @@ const ProductDetails = () => {
 
                         <div className="border-b border-gray-100 pb-6">
                             <div className="flex items-baseline gap-3 mb-1">
-                                <span className="text-2xl md:text-3xl font-bold md:font-semibold text-black">₹{product.price.toLocaleString()}</span>
-                                {product.originalPrice > product.price && (
+                                <span className="text-2xl md:text-3xl font-bold md:font-semibold text-black">₹{variantPrice.toLocaleString()}</span>
+                                {variantMrp > variantPrice && (
                                     <>
-                                        <span className="text-base md:text-lg text-gray-400 line-through font-medium">₹{product.originalPrice.toLocaleString()}</span>
-                                        <span className="bg-black text-white text-[10px] font-bold px-2 py-1 rounded-sm tracking-wider">SAVE {discount}%</span>
+                                        <span className="text-base md:text-lg text-gray-400 line-through font-medium">₹{variantMrp.toLocaleString()}</span>
+                                        <span className="bg-black text-white text-[10px] font-bold px-2 py-1 rounded-sm tracking-wider">SAVE {variantDiscount}%</span>
                                     </>
                                 )}
                             </div>
@@ -277,6 +333,34 @@ const ProductDetails = () => {
                         </div>
 
                         <div className="space-y-4 pb-2 md:pb-6">
+                            {product.variants && product.variants.length > 1 && (
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs font-bold uppercase tracking-widest text-gray-500">Variants</span>
+                                        <span className="text-[10px] text-gray-400">Select one</span>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {product.variants.map((variant) => {
+                                            const variantId = variant.id || variant._id;
+                                            const isSelected = String(variantId) === String(selectedVariantId);
+                                            return (
+                                                <button
+                                                    key={variantId}
+                                                    type="button"
+                                                    onClick={() => setSelectedVariantId(variantId)}
+                                                    className={`px-3 py-2 rounded-full text-xs font-semibold border transition-all ${
+                                                        isSelected
+                                                            ? 'border-[#3E2723] bg-[#3E2723]/10 text-[#3E2723]'
+                                                            : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                                                    }`}
+                                                >
+                                                    {variant.name || 'Variant'}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
 
 
                             <div className="flex items-center gap-2 text-emerald-700 text-sm font-medium">
@@ -331,14 +415,56 @@ const ProductDetails = () => {
                         </div>
 
                         <div className="border-t border-gray-200">
-                            <AccordionItem
-                                title="Description"
-                                isOpen={openSection === 'description'}
-                                onClick={() => toggleSection('description')}
-                            >
-                                <p className="mb-4">Elegance meets craftsmanship in this stunning {product.name}. Handcrafted with precision from 925 Sterling Silver, this piece is designed to be a timeless addition to your collection.</p>
-                                <p>Whether you're dressing up for a special occasion or adding a touch of sparkle to your daily look, this piece versatile enough to complement any style.</p>
-                            </AccordionItem>
+            <AccordionItem
+                title="Description"
+                isOpen={openSection === 'description'}
+                onClick={() => toggleSection('description')}
+            >
+                {product.description ? (
+                    <div className="prose prose-sm max-w-none text-gray-700" dangerouslySetInnerHTML={{ __html: product.description }} />
+                ) : (
+                    <>
+                        <p className="mb-4">Elegance meets craftsmanship in this stunning {product.name}. Handcrafted with precision from 925 Sterling Silver, this piece is designed to be a timeless addition to your collection.</p>
+                        <p>Whether you're dressing up for a special occasion or adding a touch of sparkle to your daily look, this piece versatile enough to complement any style.</p>
+                    </>
+                )}
+            </AccordionItem>
+
+            <AccordionItem
+                title="Specifications"
+                isOpen={openSection === 'specifications'}
+                onClick={() => toggleSection('specifications')}
+            >
+                <div className="space-y-2 text-gray-700">
+                    {product.material && <p><span className="font-semibold">Material:</span> {product.material}</p>}
+                    {product.weight && <p><span className="font-semibold">Weight:</span> {product.weight} {product.weightUnit || ''}</p>}
+                    {product.specifications && (
+                        <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: product.specifications }} />
+                    )}
+                    {!product.material && !product.weight && !product.specifications && (
+                        <p className="text-gray-500">No specifications provided.</p>
+                    )}
+                </div>
+            </AccordionItem>
+
+            <AccordionItem
+                title="FAQs"
+                isOpen={openSection === 'faqs'}
+                onClick={() => toggleSection('faqs')}
+            >
+                {product.faqs && product.faqs.length > 0 ? (
+                    <div className="space-y-3">
+                        {product.faqs.map((faq, idx) => (
+                            <div key={`${faq.question}-${idx}`} className="border border-gray-100 rounded-lg p-3">
+                                <p className="font-semibold text-gray-900">{faq.question}</p>
+                                <p className="text-gray-600 mt-1">{faq.answer}</p>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-gray-500">No FAQs available for this product yet.</p>
+                )}
+            </AccordionItem>
 
 
 

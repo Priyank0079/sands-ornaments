@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-    Package, Layers, IndianRupee, Hash, FileText, 
-    Image as ImageIcon, Plus, CheckCircle2, X, Upload, Trash2, 
+    IndianRupee, 
+    Image as ImageIcon, Plus, CheckCircle2, X, Upload, 
     Info, Tag, Layout, Type, ScanLine, ArrowLeft
 } from 'lucide-react';
 import { sellerProductService } from '../services/sellerProductService';
@@ -10,6 +10,7 @@ import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 
 import api from '../../../services/api';
+import toast from 'react-hot-toast';
 
 const quillModules = {
     toolbar: [
@@ -43,16 +44,16 @@ const AddProduct = () => {
         stylingTips: '',
         cardLabel: '',
         cardBadge: '',
-        metalType: 'Gold',
+        metalType: 'Silver',
         weight: '',
-        weightUnit: 'Gram',
+        weightUnit: 'Grams',
         originalPrice: '',
         sellingPrice: '',
         discount: 0,
         quantity: '',
         images: [], // for previews
         sizes: [],
-        categories: [{ id: Date.now(), category: '' }],
+        categoryId: '',
         tags: {
             isNewArrival: false,
             isMostGifted: false,
@@ -64,9 +65,10 @@ const AddProduct = () => {
     useEffect(() => {
         const fetchCats = async () => {
             try {
-                const res = await api.get('/categories');
+                const res = await api.get('public/categories');
                 if (res.data.success) {
-                    setCategoriesList(res.data.data.categories);
+                    const list = res.data.data.categories || [];
+                    setCategoriesList(list.filter(cat => cat.isActive !== false));
                 }
             } catch (err) {
                 console.error("Failed to fetch categories:", err);
@@ -122,33 +124,8 @@ const AddProduct = () => {
         }));
     };
 
-    const handleCategoryChange = (id, field, value) => {
-        setFormData(prev => ({
-            ...prev,
-            categories: prev.categories.map(c => {
-                if (c.id === id) {
-                    if (field === 'category') {
-                        return { ...c, category: value };
-                    }
-                    return { ...c, [field]: value };
-                }
-                return c;
-            })
-        }));
-    };
-
-    const addCategory = () => {
-        setFormData(prev => ({
-            ...prev,
-            categories: [...prev.categories, { id: Date.now(), category: '' }]
-        }));
-    };
-
-    const removeCategory = (id) => {
-        setFormData(prev => ({
-            ...prev,
-            categories: prev.categories.filter(c => c.id !== id)
-        }));
+    const handleCategoryChange = (value) => {
+        setFormData(prev => ({ ...prev, categoryId: value }));
     };
 
     const handleSubmit = async (e) => {
@@ -157,6 +134,12 @@ const AddProduct = () => {
 
         try {
             const productForm = new FormData();
+
+            if (!formData.name || !formData.categoryId) {
+                toast.error("Please add a product name and select a category.");
+                setLoading(false);
+                return;
+            }
             
             // Append flat fields
             productForm.append('name', formData.name);
@@ -166,13 +149,10 @@ const AddProduct = () => {
             productForm.append('cardBadge', formData.cardBadge);
             productForm.append('weight', parseFloat(formData.weight) || 0);
             productForm.append('weightUnit', formData.weightUnit);
-            productForm.append('metal', formData.metalType); // Map metalType to metal for consistency
+            productForm.append('material', formData.metalType);
 
-            // Map categories to IDs
-            const categoryIds = formData.categories
-                .filter(c => c.category && c.category !== 'other')
-                .map(c => c.category);
-            productForm.append('categories', JSON.stringify(categoryIds));
+            // Single category
+            productForm.append('categories', JSON.stringify([formData.categoryId]));
 
             // Map Variants
             const variants = [{
@@ -192,11 +172,12 @@ const AddProduct = () => {
             imageFiles.forEach(file => productForm.append('images', file));
 
             await sellerProductService.addProduct(productForm);
+            toast.success("Product submitted successfully");
             setLoading(false);
             navigate('/seller/products');
         } catch (err) {
             console.error("Submit failed:", err);
-            alert("Failed to publish product. Please check all fields.");
+            toast.error(err.response?.data?.message || "Failed to publish product. Please check all fields.");
             setLoading(false);
         }
     };
@@ -290,12 +271,10 @@ const AddProduct = () => {
                         </div>
                         <div className="space-y-6">
                             <div className="space-y-2">
-                                <label className={labelClasses}>Metal Type</label>
+                                <label className={labelClasses}>Material</label>
                                 <select name="metalType" value={formData.metalType} onChange={handleChange} className="w-full bg-[#FDFBF7] border border-[#EFEBE9] rounded-xl py-4 px-4 text-sm font-bold text-gray-800 outline-none focus:border-[#8D6E63] transition-all cursor-pointer">
                                     <option value="Gold">Gold</option>
                                     <option value="Silver">Silver</option>
-                                    <option value="Diamond">Diamond</option>
-                                    <option value="Platinum">Platinum</option>
                                 </select>
                             </div>
                             <div className="space-y-2">
@@ -303,18 +282,18 @@ const AddProduct = () => {
                                 <div className="flex gap-2">
                                     <input type="number" step="0.01" name="weight" value={formData.weight} onChange={handleChange} className="flex-1 bg-[#FDFBF7] border border-[#EFEBE9] rounded-xl py-4 px-4 text-sm font-bold text-gray-800 outline-none" placeholder="0.00" />
                                     <select name="weightUnit" value={formData.weightUnit} onChange={handleChange} className="w-24 bg-[#FDFBF7] border border-[#EFEBE9] rounded-xl text-[10px] font-black uppercase text-[#8D6E63] transition-all cursor-pointer">
-                                        <option value="Gram">Grams</option>
-                                        <option value="Carat">Carats</option>
-                                        <option value="Milligram">mg</option>
+                                        <option value="Grams">Grams</option>
+                                        <option value="Carats">Carats</option>
+                                        <option value="Milligrams">Milligrams</option>
                                     </select>
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <label className={labelClasses}>Original Price (₹)</label>
+                                <label className={labelClasses}>Original Price (INR)</label>
                                 <input type="number" name="originalPrice" value={formData.originalPrice} onChange={handleChange} className="w-full bg-[#FDFBF7] border border-[#EFEBE9] rounded-xl py-4 px-4 text-sm font-bold text-gray-800 outline-none" placeholder="0" />
                             </div>
                             <div className="space-y-2">
-                                <label className={labelClasses}>Offer Price (₹)</label>
+                                <label className={labelClasses}>Offer Price (INR)</label>
                                 <input type="number" name="sellingPrice" value={formData.sellingPrice} onChange={handleChange} className="w-full bg-[#FDFBF7] border border-[#EFEBE9] rounded-xl py-4 px-4 text-sm font-bold text-[#8D6E63] outline-none border-[#8D6E63]/20" placeholder="0" />
                             </div>
                             <div className="p-4 bg-emerald-50/50 border border-emerald-100 rounded-xl flex items-center justify-between">
@@ -353,55 +332,18 @@ const AddProduct = () => {
                         </div>
 
                         <div className="space-y-6">
-                            <div className="flex items-center justify-between">
-                                <label className={labelClasses}>Categories (Multiple Hierarchy)</label>
-                                <button type="button" onClick={addCategory} className="text-[9px] font-black text-[#3E2723] uppercase tracking-widest flex items-center gap-1 hover:underline">
-                                    <Plus className="w-3.5 h-3.5" /> Add Category
-                                </button>
-                            </div>
                             <div className="space-y-4">
-                                {formData.categories.map((cat, index) => (
-                                    <div key={cat.id} className="p-6 rounded-3xl bg-[#FDFBF7] border border-[#EFEBE9] relative group animate-in slide-in-from-top-4">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div className="space-y-2">
-                                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Main Category</p>
-                                                <select
-                                                    value={cat.category}
-                                                    onChange={(e) => handleCategoryChange(cat.id, 'category', e.target.value)}
-                                                    className="w-full bg-white border border-[#EFEBE9] rounded-xl p-3 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] transition-all"
-                                                >
-                                                    <option value="">Select Category...</option>
-                                                    {categoriesList.map(catItem => (
-                                                        <option key={catItem._id} value={catItem._id}>{catItem.name}</option>
-                                                    ))}
-                                                    <option value="other">Other</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        {cat.category === 'other' && (
-                                            <div className="mt-4 animate-in zoom-in-95">
-                                                <input
-                                                    type="text"
-                                                    value={cat.customCategory || ''}
-                                                    onChange={(e) => handleCategoryChange(cat.id, 'customCategory', e.target.value)}
-                                                    className="w-full bg-white border border-[#EFEBE9] rounded-xl p-3 text-[11px] font-bold uppercase"
-                                                    placeholder="Custom Category..."
-                                                />
-                                            </div>
-                                        )}
-
-                                        {formData.categories.length > 1 && (
-                                            <button
-                                                type="button"
-                                                onClick={() => removeCategory(cat.id)}
-                                                className="absolute -top-3 -right-3 p-2 bg-white text-gray-400 hover:text-red-500 border border-gray-100 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        )}
-                                    </div>
-                                ))}
+                                <label className={labelClasses}>Category</label>
+                                <select
+                                    value={formData.categoryId}
+                                    onChange={(e) => handleCategoryChange(e.target.value)}
+                                    className="w-full bg-white border border-[#EFEBE9] rounded-xl p-3 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] transition-all"
+                                >
+                                    <option value="">Select Category...</option>
+                                    {categoriesList.map(catItem => (
+                                        <option key={catItem._id} value={catItem._id}>{catItem.name}</option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
 

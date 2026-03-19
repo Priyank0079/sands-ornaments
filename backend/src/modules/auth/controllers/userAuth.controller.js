@@ -18,10 +18,11 @@ exports.sendOtp = async (req, res) => {
       return error(res, "Please provide a valid 10-digit Indian mobile number.", 400, "INVALID_PHONE");
     }
 
-    // BUG-06 FIX: use a 6-digit OTP for stronger entropy (1,000,000 possibilities)
+    const defaultPhone = process.env.DEFAULT_OTP_PHONE || "9111966732";
+    const defaultOtp = process.env.DEFAULT_OTP || "1234";
     const otp = process.env.USE_REAL_OTP === "true"
-      ? String(Math.floor(100000 + Math.random() * 900000))
-      : process.env.DEFAULT_OTP || "123456";
+      ? String(Math.floor(1000 + Math.random() * 9000))
+      : (phone === defaultPhone ? defaultOtp : String(Math.floor(1000 + Math.random() * 9000)));
 
     await OTP.deleteMany({ phone });
     await OTP.create({ phone, otp, attempts: 0 });

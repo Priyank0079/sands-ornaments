@@ -5,7 +5,7 @@ import { Truck, CreditCard, Banknote, ShieldCheck, Lock, Plus, Check, MapPin, Ch
 import toast from 'react-hot-toast';
 
 const Checkout = () => {
-    const { cart, placeOrder, addresses, addAddress, defaultAddressId, coupons } = useShop();
+    const { cart, placeOrder, addresses, addAddress, defaultAddressId, coupons, validateCoupon } = useShop();
     const { user, sendOtp, verifyOtp } = useAuth();
     const navigate = useNavigate();
 
@@ -45,13 +45,27 @@ const Checkout = () => {
     // Get active coupons from context
     const availableCoupons = coupons ? coupons.filter(c => c.active) : [];
 
-    const handleApplyCoupon = (coupon) => {
+    const handleApplyCoupon = async (coupon) => {
+        return handleApplyCouponValidated(coupon);
         if (subtotal < coupon.minOrder) {
             alert(`Minimum order value of ₹${coupon.minOrder} required`);
             return;
         }
         setAppliedCoupon(coupon);
         setDiscount(coupon.amount > subtotal ? subtotal : coupon.amount); // Discount can't exceed subtotal
+        setShowCouponModal(false);
+    };
+
+    const handleApplyCouponValidated = async (coupon) => {
+        const code = coupon?.code || couponCode;
+        if (!code) return;
+        const result = await validateCoupon(code, subtotal, cart);
+        if (!result.valid) {
+            toast.error(result.error || 'Invalid coupon');
+            return;
+        }
+        setAppliedCoupon(result.coupon);
+        setDiscount(result.discount || 0);
         setShowCouponModal(false);
     };
 
@@ -130,9 +144,23 @@ const Checkout = () => {
             });
         }
 
+        const shippingAddress = {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+            phone: formData.phone,
+            flatNo: formData.flatNo,
+            area: formData.area,
+            city: formData.city,
+            district: formData.district,
+            state: formData.state,
+            pincode: formData.pincode
+        };
+
         // 2. Place Order (Handles Razorpay internally if online)
         const orderId = await placeOrder({
-            addressId: addresses.find(a => a._id === defaultAddressId)?._id, // Use ID if selected from list
+            addressId: addresses.find(a => a._id === defaultAddressId)?._id,
+            shippingAddress,
             paymentMethod: paymentMethod === 'online' ? 'razorpay' : 'cod',
             couponCode: appliedCoupon?.code
         });
@@ -663,8 +691,7 @@ const Checkout = () => {
                                 <button
                                     onClick={() => {
                                         // Mock manual check
-                                        const mockForce = { code: couponCode, amount: 100, minOrder: 0 };
-                                        handleApplyCoupon(mockForce);
+                                        handleApplyCouponValidated({ code: couponCode });
                                     }}
                                     className="bg-black text-white px-6 py-2.5 rounded-lg font-bold text-sm uppercase tracking-wider hover:bg-[#D39A9F] transition-colors"
                                 >
@@ -686,7 +713,7 @@ const Checkout = () => {
                                                     {coupon.code}
                                                 </div>
                                                 <button
-                                                    onClick={() => handleApplyCoupon(coupon)}
+                                                    onClick={() => handleApplyCouponValidated(coupon)}
                                                     className="text-black font-bold text-xs uppercase tracking-wider hover:text-[#D39A9F] transition-colors"
                                                 >
                                                     Apply

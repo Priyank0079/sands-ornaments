@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MoveRight, ArrowLeft } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
@@ -19,7 +19,7 @@ import navOccasionValentine from '../assets/nav_occasion_valentine.png';
 const CategoryNav = () => {
     const [hoveredCategory, setHoveredCategory] = useState(null);
     const [selectedMetal, setSelectedMetal] = useState(null);
-    const { categories: dynamicCategories } = useShop();
+    const { categories: dynamicCategories, products, homepageSections } = useShop();
     const navigate = useNavigate();
 
     // SHOP BY CATEGORY (Original Form)
@@ -30,6 +30,91 @@ const CategoryNav = () => {
         type: 'mega-menu'
     };
 
+    const defaultGiftsFor = [
+        { id: 'women', name: "Womens", path: "womens", image: navGiftWomen },
+        { id: 'girls', name: "Girls", path: "girls", image: navGiftGirls },
+        { id: 'mens', name: "Mens", path: "mens", image: navGiftMens },
+        { id: 'couple', name: "Couple", path: "couple", image: navGiftCouple },
+        { id: 'kids', name: "Kids", path: "kids", image: navGiftKids }
+    ];
+
+    const defaultOccasions = [
+        { id: 'birthday', name: "Birthday", path: "birthday", image: navOccasionBirthday },
+        { id: 'anniversary', name: "Anniversary", path: "anniversary", image: navOccasionAnniversary },
+        { id: 'wedding', name: "Wedding", path: "wedding", image: navOccasionWedding },
+        { id: 'mothers-day', name: "Mother's Day", path: "mothers-day", image: navOccasionMothers },
+        { id: 'valentine', name: "Valentine Day", path: "valentine", image: navOccasionValentine }
+    ];
+
+    const fallbackGiftImage = (label) => {
+        const map = {
+            womens: navGiftWomen,
+            women: navGiftWomen,
+            girls: navGiftGirls,
+            mens: navGiftMens,
+            men: navGiftMens,
+            couple: navGiftCouple,
+            kids: navGiftKids
+        };
+        const key = String(label || '').toLowerCase().replace(/\s+/g, '');
+        return map[key] || navGiftWomen;
+    };
+
+    const fallbackOccasionImage = (label) => {
+        const map = {
+            birthday: navOccasionBirthday,
+            anniversary: navOccasionAnniversary,
+            wedding: navOccasionWedding,
+            mothersday: navOccasionMothers,
+            "mother'sday": navOccasionMothers,
+            valentine: navOccasionValentine,
+            valentineday: navOccasionValentine
+        };
+        const key = String(label || '').toLowerCase().replace(/\s+/g, '');
+        return map[key] || navOccasionBirthday;
+    };
+
+    const buildFilterPath = (label, key) => {
+        const slug = String(label || '')
+            .trim()
+            .toLowerCase()
+            .replace(/['"]/g, '')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+        return `/shop?${key}=${encodeURIComponent(slug)}`;
+    };
+
+    const ensureNavPath = (path, label, key) => {
+        if (path && path.includes(`${key}=`)) return path;
+        return buildFilterPath(label, key);
+    };
+
+    const navGiftItems = useMemo(() => {
+        const section = homepageSections?.['nav-gifts-for'];
+        if (section?.items?.length) {
+            return section.items.map(item => ({
+                id: item.itemId || item.id || item._id,
+                name: item.name || item.label,
+                path: ensureNavPath(item.path, item.name || item.label, 'filter'),
+                image: item.image || fallbackGiftImage(item.name || item.label)
+            }));
+        }
+        return defaultGiftsFor;
+    }, [homepageSections]);
+
+    const navOccasionItems = useMemo(() => {
+        const section = homepageSections?.['nav-occasions'];
+        if (section?.items?.length) {
+            return section.items.map(item => ({
+                id: item.itemId || item.id || item._id,
+                name: item.name || item.label,
+                path: ensureNavPath(item.path, item.name || item.label, 'occasion'),
+                image: item.image || fallbackOccasionImage(item.name || item.label)
+            }));
+        }
+        return defaultOccasions;
+    }, [homepageSections]);
+
     const giftsForItem = {
         id: 'gifts-for',
         name: 'Gifts For',
@@ -37,13 +122,7 @@ const CategoryNav = () => {
         type: 'mega-menu',
         introTitle: "Gifts of Love",
         introDesc: "Find the perfect token of affection for every special person in your life.",
-        subcategories: [
-            { id: 'women', name: "Womens", path: "womens", image: navGiftWomen },
-            { id: 'girls', name: "Girls", path: "girls", image: navGiftGirls },
-            { id: 'mens', name: "Mens", path: "mens", image: navGiftMens },
-            { id: 'couple', name: "Couple", path: "couple", image: navGiftCouple },
-            { id: 'kids', name: "Kids", path: "kids", image: navGiftKids }
-        ]
+        subcategories: navGiftItems
     };
 
     const occasionsItem = {
@@ -53,13 +132,7 @@ const CategoryNav = () => {
         type: 'mega-menu',
         introTitle: "Celebrate Moments",
         introDesc: "Mark life's milestones with timeless elegance and unforgettable shine.",
-        subcategories: [
-            { id: 'birthday', name: "Birthday", path: "birthday", image: navOccasionBirthday },
-            { id: 'anniversary', name: "Anniversary", path: "anniversary", image: navOccasionAnniversary },
-            { id: 'wedding', name: "Wedding", path: "wedding", image: navOccasionWedding },
-            { id: 'mothers-day', name: "Mother's Day", path: "mothers-day", image: navOccasionMothers },
-            { id: 'valentine', name: "Valentine Day", path: "valentine", image: navOccasionValentine }
-        ]
+        subcategories: navOccasionItems
     };
 
     const navItems = [
@@ -75,7 +148,8 @@ const CategoryNav = () => {
     );
 
     const getCategoriesByMetal = (metal) => {
-        return visibleCategories.filter(c => c.metal?.toLowerCase() === metal.toLowerCase());
+        const byMetal = visibleCategories.filter(c => c.metal?.toLowerCase() === metal.toLowerCase());
+        return byMetal;
     };
 
     return (
@@ -210,16 +284,23 @@ const CategoryNav = () => {
                                                                     </button>
                                                                 </div>
 
-                                                                {getCategoriesByMetal(selectedMetal).length > 0 ? (
+                                                                {(() => {
+                                                                    const list = getCategoriesByMetal(selectedMetal).map((cat) => ({
+                                                                        id: cat._id,
+                                                                        name: cat.name,
+                                                                        path: `/shop?category=${cat._id}`,
+                                                                        image: cat.image || ''
+                                                                    }));
+                                                                    return list.length > 0 ? (
                                                                     <motion.div 
                                                                         initial={{ opacity: 0, y: 20 }}
                                                                         animate={{ opacity: 1, y: 0 }}
                                                                         className="grid grid-cols-5 gap-x-6 gap-y-10"
                                                                     >
-                                                                        {getCategoriesByMetal(selectedMetal).map((cat) => (
+                                                                        {list.map((cat) => (
                                                                             <Link 
-                                                                                key={cat._id} 
-                                                                                to={cat.subcategories?.length > 0 ? `/shop?category=${cat.name}` : `/shop?category=${cat.name}&status=coming-soon`}
+                                                                                key={cat.id || cat._id} 
+                                                                                to={cat.path?.startsWith('/') ? cat.path : `/shop?category=${cat.id || cat._id}`}
                                                                                 onClick={() => { setHoveredCategory(null); setSelectedMetal(null); }}
                                                                                 className="flex flex-col items-center text-center gap-3 group"
                                                                             >
@@ -230,7 +311,7 @@ const CategoryNav = () => {
                                                                             </Link>
                                                                         ))}
                                                                     </motion.div>
-                                                                ) : (
+                                                                    ) : (
                                                                     <div className="flex flex-col items-center justify-center py-12 space-y-4">
                                                                         <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center">
                                                                             <div className="w-10 h-10 border-2 border-dashed border-[#D39A9F] rounded-full animate-spin" />
@@ -240,7 +321,8 @@ const CategoryNav = () => {
                                                                             <p className="text-gray-400 font-serif italic text-sm">We're expanding our {selectedMetal} collection. Stay tuned!</p>
                                                                         </div>
                                                                     </div>
-                                                                )}
+                                                                    );
+                                                                })()}
                                                             </div>
                                                         )
                                                     )}
@@ -261,7 +343,7 @@ const CategoryNav = () => {
                                                         {item.subcategories.map((subCat) => (
                                                             <Link 
                                                                 key={subCat.id} 
-                                                                to={`/shop?filter=${subCat.path}`} 
+                                                                to={subCat.path?.startsWith('/') ? subCat.path : `/shop?filter=${subCat.path}`} 
                                                                 onClick={() => setHoveredCategory(null)}
                                                                 className="flex flex-col items-center text-center gap-3 group"
                                                             >
