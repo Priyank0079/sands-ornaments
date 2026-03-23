@@ -14,7 +14,8 @@ const app = express();
 
 // ── GLOBAL MIDDLEWARES ───────────────────────────────────────────────────────
 app.use(helmet()); // Security headers
-app.use(cors({ origin: process.env.CLIENT_URL || "*", credentials: true }));   // Enable CORS
+const allowedOrigins = process.env.CLIENT_URL ? process.env.CLIENT_URL.split(",").map(origin => origin.trim()) : ["*"];
+app.use(cors({ origin: allowedOrigins, credentials: true }));   // Enable CORS
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(mongoSanitize()); // Prevent NoSQL injection
