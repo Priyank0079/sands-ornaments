@@ -22,13 +22,23 @@ const OccasionalSpecial = () => {
 
     const displayItems = sectionData?.items && sectionData.items.length > 0 ? sectionData.items : defaultCategories;
 
+    const buildPath = (item, fallback) => {
+        if (!item) return fallback.path;
+        const productIds = Array.isArray(item.productIds) ? item.productIds : [];
+        if (productIds.length > 0) {
+            return `/shop?products=${encodeURIComponent(productIds.join(','))}`;
+        }
+        const limit = item.limit ? Number(item.limit) : 12;
+        return `/shop?limit=${limit}&sort=random`;
+    };
+
     // Helper to get item safe
     const getItem = (index, fallback) => {
         const item = displayItems[index];
         return {
             name: item?.name || item?.label || fallback.name,
             image: item?.image || fallback.image,
-            path: item?.path || fallback.path
+            path: buildPath(item, fallback)
         };
     };
 
@@ -53,12 +63,13 @@ const OccasionalSpecial = () => {
 
                 {/* Mobile View: 2-Column Grid */}
                 <div className="grid grid-cols-2 md:hidden gap-3 px-2 mb-8">
-                    {displayItems.map((cat, index) => {
+                        {displayItems.map((cat, index) => {
                         const label = cat.name || cat.label;
+                        const path = buildPath(cat, defaultCategories[index] || defaultCategories[0]);
                         return (
                             <Link
-                                key={cat.id || index}
-                                to={cat.path}
+                                key={cat.itemId || cat._id || cat.id || index}
+                                to={path}
                                 className="relative group overflow-hidden rounded-xl flex-shrink-0 w-full aspect-[4/5] cursor-pointer shadow-sm active:scale-95 transition-transform"
                             >
                                 <img src={cat.image} alt={label} className="w-full h-full object-cover" />
@@ -75,16 +86,16 @@ const OccasionalSpecial = () => {
                 <div className="hidden md:grid grid-cols-3 gap-6 auto-rows-[250px]">
                     {/* Column 1 - Stacked */}
                     <div className="flex flex-col gap-6 h-full md:row-span-2">
-                        <Link to={item1.path} className="relative group overflow-hidden rounded-2xl flex-1 cursor-pointer shadow-md hover:shadow-xl transition-all duration-300">
-                            <img src={item1.image} alt={item1.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#2F0A0F]/80 via-transparent to-transparent"></div>
-                            <span className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white font-display text-2xl tracking-wide w-full text-center">{item1.name}</span>
-                        </Link>
-                        <Link to={item2.path} className="relative group overflow-hidden rounded-2xl flex-1 cursor-pointer shadow-md hover:shadow-xl transition-all duration-300">
-                            <img src={item2.image} alt={item2.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#2F0A0F]/80 via-transparent to-transparent"></div>
-                            <span className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white font-display text-2xl tracking-wide w-full text-center">{item2.name}</span>
-                        </Link>
+                    <Link to={item1.path} className="relative group overflow-hidden rounded-2xl flex-1 cursor-pointer shadow-md hover:shadow-xl transition-all duration-300">
+                        <img src={item1.image} alt={item1.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#2F0A0F]/80 via-transparent to-transparent"></div>
+                        <span className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white font-display text-2xl tracking-wide w-full text-center">{item1.name}</span>
+                    </Link>
+                    <Link to={item2.path} className="relative group overflow-hidden rounded-2xl flex-1 cursor-pointer shadow-md hover:shadow-xl transition-all duration-300">
+                        <img src={item2.image} alt={item2.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#2F0A0F]/80 via-transparent to-transparent"></div>
+                        <span className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white font-display text-2xl tracking-wide w-full text-center">{item2.name}</span>
+                    </Link>
                     </div>
 
                     {/* Column 2 - Tall Centerpiece */}
@@ -118,10 +129,11 @@ const OccasionalSpecial = () => {
                     <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
                         {displayItems.slice(5).map((item, index) => {
                             const label = item.name || item.label;
+                            const path = buildPath(item, defaultCategories[0]);
                             return (
                                 <Link
-                                    key={item.id || index + 5}
-                                    to={item.path}
+                                    key={item.itemId || item._id || item.id || index + 5}
+                                    to={path}
                                     className="group relative rounded-2xl overflow-hidden aspect-square border border-gray-100 shadow-md"
                                 >
                                     <img

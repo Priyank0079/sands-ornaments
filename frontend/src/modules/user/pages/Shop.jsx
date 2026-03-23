@@ -33,6 +33,8 @@ const Shop = () => {
     const occasionQuery = queryParams.get('occasion');
     const priceMaxQuery = queryParams.get('price_max');
     const productsQuery = queryParams.get('products');
+    const limitQuery = queryParams.get('limit');
+    const sortQuery = queryParams.get('sort');
 
     // Effect to handle URL-based Logic + Local Category Filter
     useEffect(() => {
@@ -51,6 +53,27 @@ const Shop = () => {
                 .filter(v => Number.isFinite(v) && v > 0);
             if (variantPrices.length > 0) return Math.min(...variantPrices);
             return 0;
+        };
+        const getProductCreatedAt = (product) => {
+            const ts = product?.createdAt || product?.updatedAt || '';
+            const date = ts ? new Date(ts).getTime() : 0;
+            if (date) return date;
+            const id = String(product?._id || product?.id || '');
+            return id ? parseInt(id.substring(0, 8), 16) || 0 : 0;
+        };
+        const getProductSold = (product) => {
+            if (!product) return 0;
+            if (Number.isFinite(product.sold)) return product.sold;
+            const variantSold = (product.variants || []).reduce((sum, v) => sum + (v.sold || 0), 0);
+            return Number.isFinite(variantSold) ? variantSold : 0;
+        };
+        const shuffleArray = (arr) => {
+            const copy = [...arr];
+            for (let i = copy.length - 1; i > 0; i -= 1) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            return copy;
         };
 
         let categoryQueryObj = null;
@@ -141,6 +164,15 @@ const Shop = () => {
                 title = 'Perfect Gift';
             }
         }
+        if (sortQuery === 'latest') {
+            title = selectedCategory !== 'All' ? selectedCategory : 'Latest Drop';
+        }
+        if (sortQuery === 'most-sold') {
+            title = selectedCategory !== 'All' ? selectedCategory : 'Most Gifted';
+        }
+        if (sortQuery === 'random') {
+            title = selectedCategory !== 'All' ? selectedCategory : 'Curated For You';
+        }
 
         // Apply Title overrides from Local Filters
         if (selectedCategory !== 'All') {
@@ -194,7 +226,13 @@ const Shop = () => {
         result = result.filter(p => getProductPrice(p) <= priceRange);
 
         // 4. Apply Sorting
-        if (sortBy === 'Price: Low to High') {
+        if (sortQuery === 'latest') {
+            result.sort((a, b) => getProductCreatedAt(b) - getProductCreatedAt(a));
+        } else if (sortQuery === 'most-sold') {
+            result.sort((a, b) => getProductSold(b) - getProductSold(a));
+        } else if (sortQuery === 'random') {
+            result = shuffleArray(result);
+        } else if (sortBy === 'Price: Low to High') {
             result.sort((a, b) => getProductPrice(a) - getProductPrice(b));
         } else if (sortBy === 'Price: High to Low') {
             result.sort((a, b) => getProductPrice(b) - getProductPrice(a));
@@ -202,6 +240,14 @@ const Shop = () => {
             result.sort((a, b) => b.rating - a.rating);
         } else if (sortBy === 'Newest') {
             result.sort((a, b) => (b.isNew === a.isNew) ? 0 : b.isNew ? 1 : -1);
+        }
+
+        // 5. Apply Limit (query)
+        if (limitQuery) {
+            const parsedLimit = Number(String(limitQuery).replace(/[^0-9]/g, ''));
+            if (Number.isFinite(parsedLimit) && parsedLimit > 0) {
+                result = result.slice(0, parsedLimit);
+            }
         }
 
         setFilteredProducts([...result]); // Create new array to force re-render

@@ -75,14 +75,21 @@ const StyleItYourWay = () => {
     ];
 
     const displayCollections = sectionData?.items && sectionData.items.length > 0
-        ? sectionData.items.map(item => ({
-            id: item.id,
-            title: item.name,
-            subtitle: item.tag,
-            image: item.image,
-            thumbnails: item.extraImages || [],
-            path: item.path || "/shop"
-        }))
+        ? sectionData.items.map(item => {
+            const productIds = Array.isArray(item.productIds) ? item.productIds : [];
+            const limit = item.limit ? Number(item.limit) : 12;
+            const path = productIds.length > 0
+                ? `/shop?products=${encodeURIComponent(productIds.join(','))}`
+                : `/shop?limit=${limit}&sort=random`;
+            return {
+                id: item.id,
+                title: item.name,
+                subtitle: item.tag,
+                image: item.image,
+                thumbnails: item.extraImages || [],
+                path
+            };
+        })
         : defaultCollections;
 
     React.useEffect(() => {
