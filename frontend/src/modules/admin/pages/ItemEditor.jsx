@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation, useSearchParams } from 'react-router-dom';
-import { Upload, X, Save, Plus, ChevronRight, Trash2, Box } from 'lucide-react';
+import { Upload, X, Save, Plus, ChevronRight, Trash2, Box, Barcode as BarcodeIcon, QrCode, Download, Copy, Loader2 } from 'lucide-react';
 import PageHeader from '../components/common/PageHeader';
 import { FormSection, Input, Select } from '../components/common/FormControls';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { adminService } from '../services/adminService';
 import toast from 'react-hot-toast';
+import { downloadImage } from '../../../utils/downloadUtils';
+import Barcode from 'react-barcode';
 
 const quillModules = {
     toolbar: [
@@ -582,6 +584,69 @@ const ItemEditor = () => {
                                         />
                                     </div>
                                 </FormSection>
+
+                                {isViewMode && isProduct && (
+                                    <FormSection title="Identity & Tracking">
+                                        <div className="space-y-6">
+                                            <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100 flex flex-col items-center text-center">
+                                                <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-2">Unique Product Code</p>
+                                                <div className="flex items-center gap-3">
+                                                    <span className="text-xl font-mono font-black text-[#3E2723] tracking-wider">
+                                                        {formData.productCode || 'N/A'}
+                                                    </span>
+                                                    <button 
+                                                        onClick={() => {
+                                                            navigator.clipboard.writeText(formData.productCode);
+                                                            toast.success("Code copied");
+                                                        }}
+                                                        className="p-1.5 bg-white rounded-lg border border-amber-200 text-amber-600 hover:bg-amber-100 transition-colors"
+                                                    >
+                                                        <Copy size={14} />
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 flex flex-col items-center gap-4">
+                                                    <div className="flex items-center justify-between w-full">
+                                                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Barcode Signature</p>
+                                                        <button 
+                                                            onClick={() => downloadImage(formData.barcode || `https://bwipjs-api.metafloor.com/?bcid=code128&text=${formData.productCode}&includetext=true`, `barcode-${formData.productCode}.png`)}
+                                                            className="p-1 px-2 text-[#3E2723] hover:bg-white rounded-lg border border-gray-100 transition-all flex items-center gap-1 group"
+                                                        >
+                                                            <Download size={12} className="group-hover:translate-y-0.5 transition-transform" />
+                                                            <span className="text-[8px] font-black uppercase tracking-widest">PNG</span>
+                                                        </button>
+                                                    </div>
+                                                    <div className="w-full flex justify-center bg-white p-3 rounded-xl border border-gray-100 shadow-inner overflow-hidden">
+                                                        <Barcode value={formData.productCode || 'N/A'} width={1.2} height={40} fontSize={10} />
+                                                    </div>
+                                                </div>
+
+                                                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 flex flex-col items-center gap-4">
+                                                    <div className="flex items-center justify-between w-full">
+                                                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">QR Identity</p>
+                                                        <button 
+                                                            onClick={() => downloadImage(formData.qrCode || `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${formData.productCode}`, `qr-${formData.productCode}.png`)}
+                                                            className="p-1 px-2 text-[#3E2723] hover:bg-white rounded-lg border border-gray-100 transition-all flex items-center gap-1 group"
+                                                        >
+                                                            <Download size={12} className="group-hover:translate-y-0.5 transition-transform" />
+                                                            <span className="text-[8px] font-black uppercase tracking-widest">PNG</span>
+                                                        </button>
+                                                    </div>
+                                                    <div className="w-24 h-24 flex items-center justify-center bg-white p-2 rounded-xl border border-gray-100 shadow-inner overflow-hidden">
+                                                        <img 
+                                                            src={formData.qrCode || `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${formData.productCode}`} 
+                                                            alt="QR" 
+                                                            className="max-h-full object-contain" 
+                                                            onError={(e) => { e.target.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${formData.productCode}`; }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </FormSection>
+                                )}
 
                                 <FormSection title="Product Variants (Size/Stock)">
                                     <div className="space-y-4">

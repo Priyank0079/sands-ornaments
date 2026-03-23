@@ -36,5 +36,14 @@ export const sellerInventoryService = {
       console.error("Seller fetch low stock alerts failed:", err);
       return [];
     }
+  },
+  serializeStock: async (payload) => {
+    try {
+      const res = await api.post('seller/inventory/serialize-stock', payload);
+      return res.data;
+    } catch (err) {
+      console.error("Seller serialize stock failed:", err);
+      throw err;
+    }
   }
 };

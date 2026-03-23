@@ -116,5 +116,18 @@ export const sellerProductService = {
         message: err.response?.data?.message || 'Barcode not found or already sold' 
       };
     }
+  },
+  scanProduct: async (productCode) => {
+    try {
+      // Assuming endpoint POST /api/seller/products/scan exists or as requested
+      const res = await api.post('/seller/products/scan', { productCode });
+      return res.data;
+    } catch (err) {
+      console.error("Failed to scan product:", err);
+      return { 
+        success: false, 
+        message: err.response?.data?.message || "Product not found or system error" 
+      };
+    }
   }
 };

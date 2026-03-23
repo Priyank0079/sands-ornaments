@@ -36,7 +36,15 @@ app.use("/api/auth",   require("./modules/auth/routes/auth.routes"));
 app.use("/api/public",        require("./modules/public/routes/index"));
 
 // Customer routes (must be authenticated)
-app.use("/api/user",   authenticate, requireRole("user"), require("./modules/user/routes/index"));
+// Allow both users and sellers to access user-related routes if they have the token, 
+// but requireRole("user") for specific ones inside the module.
+// However, to be safe, I'll just allow "seller" for the notifications specifically.
+app.use("/api/user", authenticate, (req, res, next) => {
+  if (req.originalUrl.includes("/notifications") || req.originalUrl.includes("/me")) {
+    return requireRole("user", "seller")(req, res, next);
+  }
+  return requireRole("user")(req, res, next);
+}, require("./modules/user/routes/index"));
 
 // Admin routes
 app.use("/api/admin",  authenticate, requireRole("admin"), require("./modules/admin/routes/index"));

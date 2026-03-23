@@ -65,6 +65,7 @@ import DynamicPageEditor from './modules/admin/pages/DynamicPageEditor';
 import AdminSellersPage from './modules/admin/pages/AdminSellersPage';
 import AdminSellerDetails from './modules/admin/pages/AdminSellerDetails';
 import AdminNotifications from './modules/admin/pages/AdminNotifications';
+import QrScannerPage from './modules/seller/pages/QrScannerPage';
 
 // Seller Imports
 import SellerRoutes from './modules/seller/routes/sellerRoutes';
@@ -73,10 +74,11 @@ const AppContent = () => {
   const location = useLocation();
   const isAdminPath = location.pathname.startsWith('/admin');
   const isSellerPath = location.pathname.startsWith('/seller');
+  const isScannerPath = location.pathname === '/scanner';
 
   return (
     <div className="min-h-screen flex flex-col font-sans text-gray-900 bg-[#FDF5F6]">
-      {!isAdminPath && !isSellerPath && (
+      {!isAdminPath && !isSellerPath && !isScannerPath && (
         <>
           <div className="fixed top-0 left-0 right-0 z-[100] w-full">
             <AnnouncementBar />
@@ -85,11 +87,12 @@ const AppContent = () => {
           <div className="h-[84px] md:h-[104px] w-full"></div>
         </>
       )}
-      {!isAdminPath && !isSellerPath && <CategoryNav />}
-      <main className={`flex-grow ${!isAdminPath && !isSellerPath ? 'pb-16 md:pb-0' : ''}`}>
+      {!isAdminPath && !isSellerPath && !isScannerPath && <CategoryNav />}
+      <main className={`flex-grow ${!isAdminPath && !isSellerPath && !isScannerPath ? 'pb-16 md:pb-0' : ''}`}>
         <Routes>
           {/* User Routes */}
           <Route path="/" element={<Home />} />
+          <Route path="/scanner" element={<QrScannerPage />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
@@ -177,7 +180,7 @@ const AppContent = () => {
           <Route path="*" element={<Home />} />
         </Routes>
       </main>
-      {!isAdminPath && !isSellerPath && <Footer />}
+      {!isAdminPath && !isSellerPath && !isScannerPath && <Footer />}
     </div>
   );
 };

@@ -3,6 +3,9 @@ const mongoose = require("mongoose");
 const productSchema = new mongoose.Schema({
   name: { type: String, required: true, index: "text" },
   slug: { type: String, unique: true, index: true },
+  productCode: { type: String, unique: true, sparse: true },
+  sku: { type: String, unique: true, sparse: true },
+  huid: { type: String, trim: true, sparse: true },
   brand: { type: String, default: "SANDS" },
   categories: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" }],
   description: { type: String },

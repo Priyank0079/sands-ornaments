@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { 
     IndianRupee, 
     Image as ImageIcon, Plus, CheckCircle2, X, Upload, 
-    Info, Tag, Layout, Type, ScanLine, ArrowLeft
+    Info, Tag, Layout, Type, ScanLine, ArrowLeft,
+    Sparkles, ImagePlus, Copy, ExternalLink, FileText
 } from 'lucide-react';
 import { sellerProductService } from '../services/sellerProductService';
 import ReactQuill from 'react-quill-new';
@@ -54,12 +55,20 @@ const AddProduct = () => {
         images: [], // for previews
         sizes: [],
         categoryId: '',
+        isSerialized: false,
+        productCodes: [],
         tags: {
             isNewArrival: false,
             isMostGifted: false,
             isNewLaunch: false
         }
     });
+
+    const [enhancingIndex, setEnhancingIndex] = useState(null);
+    const [showEnhanceModal, setShowEnhanceModal] = useState(false);
+    const [enhancedIndices, setEnhancedIndices] = useState(new Set());
+
+    const ENHANCEMENT_PROMPT = "Enhance this product image for eCommerce use. Improve lighting, sharpness, remove background noise, make it look professional, high resolution, clean white or premium background, realistic colors, suitable for online store listing.";
 
     // Fetch dynamic categories
     useEffect(() => {
@@ -105,6 +114,30 @@ const AddProduct = () => {
             ...prev,
             images: [...prev.images, ...newPreviews].slice(0, 5)
         }));
+    };
+
+    const handleEnhancedUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file || enhancingIndex === null) return;
+        
+        const preview = URL.createObjectURL(file);
+        
+        // Replace original image and file
+        setFormData(prev => {
+            const newImages = [...prev.images];
+            newImages[enhancingIndex] = preview;
+            return { ...prev, images: newImages };
+        });
+        setImageFiles(prev => {
+            const newFiles = [...prev];
+            newFiles[enhancingIndex] = file;
+            return newFiles;
+        });
+        
+        setEnhancedIndices(prev => new Set(prev).add(enhancingIndex));
+        setShowEnhanceModal(false);
+        setEnhancingIndex(null);
+        toast.success("✅ Image enhanced successfully");
     };
 
     const removeImage = (index) => {
@@ -168,11 +201,17 @@ const AddProduct = () => {
             productForm.append('tags', JSON.stringify(formData.tags));
             productForm.append('sizes', JSON.stringify(formData.sizes));
 
+            productForm.append('isSerialized', formData.isSerialized);
+            if (formData.isSerialized) {
+                productForm.append('productCodes', JSON.stringify(formData.productCodes));
+            }
+
             // Append Images
             imageFiles.forEach(file => productForm.append('images', file));
 
-            await sellerProductService.addProduct(productForm);
-            toast.success("Product submitted successfully");
+            const res = await sellerProductService.addProduct(productForm);
+            const count = res?.products?.length || (formData.isSerialized ? formData.quantity : 1);
+            toast.success(formData.isSerialized ? `${count} Serialized items created successfully` : "Product submitted successfully");
             setLoading(false);
             navigate('/seller/products');
         } catch (err) {
@@ -243,6 +282,47 @@ const AddProduct = () => {
                                 </label>
                             )}
                         </div>
+
+                        <div className="flex gap-2 w-full mt-2">
+                            <label className="flex-[5] py-3.5 bg-gray-50 border border-gray-200 text-[#3E2723] rounded-xl text-[9px] font-black uppercase tracking-widest text-center cursor-pointer hover:bg-white hover:border-[#3E2723] transition-all flex items-center justify-center gap-2">
+                                <Upload size={14} /> Upload Image
+                                <input type="file" multiple className="hidden" onChange={handleImageUpload} accept="image/*" />
+                            </label>
+                            
+                            <div className="flex-[6] relative group">
+                                <button 
+                                    type="button"
+                                    disabled={formData.images.length === 0}
+                                    onClick={() => {
+                                        setEnhancingIndex(0); // Default to first image
+                                        setShowEnhanceModal(true);
+                                    }}
+                                    className={`w-full py-3.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 border shadow-sm
+                                        ${formData.images.length > 0 
+                                            ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-600 hover:text-white hover:border-amber-600' 
+                                            : 'bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed'
+                                        }`}
+                                >
+                                    <Sparkles size={14} className={formData.images.length > 0 ? "animate-pulse" : ""} /> Enhance Image
+                                </button>
+                                
+                                {formData.images.length === 0 && (
+                                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[8px] px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-bold uppercase tracking-widest">
+                                        Upload image first
+                                        <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-800 rotate-45" />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {formData.images.length > 0 && enhancedIndices.size > 0 && (
+                            <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100 flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                    <span className="text-[8px] font-black text-emerald-800 uppercase tracking-widest">Images listed below are AI-Enhanced</span>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Card Labels */}
@@ -300,9 +380,93 @@ const AddProduct = () => {
                                 <span className="text-[9px] font-black text-emerald-800 uppercase tracking-widest">Computed Discount</span>
                                 <span className="text-xs font-black text-emerald-700">{formData.discount}% OFF</span>
                             </div>
-                            <div className="space-y-2">
-                                <label className={labelClasses}>Stock Quantity</label>
-                                <input type="number" name="quantity" value={formData.quantity} onChange={handleChange} className="w-full bg-[#FDFBF7] border border-[#EFEBE9] rounded-xl py-4 px-4 text-sm font-bold text-gray-800 outline-none" placeholder="0" />
+                            <div className="space-y-4 pt-4 border-t border-gray-50">
+                                <div className="flex items-center justify-between">
+                                    <label className={labelClasses}>Serialized Inventory</label>
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setFormData(prev => ({ ...prev, isSerialized: !prev.isSerialized }))}
+                                        className={`w-10 h-5 rounded-full transition-all relative ${formData.isSerialized ? 'bg-[#3E2723]' : 'bg-gray-200'}`}
+                                    >
+                                        <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${formData.isSerialized ? 'left-6' : 'left-1'}`} />
+                                    </button>
+                                </div>
+                                <p className="text-[9px] font-bold text-gray-400 uppercase leading-tight tracking-wider">
+                                    Create distinct records for every piece (for unique tracking)
+                                </p>
+
+                                {formData.isSerialized ? (
+                                    <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
+                                        <div className="space-y-2">
+                                            <label className={labelClasses}>Physical Counts</label>
+                                            <input 
+                                                type="number" 
+                                                min="1"
+                                                max="100"
+                                                value={formData.quantity} 
+                                                onChange={(e) => {
+                                                    const val = parseInt(e.target.value) || 0;
+                                                    setFormData(prev => {
+                                                        const newCodes = [...prev.productCodes];
+                                                        if (val > newCodes.length) {
+                                                            // Add empty slots
+                                                            for(let i=newCodes.length; i<val; i++) newCodes.push('');
+                                                        } else {
+                                                            newCodes.length = val;
+                                                        }
+                                                        return { ...prev, quantity: val, productCodes: newCodes };
+                                                    });
+                                                }}
+                                                className="w-full bg-[#FDFBF7] border border-[#EFEBE9] rounded-xl py-4 px-4 text-sm font-bold text-gray-800 outline-none" 
+                                                placeholder="Total Items to Scan" 
+                                            />
+                                        </div>
+
+                                        <div className="space-y-3 max-h-[200px] overflow-y-auto px-1 custom-scrollbar">
+                                            {formData.productCodes.map((code, idx) => (
+                                                <div key={idx} className="flex gap-2 animate-in fade-in duration-300">
+                                                    <div className="flex-1 relative group">
+                                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[9px] font-black text-gray-300 group-focus-within:text-[#3E2723]">#{idx+1}</span>
+                                                        <input 
+                                                            value={code}
+                                                            onChange={(e) => {
+                                                                const newVal = e.target.value.toUpperCase();
+                                                                setFormData(prev => {
+                                                                    const nc = [...prev.productCodes];
+                                                                    nc[idx] = newVal;
+                                                                    return { ...prev, productCodes: nc };
+                                                                });
+                                                            }}
+                                                            className="w-full bg-white border border-[#EFEBE9] rounded-lg py-2.5 pl-8 pr-10 text-[11px] font-mono font-bold focus:border-[#3E2723] outline-none transition-all"
+                                                            placeholder="ENTER CODE / SCAN"
+                                                        />
+                                                        <ScanLine className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-300 hover:text-[#3E2723] cursor-pointer" />
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        {formData.productCodes.length > 0 && (
+                                            <button 
+                                                type="button"
+                                                onClick={() => {
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        productCodes: prev.productCodes.map((c, i) => c || `SN${Date.now().toString().slice(-6)}${i}`)
+                                                    }));
+                                                }}
+                                                className="w-full py-2 bg-gray-50 border border-gray-100 rounded-lg text-[9px] font-black uppercase tracking-widest text-[#3E2723] hover:bg-gray-100 transition-all"
+                                            >
+                                                Auto-Generate Empty Codes
+                                            </button>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2 animate-in fade-in duration-300">
+                                        <label className={labelClasses}>Standard Stock Quantity</label>
+                                        <input type="number" name="quantity" value={formData.quantity} onChange={handleChange} className="w-full bg-[#FDFBF7] border border-[#EFEBE9] rounded-xl py-4 px-4 text-sm font-bold text-gray-800 outline-none" placeholder="0" />
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -446,6 +610,100 @@ const AddProduct = () => {
                     </div>
                 </div>
             </div>
+
+            {/* AI Enhancement Modal */}
+            {showEnhanceModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col">
+                        <div className="bg-[#3E2723] p-8 text-white relative">
+                            <div className="flex items-center gap-3 mb-2">
+                                <Sparkles className="w-6 h-6 text-amber-400" />
+                                <h2 className="text-2xl font-black uppercase tracking-tight">AI Image Enhancement</h2>
+                            </div>
+                            <p className="text-[10px] font-bold text-white/50 uppercase tracking-[0.2em]">Unlock studio-quality visuals with Gemini</p>
+                            <button 
+                                onClick={() => setShowEnhanceModal(false)}
+                                className="absolute top-8 right-8 p-2 hover:bg-white/10 rounded-xl transition-all"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="p-8 space-y-8">
+                            {/* Current Image Preview */}
+                            <div className="bg-gray-50 rounded-2xl p-4 flex items-center gap-4 border border-gray-100">
+                                <div className="w-16 h-16 rounded-xl bg-white border border-gray-200 overflow-hidden shadow-sm">
+                                    <img src={formData.images[enhancingIndex]} className="w-full h-full object-cover" alt="" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Selected Image</p>
+                                    <p className="text-xs font-bold text-[#3E2723]">Processing Shot #{enhancingIndex + 1}</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <h4 className="text-[10px] font-black text-[#8D6E63] uppercase tracking-widest">The Enhancement Workflow</h4>
+                                <div className="grid grid-cols-1 gap-4">
+                                    {[
+                                        { icon: ExternalLink, text: "Click 'Open Gemini' below to open the AI Studio" },
+                                        { icon: Upload, text: "Upload this product shot into the Gemini chat" },
+                                        { icon: FileText, text: "Copy and paste our specialized prompt" },
+                                        { icon: ImagePlus, text: "Download the enhanced result & upload it here" }
+                                    ].map((step, i) => (
+                                        <div key={i} className="flex gap-4 items-start">
+                                            <div className="w-6 h-6 rounded-lg bg-amber-50 flex items-center justify-center flex-shrink-0">
+                                                <step.icon size={12} className="text-amber-600" />
+                                            </div>
+                                            <span className="text-[11px] font-bold text-gray-600 leading-relaxed">{step.text}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="space-y-3 bg-[#FDFBF7] p-5 rounded-2xl border border-[#EFEBE9]">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[9px] font-black text-[#8D6E63] uppercase tracking-[0.2em]">The Prompt</span>
+                                    <button 
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(ENHANCEMENT_PROMPT);
+                                            toast.success("Prompt copied to clipboard");
+                                        }}
+                                        className="flex items-center gap-1.5 text-[9px] font-black text-blue-600 uppercase hover:underline"
+                                    >
+                                        <Copy size={10} /> Copy Prompt
+                                    </button>
+                                </div>
+                                <p className="text-[11px] font-medium text-gray-500 italic leading-relaxed">
+                                    "{ENHANCEMENT_PROMPT}"
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="px-8 pb-8 pt-2 flex flex-col gap-3">
+                            <a 
+                                href="https://gemini.google.com/" 
+                                target="_blank" 
+                                rel="noreferrer"
+                                className="w-full py-4 bg-[#3E2723] text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl shadow-amber-900/20 hover:bg-black transition-all flex items-center justify-center gap-2 group"
+                            >
+                                1. Open Gemini <ExternalLink size={14} className="group-hover:translate-x-1 transition-transform" />
+                            </a>
+                            
+                            <label className="w-full py-4 bg-white border-2 border-dashed border-gray-200 text-gray-500 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:border-amber-600 hover:text-amber-600 cursor-pointer transition-all flex items-center justify-center gap-2 group">
+                                <ImagePlus size={14} /> 2. Upload Enhanced Product
+                                <input type="file" className="hidden" onChange={handleEnhancedUpload} accept="image/*" />
+                            </label>
+                            
+                            <button 
+                                onClick={() => setShowEnhanceModal(false)}
+                                className="w-full py-3 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                                Continue without enhancing
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
