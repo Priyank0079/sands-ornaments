@@ -11,14 +11,14 @@ import ankletImg from '../assets/pink_anklets_1767775536388.png';
 import bannerModel from '../assets/gift_wife_silver.png';
 
 const categories = [
-    { id: 1, name: "Earrings", image: earringsImg, path: "/shop?category=earrings" },
-    { id: 2, name: "Bracelets", image: braceletImg, path: "/shop?category=bracelets" },
-    { id: 3, name: "Chains", image: chainImg, path: "/shop?category=chains" },
-    { id: 4, name: "Anklets", image: ankletImg, path: "/shop?category=anklets" },
+    { id: 1, name: "Earrings", image: earringsImg, path: "/shop?sort=most-sold", limit: 12 },
+    { id: 2, name: "Bracelets", image: braceletImg, path: "/shop?sort=most-sold", limit: 12 },
+    { id: 3, name: "Chains", image: chainImg, path: "/shop?sort=most-sold", limit: 12 },
+    { id: 4, name: "Anklets", image: ankletImg, path: "/shop?sort=most-sold", limit: 12 },
 ];
 
 const MostGifted = () => {
-    const { homepageSections } = useShop();
+    const { homepageSections, categories: allCategories } = useShop();
 
     // Use admin-configured items if available, otherwise fall back to defaults
     const sectionData = homepageSections?.['most-gifted'];
@@ -59,7 +59,7 @@ const MostGifted = () => {
 
                             {/* CTA Button */}
                             <Link
-                                to="/shop"
+                                to="/shop?sort=most-sold"
                                 className="mt-4 md:mt-8 inline-flex items-center gap-3 bg-white/20 border border-white/30 text-white px-6 md:px-8 py-2.5 md:py-3 rounded-full hover:bg-white hover:text-[#722F37] transition-all duration-500 w-fit group/btn backdrop-blur-md"
                             >
                                 <span className="uppercase tracking-widest text-[10px] md:text-xs font-bold">Explore Collection</span>
@@ -71,17 +71,24 @@ const MostGifted = () => {
                     {/* Category Cards - Vertical & Dark */}
                     <div className="w-full lg:w-[55%] grid grid-cols-2 md:grid-cols-4 gap-4">
                         {displayItems.map((cat, index) => {
-                            const itemLabel = cat.name || cat.label;
+                            const category = cat.categoryId
+                                ? allCategories.find(c => String(c._id || c.id) === String(cat.categoryId))
+                                : null;
+                            const limit = Number(cat.limit) || 12;
+                            const itemLabel = cat.name || cat.label || category?.name || 'Most Gifted';
+                            const path = category
+                                ? `/shop?category=${category._id || category.id}&limit=${limit}&sort=most-sold`
+                                : (cat.path || `/shop?limit=${limit}&sort=most-sold`);
 
                             return (
                                 <Link
-                                    to={cat.path}
-                                    key={cat.id}
+                                    to={path}
+                                    key={cat.itemId || cat._id || cat.id || itemLabel}
                                     className="relative rounded-2xl md:rounded-[2rem] overflow-hidden group h-[200px] md:h-[280px] lg:h-full bg-white shadow-md md:shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 cursor-pointer isolate"
                                 >
                                     {/* Product Image */}
                                     <img
-                                        src={cat.image}
+                                        src={cat.image || earringsImg}
                                         alt={itemLabel}
                                         className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-[2000ms] opacity-90 group-hover:opacity-100"
                                     />

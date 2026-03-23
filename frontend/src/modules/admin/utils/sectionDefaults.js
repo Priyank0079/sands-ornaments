@@ -148,10 +148,10 @@ export const sectionDefaults = [
     isActive: true,
     sortOrder: 5,
     items: [
-      { id: '1', name: 'Midnight Silver Ring', price: 'INR 2499', image: latestRing, path: '/product/midnight-ring', tag: '' },
-      { id: '2', name: 'Lunar Pendant', price: 'INR 4999', image: latestNecklace, path: '/product/lunar-pendant', tag: '' },
-      { id: '3', name: 'Noir Drop Earrings', price: 'INR 3299', image: latestEarrings, path: '/product/noir-earrings', tag: '' },
-      { id: '4', name: 'Obsidian Chain', price: 'INR 5999', image: latestBracelet, path: '/product/obsidian-chain', tag: '' }
+      { id: '1', name: 'Latest Rings', image: latestRing, path: '/shop?sort=latest', tag: '', limit: 12, categoryId: null },
+      { id: '2', name: 'Latest Pendants', image: latestNecklace, path: '/shop?sort=latest', tag: '', limit: 12, categoryId: null },
+      { id: '3', name: 'Latest Earrings', image: latestEarrings, path: '/shop?sort=latest', tag: '', limit: 12, categoryId: null },
+      { id: '4', name: 'Latest Chains', image: latestBracelet, path: '/shop?sort=latest', tag: '', limit: 12, categoryId: null }
     ]
   },
   {
@@ -160,10 +160,10 @@ export const sectionDefaults = [
     isActive: true,
     sortOrder: 6,
     items: [
-      { id: '1', name: 'Earrings', image: pinkEarrings, path: '/shop?category=earrings', tag: '' },
-      { id: '2', name: 'Bracelets', image: pinkBracelets, path: '/shop?category=bracelets', tag: '' },
-      { id: '3', name: 'Chains', image: pinkChains, path: '/shop?category=chains', tag: '' },
-      { id: '4', name: 'Anklets', image: pinkAnklets, path: '/shop?category=anklets', tag: '' }
+      { id: '1', name: 'Earrings', image: pinkEarrings, path: '/shop?sort=most-sold', tag: '', limit: 12, categoryId: null },
+      { id: '2', name: 'Bracelets', image: pinkBracelets, path: '/shop?sort=most-sold', tag: '', limit: 12, categoryId: null },
+      { id: '3', name: 'Chains', image: pinkChains, path: '/shop?sort=most-sold', tag: '', limit: 12, categoryId: null },
+      { id: '4', name: 'Anklets', image: pinkAnklets, path: '/shop?sort=most-sold', tag: '', limit: 12, categoryId: null }
     ]
   },
   {
@@ -172,7 +172,7 @@ export const sectionDefaults = [
     isActive: true,
     sortOrder: 7,
     items: [
-      { id: 'banner', name: 'Proposal Rings', image: proposalBannerImg, path: '/category/rings', tag: '' }
+      { id: 'banner', name: 'Proposal Rings', image: proposalBannerImg, path: '/shop?sort=latest', tag: '', limit: 12, categoryId: null }
     ]
   },
   {
@@ -181,11 +181,11 @@ export const sectionDefaults = [
     isActive: true,
     sortOrder: 8,
     items: [
-      { id: 'haldi', name: 'Haldi', image: haldiImg, path: '/category/haldi', tag: '' },
-      { id: 'sangeet', name: 'Sangeet', image: sangeetImg, path: '/category/sangeet', tag: '' },
-      { id: 'reception', name: 'Reception', image: receptionImg, path: '/category/reception', tag: '' },
-      { id: 'bridal', name: 'Gift for Bride', image: bridalImg, path: '/category/bridal', tag: '' },
-      { id: 'bridesmaids', name: 'Gift for Bridesmaid', image: bridesmaidImg, path: '/category/bridesmaids', tag: '' }
+      { id: 'haldi', name: 'Haldi', image: haldiImg, path: '/shop?sort=random', tag: '', limit: 12, productIds: [] },
+      { id: 'sangeet', name: 'Sangeet', image: sangeetImg, path: '/shop?sort=random', tag: '', limit: 12, productIds: [] },
+      { id: 'reception', name: 'Reception', image: receptionImg, path: '/shop?sort=random', tag: '', limit: 12, productIds: [] },
+      { id: 'bridal', name: 'Gift for Bride', image: bridalImg, path: '/shop?sort=random', tag: '', limit: 12, productIds: [] },
+      { id: 'bridesmaids', name: 'Gift for Bridesmaid', image: bridesmaidImg, path: '/shop?sort=random', tag: '', limit: 12, productIds: [] }
     ]
   },
   {
@@ -194,10 +194,10 @@ export const sectionDefaults = [
     isActive: true,
     sortOrder: 9,
     items: [
-      { id: '1', name: 'Daily Wear', image: bannerDaily, tag: 'Effortless Everyday', extraImages: [prodPendant, prodWineEar, prodAnklet] },
-      { id: '2', name: 'Office Wear', image: bannerOffice, tag: 'Professional Chic', extraImages: [prodEarring, prodPendant, prodRing] },
-      { id: '3', name: 'Party Wear', image: bannerParty, tag: 'Glamour And Shine', extraImages: [prodWineEar, prodWineRing, prodAnklet] },
-      { id: '4', name: 'Casual Wear', image: bannerCasual, tag: 'Relaxed Vibes', extraImages: [prodAnklet, prodBracelet, prodSis] }
+      { id: '1', name: 'Daily Wear', image: bannerDaily, tag: 'Effortless Everyday', extraImages: [prodPendant, prodWineEar, prodAnklet], limit: 12, productIds: [] },
+      { id: '2', name: 'Office Wear', image: bannerOffice, tag: 'Professional Chic', extraImages: [prodEarring, prodPendant, prodRing], limit: 12, productIds: [] },
+      { id: '3', name: 'Party Wear', image: bannerParty, tag: 'Glamour And Shine', extraImages: [prodWineEar, prodWineRing, prodAnklet], limit: 12, productIds: [] },
+      { id: '4', name: 'Casual Wear', image: bannerCasual, tag: 'Relaxed Vibes', extraImages: [prodAnklet, prodBracelet, prodSis], limit: 12, productIds: [] }
     ]
   }
 ];

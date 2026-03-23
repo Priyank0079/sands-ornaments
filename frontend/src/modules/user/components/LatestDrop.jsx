@@ -11,14 +11,14 @@ import latestEarrings from '../assets/latest_drop_earrings.png';
 import latestBracelet from '../assets/latest_drop_bracelet.png';
 
 const latestItems = [
-    { id: 1, name: "Midnight Silver Ring", price: "₹2,499", image: latestRing, path: "/product/midnight-ring" },
-    { id: 2, name: "Lunar Pendant", price: "₹4,999", image: latestNecklace, path: "/product/lunar-pendant" },
-    { id: 3, name: "Noir Drop Earrings", price: "₹3,299", image: latestEarrings, path: "/product/noir-earrings" },
-    { id: 4, name: "Obsidian Chain", price: "₹5,999", image: latestBracelet, path: "/product/obsidian-chain" }
+    { id: '1', name: "Latest Rings", image: latestRing, path: "/shop?sort=latest", limit: 12 },
+    { id: '2', name: "Latest Pendants", image: latestNecklace, path: "/shop?sort=latest", limit: 12 },
+    { id: '3', name: "Latest Earrings", image: latestEarrings, path: "/shop?sort=latest", limit: 12 },
+    { id: '4', name: "Latest Chains", image: latestBracelet, path: "/shop?sort=latest", limit: 12 }
 ];
 
 const LatestDrop = () => {
-    const { homepageSections, products } = useShop();
+    const { homepageSections, categories } = useShop();
 
     // Use admin-configured items if available, otherwise fall back to defaults
     const sectionData = homepageSections?.['latest-drop'];
@@ -42,7 +42,7 @@ const LatestDrop = () => {
 
                     <div className="hidden md:block md:absolute md:right-0 md:top-1/2 md:-translate-y-1/2">
                         <Link
-                            to="/shop?sort=newest"
+                            to="/shop?sort=latest"
                             className="group flex items-center gap-2 text-[#1F1F1F] font-medium border-b border-black pb-1 hover:text-[#4A1015] hover:border-[#4A1015] transition-all"
                         >
                             Explore Collection
@@ -54,17 +54,19 @@ const LatestDrop = () => {
                 {/* Grid (Desktop) / Horizontal Scroll (Mobile) */}
                 <div className="flex overflow-x-auto md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8 pb-4 md:pb-0 px-4 md:px-0 scrollbar-hide snap-x snap-mandatory -mx-4 md:mx-0">
                     {displayItems.map((item, index) => {
-                        // Dynamic Product Lookup
-                        const product = products.find(p => p.id === item.productId);
-                        // If it's a real product, use its data, otherwise fallback to item (legacy/manual)
-                        const name = product ? product.name : item.name;
-                        const image = product ? (product.images[0] || item.image) : item.image;
-                        const price = product ? `₹${product.variants[0]?.price}` : (item.price || '');
-                        const path = product ? `/product/${product.id}` : item.path;
+                        const category = item.categoryId
+                            ? categories.find(c => String(c._id || c.id) === String(item.categoryId))
+                            : null;
+                        const limit = Number(item.limit) || 12;
+                        const name = item.name || item.label || category?.name || 'Latest Drop';
+                        const image = item.image || latestRing;
+                        const path = category
+                            ? `/shop?category=${category._id || category.id}&limit=${limit}&sort=latest`
+                            : (item.path || `/shop?limit=${limit}&sort=latest`);
 
                         return (
                             <motion.div
-                                key={item.id}
+                                key={item.itemId || item._id || item.id || name}
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
@@ -104,21 +106,21 @@ const LatestDrop = () => {
                                                 </div>
                                             </div>
                                             <div className="flex items-center justify-between">
-                                                <p className="font-serif text-lg text-gray-300 leading-none tracking-wide">{price}</p>
+                                                <p className="font-serif text-lg text-gray-300 leading-none tracking-wide">Latest {limit}</p>
                                                 <span className="text-[10px] text-white/40 uppercase tracking-widest hidden group-hover:block transition-all duration-300">View</span>
                                             </div>
                                         </div>
                                     </div>
                                 </Link>
                             </motion.div>
-                        )
+                        );
                     })}
                 </div>
 
                 {/* Explore Button (Mobile Only - Bottom) */}
                 <div className="mt-6 flex justify-center md:hidden">
                     <Link
-                        to="/shop?sort=newest"
+                        to="/shop?sort=latest"
                         className="inline-flex items-center gap-2 text-[#4A1015] font-semibold border-b border-[#4A1015] pb-1"
                     >
                         Explore Collection

@@ -5,6 +5,8 @@ const homepageItemSchema = new mongoose.Schema({
   type: { type: String, default: "manual" }, // manual | product
   productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
   productIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
+  categoryId: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
+  limit: { type: Number },
   name: String,
   label: String,
   image: String,

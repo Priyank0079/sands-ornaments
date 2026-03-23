@@ -55,6 +55,9 @@ export const useCatalogue = () => {
                 reviews: prod.reviewCount || 0,
                 isNew: prod.tags?.isNewArrival || false,
                 isTrending: prod.tags?.isTrending || false,
+                createdAt: prod.createdAt || prod.updatedAt || '',
+                updatedAt: prod.updatedAt || prod.createdAt || '',
+                sold: Number(prod.sold || (prod.variants || []).reduce((sum, v) => sum + (v.sold || 0), 0)),
                 category: rawCategoryName || '', // Updated for flat populate + legacy string fallback
                 categoryId: rawCategoryId || '',
                 categorySlug: rawCategorySlug || '',

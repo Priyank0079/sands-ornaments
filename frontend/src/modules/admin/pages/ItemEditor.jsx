@@ -6,6 +6,7 @@ import { FormSection, Input, Select } from '../components/common/FormControls';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { adminService } from '../services/adminService';
+import api from '../../../services/api';
 import toast from 'react-hot-toast';
 import { downloadImage } from '../../../utils/downloadUtils';
 import Barcode from 'react-barcode';
@@ -45,8 +46,8 @@ const ItemEditor = () => {
     const isEditMode = Boolean(id) && !isViewMode;
 
     const [categories, setCategories] = useState([]);
-    const [fetchedGiftOptions, setFetchedGiftOptions] = useState([]);
-    const [fetchedOccasionOptions, setFetchedOccasionOptions] = useState([]);
+    const [navGiftOptions, setNavGiftOptions] = useState([]);
+    const [navOccasionOptions, setNavOccasionOptions] = useState([]);
     const [loading, setLoading] = useState(isEditMode || isViewMode);
     const [imageFiles, setImageFiles] = useState([]);
     const [previewImages, setPreviewImages] = useState([]);
@@ -104,6 +105,33 @@ const ItemEditor = () => {
             const exists = current.includes(value);
             return { ...prev, [field]: exists ? current.filter(v => v !== value) : [...current, value] };
         });
+    };
+
+    const toSlugValue = (label) => {
+        return String(label || '')
+            .trim()
+            .toLowerCase()
+            .replace(/['"]/g, '')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+    };
+
+    const getQueryParamValue = (path, key) => {
+        if (!path || !path.includes('?')) return '';
+        const query = path.split('?')[1] || '';
+        const params = new URLSearchParams(query);
+        return params.get(key) || '';
+    };
+
+    const buildNavOptions = (section, key, fallback) => {
+        if (section?.items?.length) {
+            return section.items.map(item => {
+                const label = item.name || item.label || '';
+                const value = getQueryParamValue(item.path, key) || toSlugValue(label);
+                return { label, value };
+            }).filter(opt => opt.value);
+        }
+        return fallback.map(label => ({ label, value: toSlugValue(label) }));
     };
 
     const addFaq = () => setFormData(prev => ({ ...prev, faqs: [...prev.faqs, { question: '', answer: '' }] }));
@@ -249,6 +277,9 @@ const ItemEditor = () => {
         try {
             const data = new FormData();
             
+            const normalizedGifts = (formData.navGiftsFor || []).map(toSlugValue);
+            const normalizedOccasions = (formData.navOccasions || []).map(toSlugValue);
+
             // Append basic fields
             Object.keys(formData).forEach(key => {
                 if (key === 'variants') {
@@ -262,7 +293,13 @@ const ItemEditor = () => {
                     }));
                     data.append(key, JSON.stringify(sanitizedVariants));
                 } else if (['images', 'faqs', 'navGiftsFor', 'navOccasions', 'tags', 'sizes', 'productCodes'].includes(key)) {
-                    data.append(key, JSON.stringify(formData[key]));
+                    if (key === 'navGiftsFor') {
+                        data.append(key, JSON.stringify(normalizedGifts));
+                    } else if (key === 'navOccasions') {
+                        data.append(key, JSON.stringify(normalizedOccasions));
+                    } else {
+                        data.append(key, JSON.stringify(formData[key]));
+                    }
                 } else if (key !== 'deletedImages') {
                     data.append(key, formData[key]);
                 }
@@ -292,8 +329,18 @@ const ItemEditor = () => {
     useEffect(() => {
         const load = async () => {
             try {
-                const cats = await adminService.getCategories();
+                const [cats, cmsRes] = await Promise.all([
+                    adminService.getCategories(),
+                    api.get('public/cms/homepage').catch(() => null)
+                ]);
                 setCategories(cats);
+
+                const sections = cmsRes?.data?.data?.sections || [];
+                const giftSection = sections.find(sec => sec.sectionId === 'nav-gifts-for');
+                const occasionSection = sections.find(sec => sec.sectionId === 'nav-occasions');
+                setNavGiftOptions(buildNavOptions(giftSection, 'filter', ['Womens', 'Girls', 'Mens', 'Couple', 'Kids']));
+                setNavOccasionOptions(buildNavOptions(occasionSection, 'occasion', ['Birthday', 'Anniversary', 'Wedding', "Mother's Day", 'Valentine Day']));
+
                 if (id) {
                     const data = isCategory ? await adminService.getCategoryById(id) : await adminService.getProductById(id);
                     if (data) {
@@ -323,20 +370,23 @@ const ItemEditor = () => {
     }, [id, isCategory]);
 
     const sizeOptions = ['5', '6', '7', '8', '9', '10', '2.2', '2.4', '2.6', 'Adjustable'];
-    const navGiftOptions = [
-        { label: 'Sophisticated Women', value: 'womens' },
-        { label: 'Modern Gentleman', value: 'mens' },
-        { label: 'Elegant Couples', value: 'couple' },
-        { label: 'Younger Generation', value: 'kids' },
-        { label: 'Gifts Under 500', value: 'under-500' }
+    const fallbackGiftOptions = [
+        { label: 'Womens', value: 'womens' },
+        { label: 'Girls', value: 'girls' },
+        { label: 'Mens', value: 'mens' },
+        { label: 'Couple', value: 'couple' },
+        { label: 'Kids', value: 'kids' }
     ];
-    const navOccasionOptions = [
-        { label: 'Milestone Birthday', value: 'birthday' },
-        { label: 'Grand Anniversary', value: 'anniversary' },
-        { label: 'Royal Wedding', value: 'wedding' },
-        { label: 'Maternal Tribute', value: 'mothers-day' },
-        { label: 'Romantic Occasion', value: 'valentine' }
+    const fallbackOccasionOptions = [
+        { label: 'Birthday', value: 'birthday' },
+        { label: 'Anniversary', value: 'anniversary' },
+        { label: 'Wedding', value: 'wedding' },
+        { label: "Mother's Day", value: 'mothers-day' },
+        { label: 'Valentine Day', value: 'valentine-day' }
     ];
+
+    const resolvedNavGiftOptions = navGiftOptions.length ? navGiftOptions : fallbackGiftOptions;
+    const resolvedNavOccasionOptions = navOccasionOptions.length ? navOccasionOptions : fallbackOccasionOptions;
 
     if (loading && !formData.name) return (
         <div className="flex flex-col h-screen items-center justify-center bg-white space-y-4">
@@ -633,7 +683,7 @@ const ItemEditor = () => {
                                         <span className="text-[9px] font-bold text-gray-300 uppercase italic">Optional</span>
                                     </div>
                                     <div className="flex flex-wrap gap-2">
-                                        {navGiftOptions.map(opt => (
+                                    {resolvedNavGiftOptions.map(opt => (
                                             <button
                                                 key={opt.value}
                                                 type="button"
@@ -662,7 +712,7 @@ const ItemEditor = () => {
                                         <span className="text-[9px] font-bold text-gray-300 uppercase italic">Optional</span>
                                     </div>
                                     <div className="flex flex-wrap gap-2">
-                                        {navOccasionOptions.map(opt => (
+                                    {resolvedNavOccasionOptions.map(opt => (
                                             <button
                                                 key={opt.value}
                                                 type="button"

@@ -5,14 +5,20 @@ import { useShop } from '../../../context/ShopContext';
 import bannerImgDefault from '../assets/proposal_banner.png';
 
 const ProposalBanner = () => {
-    const { homepageSections } = useShop();
+    const { homepageSections, categories } = useShop();
     const sectionData = homepageSections?.['proposal-rings'];
     const displayItems = sectionData?.items || [];
 
     // Use first item for banner if available
     const bannerItem = displayItems[0];
+    const bannerCategory = bannerItem?.categoryId
+        ? categories.find(c => String(c._id || c.id) === String(bannerItem.categoryId))
+        : null;
+    const bannerLimit = Number(bannerItem?.limit) || 12;
     const bannerImage = bannerItem?.image || bannerImgDefault;
-    const bannerLink = bannerItem?.path || "/category/rings";
+    const bannerLink = bannerCategory
+        ? `/shop?category=${bannerCategory._id || bannerCategory.id}&limit=${bannerLimit}&sort=latest`
+        : (bannerItem?.path || "/category/rings");
 
     return (
         <section className="w-full bg-[#1B0305] relative overflow-hidden">
@@ -67,24 +73,32 @@ const ProposalBanner = () => {
                 {/* Additional Items Grid (Satisfies "item add karne ka") */}
                 {displayItems.length > 1 && (
                     <div className="pb-16 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
-                        {displayItems.slice(1).map((item, index) => (
+                        {displayItems.slice(1).map((item, index) => {
+                            const category = item.categoryId
+                                ? categories.find(c => String(c._id || c.id) === String(item.categoryId))
+                                : null;
+                            const limit = Number(item.limit) || 12;
+                            const path = category
+                                ? `/shop?category=${category._id || category.id}&limit=${limit}&sort=latest`
+                                : (item.path || "/category/rings");
+                            return (
                             <Link
-                                key={item.id}
-                                to={item.path}
+                                key={item.itemId || item._id || item.id || index}
+                                to={path}
                                 className="group relative rounded-2xl overflow-hidden aspect-square bg-[#2A0505] border border-[#4A1015]/50 shadow-xl"
                             >
                                 <img
-                                    src={item.image}
-                                    alt={item.name}
+                                    src={item.image || bannerImgDefault}
+                                    alt={item.name || 'Proposal Ring'}
                                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-80 group-hover:opacity-100"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
                                 <div className="absolute bottom-4 left-0 right-0 text-center">
-                                    <h4 className="text-white font-display text-lg tracking-wide uppercase">{item.name}</h4>
+                                    <h4 className="text-white font-display text-lg tracking-wide uppercase">{item.name || 'Proposal Rings'}</h4>
                                     <div className="w-8 h-[1px] bg-[#D4AF37] mx-auto mt-1 group-hover:w-16 transition-all duration-500"></div>
                                 </div>
                             </Link>
-                        ))}
+                        )})}
                     </div>
                 )}
             </div>
