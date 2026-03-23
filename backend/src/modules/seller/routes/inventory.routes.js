@@ -9,5 +9,6 @@ router.get("/", inventoryController.getInventory);
 router.post("/adjust", inventoryController.adjustStock);
 router.get("/history", inventoryController.getStockHistory);
 router.get("/alerts", inventoryController.getLowStockAlerts);
+router.post("/serialize-stock", inventoryController.serializeStock);
 
 module.exports = router;

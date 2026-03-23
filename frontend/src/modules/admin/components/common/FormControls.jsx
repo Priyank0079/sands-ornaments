@@ -9,8 +9,9 @@ export const Input = memo(({ label, ...props }) => (
         )}
         <input
             {...props}
-            className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#3E2723] focus:ring-2 focus:ring-[#3E2723]/10 transition-all shadow-sm"
+            className={`w-full bg-white border rounded-lg py-2.5 px-3.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none transition-all shadow-sm ${props.error ? 'border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-200/40' : 'border-gray-300 focus:border-[#3E2723] focus:ring-2 focus:ring-[#3E2723]/10'}`}
         />
+        {props.error && <p className="text-[10px] text-red-500 font-bold ml-1">{props.error}</p>}
     </div>
 ));
 

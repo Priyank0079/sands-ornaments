@@ -90,7 +90,10 @@ const ProductListPage = () => {
                 category: p.categories?.[0]?.name || 'Uncategorized',
                 variants: p.variants || [],
                 active: p.active !== false,
-                isActive: p.active !== false
+                isActive: p.active !== false,
+                productCode: p.productCode || p.sku,
+                barcode: p.barcode,
+                qrCode: p.qrCode
             }));
             setProducts(normalized);
             setLoading(false);
@@ -175,6 +178,9 @@ const ProductListPage = () => {
                             <tr>
                                 <th className="px-6 py-4 text-[10px] md:text-xs font-bold text-gray-800 uppercase tracking-widest">Product Info</th>
                                 <th className="px-6 py-4 text-[10px] md:text-xs font-bold text-gray-800 uppercase tracking-widest">Category</th>
+                                <th className="px-6 py-4 text-[10px] md:text-xs font-bold text-gray-800 uppercase tracking-widest text-center">Code</th>
+                                <th className="px-6 py-4 text-[10px] md:text-xs font-bold text-gray-800 uppercase tracking-widest text-center">Barcode</th>
+                                <th className="px-6 py-4 text-[10px] md:text-xs font-bold text-gray-800 uppercase tracking-widest text-center">QR</th>
                                 <th className="px-6 py-4 text-[10px] md:text-xs font-bold text-gray-800 uppercase tracking-widest text-left">Pricing</th>
                                 <th className="px-6 py-4 text-[10px] md:text-xs font-bold text-gray-800 uppercase tracking-widest text-center">Variants</th>
                                 <th className="px-6 py-4 text-[10px] md:text-xs font-bold text-gray-800 uppercase tracking-widest text-center">Status</th>
@@ -205,6 +211,37 @@ const ProductListPage = () => {
                                         <td className="px-6 py-5">
                                             <div className="space-y-1 text-left">
                                                 <p className="text-[10px] font-black text-footerBg uppercase tracking-tight">{product.category}</p>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-5 text-center">
+                                            <span className="font-mono font-bold text-[#8D6E63] text-[9px] bg-amber-50 px-2 py-0.5 rounded border border-amber-100 uppercase tracking-widest whitespace-nowrap">
+                                                {product.productCode || 'N/A'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-5">
+                                            <div className="relative group/barcode cursor-pointer flex justify-center">
+                                                <div className="w-10 h-10 bg-white border border-gray-100 rounded flex items-center justify-center p-1 overflow-hidden shadow-inner">
+                                                    {product.barcode ? <img src={product.barcode} alt="barcode" className="w-full h-full object-contain" /> : <div className="text-[8px] text-gray-300">N/A</div>}
+                                                </div>
+                                                {product.barcode && (
+                                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white p-3 rounded-xl shadow-2xl border border-gray-100 z-50 opacity-0 group-hover/barcode:opacity-100 pointer-events-none transition-all duration-300 translate-y-2 group-hover/barcode:translate-y-0 scale-95 group-hover/barcode:scale-100">
+                                                        <img src={product.barcode} alt="barcode" className="w-full h-auto" />
+                                                        <p className="text-[8px] font-black text-center mt-2 text-gray-400 uppercase tracking-[0.2em]">{product.productCode}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-5">
+                                            <div className="relative group/qr cursor-pointer flex justify-center">
+                                                <div className="w-10 h-10 bg-white border border-gray-100 rounded flex items-center justify-center p-1.5 overflow-hidden shadow-inner">
+                                                     {product.qrCode ? <img src={product.qrCode} alt="qr" className="w-full h-full object-contain" /> : <div className="text-[8px] text-gray-300">N/A</div>}
+                                                </div>
+                                                {product.qrCode && (
+                                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-40 bg-white p-3 rounded-xl shadow-2xl border border-gray-100 z-50 opacity-0 group-hover/qr:opacity-100 pointer-events-none transition-all duration-300 translate-y-2 group-hover/qr:translate-y-0 scale-95 group-hover/qr:scale-100">
+                                                        <img src={product.qrCode} alt="qr" className="w-full h-auto" />
+                                                        <p className="text-[8px] font-black text-center mt-2 text-gray-400 uppercase tracking-[0.2em]">Scan to Sell</p>
+                                                    </div>
+                                                )}
                                             </div>
                                         </td>
                                         <td className="px-6 py-5 text-left">

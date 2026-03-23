@@ -109,3 +109,96 @@ exports.getLowStockAlerts = async (req, res) => {
     return success(res, { alerts }, "Low stock alerts retrieved");
   } catch (err) { return error(res, err.message); }
 };
+
+exports.serializeStock = async (req, res) => {
+  try {
+    const { productId, variantId, productCodes } = req.body;
+    const sellerId = req.user.userId;
+
+    if (!Array.isArray(productCodes) || productCodes.length === 0) {
+      return error(res, "Missing serial codes", 400);
+    }
+
+    const product = await Product.findOne({ _id: productId, sellerId });
+    if (!product) return error(res, "Product not found", 404);
+
+    const variant = product.variants.id(variantId);
+    if (!variant) return error(res, "Variant not found", 404);
+
+    if (variant.stock < productCodes.length) {
+      return error(res, "Insufficient stock to serialize", 400);
+    }
+
+    // Capture original properties
+    const originalStock = variant.stock;
+    
+    // Create new products based on the original template
+    const productsToCreate = [];
+    for (const code of productCodes) {
+      const pData = product.toObject();
+      delete pData._id;
+      delete pData.__v;
+      delete pData.createdAt;
+      delete pData.updatedAt;
+      
+      const newProduct = {
+        ...pData,
+        name: `${product.name} - ${code}`,
+        slug: `${product.slug}-${code}-${Math.floor(1000 + Math.random() * 9000)}`,
+        productCode: code,
+        sku: code,
+        status: "Active",
+        active: true,
+        variants: pData.variants.map(v => ({
+           ...v,
+           _id: undefined, 
+           stock: v._id.toString() === variantId.toString() ? 1 : 0
+        }))
+      };
+      productsToCreate.push(newProduct);
+    }
+
+    const createResult = await Product.insertMany(productsToCreate);
+
+    // Update original product stock
+    variant.stock -= productCodes.length;
+    await product.save();
+
+    // Log the reduction on original
+    await StockLog.create({
+      productId,
+      variantId,
+      changeType: "adjustment",
+      previousStock: originalStock,
+      newStock: variant.stock,
+      change: -productCodes.length,
+      reason: "Converted items to individual serialized listings",
+      sellerId
+    });
+
+    // Logs for new products
+    const newStockLogs = [];
+    createResult.forEach(p => {
+       const v = p.variants.find(nv => nv.stock === 1);
+       if(v) {
+         newStockLogs.push({
+           productId: p._id,
+           variantId: v._id,
+           changeType: "purchase",
+           previousStock: 0,
+           newStock: 1,
+           change: 1,
+           reason: "Individual item created from stock serialization",
+           sellerId
+         });
+       }
+    });
+    if (newStockLogs.length > 0) {
+      await StockLog.insertMany(newStockLogs);
+    }
+
+    return success(res, { newProducts: createResult }, `Successfully converted ${productCodes.length} items to serialized listings.`, 201);
+  } catch (err) {
+    return error(res, err.message);
+  }
+};

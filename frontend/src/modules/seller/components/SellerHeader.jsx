@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, User, LogOut, ShoppingBag, XCircle, RotateCcw, AlertTriangle, CheckCircle2, Menu, ArrowLeft } from 'lucide-react';
+import { Bell, User, LogOut, ShoppingBag, XCircle, RotateCcw, AlertTriangle, CheckCircle2, Menu, ArrowLeft, QrCode } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { sellerService } from '../services/sellerService';
 import { sellerOrderService } from '../services/sellerOrderService';
@@ -83,6 +83,18 @@ const SellerHeader = ({ isSidebarOpen, setIsSidebarOpen }) => {
             </div>
 
             <div className="flex items-center gap-4 lg:gap-6">
+                {/* Terminal Scanner */}
+                <div className="relative">
+                    <button 
+                        onClick={() => navigate('/scanner')}
+                        className="relative p-2.5 hover:bg-gray-50 rounded-xl transition-all border border-gray-100 shadow-sm group bg-amber-50/30 border-amber-100/50"
+                        title="Terminal Scanner"
+                    >
+                        <QrCode className="w-5 h-5 text-amber-700 group-hover:scale-110 transition-transform" />
+                        <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-500 rounded-full border-2 border-white shadow-sm animate-pulse"></span>
+                    </button>
+                </div>
+
                 {/* Notification Bell */}
                 <div className="relative">
                     <button 

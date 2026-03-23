@@ -11,7 +11,8 @@ const SELLER_COMPLEX_FIELDS = [
   "variants",
   "sizes",
   "navGiftsFor",
-  "navOccasions"
+  "navOccasions",
+  "faqs"
 ];
 
 router.use(authenticate, requireRole("seller"));
