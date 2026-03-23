@@ -35,10 +35,18 @@ export const ShopProvider = ({ children }) => {
         isLoading: isCatalogueLoading 
     } = useCatalogue();
 
-    const [coupons, setCoupons] = useState([]);
     const [defaultAddressId, setDefaultAddressId] = useState(() => {
         return localStorage.getItem('defaultAddressId') || null;
     });
+    const [coupons, setCoupons] = useState([]);
+    const [globalGst, _setGlobalGst] = useState(() => {
+        return localStorage.getItem('admin_global_gst') || '0';
+    });
+
+    const setGlobalGst = (val) => {
+        _setGlobalGst(val);
+        localStorage.setItem('admin_global_gst', val);
+    };
     
     useEffect(() => {
         if (apiCoupons.length > 0) setCoupons(apiCoupons);
@@ -730,7 +738,10 @@ export const ShopProvider = ({ children }) => {
             categories, banners, isLoading: isCatalogueLoading,
 
             // Homepage Sections Management
-            homepageSections
+            homepageSections,
+
+            // Global Config
+            globalGst, setGlobalGst
         }}>
             {children}
             {/* Custom Toast Notification */}

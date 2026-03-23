@@ -10,7 +10,7 @@ import { sellerProductService } from '../services/sellerProductService';
 import api from '../../../services/api';
 import toast from 'react-hot-toast';
 import { downloadImage } from '../../../utils/downloadUtils';
-
+import { useShop } from '../../../context/ShopContext';
 
 const quillModules = {
     toolbar: [
@@ -82,6 +82,8 @@ const SellerProductEditor = () => {
         return fallback.map(label => ({ label, value: toSlugValue(label) }));
     };
 
+    const { globalGst } = useShop();
+
     const [formData, setFormData] = useState({
         name: '',
         productCode: '',
@@ -104,10 +106,13 @@ const SellerProductEditor = () => {
         navGiftsFor: [],
         navOccasions: [],
         variants: [
-            { id: Date.now(), name: 'Standard', mrp: '', price: '', stock: '' }
+            { id: Date.now(), name: 'Standard', makingCharge: '0', diamondPrice: '0', mrp: globalGst || '0', price: '', stock: '' }
         ],
         faqs: [],
         deletedImages: [],
+        silverCategory: '', // New Field for silver purity
+        goldCategory: '', // New Field for gold purity
+        careTips: '', // New Field for caring tips
         isSerialized: false,
         productCodes: []
     });
@@ -164,9 +169,19 @@ const SellerProductEditor = () => {
                         categories: normalizedCategories.slice(0, 1),
                         navGiftsFor: Array.isArray(data.navGiftsFor) ? data.navGiftsFor : [],
                         navOccasions: Array.isArray(data.navOccasions) ? data.navOccasions : [],
-                        variants: data.variants?.map(v => ({ ...v, id: v._id || Math.random() })) || prev.variants,
+                        variants: data.variants?.map(v => ({ 
+                            ...v, 
+                            id: v._id || Math.random(),
+                            makingCharge: (v.makingCharge || 0).toString(),
+                            diamondPrice: (v.diamondPrice || 0).toString()
+                        })) || prev.variants,
                         faqs: data.faqs || [],
-                        deletedImages: []
+                        deletedImages: [],
+                        silverCategory: data.silverCategory || '',
+                        goldCategory: data.goldCategory || '',
+                        careTips: data.careTips || '',
+                        isSerialized: data.isSerialized || false,
+                        productCodes: data.productCodes || []
                     }));
                     if (data.images) {
                         setPreviewImages(data.images);
@@ -238,12 +253,22 @@ const SellerProductEditor = () => {
         toast.success("✅ Image enhanced successfully");
     };
 
-    const handleVariantChange = (id, field, value) => {
+    const handleVariantChange = (vid, field, value) => {
         setFormData(prev => ({
             ...prev,
             variants: prev.variants.map(v => {
-                if (v.id === id) {
+                if (v.id === vid) {
                     const updated = { ...v, [field]: value };
+                    
+                    // Recalculate MRP if charges change
+                    if (['makingCharge', 'diamondPrice'].includes(field)) {
+                        updated.mrp = (
+                            (parseFloat(updated.makingCharge) || 0) + 
+                            (parseFloat(updated.diamondPrice) || 0) + 
+                            (parseFloat(globalGst) || 0)
+                        ).toString();
+                    }
+
                     if ((field === 'mrp' || field === 'price') && updated.mrp && updated.price) {
                         const m = parseFloat(updated.mrp);
                         const p = parseFloat(updated.price);
@@ -259,7 +284,15 @@ const SellerProductEditor = () => {
     const addVariant = () => {
         setFormData(prev => ({
             ...prev,
-            variants: [...prev.variants, { id: Date.now(), name: '', mrp: '', price: '', stock: '' }]
+            variants: [...prev.variants, { 
+                id: Date.now(), 
+                name: '', 
+                makingCharge: '0', 
+                diamondPrice: '0', 
+                mrp: (parseFloat(globalGst) || 0).toString(), 
+                price: '', 
+                stock: '' 
+            }]
         }));
     };
 
@@ -358,6 +391,8 @@ const SellerProductEditor = () => {
             productForm.append('categories', JSON.stringify([formData.categories[0].category]));
             productForm.append('variants', JSON.stringify(formData.variants.map(({ id, _id, sold, ...rest }) => ({
                 ...rest,
+                makingCharge: parseFloat(rest.makingCharge) || 0,
+                diamondPrice: parseFloat(rest.diamondPrice) || 0,
                 mrp: parseFloat(rest.mrp) || 0,
                 price: parseFloat(rest.price) || 0,
                 stock: parseInt(rest.stock) || 0,
@@ -512,6 +547,40 @@ const SellerProductEditor = () => {
                                 ]}
                                 disabled={isViewMode}
                             />
+                            {formData.material === 'Silver' && (
+                                <Select
+                                    label="Silver Purity Categorization"
+                                    value={formData.silverCategory}
+                                    onChange={(e) => setFormData({ ...formData, silverCategory: e.target.value })}
+                                    options={[
+                                        { label: 'Select Purity', value: '' },
+                                        { label: '800', value: '800' },
+                                        { label: '835', value: '835' },
+                                        { label: '925', value: '925' },
+                                        { label: '925 Sterling Silver', value: '925 sterling silver' },
+                                        { label: '958', value: '958' },
+                                        { label: '970', value: '970' },
+                                        { label: '990', value: '990' },
+                                        { label: '999', value: '999' }
+                                    ]}
+                                    disabled={isViewMode}
+                                />
+                            )}
+                            {formData.material === 'Gold' && (
+                                <Select
+                                    label="Gold Karat Categorization"
+                                    value={formData.goldCategory}
+                                    onChange={(e) => setFormData({ ...formData, goldCategory: e.target.value })}
+                                    options={[
+                                        { label: 'Select Karat', value: '' },
+                                        { label: '14 Karat', value: '14' },
+                                        { label: '18 Karat', value: '18' },
+                                        { label: '22 Karat', value: '22' },
+                                        { label: '24 Karat', value: '24' }
+                                    ]}
+                                    disabled={isViewMode}
+                                />
+                            )}
                             <Input
                                 label="Weight"
                                 type="number"
@@ -663,10 +732,10 @@ const SellerProductEditor = () => {
                                         <BarcodeIcon size={14} className="text-[#3E2723]" />
                                     </div>
                                 </div>
-                                <p className="text-[8px] font-bold text-gray-400 mt-2 ml-1 uppercase tracking-widest italic flex items-center gap-1">
+                                <div className="text-[8px] font-bold text-gray-400 mt-2 ml-1 uppercase tracking-widest italic flex items-center gap-1">
                                     <div className="w-0.5 h-3 bg-gray-200" />
                                     This signature is mathematically locked to the product registry.
-                                </p>
+                                </div>
                             </div>
 
                             <div className="space-y-2 mt-6">
@@ -870,90 +939,151 @@ const SellerProductEditor = () => {
                                         />
                                     </div>
                                 </div>
+
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <label className="block text-xs font-semibold text-gray-700 tracking-wide">Caring Tips</label>
+                                        {!isViewMode && (
+                                            <button 
+                                                type="button"
+                                                onClick={() => setFormData(prev => ({ ...prev, careTips: "<p><strong>Jewelry Care Guide:</strong></p><ul><li>Avoid direct contact with perfumes, lotions, and hairsprays.</li><li>Remove jewelry before swimming, bathing, or exercising.</li><li>Store in a cool, dry place, ideally in an airtight bag or box.</li><li>Clean occasionally with a soft, lint-free cloth to restore shine.</li></ul>" }))}
+                                                className="text-[10px] font-bold text-[#3E2723] uppercase hover:underline"
+                                            >
+                                                Load Template
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div className="bg-white rounded-lg overflow-hidden border border-gray-200">
+                                        <ReactQuill
+                                            theme="snow"
+                                            value={formData.careTips}
+                                            onChange={(value) => setFormData({ ...formData, careTips: value })}
+                                            readOnly={isViewMode}
+                                            modules={quillModules}
+                                            formats={quillFormats}
+                                            style={{ height: '150px', marginBottom: '50px' }}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </FormSection>
+                        <FormSection title="Inventory Details">
+                            <div className="flex items-center justify-between mb-8">
+                                <h3 className="text-xl font-bold text-gray-900 uppercase tracking-tight">Product Variants</h3>
+                                {!isViewMode && (
+                                    <button 
+                                        type="button" 
+                                        onClick={addVariant}
+                                        className="flex items-center gap-2 text-[10px] font-black text-[#3E2723] uppercase tracking-widest hover:underline"
+                                    >
+                                        <Plus size={14} /> Add Variant
+                                    </button>
+                                )}
+                            </div>
+                            <div className="space-y-6">
+                                {formData.variants.map((v, idx) => (
+                                    <div key={v.id} className="flex flex-col gap-6 bg-[#FDFBF7] p-8 rounded-[2rem] border border-gray-100 group relative shadow-sm hover:shadow-md transition-all">
+                                        {!isViewMode && formData.variants.length > 1 && (
+                                            <button 
+                                                type="button"
+                                                onClick={() => removeVariant(v.id)} 
+                                                className="absolute top-6 right-6 p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all opacity-0 group-hover:opacity-100"
+                                            >
+                                                <Trash2 size={16}/>
+                                            </button>
+                                        )}
+                                        
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Variant Name</label>
+                                                <input 
+                                                    value={v.name} 
+                                                    onChange={(e) => handleVariantChange(v.id, 'name', e.target.value)} 
+                                                    disabled={isViewMode} 
+                                                    className="w-full bg-white border border-gray-100 rounded-2xl py-4 px-6 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723]/30 transition-all shadow-sm" 
+                                                    placeholder="Standard" 
+                                                />
+                                                {errors[`variant_${idx}_name`] && <div className="text-[10px] text-red-500 mt-1 ml-1">{errors[`variant_${idx}_name`]}</div>}
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Making Charge</label>
+                                                <div className="relative group/field">
+                                                    <input 
+                                                        type="number" 
+                                                        value={v.makingCharge} 
+                                                        onChange={(e) => handleVariantChange(v.id, 'makingCharge', e.target.value)} 
+                                                        disabled={isViewMode} 
+                                                        className="w-full bg-white border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723]/30 transition-all shadow-sm" 
+                                                        placeholder="0" 
+                                                    />
+                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 font-bold group-focus-within/field:text-[#3E2723]">₹</span>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Diamond Price</label>
+                                                <div className="relative group/field">
+                                                    <input 
+                                                        type="number" 
+                                                        value={v.diamondPrice} 
+                                                        onChange={(e) => handleVariantChange(v.id, 'diamondPrice', e.target.value)} 
+                                                        disabled={isViewMode} 
+                                                        className="w-full bg-white border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723]/30 transition-all shadow-sm" 
+                                                        placeholder="0" 
+                                                    />
+                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 font-bold group-focus-within/field:text-[#3E2723]">₹</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 border-t border-gray-100/50 pt-8">
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest ml-1">Retail MRP (Calculated)</label>
+                                                <div className="relative group/field">
+                                                    <input 
+                                                        type="number" 
+                                                        value={v.mrp} 
+                                                        readOnly
+                                                        disabled={isViewMode} 
+                                                        className="w-full bg-amber-50/20 border border-amber-100/30 rounded-2xl py-4 pl-12 pr-6 text-sm font-black text-[#3E2723] outline-none shadow-sm" 
+                                                        placeholder="Calculated MRP" 
+                                                    />
+                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-amber-600 font-bold">₹</span>
+                                                </div>
+                                                {errors[`variant_${idx}_mrp`] && <div className="text-[10px] text-red-500 mt-1 ml-1">{errors[`variant_${idx}_mrp`]}</div>}
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Selling Price</label>
+                                                <div className="relative group/field">
+                                                    <input 
+                                                        type="number" 
+                                                        value={v.price} 
+                                                        onChange={(e) => handleVariantChange(v.id, 'price', e.target.value)} 
+                                                        disabled={isViewMode} 
+                                                        className="w-full bg-white border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723]/30 transition-all shadow-sm" 
+                                                        placeholder="Final Price" 
+                                                    />
+                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 font-bold group-focus-within/field:text-[#3E2723]">₹</span>
+                                                </div>
+                                                {errors[`variant_${idx}_price`] && <div className="text-[10px] text-red-500 mt-1 ml-1">{errors[`variant_${idx}_price`]}</div>}
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Stock Units</label>
+                                                <input 
+                                                    type="number" 
+                                                    value={v.stock} 
+                                                    onChange={(e) => handleVariantChange(v.id, 'stock', e.target.value)} 
+                                                    disabled={isViewMode} 
+                                                    className="w-full bg-white border border-gray-100 rounded-2xl py-4 px-6 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723]/30 transition-all shadow-sm" 
+                                                    placeholder="In Stock" 
+                                                />
+                                                {errors[`variant_${idx}_stock`] && <div className="text-[10px] text-red-500 mt-1 ml-1">{errors[`variant_${idx}_stock`]}</div>}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </FormSection>
 
-                        <FormSection title="Variants & Pricing">
-                            {errors.variants && <span className="text-[10px] text-red-500 font-bold">{errors.variants}</span>}
-                            <div className="overflow-x-auto">
-                                <table className="w-full min-w-[520px] text-left border-collapse">
-                                    <thead className="bg-gray-50 border-b border-gray-200">
-                                        <tr>
-                                            <th className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-500">Variant</th>
-                                            <th className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-500">MRP</th>
-                                            <th className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-500">Price</th>
-                                            <th className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-500">Stock</th>
-                                            {!isViewMode && <th className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-500 text-right">Action</th>}
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-100">
-                                        {formData.variants.map((variant, index) => (
-                                            <tr key={variant.id}>
-                                                <td className="px-4 py-2">
-                                                    <input
-                                                        value={variant.name}
-                                                        onChange={(e) => handleVariantChange(variant.id, 'name', e.target.value)}
-                                                        className="w-full bg-white border border-gray-200 rounded-lg py-2 px-2 text-xs"
-                                                        disabled={isViewMode}
-                                                    />
-                                                    {errors[`variant_${index}_name`] && <div className="text-[10px] text-red-500 mt-1">{errors[`variant_${index}_name`]}</div>}
-                                                </td>
-                                                <td className="px-4 py-2">
-                                                    <input
-                                                        type="number"
-                                                        value={variant.mrp}
-                                                        onChange={(e) => handleVariantChange(variant.id, 'mrp', e.target.value)}
-                                                        className="w-full bg-white border border-gray-200 rounded-lg py-2 px-2 text-xs"
-                                                        disabled={isViewMode}
-                                                    />
-                                                    {errors[`variant_${index}_mrp`] && <div className="text-[10px] text-red-500 mt-1">{errors[`variant_${index}_mrp`]}</div>}
-                                                </td>
-                                                <td className="px-4 py-2">
-                                                    <input
-                                                        type="number"
-                                                        value={variant.price}
-                                                        onChange={(e) => handleVariantChange(variant.id, 'price', e.target.value)}
-                                                        className="w-full bg-white border border-gray-200 rounded-lg py-2 px-2 text-xs"
-                                                        disabled={isViewMode}
-                                                    />
-                                                    {errors[`variant_${index}_price`] && <div className="text-[10px] text-red-500 mt-1">{errors[`variant_${index}_price`]}</div>}
-                                                </td>
-                                                <td className="px-4 py-2">
-                                                    <input
-                                                        type="number"
-                                                        value={variant.stock}
-                                                        onChange={(e) => handleVariantChange(variant.id, 'stock', e.target.value)}
-                                                        className="w-full bg-white border border-gray-200 rounded-lg py-2 px-2 text-xs"
-                                                        disabled={isViewMode}
-                                                    />
-                                                    {errors[`variant_${index}_stock`] && <div className="text-[10px] text-red-500 mt-1">{errors[`variant_${index}_stock`]}</div>}
-                                                </td>
-                                                {!isViewMode && (
-                                                    <td className="px-4 py-2 text-right">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => removeVariant(variant.id)}
-                                                            className="p-1 text-gray-400 hover:text-red-500"
-                                                        >
-                                                            <Trash2 size={14} />
-                                                        </button>
-                                                    </td>
-                                                )}
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                            {!isViewMode && (
-                                <button
-                                    type="button"
-                                    onClick={addVariant}
-                                    className="mt-4 text-[10px] font-bold text-[#3E2723] uppercase tracking-wider flex items-center gap-1 hover:underline"
-                                >
-                                    <Plus size={14} /> Add Variant
-                                </button>
-                            )}
-                        </FormSection>
 
                         <FormSection title="Product Questions (FAQ)">
                             <div className="space-y-4">

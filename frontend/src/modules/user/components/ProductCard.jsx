@@ -140,9 +140,19 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
                     )}
 
                     {/* Title */}
-                    <h3 className={`text-black font-serif ${isWishlistPage ? 'text-sm' : 'text-base md:text-lg'} font-medium leading-tight mb-1 line-clamp-2`}>
+                    <h3 className={`text-black font-serif ${isWishlistPage ? 'text-sm' : 'text-base md:text-lg'} font-medium leading-tight mb-2 line-clamp-2`}>
                         {product.name}
                     </h3>
+
+                    {/* Caring Tips Short Link */}
+                    <Link 
+                        to={`/product/${product.id}#care`}
+                        className="text-[10px] font-bold text-[#D39A9F] uppercase tracking-widest hover:text-[#4A1015] transition-colors flex items-center gap-1 mt-auto pb-2"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <span>Caring Tips</span>
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#D39A9F]" />
+                    </Link>
                 </div>
 
                 {/* Add to Cart Button - Full Width Flush Bottom with Premium Gradient */}

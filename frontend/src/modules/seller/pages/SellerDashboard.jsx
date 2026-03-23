@@ -27,7 +27,7 @@ const SellerDashboard = () => {
     useEffect(() => {
         const fetchSellerStats = async () => {
             try {
-                const res = await api.get('seller/stats');
+                const res = await api.get('seller/dashboard/stats');
                 if (res.data.success) {
                     const payload = res.data.data || res.data;
                     const { stats: s, recentOrders: o, analytics: a } = payload;
