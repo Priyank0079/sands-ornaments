@@ -5,7 +5,7 @@ import { useAuth } from '../../../context/AuthContext';
 import api from '../../../services/api';
 import toast from 'react-hot-toast';
 import ProductCard from '../components/ProductCard';
-import { Heart, ShoppingBag, Star, Share2, Plus, Minus, Truck, ShieldCheck, Smile, Gift, ChevronDown, SlidersHorizontal, X, Camera, Check, ArrowLeft } from 'lucide-react';
+import { Heart, ShoppingBag, Star, Share2, Plus, Minus, Truck, ShieldCheck, Smile, Gift, ChevronDown, SlidersHorizontal, X, Camera, Check, ArrowLeft, Droplets, Sparkles } from 'lucide-react';
 
 const AccordionItem = ({ title, children, isOpen, onClick }) => (
     <div className="border-b border-[#EBCDD0]/50">
@@ -138,8 +138,16 @@ const ProductDetails = () => {
             const firstVariant = product.variants?.[0];
             setSelectedVariantId(firstVariant?.id || firstVariant?._id || null);
         }
-        setOpenSection('description'); // Reset to open description whenever ID changes
+        setOpenSection(window.location.hash === '#care' ? 'care' : 'description'); // Reset sections
     }, [product, id]);
+
+    useEffect(() => {
+        if (window.location.hash === '#care' && product) {
+            setOpenSection('care');
+            const el = document.getElementById('care-guide-section');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [product]);
 
     // Derived State
     const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
@@ -393,6 +401,15 @@ const ProductDetails = () => {
                                 >
                                     Buy It Now
                                 </button>
+                                <button
+                                    onClick={() => {
+                                        setOpenSection('care');
+                                        document.getElementById('care-guide-section')?.scrollIntoView({ behavior: 'smooth' });
+                                    }}
+                                    className="w-full h-10 border border-[#D39A9F] text-[#4A1015] font-bold text-xs tracking-widest hover:bg-[#FDF5F6] transition-colors uppercase flex items-center justify-center gap-2"
+                                >
+                                    <Sparkles className="w-4 h-4" /> View Caring Guide
+                                </button>
                             </div>
 
                             {/* Mobile Sticky Action Bar (Fixed Overlay) */}
@@ -402,6 +419,15 @@ const ProductDetails = () => {
                                     className="flex-1 bg-black text-white rounded-xl h-12 font-bold uppercase tracking-wide text-[10px] flex items-center justify-center gap-2 active:scale-95 transition-transform hover:bg-[#D39A9F]"
                                 >
                                     <ShoppingBag className="w-4 h-4" /> Add to Bag
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setOpenSection('care');
+                                        document.getElementById('care-guide-section')?.scrollIntoView({ behavior: 'smooth' });
+                                    }}
+                                    className="flex-1 bg-white border border-[#D39A9F] text-[#4A1015] rounded-xl h-12 font-bold uppercase tracking-wide text-[10px] flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                                >
+                                    Caring Tips
                                 </button>
                                 <button
                                     onClick={() => {
@@ -437,11 +463,13 @@ const ProductDetails = () => {
             >
                 <div className="space-y-2 text-gray-700">
                     {product.material && <p><span className="font-semibold">Material:</span> {product.material}</p>}
+                    {product.silverCategory && <p><span className="font-semibold">Silver Purity:</span> {product.silverCategory}</p>}
+                    {product.goldCategory && <p><span className="font-semibold">Gold Karat:</span> {product.goldCategory}K</p>}
                     {product.weight && <p><span className="font-semibold">Weight:</span> {product.weight} {product.weightUnit || ''}</p>}
                     {product.specifications && (
-                        <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: product.specifications }} />
+                        <div className="prose prose-sm max-w-none text-gray-700" dangerouslySetInnerHTML={{ __html: product.specifications }} />
                     )}
-                    {!product.material && !product.weight && !product.specifications && (
+                    {!product.material && !product.weight && !product.specifications && !product.silverCategory && (
                         <p className="text-gray-500">No specifications provided.</p>
                     )}
                 </div>
@@ -476,13 +504,41 @@ const ProductDetails = () => {
                                 onClick={() => toggleSection('styling')}
                             >
                                 {product.stylingTips ? (
-                                    <div className="prose prose-sm max-w-none text-gray-600" dangerouslySetInnerHTML={{ __html: product.stylingTips }} />
+                                    <div className="prose prose-sm max-w-none text-gray-600 font-sans" dangerouslySetInnerHTML={{ __html: product.stylingTips }} />
                                 ) : (
                                     <p>Pair this versatile piece with both western and ethnic wear to elevate your look.</p>
                                 )}
                             </AccordionItem>
 
-
+                            <AccordionItem
+                                title="Jewelry Care Guide"
+                                isOpen={openSection === 'care'}
+                                onClick={() => toggleSection('care')}
+                            >
+                                {product.careTips ? (
+                                    <div className="prose prose-sm max-w-none text-gray-700 font-sans" dangerouslySetInnerHTML={{ __html: product.careTips }} />
+                                ) : (
+                                    <div className="space-y-4">
+                                        <p className="text-gray-600 italic">Follow these tips to keep your {product.name} shining forever:</p>
+                                        <div className="grid grid-cols-2 gap-3 pb-2">
+                                            {[
+                                                { icon: <Droplets className="w-4 h-4" />, title: "Keep Dry", desc: "Remove before swimming or bathing" },
+                                                { icon: <Sparkles className="w-4 h-4" />, title: "Apply First", desc: "Put on jewelry after makeup/perfume" },
+                                                { icon: <ShieldCheck className="w-4 h-4" />, title: "Safe Storage", desc: "Store in a cool, dry airtight box" },
+                                                { icon: <Smile className="w-4 h-4" />, title: "Clean Softly", desc: "Wipe with a soft polishing cloth" }
+                                            ].map((item, idx) => (
+                                                <div key={idx} className="bg-[#FDFBF7] p-3 rounded-xl border border-[#EFEBE9] flex flex-col items-center text-center gap-1.5 transition-transform hover:scale-105">
+                                                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[#D39A9F] shadow-sm border border-[#EBCDD0]/30">
+                                                        {item.icon}
+                                                    </div>
+                                                    <h5 className="text-[10px] font-bold text-black uppercase tracking-wider">{item.title}</h5>
+                                                    <p className="text-[9px] text-gray-500 font-medium leading-tight">{item.desc}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </AccordionItem>
                         </div>
 
                         <div className="grid grid-cols-3 gap-2 md:gap-4 bg-[#FDF5F6] p-4 md:p-6 rounded-2xl mt-2 border border-[#EBCDD0]/50">
@@ -552,6 +608,60 @@ const ProductDetails = () => {
                 {/* ================= REORDERED SECTIONS ================= */}
 
                 <div className="mt-4 md:mt-8">
+                    {/* Exclusive Care Guide Section */}
+                    <div className="mt-8 mb-12 animate-in fade-in slide-in-from-bottom-10 duration-1000">
+                        <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#FDF5F6] to-white border border-[#EBCDD0]/30 shadow-sm p-8 md:p-12">
+                             {/* Design Elements */}
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-[#EBCDD0]/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl opacity-50" />
+                            <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#D39A9F]/5 rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl opacity-50" />
+
+                            <div className="relative z-10 flex flex-col items-center text-center max-w-2xl mx-auto space-y-6">
+                                <div className="bg-[#D39A9F] text-white px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] shadow-sm">
+                                    Care Guide
+                                </div>
+                                <h2 className="text-2xl md:text-3xl font-display font-bold text-black tracking-tight leading-tight">
+                                    Preserve the radiance of your <span className="text-[#D39A9F]">{product.name}</span>
+                                </h2>
+                                <p className="text-gray-600 text-sm md:text-base leading-relaxed font-sans">
+                                    Our jewelry is crafted with pure 925 sterling silver and premium plating. Follow these simple steps to ensure your pieces remain as stunning as the day you first wore them.
+                                </p>
+                            </div>
+
+                             <div className="mt-12 grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 relative z-10">
+                                {[
+                                    { 
+                                        icon: <Droplets className="w-5 h-5 md:w-6 h-6" />, 
+                                        title: "Stay Dry", 
+                                        desc: "Remove before bathing or swimming to prevent tarnishing." 
+                                    },
+                                    { 
+                                        icon: <Sparkles className="w-5 h-5 md:w-6 h-6" />, 
+                                        title: "Last Step", 
+                                        desc: "Avoid contact with perfumes, makeup, and hairsprays." 
+                                    },
+                                    { 
+                                        icon: <ShieldCheck className="w-5 h-5 md:w-6 h-6" />, 
+                                        title: "Safe Haven", 
+                                        desc: "Store in individual airtight bags to minimize oxidation." 
+                                    },
+                                    { 
+                                        icon: <Smile className="w-5 h-5 md:w-6 h-6" />, 
+                                        title: "Gentle Clean", 
+                                        desc: "Regularly wipe with a soft cloth to restore its natural glow." 
+                                    }
+                                ].map((card, i) => (
+                                    <div key={i} className="group bg-white/80 backdrop-blur-sm p-6 rounded-[1.5rem] border border-white shadow hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                                        <div className="w-12 h-12 rounded-2xl bg-[#FDF5F6] flex items-center justify-center text-[#D39A9F] mb-4 group-hover:bg-[#D39A9F] group-hover:text-white transition-colors">
+                                            {card.icon}
+                                        </div>
+                                        <h4 className="text-xs font-bold text-black uppercase tracking-wider mb-2 font-display">{card.title}</h4>
+                                        <p className="text-[10px] md:text-xs text-gray-500 font-medium leading-relaxed font-sans">{card.desc}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="flex gap-10 border-b border-gray-100 mb-6">
                         <button
                             className={`pb-4 text-sm md:text-base font-bold uppercase tracking-[0.15em] transition-all relative ${activeTab === 'related' ? 'text-black' : 'text-gray-400 hover:text-gray-600'}`}

@@ -40,10 +40,9 @@ app.use("/api/public",        require("./modules/public/routes/index"));
 // but requireRole("user") for specific ones inside the module.
 // However, to be safe, I'll just allow "seller" for the notifications specifically.
 app.use("/api/user", authenticate, (req, res, next) => {
-  if (req.originalUrl.includes("/notifications") || req.originalUrl.includes("/me")) {
-    return requireRole("user", "seller")(req, res, next);
-  }
-  return requireRole("user")(req, res, next);
+  // Allow all authenticated users (User, Seller, Admin) to access personal data endpoints
+  // If they are not an 'admin' or 'seller', they default to requireRole('user')
+  return requireRole("user", "seller", "admin")(req, res, next);
 }, require("./modules/user/routes/index"));
 
 // Admin routes

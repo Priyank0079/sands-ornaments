@@ -61,7 +61,10 @@ const AddProduct = () => {
             isNewArrival: false,
             isMostGifted: false,
             isNewLaunch: false
-        }
+        },
+        silverCategory: '', // New Field for silver purity
+        goldCategory: '', // New Field for gold purity
+        careTips: '' // New Field for caring tips
     });
 
     const [enhancingIndex, setEnhancingIndex] = useState(null);
@@ -183,6 +186,13 @@ const AddProduct = () => {
             productForm.append('weight', parseFloat(formData.weight) || 0);
             productForm.append('weightUnit', formData.weightUnit);
             productForm.append('material', formData.metalType);
+            productForm.append('careTips', formData.careTips);
+            if (formData.metalType === 'Silver' && formData.silverCategory) {
+                productForm.append('silverCategory', formData.silverCategory);
+            }
+            if (formData.metalType === 'Gold' && formData.goldCategory) {
+                productForm.append('goldCategory', formData.goldCategory);
+            }
 
             // Single category
             productForm.append('categories', JSON.stringify([formData.categoryId]));
@@ -357,6 +367,42 @@ const AddProduct = () => {
                                     <option value="Silver">Silver</option>
                                 </select>
                             </div>
+                            {formData.metalType === 'Silver' && (
+                                <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
+                                    <Select
+                                        label="Silver Purity Categorization"
+                                        value={formData.silverCategory}
+                                        onChange={(e) => setFormData({ ...formData, silverCategory: e.target.value })}
+                                        options={[
+                                            { label: 'Select Purity', value: '' },
+                                            { label: '800', value: '800' },
+                                            { label: '835', value: '835' },
+                                            { label: '925', value: '925' },
+                                            { label: '925 Sterling Silver', value: '925 sterling silver' },
+                                            { label: '958', value: '958' },
+                                            { label: '970', value: '970' },
+                                            { label: '990', value: '990' },
+                                            { label: '999', value: '999' }
+                                        ]}
+                                    />
+                                </div>
+                            )}
+                            {formData.metalType === 'Gold' && (
+                                <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
+                                    <Select
+                                        label="Gold Karat Categorization"
+                                        value={formData.goldCategory}
+                                        onChange={(e) => setFormData({ ...formData, goldCategory: e.target.value })}
+                                        options={[
+                                            { label: 'Select Karat', value: '' },
+                                            { label: '14 Karat', value: '14' },
+                                            { label: '18 Karat', value: '18' },
+                                            { label: '22 Karat', value: '22' },
+                                            { label: '24 Karat', value: '24' }
+                                        ]}
+                                    />
+                                </div>
+                            )}
                             <div className="space-y-2">
                                 <label className={labelClasses}>Weight & Unit</label>
                                 <div className="flex gap-2">
@@ -562,6 +608,29 @@ const AddProduct = () => {
                                         theme="snow"
                                         value={formData.stylingTips}
                                         onChange={(val) => setFormData(prev => ({ ...prev, stylingTips: val }))}
+                                        modules={quillModules}
+                                        formats={quillFormats}
+                                        style={{ height: '150px', marginBottom: '50px' }}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <label className={labelClasses}>Professional Caring Tips</label>
+                                    <button 
+                                        type="button"
+                                        onClick={() => setFormData(prev => ({ ...prev, careTips: "<p><strong>Jewelry Care Guide:</strong></p><ul><li>Avoid direct contact with perfumes, lotions, and hairsprays.</li><li>Remove jewelry before swimming, bathing, or exercising.</li><li>Store in a cool, dry place, ideally in an airtight bag or box.</li><li>Clean occasionally with a soft, lint-free cloth to restore shine.</li></ul>" }))}
+                                        className="text-[10px] font-bold text-[#D39A9F] uppercase hover:underline"
+                                    >
+                                        Load Template
+                                    </button>
+                                </div>
+                                <div className="bg-[#FDFBF7] rounded-3xl overflow-hidden border border-[#EFEBE9]">
+                                    <ReactQuill
+                                        theme="snow"
+                                        value={formData.careTips}
+                                        onChange={(val) => setFormData(prev => ({ ...prev, careTips: val }))}
                                         modules={quillModules}
                                         formats={quillFormats}
                                         style={{ height: '150px', marginBottom: '50px' }}

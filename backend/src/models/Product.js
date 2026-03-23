@@ -10,7 +10,16 @@ const productSchema = new mongoose.Schema({
   categories: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" }],
   description: { type: String },
   stylingTips: { type: String },
-  material: { type: String, default: "925 Silver" },
+  material: { type: String, default: 'Silver' },
+  silverCategory: {
+      type: String,
+      enum: ['800', '835', '925', '925 sterling silver', '958', '970', '990', '999', '']
+  },
+  goldCategory: {
+      type: String,
+      enum: ['14', '18', '22', '24', '']
+  },
+  careTips: { type: String, default: '' },
   weight: { type: Number },
   weightUnit: { type: String, enum: ["Grams", "Carats", "Milligrams"], default: "Grams" },
   specifications: { type: String },
@@ -20,6 +29,8 @@ const productSchema = new mongoose.Schema({
   images: [{ type: String }],
   variants: [{
     name: { type: String, required: true },
+    makingCharge: { type: Number, default: 0 },
+    diamondPrice: { type: Number, default: 0 },
     mrp: { type: Number, required: true },
     price: { type: Number, required: true },
     discount: { type: Number },
