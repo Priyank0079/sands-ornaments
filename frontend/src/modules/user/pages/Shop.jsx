@@ -31,6 +31,8 @@ const Shop = () => {
     const isComingSoonQuery = queryParams.get('status') === 'coming-soon';
     const filterQuery = queryParams.get('filter');
     const occasionQuery = queryParams.get('occasion');
+    const priceMaxQuery = queryParams.get('price_max');
+    const productsQuery = queryParams.get('products');
 
     // Effect to handle URL-based Logic + Local Category Filter
     useEffect(() => {
@@ -40,6 +42,16 @@ const Shop = () => {
         
         let baseProducts = products;
         let title = 'All Jewellery';
+
+        const getProductPrice = (product) => {
+            if (!product) return 0;
+            if (product.price !== undefined && product.price !== null) return Number(product.price) || 0;
+            const variantPrices = (product.variants || [])
+                .map(v => Number(v.price || v.mrp || 0))
+                .filter(v => Number.isFinite(v) && v > 0);
+            if (variantPrices.length > 0) return Math.min(...variantPrices);
+            return 0;
+        };
 
         let categoryQueryObj = null;
         if (categoryQuery) {
@@ -112,6 +124,24 @@ const Shop = () => {
             baseProducts = baseProducts.filter(p => matchesCategory(p, categoryQuery, categoryQueryObj));
         }
 
+        if (priceMaxQuery) {
+            const parsedPrice = Number(String(priceMaxQuery).replace(/[^0-9]/g, ''));
+            if (Number.isFinite(parsedPrice) && parsedPrice > 0 && priceRange !== parsedPrice) {
+                setPriceRange(parsedPrice);
+            }
+            title = `Under INR ${parsedPrice}`;
+        }
+        if (productsQuery) {
+            const ids = String(productsQuery)
+                .split(',')
+                .map(id => id.trim())
+                .filter(Boolean);
+            if (ids.length > 0) {
+                baseProducts = baseProducts.filter(p => ids.includes(String(p._id || p.id)));
+                title = 'Perfect Gift';
+            }
+        }
+
         // Apply Title overrides from Local Filters
         if (selectedCategory !== 'All') {
             title = selectedCategory;
@@ -161,13 +191,13 @@ const Shop = () => {
         }
 
         // 3. Apply Price Filter
-        result = result.filter(p => p.price <= priceRange);
+        result = result.filter(p => getProductPrice(p) <= priceRange);
 
         // 4. Apply Sorting
         if (sortBy === 'Price: Low to High') {
-            result.sort((a, b) => a.price - b.price);
+            result.sort((a, b) => getProductPrice(a) - getProductPrice(b));
         } else if (sortBy === 'Price: High to Low') {
-            result.sort((a, b) => b.price - a.price);
+            result.sort((a, b) => getProductPrice(b) - getProductPrice(a));
         } else if (sortBy === 'Best Selling') {
             result.sort((a, b) => b.rating - a.rating);
         } else if (sortBy === 'Newest') {

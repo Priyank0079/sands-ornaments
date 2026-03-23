@@ -111,10 +111,10 @@ export const sectionDefaults = [
     isActive: true,
     sortOrder: 2,
     items: [
-      { id: 'under-999', name: 'Under INR 999', image: price999, path: '/shop?price_max=999', tag: '' },
-      { id: 'under-1999', name: 'Under INR 1999', image: price1999, path: '/shop?price_max=1999', tag: '' },
-      { id: 'under-2999', name: 'Under INR 2999', image: price2999, path: '/shop?price_max=2999', tag: '' },
-      { id: 'under-3999', name: 'Under INR 3999', image: price3999, path: '/shop?price_max=3999', tag: '' }
+      { id: 'under-999', name: 'Under INR 999', priceMax: 999, image: price999, path: '/shop?price_max=999', tag: '' },
+      { id: 'under-1999', name: 'Under INR 1999', priceMax: 1999, image: price1999, path: '/shop?price_max=1999', tag: '' },
+      { id: 'under-2999', name: 'Under INR 2999', priceMax: 2999, image: price2999, path: '/shop?price_max=2999', tag: '' },
+      { id: 'under-3999', name: 'Under INR 3999', priceMax: 3999, image: price3999, path: '/shop?price_max=3999', tag: '' }
     ]
   },
   {
@@ -123,10 +123,10 @@ export const sectionDefaults = [
     isActive: true,
     sortOrder: 3,
     items: [
-      { id: 'mother', name: 'Mother', image: giftMother, path: '/shop?recipient=mother', tag: '' },
-      { id: 'friends', name: 'Friends', image: giftFriends, path: '/shop?recipient=friends', tag: '' },
-      { id: 'wife', name: 'Wife', image: giftWife, path: '/shop?recipient=wife', tag: '' },
-      { id: 'sister', name: 'Sister', image: giftSister, path: '/shop?recipient=sister', tag: '' }
+      { id: 'mother', name: 'Mother', image: giftMother, path: '/shop', tag: '', productIds: [] },
+      { id: 'friends', name: 'Friends', image: giftFriends, path: '/shop', tag: '', productIds: [] },
+      { id: 'wife', name: 'Wife', image: giftWife, path: '/shop', tag: '', productIds: [] },
+      { id: 'sister', name: 'Sister', image: giftSister, path: '/shop', tag: '', productIds: [] }
     ]
   },
   {
@@ -135,11 +135,11 @@ export const sectionDefaults = [
     isActive: true,
     sortOrder: 4,
     items: [
-      { id: 'earrings', name: 'Earrings', image: newEarrings, path: '/category/earrings', tag: '' },
-      { id: 'chains', name: 'Chains', image: newChains, path: '/category/chains', tag: '' },
-      { id: 'studs', name: 'Studs', image: newStuds, path: '/category/studs', tag: '' },
-      { id: 'bracelets', name: 'Bracelets', image: newBracelets, path: '/category/bracelets', tag: '' },
-      { id: 'anklets', name: 'Anklets', image: newAnklets, path: '/category/anklets', tag: '' }
+      { id: 'earrings', name: 'Earrings', image: newEarrings, path: '/shop', tag: '', productIds: [] },
+      { id: 'chains', name: 'Chains', image: newChains, path: '/shop', tag: '', productIds: [] },
+      { id: 'studs', name: 'Studs', image: newStuds, path: '/shop', tag: '', productIds: [] },
+      { id: 'bracelets', name: 'Bracelets', image: newBracelets, path: '/shop', tag: '', productIds: [] },
+      { id: 'anklets', name: 'Anklets', image: newAnklets, path: '/shop', tag: '', productIds: [] }
     ]
   },
   {

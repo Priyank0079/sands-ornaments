@@ -10,6 +10,7 @@ const sanitizeSectionPayload = (payload = {}) => {
       itemId: item.itemId || item.id || item._id || `${Date.now()}_${idx}`,
       type: item.type || (item.productId ? "product" : "manual"),
       productId: item.productId || null,
+      productIds: Array.isArray(item.productIds) ? item.productIds : undefined,
       name: item.name,
       label: item.label,
       image: item.image,
