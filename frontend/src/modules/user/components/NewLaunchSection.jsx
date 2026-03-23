@@ -12,11 +12,11 @@ import newBracelets from '../assets/new_launch_bracelets.png';
 import newAnklets from '../assets/new_launch_anklets.png';
 
 const newLaunches = [
-    { id: 'earrings', name: "Earrings", image: newEarrings, path: "/category/earrings" },
-    { id: 'chains', name: "Chains", image: newChains, path: "/category/chains" },
-    { id: 'studs', name: "Studs", image: newStuds, path: "/category/studs" },
-    { id: 'bracelets', name: "Bracelets", image: newBracelets, path: "/category/bracelets" },
-    { id: 'anklets', name: "Anklets", image: newAnklets, path: "/category/anklets" }
+    { id: 'earrings', name: "Earrings", image: newEarrings, path: "/shop", productIds: [] },
+    { id: 'chains', name: "Chains", image: newChains, path: "/shop", productIds: [] },
+    { id: 'studs', name: "Studs", image: newStuds, path: "/shop", productIds: [] },
+    { id: 'bracelets', name: "Bracelets", image: newBracelets, path: "/shop", productIds: [] },
+    { id: 'anklets', name: "Anklets", image: newAnklets, path: "/shop", productIds: [] }
 ];
 
 const NewLaunchSection = () => {
@@ -54,6 +54,9 @@ const NewLaunchSection = () => {
                 <div className="flex flex-wrap md:flex-nowrap justify-center gap-6 md:gap-8">
                     {displayItems.map((item, index) => {
                         const itemLabel = item.name || item.label;
+                        const productIds = Array.isArray(item.productIds) ? item.productIds : [];
+                        const productQuery = productIds.length > 0 ? productIds.join(',') : '';
+                        const itemPath = productQuery ? `/shop?products=${encodeURIComponent(productQuery)}` : (item.path || '/shop?status=coming-soon');
 
                         const key = item.itemId || item._id || item.id || itemLabel || index;
                         return (
@@ -65,7 +68,7 @@ const NewLaunchSection = () => {
                                 transition={{ duration: 0.5, delay: index * 0.1 }}
                                 className="w-[45%] md:w-56 lg:w-64"
                             >
-                                <Link to={item.path} className="group block relative">
+                                <Link to={itemPath} className="group block relative">
                                     {/* Square Card Container */}
                                     <div className="relative rounded-3xl overflow-hidden aspect-square bg-white shadow-[0_15px_35px_rgba(0,0,0,0.2)] group-hover:shadow-[0_25px_50px_rgba(114,47,55,0.4)] transition-all duration-500 transform group-hover:-translate-y-2 isolate">
 

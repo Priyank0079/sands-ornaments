@@ -2,16 +2,23 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { X, Search, Check, Filter } from 'lucide-react';
 import { useShop } from '../../../../context/ShopContext';
 import { adminService } from '../../services/adminService';
+import api from '../../../../services/api';
 
 const ProductBrowserModal = ({ isOpen, onClose, onSelect, selectedIds = [], maxSelection = 1 }) => {
-    if (!isOpen) return null;
-
     const { products } = useShop(); // Public catalogue fallback
     const [adminProducts, setAdminProducts] = useState([]);
+    const [publicProducts, setPublicProducts] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [localSelectedIds, setLocalSelectedIds] = useState(selectedIds);
+
+    useEffect(() => {
+        if (!isOpen) return;
+        setLocalSelectedIds(selectedIds || []);
+        setSearchTerm('');
+        setSelectedCategory('All');
+    }, [isOpen, selectedIds]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -38,6 +45,29 @@ const ProductBrowserModal = ({ isOpen, onClose, onSelect, selectedIds = [], maxS
         fetchAdminProducts();
     }, [isOpen]);
 
+    useEffect(() => {
+        if (!isOpen) return;
+        const fetchPublicProducts = async () => {
+            try {
+                const res = await api.get('public/products');
+                const data = res.data.data?.products || res.data.products || [];
+                const normalized = (data || []).map(p => ({
+                    id: p._id || p.id,
+                    name: p.name || '',
+                    category: p.categories?.[0]?.name || p.category || 'Uncategorized',
+                    image: p.images?.[0] || p.image || '',
+                    images: p.images || [],
+                    price: p.variants?.[0]?.price || 0,
+                    discount: p.variants?.[0]?.discount ? `${p.variants[0].discount}%off` : ''
+                }));
+                setPublicProducts(normalized);
+            } catch (err) {
+                setPublicProducts([]);
+            }
+        };
+        fetchPublicProducts();
+    }, [isOpen]);
+
     const fallbackProducts = (products || []).map(p => ({
         id: p.id || p._id,
         name: p.name || '',
@@ -49,17 +79,22 @@ const ProductBrowserModal = ({ isOpen, onClose, onSelect, selectedIds = [], maxS
     }));
 
     // Prefer admin products when available
-    const allProducts = adminProducts.length > 0 ? adminProducts : fallbackProducts;
+    const allProducts = adminProducts.length > 0
+        ? adminProducts
+        : (publicProducts.length > 0 ? publicProducts : fallbackProducts);
 
     const categories = ['All', ...new Set(allProducts.map(p => p.category).filter(Boolean))];
 
     const filteredProducts = useMemo(() => {
         return allProducts.filter(product => {
-            const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+            const name = String(product.name || '').toLowerCase();
+            const matchesSearch = name.includes(searchTerm.toLowerCase());
             const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
             return matchesSearch && matchesCategory;
         });
     }, [searchTerm, selectedCategory, allProducts]);
+
+    if (!isOpen) return null;
 
     const toggleSelection = (product) => {
         setLocalSelectedIds(prev => {

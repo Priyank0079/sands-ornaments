@@ -4,6 +4,7 @@ import { Plus, Trash2, Link as LinkIcon, Image as ImageIcon, Tag, Search, CheckC
 import { Input } from '../common/FormControls';
 import { adminService } from '../../services/adminService';
 import toast from 'react-hot-toast';
+import ProductBrowserModal from './ProductBrowserModal';
 
 // Import default assets
 import catPendant from '../../../user/assets/cat_pendant_wine.png';
@@ -33,6 +34,36 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     const [items, setItems] = useState(initialItemsFromProps);
     const [editingId, setEditingId] = useState(null);
     const [categories, setCategories] = useState([]);
+    const [isProductPickerOpen, setIsProductPickerOpen] = useState(false);
+    const [productPickerTarget, setProductPickerTarget] = useState(null);
+
+    const parsePriceValue = (value) => {
+        if (value === undefined || value === null) return null;
+        const cleaned = String(value).replace(/[^0-9]/g, '');
+        if (!cleaned) return null;
+        const numeric = Number(cleaned);
+        return Number.isFinite(numeric) ? numeric : null;
+    };
+
+    const getPriceMaxFromItem = (item) => {
+        if (!item) return null;
+        if (item.priceMax !== undefined && item.priceMax !== null && item.priceMax !== '') {
+            return parsePriceValue(item.priceMax);
+        }
+        if (item.price !== undefined && item.price !== null && item.price !== '') {
+            return parsePriceValue(item.price);
+        }
+        if (item.path && String(item.path).includes('price_max=')) {
+            const query = item.path.split('price_max=')[1]?.split('&')[0];
+            const parsed = parsePriceValue(query);
+            if (parsed) return parsed;
+        }
+        if (item.name) {
+            const parsed = parsePriceValue(item.name);
+            if (parsed) return parsed;
+        }
+        return null;
+    };
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -103,7 +134,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         if (!isCategoryShowcase || categories.length === 0) return;
         setItems(prev => prev.map(item => {
             if (item.categoryId) return item;
-            const resolved = getCategoryFromPath(item.path);
+            const resolved = getCategoryFromItem(item);
             if (!resolved) return item;
             return {
                 ...item,
@@ -114,6 +145,20 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             };
         }));
     }, [categories, isCategoryShowcase]);
+
+    useEffect(() => {
+        if (sectionId !== 'price-range-showcase') return;
+        setItems(prev => prev.map(item => {
+            const priceMax = getPriceMaxFromItem(item);
+            if (!priceMax) return item;
+            return {
+                ...item,
+                priceMax,
+                name: `Under INR ${priceMax}`,
+                path: `/shop?price_max=${priceMax}`
+            };
+        }));
+    }, [sectionId]);
 
     const handleItemChange = (id, field, value) => {
         setItems(prev => prev.map(item => {
@@ -148,13 +193,21 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         handleSave(newItems);
     };
 
+    const saveCurrentItems = () => {
+        setItems(prev => {
+            handleSave(prev);
+            return prev;
+        });
+    };
+
     const addItem = () => {
         const newItem = {
             id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
             name: isCategoryShowcase ? '' : 'New Item',
             path: isCategoryShowcase ? '' : '/shop',
             image: '',
-            tag: ''
+            tag: '',
+            ...(sectionId === 'price-range-showcase' ? { priceMax: '' } : {})
         };
         const nextItems = [...items, newItem];
         setItems(nextItems);
@@ -173,16 +226,40 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         navigate(`/admin/products?selectMode=true&returnUrl=/admin/sections/${sectionId}`);
     };
 
+    const handleProductPickerOpen = (itemId) => {
+        setProductPickerTarget(itemId);
+        setIsProductPickerOpen(true);
+    };
+
+    const handleProductPickerSelect = (selectedItems) => {
+        const selectedIds = (selectedItems || []).map(item => item.id || item._id).filter(Boolean);
+        setItems(prev => prev.map(item => {
+            if (item.id !== productPickerTarget) return item;
+            const existing = new Set(item.productIds || []);
+            selectedIds.forEach(id => existing.add(id));
+            return { ...item, productIds: Array.from(existing) };
+        }));
+        setIsProductPickerOpen(false);
+        setProductPickerTarget(null);
+    };
+
+    const normalizeLabel = (value) => String(value || '')
+        .trim()
+        .toLowerCase()
+        .replace(/['"]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+
     const getCategoryFromPath = (path) => {
         if (!path || categories.length === 0) return null;
         try {
             if (path.startsWith('/category/')) {
                 const slug = path.replace('/category/', '').split('?')[0];
-                return categories.find(c => c.slug === slug) || null;
+                return categories.find(c => c.slug === slug || normalizeLabel(c.name) === slug) || null;
             }
             if (path.includes('category=')) {
                 const query = path.split('category=')[1]?.split('&')[0];
-                return categories.find(c => c.slug === query || c.name === query) || null;
+                return categories.find(c => c.slug === query || c.name === query || normalizeLabel(c.name) === query || String(c._id) === String(query)) || null;
             }
         } catch (err) {
             return null;
@@ -195,6 +272,10 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         if (item.categoryId && categories.length > 0) {
             const match = categories.find(c => String(c._id) === String(item.categoryId));
             if (match) return match;
+        }
+        if (item.name) {
+            const byName = categories.find(c => normalizeLabel(c.name) === normalizeLabel(item.name));
+            if (byName) return byName;
         }
         return getCategoryFromPath(item.path);
     };
@@ -231,6 +312,42 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                     image: item.image || category.image || item.image
                 };
             });
+            onSave({ items: normalizedItems });
+            return;
+        }
+        if (sectionId === 'price-range-showcase') {
+            const missing = nextItems.filter(item => !getPriceMaxFromItem(item));
+            if (missing.length > 0) {
+                const labels = missing.map(item => item.name || item.id || 'Item').join(', ');
+                toast.error(`Enter a max price for each item before saving. Missing: ${labels}`);
+                return;
+            }
+            const normalizedItems = nextItems.map((item) => {
+                const priceMax = getPriceMaxFromItem(item);
+                if (!priceMax) return item;
+                return {
+                    ...item,
+                    priceMax,
+                    name: `Under INR ${priceMax}`,
+                    path: `/shop?price_max=${priceMax}`
+                };
+            });
+            onSave({ items: normalizedItems });
+            return;
+        }
+        if (sectionId === 'perfect-gift') {
+            const normalizedItems = nextItems.map((item) => ({
+                ...item,
+                productIds: Array.isArray(item.productIds) ? item.productIds : []
+            }));
+            onSave({ items: normalizedItems });
+            return;
+        }
+        if (sectionId === 'new-launch') {
+            const normalizedItems = nextItems.map((item) => ({
+                ...item,
+                productIds: Array.isArray(item.productIds) ? item.productIds : []
+            }));
             onSave({ items: normalizedItems });
             return;
         }
@@ -336,6 +453,18 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
 
     return (
         <div className="max-w-4xl mx-auto space-y-6 pb-20">
+            {(sectionId === 'perfect-gift' || sectionId === 'new-launch') && (
+                <ProductBrowserModal
+                    isOpen={isProductPickerOpen}
+                    onClose={() => {
+                        setIsProductPickerOpen(false);
+                        setProductPickerTarget(null);
+                    }}
+                    onSelect={handleProductPickerSelect}
+                    selectedIds={items.find(item => item.id === productPickerTarget)?.productIds || []}
+                    maxSelection={50}
+                />
+            )}
             <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
                 <div>
                     <h3 className="font-display text-sm md:text-base font-bold text-gray-800">Manage Items</h3>
@@ -373,7 +502,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                     <button
                                         onClick={() => {
                                             if (isEditing) {
-                                                handleSave(items);
+                                                saveCurrentItems();
                                             }
                                             setEditingId(isEditing ? null : item.id);
                                         }}
@@ -411,8 +540,8 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                         </div>
                                     </div>
 
-                                    {/* Select Product Button (skip for category showcase + nav gifts/occasions) */}
-                                    {!isCategoryShowcase && sectionId !== 'nav-gifts-for' && sectionId !== 'nav-occasions' && (
+                                    {/* Select Product Button (skip for category showcase + nav gifts/occasions + price range + perfect gift + new launch) */}
+                                    {!isCategoryShowcase && sectionId !== 'nav-gifts-for' && sectionId !== 'nav-occasions' && sectionId !== 'price-range-showcase' && sectionId !== 'perfect-gift' && sectionId !== 'new-launch' && (
                                         <button
                                             onClick={() => handleRedirectToSelect(item.id)}
                                             className="w-full py-2 bg-gray-50 text-gray-600 text-[10px] font-bold rounded-lg border border-gray-200 hover:bg-gray-100 flex items-center justify-center gap-2 uppercase tracking-widest"
@@ -452,7 +581,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                 </select>
                                             </div>
                                         )}
-                                        {!isCategoryShowcase && (
+                                        {!isCategoryShowcase && sectionId !== 'price-range-showcase' && (
                                             <Input
                                                 label={sectionId === 'style-it-your-way' ? "Title" : "Name"}
                                                 value={item.name}
@@ -468,6 +597,49 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                 placeholder="Select a category"
                                                 className="bg-gray-50 text-gray-500 cursor-not-allowed"
                                             />
+                                        )}
+                                        {sectionId === 'price-range-showcase' && (
+                                            <div className="space-y-2">
+                                                <Input
+                                                    label="Max Price (INR)"
+                                                    type="number"
+                                                    min="0"
+                                                    value={item.priceMax ?? ''}
+                                                    onChange={(e) => {
+                                                        const raw = e.target.value;
+                                                        const numeric = raw === '' ? '' : Number(raw);
+                                                        setItems(prev => prev.map(entry => {
+                                                            if (entry.id !== item.id) return entry;
+                                                            return {
+                                                                ...entry,
+                                                                priceMax: numeric,
+                                                                name: numeric ? `Under INR ${numeric}` : entry.name
+                                                            };
+                                                        }));
+                                                    }}
+                                                    placeholder="999"
+                                                />
+                                                <Input
+                                                    label="Display Label"
+                                                    value={item.name || ''}
+                                                    readOnly
+                                                    placeholder="Under INR 999"
+                                                    className="bg-gray-50 text-gray-500 cursor-not-allowed"
+                                                />
+                                            </div>
+                                        )}
+                                        {(sectionId === 'perfect-gift' || sectionId === 'new-launch') && (
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Selected Products</label>
+                                                <button
+                                                    onClick={() => handleProductPickerOpen(item.id)}
+                                                    className="w-full py-2 bg-gray-50 text-gray-700 text-[10px] font-bold rounded-lg border border-gray-200 hover:bg-gray-100 uppercase tracking-widest"
+                                                >
+                                                    {Array.isArray(item.productIds) && item.productIds.length > 0
+                                                        ? `Selected ${item.productIds.length} Products`
+                                                        : 'Select Products'}
+                                                </button>
+                                            </div>
                                         )}
                                         <Input
                                             label={sectionId === 'style-it-your-way' ? "Subtitle" : "Badge"}

@@ -53,14 +53,31 @@ const CategoryShowcase = () => {
         return null;
     };
 
+    const getCategoryFromItem = (item) => {
+        if (!item) return null;
+        if (item.categoryId) {
+            const match = activeCategories.find(c => String(c._id) === String(item.categoryId) || String(c.id) === String(item.categoryId));
+            if (match) return match;
+        }
+        if (item.path) {
+            const fromPath = getCategoryFromPath(item.path);
+            if (fromPath) return fromPath;
+        }
+        if (item.name) {
+            const byName = activeCategories.find(c => c.name === item.name);
+            if (byName) return byName;
+        }
+        return null;
+    };
+
     const displayItems = (sectionConfig?.items && sectionConfig.items.length > 0)
         ? sectionConfig.items.map((item) => {
-            const resolvedCategory = getCategoryFromPath(item.path);
+            const resolvedCategory = getCategoryFromItem(item);
             if (resolvedCategory) {
                 return {
-                    id: resolvedCategory._id,
+                    id: item.id || resolvedCategory._id,
                     name: resolvedCategory.name,
-                    image: resolvedCategory.image || resolveFallbackImage(resolvedCategory.slug || resolvedCategory.name),
+                    image: item.image || resolvedCategory.image || resolveFallbackImage(resolvedCategory.slug || resolvedCategory.name),
                     path: `/shop?category=${resolvedCategory._id}`,
                     tag: item.tag || ''
                 };
@@ -94,9 +111,11 @@ const CategoryShowcase = () => {
                                 <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-1000 ease-in-out z-20"></div>
 
                                 {/* Top Tag - Gold/Beige with Glow */}
-                                <div className="absolute top-0 left-0 right-0 bg-[#F5E6D3] py-1 text-center font-black text-[9px] md:text-[11px] text-[#4A1015] tracking-[0.15em] z-30 shadow-sm uppercase group-hover:bg-white transition-colors duration-300">
-                                    {cat.tag || 'UPTO 15% OFF'}
-                                </div>
+                                {cat.tag && (
+                                    <div className="absolute top-0 left-0 right-0 bg-[#F5E6D3] py-1 text-center font-black text-[9px] md:text-[11px] text-[#4A1015] tracking-[0.15em] z-30 shadow-sm uppercase group-hover:bg-white transition-colors duration-300">
+                                        {cat.tag}
+                                    </div>
+                                )}
 
                                 {/* Image with Zoom Effect */}
                                 <div className="absolute inset-0 pt-2 flex items-center justify-center p-3 md:p-0">

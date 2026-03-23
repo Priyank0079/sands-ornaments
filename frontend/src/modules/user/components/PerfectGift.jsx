@@ -12,10 +12,10 @@ import giftSister from '../assets/gift_sister_silver.png';
 import dividerImg from '../assets/ornament-divider.png';
 
 const recipients = [
-    { id: 'mother', name: "Mother", image: giftMother, path: "/shop?recipient=mother" },
-    { id: 'friends', name: "Friends", image: giftFriends, path: "/shop?recipient=friends" },
-    { id: 'wife', name: "Wife", image: giftWife, path: "/shop?recipient=wife" },
-    { id: 'sister', name: "Sister", image: giftSister, path: "/shop?recipient=sister" }
+    { id: 'mother', name: "Mother", image: giftMother, path: "/shop", productIds: [] },
+    { id: 'friends', name: "Friends", image: giftFriends, path: "/shop", productIds: [] },
+    { id: 'wife', name: "Wife", image: giftWife, path: "/shop", productIds: [] },
+    { id: 'sister', name: "Sister", image: giftSister, path: "/shop", productIds: [] }
 ];
 
 const PerfectGift = () => {
@@ -60,6 +60,9 @@ const PerfectGift = () => {
                         const desktopMargin = (index === 0 || index === 3) ? 'md:mt-0' : 'md:mt-24';
 
                         const itemLabel = item.name || item.label;
+                        const productIds = Array.isArray(item.productIds) ? item.productIds : [];
+                        const productQuery = productIds.length > 0 ? productIds.join(',') : '';
+                        const itemPath = productQuery ? `/shop?products=${encodeURIComponent(productQuery)}` : (item.path || '/shop?status=coming-soon');
 
                         const key = item.itemId || item._id || item.id || itemLabel || index;
                         return (
@@ -72,7 +75,7 @@ const PerfectGift = () => {
                                 className={`w-[calc(50%-0.5rem)] md:w-56 lg:w-72 ${mobileMargin} ${desktopMargin}`}
                             >
                                 <Link
-                                    to={item.path}
+                                    to={itemPath}
                                     className="group relative block w-full aspect-[3/4] rounded-2xl md:rounded-[2rem] overflow-hidden border border-[#C9A24D]/20 shadow-lg transition-all duration-500 hover:shadow-[0_0_25px_rgba(201,162,77,0.3)] hover:border-[#C9A24D]/60 hover:-translate-y-2"
                                 >
                                     {/* Image with Zoom Effect */}

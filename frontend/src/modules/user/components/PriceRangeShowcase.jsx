@@ -10,10 +10,10 @@ import price2999 from '../assets/price_under_2999.png';
 import price3999 from '../assets/price_under_3999.png';
 
 const priceRanges = [
-    { id: 'under-999', label: "Under ₹999", image: price999, path: "/shop?price_max=999" },
-    { id: 'under-1999', label: "Under ₹1999", image: price1999, path: "/shop?price_max=1999" },
-    { id: 'under-2999', label: "Under ₹2999", image: price2999, path: "/shop?price_max=2999" },
-    { id: 'under-3999', label: "Under ₹3999", image: price3999, path: "/shop?price_max=3999" }
+    { id: 'under-999', name: "Under INR 999", priceMax: 999, image: price999, path: "/shop?price_max=999" },
+    { id: 'under-1999', name: "Under INR 1999", priceMax: 1999, image: price1999, path: "/shop?price_max=1999" },
+    { id: 'under-2999', name: "Under INR 2999", priceMax: 2999, image: price2999, path: "/shop?price_max=2999" },
+    { id: 'under-3999', name: "Under INR 3999", priceMax: 3999, image: price3999, path: "/shop?price_max=3999" }
 ];
 
 const PriceRangeShowcase = () => {
@@ -22,6 +22,34 @@ const PriceRangeShowcase = () => {
     // Use admin-configured items if available, otherwise fall back to defaults
     const sectionData = homepageSections?.['price-range-showcase'];
     const displayItems = sectionData?.items && sectionData.items.length > 0 ? sectionData.items : priceRanges;
+
+    const parsePriceValue = (value) => {
+        if (value === undefined || value === null) return null;
+        const cleaned = String(value).replace(/[^0-9]/g, '');
+        if (!cleaned) return null;
+        const numeric = Number(cleaned);
+        return Number.isFinite(numeric) ? numeric : null;
+    };
+
+    const getPriceMaxFromItem = (item) => {
+        if (!item) return null;
+        if (item.priceMax !== undefined && item.priceMax !== null && item.priceMax !== '') {
+            return parsePriceValue(item.priceMax);
+        }
+        if (item.price !== undefined && item.price !== null && item.price !== '') {
+            return parsePriceValue(item.price);
+        }
+        if (item.path && String(item.path).includes('price_max=')) {
+            const query = item.path.split('price_max=')[1]?.split('&')[0];
+            const parsed = parsePriceValue(query);
+            if (parsed) return parsed;
+        }
+        if (item.name) {
+            const parsed = parsePriceValue(item.name);
+            if (parsed) return parsed;
+        }
+        return null;
+    };
 
     return (
         <section className="pt-2 pb-16 md:pt-10 md:pb-24 bg-white">
@@ -45,9 +73,11 @@ const PriceRangeShowcase = () => {
 
                 <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                     {displayItems.map((item, index) => {
-                        const itemLabel = item.name || item.label;
-
+                        const priceMax = getPriceMaxFromItem(item);
+                        const itemLabel = priceMax ? `UNDER INR ${priceMax}` : (item.name || item.label || '');
+                        const itemPath = priceMax ? `/shop?price_max=${priceMax}` : item.path;
                         const key = item.itemId || item._id || item.id || itemLabel || index;
+
                         return (
                             <motion.div
                                 key={key}
@@ -58,7 +88,7 @@ const PriceRangeShowcase = () => {
                                 transition={{ duration: 0.6, delay: index * 0.1 }}
                             >
                                 <Link
-                                    to={item.path}
+                                    to={itemPath || '/shop'}
                                     className="group relative block w-full aspect-[3/4] md:aspect-[3/4] lg:aspect-[4/3] rounded-2xl md:rounded-[2.5rem] overflow-hidden shadow-md md:shadow-lg hover:shadow-[0_20px_50px_rgba(74,16,21,0.3)] transition-all duration-500 border-[3px] border-transparent hover:border-[#4A1015]"
                                 >
                                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-500 z-10" />
@@ -78,7 +108,7 @@ const PriceRangeShowcase = () => {
                                     </div>
                                 </Link>
                             </motion.div>
-                        )
+                        );
                     })}
                 </div>
             </div>
