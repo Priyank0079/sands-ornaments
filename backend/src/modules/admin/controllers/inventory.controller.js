@@ -1,6 +1,7 @@
 const Product = require("../../../models/Product");
 const StockLog = require("../../../models/StockLog");
 const { success, error } = require("../../../utils/apiResponse");
+const { isSerializedVariant, setSerializedVariantStock } = require("../../../utils/inventorySync");
 
 exports.getInventory = async (req, res) => {
   try {
@@ -15,8 +16,9 @@ exports.getInventory = async (req, res) => {
     if (lowStock === "true") query["variants.stock"] = { $lte: 10 }; // Default low stock threshold
 
     const products = await Product.find(query)
-      .select("name images variants categories")
-      .populate("categories", "name");
+      .select("name images variants categories sellerId")
+      .populate("categories", "name")
+      .populate("sellerId", "fullName shopName");
 
     return success(res, { inventory: products }, "Inventory retrieved");
   } catch (err) { return error(res, err.message); }
@@ -35,8 +37,25 @@ exports.adjustStock = async (req, res) => {
     const variant = product.variants.id(variantId);
     if (!variant) return error(res, "Variant not found", 404);
 
-    const previousStock = variant.stock;
-    variant.stock = Number(newStock);
+    const nextStock = Number(newStock);
+    if (nextStock < 0) {
+      return error(res, "Stock cannot be negative", 400);
+    }
+
+    const previousStock = Number(variant.stock) || 0;
+    const variantIndex = product.variants.findIndex(v => String(v._id) === String(variantId));
+
+    if (isSerializedVariant(product, variant)) {
+      setSerializedVariantStock({
+        product,
+        variant,
+        desiredStock: nextStock,
+        variantIndex
+      });
+    } else {
+      variant.stock = nextStock;
+    }
+
     await product.save();
 
     // Log the manual adjustment
@@ -45,8 +64,8 @@ exports.adjustStock = async (req, res) => {
       variantId,
       changeType: "adjustment",
       previousStock,
-      newStock,
-      change: newStock - previousStock,
+      newStock: variant.stock,
+      change: variant.stock - previousStock,
       reason: reason || "Manual adjustment by Admin",
       adminId: req.user.userId
     });
@@ -63,8 +82,9 @@ exports.getStockHistory = async (req, res) => {
     if (variantId) query.variantId = variantId;
 
     const logs = await StockLog.find(query)
-      .populate("productId", "name")
+      .populate("productId", "name images sellerId")
       .populate("adminId", "name")
+      .populate("sellerId", "fullName shopName")
       .sort({ createdAt: -1 })
       .limit(50);
 
@@ -76,8 +96,9 @@ exports.getLowStockAlerts = async (req, res) => {
   try {
     const threshold = Number(req.query.threshold) || 5;
     const products = await Product.find({ "variants.stock": { $lte: threshold } })
-      .select("name images categories variants")
-      .populate("categories", "name");
+      .select("name images categories variants sellerId")
+      .populate("categories", "name")
+      .populate("sellerId", "fullName shopName");
     
     const alerts = [];
     products.forEach(p => {
@@ -88,6 +109,7 @@ exports.getLowStockAlerts = async (req, res) => {
             productName: p.name,
             productImage: p.images?.[0] || '',
             categoryName: p.categories?.[0]?.name || 'Uncategorized',
+            sellerName: p.sellerId?.shopName || p.sellerId?.fullName || 'Admin',
             variantId: v._id,
             variantName: v.name,
             currentStock: v.stock,

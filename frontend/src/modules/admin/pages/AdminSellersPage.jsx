@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Store, Eye, CheckCircle, XCircle, FileText, ShieldCheck, Search, Users, UserCheck, UserX, Clock } from 'lucide-react';
+import { Store, Eye, CheckCircle, XCircle, FileText, ShieldCheck, Search, Users, UserCheck, UserX, Clock, Package, IndianRupee } from 'lucide-react';
 import AdminTable from '../components/AdminTable';
 import AdminStatsCard from '../components/AdminStatsCard';
 import { adminService } from '../services/adminService';
@@ -31,12 +31,12 @@ const AdminSellersPage = () => {
     }, []);
 
     const handleAction = async (id, status, reason) => {
-        const success = await adminService.updateSellerStatus(id, status, reason);
-        if (success) {
-            toast.success(`Seller ${status.toLowerCase()}`);
+        const response = await adminService.updateSellerStatus(id, status, reason);
+        if (response?.success) {
+            toast.success(response.message || `Seller ${status.toLowerCase()}`);
             fetchSellers();
         } else {
-            toast.error("Failed to update seller");
+            toast.error(response?.message || "Failed to update seller");
         }
     };
 
@@ -76,8 +76,15 @@ const AdminSellersPage = () => {
         },
         {
             header: 'SHOP NAME',
-            accessor: 'shopName',
-            className: 'w-[12%]'
+            className: 'w-[14%]',
+            render: (row) => (
+                <div className="flex flex-col text-left">
+                    <span className="text-xs font-bold text-gray-900 uppercase tracking-tight">{row.shopName}</span>
+                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none mt-0.5">
+                        {row.city || 'N/A'}{row.state ? `, ${row.state}` : ''}
+                    </span>
+                </div>
+            )
         },
         {
             header: 'MOBILE',
@@ -85,9 +92,48 @@ const AdminSellersPage = () => {
             className: 'w-[10%]'
         },
         {
-            header: 'GST',
-            accessor: 'gstNumber',
-            className: 'w-[10%]'
+            header: 'BUSINESS',
+            className: 'w-[14%]',
+            render: (row) => (
+                <div className="space-y-1">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-600">
+                        {row.gstNumber || 'No GST'}
+                    </p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                        PAN: {row.panNumber || 'N/A'}
+                    </p>
+                </div>
+            )
+        },
+        {
+            header: 'METRICS',
+            className: 'w-[15%]',
+            render: (row) => (
+                <div className="space-y-1">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-700 flex items-center gap-1">
+                        <Package size={12} className="text-gray-400" />
+                        {row.metrics?.productCount || 0} Products
+                    </p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                        {row.metrics?.stockUnits || 0} Units
+                    </p>
+                </div>
+            )
+        },
+        {
+            header: 'REVENUE',
+            className: 'w-[12%]',
+            render: (row) => (
+                <div className="space-y-1 text-left">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-700 flex items-center gap-1">
+                        <IndianRupee size={12} className="text-gray-400" />
+                        {(row.metrics?.totalRevenue || 0).toLocaleString()}
+                    </p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                        {row.metrics?.orderCount || 0} Orders
+                    </p>
+                </div>
+            )
         },
         {
             header: 'DOCS',
@@ -114,7 +160,7 @@ const AdminSellersPage = () => {
         },
         {
             header: 'STATUS',
-            className: 'w-[10%]',
+            className: 'w-[9%]',
             render: (row) => (
                 <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest border ${
                     row.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
@@ -137,23 +183,23 @@ const AdminSellersPage = () => {
                     >
                         <Eye size={18} />
                     </button>
-                    {row.status === 'PENDING' && (
-                        <>
-                            <button 
-                                onClick={() => handleAction(row._id || row.id, 'APPROVED')}
-                                className="p-1.5 hover:bg-emerald-50 rounded-lg text-gray-400 hover:text-emerald-600 transition-all"
-                                title="Approve"
-                            >
-                                <CheckCircle size={18} />
-                            </button>
-                            <button 
-                                onClick={() => handleAction(row._id || row.id, 'REJECTED', 'Rejected by admin')}
-                                className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition-all"
-                                title="Reject"
-                            >
-                                <XCircle size={18} />
-                            </button>
-                        </>
+                    {row.status !== 'APPROVED' && (
+                        <button 
+                            onClick={() => handleAction(row._id || row.id, 'APPROVED')}
+                            className="p-1.5 hover:bg-emerald-50 rounded-lg text-gray-400 hover:text-emerald-600 transition-all"
+                            title="Approve"
+                        >
+                            <CheckCircle size={18} />
+                        </button>
+                    )}
+                    {row.status !== 'REJECTED' && (
+                        <button 
+                            onClick={() => navigate(`/admin/seller-details/${row._id || row.id}`)}
+                            className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition-all"
+                            title="Review / Reject"
+                        >
+                            <XCircle size={18} />
+                        </button>
                     )}
                 </div>
             )

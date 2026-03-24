@@ -23,13 +23,20 @@ const BulkUpdateModal = ({ isOpen, onClose, onApply, products = [] }) => {
 
     // Group products by category, filtering by search query
     const groupedProducts = useMemo(() => {
+        const getCategoryName = (product) => {
+            const categories = product.categories || [];
+            const primary = categories[0];
+            if (typeof primary === 'string') return primary;
+            return primary?.name || product.category || 'Uncategorized';
+        };
+
         const filtered = products.filter(p =>
             p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (p.category && p.category.toLowerCase().includes(searchQuery.toLowerCase()))
+            getCategoryName(p).toLowerCase().includes(searchQuery.toLowerCase())
         );
 
         return filtered.reduce((acc, product) => {
-            const category = product.category || 'Uncategorized';
+            const category = getCategoryName(product);
             if (!acc[category]) acc[category] = [];
             acc[category].push(product);
             return acc;
@@ -91,7 +98,7 @@ const BulkUpdateModal = ({ isOpen, onClose, onApply, products = [] }) => {
     ];
 
     const totalVisible = Object.values(groupedProducts).flat().length;
-    const selectedVisible = Object.values(groupedProducts).flat().filter(p => selectedIds.includes(p.id)).length;
+    const selectedVisible = Object.values(groupedProducts).flat().filter(p => selectedIds.includes(getProductId(p))).length;
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
@@ -186,7 +193,7 @@ const BulkUpdateModal = ({ isOpen, onClose, onApply, products = [] }) => {
                                                                 className="w-3.5 h-3.5 rounded border-gray-300 text-[#3E2723] focus:ring-[#3E2723]"
                                                             />
                                                             <div className="flex items-center gap-3 min-w-0 flex-1">
-                                                                <img src={product.image} alt="" className="w-8 h-8 rounded-lg object-cover bg-gray-100 shrink-0 border border-gray-100" />
+                                                                <img src={product.image || product.images?.[0] || ''} alt="" className="w-8 h-8 rounded-lg object-cover bg-gray-100 shrink-0 border border-gray-100" />
                                                                 <div className="min-w-0 flex-1">
                                                                     <div className="flex items-center justify-between gap-2">
                                                                         <p className="text-[11px] font-bold text-gray-700 truncate">{product.name}</p>

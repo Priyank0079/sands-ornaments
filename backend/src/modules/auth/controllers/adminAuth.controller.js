@@ -22,6 +22,10 @@ exports.login = async (req, res) => {
       return error(res, "Invalid credentials.", 401, "INVALID_CREDENTIALS");
     }
 
+    if (admin.isBlocked) {
+      return error(res, "This admin account is blocked.", 403, "ACCOUNT_BLOCKED");
+    }
+
     // Compare password
     if (!admin.password) {
       return error(res, "Invalid credentials.", 401, "INVALID_CREDENTIALS");

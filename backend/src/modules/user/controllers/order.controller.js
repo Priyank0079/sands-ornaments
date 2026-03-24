@@ -6,6 +6,11 @@ const StockLog = require("../../../models/StockLog");
 const { generateOrderId } = require("../../../utils/generateId");
 const { success, error } = require("../../../utils/apiResponse");
 const razorpay = require("../../../config/razorpay");
+const {
+  isSerializedVariant,
+  consumeSerializedStock,
+  restockSerializedUnits
+} = require("../../../utils/inventorySync");
 
 /**
  * Shared helper: validate + compute coupon discount.
@@ -71,22 +76,41 @@ const applyCoupon = async (couponCode, subtotal, userId, items = []) => {
  */
 const deductStockForOrder = async (orderItems, orderId, userId) => {
   for (const item of orderItems) {
-    await Product.updateOne(
-      { _id: item.productId, "variants._id": item.variantId },
-      { $inc: { "variants.$.stock": -item.quantity, "variants.$.sold": item.quantity } }
-    );
+    const product = await Product.findById(item.productId);
+    const variant = product?.variants.id(item.variantId);
+    if (!product || !variant) continue;
 
-    const p = await Product.findById(item.productId);
-    const v = p?.variants.id(item.variantId);
-    if (!v) continue;
+    const quantity = Number(item.quantity) || 0;
+    if (quantity <= 0) continue;
+
+    const previousStock = Number(variant.stock) || 0;
+    const variantIndex = product.variants.findIndex(v => String(v._id) === String(item.variantId));
+
+    if (isSerializedVariant(product, variant)) {
+      consumeSerializedStock({
+        product,
+        variant,
+        quantity,
+        variantIndex,
+        saleStatus: "SOLD_ONLINE"
+      });
+    } else {
+      if (previousStock < quantity) {
+        throw new Error(`Insufficient stock for ${product.name} (${variant.name})`);
+      }
+      variant.stock = previousStock - quantity;
+    }
+
+    variant.sold = (Number(variant.sold) || 0) + quantity;
+    await product.save();
 
     await StockLog.create({
       productId: item.productId,
       variantId: item.variantId,
       changeType: "sale",
-      previousStock: v.stock + item.quantity,
-      newStock: v.stock,
-      change: -item.quantity,
+      previousStock,
+      newStock: variant.stock,
+      change: -quantity,
       reason: `Order ${orderId}`,
       userId,
     });
@@ -265,10 +289,40 @@ exports.cancelOrder = async (req, res) => {
     // Restock only if stock was already deducted (COD or paid Razorpay orders)
     if (order.paymentStatus === "cod" || order.paymentStatus === "paid") {
       for (const item of order.items) {
-        await Product.updateOne(
-          { _id: item.productId, "variants._id": item.variantId },
-          { $inc: { "variants.$.stock": item.quantity, "variants.$.sold": -item.quantity } }
-        );
+        const product = await Product.findById(item.productId);
+        const variant = product?.variants.id(item.variantId);
+        if (!product || !variant) continue;
+
+        const quantity = Number(item.quantity) || 0;
+        if (quantity <= 0) continue;
+
+        const previousStock = Number(variant.stock) || 0;
+        const variantIndex = product.variants.findIndex(v => String(v._id) === String(item.variantId));
+
+        if (isSerializedVariant(product, variant)) {
+          restockSerializedUnits({
+            product,
+            variant,
+            quantity,
+            variantIndex
+          });
+        } else {
+          variant.stock = previousStock + quantity;
+        }
+
+        variant.sold = Math.max(0, (Number(variant.sold) || 0) - quantity);
+        await product.save();
+
+        await StockLog.create({
+          productId: item.productId,
+          variantId: item.variantId,
+          changeType: "return",
+          previousStock,
+          newStock: variant.stock,
+          change: variant.stock - previousStock,
+          reason: `Order ${order.orderId} cancelled by user`,
+          userId: req.user.userId
+        });
       }
     }
 

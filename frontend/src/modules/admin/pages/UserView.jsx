@@ -22,7 +22,10 @@ const UserView = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
+    const [metrics, setMetrics] = useState(null);
     const [orders, setOrders] = useState([]);
+    const [addresses, setAddresses] = useState([]);
+    const [lastAddress, setLastAddress] = useState(null);
     const [loading, setLoading] = useState(true);
     const [toggling, setToggling] = useState(false);
 
@@ -30,12 +33,12 @@ const UserView = () => {
         const loadUser = async () => {
             setLoading(true);
             try {
-                const [userData, userOrders] = await Promise.all([
-                    adminService.getUserById(id),
-                    adminService.getOrders({ userId: id, limit: 50 })
-                ]);
-                setUser(userData);
-                setOrders(userOrders || []);
+                const userData = await adminService.getUserById(id);
+                setUser(userData?.user || null);
+                setMetrics(userData?.metrics || null);
+                setOrders(userData?.recentOrders || []);
+                setAddresses(userData?.addresses || []);
+                setLastAddress(userData?.lastAddress || null);
             } catch (err) {
                 toast.error("Failed to load user details");
             } finally {
@@ -45,24 +48,22 @@ const UserView = () => {
         loadUser();
     }, [id]);
 
-    const totalSpend = useMemo(
-        () => orders.reduce((acc, order) => acc + (order.total || 0), 0),
-        [orders]
-    );
-
-    const lastOrder = orders[0];
-    const lastAddress = lastOrder?.shippingAddress;
+    const totalSpend = useMemo(() => metrics?.spentAmount || 0, [metrics]);
 
     const handleToggleBlock = async () => {
         if (!user) return;
         setToggling(true);
-        const success = await adminService.toggleUserStatus(user._id || user.id);
-        if (success) {
-            toast.success(user.isBlocked ? "User unblocked" : "User blocked");
+        const response = await adminService.toggleUserStatus(user._id || user.id);
+        if (response?.success) {
+            toast.success(response.message || (user.isBlocked ? "User unblocked" : "User blocked"));
             const refreshed = await adminService.getUserById(user._id || user.id);
-            setUser(refreshed);
+            setUser(refreshed?.user || null);
+            setMetrics(refreshed?.metrics || null);
+            setOrders(refreshed?.recentOrders || []);
+            setAddresses(refreshed?.addresses || []);
+            setLastAddress(refreshed?.lastAddress || null);
         } else {
-            toast.error("Failed to update user status");
+            toast.error(response?.message || "Failed to update user status");
         }
         setToggling(false);
     };
@@ -147,7 +148,7 @@ const UserView = () => {
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <AdminStatsCard
                             label="Orders"
-                            value={orders.length}
+                            value={metrics?.ordersCount || 0}
                             icon={Package}
                             color="text-blue-600"
                             bgColor="bg-blue-50"
@@ -161,7 +162,7 @@ const UserView = () => {
                         />
                         <AdminStatsCard
                             label="Wishlist"
-                            value={user.wishlist?.length || 0}
+                            value={user.wishlistCount || user.wishlist?.length || 0}
                             icon={Heart}
                             color="text-rose-600"
                             bgColor="bg-rose-50"
@@ -183,10 +184,40 @@ const UserView = () => {
                         </div>
                         {lastAddress ? (
                             <div className="text-sm font-semibold text-gray-700">
-                                {lastAddress.firstName} {lastAddress.lastName}, {lastAddress.flatNo} {lastAddress.area}, {lastAddress.city}, {lastAddress.state} - {lastAddress.pincode}
+                                {[lastAddress.name || `${lastAddress.firstName || ''} ${lastAddress.lastName || ''}`.trim(), lastAddress.phone, lastAddress.flatNo, lastAddress.area, lastAddress.city, lastAddress.state, lastAddress.pincode]
+                                    .filter(Boolean)
+                                    .join(', ')}
                             </div>
                         ) : (
-                            <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">No orders yet</div>
+                            <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">No saved address yet</div>
+                        )}
+                    </div>
+
+                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                        <div className="flex items-center gap-2 mb-4">
+                            <MapPin size={16} className="text-gray-400" />
+                            <h3 className="text-xs font-black uppercase tracking-widest text-gray-500">Address Book</h3>
+                        </div>
+                        {addresses.length > 0 ? (
+                            <div className="space-y-3">
+                                {addresses.slice(0, 3).map((address) => (
+                                    <div key={address._id} className="p-4 rounded-xl border border-gray-100 bg-gray-50">
+                                        <div className="flex items-center justify-between gap-3">
+                                            <p className="text-xs font-black text-gray-900 uppercase tracking-widest">{address.type}</p>
+                                            {address.isDefault && (
+                                                <span className="px-2 py-1 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest border border-emerald-100">
+                                                    Default
+                                                </span>
+                                            )}
+                                        </div>
+                                        <p className="text-xs font-bold text-gray-700 mt-2">
+                                            {[address.name, address.phone, address.flatNo, address.area, address.city, address.state, address.pincode].filter(Boolean).join(', ')}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">No addresses saved</div>
                         )}
                     </div>
 
@@ -194,7 +225,7 @@ const UserView = () => {
                     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                         <div className="p-6 border-b border-gray-50 flex items-center justify-between">
                             <h3 className="text-xs font-black uppercase tracking-widest text-gray-500">Order History</h3>
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{orders.length} orders</span>
+                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{metrics?.ordersCount || orders.length} orders</span>
                         </div>
                         <div className="divide-y divide-gray-50">
                             {orders.length > 0 ? orders.slice(0, 10).map((order) => (

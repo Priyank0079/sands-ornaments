@@ -10,6 +10,7 @@ const InventoryReportsPage = () => {
     const [loading, setLoading] = useState(false);
     const [categoryData, setCategoryData] = useState([]);
     const [salesData, setSalesData] = useState([]);
+    const [ownerData, setOwnerData] = useState([]);
 
     useEffect(() => {
         const loadInventory = async () => {
@@ -22,9 +23,11 @@ const InventoryReportsPage = () => {
                 const categoryMap = new Map();
                 const productPriceMap = new Map();
                 const productCategoryMap = new Map();
+                const ownerMap = new Map();
 
                 (inventory || []).forEach(p => {
                     const categoryName = p.categories?.[0]?.name || 'Uncategorized';
+                    const ownerName = p.sellerId?.shopName || p.sellerId?.fullName || 'Admin Inventory';
                     const variants = p.variants || [];
                     const totalQty = variants.reduce((acc, v) => acc + (v.stock || 0), 0);
                     const avgPrice = variants.length > 0
@@ -48,9 +51,18 @@ const InventoryReportsPage = () => {
                         productPriceMap.set(productKey, avgUnitPrice);
                         productCategoryMap.set(productKey, categoryName);
                     }
+
+                    if (!ownerMap.has(ownerName)) {
+                        ownerMap.set(ownerName, { owner: ownerName, units: 0, productCount: 0, estimatedValue: 0 });
+                    }
+                    const currentOwner = ownerMap.get(ownerName);
+                    currentOwner.units += totalQty;
+                    currentOwner.productCount += 1;
+                    currentOwner.estimatedValue += value;
                 });
 
                 setCategoryData(Array.from(categoryMap.values()));
+                setOwnerData(Array.from(ownerMap.values()).sort((a, b) => b.units - a.units));
 
                 const salesMap = new Map();
                 (logs || []).forEach(log => {
@@ -61,6 +73,7 @@ const InventoryReportsPage = () => {
                         id: productKey,
                         name: log.productId?.name || 'Unknown',
                         category: productCategoryMap.get(productKey) || 'Uncategorized',
+                        owner: log.productId?.sellerId?.shopName || log.productId?.sellerId?.fullName || 'Admin Inventory',
                         sold: 0,
                         avgPrice: Math.round(productPriceMap.get(productKey) || 0),
                         revenue: 0
@@ -96,6 +109,38 @@ const InventoryReportsPage = () => {
         return categoryData.reduce((top, current) => (current.value > (top?.value || 0) ? current : top), null);
     }, [categoryData]);
 
+    const exportActiveReport = () => {
+        const rows = activeTab === 'category'
+            ? [
+                ['Category', 'Unique Products', 'Total Quantity', 'Estimated Value'],
+                ...categoryData.map((item) => [item.category, item.uniqueProducts, item.totalQty, item.value])
+            ]
+            : [
+                ['Product Name', 'Category', 'Units Sold', 'Average Price', 'Total Revenue'],
+                ...salesData.map((item) => [item.name, item.category, item.sold, item.avgPrice, item.revenue])
+            ];
+
+        if (rows.length <= 1) {
+            toast.error(`No ${activeTab === 'category' ? 'category' : 'sales'} data available to export`);
+            return;
+        }
+
+        const csv = rows
+            .map((row) => row.map((value) => `"${String(value ?? '').replace(/"/g, '""')}"`).join(','))
+            .join('\n');
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `${activeTab}-inventory-report-${Date.now()}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        toast.success(`${activeTab === 'category' ? 'Category' : 'Sales'} report exported`);
+    };
+
     return (
         <div className="space-y-8 font-sans animate-in fade-in duration-500">
             {/* Header */}
@@ -108,8 +153,11 @@ const InventoryReportsPage = () => {
                     <button className="px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 transition-all shadow-sm flex items-center gap-2">
                         <Calendar size={14} /> This Month
                     </button>
-                    <button className="px-4 py-2 bg-[#1a1a1a] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-lg active:scale-95 flex items-center gap-2">
-                        <Download size={14} /> Export PDF
+                    <button
+                        onClick={exportActiveReport}
+                        className="px-4 py-2 bg-[#1a1a1a] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-lg active:scale-95 flex items-center gap-2"
+                    >
+                        <Download size={14} /> Export CSV
                     </button>
                 </div>
             </div>
@@ -162,6 +210,36 @@ const InventoryReportsPage = () => {
                                 </span>
                             </div>
                         </div>
+                    </div>
+
+                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                        <div className="px-6 py-4 border-b border-gray-100">
+                            <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Inventory Ownership</h3>
+                        </div>
+                        <table className="w-full text-left">
+                            <thead className="bg-[#F8FAFC] border-b border-gray-100">
+                                <tr>
+                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Owner</th>
+                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Products</th>
+                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Units</th>
+                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Estimated Value</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-50">
+                                {loading ? (
+                                    <tr><td colSpan="4" className="px-6 py-12 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">Loading ownership...</td></tr>
+                                ) : ownerData.length === 0 ? (
+                                    <tr><td colSpan="4" className="px-6 py-12 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">No ownership data available</td></tr>
+                                ) : ownerData.map((item) => (
+                                    <tr key={item.owner} className="hover:bg-gray-50/50 transition-colors">
+                                        <td className="px-6 py-4 text-xs font-black text-gray-900">{item.owner}</td>
+                                        <td className="px-6 py-4 text-center text-xs font-bold text-gray-600">{item.productCount}</td>
+                                        <td className="px-6 py-4 text-center text-xs font-bold text-gray-600">{item.units}</td>
+                                        <td className="px-6 py-4 text-right text-sm font-black text-gray-900">INR {item.estimatedValue.toLocaleString()}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
 
                     {/* Category Table */}
@@ -225,6 +303,7 @@ const InventoryReportsPage = () => {
                             <thead className="bg-[#F8FAFC] border-b border-gray-100">
                                 <tr>
                                     <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest w-[40%]">Product Name</th>
+                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Owner</th>
                                     <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Category</th>
                                     <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Units Sold</th>
                                     <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Avg Price</th>
@@ -233,12 +312,13 @@ const InventoryReportsPage = () => {
                             </thead>
                             <tbody className="divide-y divide-gray-50">
                                 {loading ? (
-                                    <tr><td colSpan="5" className="px-6 py-12 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">Loading sales...</td></tr>
+                                    <tr><td colSpan="6" className="px-6 py-12 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">Loading sales...</td></tr>
                                 ) : salesData.length === 0 ? (
-                                    <tr><td colSpan="5" className="px-6 py-12 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">No sales data yet</td></tr>
+                                    <tr><td colSpan="6" className="px-6 py-12 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">No sales data yet</td></tr>
                                 ) : salesData.map((item, idx) => (
                                     <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
                                         <td className="px-6 py-4 text-xs font-black text-gray-900">{item.name}</td>
+                                        <td className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">{item.owner}</td>
                                         <td className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">{item.category}</td>
                                         <td className="px-6 py-4 text-center text-xs font-black text-blue-600">{item.sold}</td>
                                         <td className="px-6 py-4 text-right text-xs font-bold text-gray-500">INR {item.avgPrice}</td>

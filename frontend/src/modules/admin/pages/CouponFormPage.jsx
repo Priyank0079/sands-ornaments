@@ -14,6 +14,7 @@ const CouponFormPage = () => {
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
     const ALL_CATEGORIES = categories || [];
+    const [errors, setErrors] = useState({});
 
     const [formData, setFormData] = useState({
         code: '',
@@ -84,7 +85,9 @@ const CouponFormPage = () => {
         const { name, value, type, checked } = e.target;
         setFormData(prev => ({
             ...prev,
-            [name]: type === 'checkbox' ? checked : value
+            [name]: name === 'code'
+                ? String(value).toUpperCase().replace(/[^A-Z0-9_-]/g, '')
+                : (type === 'checkbox' ? checked : value)
         }));
     };
 
@@ -99,14 +102,54 @@ const CouponFormPage = () => {
         });
     };
 
+    const validateForm = () => {
+        const nextErrors = {};
+        if (!formData.code.trim()) nextErrors.code = 'Coupon code is required';
+        if (!formData.validFrom) nextErrors.validFrom = 'Start date is required';
+        if (!formData.validUntil) nextErrors.validUntil = 'Expiry date is required';
+        if (formData.validFrom && formData.validUntil && new Date(formData.validUntil) <= new Date(formData.validFrom)) {
+            nextErrors.validUntil = 'Expiry must be after the start date';
+        }
+        if (formData.type !== 'free_shipping' && (formData.value === '' || Number(formData.value) <= 0)) {
+            nextErrors.value = 'Discount value must be greater than 0';
+        }
+        if (formData.type === 'percentage' && Number(formData.value) > 100) {
+            nextErrors.value = 'Percentage discount cannot exceed 100';
+        }
+        if (Number(formData.minOrderValue || 0) < 0) {
+            nextErrors.minOrderValue = 'Minimum order cannot be negative';
+        }
+        if (formData.type === 'percentage' && formData.maxDiscount !== '' && Number(formData.maxDiscount) < 0) {
+            nextErrors.maxDiscount = 'Max discount cannot be negative';
+        }
+        if (formData.usageLimit !== '' && Number(formData.usageLimit) < 1) {
+            nextErrors.usageLimit = 'Usage limit must be at least 1';
+        }
+        if (Number(formData.perUserLimit || 0) < 1) {
+            nextErrors.perUserLimit = 'Per-user limit must be at least 1';
+        }
+        if (formData.userEligibility !== 'new' && formData.applicabilityType === 'category' && formData.targetItems.length === 0) {
+            nextErrors.targetItems = 'Select at least one category';
+        }
+        if (formData.userEligibility !== 'new' && formData.applicabilityType === 'product' && formData.targetItems.length === 0) {
+            nextErrors.targetItems = 'Select at least one product';
+        }
+        setErrors(nextErrors);
+        return Object.keys(nextErrors).length === 0;
+    };
+
     const handleSave = async (e) => {
         e.preventDefault();
+        if (!validateForm()) {
+            toast.error('Please fix the highlighted coupon fields');
+            return;
+        }
 
         // Map targetItems to specific backend fields
         const payload = {
             code: formData.code.toUpperCase(),
             type: formData.type,
-            value: Number(formData.value),
+            value: formData.type === 'free_shipping' ? 0 : Number(formData.value),
             minOrderValue: Number(formData.minOrderValue) || 0,
             maxDiscount: formData.type === 'percentage' ? (Number(formData.maxDiscount) || null) : null,
             validFrom: formData.validFrom ? new Date(formData.validFrom).toISOString() : null,
@@ -164,6 +207,7 @@ const CouponFormPage = () => {
                                     name="code"
                                     value={formData.code}
                                     onChange={handleChange}
+                                    error={errors.code}
                                     placeholder="e.g., WELCOME50"
                                 />
                                 <div className="text-right">
@@ -195,6 +239,7 @@ const CouponFormPage = () => {
                                     name="value"
                                     value={formData.value}
                                     onChange={handleChange}
+                                    error={errors.value}
                                     disabled={formData.type === 'free_shipping'}
                                     placeholder={formData.type === 'percentage' ? 'e.g., 20' : 'e.g., 500'}
                                 />
@@ -325,6 +370,9 @@ const CouponFormPage = () => {
                                     </div>
                                 )}
                             </div>
+                            {errors.targetItems && (
+                                <p className="text-[10px] text-red-500 font-bold">{errors.targetItems}</p>
+                            )}
                         </div>
                     </FormSection>
                 </div>
@@ -339,6 +387,7 @@ const CouponFormPage = () => {
                                 name="validFrom"
                                 value={formData.validFrom}
                                 onChange={handleChange}
+                                error={errors.validFrom}
                             />
                             <Input
                                 label="Expiry Date"
@@ -346,6 +395,7 @@ const CouponFormPage = () => {
                                 name="validUntil"
                                 value={formData.validUntil}
                                 onChange={handleChange}
+                                error={errors.validUntil}
                             />
                         </div>
                     </FormSection>
@@ -359,6 +409,7 @@ const CouponFormPage = () => {
                                 name="minOrderValue"
                                 value={formData.minOrderValue}
                                 onChange={handleChange}
+                                error={errors.minOrderValue}
                             />
                             <Input
                                 label="Max Discount (INR)"
@@ -366,6 +417,7 @@ const CouponFormPage = () => {
                                 name="maxDiscount"
                                 value={formData.maxDiscount}
                                 onChange={handleChange}
+                                error={errors.maxDiscount}
                                 disabled={formData.type === 'flat'}
                             />
                             <div className="grid grid-cols-2 gap-4">
@@ -375,6 +427,7 @@ const CouponFormPage = () => {
                                     name="usageLimit"
                                     value={formData.usageLimit}
                                     onChange={handleChange}
+                                    error={errors.usageLimit}
                                 />
                                 <Input
                                     label="User Limit"
@@ -382,6 +435,7 @@ const CouponFormPage = () => {
                                     name="perUserLimit"
                                     value={formData.perUserLimit}
                                     onChange={handleChange}
+                                    error={errors.perUserLimit}
                                 />
                             </div>
                         </div>

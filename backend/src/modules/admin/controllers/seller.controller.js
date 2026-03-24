@@ -1,31 +1,188 @@
+const mongoose = require("mongoose");
 const Seller = require("../../../models/Seller");
+const Product = require("../../../models/Product");
+const Order = require("../../../models/Order");
 const { success, error } = require("../../../utils/apiResponse");
 const { sendEmail } = require("../../../services/emailService");
+
+const escapeRegex = (value = "") => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const buildSellerMetrics = async (sellerIds = []) => {
+  const normalizedIds = sellerIds
+    .filter(Boolean)
+    .map((id) => new mongoose.Types.ObjectId(String(id)));
+
+  if (!normalizedIds.length) {
+    return new Map();
+  }
+
+  const [productMetrics, orderMetrics] = await Promise.all([
+    Product.aggregate([
+      {
+        $match: {
+          sellerId: { $in: normalizedIds }
+        }
+      },
+      {
+        $project: {
+          sellerId: 1,
+          variantCount: { $size: { $ifNull: ["$variants", []] } },
+          stockUnits: {
+            $sum: {
+              $map: {
+                input: { $ifNull: ["$variants", []] },
+                as: "variant",
+                in: { $ifNull: ["$$variant.stock", 0] }
+              }
+            }
+          }
+        }
+      },
+      {
+        $group: {
+          _id: "$sellerId",
+          productCount: { $sum: 1 },
+          variantCount: { $sum: "$variantCount" },
+          stockUnits: { $sum: "$stockUnits" }
+        }
+      }
+    ]),
+    Order.aggregate([
+      {
+        $match: {
+          "items.sellerId": { $in: normalizedIds },
+          status: { $ne: "Cancelled" }
+        }
+      },
+      { $unwind: "$items" },
+      {
+        $match: {
+          "items.sellerId": { $in: normalizedIds }
+        }
+      },
+      {
+        $group: {
+          _id: "$items.sellerId",
+          orderIds: { $addToSet: "$_id" },
+          totalRevenue: {
+            $sum: {
+              $multiply: [
+                { $ifNull: ["$items.price", 0] },
+                { $ifNull: ["$items.quantity", 0] }
+              ]
+            }
+          },
+          unitsSold: { $sum: { $ifNull: ["$items.quantity", 0] } }
+        }
+      }
+    ])
+  ]);
+
+  const metricsMap = new Map();
+
+  productMetrics.forEach((item) => {
+    metricsMap.set(String(item._id), {
+      productCount: item.productCount || 0,
+      variantCount: item.variantCount || 0,
+      stockUnits: item.stockUnits || 0,
+      orderCount: 0,
+      unitsSold: 0,
+      totalRevenue: 0
+    });
+  });
+
+  orderMetrics.forEach((item) => {
+    const existing = metricsMap.get(String(item._id)) || {
+      productCount: 0,
+      variantCount: 0,
+      stockUnits: 0,
+      orderCount: 0,
+      unitsSold: 0,
+      totalRevenue: 0
+    };
+
+    existing.orderCount = item.orderIds?.length || 0;
+    existing.unitsSold = item.unitsSold || 0;
+    existing.totalRevenue = Math.round(item.totalRevenue || 0);
+
+    metricsMap.set(String(item._id), existing);
+  });
+
+  return metricsMap;
+};
 
 exports.getSellers = async (req, res) => {
   try {
     const { status, search } = req.query;
     const query = {};
-    if (status) query.status = status;
+
+    if (status && ["PENDING", "APPROVED", "REJECTED"].includes(status)) {
+      query.status = status;
+    }
+
     if (search) {
+      const escaped = escapeRegex(search.trim());
       query.$or = [
-        { shopName: { $regex: search, $options: "i" } },
-        { fullName: { $regex: search, $options: "i" } },
-        { email: { $regex: search, $options: "i" } }
+        { shopName: { $regex: escaped, $options: "i" } },
+        { fullName: { $regex: escaped, $options: "i" } },
+        { email: { $regex: escaped, $options: "i" } },
+        { mobileNumber: { $regex: escaped, $options: "i" } }
       ];
     }
 
-    const sellers = await Seller.find(query).sort({ createdAt: -1 });
-    return success(res, { sellers }, "Sellers retrieved");
-  } catch (err) { return error(res, err.message); }
+    const sellers = await Seller.find(query).select("-password").sort({ createdAt: -1 }).lean();
+    const metricsMap = await buildSellerMetrics(sellers.map((seller) => seller._id));
+
+    const enrichedSellers = sellers.map((seller) => ({
+      ...seller,
+      metrics: metricsMap.get(String(seller._id)) || {
+        productCount: 0,
+        variantCount: 0,
+        stockUnits: 0,
+        orderCount: 0,
+        unitsSold: 0,
+        totalRevenue: 0
+      }
+    }));
+
+    return success(res, { sellers: enrichedSellers }, "Sellers retrieved");
+  } catch (err) {
+    return error(res, err.message);
+  }
 };
 
 exports.getSellerDetail = async (req, res) => {
   try {
-    const seller = await Seller.findById(req.params.id);
+    const seller = await Seller.findById(req.params.id).select("-password").lean();
     if (!seller) return error(res, "Seller not found", 404);
-    return success(res, { seller }, "Seller details retrieved");
-  } catch (err) { return error(res, err.message); }
+
+    const metricsMap = await buildSellerMetrics([seller._id]);
+    const recentProducts = await Product.find({ sellerId: seller._id })
+      .select("name images categories variants status createdAt")
+      .populate("categories", "name")
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .lean();
+
+    return success(
+      res,
+      {
+        seller,
+        metrics: metricsMap.get(String(seller._id)) || {
+          productCount: 0,
+          variantCount: 0,
+          stockUnits: 0,
+          orderCount: 0,
+          unitsSold: 0,
+          totalRevenue: 0
+        },
+        recentProducts
+      },
+      "Seller details retrieved"
+    );
+  } catch (err) {
+    return error(res, err.message);
+  }
 };
 
 exports.updateSellerStatus = async (req, res) => {
@@ -40,28 +197,43 @@ exports.updateSellerStatus = async (req, res) => {
     const seller = await Seller.findById(id);
     if (!seller) return error(res, "Seller not found", 404);
 
-    seller.status = status;
-    if (status === "REJECTED") {
-      if (!rejectionReason || !rejectionReason.trim()) {
-        return error(res, "Rejection reason is required", 400);
-      }
-      seller.rejectionReason = rejectionReason;
-    } else {
-      seller.rejectionReason = null;
+    const trimmedReason = String(rejectionReason || "").trim();
+
+    if (status === "REJECTED" && !trimmedReason) {
+      return error(res, "Rejection reason is required", 400);
     }
-    
-    await seller.save();
+
+    const isSameStatus =
+      seller.status === status &&
+      (status !== "REJECTED" || (seller.rejectionReason || "") === trimmedReason);
+
+    if (!isSameStatus) {
+      seller.status = status;
+      seller.rejectionReason = status === "REJECTED" ? trimmedReason : null;
+      await seller.save();
+    }
 
     if (seller.email) {
-      await sendEmail({
-        email: seller.email,
-        subject: `Your seller account has been ${status.toLowerCase()}`,
-        message: status === "APPROVED"
-          ? `Hi ${seller.fullName}, your seller account is approved. You can now log in to the seller panel.`
-          : `Hi ${seller.fullName}, your seller account was rejected. Reason: ${rejectionReason || "Not specified"}.`,
-      });
+      try {
+        await sendEmail({
+          email: seller.email,
+          subject: status === "APPROVED" ? "Seller account approved" : "Seller account application update",
+          message:
+            status === "APPROVED"
+              ? `Hi ${seller.fullName}, your seller account for ${seller.shopName} is approved. You can now log in to the seller panel.`
+              : `Hi ${seller.fullName}, your seller account application for ${seller.shopName} was rejected. Reason: ${trimmedReason}.`
+        });
+      } catch (mailErr) {
+        console.error("Seller status email failed:", mailErr.message);
+      }
     }
-    
-    return success(res, { seller }, `Seller ${status.toLowerCase()} successfully`);
-  } catch (err) { return error(res, err.message); }
+
+    return success(
+      res,
+      { seller: seller.toObject({ versionKey: false, transform: (_, ret) => { delete ret.password; return ret; } }) },
+      isSameStatus ? "Seller status already up to date" : `Seller ${status.toLowerCase()} successfully`
+    );
+  } catch (err) {
+    return error(res, err.message);
+  }
 };

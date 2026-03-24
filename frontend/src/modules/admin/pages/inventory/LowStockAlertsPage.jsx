@@ -96,7 +96,13 @@ const LowStockAlertsPage = () => {
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-4">
                                                 <div className={`w-12 h-12 bg-gray-50 rounded-lg border border-gray-100 p-1 flex-shrink-0 relative ${isOOS ? 'grayscale opacity-75' : ''}`}>
-                                                    <img src={item.productImage} className="w-full h-full object-contain mix-blend-multiply" />
+                                                    {item.productImage ? (
+                                                        <img src={item.productImage} alt="" className="w-full h-full object-contain mix-blend-multiply" />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center">
+                                                            <Package size={18} className="text-gray-300" />
+                                                        </div>
+                                                    )}
                                                     {isOOS && (
                                                         <div className="absolute inset-0 flex items-center justify-center bg-gray-100/50 rounded-lg">
                                                             <AlertTriangle size={16} className="text-red-500" />
@@ -106,6 +112,7 @@ const LowStockAlertsPage = () => {
                                                 <div>
                                                     <p className="text-sm font-bold text-black line-clamp-1">{item.productName}</p>
                                                     <p className="text-[10px] text-gray-400 uppercase tracking-widest">{item.variantName || 'Standard'}</p>
+                                                    <p className="text-[10px] text-gray-400 uppercase tracking-widest">{item.sellerName || 'Admin Inventory'}</p>
                                                 </div>
                                             </div>
                                         </td>

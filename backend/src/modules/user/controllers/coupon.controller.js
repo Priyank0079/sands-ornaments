@@ -3,9 +3,15 @@ const { success, error } = require("../../../utils/apiResponse");
 
 exports.getPublicCoupons = async (req, res) => {
   try {
+    const now = new Date();
     const coupons = await Coupon.find({ 
       active: true, 
-      validUntil: { $gte: new Date() } 
+      validFrom: { $lte: now },
+      validUntil: { $gte: now },
+      $or: [
+        { usageLimit: null },
+        { $expr: { $lt: ["$usageCount", "$usageLimit"] } }
+      ]
     }).select("code type value minOrderValue description validUntil");
     return success(res, { coupons }, "Active coupons retrieved");
   } catch (err) { return error(res, err.message); }

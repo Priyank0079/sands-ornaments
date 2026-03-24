@@ -54,18 +54,24 @@ const StockAdjustmentPage = () => {
                 const item = products.find(p => p.variantId === variantId);
                 if (!item) continue;
                 const newStock = item.stock + delta;
-                await adminService.adjustStock({
+                if (newStock < 0) {
+                    throw new Error(`Stock cannot go below zero for ${item.name}`);
+                }
+                const response = await adminService.adjustStock({
                     productId: item.productId,
                     variantId,
                     newStock,
                     reason: "Manual adjustment by Admin"
                 });
+                if (!response?.success) {
+                    throw new Error(response?.message || `Failed to update ${item.name}`);
+                }
             }
             toast.success("Inventory updated");
             setAdjustments({});
             await loadInventory();
         } catch (err) {
-            toast.error("Failed to update inventory");
+            toast.error(err?.message || "Failed to update inventory");
         } finally {
             setSaving(false);
         }

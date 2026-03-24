@@ -1,7 +1,9 @@
 const Return = require("../../../models/Return");
 const Order = require("../../../models/Order");
 const Product = require("../../../models/Product");
+const StockLog = require("../../../models/StockLog");
 const { success, error } = require("../../../utils/apiResponse");
+const { isSerializedVariant, restockSerializedUnits } = require("../../../utils/inventorySync");
 
 exports.getAllReturns = async (req, res) => {
   try {
@@ -43,10 +45,42 @@ exports.updateReturnStatus = async (req, res) => {
         // Restock each returned item
         for (const item of returnReq.items) {
           if (item.productId && item.variantId && item.quantity) {
-            await Product.updateOne(
-              { _id: item.productId, "variants._id": item.variantId },
-              { $inc: { "variants.$.stock": item.quantity, "variants.$.sold": -item.quantity } }
-            );
+            const product = await Product.findById(item.productId);
+            if (!product) continue;
+
+            const variant = product.variants.id(item.variantId);
+            if (!variant) continue;
+
+            const previousStock = Number(variant.stock) || 0;
+            const quantity = Number(item.quantity) || 0;
+            const variantIndex = product.variants.findIndex(v => String(v._id) === String(item.variantId));
+
+            if (quantity <= 0) continue;
+
+            if (isSerializedVariant(product, variant)) {
+              restockSerializedUnits({
+                product,
+                variant,
+                quantity,
+                variantIndex
+              });
+            } else {
+              variant.stock = previousStock + quantity;
+            }
+
+            variant.sold = Math.max(0, (Number(variant.sold) || 0) - quantity);
+            await product.save();
+
+            await StockLog.create({
+              productId: product._id,
+              variantId: variant._id,
+              changeType: "return",
+              previousStock,
+              newStock: variant.stock,
+              change: variant.stock - previousStock,
+              reason: `Return ${status} for order ${order.orderId || order._id}`,
+              adminId: req.user.userId
+            });
           }
         }
 

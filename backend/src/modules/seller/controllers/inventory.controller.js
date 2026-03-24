@@ -1,6 +1,7 @@
 const Product = require("../../../models/Product");
 const StockLog = require("../../../models/StockLog");
 const { success, error } = require("../../../utils/apiResponse");
+const { isSerializedVariant, setSerializedVariantStock } = require("../../../utils/inventorySync");
 
 exports.getInventory = async (req, res) => {
   try {
@@ -35,8 +36,25 @@ exports.adjustStock = async (req, res) => {
     const variant = product.variants.id(variantId);
     if (!variant) return error(res, "Variant not found", 404);
 
-    const previousStock = variant.stock;
-    variant.stock = Number(newStock);
+    const nextStock = Number(newStock);
+    if (nextStock < 0) {
+      return error(res, "Stock cannot be negative", 400);
+    }
+
+    const previousStock = Number(variant.stock) || 0;
+    const variantIndex = product.variants.findIndex(v => String(v._id) === String(variantId));
+
+    if (isSerializedVariant(product, variant)) {
+      setSerializedVariantStock({
+        product,
+        variant,
+        desiredStock: nextStock,
+        variantIndex
+      });
+    } else {
+      variant.stock = nextStock;
+    }
+
     await product.save();
 
     await StockLog.create({
@@ -44,8 +62,8 @@ exports.adjustStock = async (req, res) => {
       variantId,
       changeType: "adjustment",
       previousStock,
-      newStock,
-      change: newStock - previousStock,
+      newStock: variant.stock,
+      change: variant.stock - previousStock,
       reason: reason || "Manual adjustment by Seller",
       sellerId: req.user.userId
     });

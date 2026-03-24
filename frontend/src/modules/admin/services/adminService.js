@@ -384,7 +384,7 @@ export const adminService = {
   getSellerDetails: async (id) => {
     try {
       const res = await api.get(`admin/sellers/${id}`);
-      return res.data.data?.seller || res.data.seller;
+      return res.data.data || { seller: res.data.seller };
     } catch (err) {
       console.error("Admin fetch seller details failed:", err);
       throw err;
@@ -393,10 +393,17 @@ export const adminService = {
   updateSellerStatus: async (id, status, rejectionReason = null) => {
     try {
       const res = await api.patch(`admin/sellers/${id}/status`, { status, rejectionReason });
-      return res.data.success;
+      return {
+        success: res.data.success,
+        seller: res.data.data?.seller || res.data.seller || null,
+        message: res.data.message || `Seller ${status.toLowerCase()} successfully`
+      };
     } catch (err) {
       console.error("Admin update seller status failed:", err);
-      return false;
+      return {
+        success: false,
+        message: err.response?.data?.message || "Failed to update seller"
+      };
     }
   },
 
@@ -413,7 +420,7 @@ export const adminService = {
   getUserById: async (id) => {
     try {
       const res = await api.get(`admin/users/${id}`);
-      return res.data.data?.user || res.data.user;
+      return res.data.data || { user: res.data.user };
     } catch (err) {
       console.error("Admin fetch user details failed:", err);
       throw err;
@@ -422,10 +429,17 @@ export const adminService = {
   toggleUserStatus: async (id) => {
     try {
       const res = await api.patch(`admin/users/${id}/block`);
-      return res.data.success;
+      return {
+        success: res.data.success,
+        user: res.data.data?.user || res.data.user || null,
+        message: res.data.message || "User status updated"
+      };
     } catch (err) {
       console.error("Admin toggle user status failed:", err);
-      return false;
+      return {
+        success: false,
+        message: err.response?.data?.message || "Failed to update user status"
+      };
     }
   },
 

@@ -15,6 +15,7 @@ import { adminService } from '../services/adminService';
 import Pagination from '../components/Pagination';
 import DataTable from '../components/common/DataTable';
 import AdminStatsCard from '../components/AdminStatsCard';
+import toast from 'react-hot-toast';
 
 const CouponListPage = () => {
     const navigate = useNavigate();
@@ -61,6 +62,9 @@ const CouponListPage = () => {
             const success = await adminService.deleteCoupon(id);
             if (success) {
                 setCoupons(prev => prev.filter(c => (c._id || c.id) !== id));
+                toast.success("Coupon deleted");
+            } else {
+                toast.error("Failed to delete coupon");
             }
         }
     };
@@ -71,6 +75,9 @@ const CouponListPage = () => {
             setCoupons(prev => prev.map(c => 
                 (c._id || c.id) === id ? { ...c, active: !c.active } : c
             ));
+            toast.success(res.message || "Coupon updated");
+        } else {
+            toast.error(res?.message || "Failed to update coupon");
         }
     };
 

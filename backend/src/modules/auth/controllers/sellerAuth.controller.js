@@ -29,7 +29,10 @@ exports.register = async (req, res) => {
       bankAccount
     } = req.body;
 
-    const existing = await Seller.findOne({ $or: [{ email }, { mobileNumber }] });
+    const normalizedEmail = String(email || "").trim().toLowerCase();
+    const normalizedMobile = String(mobileNumber || "").trim();
+
+    const existing = await Seller.findOne({ $or: [{ email: normalizedEmail }, { mobileNumber: normalizedMobile }] });
     if (existing) return error(res, "Seller with this email or mobile already exists", 400);
 
     const salt = await bcrypt.genSalt(10);
@@ -51,8 +54,8 @@ exports.register = async (req, res) => {
     const seller = await Seller.create({
       shopName,
       fullName,
-      email,
-      mobileNumber,
+      email: normalizedEmail,
+      mobileNumber: normalizedMobile,
       password: hashedPassword,
       gstNumber,
       panNumber,
@@ -80,11 +83,15 @@ exports.register = async (req, res) => {
     });
 
     if (process.env.ADMIN_EMAIL) {
-      await sendEmail({
-        email: process.env.ADMIN_EMAIL,
-        subject: "New seller registration pending approval",
-        message: `New seller registration received.\n\nName: ${fullName}\nShop: ${shopName}\nEmail: ${email}\nMobile: ${mobileNumber}\nGST: ${gstNumber || "N/A"}\nPAN: ${panNumber || "N/A"}\nBIS: ${bisNumber || "N/A"}\nLocation: ${city || "N/A"}, ${state || "N/A"}\n\nReview in admin panel.`,
-      });
+      try {
+        await sendEmail({
+          email: process.env.ADMIN_EMAIL,
+          subject: "New seller registration pending approval",
+          message: `New seller registration received.\n\nName: ${fullName}\nShop: ${shopName}\nEmail: ${normalizedEmail}\nMobile: ${normalizedMobile}\nGST: ${gstNumber || "N/A"}\nPAN: ${panNumber || "N/A"}\nBIS: ${bisNumber || "N/A"}\nLocation: ${city || "N/A"}, ${state || "N/A"}\n\nReview in admin panel.`,
+        });
+      } catch (mailErr) {
+        console.error("Admin seller registration email failed:", mailErr.message);
+      }
     }
 
     return success(res, { sellerId: seller._id }, "Registration submitted. Awaiting admin approval.", 201);
@@ -94,15 +101,22 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password, identifier } = req.body;
-    const lookup = identifier || email;
+    const lookup = String(identifier || email || "").trim().toLowerCase();
 
     const seller = await Seller.findOne({
       $or: [{ email: lookup }, { mobileNumber: lookup }]
     });
     if (!seller) return error(res, "Invalid credentials", 401);
 
-    if (seller.status !== "APPROVED") {
-      return error(res, `Account ${seller.status.toLowerCase()}. Please contact support.`, 403);
+    if (seller.status === "PENDING") {
+      return error(res, "Your seller account is under review. Please wait for admin approval.", 403);
+    }
+
+    if (seller.status === "REJECTED") {
+      const rejectionMessage = seller.rejectionReason
+        ? `Your seller account was rejected. Reason: ${seller.rejectionReason}`
+        : "Your seller account was rejected. Please contact support.";
+      return error(res, rejectionMessage, 403);
     }
 
     const isMatch = await bcrypt.compare(password, seller.password);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Store, User, MapPin, CreditCard, ShieldCheck, FileText, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, Store, User, CreditCard, ShieldCheck, FileText, CheckCircle, XCircle, Package, ShoppingBag, IndianRupee, Boxes } from 'lucide-react';
 import { adminService } from '../services/adminService';
 import toast from 'react-hot-toast';
 
@@ -8,14 +8,22 @@ const AdminSellerDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [seller, setSeller] = useState(null);
+    const [metrics, setMetrics] = useState(null);
+    const [recentProducts, setRecentProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     const fetchSeller = async () => {
+        setLoading(true);
         try {
             const data = await adminService.getSellerDetails(id);
-            setSeller(data);
+            setSeller(data?.seller || null);
+            setMetrics(data?.metrics || null);
+            setRecentProducts(data?.recentProducts || []);
         } catch (err) {
             console.error("Seller load failed");
             toast.error("Failed to load seller");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -27,17 +35,18 @@ const AdminSellerDetails = () => {
     const [rejectReason, setRejectReason] = useState('');
 
     const handleAction = async (status, reason = null) => {
-        const success = await adminService.updateSellerStatus(id, status, reason);
-        if (success) {
+        const response = await adminService.updateSellerStatus(id, status, reason);
+        if (response?.success) {
             if (status === 'REJECTED') setShowRejectModal(false);
-            toast.success(`Seller ${status.toLowerCase()}`);
+            toast.success(response.message || `Seller ${status.toLowerCase()}`);
             fetchSeller();
         } else {
-            toast.error("Failed to update seller");
+            toast.error(response?.message || "Failed to update seller");
         }
     };
 
-    if (!seller) return <div className="p-8 text-center text-gray-500 font-bold uppercase tracking-widest">Loading Seller Profile...</div>;
+    if (loading) return <div className="p-8 text-center text-gray-500 font-bold uppercase tracking-widest">Loading Seller Profile...</div>;
+    if (!seller) return <div className="p-8 text-center text-gray-500 font-bold uppercase tracking-widest">Seller not found.</div>;
 
     const sectionTitleClasses = "text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2";
     const infoLabelClasses = "text-[9px] font-black text-gray-400 uppercase tracking-widest";
@@ -135,6 +144,37 @@ const AdminSellerDetails = () => {
                     <p className="text-xs font-bold text-red-900 uppercase tracking-widest leading-relaxed">"{seller.rejectionReason}"</p>
                 </div>
             )}
+
+            <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+                <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Products</p>
+                    <div className="flex items-center justify-between">
+                        <p className="text-3xl font-black text-gray-900">{metrics?.productCount || 0}</p>
+                        <Package className="text-gray-300" size={24} />
+                    </div>
+                </div>
+                <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Inventory Units</p>
+                    <div className="flex items-center justify-between">
+                        <p className="text-3xl font-black text-gray-900">{metrics?.stockUnits || 0}</p>
+                        <Boxes className="text-gray-300" size={24} />
+                    </div>
+                </div>
+                <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Orders</p>
+                    <div className="flex items-center justify-between">
+                        <p className="text-3xl font-black text-gray-900">{metrics?.orderCount || 0}</p>
+                        <ShoppingBag className="text-gray-300" size={24} />
+                    </div>
+                </div>
+                <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Revenue</p>
+                    <div className="flex items-center justify-between">
+                        <p className="text-3xl font-black text-gray-900">{(metrics?.totalRevenue || 0).toLocaleString()}</p>
+                        <IndianRupee className="text-gray-300" size={24} />
+                    </div>
+                </div>
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Column 1: Personal & Bank */}
@@ -264,6 +304,77 @@ const AdminSellerDetails = () => {
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <div className={cardClasses}>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                    <h3 className={sectionTitleClasses}>
+                        <Package size={14} className="text-[#3E2723]" /> Recent Seller Products
+                    </h3>
+                    <button
+                        onClick={() => navigate(`/admin/products?sellerId=${seller._id}`)}
+                        className="px-4 py-2 bg-gray-50 border border-gray-200 text-gray-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-100 transition-all"
+                    >
+                        View All Seller Products
+                    </button>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead className="bg-[#F8FAFC] border-b border-gray-100">
+                            <tr>
+                                <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Product</th>
+                                <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Category</th>
+                                <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Variants</th>
+                                <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Stock</th>
+                                <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50">
+                            {recentProducts.length === 0 ? (
+                                <tr>
+                                    <td colSpan="5" className="px-4 py-10 text-center text-xs font-bold uppercase tracking-widest text-gray-400">
+                                        No seller products yet
+                                    </td>
+                                </tr>
+                            ) : recentProducts.map((product) => {
+                                const totalStock = (product.variants || []).reduce((sum, variant) => sum + (variant.stock || 0), 0);
+                                return (
+                                    <tr key={product._id} className="hover:bg-gray-50/50 transition-colors">
+                                        <td className="px-4 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 bg-gray-50 rounded-lg border border-gray-100 p-1 flex-shrink-0">
+                                                    {product.images?.[0] ? (
+                                                        <img src={product.images[0]} alt="" className="w-full h-full object-contain mix-blend-multiply" />
+                                                    ) : (
+                                                        <Package size={16} className="text-gray-300 m-auto" />
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs font-black text-gray-900 uppercase tracking-tight">{product.name}</p>
+                                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                                        Added {new Date(product.createdAt).toLocaleDateString()}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-500">
+                                            {product.categories?.[0]?.name || 'Uncategorized'}
+                                        </td>
+                                        <td className="px-4 py-4 text-center text-xs font-black text-gray-700">{product.variants?.length || 0}</td>
+                                        <td className="px-4 py-4 text-center text-xs font-black text-gray-700">{totalStock}</td>
+                                        <td className="px-4 py-4 text-right">
+                                            <span className={`px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-widest border ${
+                                                product.status === 'Active' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-gray-50 text-gray-500 border-gray-100'
+                                            }`}>
+                                                {product.status}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
