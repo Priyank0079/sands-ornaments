@@ -33,14 +33,14 @@ exports.getBanners = async (req, res) => {
 
 exports.getBlogs = async (req, res) => {
   try {
-    const blogs = await Blog.find({ status: "Published" }).sort({ createdAt: -1 });
+    const blogs = await Blog.find({ isPublished: true }).sort({ publishedAt: -1, createdAt: -1 });
     return success(res, { blogs });
   } catch (err) { return error(res, err.message); }
 };
 
 exports.getBlogDetail = async (req, res) => {
   try {
-    const blog = await Blog.findOne({ slug: req.params.slug, status: "Published" });
+    const blog = await Blog.findOne({ slug: req.params.slug, isPublished: true });
     if (!blog) return error(res, "Blog not found", 404);
     return success(res, { blog });
   } catch (err) { return error(res, err.message); }

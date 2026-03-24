@@ -587,6 +587,15 @@ export const adminService = {
   },
 
   // Dynamic Pages (CMS)
+  getPages: async () => {
+    try {
+      const res = await api.get('admin/pages');
+      return res.data.data?.pages || res.data.pages || [];
+    } catch (err) {
+      console.error("Fetch pages failed:", err);
+      return [];
+    }
+  },
   getPageBySlug: async (slug) => {
     try {
       const res = await api.get(`admin/pages/${slug}`);

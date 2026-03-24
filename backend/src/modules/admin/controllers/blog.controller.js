@@ -2,6 +2,13 @@ const Blog = require("../../../models/Blog");
 const slugify = require("../../../utils/slugify");
 const { success, error } = require("../../../utils/apiResponse");
 
+const parseBoolean = (value, fallback = undefined) => {
+  if (value === undefined) return fallback;
+  if (typeof value === "boolean") return value;
+  if (typeof value === "string") return value === "true";
+  return Boolean(value);
+};
+
 exports.getBlogs = async (req, res) => {
   try {
     const blogs = await Blog.find().sort({ createdAt: -1 });
@@ -23,25 +30,29 @@ exports.getBlogById = async (req, res) => {
 
 exports.createBlog = async (req, res) => {
   try {
-    const { title, slug, content, category, excerpt, author, tags, isPublished } = req.body;
+    const { title, slug, content, category, excerpt, author, tags, isPublished, coverImage } = req.body;
+    if (!String(title || "").trim()) return error(res, "Blog title is required", 400);
+    if (!String(content || "").trim()) return error(res, "Blog content is required", 400);
+    if (!String(category || "").trim()) return error(res, "Blog category is required", 400);
     
     const blogSlug = slug ? slugify(slug) : slugify(title);
     
     // Check for duplicate slug
     const existing = await Blog.findOne({ slug: blogSlug });
     if (existing) return error(res, "A blog with this title/slug already exists", 409);
+    const published = parseBoolean(isPublished, true);
 
     const blog = await Blog.create({
-      title,
+      title: String(title).trim(),
       slug: blogSlug,
-      content,
-      category,
-      excerpt,
-      coverImage: req.file ? req.file.path : null,
+      content: String(content).trim(),
+      category: String(category).trim(),
+      excerpt: String(excerpt || "").trim(),
+      coverImage: req.file ? req.file.path : String(coverImage || "").trim() || null,
       author: author || "SANDS Admin",
       tags: tags ? (Array.isArray(tags) ? tags : JSON.parse(tags)) : [],
-      isPublished: isPublished !== undefined ? isPublished : true,
-      publishedAt: isPublished !== false ? new Date() : null
+      isPublished: published,
+      publishedAt: published ? new Date() : null
     });
 
     return success(res, { blog }, "Blog created successfully", 201);
@@ -53,33 +64,44 @@ exports.createBlog = async (req, res) => {
 exports.updateBlog = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, slug, content, category, excerpt, author, tags, isPublished } = req.body;
+    const { title, slug, content, category, excerpt, author, tags, isPublished, coverImage } = req.body;
 
     const blog = await Blog.findById(id);
     if (!blog) return error(res, "Blog not found", 404);
 
     if (title) {
-        blog.title = title;
+        blog.title = String(title).trim();
         if (!slug) blog.slug = slugify(title);
     }
     if (slug) blog.slug = slugify(slug);
+
+    const duplicate = await Blog.findOne({ slug: blog.slug, _id: { $ne: id } });
+    if (duplicate) return error(res, "A blog with this title/slug already exists", 409);
     
-    if (content !== undefined) blog.content = content;
-    if (category !== undefined) blog.category = category;
-    if (excerpt !== undefined) blog.excerpt = excerpt;
+    if (content !== undefined) blog.content = String(content).trim();
+    if (category !== undefined) blog.category = String(category).trim();
+    if (excerpt !== undefined) blog.excerpt = String(excerpt || "").trim();
     if (author !== undefined) blog.author = author;
     if (tags !== undefined) blog.tags = Array.isArray(tags) ? tags : JSON.parse(tags);
     
     if (isPublished !== undefined) {
-        if (isPublished && !blog.isPublished) blog.publishedAt = new Date();
-        blog.isPublished = isPublished;
+        const published = parseBoolean(isPublished, blog.isPublished);
+        if (published && !blog.isPublished) blog.publishedAt = new Date();
+        if (!published) blog.publishedAt = null;
+        blog.isPublished = published;
     }
 
     if (req.file) {
       blog.coverImage = req.file.path;
+    } else if (coverImage !== undefined) {
+      blog.coverImage = String(coverImage || "").trim() || null;
     } else if (req.body.removeImage === 'true') {
       blog.coverImage = null;
     }
+
+    if (!String(blog.title || "").trim()) return error(res, "Blog title is required", 400);
+    if (!String(blog.content || "").trim()) return error(res, "Blog content is required", 400);
+    if (!String(blog.category || "").trim()) return error(res, "Blog category is required", 400);
 
     await blog.save();
     return success(res, { blog }, "Blog updated successfully");

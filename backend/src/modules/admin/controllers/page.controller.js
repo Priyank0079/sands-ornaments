@@ -1,6 +1,12 @@
 const Page = require("../../../models/Page");
 const { success, error } = require("../../../utils/apiResponse");
 
+const normalizePagePayload = (body = {}) => ({
+  slug: String(body.slug || "").trim().toLowerCase(),
+  title: String(body.title || "").trim(),
+  content: String(body.content || "").trim(),
+});
+
 // Public: Get page content by slug
 exports.getPageBySlug = async (req, res) => {
   try {
@@ -26,9 +32,11 @@ exports.getAllPages = async (req, res) => {
 // Admin: Upsert page (Create or Update)
 exports.upsertPage = async (req, res) => {
   try {
-    const { slug, title, content } = req.body;
-    
-    if (!slug) return error(res, "Slug is required", 400);
+    const { slug, title, content } = normalizePagePayload(req.body);
+
+    if (!slug) return error(res, "Page slug is required", 400);
+    if (!title) return error(res, "Page title is required", 400);
+    if (!content) return error(res, "Page content is required", 400);
 
     const page = await Page.findOneAndUpdate(
       { slug },

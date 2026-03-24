@@ -22,6 +22,7 @@ import PrivacyPolicy from './modules/user/pages/PrivacyPolicy';
 import Notifications from './modules/user/pages/Notifications';
 import AnnouncementBar from './modules/user/components/AnnouncementBar';
 import BlogsPage from './modules/user/pages/BlogsPage';
+import BlogDetailPage from './modules/user/pages/BlogDetailPage';
 import DynamicPage from './modules/user/pages/DynamicPage';
 import GoldComingSoon from './modules/user/pages/GoldComingSoon';
 
@@ -64,6 +65,7 @@ import GlobalSettings from './modules/admin/pages/GlobalSettings';
 import SectionManagement from './modules/admin/pages/SectionManagement';
 import SectionEditor from './modules/admin/pages/SectionEditor';
 import DynamicPageEditor from './modules/admin/pages/DynamicPageEditor';
+import PageManagement from './modules/admin/pages/PageManagement';
 import AdminSellersPage from './modules/admin/pages/AdminSellersPage';
 import AdminSellerDetails from './modules/admin/pages/AdminSellerDetails';
 import AdminNotifications from './modules/admin/pages/AdminNotifications';
@@ -124,6 +126,7 @@ const AppContent = () => {
           <Route path="/category/:category" element={<Shop />} />
           <Route path="/gold-collection" element={<GoldComingSoon />} />
           <Route path="/blogs" element={<BlogsPage />} />
+          <Route path="/blogs/:slug" element={<BlogDetailPage />} />
 
           {/* Admin Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
@@ -168,6 +171,7 @@ const AppContent = () => {
                   <Route path="/blogs" element={<BlogManagement />} />
                   <Route path="/sections" element={<SectionManagement />} />
                   <Route path="/sections/:id" element={<SectionEditor />} />
+                  <Route path="/pages" element={<PageManagement />} />
                   <Route path="/pages/:pageId" element={<DynamicPageEditor />} />
                   <Route path="/sellers" element={<AdminSellersPage />} />
                   <Route path="/seller-details/:id" element={<AdminSellerDetails />} />

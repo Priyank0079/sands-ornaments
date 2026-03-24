@@ -6,20 +6,7 @@ import { Save, ArrowLeft, Layout, Type, Image as ImageIcon } from 'lucide-react'
 import PageHeader from '../components/common/PageHeader';
 import { adminService } from '../services/adminService';
 import toast from 'react-hot-toast';
-
-// Page configuration map to handle titles and keys dynamically
-const PAGE_CONFIG = {
-    'privacy-policy': { title: 'Privacy Policy', subtitle: 'Manage your privacy policy content' },
-    'terms-conditions': { title: 'Terms & Conditions', subtitle: 'Update terms of service' },
-    'return-refund-policy': { title: 'Return & Refund Policy', subtitle: 'Edit return and refund processing details' },
-    'shipping-policy': { title: 'Shipping Policy', subtitle: 'Manage shipping zones and delivery times' },
-    'cancellation-policy': { title: 'Cancellation Policy', subtitle: 'Update order cancellation rules' },
-    'jewelry-care': { title: 'Jewelry Care Instructions', subtitle: 'Guide customers on how to care for their jewelry' },
-    'warranty-info': { title: 'Warranty Information', subtitle: 'Details about product warranty and coverage' },
-    'our-craftsmanship': { title: 'Our Craftsmanship', subtitle: 'Share the story of your artisans' },
-    'customization': { title: 'Customization Services', subtitle: 'Details about custom jewelry options' },
-    'about-us': { title: 'About Us', subtitle: 'Company history and mission' },
-};
+import { PAGE_CONFIG } from './PageManagement';
 
 const DynamicPageEditor = ({ pageId: propPageId }) => {
     const { pageId: paramPageId } = useParams();
@@ -30,13 +17,14 @@ const DynamicPageEditor = ({ pageId: propPageId }) => {
     // Redirect if pageId is invalid
     useEffect(() => {
         if (!config) {
-            navigate('/admin/dashboard');
+            navigate('/admin/pages');
         }
     }, [pageId, navigate, config]);
 
     const [content, setContent] = useState('');
     const [title, setTitle] = useState(config?.title || '');
     const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
 
     // Fetch data from backend
     useEffect(() => {
@@ -65,10 +53,20 @@ const DynamicPageEditor = ({ pageId: propPageId }) => {
     }, [pageId, config]);
 
     const handleSave = async () => {
+        if (!title.trim()) {
+            toast.error("Page title is required");
+            return;
+        }
+        if (!content || !content.replace(/<[^>]+>/g, '').trim()) {
+            toast.error("Page content is required");
+            return;
+        }
+
+        setSaving(true);
         try {
             const res = await adminService.savePage({
                 slug: pageId,
-                title,
+                title: title.trim(),
                 content
             });
 
@@ -80,6 +78,8 @@ const DynamicPageEditor = ({ pageId: propPageId }) => {
         } catch (err) {
             console.error("Save page failed:", err);
             toast.error("An error occurred while saving");
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -120,10 +120,11 @@ const DynamicPageEditor = ({ pageId: propPageId }) => {
                 </div>
                 <button
                     onClick={handleSave}
-                    className="flex items-center justify-center gap-2 px-6 py-3 bg-[#3E2723] text-white rounded-xl text-sm font-bold hover:bg-[#5D4037] transition-all shadow-lg shadow-[#3E2723]/20 active:scale-95"
+                    disabled={saving}
+                    className="flex items-center justify-center gap-2 px-6 py-3 bg-[#3E2723] text-white rounded-xl text-sm font-bold hover:bg-[#5D4037] transition-all shadow-lg shadow-[#3E2723]/20 active:scale-95 disabled:opacity-60"
                 >
                     <Save className="w-5 h-5" />
-                    Save Changes
+                    {saving ? 'Saving...' : 'Save Changes'}
                 </button>
             </div>
 

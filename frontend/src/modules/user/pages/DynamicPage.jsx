@@ -29,6 +29,14 @@ const DynamicPage = ({ slug: propSlug }) => {
         window.scrollTo(0, 0);
     }, [slug]);
 
+    useEffect(() => {
+        if (page?.title) {
+            document.title = `${page.title} | Sands Ornaments`;
+        } else {
+            document.title = 'Sands Ornaments';
+        }
+    }, [page]);
+
     if (loading) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDF5F6]">

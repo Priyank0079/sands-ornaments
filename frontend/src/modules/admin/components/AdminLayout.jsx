@@ -102,7 +102,7 @@ const AdminLayout = ({ children }) => {
                 { name: 'Warranty Info', path: '/admin/pages/warranty-info', icon: FileText },
                 { name: 'Our Craftsmanship', path: '/admin/pages/our-craftsmanship', icon: FileText },
                 { name: 'Customization', path: '/admin/pages/customization', icon: FileText },
-                { name: 'About Us', path: '/admin/about-us', icon: FileText },
+                { name: 'About Us', path: '/admin/pages/about-us', icon: FileText },
             ]
         },
         { name: 'Blogs', icon: BookOpen, path: '/admin/blogs' },
