@@ -1,6 +1,9 @@
 const Seller = require("../../../models/Seller");
 const bcrypt = require("bcryptjs");
 const { success, error } = require("../../../utils/apiResponse");
+const Setting = require("../../../models/Setting");
+const Product = require("../../../models/Product");
+const { applyMetalPricingToProduct } = require("../../../utils/metalPricing");
 
 exports.getProfile = async (req, res) => {
   try {
@@ -87,5 +90,44 @@ exports.changePassword = async (req, res) => {
     await seller.save();
 
     return success(res, {}, "Password updated successfully");
+  } catch (err) { return error(res, err.message); }
+};
+
+exports.getMetalPricing = async (req, res) => {
+  try {
+    const seller = await Seller.findById(req.user.userId).select("metalRates");
+    if (!seller) return error(res, "Seller not found", 404);
+    const settings = await Setting.findOne();
+    return success(res, {
+      metalRates: seller.metalRates || {},
+      gstRate: settings?.gstRate || 0
+    }, "Metal pricing retrieved");
+  } catch (err) { return error(res, err.message); }
+};
+
+exports.updateMetalPricing = async (req, res) => {
+  try {
+    const { metalRates } = req.body || {};
+    const seller = await Seller.findById(req.user.userId);
+    if (!seller) return error(res, "Seller not found", 404);
+
+    if (metalRates && typeof metalRates === "object") {
+      seller.metalRates = {
+        ...seller.metalRates,
+        ...metalRates
+      };
+    }
+    await seller.save();
+
+    const settings = await Setting.findOne();
+    const gstRate = settings?.gstRate || 0;
+
+    const products = await Product.find({ sellerId: req.user.userId });
+    for (const product of products) {
+      applyMetalPricingToProduct(product, seller.metalRates || {}, gstRate);
+      await product.save();
+    }
+
+    return success(res, { metalRates: seller.metalRates, gstRate }, "Metal pricing updated successfully");
   } catch (err) { return error(res, err.message); }
 };

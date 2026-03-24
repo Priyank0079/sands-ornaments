@@ -91,5 +91,25 @@ export const sellerService = {
             console.error("Failed to change password:", err);
             return { success: false, message: err.response?.data?.message || "Password update failed" };
         }
+    },
+
+    getMetalPricing: async () => {
+        try {
+            const res = await api.get('/seller/profile/metal-pricing');
+            return res.data?.data || res.data || { metalRates: {}, gstRate: 0 };
+        } catch (err) {
+            console.error("Failed to fetch metal pricing:", err);
+            return { metalRates: {}, gstRate: 0 };
+        }
+    },
+
+    updateMetalPricing: async (payload) => {
+        try {
+            const res = await api.patch('/seller/profile/metal-pricing', payload);
+            return res.data;
+        } catch (err) {
+            console.error("Failed to update metal pricing:", err);
+            return { success: false, message: err.response?.data?.message || "Metal pricing update failed" };
+        }
     }
 };

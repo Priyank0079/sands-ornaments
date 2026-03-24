@@ -7,6 +7,7 @@ import { FormSection, Input, Select, TextArea } from '../../admin/components/com
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { sellerProductService } from '../services/sellerProductService';
+import { sellerService } from '../services/sellerService';
 import api from '../../../services/api';
 import toast from 'react-hot-toast';
 import { downloadImage } from '../../../utils/downloadUtils';
@@ -29,7 +30,7 @@ const quillFormats = [
     'link'
 ];
 
-const SellerProductEditor = ({ productApi, backPath = '/seller/products' }) => {
+const SellerProductEditor = ({ productApi, metalPricingApi, backPath = '/seller/products' }) => {
     const { id } = useParams();
     const navigate = useNavigate();
     const location = useLocation();
@@ -74,6 +75,29 @@ const SellerProductEditor = ({ productApi, backPath = '/seller/products' }) => {
     const getSerialPrefix = () => {
         const base = String(formData.name || 'ITEM').toUpperCase().replace(/[^A-Z0-9]/g, '');
         return base.substring(0, 4) || 'ITEM';
+    };
+
+    const getMetalRate = () => {
+        const unit = String(formData.weightUnit || 'Grams').toLowerCase();
+        const isGold = String(formData.material || '').toLowerCase() === 'gold';
+        if (unit === 'milligrams' || unit === 'milligram') {
+            return isGold ? Number(metalRates.goldPerMilligram) || 0 : Number(metalRates.silverPerMilligram) || 0;
+        }
+        return isGold ? Number(metalRates.goldPerGram) || 0 : Number(metalRates.silverPerGram) || 0;
+    };
+
+    const getMetalPrice = () => {
+        const weight = Number(formData.weight) || 0;
+        return weight * getMetalRate();
+    };
+
+    const getPricingForVariant = (variant) => {
+        const metalPrice = getMetalPrice();
+        const makingCharge = Number(variant.makingCharge) || 0;
+        const diamondPrice = Number(variant.diamondPrice) || 0;
+        const gstValue = Number(gstRate) || 0;
+        const finalPrice = metalPrice + makingCharge + diamondPrice + gstValue;
+        return { metalPrice, gstValue, finalPrice };
     };
 
     const generateSerialCode = (existingSet, variantIndex, prefixOverride) => {
@@ -141,6 +165,13 @@ const SellerProductEditor = ({ productApi, backPath = '/seller/products' }) => {
     };
 
     const { globalGst } = useShop();
+    const [metalRates, setMetalRates] = useState({
+        goldPerGram: 0,
+        goldPerMilligram: 0,
+        silverPerGram: 0,
+        silverPerMilligram: 0
+    });
+    const [gstRate, setGstRate] = useState(parseFloat(globalGst) || 0);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -164,7 +195,7 @@ const SellerProductEditor = ({ productApi, backPath = '/seller/products' }) => {
         navGiftsFor: [],
         navOccasions: [],
         variants: [
-            { id: Date.now(), name: 'Standard', makingCharge: '0', diamondPrice: '0', mrp: globalGst || '0', price: '', stock: 0, serialCodes: [] }
+            { id: Date.now(), name: 'Standard', makingCharge: '0', diamondPrice: '0', mrp: globalGst || '0', price: '', stock: 0, serialCodes: [], metalPrice: 0, gst: 0, finalPrice: 0 }
         ],
         faqs: [],
         deletedImages: [],
@@ -179,6 +210,10 @@ const SellerProductEditor = ({ productApi, backPath = '/seller/products' }) => {
         getProduct: sellerProductService.getSellerProductRaw,
         createProduct: sellerProductService.addProduct,
         updateProduct: sellerProductService.updateProduct
+    };
+
+    const resolvedMetalPricingApi = metalPricingApi || {
+        getMetalPricing: sellerService.getMetalPricing
     };
 
     useEffect(() => {
@@ -203,6 +238,28 @@ const SellerProductEditor = ({ productApi, backPath = '/seller/products' }) => {
         loadCategories();
     }, []);
 
+    useEffect(() => {
+        const loadPricing = async () => {
+            try {
+                const res = await resolvedMetalPricingApi.getMetalPricing();
+                if (res?.metalRates) {
+                    setMetalRates({
+                        goldPerGram: res.metalRates.goldPerGram ?? 0,
+                        goldPerMilligram: res.metalRates.goldPerMilligram ?? 0,
+                        silverPerGram: res.metalRates.silverPerGram ?? 0,
+                        silverPerMilligram: res.metalRates.silverPerMilligram ?? 0
+                    });
+                }
+                if (res?.gstRate !== undefined && res?.gstRate !== null) {
+                    setGstRate(Number(res.gstRate) || 0);
+                }
+            } catch (err) {
+                // silent fallback to local GST
+            }
+        };
+        loadPricing();
+    }, []);
+
     // Auto-generate Product Code Logic
     useEffect(() => {
         if (!isEditMode && formData.name.length >= 3 && !formData.productCode) {
@@ -211,6 +268,23 @@ const SellerProductEditor = ({ productApi, backPath = '/seller/products' }) => {
             setFormData(prev => ({ ...prev, productCode: `${prefix}${random}` }));
         }
     }, [formData.name, isEditMode, formData.productCode]);
+
+    useEffect(() => {
+        setFormData(prev => ({
+            ...prev,
+            variants: prev.variants.map(v => {
+                const pricing = getPricingForVariant(v);
+                return {
+                    ...v,
+                    mrp: pricing.finalPrice.toString(),
+                    price: pricing.finalPrice.toString(),
+                    metalPrice: pricing.metalPrice,
+                    gst: pricing.gstValue,
+                    finalPrice: pricing.finalPrice
+                };
+            })
+        }));
+    }, [formData.material, formData.weight, formData.weightUnit, gstRate, metalRates]);
 
     useEffect(() => {
         const loadProduct = async () => {
@@ -336,19 +410,13 @@ const SellerProductEditor = ({ productApi, backPath = '/seller/products' }) => {
                 if (v.id === vid) {
                     const updated = { ...v, [field]: value };
                     
-                    // Recalculate MRP if charges change
                     if (['makingCharge', 'diamondPrice'].includes(field)) {
-                        updated.mrp = (
-                            (parseFloat(updated.makingCharge) || 0) + 
-                            (parseFloat(updated.diamondPrice) || 0) + 
-                            (parseFloat(globalGst) || 0)
-                        ).toString();
-                    }
-
-                    if ((field === 'mrp' || field === 'price') && updated.mrp && updated.price) {
-                        const m = parseFloat(updated.mrp);
-                        const p = parseFloat(updated.price);
-                        updated.discount = m > p ? Math.round(((m - p) / m) * 100) : 0;
+                        const pricing = getPricingForVariant(updated);
+                        updated.mrp = pricing.finalPrice.toString();
+                        updated.price = pricing.finalPrice.toString();
+                        updated.metalPrice = pricing.metalPrice;
+                        updated.gst = pricing.gstValue;
+                        updated.finalPrice = pricing.finalPrice;
                     }
                     return updated;
                 }
@@ -1016,6 +1084,7 @@ const SellerProductEditor = ({ productApi, backPath = '/seller/products' }) => {
                             <div className="space-y-6">
                                 {formData.variants.map((v, idx) => {
                                     const availableCount = getAvailableSerialCodes(v).length;
+                                    const pricing = getPricingForVariant(v);
                                     return (
                                     <div key={v.id} className="flex flex-col gap-6 bg-[#FDFBF7] p-8 rounded-[2rem] border border-gray-100 group relative shadow-sm hover:shadow-md transition-all">
                                         {!isViewMode && formData.variants.length > 1 && (
@@ -1051,7 +1120,7 @@ const SellerProductEditor = ({ productApi, backPath = '/seller/products' }) => {
                                                         className="w-full bg-white border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723]/30 transition-all shadow-sm" 
                                                         placeholder="0" 
                                                     />
-                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 font-bold group-focus-within/field:text-[#3E2723]">₹</span>
+                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
                                                 </div>
                                             </div>
                                             <div className="space-y-2">
@@ -1070,9 +1139,37 @@ const SellerProductEditor = ({ productApi, backPath = '/seller/products' }) => {
                                             </div>
                                         </div>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 border-t border-gray-100/50 pt-8">
+                                        <div className="grid grid-cols-1 md:grid-cols-5 gap-8 border-t border-gray-100/50 pt-8">
                                             <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest ml-1">Retail MRP (Calculated)</label>
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Metal Price (Auto)</label>
+                                                <div className="relative group/field">
+                                                    <input 
+                                                        type="number" 
+                                                        value={pricing.metalPrice.toFixed(2)} 
+                                                        readOnly
+                                                        disabled={isViewMode} 
+                                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-black text-gray-700 outline-none shadow-sm" 
+                                                        placeholder="0" 
+                                                    />
+                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">GST (Auto)</label>
+                                                <div className="relative group/field">
+                                                    <input 
+                                                        type="number" 
+                                                        value={pricing.gstValue.toFixed(2)} 
+                                                        readOnly
+                                                        disabled={isViewMode} 
+                                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-700 outline-none shadow-sm" 
+                                                        placeholder="0" 
+                                                    />
+                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest ml-1">Final Price (Calculated)</label>
                                                 <div className="relative group/field">
                                                     <input 
                                                         type="number" 
@@ -1080,26 +1177,11 @@ const SellerProductEditor = ({ productApi, backPath = '/seller/products' }) => {
                                                         readOnly
                                                         disabled={isViewMode} 
                                                         className="w-full bg-amber-50/20 border border-amber-100/30 rounded-2xl py-4 pl-12 pr-6 text-sm font-black text-[#3E2723] outline-none shadow-sm" 
-                                                        placeholder="Calculated MRP" 
+                                                        placeholder="Final Price" 
                                                     />
                                                     <span className="absolute left-5 top-1/2 -translate-y-1/2 text-amber-600 font-bold">₹</span>
                                                 </div>
                                                 {errors[`variant_${idx}_mrp`] && <div className="text-[10px] text-red-500 mt-1 ml-1">{errors[`variant_${idx}_mrp`]}</div>}
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Selling Price</label>
-                                                <div className="relative group/field">
-                                                    <input 
-                                                        type="number" 
-                                                        value={v.price} 
-                                                        onChange={(e) => handleVariantChange(v.id, 'price', e.target.value)} 
-                                                        disabled={isViewMode} 
-                                                        className="w-full bg-white border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723]/30 transition-all shadow-sm" 
-                                                        placeholder="Final Price" 
-                                                    />
-                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 font-bold group-focus-within/field:text-[#3E2723]">₹</span>
-                                                </div>
-                                                {errors[`variant_${idx}_price`] && <div className="text-[10px] text-red-500 mt-1 ml-1">{errors[`variant_${idx}_price`]}</div>}
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Serialized Quantity</label>

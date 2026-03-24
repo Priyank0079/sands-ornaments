@@ -2,6 +2,9 @@ const Product = require("../../../models/Product");
 const StockLog = require("../../../models/StockLog");
 const slugify = require("../../../utils/slugify");
 const { success, error } = require("../../../utils/apiResponse");
+const Seller = require("../../../models/Seller");
+const Setting = require("../../../models/Setting");
+const { applyMetalPricingToProduct } = require("../../../utils/metalPricing");
 
 const normalizeCategories = (categories) => {
   if (!categories) return [];
@@ -114,7 +117,12 @@ exports.createProduct = async (req, res) => {
       });
     }
 
-    const product = await Product.create({
+    const seller = await Seller.findById(sellerId);
+    const settings = await Setting.findOne();
+    const metalRates = seller?.metalRates || {};
+    const gstRate = settings?.gstRate || 0;
+
+    const productData = applyMetalPricingToProduct({
       ...data,
       sellerId,
       slug: finalSlug,
@@ -124,7 +132,9 @@ exports.createProduct = async (req, res) => {
       status: "Active",
       active: true,
       isSerialized: true
-    });
+    }, metalRates, gstRate);
+
+    const product = await Product.create(productData);
 
     if (product.variants && product.variants.length > 0) {
       const stockLogs = product.variants.map(v => ({
@@ -223,6 +233,12 @@ exports.updateProduct = async (req, res) => {
 
     Object.assign(product, safeData);
     product.isSerialized = true;
+
+    const seller = await Seller.findById(sellerId);
+    const settings = await Setting.findOne();
+    const metalRates = seller?.metalRates || {};
+    const gstRate = settings?.gstRate || 0;
+    applyMetalPricingToProduct(product, metalRates, gstRate);
     await product.save();
 
     return success(res, { product }, "Product updated successfully");
@@ -269,7 +285,7 @@ exports.scanProduct = async (req, res) => {
     await StockLog.create({
       productId: product._id,
       variantId: variant._id,
-      changeType: "sale_offline",
+      changeType: "sale",
       previousStock,
       newStock: variant.stock,
       change: -1,

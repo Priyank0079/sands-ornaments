@@ -35,7 +35,36 @@ const ProductDetails = () => {
     const navigate = useNavigate();
     const { addToCart, removeFromCart, cart, addToWishlist, removeFromWishlist, wishlist, products, isLoading } = useShop();
     const { user } = useAuth();
-    const product = (products || []).find(p => String(p.id || p._id) === String(id));
+    const catalogueProduct = (products || []).find(p => String(p.id || p._id) === String(id));
+    const [detailProduct, setDetailProduct] = useState(null);
+    const [detailLoading, setDetailLoading] = useState(false);
+    const product = detailProduct || catalogueProduct;
+
+    useEffect(() => {
+        let ignore = false;
+        const loadDetail = async () => {
+            if (!id) return;
+            setDetailLoading(true);
+            try {
+                const res = await api.get(`public/products/${id}`);
+                const data = res.data?.data?.product || res.data?.product;
+                if (!ignore && data) {
+                    setDetailProduct({
+                        ...data,
+                        id: data._id || data.id
+                    });
+                }
+            } catch (err) {
+                // fall back to catalogue data
+            } finally {
+                if (!ignore) setDetailLoading(false);
+            }
+        };
+        loadDetail();
+        return () => {
+            ignore = true;
+        };
+    }, [id]);
 
     useEffect(() => {
         if (product) {
@@ -199,7 +228,7 @@ const ProductDetails = () => {
     };
 
 
-    if (isLoading) {
+    if (isLoading || detailLoading) {
         return (
             <div className="bg-white min-h-screen flex items-center justify-center">
                 <div className="w-12 h-12 border-4 border-[#D39A9F] border-t-transparent rounded-full animate-spin"></div>
@@ -227,6 +256,14 @@ const ProductDetails = () => {
     const variantPrice = selectedVariant?.price ?? product.price;
     const variantMrp = selectedVariant?.mrp ?? product.originalPrice;
     const variantDiscount = variantMrp > variantPrice ? Math.round(((variantMrp - variantPrice) / variantMrp) * 100) : 0;
+    const pricingBreakdown = {
+        metalPrice: selectedVariant?.metalPrice ?? 0,
+        makingCharge: selectedVariant?.makingCharge ?? 0,
+        diamondPrice: selectedVariant?.diamondPrice ?? 0,
+        gst: selectedVariant?.gst ?? 0,
+        finalPrice: selectedVariant?.finalPrice ?? variantPrice ?? 0
+    };
+    const supplierName = product?.sellerId?.shopName || product?.supplierInfo || product?.brand || '';
 
     return (
         <div className="bg-white min-h-screen py-8 pb-24 md:pb-8 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out fill-mode-both selection:bg-[#D39A9F] selection:text-white">
@@ -325,6 +362,11 @@ const ProductDetails = () => {
                                 </div>
 
                             </div>
+                            {supplierName && (
+                                <div className="mt-2 text-xs uppercase tracking-widest text-gray-400 font-semibold">
+                                    Sold by <span className="text-gray-700 font-bold">{supplierName}</span>
+                                </div>
+                            )}
                         </div>
 
                         <div className="border-b border-gray-100 pb-6">
@@ -338,6 +380,32 @@ const ProductDetails = () => {
                                 )}
                             </div>
                             <p className="text-xs text-gray-500 font-medium">Inclusive of all taxes</p>
+                        </div>
+
+                        <div className="border-b border-gray-100 pb-6">
+                            <div className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-3">Price Breakdown</div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                                <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
+                                    <span className="text-gray-600">Metal Price</span>
+                                    <span className="font-semibold text-gray-900">â‚¹{Number(pricingBreakdown.metalPrice || 0).toLocaleString()}</span>
+                                </div>
+                                <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
+                                    <span className="text-gray-600">Making Charge</span>
+                                    <span className="font-semibold text-gray-900">â‚¹{Number(pricingBreakdown.makingCharge || 0).toLocaleString()}</span>
+                                </div>
+                                <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
+                                    <span className="text-gray-600">Diamond Price</span>
+                                    <span className="font-semibold text-gray-900">â‚¹{Number(pricingBreakdown.diamondPrice || 0).toLocaleString()}</span>
+                                </div>
+                                <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
+                                    <span className="text-gray-600">GST</span>
+                                    <span className="font-semibold text-gray-900">â‚¹{Number(pricingBreakdown.gst || 0).toLocaleString()}</span>
+                                </div>
+                            </div>
+                            <div className="mt-4 flex items-center justify-between border-t border-gray-200 pt-4">
+                                <span className="text-sm font-bold uppercase tracking-widest text-gray-500">Final Price</span>
+                                <span className="text-lg font-bold text-black">â‚¹{Number(pricingBreakdown.finalPrice || variantPrice || 0).toLocaleString()}</span>
+                            </div>
                         </div>
 
                         <div className="space-y-4 pb-2 md:pb-6">

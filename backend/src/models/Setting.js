@@ -14,7 +14,14 @@ const settingSchema = new mongoose.Schema({
   favicon: String,
   maintenanceMode: { type: Boolean, default: false },
   shippingCharges: { type: Number, default: 0 },
-  freeShippingThreshold: { type: Number, default: 0 }
+  freeShippingThreshold: { type: Number, default: 0 },
+  gstRate: { type: Number, default: 0 },
+  metalRates: {
+    goldPerGram: { type: Number, default: 0 },
+    goldPerMilligram: { type: Number, default: 0 },
+    silverPerGram: { type: Number, default: 0 },
+    silverPerMilligram: { type: Number, default: 0 }
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model("Setting", settingSchema);

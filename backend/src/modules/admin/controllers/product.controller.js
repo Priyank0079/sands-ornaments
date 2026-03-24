@@ -5,6 +5,8 @@ const HomepageSection = require("../../../models/HomepageSection");
 const slugify = require("../../../utils/slugify");
 const { deleteFromCloudinary } = require("../../../utils/cloudinaryUtils");
 const { success, error } = require("../../../utils/apiResponse");
+const Setting = require("../../../models/Setting");
+const { applyMetalPricingToProduct } = require("../../../utils/metalPricing");
 
 // BUG-10 FIX: explicit whitelist of fields that can be updated via API
 const PRODUCT_UPDATE_WHITELIST = [
@@ -72,7 +74,17 @@ exports.createProduct = async (req, res) => {
       });
     }
 
-    const product = await Product.create({ ...data, slug: productSlug, images, isSerialized: true });
+    const settings = await Setting.findOne();
+    const metalRates = settings?.metalRates || {};
+    const gstRate = settings?.gstRate || 0;
+
+    const productData = applyMetalPricingToProduct(
+      { ...data, slug: productSlug, images, isSerialized: true },
+      metalRates,
+      gstRate
+    );
+
+    const product = await Product.create(productData);
 
     const stockLogs = product.variants.map(v => ({
       productId:     product._id,
@@ -219,6 +231,11 @@ exports.updateProduct = async (req, res) => {
     }
 
     product.isSerialized = true;
+
+    const settings = await Setting.findOne();
+    const metalRates = settings?.metalRates || {};
+    const gstRate = settings?.gstRate || 0;
+    applyMetalPricingToProduct(product, metalRates, gstRate);
 
     await product.save();
     return success(res, { product }, "Product updated successfully");

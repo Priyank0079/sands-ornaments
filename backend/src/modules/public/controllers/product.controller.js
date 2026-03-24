@@ -91,11 +91,19 @@ exports.getProducts = async (req, res) => {
 
 /**
  * GET /api/products/:slug
+ * Supports slug or ObjectId.
  */
 exports.getProductDetail = async (req, res) => {
   try {
-    const product = await Product.findOne({ slug: req.params.slug, status: "Active", active: { $ne: false } })
-      .populate("categories", "name");
+    const identifier = req.params.slug;
+    const baseQuery = { status: "Active", active: { $ne: false } };
+    const lookup = mongoose.isValidObjectId(identifier)
+      ? { ...baseQuery, _id: identifier }
+      : { ...baseQuery, slug: identifier };
+
+    const product = await Product.findOne(lookup)
+      .populate("categories", "name slug metal")
+      .populate("sellerId", "shopName");
 
     if (!product) return error(res, "Product not found", 404);
 

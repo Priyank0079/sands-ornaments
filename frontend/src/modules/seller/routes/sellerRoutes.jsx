@@ -15,6 +15,7 @@ import SellerReturnDetail from '../pages/SellerReturnDetail';
 import SellerCustomers from '../pages/SellerCustomers';
 import SellerCustomerDetail from '../pages/SellerCustomerDetail';
 import SellerProfile from '../pages/SellerProfile';
+import SellerMetalPricing from '../pages/SellerMetalPricing';
 import SellerInventory from '../pages/SellerInventory';
 import SellerStockAdjustmentPage from '../pages/inventory/SellerStockAdjustmentPage';
 import SellerStockHistoryPage from '../pages/inventory/SellerStockHistoryPage';
@@ -92,6 +93,7 @@ const SellerRoutes = () => {
                             <Route path="/customers" element={<SellerCustomers />} />
                             <Route path="/customer-details/:id" element={<SellerCustomerDetail />} />
                             <Route path="/profile" element={<SellerProfile />} />
+                            <Route path="/metal-pricing" element={<SellerMetalPricing />} />
                             <Route path="/" element={<Navigate to="/seller/dashboard" replace />} />
                         </Routes>
                     </SellerLayout>

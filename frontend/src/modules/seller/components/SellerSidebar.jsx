@@ -12,6 +12,7 @@ import {
     ChevronDown,
     Boxes,
     RotateCcw,
+    RefreshCcw,
     AlertTriangle,
     Users,
     UserCircle
@@ -51,6 +52,7 @@ const SellerSidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
         { name: 'Returns', icon: RotateCcw, path: '/seller/returns' },
         { name: 'Customers', icon: Users, path: '/seller/customers' },
         { name: 'Direct Sales', icon: ScanLine, path: '/seller/offline-sale' },
+        { name: 'Metal Pricing', icon: RefreshCcw, path: '/seller/metal-pricing' },
         { name: 'Profile', icon: UserCircle, path: '/seller/profile' }
     ];
 

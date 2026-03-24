@@ -27,6 +27,12 @@ const sellerSchema = new mongoose.Schema({
   registrationDate: { type: Date, default: Date.now },
   totalOrders: { type: Number, default: 0 },
   totalRevenue: { type: Number, default: 0 },
+  metalRates: {
+    goldPerGram: { type: Number, default: 0 },
+    goldPerMilligram: { type: Number, default: 0 },
+    silverPerGram: { type: Number, default: 0 },
+    silverPerMilligram: { type: Number, default: 0 }
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model("Seller", sellerSchema);

@@ -21,9 +21,14 @@ const AdminProductEditor = () => {
         }
     }), []);
 
+    const metalPricingApi = useMemo(() => ({
+        getMetalPricing: adminService.getMetalPricing
+    }), []);
+
     return (
         <SellerProductEditor
             productApi={productApi}
+            metalPricingApi={metalPricingApi}
             backPath="/admin/products"
         />
     );

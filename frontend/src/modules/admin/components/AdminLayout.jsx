@@ -11,6 +11,7 @@ import { useShop } from '../../../context/ShopContext';
 import logo from '../assets/sands-logo.png';
 import logoName from '../assets/sands-logoname.png';
 import toast from 'react-hot-toast';
+import { adminService } from '../services/adminService';
 
 const AdminLayout = ({ children }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 1024);
@@ -106,6 +107,7 @@ const AdminLayout = ({ children }) => {
         },
         { name: 'Blogs', icon: BookOpen, path: '/admin/blogs' },
         { name: 'Sections', icon: LayoutDashboard, path: '/admin/sections' },
+        { name: 'Metal Pricing', icon: RefreshCcw, path: '/admin/metal-pricing' },
         { name: 'Global Settings', icon: Settings, path: '/admin/settings' },
     ];
 
@@ -171,6 +173,23 @@ const AdminLayout = ({ children }) => {
             if (window.innerWidth <= 1024) {
                 setIsSidebarOpen(false);
             }
+        }
+    };
+
+    const handleSaveGst = async () => {
+        const normalizedGst = Number(gstValue) || 0;
+        setGlobalGst(normalizedGst);
+        try {
+            const current = await adminService.getMetalPricing();
+            const metalRates = current?.metalRates || {};
+            const res = await adminService.updateMetalPricing({ gstRate: normalizedGst, metalRates });
+            if (res?.success === false) {
+                toast.error(res.message || "Failed to sync GST");
+                return;
+            }
+            toast.success("Global GST fixed: " + normalizedGst);
+        } catch (err) {
+            toast.error("Failed to sync GST");
         }
     };
 
@@ -306,10 +325,7 @@ const AdminLayout = ({ children }) => {
                                 />
                             </div>
                             <button 
-                                onClick={() => {
-                                    setGlobalGst(gstValue);
-                                    toast.success("Global GST fixed: " + gstValue);
-                                }}
+                                onClick={handleSaveGst}
                                 className="w-full py-2 bg-amber-600/90 hover:bg-amber-600 text-white text-[9px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-amber-900/20"
                             >
                                 Save Configuration

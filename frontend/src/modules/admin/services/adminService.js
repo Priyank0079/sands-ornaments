@@ -236,6 +236,24 @@ export const adminService = {
       return null;
     }
   },
+  getMetalPricing: async () => {
+    try {
+      const res = await api.get('admin/settings/metal-pricing');
+      return res.data?.data || res.data || { metalRates: {}, gstRate: 0 };
+    } catch (err) {
+      console.error("Admin fetch metal pricing failed:", err);
+      return { metalRates: {}, gstRate: 0 };
+    }
+  },
+  updateMetalPricing: async (payload) => {
+    try {
+      const res = await api.patch('admin/settings/metal-pricing', payload);
+      return res.data;
+    } catch (err) {
+      console.error("Admin update metal pricing failed:", err);
+      return { success: false, message: err.response?.data?.message || "Failed to update metal pricing" };
+    }
+  },
   getSections: async () => {
     try {
       const res = await api.get('admin/sections');

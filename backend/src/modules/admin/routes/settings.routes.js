@@ -7,5 +7,7 @@ router.use(authenticate, requireRole("admin"));
 
 router.get("/", settingsController.getSettings);
 router.put("/", settingsController.updateSettings);
+router.get("/metal-pricing", settingsController.getMetalPricing);
+router.patch("/metal-pricing", settingsController.updateMetalPricing);
 
 module.exports = router;
