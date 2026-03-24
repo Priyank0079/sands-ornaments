@@ -183,19 +183,15 @@ const ProductManagement = () => {
         {
             header: 'Placement',
             render: (item) => {
-                const shopCats = (item.navShopByCategory || [])
-                    .map(id => categoriesById[String(id)] || '')
-                    .filter(Boolean);
                 const gifts = item.navGiftsFor || [];
                 const occasions = item.navOccasions || [];
 
-                if (shopCats.length === 0 && gifts.length === 0 && occasions.length === 0) {
+                if (gifts.length === 0 && occasions.length === 0) {
                     return <span className="text-gray-400 text-xs font-semibold">-</span>;
                 }
 
                 return (
                     <div className="flex flex-col gap-1.5 min-w-[180px]">
-                        {renderNavBadges('Shop', shopCats)}
                         {renderNavBadges('Gifts', gifts)}
                         {renderNavBadges('Occasion', occasions)}
                     </div>

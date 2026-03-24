@@ -99,12 +99,15 @@ const CategoryPage = () => {
         {
             header: 'Status',
             render: (item) => (
-                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${item.isActive !== false
-                    ? 'bg-green-50 text-green-700 border border-green-100'
-                    : 'bg-gray-100 text-gray-500 border border-gray-200'
-                    }`}>
+                <button
+                    onClick={() => toggleVisibility(item._id, 'isActive')}
+                    className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${item.isActive !== false
+                        ? 'bg-green-50 text-green-700 border border-green-100 hover:bg-green-100'
+                        : 'bg-gray-100 text-gray-500 border border-gray-200 hover:bg-gray-200'
+                        }`}
+                >
                     {item.isActive !== false ? 'Active' : 'Inactive'}
-                </span>
+                </button>
             )
         },
         {

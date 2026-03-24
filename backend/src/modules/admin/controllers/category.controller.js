@@ -2,6 +2,7 @@ const Category = require("../../../models/Category");
 const Product = require("../../../models/Product");
 const slugify = require("../../../utils/slugify");
 const { success, error } = require("../../../utils/apiResponse");
+const { deleteFromCloudinary } = require("../../../utils/cloudinaryUtils");
 
 // ── CATEGORIES ───────────────────────────────────────────────────────────────
 
@@ -116,6 +117,26 @@ exports.updateCategory = async (req, res) => {
     if (isActive !== undefined) category.isActive = parseBoolean(isActive);
     if (metal !== undefined) category.metal = metal;
 
+    const deletedImages = Array.isArray(req.body.deletedImages)
+      ? req.body.deletedImages
+      : (() => {
+          if (!req.body.deletedImages) return [];
+          try { return JSON.parse(req.body.deletedImages); } catch (e) { return []; }
+        })();
+
+    if (deletedImages.length > 0) {
+      for (const imageUrl of deletedImages) {
+        try {
+          await deleteFromCloudinary(imageUrl);
+        } catch (err) {
+          console.error(`Failed to delete category image ${imageUrl}:`, err);
+        }
+      }
+      if (category.image && deletedImages.includes(category.image)) {
+        category.image = null;
+      }
+    }
+
     if (req.file) {
       category.image = req.file.path;
     }
@@ -143,6 +164,14 @@ exports.deleteCategory = async (req, res) => {
     const category = await Category.findByIdAndDelete(id);
     if (!category) return error(res, "Category not found", 404);
     
+    if (category.image) {
+      try {
+        await deleteFromCloudinary(category.image);
+      } catch (err) {
+        console.error(`Failed to delete category image ${category.image}:`, err);
+      }
+    }
+
     console.log(`[Admin] Category deleted: ${category.name} (${id})`);
     return success(res, {}, "Category deleted");
   } catch (err) { return error(res, err.message); }

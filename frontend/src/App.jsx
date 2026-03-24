@@ -30,6 +30,7 @@ import AdminLogin from './modules/admin/pages/Login';
 import AdminLayout from './modules/admin/components/AdminLayout';
 import AdminProtectedRoute from './modules/admin/components/AdminProtectedRoute';
 import CategoryPage from './modules/admin/pages/categories/CategoryPage';
+import CategoryEditor from './modules/admin/pages/categories/CategoryEditor';
 
 import ProductManagement from './modules/admin/pages/ProductManagement';
 import ProductView from './modules/admin/pages/ProductView';
@@ -132,8 +133,8 @@ const AppContent = () => {
                 <Routes>
                   <Route path="/" element={<AdminDashboard />} />
                   <Route path="/categories" element={<CategoryPage />} />
-                  <Route path="/categories/new" element={<ItemEditor />} />
-                  <Route path="/categories/edit/:id" element={<ItemEditor />} />
+                  <Route path="/categories/new" element={<CategoryEditor />} />
+                  <Route path="/categories/edit/:id" element={<CategoryEditor />} />
 
                   <Route path="/products" element={<ProductManagement />} />
                   <Route path="/products/view/:id" element={<AdminProductEditor />} />
