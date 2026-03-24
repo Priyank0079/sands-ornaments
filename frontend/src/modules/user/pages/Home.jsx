@@ -9,6 +9,7 @@ import PerfectGift from '../components/PerfectGift';
 import NewLaunchSection from '../components/NewLaunchSection';
 import LatestDrop from '../components/LatestDrop';
 import MostGifted from '../components/MostGifted';
+import PromoSlider from '../components/PromoSlider';
 import OccasionalSpecial from '../components/OccasionalSpecial';
 import ProposalBanner from '../components/ProposalBanner';
 import StyleItYourWay from '../components/StyleItYourWay';
@@ -32,9 +33,11 @@ import spotlightMain from '../assets/spotlight_silver_main.png';
 import spotlightHover from '../assets/spotlight_silver_hover.png';
 
 import { useShop } from '../../../context/ShopContext';
+import { normalizeStoreLink } from '../utils/navigation';
 
 const Home = () => {
     const { products, categories, banners, isLoading } = useShop();
+    const heroBannerItems = (banners || []).filter((banner) => (banner.placement || 'hero') === 'hero');
     
     useEffect(() => {
         document.title = "Sands Ornaments | Pure 925 Silver Jewellery - Timeless Elegance";
@@ -91,12 +94,12 @@ const Home = () => {
             link: "/shop"
         }
     ];
-    const heroSlides = (banners && banners.length > 0)
-        ? banners.map((banner) => ({
+    const heroSlides = (heroBannerItems && heroBannerItems.length > 0)
+        ? heroBannerItems.map((banner) => ({
             image: banner.image,
             title: banner.title || "Sands Ornaments",
             description: banner.subtitle || "Crafted in Pure 925 Silver",
-            link: banner.link || "/shop",
+            link: normalizeStoreLink(banner.link),
             btnText: "Shop Now"
         }))
         : staticHeroSlides;
@@ -313,6 +316,8 @@ const Home = () => {
                     </div>
                 </div>
             </section>
+
+            <PromoSlider />
 
             {/* CATEGORY SHOWCASE - Replaces Mobile Stories */}
             <CategoryShowcase />

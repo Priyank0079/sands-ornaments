@@ -5,11 +5,49 @@ const slugify = require("../../../utils/slugify");
 const { deleteFromCloudinary } = require("../../../utils/cloudinaryUtils");
 const { success, error } = require("../../../utils/apiResponse");
 
+const normalizeBannerSortOrders = async (placement, preferredBannerId = null, preferredSortOrder = null) => {
+  const placementQuery = placement === "hero"
+    ? { $or: [{ placement: "hero" }, { placement: { $exists: false } }, { placement: null }] }
+    : { placement };
+  const banners = await Banner.find(placementQuery).sort({ sortOrder: 1, createdAt: 1 });
+  const preferred = preferredBannerId
+    ? banners.find((banner) => String(banner._id) === String(preferredBannerId))
+    : null;
+
+  const remaining = preferred
+    ? banners.filter((banner) => String(banner._id) !== String(preferredBannerId))
+    : banners;
+
+  const ordered = [];
+  const desiredIndex = preferred ? Math.max(0, Number(preferredSortOrder) || 0) : null;
+  let inserted = false;
+
+  remaining.forEach((banner) => {
+    if (preferred && !inserted && ordered.length === desiredIndex) {
+      ordered.push(preferred);
+      inserted = true;
+    }
+    ordered.push(banner);
+  });
+
+  if (preferred && !inserted) {
+    ordered.push(preferred);
+  }
+
+  await Promise.all(
+    ordered.map((banner, index) => {
+      if (banner.sortOrder === index) return Promise.resolve();
+      return Banner.updateOne({ _id: banner._id }, { $set: { sortOrder: index } });
+    })
+  );
+};
+
 const normalizeBannerPayload = (body = {}, existingBanner = null) => {
   const data = {
     title: String(body.title || "").trim(),
     subtitle: String(body.subtitle || "").trim(),
     link: String(body.link || "").trim(),
+    placement: body.placement === "promo" ? "promo" : (existingBanner?.placement || "hero"),
   };
 
   if (Object.prototype.hasOwnProperty.call(body, "isActive")) {
@@ -49,6 +87,7 @@ const normalizeBannerPayload = (body = {}, existingBanner = null) => {
 const validateBannerPayload = (data) => {
   if (!data.title) return "Banner title is required";
   if (!data.image) return "Banner image is required";
+  if (!["hero", "promo"].includes(data.placement)) return "Banner placement is invalid";
   if (data.validFrom && Number.isNaN(data.validFrom.getTime())) return "Enter a valid start date";
   if (data.validUntil && Number.isNaN(data.validUntil.getTime())) return "Enter a valid end date";
   if (data.validFrom && data.validUntil && data.validUntil < data.validFrom) {
@@ -65,7 +104,9 @@ exports.createBanner = async (req, res) => {
     const validationError = validateBannerPayload(data);
     if (validationError) return error(res, validationError, 400);
     const banner = await Banner.create(data);
-    return success(res, { banner }, "Banner created", 201);
+    await normalizeBannerSortOrders(banner.placement, banner._id, banner.sortOrder);
+    const normalizedBanner = await Banner.findById(banner._id);
+    return success(res, { banner: normalizedBanner }, "Banner created", 201);
   } catch (err) { return error(res, err.message); }
 };
 
@@ -88,6 +129,7 @@ exports.updateBanner = async (req, res) => {
   try {
     const existingBanner = await Banner.findById(req.params.id);
     if (!existingBanner) return error(res, "Banner not found", 404);
+    const previousPlacement = existingBanner.placement || "hero";
 
     const data = normalizeBannerPayload(req.body, existingBanner);
     data.image = req.file ? req.file.path : existingBanner.image;
@@ -97,6 +139,8 @@ exports.updateBanner = async (req, res) => {
 
     const oldImage = req.file ? existingBanner.image : null;
     const banner = await Banner.findByIdAndUpdate(req.params.id, data, { new: true });
+    await normalizeBannerSortOrders(previousPlacement);
+    await normalizeBannerSortOrders(banner.placement, banner._id, banner.sortOrder);
     if (oldImage) {
       await deleteFromCloudinary(oldImage).catch(() => null);
     }
@@ -108,6 +152,7 @@ exports.deleteBanner = async (req, res) => {
   try {
     const banner = await Banner.findByIdAndDelete(req.params.id);
     if (!banner) return error(res, "Banner not found", 404);
+    await normalizeBannerSortOrders(banner.placement || "hero");
     if (banner.image) {
       await deleteFromCloudinary(banner.image).catch(() => null);
     }

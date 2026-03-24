@@ -2,13 +2,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-
+import { Link } from 'react-router-dom';
 
 import { useShop } from '../../../context/ShopContext';
+import { normalizeStoreLink } from '../utils/navigation';
 
 const PromoSlider = () => {
-    const { getBannersBySection } = useShop();
-    const banners = getBannersBySection('promo');
+    const { banners: allBanners } = useShop();
+    const banners = (allBanners || []).filter((banner) => (banner.placement || 'hero') === 'promo');
     const [currentIndex, setCurrentIndex] = useState(0);
 
     useEffect(() => {
@@ -74,17 +75,21 @@ const PromoSlider = () => {
                                 {banners[currentIndex].subtitle}
                             </motion.p>
 
-                            <motion.button
+                            <motion.div
                                 initial={{ scale: 0.9, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
                                 transition={{ delay: 0.6 }}
-                                className="pointer-events-auto bg-primary hover:bg-primaryHover text-white font-bold text-[9px] md:text-sm uppercase tracking-widest px-4 py-2 md:px-6 md:py-3 rounded-full transition-all shadow-xl active:scale-95 w-fit flex items-center gap-2 group/btn"
                             >
-                                Explore Collection
-                                <div className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center group-hover/btn:translate-x-1 transition-transform">
-                                    <ChevronRight size={12} />
-                                </div>
-                            </motion.button>
+                                <Link
+                                    to={normalizeStoreLink(banners[currentIndex].link)}
+                                    className="pointer-events-auto bg-primary hover:bg-primaryHover text-white font-bold text-[9px] md:text-sm uppercase tracking-widest px-4 py-2 md:px-6 md:py-3 rounded-full transition-all shadow-xl active:scale-95 w-fit flex items-center gap-2 group/btn"
+                                >
+                                    Explore Collection
+                                    <div className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center group-hover/btn:translate-x-1 transition-transform">
+                                        <ChevronRight size={12} />
+                                    </div>
+                                </Link>
+                            </motion.div>
                         </div>
                     </motion.div>
                 </AnimatePresence>

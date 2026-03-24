@@ -1,13 +1,27 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Image as ImageIcon, Plus, Trash2, Eye, EyeOff, Calendar, Edit3, X, MoveVertical } from 'lucide-react';
+import {
+  Image as ImageIcon,
+  Plus,
+  Trash2,
+  Eye,
+  EyeOff,
+  Calendar,
+  Edit3,
+  X,
+  MoveVertical,
+  Monitor,
+  LayoutPanelTop,
+} from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import PageHeader from '../components/common/PageHeader';
 import { adminService } from '../services/adminService';
 
-const createEmptyForm = () => ({
+const createEmptyForm = (placement = 'hero') => ({
   title: '',
   subtitle: '',
   link: '/shop',
+  placement,
   sortOrder: 0,
   isActive: true,
   validFrom: '',
@@ -24,12 +38,26 @@ const formatDateInput = (value) => {
   return date.toISOString().slice(0, 10);
 };
 
+const getBannerPlacement = (banner) => banner?.placement || 'hero';
+const getBannerLifecycle = (banner) => {
+  const now = new Date();
+  const start = banner?.validFrom ? new Date(banner.validFrom) : null;
+  const end = banner?.validUntil ? new Date(banner.validUntil) : null;
+
+  if (!banner?.isActive) return 'hidden';
+  if (start && start > now) return 'scheduled';
+  if (end && end < now) return 'expired';
+  return 'live';
+};
+
 const BannerManagement = () => {
+  const queryClient = useQueryClient();
   const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBannerId, setEditingBannerId] = useState(null);
+  const [activePlacement, setActivePlacement] = useState('hero');
   const [formData, setFormData] = useState(createEmptyForm());
 
   const fetchBanners = async () => {
@@ -39,20 +67,31 @@ const BannerManagement = () => {
     setLoading(false);
   };
 
+  const refreshPublicBannerCache = async () => {
+    await queryClient.invalidateQueries({ queryKey: ['banners'] });
+    await queryClient.refetchQueries({ queryKey: ['banners'], type: 'active' });
+  };
+
   useEffect(() => {
     fetchBanners();
   }, []);
 
-  const sortedBanners = useMemo(
-    () => [...banners].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || new Date(b.createdAt || 0) - new Date(a.createdAt || 0)),
-    [banners]
+  const visibleBanners = useMemo(
+    () => banners.filter((banner) => getBannerPlacement(banner) === activePlacement),
+    [activePlacement, banners]
   );
 
-  const activeCount = banners.filter((banner) => banner.isActive).length;
+  const sortedBanners = useMemo(
+    () => [...visibleBanners].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || new Date(b.createdAt || 0) - new Date(a.createdAt || 0)),
+    [visibleBanners]
+  );
+
+  const liveCount = visibleBanners.filter((banner) => getBannerLifecycle(banner) === 'live').length;
+  const scheduledCount = visibleBanners.filter((banner) => getBannerLifecycle(banner) === 'scheduled').length;
 
   const openCreateModal = () => {
     setEditingBannerId(null);
-    setFormData(createEmptyForm());
+    setFormData(createEmptyForm(activePlacement));
     setIsModalOpen(true);
   };
 
@@ -62,6 +101,7 @@ const BannerManagement = () => {
       title: banner.title || '',
       subtitle: banner.subtitle || '',
       link: banner.link || '/shop',
+      placement: getBannerPlacement(banner),
       sortOrder: Number.isFinite(Number(banner.sortOrder)) ? Number(banner.sortOrder) : 0,
       isActive: banner.isActive !== false,
       validFrom: formatDateInput(banner.validFrom),
@@ -76,7 +116,7 @@ const BannerManagement = () => {
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingBannerId(null);
-    setFormData(createEmptyForm());
+    setFormData(createEmptyForm(activePlacement));
   };
 
   const handleImageChange = (file) => {
@@ -98,16 +138,17 @@ const BannerManagement = () => {
     return null;
   };
 
-  const buildPayload = () => {
+  const buildPayload = (bannerForm) => {
     const payload = new FormData();
-    payload.append('title', formData.title.trim());
-    payload.append('subtitle', formData.subtitle.trim());
-    payload.append('link', formData.link.trim());
-    payload.append('sortOrder', String(Number(formData.sortOrder) || 0));
-    payload.append('isActive', String(Boolean(formData.isActive)));
-    payload.append('validFrom', formData.validFrom || '');
-    payload.append('validUntil', formData.validUntil || '');
-    if (formData.image) payload.append('image', formData.image);
+    payload.append('title', bannerForm.title.trim());
+    payload.append('subtitle', bannerForm.subtitle.trim());
+    payload.append('link', bannerForm.link.trim());
+    payload.append('placement', bannerForm.placement || 'hero');
+    payload.append('sortOrder', String(Number(bannerForm.sortOrder) || 0));
+    payload.append('isActive', String(Boolean(bannerForm.isActive)));
+    payload.append('validFrom', bannerForm.validFrom || '');
+    payload.append('validUntil', bannerForm.validUntil || '');
+    if (bannerForm.image) payload.append('image', bannerForm.image);
     return payload;
   };
 
@@ -120,14 +161,14 @@ const BannerManagement = () => {
     }
 
     setSaving(true);
-    const payload = buildPayload();
     const result = editingBannerId
-      ? await adminService.updateBanner(editingBannerId, payload)
-      : await adminService.createBanner(payload);
+      ? await adminService.updateBanner(editingBannerId, buildPayload(formData))
+      : await adminService.createBanner(buildPayload(formData));
 
     if (result.success) {
       toast.success(result.message || `Banner ${editingBannerId ? 'updated' : 'created'} successfully`);
       await fetchBanners();
+      await refreshPublicBannerCache();
       closeModal();
     } else {
       toast.error(result.message || 'Unable to save banner');
@@ -136,19 +177,25 @@ const BannerManagement = () => {
   };
 
   const handleToggleActive = async (banner) => {
-    const payload = new FormData();
-    payload.append('title', banner.title || '');
-    payload.append('subtitle', banner.subtitle || '');
-    payload.append('link', banner.link || '');
-    payload.append('sortOrder', String(Number(banner.sortOrder) || 0));
-    payload.append('isActive', String(!banner.isActive));
-    payload.append('validFrom', formatDateInput(banner.validFrom) || '');
-    payload.append('validUntil', formatDateInput(banner.validUntil) || '');
+    const result = await adminService.updateBanner(
+      banner._id,
+      buildPayload({
+        title: banner.title || '',
+        subtitle: banner.subtitle || '',
+        link: banner.link || '',
+        placement: getBannerPlacement(banner),
+        sortOrder: Number(banner.sortOrder) || 0,
+        isActive: !banner.isActive,
+        validFrom: formatDateInput(banner.validFrom),
+        validUntil: formatDateInput(banner.validUntil),
+        image: null,
+      })
+    );
 
-    const result = await adminService.updateBanner(banner._id, payload);
     if (result.success) {
       toast.success(result.message || 'Banner status updated');
       await fetchBanners();
+      await refreshPublicBannerCache();
     } else {
       toast.error(result.message || 'Failed to update banner status');
     }
@@ -160,17 +207,23 @@ const BannerManagement = () => {
     if (result.success) {
       toast.success(result.message || 'Banner deleted');
       await fetchBanners();
+      await refreshPublicBannerCache();
     } else {
       toast.error(result.message || 'Failed to delete banner');
     }
   };
+
+  const placementTitle = activePlacement === 'hero' ? 'Home Hero Slider' : 'Homepage Promo Slider';
+  const placementDescription = activePlacement === 'hero'
+    ? 'These banners rotate at the top of the user homepage.'
+    : 'These banners appear below the homepage hero as the promo slider.';
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-4 md:space-y-8 animate-in fade-in duration-500 pb-20">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <PageHeader
           title="Banner Management"
-          subtitle="Manage the live homepage hero banners shown on the user storefront"
+          subtitle="Manage the live hero and promo banners shown on the user storefront"
         />
         <button
           onClick={openCreateModal}
@@ -183,25 +236,42 @@ const BannerManagement = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400">Total Banners</p>
-          <p className="text-3xl font-black text-gray-900 mt-3">{banners.length}</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400">Total In Placement</p>
+          <p className="text-3xl font-black text-gray-900 mt-3">{visibleBanners.length}</p>
         </div>
         <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400">Active On Homepage</p>
-          <p className="text-3xl font-black text-emerald-600 mt-3">{activeCount}</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400">Live On User Side</p>
+          <p className="text-3xl font-black text-emerald-600 mt-3">{liveCount}</p>
         </div>
         <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400">Placement</p>
-          <p className="text-lg font-bold text-gray-900 mt-3">Home Hero Slider</p>
-          <p className="text-sm text-gray-500 mt-1">Route: `/`</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400">Scheduled</p>
+          <p className="text-3xl font-black text-amber-600 mt-3">{scheduledCount}</p>
+          <p className="text-sm text-gray-500 mt-1">{placementTitle}</p>
         </div>
       </div>
 
       <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div className="px-5 py-4 border-b border-gray-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">Hero Banners</h2>
-            <p className="text-sm text-gray-500">These banners rotate at the top of the user homepage.</p>
+            <h2 className="text-lg font-bold text-gray-900">{activePlacement === 'hero' ? 'Hero Banners' : 'Promo Banners'}</h2>
+            <p className="text-sm text-gray-500">{placementDescription}</p>
+          </div>
+
+          <div className="flex p-1 bg-gray-50 border border-gray-200 rounded-xl">
+            <button
+              onClick={() => setActivePlacement('hero')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${activePlacement === 'hero' ? 'bg-[#3E2723] text-white shadow-sm' : 'text-gray-500 hover:bg-white'}`}
+            >
+              <Monitor className="w-4 h-4" />
+              Hero
+            </button>
+            <button
+              onClick={() => setActivePlacement('promo')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${activePlacement === 'promo' ? 'bg-[#3E2723] text-white shadow-sm' : 'text-gray-500 hover:bg-white'}`}
+            >
+              <LayoutPanelTop className="w-4 h-4" />
+              Promo
+            </button>
           </div>
         </div>
 
@@ -213,12 +283,29 @@ const BannerManagement = () => {
           <div className="p-10 text-center">
             <ImageIcon className="w-10 h-10 mx-auto text-gray-300" />
             <p className="mt-4 text-lg font-semibold text-gray-800">No banners added yet</p>
-            <p className="mt-1 text-sm text-gray-500">Create a banner to power the homepage hero slider.</p>
+            <p className="mt-1 text-sm text-gray-500">
+              Create a {activePlacement === 'hero' ? 'hero' : 'promo'} banner to power the homepage section.
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 p-4">
             {sortedBanners.map((banner) => (
               <div key={banner._id} className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden group">
+                {(() => {
+                  const lifecycle = getBannerLifecycle(banner);
+                  const badgeMap = {
+                    live: 'bg-emerald-500 text-white border-emerald-600',
+                    scheduled: 'bg-amber-500 text-white border-amber-600',
+                    expired: 'bg-gray-700 text-white border-gray-800',
+                    hidden: 'bg-white text-gray-500 border-gray-200',
+                  };
+                  const labelMap = {
+                    live: 'Live',
+                    scheduled: 'Scheduled',
+                    expired: 'Expired',
+                    hidden: 'Hidden',
+                  };
+                  return (
                 <div className="aspect-[21/9] relative overflow-hidden bg-gray-100 border-b border-gray-100">
                   <img
                     src={banner.image}
@@ -236,11 +323,13 @@ const BannerManagement = () => {
                     </div>
                   </div>
                   <div className="absolute top-4 right-4">
-                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border shadow-md ${banner.isActive ? 'bg-emerald-500 text-white border-emerald-600' : 'bg-white text-gray-500 border-gray-200'}`}>
-                      {banner.isActive ? 'Active' : 'Hidden'}
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border shadow-md ${badgeMap[lifecycle]}`}>
+                      {labelMap[lifecycle]}
                     </span>
                   </div>
                 </div>
+                  );
+                })()}
 
                 <div className="p-5">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -253,6 +342,11 @@ const BannerManagement = () => {
                       <p className="mt-1 text-sm font-semibold text-gray-800">
                         {banner.validFrom ? formatDateInput(banner.validFrom) : 'Now'} to {banner.validUntil ? formatDateInput(banner.validUntil) : 'No end date'}
                       </p>
+                      {getBannerLifecycle(banner) === 'scheduled' && (
+                        <p className="mt-1 text-xs font-semibold text-amber-600">
+                          This will appear on the user side starting {formatDateInput(banner.validFrom)}.
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -290,7 +384,9 @@ const BannerManagement = () => {
             <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-[#FDFBF7]">
               <div>
                 <h3 className="text-xl font-bold text-black">{editingBannerId ? 'Edit Banner' : 'Add Banner'}</h3>
-                <p className="text-sm text-gray-500 mt-1">This updates the live homepage hero slider.</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  This updates the live {formData.placement === 'hero' ? 'homepage hero' : 'homepage promo'} slider.
+                </p>
               </div>
               <button onClick={closeModal} className="p-2 hover:bg-gray-100 rounded-lg text-gray-400">
                 <X className="w-6 h-6" />
@@ -299,6 +395,26 @@ const BannerManagement = () => {
 
             <form onSubmit={handleSubmit} className="p-6 md:p-8 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-[11px] font-bold text-black uppercase tracking-[0.2em]">Placement</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, placement: 'hero' }))}
+                      className={`p-3 rounded-xl border text-sm font-bold transition-all ${formData.placement === 'hero' ? 'bg-[#3E2723] text-white border-[#3E2723]' : 'bg-white text-gray-700 border-gray-200'}`}
+                    >
+                      Hero Slider
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, placement: 'promo' }))}
+                      className={`p-3 rounded-xl border text-sm font-bold transition-all ${formData.placement === 'promo' ? 'bg-[#3E2723] text-white border-[#3E2723]' : 'bg-white text-gray-700 border-gray-200'}`}
+                    >
+                      Promo Slider
+                    </button>
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <label className="text-[11px] font-bold text-black uppercase tracking-[0.2em]">Banner Image</label>
                   <div className="w-full aspect-[21/9] bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl overflow-hidden relative group flex items-center justify-center">
@@ -321,7 +437,7 @@ const BannerManagement = () => {
                       <div className="text-center px-6">
                         <ImageIcon className="w-8 h-8 mx-auto text-gray-400" />
                         <p className="mt-3 text-sm font-semibold text-gray-700">Upload the homepage banner image</p>
-                        <p className="mt-1 text-xs text-gray-500">Recommended: wide hero image</p>
+                        <p className="mt-1 text-xs text-gray-500">Recommended: wide hero or promo image</p>
                       </div>
                     )}
                     <input
@@ -352,7 +468,7 @@ const BannerManagement = () => {
                     value={formData.subtitle}
                     onChange={(event) => setFormData((prev) => ({ ...prev, subtitle: event.target.value }))}
                     className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#3E2723]/10 resize-none"
-                    placeholder="Short supporting copy for the homepage hero"
+                    placeholder="Short supporting copy for the selected slider"
                   />
                 </div>
               </div>
@@ -368,6 +484,7 @@ const BannerManagement = () => {
                       className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#3E2723]/10"
                       placeholder="/shop"
                     />
+                    <p className="text-xs text-gray-500">If the link is invalid, the storefront will safely redirect to `/shop`.</p>
                   </div>
                   <div className="space-y-2">
                     <label className="text-[11px] font-bold text-black uppercase tracking-[0.2em]">Sort Order</label>
