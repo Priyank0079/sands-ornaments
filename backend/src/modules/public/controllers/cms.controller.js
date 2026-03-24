@@ -4,9 +4,29 @@ const Banner = require("../../../models/Banner");
 const HomepageSection = require("../../../models/HomepageSection");
 const { success, error } = require("../../../utils/apiResponse");
 
+const getActiveBannerQuery = (now = new Date()) => ({
+  isActive: true,
+  $and: [
+    {
+      $or: [
+        { validFrom: { $exists: false } },
+        { validFrom: null },
+        { validFrom: { $lte: now } },
+      ],
+    },
+    {
+      $or: [
+        { validUntil: { $exists: false } },
+        { validUntil: null },
+        { validUntil: { $gte: now } },
+      ],
+    },
+  ],
+});
+
 exports.getBanners = async (req, res) => {
   try {
-    const banners = await Banner.find({ isActive: true }).sort({ sortOrder: 1 });
+    const banners = await Banner.find(getActiveBannerQuery()).sort({ sortOrder: 1, createdAt: -1 });
     return success(res, { banners });
   } catch (err) { return error(res, err.message); }
 };
@@ -35,7 +55,7 @@ exports.getFAQs = async (req, res) => {
 
 exports.getHomepageData = async (req, res) => {
   try {
-    const banners = await Banner.find({ isActive: true }).sort({ sortOrder: 1 });
+    const banners = await Banner.find(getActiveBannerQuery()).sort({ sortOrder: 1, createdAt: -1 });
     const sections = await HomepageSection.find({ isActive: true })
       .populate({
         path: "items.productId",

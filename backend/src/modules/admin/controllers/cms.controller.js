@@ -2,13 +2,68 @@ const Banner = require("../../../models/Banner");
 const Blog = require("../../../models/Blog");
 const FAQ = require("../../../models/FAQ");
 const slugify = require("../../../utils/slugify");
+const { deleteFromCloudinary } = require("../../../utils/cloudinaryUtils");
 const { success, error } = require("../../../utils/apiResponse");
+
+const normalizeBannerPayload = (body = {}, existingBanner = null) => {
+  const data = {
+    title: String(body.title || "").trim(),
+    subtitle: String(body.subtitle || "").trim(),
+    link: String(body.link || "").trim(),
+  };
+
+  if (Object.prototype.hasOwnProperty.call(body, "isActive")) {
+    data.isActive = body.isActive === true || body.isActive === "true";
+  } else {
+    data.isActive = existingBanner ? existingBanner.isActive : true;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "sortOrder")) {
+    const parsed = Number(body.sortOrder);
+    data.sortOrder = Number.isFinite(parsed) ? parsed : 0;
+  } else {
+    data.sortOrder = existingBanner?.sortOrder || 0;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "validFrom")) {
+    data.validFrom = body.validFrom ? new Date(body.validFrom) : null;
+  } else {
+    data.validFrom = existingBanner?.validFrom || null;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "validUntil")) {
+    data.validUntil = body.validUntil ? new Date(body.validUntil) : null;
+  } else {
+    data.validUntil = existingBanner?.validUntil || null;
+  }
+
+  if (body.mobileImage !== undefined) {
+    data.mobileImage = String(body.mobileImage || "").trim();
+  } else {
+    data.mobileImage = existingBanner?.mobileImage || "";
+  }
+
+  return data;
+};
+
+const validateBannerPayload = (data) => {
+  if (!data.title) return "Banner title is required";
+  if (!data.image) return "Banner image is required";
+  if (data.validFrom && Number.isNaN(data.validFrom.getTime())) return "Enter a valid start date";
+  if (data.validUntil && Number.isNaN(data.validUntil.getTime())) return "Enter a valid end date";
+  if (data.validFrom && data.validUntil && data.validUntil < data.validFrom) {
+    return "End date must be after start date";
+  }
+  return null;
+};
 
 // ── Banners ──────────────────────────────────────────────────────────────────
 exports.createBanner = async (req, res) => {
   try {
-    const data = req.body;
+    const data = normalizeBannerPayload(req.body);
     if (req.file) data.image = req.file.path;
+    const validationError = validateBannerPayload(data);
+    if (validationError) return error(res, validationError, 400);
     const banner = await Banner.create(data);
     return success(res, { banner }, "Banner created", 201);
   } catch (err) { return error(res, err.message); }
@@ -31,17 +86,31 @@ exports.getBannerDetail = async (req, res) => {
 
 exports.updateBanner = async (req, res) => {
   try {
-    const data = req.body;
-    if (req.file) data.image = req.file.path;
+    const existingBanner = await Banner.findById(req.params.id);
+    if (!existingBanner) return error(res, "Banner not found", 404);
+
+    const data = normalizeBannerPayload(req.body, existingBanner);
+    data.image = req.file ? req.file.path : existingBanner.image;
+
+    const validationError = validateBannerPayload(data);
+    if (validationError) return error(res, validationError, 400);
+
+    const oldImage = req.file ? existingBanner.image : null;
     const banner = await Banner.findByIdAndUpdate(req.params.id, data, { new: true });
-    if (!banner) return error(res, "Banner not found", 404);
+    if (oldImage) {
+      await deleteFromCloudinary(oldImage).catch(() => null);
+    }
     return success(res, { banner }, "Banner updated");
   } catch (err) { return error(res, err.message); }
 };
 
 exports.deleteBanner = async (req, res) => {
   try {
-    await Banner.findByIdAndDelete(req.params.id);
+    const banner = await Banner.findByIdAndDelete(req.params.id);
+    if (!banner) return error(res, "Banner not found", 404);
+    if (banner.image) {
+      await deleteFromCloudinary(banner.image).catch(() => null);
+    }
     return success(res, {}, "Banner deleted");
   } catch (err) { return error(res, err.message); }
 };

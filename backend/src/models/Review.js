@@ -7,6 +7,7 @@ const reviewSchema = new mongoose.Schema({
   title: String,
   body: { type: String, required: true },
   images: [String],
+  status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending", index: true },
   isApproved: { type: Boolean, default: false, index: true },
 }, { timestamps: true });
 

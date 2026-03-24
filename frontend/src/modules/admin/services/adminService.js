@@ -131,6 +131,65 @@ export const adminService = {
     }
   },
 
+  // Banner Management
+  getBanners: async () => {
+    try {
+      const res = await api.get('admin/cms/banners');
+      return res.data.data?.banners || res.data.banners || [];
+    } catch (err) {
+      console.error("Admin fetch banners failed:", err);
+      return [];
+    }
+  },
+  getBannerById: async (id) => {
+    try {
+      const res = await api.get(`admin/cms/banners/${id}`);
+      return res.data.data?.banner || res.data.banner || null;
+    } catch (err) {
+      console.error("Admin fetch banner failed:", err);
+      throw err;
+    }
+  },
+  createBanner: async (data) => {
+    try {
+      const config = isFormData(data)
+        ? { headers: { 'Content-Type': 'multipart/form-data' } }
+        : undefined;
+      const res = await api.post('admin/cms/banners', data, config);
+      return res.data;
+    } catch (err) {
+      console.error("Admin create banner failed:", err);
+      return { success: false, message: err.response?.data?.message || "Failed to create banner" };
+    }
+  },
+  updateBanner: async (id, data) => {
+    try {
+      const config = isFormData(data)
+        ? { headers: { 'Content-Type': 'multipart/form-data' } }
+        : undefined;
+      const res = await api.put(`admin/cms/banners/${id}`, data, config);
+      return res.data;
+    } catch (err) {
+      console.error("Admin update banner failed:", err);
+      return { success: false, message: err.response?.data?.message || "Failed to update banner" };
+    }
+  },
+  deleteBanner: async (id) => {
+    try {
+      const res = await api.delete(`admin/cms/banners/${id}`);
+      return {
+        success: res.data.success,
+        message: res.data.message || "Banner deleted"
+      };
+    } catch (err) {
+      console.error("Admin delete banner failed:", err);
+      return {
+        success: false,
+        message: err.response?.data?.message || "Failed to delete banner"
+      };
+    }
+  },
+
 
   // Coupon Management
   getCoupons: async () => {
@@ -439,6 +498,48 @@ export const adminService = {
       return {
         success: false,
         message: err.response?.data?.message || "Failed to update user status"
+      };
+    }
+  },
+
+  // Review Management
+  getReviews: async (params = {}) => {
+    try {
+      const res = await api.get('admin/reviews', { params });
+      return res.data.data?.reviews || res.data.reviews || [];
+    } catch (err) {
+      console.error("Admin fetch reviews failed:", err);
+      return [];
+    }
+  },
+  updateReviewStatus: async (id, action) => {
+    try {
+      const res = await api.patch(`admin/reviews/${id}/toggle`, { action });
+      return {
+        success: res.data.success,
+        review: res.data.data?.review || res.data.review || null,
+        message: res.data.message || "Review updated"
+      };
+    } catch (err) {
+      console.error("Admin update review failed:", err);
+      return {
+        success: false,
+        message: err.response?.data?.message || "Failed to update review"
+      };
+    }
+  },
+  deleteReview: async (id) => {
+    try {
+      const res = await api.delete(`admin/reviews/${id}`);
+      return {
+        success: res.data.success,
+        message: res.data.message || "Review deleted successfully"
+      };
+    } catch (err) {
+      console.error("Admin delete review failed:", err);
+      return {
+        success: false,
+        message: err.response?.data?.message || "Failed to delete review"
       };
     }
   },

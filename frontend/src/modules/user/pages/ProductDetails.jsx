@@ -131,22 +131,12 @@ const ProductDetails = () => {
                 body: reviewComment.trim() || 'No comment provided.'
             });
             if (res.data?.success) {
-                toast.success(res.data.message || 'Review submitted');
+                toast.success(res.data.message || 'Review submitted for approval');
                 setIsWriteReviewOpen(false);
                 setReviewTitle('');
                 setReviewComment('');
                 setRating(0);
                 setReviewStep(1);
-                const refreshed = await api.get('public/reviews', { params: { productId } });
-                const list = refreshed.data?.data?.reviews || refreshed.data?.reviews || [];
-                setReviews(list.map(r => ({
-                    id: r._id,
-                    name: r.userId?.name || 'Customer',
-                    date: new Date(r.createdAt).toLocaleDateString('en-GB'),
-                    rating: r.rating || 0,
-                    title: r.title || 'Review',
-                    comment: r.body || ''
-                })));
             } else {
                 toast.error(res.data?.message || 'Unable to submit review');
             }

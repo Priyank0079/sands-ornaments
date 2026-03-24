@@ -94,7 +94,10 @@ const Home = () => {
     const heroSlides = (banners && banners.length > 0)
         ? banners.map((banner) => ({
             image: banner.image,
-            title: banner.title || "Sands Ornaments"
+            title: banner.title || "Sands Ornaments",
+            description: banner.subtitle || "Crafted in Pure 925 Silver",
+            link: banner.link || "/shop",
+            btnText: "Shop Now"
         }))
         : staticHeroSlides;
 
@@ -217,7 +220,7 @@ const Home = () => {
                                                 transition={{ duration: 1.0, ease: "easeOut", delay: 0.2 }}
                                                 className="text-2xl md:text-5xl font-display font-normal leading-tight tracking-wide text-white md:text-[#1F1F1F]"
                                             >
-                                                Timeless Jewellery <br />
+                                                {heroSlides[currentSlide].title || "Timeless Jewellery"} <br />
                                                 <span className="font-serif italic font-light">For Every Moment</span>
                                             </motion.h1>
                                             {/* Accent Underline - Gold */}
@@ -235,7 +238,7 @@ const Home = () => {
                                             transition={{ duration: 1.0, ease: "easeOut", delay: 0.3 }}
                                             className="text-white/90 md:text-[#1F1F1F]/80 text-base md:text-2xl font-serif italic font-light max-w-sm md:max-w-md mx-auto md:mx-0 leading-relaxed"
                                         >
-                                            Crafted in Pure 925 Silver
+                                            {heroSlides[currentSlide].description || "Crafted in Pure 925 Silver"}
                                         </motion.p>
 
                                         {/* Interactive Buttons - Wine Red CTA */}
@@ -245,8 +248,8 @@ const Home = () => {
                                             transition={{ duration: 1.0, ease: "easeOut", delay: 0.4 }}
                                             className="flex items-center justify-center md:justify-start space-x-6 pt-2 md:pt-4"
                                         >
-                                            <Link to="/shop" className="bg-[#4A1015] text-white w-full md:w-auto px-8 py-4 md:px-12 md:py-5 rounded-full font-semibold tracking-wide hover:bg-[#2F0005] active:scale-95 md:hover:scale-105 transition-all shadow-xl flex items-center justify-center gap-2 group/btn text-base md:text-base min-h-[56px] md:min-h-0">
-                                                <span>Shop Now</span>
+                                            <Link to={heroSlides[currentSlide].link || "/shop"} className="bg-[#4A1015] text-white w-full md:w-auto px-8 py-4 md:px-12 md:py-5 rounded-full font-semibold tracking-wide hover:bg-[#2F0005] active:scale-95 md:hover:scale-105 transition-all shadow-xl flex items-center justify-center gap-2 group/btn text-base md:text-base min-h-[56px] md:min-h-0">
+                                                <span>{heroSlides[currentSlide].btnText || "Shop Now"}</span>
                                                 <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
                                             </Link>
                                         </motion.div>
