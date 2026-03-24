@@ -18,6 +18,7 @@ const SELLER_COMPLEX_FIELDS = [
 router.use(authenticate, requireRole("seller"));
 
 router.get("/", productController.getMyProducts);
+router.post("/scan", productController.scanProduct);
 router.get("/:id", productController.getMyProduct);
 router.post(
   "/", 

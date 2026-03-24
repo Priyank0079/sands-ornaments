@@ -29,7 +29,7 @@ const quillFormats = [
     'link'
 ];
 
-const SellerProductEditor = () => {
+const SellerProductEditor = ({ productApi, backPath = '/seller/products' }) => {
     const { id } = useParams();
     const navigate = useNavigate();
     const location = useLocation();
@@ -54,6 +54,64 @@ const SellerProductEditor = () => {
     const [enhancedIndices, setEnhancedIndices] = useState(new Set());
 
     const ENHANCEMENT_PROMPT = "Enhance this product image for eCommerce use. Improve lighting, sharpness, remove background noise, make it look professional, high resolution, clean white or premium background, realistic colors, suitable for online store listing.";
+
+    const normalizeSerialCodes = (codes) => {
+        if (!Array.isArray(codes)) return [];
+        return codes
+            .map(code => {
+                if (typeof code === 'string') return { code, status: 'AVAILABLE' };
+                if (code && typeof code === 'object' && code.code) {
+                    return { code: String(code.code), status: code.status || 'AVAILABLE' };
+                }
+                return null;
+            })
+            .filter(Boolean);
+    };
+
+    const getAvailableSerialCodes = (variant) =>
+        (variant.serialCodes || []).filter(code => (code.status || 'AVAILABLE') === 'AVAILABLE');
+
+    const getSerialPrefix = () => {
+        const base = String(formData.name || 'ITEM').toUpperCase().replace(/[^A-Z0-9]/g, '');
+        return base.substring(0, 4) || 'ITEM';
+    };
+
+    const generateSerialCode = (existingSet, variantIndex, prefixOverride) => {
+        const prefix = prefixOverride || getSerialPrefix();
+        let attempt = 0;
+        while (attempt < 50) {
+            const suffix = `${String(variantIndex + 1).padStart(2, '0')}${Date.now().toString().slice(-4)}${String(Math.floor(Math.random() * 900)).padStart(3, '0')}`;
+            const code = `${prefix}${suffix}`;
+            if (!existingSet.has(code)) return code;
+            attempt += 1;
+        }
+        return `${prefix}${Date.now().toString().slice(-10)}`;
+    };
+
+    const syncVariantSerialQuantity = (variant, variantIndex, desiredCount, prefixOverride) => {
+        const normalized = normalizeSerialCodes(variant.serialCodes || []);
+        const available = normalized.filter(code => (code.status || 'AVAILABLE') === 'AVAILABLE');
+        const sold = normalized.filter(code => (code.status || 'AVAILABLE') !== 'AVAILABLE');
+        const existingSet = new Set(normalized.map(code => code.code));
+
+        let updatedAvailable = [...available];
+        if (desiredCount > available.length) {
+            const toAdd = desiredCount - available.length;
+            for (let i = 0; i < toAdd; i += 1) {
+                const code = generateSerialCode(existingSet, variantIndex, prefixOverride);
+                existingSet.add(code);
+                updatedAvailable.push({ code, status: 'AVAILABLE' });
+            }
+        } else if (desiredCount < available.length) {
+            updatedAvailable = available.slice(0, desiredCount);
+        }
+
+        return {
+            ...variant,
+            serialCodes: [...sold, ...updatedAvailable],
+            stock: desiredCount
+        };
+    };
 
     const toSlugValue = (label) => {
         return String(label || '')
@@ -106,16 +164,22 @@ const SellerProductEditor = () => {
         navGiftsFor: [],
         navOccasions: [],
         variants: [
-            { id: Date.now(), name: 'Standard', makingCharge: '0', diamondPrice: '0', mrp: globalGst || '0', price: '', stock: '' }
+            { id: Date.now(), name: 'Standard', makingCharge: '0', diamondPrice: '0', mrp: globalGst || '0', price: '', stock: 0, serialCodes: [] }
         ],
         faqs: [],
         deletedImages: [],
         silverCategory: '', // New Field for silver purity
         goldCategory: '', // New Field for gold purity
         careTips: '', // New Field for caring tips
-        isSerialized: false,
+        isSerialized: true,
         productCodes: []
     });
+
+    const resolvedProductApi = productApi || {
+        getProduct: sellerProductService.getSellerProductRaw,
+        createProduct: sellerProductService.addProduct,
+        updateProduct: sellerProductService.updateProduct
+    };
 
     useEffect(() => {
         const loadCategories = async () => {
@@ -155,7 +219,7 @@ const SellerProductEditor = () => {
                 return;
             }
             try {
-                const data = await sellerProductService.getSellerProductRaw(id);
+                const data = await resolvedProductApi.getProduct(id);
                 if (data) {
                     const normalizedCategories = (data.categories || []).map(c => ({
                         category: typeof c === 'object' ? (c._id || c.name || '') : c
@@ -169,19 +233,31 @@ const SellerProductEditor = () => {
                         categories: normalizedCategories.slice(0, 1),
                         navGiftsFor: Array.isArray(data.navGiftsFor) ? data.navGiftsFor : [],
                         navOccasions: Array.isArray(data.navOccasions) ? data.navOccasions : [],
-                        variants: data.variants?.map(v => ({ 
-                            ...v, 
-                            id: v._id || Math.random(),
-                            makingCharge: (v.makingCharge || 0).toString(),
-                            diamondPrice: (v.diamondPrice || 0).toString()
-                        })) || prev.variants,
+                        variants: data.variants?.map((v, index) => {
+                            const serialCodes = normalizeSerialCodes(v.serialCodes || []);
+                            const prefix = String(data.name || '').toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 4) || 'ITEM';
+                            const availableCount = serialCodes.filter(code => (code.status || 'AVAILABLE') === 'AVAILABLE').length;
+                            const desiredCount = availableCount || Number(v.stock) || 0;
+                            const ensured = serialCodes.length > 0
+                                ? { serialCodes, stock: availableCount }
+                                : syncVariantSerialQuantity({ serialCodes: [] }, index, desiredCount, prefix);
+
+                            return { 
+                                ...v, 
+                                id: v._id || Math.random(),
+                                makingCharge: (v.makingCharge || 0).toString(),
+                                diamondPrice: (v.diamondPrice || 0).toString(),
+                                serialCodes: ensured.serialCodes,
+                                stock: ensured.stock
+                            };
+                        }) || prev.variants,
                         faqs: data.faqs || [],
                         deletedImages: [],
                         silverCategory: data.silverCategory || '',
                         goldCategory: data.goldCategory || '',
                         careTips: data.careTips || '',
-                        isSerialized: data.isSerialized || false,
-                        productCodes: data.productCodes || []
+                        isSerialized: true,
+                        productCodes: []
                     }));
                     if (data.images) {
                         setPreviewImages(data.images);
@@ -291,7 +367,8 @@ const SellerProductEditor = () => {
                 diamondPrice: '0', 
                 mrp: (parseFloat(globalGst) || 0).toString(), 
                 price: '', 
-                stock: '' 
+                stock: 0,
+                serialCodes: []
             }]
         }));
     };
@@ -301,6 +378,17 @@ const SellerProductEditor = () => {
         setFormData(prev => ({
             ...prev,
             variants: prev.variants.filter(v => v.id !== id)
+        }));
+    };
+
+    const updateVariantSerialQuantity = (id, desiredCount) => {
+        const count = Math.max(0, parseInt(desiredCount || 0, 10));
+        setFormData(prev => ({
+            ...prev,
+            variants: prev.variants.map((v, index) => {
+                if (v.id !== id) return v;
+                return syncVariantSerialQuantity(v, index, count);
+            })
         }));
     };
 
@@ -389,14 +477,25 @@ const SellerProductEditor = () => {
             });
 
             productForm.append('categories', JSON.stringify([formData.categories[0].category]));
-            productForm.append('variants', JSON.stringify(formData.variants.map(({ id, _id, sold, ...rest }) => ({
+            const normalizedVariants = formData.variants.map((variantItem) => {
+                const serialCodes = normalizeSerialCodes(variantItem.serialCodes || []);
+                const availableCount = serialCodes.filter(code => (code.status || 'AVAILABLE') === 'AVAILABLE').length;
+                return {
+                    ...variantItem,
+                    serialCodes,
+                    stock: availableCount
+                };
+            });
+
+            productForm.append('variants', JSON.stringify(normalizedVariants.map(({ id, _id, sold, ...rest }) => ({
                 ...rest,
                 makingCharge: parseFloat(rest.makingCharge) || 0,
                 diamondPrice: parseFloat(rest.diamondPrice) || 0,
                 mrp: parseFloat(rest.mrp) || 0,
                 price: parseFloat(rest.price) || 0,
                 stock: parseInt(rest.stock) || 0,
-                discount: parseInt(rest.discount) || 0
+                discount: parseInt(rest.discount) || 0,
+                serialCodes: rest.serialCodes
             }))));
             productForm.append('tags', JSON.stringify(formData.tags));
             productForm.append('faqs', JSON.stringify((formData.faqs || []).map(({ _id, ...rest }) => ({
@@ -408,20 +507,17 @@ const SellerProductEditor = () => {
             productForm.append('navOccasions', JSON.stringify(normalizedOccasions));
             productForm.append('deletedImages', JSON.stringify(formData.deletedImages || []));
             
-            if (formData.isSerialized && formData.productCodes.length > 0) {
-                productForm.append('isSerialized', 'true');
-                productForm.append('productCodes', JSON.stringify(formData.productCodes));
-            }
+            productForm.append('isSerialized', 'true');
 
             imageFiles.forEach(file => productForm.append('images', file));
 
             if (isEditMode) {
-                const res = await sellerProductService.updateProduct(id, productForm);
-                if (res.success === false) throw new Error(res.message || "Update failed");
+                const res = await resolvedProductApi.updateProduct(id, productForm);
+                if (res?.success === false) throw new Error(res?.message || "Update failed");
                 toast.success("Product updated");
-                navigate('/seller/products');
+                navigate(backPath);
             } else {
-                const res = await sellerProductService.addProduct(productForm);
+                const res = await resolvedProductApi.createProduct(productForm);
                 setCreatedProductData(res);
                 setShowSuccessModal(true);
                 toast.success("Product created");
@@ -439,7 +535,7 @@ const SellerProductEditor = () => {
                 <PageHeader
                     title={isViewMode ? `View Product` : (isEditMode ? `Edit Product` : `Create New Product`)}
                     subtitle={isViewMode ? `Viewing details for ${formData.name || id}` : (isEditMode ? `ID: ${id || 'N/A'}` : `Setup your new product details`)}
-                    backPath="/seller/products"
+                    backPath={backPath}
                     action={!isViewMode ? {
                         label: loading || isSaving ? (isEditMode ? 'Saving...' : 'Publishing...') : (isEditMode ? 'Save Changes' : `Publish Product`),
                         onClick: handleSubmit,
@@ -828,82 +924,19 @@ const SellerProductEditor = () => {
                         </FormSection>
 
                         <FormSection title="Inventory Strategy">
-                            <div className="space-y-6">
-                                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between p-4 bg-amber-50 rounded-2xl border border-amber-100">
                                     <div className="flex items-center gap-3">
-                                        <div className={`p-2 rounded-xl transition-colors ${formData.isSerialized ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-400'}`}>
+                                        <div className="p-2 rounded-xl bg-amber-100 text-amber-600">
                                             <BarcodeIcon size={18} />
                                         </div>
                                         <div>
                                             <p className="text-[10px] font-black uppercase tracking-widest text-gray-900">Serialized Inventory</p>
-                                            <p className="text-[8px] font-bold text-gray-400 uppercase mt-0.5">Generate unique IDs per item (e.g. RING001, RING002)</p>
+                                            <p className="text-[8px] font-bold text-gray-400 uppercase mt-0.5">Always enabled. Set quantities per variant below.</p>
                                         </div>
                                     </div>
-                                    <button 
-                                        type="button"
-                                        onClick={() => setFormData({ ...formData, isSerialized: !formData.isSerialized })}
-                                        className={`w-12 h-6 rounded-full relative transition-all duration-300 ${formData.isSerialized ? 'bg-[#3E2723]' : 'bg-gray-200'}`}
-                                    >
-                                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all duration-300 ${formData.isSerialized ? 'right-1' : 'left-1'}`} />
-                                    </button>
+                                    <div className="text-[9px] font-black text-amber-700 uppercase tracking-widest">Locked</div>
                                 </div>
-
-                                {formData.isSerialized && (
-                                    <div className="space-y-6 animate-in slide-in-from-top-4 duration-500">
-                                        <div className="p-6 bg-amber-50 rounded-[2rem] border border-amber-100 space-y-4">
-                                            <div className="flex items-center justify-between">
-                                                <label className="text-[10px] font-black text-amber-800 uppercase tracking-widest">Total Serialized Quantity</label>
-                                                <div className="flex items-center gap-2">
-                                                    <input 
-                                                        type="number" 
-                                                        min="1"
-                                                        max="100"
-                                                        value={formData.productCodes.length || ''}
-                                                        onChange={(e) => {
-                                                            const val = Math.min(parseInt(e.target.value) || 0, 100);
-                                                            const finalCodes = Array(val).fill('').map((_, i) => formData.productCodes[i] || '');
-                                                            setFormData({ ...formData, productCodes: finalCodes });
-                                                        }}
-                                                        className="w-16 bg-white border border-amber-200 rounded-lg py-1 px-2 text-xs font-black text-center focus:outline-none focus:border-amber-500"
-                                                        placeholder="0"
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <div className="space-y-3">
-                                                <div className="flex items-center justify-between">
-                                                    <p className="text-[9px] font-black text-amber-600/60 uppercase tracking-widest">Assign Unique Codes</p>
-                                                    <button 
-                                                        type="button"
-                                                        onClick={() => {
-                                                            const prefix = formData.name.toUpperCase().replace(/[^A-Z]/g, '').substring(0, 4) || 'ITEM';
-                                                            const newCodes = formData.productCodes.map((_, i) => `${prefix}${(i + 1).toString().padStart(3, '0')}`);
-                                                            setFormData({ ...formData, productCodes: newCodes });
-                                                        }}
-                                                        className="text-[9px] font-black text-blue-600 uppercase hover:underline"
-                                                    >
-                                                        Auto-Generate
-                                                    </button>
-                                                </div>
-                                                <div className="grid grid-cols-2 gap-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar border-t border-amber-100 pt-3">
-                                                    {formData.productCodes.map((code, idx) => (
-                                                        <input 
-                                                            key={idx}
-                                                            placeholder={`ID #${idx + 1}`}
-                                                            value={code}
-                                                            onChange={(e) => {
-                                                                const newCodes = [...formData.productCodes];
-                                                                newCodes[idx] = e.target.value.toUpperCase();
-                                                                setFormData({ ...formData, productCodes: newCodes });
-                                                            }}
-                                                            className="bg-white border border-amber-100 rounded-lg py-2 px-3 text-[10px] font-mono font-black placeholder:text-gray-300 focus:outline-none focus:border-amber-500 transition-all shadow-sm"
-                                                        />
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                         </FormSection>
 
@@ -981,7 +1014,9 @@ const SellerProductEditor = () => {
                                 )}
                             </div>
                             <div className="space-y-6">
-                                {formData.variants.map((v, idx) => (
+                                {formData.variants.map((v, idx) => {
+                                    const availableCount = getAvailableSerialCodes(v).length;
+                                    return (
                                     <div key={v.id} className="flex flex-col gap-6 bg-[#FDFBF7] p-8 rounded-[2rem] border border-gray-100 group relative shadow-sm hover:shadow-md transition-all">
                                         {!isViewMode && formData.variants.length > 1 && (
                                             <button 
@@ -1067,20 +1102,69 @@ const SellerProductEditor = () => {
                                                 {errors[`variant_${idx}_price`] && <div className="text-[10px] text-red-500 mt-1 ml-1">{errors[`variant_${idx}_price`]}</div>}
                                             </div>
                                             <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Serialized Quantity</label>
+                                                <input 
+                                                    type="number" 
+                                                    value={availableCount} 
+                                                    onChange={(e) => updateVariantSerialQuantity(v.id, e.target.value)} 
+                                                    disabled={isViewMode} 
+                                                    className="w-full bg-white border border-gray-100 rounded-2xl py-4 px-6 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723]/30 transition-all shadow-sm" 
+                                                    placeholder="0" 
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
                                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Stock Units</label>
                                                 <input 
                                                     type="number" 
-                                                    value={v.stock} 
-                                                    onChange={(e) => handleVariantChange(v.id, 'stock', e.target.value)} 
-                                                    disabled={isViewMode} 
-                                                    className="w-full bg-white border border-gray-100 rounded-2xl py-4 px-6 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723]/30 transition-all shadow-sm" 
+                                                    value={availableCount} 
+                                                    readOnly
+                                                    disabled
+                                                    className="w-full bg-gray-100 border border-gray-200 rounded-2xl py-4 px-6 text-sm font-bold text-gray-700 outline-none shadow-sm cursor-not-allowed" 
                                                     placeholder="In Stock" 
                                                 />
                                                 {errors[`variant_${idx}_stock`] && <div className="text-[10px] text-red-500 mt-1 ml-1">{errors[`variant_${idx}_stock`]}</div>}
                                             </div>
                                         </div>
+
+                                        <div className="border-t border-gray-100/60 pt-6 space-y-4">
+                                            <div className="flex items-center justify-between">
+                                                <p className="text-[10px] font-black text-amber-700 uppercase tracking-widest">Unique Codes</p>
+                                                {!isViewMode && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => updateVariantSerialQuantity(v.id, Math.max(availableCount, 1))}
+                                                        className="text-[9px] font-black text-blue-600 uppercase hover:underline"
+                                                    >
+                                                        Auto-Generate
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
+                                                {(v.serialCodes || []).map((codeObj, codeIdx) => (
+                                                    <input
+                                                        key={`${codeObj.code}-${codeIdx}`}
+                                                        value={codeObj.code}
+                                                        onChange={(e) => {
+                                                            if (isViewMode || (codeObj.status && codeObj.status !== 'AVAILABLE')) return;
+                                                            const next = formData.variants.map((variantItem, variantIndex) => {
+                                                                if (variantItem.id !== v.id) return variantItem;
+                                                                const serialCodes = normalizeSerialCodes(variantItem.serialCodes || []);
+                                                                serialCodes[codeIdx] = { ...serialCodes[codeIdx], code: e.target.value.toUpperCase() };
+                                                                return { ...variantItem, serialCodes };
+                                                            });
+                                                            setFormData(prev => ({ ...prev, variants: next }));
+                                                        }}
+                                                        disabled={isViewMode || (codeObj.status && codeObj.status !== 'AVAILABLE')}
+                                                        className="bg-white border border-amber-100 rounded-lg py-2 px-3 text-[10px] font-mono font-black placeholder:text-gray-300 focus:outline-none focus:border-amber-500 transition-all shadow-sm disabled:bg-gray-100 disabled:text-gray-400"
+                                                    />
+                                                ))}
+                                                {(!v.serialCodes || v.serialCodes.length === 0) && (
+                                                    <div className="text-xs text-gray-400 col-span-2 md:col-span-3">No codes generated yet.</div>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
-                                ))}
+                                )})}
                             </div>
                         </FormSection>
 
@@ -1337,7 +1421,7 @@ const SellerProductEditor = () => {
                                      Manifest Next Item
                                  </button>
                                  <button 
-                                     onClick={() => navigate('/seller/products')}
+                                     onClick={() => navigate(backPath)}
                                      className="w-full py-4 text-gray-400 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:text-gray-900 transition-all"
                                  >
                                      Exit to Repository

@@ -34,6 +34,7 @@ import CategoryPage from './modules/admin/pages/categories/CategoryPage';
 import ProductManagement from './modules/admin/pages/ProductManagement';
 import ProductView from './modules/admin/pages/ProductView';
 import ItemEditor from './modules/admin/pages/ItemEditor';
+import AdminProductEditor from './modules/admin/pages/AdminProductEditor';
 import OrderListPage from './modules/admin/pages/OrderListPage';
 import OrderDetailPage from './modules/admin/pages/OrderDetailPage';
 import ReturnDetailPage from './modules/admin/pages/ReturnDetailPage';
@@ -134,9 +135,9 @@ const AppContent = () => {
                   <Route path="/categories/edit/:id" element={<ItemEditor />} />
 
                   <Route path="/products" element={<ProductManagement />} />
-                  <Route path="/products/view/:id" element={<ItemEditor />} />
-                  <Route path="/products/new" element={<ItemEditor />} />
-                  <Route path="/products/edit/:id" element={<ItemEditor />} />
+                  <Route path="/products/view/:id" element={<AdminProductEditor />} />
+                  <Route path="/products/new" element={<AdminProductEditor />} />
+                  <Route path="/products/edit/:id" element={<AdminProductEditor />} />
                   <Route path="/coupons" element={<CouponListPage />} />
                   <Route path="/coupons/add" element={<CouponFormPage />} />
                   <Route path="/coupons/edit/:id" element={<CouponFormPage />} />

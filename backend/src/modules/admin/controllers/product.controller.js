@@ -13,8 +13,27 @@ const PRODUCT_UPDATE_WHITELIST = [
   "isFeatured", "isTrending", "isNewArrival",
   "returnEligibilities", "weight", "material", "faqs",
   "showInNavbar", "showInCollection", "active",
-  "navShopByCategory", "navGiftsFor", "navOccasions"
+  "navShopByCategory", "navGiftsFor", "navOccasions",
+  "cardLabel", "cardBadge", "careTips", "silverCategory",
+  "goldCategory", "weightUnit", "specifications", "supplierInfo",
+  "huid", "sizes", "isSerialized"
 ];
+
+const normalizeSerialCodes = (codes = []) => {
+  if (!Array.isArray(codes)) return [];
+  return codes
+    .map(code => {
+      if (typeof code === "string") return { code, status: "AVAILABLE" };
+      if (code && typeof code === "object" && code.code) {
+        return { code: String(code.code), status: code.status || "AVAILABLE" };
+      }
+      return null;
+    })
+    .filter(Boolean);
+};
+
+const countAvailableCodes = (codes = []) =>
+  codes.filter(c => (c.status || "AVAILABLE") === "AVAILABLE").length;
 
 
 // ─────────────────────────────────────────────────────────────────
@@ -44,11 +63,16 @@ exports.createProduct = async (req, res) => {
         if (v.mrp && v.price && !v.discount) {
           v.discount = Math.round(((v.mrp - v.price) / v.mrp) * 100);
         }
+        const serialCodes = normalizeSerialCodes(v.serialCodes || []);
+        if (serialCodes.length > 0) {
+          v.serialCodes = serialCodes;
+          v.stock = countAvailableCodes(serialCodes);
+        }
         return v;
       });
     }
 
-    const product = await Product.create({ ...data, slug: productSlug, images });
+    const product = await Product.create({ ...data, slug: productSlug, images, isSerialized: true });
 
     const stockLogs = product.variants.map(v => ({
       productId:     product._id,
@@ -182,6 +206,19 @@ exports.updateProduct = async (req, res) => {
     PRODUCT_UPDATE_WHITELIST.forEach(key => {
       if (data[key] !== undefined) product[key] = data[key];
     });
+
+    if (Array.isArray(product.variants)) {
+      product.variants = product.variants.map(v => {
+        const serialCodes = normalizeSerialCodes(v.serialCodes || []);
+        if (serialCodes.length > 0) {
+          v.serialCodes = serialCodes;
+          v.stock = countAvailableCodes(serialCodes);
+        }
+        return v;
+      });
+    }
+
+    product.isSerialized = true;
 
     await product.save();
     return success(res, { product }, "Product updated successfully");

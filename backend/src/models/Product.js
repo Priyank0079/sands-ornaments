@@ -35,7 +35,11 @@ const productSchema = new mongoose.Schema({
     price: { type: Number, required: true },
     discount: { type: Number },
     stock: { type: Number, required: true, min: 0 },
-    sold: { type: Number, default: 0 }
+    sold: { type: Number, default: 0 },
+    serialCodes: [{
+      code: { type: String, trim: true },
+      status: { type: String, enum: ["AVAILABLE", "SOLD_OFFLINE", "SOLD_ONLINE"], default: "AVAILABLE" }
+    }]
   }],
   tags: {
     isNewArrival: { type: Boolean, default: false },
@@ -57,7 +61,8 @@ const productSchema = new mongoose.Schema({
   faqs: [{
     question: { type: String, trim: true },
     answer: { type: String, trim: true }
-  }]
+  }],
+  isSerialized: { type: Boolean, default: true }
 }, { timestamps: true });
 
 module.exports = mongoose.model("Product", productSchema);

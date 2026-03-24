@@ -23,9 +23,28 @@ const sanitizeVariants = (variants) => {
     mrp: Number(v.mrp) || 0,
     price: Number(v.price) || 0,
     stock: Number(v.stock) || 0,
-    discount: Number(v.discount) || 0
+    discount: Number(v.discount) || 0,
+    makingCharge: Number(v.makingCharge) || 0,
+    diamondPrice: Number(v.diamondPrice) || 0,
+    serialCodes: normalizeSerialCodes(v.serialCodes || [])
   }));
 };
+
+const normalizeSerialCodes = (codes = []) => {
+  if (!Array.isArray(codes)) return [];
+  return codes
+    .map(code => {
+      if (typeof code === "string") return { code, status: "AVAILABLE" };
+      if (code && typeof code === "object" && code.code) {
+        return { code: String(code.code), status: code.status || "AVAILABLE" };
+      }
+      return null;
+    })
+    .filter(Boolean);
+};
+
+const countAvailableCodes = (codes = []) =>
+  codes.filter(c => (c.status || "AVAILABLE") === "AVAILABLE").length;
 
 exports.createProduct = async (req, res) => {
   try {
@@ -45,9 +64,6 @@ exports.createProduct = async (req, res) => {
     const faqs = tryParse(data.faqs) || [];
     const navGiftsFor = tryParse(data.navGiftsFor) || [];
     const navOccasions = tryParse(data.navOccasions) || [];
-    const productCodes = tryParse(data.productCodes);
-    
-    const isSerialized = productCodes && Array.isArray(productCodes) && productCodes.length > 0;
     const material = normalizeMaterial(data);
     const baseSlug = data.slug ? slugify(data.slug) : slugify(data.name);
 
@@ -63,6 +79,7 @@ exports.createProduct = async (req, res) => {
     data.faqs = faqs;
     data.navGiftsFor = navGiftsFor;
     data.navOccasions = navOccasions;
+    data.isSerialized = true;
     
     // Ensure slug is clean
     data.slug = baseSlug;
@@ -77,101 +94,53 @@ exports.createProduct = async (req, res) => {
       if (!Array.isArray(images)) images = [data.images].filter(Boolean);
     }
 
-    if (isSerialized) {
-      // Create multiple products
-      const productsToCreate = [];
-      for (let i = 0; i < productCodes.length; i++) {
-        const code = productCodes[i];
-        const uniqueSlug = `${baseSlug}-${code}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const existing = await Product.findOne({ slug: baseSlug });
+    const finalSlug = existing ? `${baseSlug}-${Math.floor(1000 + Math.random() * 9000)}` : baseSlug;
 
-        const productData = {
-          ...data,
-          name: `${data.name} - ${code}`,
-          sellerId,
-          slug: uniqueSlug,
-          productCode: code,
-          sku: code,
-          images,
-          categories,
-          material,
-          status: "Active",
-          active: true,
-          variants: variants.length > 0 ? variants.map(v => ({ ...v, stock: 1 })) : [{
-            name: "Standard",
-            mrp: parseFloat(data.originalPrice) || 0,
-            price: parseFloat(data.price || data.sellingPrice) || 0,
-            stock: 1,
-            discount: parseInt(data.discount) || 0
-          }]
-        };
-        productsToCreate.push(productData);
-      }
-
-      const createdProducts = await Product.insertMany(productsToCreate);
-      
-      // Create Stock Logs for each
-      const stockLogs = [];
-      createdProducts.forEach(p => {
-        p.variants.forEach(v => {
-          stockLogs.push({
-            productId: p._id,
-            variantId: v._id,
-            changeType: "purchase",
-            previousStock: 0,
-            newStock: v.stock,
-            change: v.stock,
-            reason: "Bulk serialized listing",
-            sellerId: sellerId
-          });
-        });
-      });
-      await StockLog.insertMany(stockLogs);
-
-      return success(res, { products: createdProducts }, `${createdProducts.length} products created successfully.`, 201);
+    if (!variants || variants.length === 0) {
+      data.variants = [{
+        name: "Standard",
+        mrp: parseFloat(data.originalPrice) || 0,
+        price: parseFloat(data.price || data.sellingPrice) || 0,
+        stock: parseInt(data.availableStock || data.quantity || data.stock) || 0,
+        discount: parseInt(data.discount) || 0,
+        serialCodes: []
+      }];
     } else {
-      // Single product creation (Standard)
-      const existing = await Product.findOne({ slug: baseSlug });
-      const finalSlug = existing ? `${baseSlug}-${Math.floor(1000 + Math.random() * 9000)}` : baseSlug;
-
-      if (!variants || variants.length === 0) {
-        data.variants = [{
-          name: "Standard",
-          mrp: parseFloat(data.originalPrice) || 0,
-          price: parseFloat(data.price || data.sellingPrice) || 0,
-          stock: parseInt(data.availableStock || data.quantity || data.stock) || 0,
-          discount: parseInt(data.discount) || 0
-        }];
-      } else {
-        data.variants = variants;
-      }
-
-      const product = await Product.create({
-        ...data,
-        sellerId,
-        slug: finalSlug,
-        images,
-        categories,
-        material,
-        status: "Active",
-        active: true
+      data.variants = variants.map(v => {
+        const serialCodes = normalizeSerialCodes(v.serialCodes || []);
+        const availableCount = serialCodes.length > 0 ? countAvailableCodes(serialCodes) : Number(v.stock) || 0;
+        return { ...v, serialCodes, stock: availableCount };
       });
-
-      if (product.variants && product.variants.length > 0) {
-        const stockLogs = product.variants.map(v => ({
-          productId: product._id,
-          variantId: v._id,
-          changeType: "purchase",
-          previousStock: 0,
-          newStock: v.stock,
-          change: v.stock,
-          reason: "Initial seller listing",
-          sellerId: sellerId
-        }));
-        await StockLog.insertMany(stockLogs);
-      }
-
-      return success(res, { product }, "Product created successfully.", 201);
     }
+
+    const product = await Product.create({
+      ...data,
+      sellerId,
+      slug: finalSlug,
+      images,
+      categories,
+      material,
+      status: "Active",
+      active: true,
+      isSerialized: true
+    });
+
+    if (product.variants && product.variants.length > 0) {
+      const stockLogs = product.variants.map(v => ({
+        productId: product._id,
+        variantId: v._id,
+        changeType: "purchase",
+        previousStock: 0,
+        newStock: v.stock,
+        change: v.stock,
+        reason: "Initial seller listing",
+        sellerId: sellerId
+      }));
+      await StockLog.insertMany(stockLogs);
+    }
+
+    return success(res, { product }, "Product created successfully.", 201);
   } catch (err) { 
     console.error("❌ CREATE PRODUCT ERROR:", err);
     return error(res, err.message); 
@@ -241,9 +210,19 @@ exports.updateProduct = async (req, res) => {
     if (safeData.material !== undefined || safeData.metal !== undefined || safeData.metalType !== undefined) {
       safeData.material = normalizeMaterial(safeData);
     }
-    if (safeData.variants) safeData.variants = sanitizeVariants(safeData.variants);
+    if (safeData.variants) {
+      safeData.variants = sanitizeVariants(safeData.variants).map(v => {
+        const serialCodes = normalizeSerialCodes(v.serialCodes || []);
+        if (serialCodes.length > 0) {
+          v.serialCodes = serialCodes;
+          v.stock = countAvailableCodes(serialCodes);
+        }
+        return v;
+      });
+    }
 
     Object.assign(product, safeData);
+    product.isSerialized = true;
     await product.save();
 
     return success(res, { product }, "Product updated successfully");
@@ -256,4 +235,57 @@ exports.deleteProduct = async (req, res) => {
     if (!product) return error(res, "Product not found", 404);
     return success(res, {}, "Product deleted");
   } catch (err) { return error(res, err.message); }
+};
+
+exports.scanProduct = async (req, res) => {
+  try {
+    const { productCode } = req.body;
+    const sellerId = req.user.userId;
+    if (!productCode) return error(res, "Product code is required", 400);
+
+    const product = await Product.findOne({
+      sellerId,
+      "variants.serialCodes.code": productCode
+    });
+    if (!product) return error(res, "Product not found", 404);
+
+    const variant = product.variants.find(v =>
+      Array.isArray(v.serialCodes) && v.serialCodes.some(c => c.code === productCode)
+    );
+    if (!variant) return error(res, "Variant not found", 404);
+
+    const codeEntry = variant.serialCodes.find(c => c.code === productCode);
+    if (!codeEntry) return error(res, "Product code not found", 404);
+    if (codeEntry.status && codeEntry.status !== "AVAILABLE") {
+      return error(res, "Product already sold", 400);
+    }
+
+    const previousStock = variant.stock || 0;
+    codeEntry.status = "SOLD_OFFLINE";
+    variant.stock = Math.max(0, previousStock - 1);
+
+    await product.save();
+
+    await StockLog.create({
+      productId: product._id,
+      variantId: variant._id,
+      changeType: "sale_offline",
+      previousStock,
+      newStock: variant.stock,
+      change: -1,
+      reason: `Offline sale - ${productCode}`,
+      sellerId
+    });
+
+    return success(res, {
+      name: product.name,
+      price: variant.price,
+      stock: variant.stock,
+      productId: product._id,
+      variantId: variant._id,
+      productCode
+    }, "Product sold successfully");
+  } catch (err) {
+    return error(res, err.message);
+  }
 };

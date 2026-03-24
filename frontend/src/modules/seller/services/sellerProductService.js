@@ -121,7 +121,7 @@ export const sellerProductService = {
     try {
       // Assuming endpoint POST /api/seller/products/scan exists or as requested
       const res = await api.post('/seller/products/scan', { productCode });
-      return res.data;
+      return res.data?.data || res.data;
     } catch (err) {
       console.error("Failed to scan product:", err);
       return { 

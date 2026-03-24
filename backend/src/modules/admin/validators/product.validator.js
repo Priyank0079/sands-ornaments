@@ -8,6 +8,12 @@ const variantSchema = Joi.object({
   price: Joi.number().required().min(0).max(Joi.ref('mrp')),
   stock: Joi.number().integer().required().min(0),
   discount: Joi.number().min(0).max(100),
+  makingCharge: Joi.number().min(0).optional(),
+  diamondPrice: Joi.number().min(0).optional(),
+  serialCodes: Joi.array().items(Joi.object({
+    code: Joi.string().trim().required(),
+    status: Joi.string().valid("AVAILABLE", "SOLD_OFFLINE", "SOLD_ONLINE").optional()
+  })).optional()
 });
 
 const productSchema = Joi.object({
@@ -17,13 +23,18 @@ const productSchema = Joi.object({
   categories: Joi.array().items(Joi.string().pattern(/^[0-9a-fA-F]{24}$/)).min(1).max(1).required(),
   description: Joi.string().required(),
   stylingTips: Joi.string().allow(""),
+  careTips: Joi.string().allow(""),
   material: Joi.string().default("925 Silver"),
+  silverCategory: Joi.string().allow(""),
+  goldCategory: Joi.string().allow(""),
   weight: Joi.number().positive(),
   weightUnit: Joi.string().valid("Grams", "Carats", "Milligrams").default("Grams"),
   specifications: Joi.string().allow(""),
   supplierInfo: Joi.string().allow(""),
   cardLabel: Joi.string().allow(""),
   cardBadge: Joi.string().allow(""),
+  huid: Joi.string().allow(""),
+  sizes: Joi.array().items(Joi.string().trim()).optional(),
   variants: Joi.array().items(variantSchema).min(1).required(),
   tags: Joi.object({
     isNewArrival: boolField,
@@ -38,6 +49,7 @@ const productSchema = Joi.object({
   active: boolField,
   navGiftsFor: Joi.array().items(Joi.string().trim()).optional(),
   navOccasions: Joi.array().items(Joi.string().trim()).optional(),
+  isSerialized: boolField.optional(),
   images: Joi.any(),
   deletedImages: Joi.array().items(Joi.string()).allow(null),
   faqs: Joi.array().items(Joi.object({
