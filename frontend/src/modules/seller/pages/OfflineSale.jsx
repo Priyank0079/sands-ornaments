@@ -81,7 +81,7 @@ const OfflineSale = () => {
                         
                         <div>
                              <h2 className="text-white text-xl font-black uppercase tracking-[0.2em]">Inventory Reconciliation</h2>
-                             <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mt-2 opacity-60">Input SKU or Barcode for direct fulfillment</p>
+                             <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mt-2 opacity-60">Scan or enter a serialized unit code for direct fulfillment</p>
                         </div>
 
                         {/* Scanner Overlay Simulation */}
@@ -101,7 +101,7 @@ const OfflineSale = () => {
                                 <input 
                                     value={scannedCode}
                                     onChange={(e) => setScannedCode(e.target.value)}
-                                    placeholder="SKU IDENTIFIER (e.g. SILV001)"
+                                    placeholder="SERIAL CODE (e.g. ITEM010001234)"
                                     className="w-full bg-[#1E293B]/50 border border-white/10 rounded-2xl py-6 px-14 text-white text-xl font-mono focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all text-center tracking-widest shadow-inner placeholder:text-gray-600"
                                 />
                                 <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-blue-500 transition-colors" />
@@ -144,15 +144,15 @@ const OfflineSale = () => {
                     <ul className="space-y-3">
                          <li className="flex gap-3 text-xs font-semibold text-gray-600">
                              <div className="w-5 h-5 bg-gray-50 rounded flex items-center justify-center shrink-0 text-[10px] border border-gray-100 italic">1</div>
-                             <span>Enter a barcode from your product list (e.g. RING001).</span>
+                             <span>Enter a serialized unit code from a variant's unique code list.</span>
                          </li>
                          <li className="flex gap-3 text-xs font-semibold text-gray-600">
                              <div className="w-5 h-5 bg-gray-50 rounded flex items-center justify-center shrink-0 text-[10px] border border-gray-100 italic">2</div>
-                             <span>The system checks if the product is AVAILABLE.</span>
+                             <span>The system checks whether that serialized unit is still AVAILABLE.</span>
                          </li>
                          <li className="flex gap-3 text-xs font-semibold text-gray-600">
                              <div className="w-5 h-5 bg-gray-50 rounded flex items-center justify-center shrink-0 text-[10px] border border-gray-100 italic">3</div>
-                             <span>If valid, status becomes SOLD_OFFLINE and inventory decreases.</span>
+                             <span>If valid, that unit becomes SOLD_OFFLINE and the variant stock decreases automatically.</span>
                          </li>
                     </ul>
                 </div>

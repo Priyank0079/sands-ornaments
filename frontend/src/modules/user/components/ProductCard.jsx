@@ -10,16 +10,23 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
 
     const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
     const isWishlisted = safeWishlist.some(item => item.id === product.id);
+    const primaryImage = product.image || product.images?.[0] || '';
 
     const variantPrices = (product.variants || [])
         .map(v => Number(v.price))
         .filter(v => !Number.isNaN(v) && v > 0);
+    const variantOriginalPrices = (product.variants || [])
+        .map(v => Number(v.mrp))
+        .filter(v => !Number.isNaN(v) && v > 0);
     const variantCount = (product.variants || []).length;
-    const fromPrice = variantPrices.length > 0 ? Math.min(...variantPrices) : product.price;
+    const fromPrice = variantPrices.length > 0 ? Math.min(...variantPrices) : Number(product.price || 0);
+    const fromOriginalPrice = variantOriginalPrices.length > 0 ? Math.max(...variantOriginalPrices) : Number(product.originalPrice || 0);
 
     // Calculate discount percentage if original price exists
-    const discount = product.originalPrice > product.price
-        ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+    const effectivePrice = variantCount > 1 ? fromPrice : Number(product.price || 0);
+    const effectiveOriginalPrice = variantCount > 1 ? fromOriginalPrice : Number(product.originalPrice || 0);
+    const discount = effectiveOriginalPrice > effectivePrice
+        ? Math.round(((effectiveOriginalPrice - effectivePrice) / effectiveOriginalPrice) * 100)
         : 0;
 
     const handleAddToCart = (e) => {
@@ -70,7 +77,7 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
             {/* Flying Image Animation Element */}
             {flying && (
                 <img
-                    src={product.image}
+                    src={primaryImage}
                     alt=""
                     className={`fixed z-[9999] w-48 h-48 object-cover shadow-2xl pointer-events-none border-4 border-white ${flyingType === 'cart' ? 'animate-fly-cart' : 'animate-fly-heart'}`}
                     style={{ left: '50%', top: '50%' }}
@@ -82,7 +89,7 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
                 <div className="relative aspect-square md:aspect-[5/4] max-h-[160px] md:max-h-none overflow-hidden bg-[#F5F5F5] shrink-0">
                     <div className="block w-full h-full">
                         <img
-                            src={product.image}
+                            src={primaryImage}
                             alt={product.name}
                             className="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-110"
                         />
@@ -128,8 +135,8 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
                         <span className={`text-black font-bold ${isWishlistPage ? 'text-sm' : 'text-base'}`}>
                             {variantCount > 1 ? `From ₹${Number(fromPrice || 0).toLocaleString()}` : `₹${Number(product.price || 0).toLocaleString()}`}
                         </span>
-                        {product.originalPrice > product.price && (
-                            <span className="text-gray-400 line-through text-xs">₹{Number(product.originalPrice || 0).toLocaleString()}</span>
+                        {effectiveOriginalPrice > effectivePrice && (
+                            <span className="text-gray-400 line-through text-xs">₹{Number(effectiveOriginalPrice || 0).toLocaleString()}</span>
                         )}
                     </div>
 

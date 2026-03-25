@@ -21,7 +21,7 @@ const productSchema = new mongoose.Schema({
   },
   careTips: { type: String, default: '' },
   weight: { type: Number },
-  weightUnit: { type: String, enum: ["Grams", "Carats", "Milligrams"], default: "Grams" },
+  weightUnit: { type: String, enum: ["Grams", "Milligrams"], default: "Grams" },
   specifications: { type: String },
   supplierInfo: { type: String },
   cardLabel: { type: String },
@@ -29,6 +29,9 @@ const productSchema = new mongoose.Schema({
   images: [{ type: String }],
   variants: [{
     name: { type: String, required: true },
+    variantCode: { type: String, trim: true },
+    weight: { type: Number, min: 0 },
+    weightUnit: { type: String, enum: ["Grams", "Milligrams"], default: "Grams" },
     makingCharge: { type: Number, default: 0 },
     diamondPrice: { type: Number, default: 0 },
     mrp: { type: Number, required: true },

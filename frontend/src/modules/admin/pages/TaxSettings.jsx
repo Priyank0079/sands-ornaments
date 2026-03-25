@@ -3,10 +3,8 @@ import { Save, Percent, RefreshCcw, Package } from 'lucide-react';
 import PageHeader from '../components/common/PageHeader';
 import { adminService } from '../services/adminService';
 import toast from 'react-hot-toast';
-import { useShop } from '../../../context/ShopContext';
 
 const TaxSettings = () => {
-  const { setGlobalGst } = useShop();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [gstRate, setGstRate] = useState(0);
@@ -20,11 +18,10 @@ const TaxSettings = () => {
       setGstRate(Number(res.gstRate) || 0);
       setTotalProductCount(Number(res.totalProductCount) || 0);
       setUpdatedAt(res.updatedAt || null);
-      setGlobalGst(Number(res.gstRate) || 0);
       setLoading(false);
     };
     load();
-  }, [setGlobalGst]);
+  }, []);
 
   const cards = useMemo(() => ([
     {
@@ -59,7 +56,6 @@ const TaxSettings = () => {
 
     if (res.success) {
       toast.success('Tax settings updated');
-      setGlobalGst(payload.gstRate);
       const refresh = await adminService.getTaxSettings();
       setGstRate(Number(refresh.gstRate) || payload.gstRate);
       setTotalProductCount(Number(refresh.totalProductCount) || 0);

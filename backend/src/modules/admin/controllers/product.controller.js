@@ -7,10 +7,12 @@ const { deleteFromCloudinary } = require("../../../utils/cloudinaryUtils");
 const { success, error } = require("../../../utils/apiResponse");
 const Setting = require("../../../models/Setting");
 const { applyMetalPricingToProduct } = require("../../../utils/metalPricing");
+const { generateUniqueProductCode, generateVariantCode } = require("../../../utils/productIdentity");
+const { normalizeProductForResponse } = require("../../../utils/productCompatibility");
 
 // BUG-10 FIX: explicit whitelist of fields that can be updated via API
 const PRODUCT_UPDATE_WHITELIST = [
-  "name", "description", "slug", "tags", "stylingTips",
+  "name", "description", "slug", "productCode", "tags", "stylingTips",
   "variants", "status", "categories", "sellerId",
   "isFeatured", "isTrending", "isNewArrival",
   "returnEligibilities", "weight", "material", "faqs",
@@ -37,6 +39,44 @@ const normalizeSerialCodes = (codes = []) => {
 const countAvailableCodes = (codes = []) =>
   codes.filter(c => (c.status || "AVAILABLE") === "AVAILABLE").length;
 
+const normalizeVariantFields = (variants = [], fallback = {}) => {
+  const fallbackWeight = fallback.weight !== undefined && fallback.weight !== null
+    ? Number(fallback.weight) || 0
+    : undefined;
+  const fallbackWeightUnit = fallback.weightUnit || "Grams";
+  return variants.map((variant) => ({
+    ...variant,
+    variantCode: variant.variantCode || "",
+    weight: variant.weight !== undefined && variant.weight !== null && variant.weight !== ""
+      ? Number(variant.weight) || 0
+      : fallbackWeight,
+    weightUnit: variant.weightUnit || fallbackWeightUnit,
+    makingCharge: Number(variant.makingCharge) || 0,
+    diamondPrice: Number(variant.diamondPrice) || 0,
+    metalPrice: Number(variant.metalPrice) || 0,
+    gst: Number(variant.gst) || 0,
+    finalPrice: Number(variant.finalPrice) || 0,
+    mrp: Number(variant.mrp) || 0,
+    price: Number(variant.price) || 0,
+    stock: Number(variant.stock) || 0,
+    discount: Number(variant.discount) || 0,
+    serialCodes: normalizeSerialCodes(variant.serialCodes || [])
+  }));
+};
+
+const ensureVariantCodes = (variants = [], productCode = "") => {
+  const existingCodes = new Set(
+    variants
+      .map((variant) => variant.variantCode)
+      .filter(Boolean)
+  );
+
+  return variants.map((variant, index) => ({
+    ...variant,
+    variantCode: variant.variantCode || generateVariantCode(productCode, index, existingCodes)
+  }));
+};
+
 
 // ─────────────────────────────────────────────────────────────────
 // POST /api/admin/products
@@ -54,6 +94,11 @@ exports.createProduct = async (req, res) => {
     const productSlug = data.slug ? slugify(data.slug) : slugify(data.name);
     const existing = await Product.findOne({ slug: productSlug });
     if (existing) return error(res, "Product with this slug already exists.", 409);
+    if (!data.productCode) {
+      data.productCode = await generateUniqueProductCode(Product);
+    }
+    const existingProductCode = await Product.findOne({ productCode: data.productCode }).select("_id");
+    if (existingProductCode) return error(res, "Product code already exists.", 409);
 
     let images = [];
     if (req.files && req.files.length > 0) {
@@ -61,7 +106,10 @@ exports.createProduct = async (req, res) => {
     }
 
     if (data.variants && data.variants.length > 0) {
-      data.variants = data.variants.map(v => {
+      data.variants = normalizeVariantFields(data.variants, {
+        weight: data.weight,
+        weightUnit: data.weightUnit
+      }).map(v => {
         if (v.mrp && v.price && !v.discount) {
           v.discount = Math.round(((v.mrp - v.price) / v.mrp) * 100);
         }
@@ -72,6 +120,7 @@ exports.createProduct = async (req, res) => {
         }
         return v;
       });
+      data.variants = ensureVariantCodes(data.variants, data.productCode);
     }
 
     const settings = await Setting.findOne();
@@ -79,7 +128,7 @@ exports.createProduct = async (req, res) => {
     const gstRate = settings?.gstRate || 0;
 
     const productData = applyMetalPricingToProduct(
-      { ...data, slug: productSlug, images, isSerialized: true },
+      { ...data, productCode: data.productCode, slug: productSlug, images, isSerialized: true },
       metalRates,
       gstRate
     );
@@ -152,7 +201,7 @@ exports.getProducts = async (req, res) => {
     ]);
 
     return success(res, {
-      products,
+      products: products.map((product) => normalizeProductForResponse(product)),
       pagination: { total, page, limit, pages: Math.ceil(total / limit) },
     }, "Products retrieved");
   } catch (err) { return error(res, err.message); }
@@ -167,7 +216,7 @@ exports.getProductDetail = async (req, res) => {
     const product = await Product.findById(req.params.id)
       .populate("categories",    "name");
     if (!product) return error(res, "Product not found", 404);
-    return success(res, { product }, "Product details retrieved");
+    return success(res, { product: normalizeProductForResponse(product) }, "Product details retrieved");
   } catch (err) { return error(res, err.message); }
 };
 
@@ -195,6 +244,12 @@ exports.updateProduct = async (req, res) => {
     } else if (data.slug) {
       data.slug = slugify(data.slug);
     }
+    if (data.productCode) {
+      const existingProductCode = await Product.findOne({ productCode: data.productCode, _id: { $ne: product._id } }).select("_id");
+      if (existingProductCode) return error(res, "Product code already exists.", 409);
+    } else if (!product.productCode) {
+      data.productCode = await generateUniqueProductCode(Product);
+    }
 
     // Handle specific image deletions
     if (data.deletedImages && Array.isArray(data.deletedImages)) {
@@ -220,7 +275,10 @@ exports.updateProduct = async (req, res) => {
     });
 
     if (Array.isArray(product.variants)) {
-      product.variants = product.variants.map(v => {
+      product.variants = normalizeVariantFields(product.variants, {
+        weight: product.weight,
+        weightUnit: product.weightUnit
+      }).map(v => {
         const serialCodes = normalizeSerialCodes(v.serialCodes || []);
         if (serialCodes.length > 0) {
           v.serialCodes = serialCodes;
@@ -228,6 +286,7 @@ exports.updateProduct = async (req, res) => {
         }
         return v;
       });
+      product.variants = ensureVariantCodes(product.variants, product.productCode || data.productCode || "");
     }
 
     product.isSerialized = true;

@@ -86,7 +86,7 @@ exports.getMetalPricing = async (req, res) => {
     return success(res, {
       metalRates: settings.metalRates || {},
       adminProductCount,
-      updatedAt: settings.updatedAt || settings.createdAt || null
+      updatedAt: settings.metalPricingUpdatedAt || settings.updatedAt || settings.createdAt || null
     }, "Metal pricing retrieved");
   } catch (err) { return error(res, err.message); }
 };
@@ -96,6 +96,10 @@ exports.updateMetalPricing = async (req, res) => {
     const { metalRates, gstRate } = req.body || {};
     const settings = await getOrCreateSettings();
 
+    if (gstRate !== undefined && gstRate !== null) {
+      return error(res, "GST is managed through Tax Settings, not Metal Pricing", 400);
+    }
+
     if (metalRates && typeof metalRates === "object") {
       const normalizedRates = normalizeMetalRates(metalRates, settings.metalRates || {});
       if (hasNegativeRate(normalizedRates)) {
@@ -103,13 +107,7 @@ exports.updateMetalPricing = async (req, res) => {
       }
       settings.metalRates = normalizedRates;
     }
-    if (gstRate !== undefined && gstRate !== null) {
-      const normalizedGst = Number(gstRate);
-      if (!Number.isFinite(normalizedGst) || normalizedGst < 0) {
-        return error(res, "GST cannot be negative", 400);
-      }
-      settings.gstRate = normalizedGst;
-    }
+    settings.metalPricingUpdatedAt = new Date();
     await settings.save();
 
     const adminProducts = await Product.find({
@@ -121,20 +119,11 @@ exports.updateMetalPricing = async (req, res) => {
       await product.save();
     }
 
-    if (gstRate !== undefined && gstRate !== null) {
-      const sellerProducts = await Product.find({ sellerId: { $ne: null } });
-      const sellerRateMap = await buildSellerRateMap(sellerProducts);
-      for (const product of sellerProducts) {
-        const ownerRates = sellerRateMap.get(String(product.sellerId)) || {};
-        applyMetalPricingToProduct(product, ownerRates, settings.gstRate || 0);
-        await product.save();
-      }
-    }
-
     const adminProductCount = await countAdminOwnedProducts();
     return success(res, {
-      settings,
-      adminProductCount
+      metalRates: settings.metalRates || {},
+      adminProductCount,
+      updatedAt: settings.metalPricingUpdatedAt || settings.updatedAt || settings.createdAt || null
     }, "Metal pricing updated successfully");
   } catch (err) { return error(res, err.message); }
 };
@@ -146,7 +135,7 @@ exports.getTaxSettings = async (req, res) => {
     return success(res, {
       gstRate: settings.gstRate || 0,
       totalProductCount,
-      updatedAt: settings.updatedAt || settings.createdAt || null
+      updatedAt: settings.taxSettingsUpdatedAt || settings.updatedAt || settings.createdAt || null
     }, "Tax settings retrieved");
   } catch (err) { return error(res, err.message); }
 };
@@ -161,6 +150,7 @@ exports.updateTaxSettings = async (req, res) => {
 
     const settings = await getOrCreateSettings();
     settings.gstRate = normalizedGst;
+    settings.taxSettingsUpdatedAt = new Date();
     await settings.save();
 
     const allProducts = await Product.find({});
@@ -177,7 +167,7 @@ exports.updateTaxSettings = async (req, res) => {
     return success(res, {
       gstRate: settings.gstRate || 0,
       totalProductCount: allProducts.length,
-      updatedAt: settings.updatedAt || settings.createdAt || null
+      updatedAt: settings.taxSettingsUpdatedAt || settings.updatedAt || settings.createdAt || null
     }, "Tax settings updated successfully");
   } catch (err) { return error(res, err.message); }
 };

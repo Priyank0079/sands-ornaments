@@ -3,6 +3,7 @@ const FAQ = require("../../../models/FAQ");
 const Banner = require("../../../models/Banner");
 const HomepageSection = require("../../../models/HomepageSection");
 const { success, error } = require("../../../utils/apiResponse");
+const { normalizeProductForResponse } = require("../../../utils/productCompatibility");
 
 const getActiveBannerQuery = (now = new Date()) => ({
   isActive: true,
@@ -59,7 +60,7 @@ exports.getHomepageData = async (req, res) => {
     const sections = await HomepageSection.find({ isActive: true })
       .populate({
         path: "items.productId",
-        select: "name slug brand images variants rating tags status active",
+        select: "name slug productCode brand images variants rating tags status active weight weightUnit",
         match: { status: "Active", active: { $ne: false } }
       })
       .sort({ sortOrder: 1, createdAt: 1 });
@@ -69,7 +70,11 @@ exports.getHomepageData = async (req, res) => {
       const items = (raw.items || []).filter((item) => {
         if (item.productId) return Boolean(item.productId);
         return true;
-      });
+      }).map((item) => (
+        item.productId
+          ? { ...item, productId: normalizeProductForResponse(item.productId) }
+          : item
+      ));
       return { ...raw, items };
     });
 

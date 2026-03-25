@@ -113,7 +113,7 @@ export const sellerProductService = {
     } catch (err) {
       return { 
         success: false, 
-        message: err.response?.data?.message || 'Barcode not found or already sold' 
+        message: err.response?.data?.message || 'Serial code not found or already sold' 
       };
     }
   },

@@ -5,6 +5,8 @@ const { success, error } = require("../../../utils/apiResponse");
 const Seller = require("../../../models/Seller");
 const Setting = require("../../../models/Setting");
 const { applyMetalPricingToProduct } = require("../../../utils/metalPricing");
+const { generateUniqueProductCode, generateVariantCode } = require("../../../utils/productIdentity");
+const { normalizeProductForResponse } = require("../../../utils/productCompatibility");
 
 const normalizeCategories = (categories) => {
   if (!categories) return [];
@@ -19,16 +21,29 @@ const normalizeMaterial = (data) => {
   return data.material;
 };
 
-const sanitizeVariants = (variants) => {
+const sanitizeVariants = (variants, fallback = {}) => {
   if (!Array.isArray(variants)) return [];
+  const fallbackWeight = fallback.weight !== undefined && fallback.weight !== null
+    ? Number(fallback.weight) || 0
+    : undefined;
+  const fallbackWeightUnit = fallback.weightUnit || "Grams";
+
   return variants.map(v => ({
     name: v.name || "Standard",
+    variantCode: v.variantCode || "",
     mrp: Number(v.mrp) || 0,
     price: Number(v.price) || 0,
     stock: Number(v.stock) || 0,
     discount: Number(v.discount) || 0,
+    weight: v.weight !== undefined && v.weight !== null && v.weight !== ""
+      ? Number(v.weight) || 0
+      : fallbackWeight,
+    weightUnit: v.weightUnit || fallbackWeightUnit,
     makingCharge: Number(v.makingCharge) || 0,
     diamondPrice: Number(v.diamondPrice) || 0,
+    metalPrice: Number(v.metalPrice) || 0,
+    gst: Number(v.gst) || 0,
+    finalPrice: Number(v.finalPrice) || 0,
     serialCodes: normalizeSerialCodes(v.serialCodes || [])
   }));
 };
@@ -49,6 +64,19 @@ const normalizeSerialCodes = (codes = []) => {
 const countAvailableCodes = (codes = []) =>
   codes.filter(c => (c.status || "AVAILABLE") === "AVAILABLE").length;
 
+const ensureVariantCodes = (variants = [], productCode = "") => {
+  const existingCodes = new Set(
+    variants
+      .map(variant => variant.variantCode)
+      .filter(Boolean)
+  );
+
+  return variants.map((variant, index) => ({
+    ...variant,
+    variantCode: variant.variantCode || generateVariantCode(productCode, index, existingCodes)
+  }));
+};
+
 exports.createProduct = async (req, res) => {
   try {
     const data = { ...req.body };
@@ -62,7 +90,10 @@ exports.createProduct = async (req, res) => {
 
     // Parse all potentially stringified JSON fields
     const categories = normalizeCategories(tryParse(data.categories));
-    const variants = sanitizeVariants(tryParse(data.variants));
+    const variants = sanitizeVariants(tryParse(data.variants), {
+      weight: data.weight,
+      weightUnit: data.weightUnit
+    });
     const tags = tryParse(data.tags) || {};
     const faqs = tryParse(data.faqs) || [];
     const navGiftsFor = tryParse(data.navGiftsFor) || [];
@@ -71,9 +102,13 @@ exports.createProduct = async (req, res) => {
     const baseSlug = data.slug ? slugify(data.slug) : slugify(data.name);
 
     // Sanitize unique fields to prevent duplicate "" key errors
-    if (!data.productCode) delete data.productCode;
+    if (!data.productCode) {
+      data.productCode = await generateUniqueProductCode(Product);
+    }
     if (!data.sku) delete data.sku;
     if (!data.huid) delete data.huid;
+    const existingProductCode = await Product.findOne({ productCode: data.productCode }).select("_id");
+    if (existingProductCode) return error(res, "Product code already exists.", 409);
 
     // Update data with parsed objects for standard creation
     data.categories = categories;
@@ -107,6 +142,10 @@ exports.createProduct = async (req, res) => {
         price: parseFloat(data.price || data.sellingPrice) || 0,
         stock: parseInt(data.availableStock || data.quantity || data.stock) || 0,
         discount: parseInt(data.discount) || 0,
+        weight: data.weight !== undefined && data.weight !== null && data.weight !== ""
+          ? Number(data.weight) || 0
+          : 0,
+        weightUnit: data.weightUnit || "Grams",
         serialCodes: []
       }];
     } else {
@@ -116,6 +155,7 @@ exports.createProduct = async (req, res) => {
         return { ...v, serialCodes, stock: availableCount };
       });
     }
+    data.variants = ensureVariantCodes(data.variants, data.productCode);
 
     const seller = await Seller.findById(sellerId);
     const settings = await Setting.findOne();
@@ -129,6 +169,7 @@ exports.createProduct = async (req, res) => {
       images,
       categories,
       material,
+      productCode: data.productCode,
       status: "Active",
       active: true,
       isSerialized: true
@@ -162,7 +203,7 @@ exports.getMyProducts = async (req, res) => {
     const products = await Product.find({ sellerId: req.user.userId })
       .populate("categories", "name slug")
       .sort({ createdAt: -1 });
-    return success(res, { products });
+    return success(res, { products: products.map((product) => normalizeProductForResponse(product)) });
   } catch (err) { return error(res, err.message); }
 };
 
@@ -171,7 +212,7 @@ exports.getMyProduct = async (req, res) => {
     const product = await Product.findOne({ _id: req.params.id, sellerId: req.user.userId })
       .populate("categories", "name slug");
     if (!product) return error(res, "Product not found", 404);
-    return success(res, { product });
+    return success(res, { product: normalizeProductForResponse(product) });
   } catch (err) { return error(res, err.message); }
 };
 
@@ -213,6 +254,12 @@ exports.updateProduct = async (req, res) => {
     if (!safeData.productCode) delete safeData.productCode;
     if (!safeData.sku) delete safeData.sku;
     if (!safeData.huid) delete safeData.huid;
+    if (safeData.productCode) {
+      const duplicateCode = await Product.findOne({ productCode: safeData.productCode, _id: { $ne: id } }).select("_id");
+      if (duplicateCode) return error(res, "Product code already exists.", 409);
+    } else if (!product.productCode) {
+      safeData.productCode = await generateUniqueProductCode(Product);
+    }
 
     if (safeData.categories !== undefined) {
       safeData.categories = normalizeCategories(safeData.categories);
@@ -220,8 +267,12 @@ exports.updateProduct = async (req, res) => {
     if (safeData.material !== undefined || safeData.metal !== undefined || safeData.metalType !== undefined) {
       safeData.material = normalizeMaterial(safeData);
     }
-    if (safeData.variants) {
-      safeData.variants = sanitizeVariants(safeData.variants).map(v => {
+    Object.assign(product, safeData);
+    if (Array.isArray(product.variants)) {
+      product.variants = sanitizeVariants(product.variants, {
+        weight: product.weight,
+        weightUnit: product.weightUnit
+      }).map(v => {
         const serialCodes = normalizeSerialCodes(v.serialCodes || []);
         if (serialCodes.length > 0) {
           v.serialCodes = serialCodes;
@@ -229,9 +280,8 @@ exports.updateProduct = async (req, res) => {
         }
         return v;
       });
+      product.variants = ensureVariantCodes(product.variants, product.productCode || safeData.productCode || "");
     }
-
-    Object.assign(product, safeData);
     product.isSerialized = true;
 
     const seller = await Seller.findById(sellerId);

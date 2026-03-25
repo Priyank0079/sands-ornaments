@@ -1,14 +1,17 @@
 const User = require("../../../models/User");
 const { success, error } = require("../../../utils/apiResponse");
+const { normalizeProductForResponse } = require("../../../utils/productCompatibility");
 
 exports.getWishlist = async (req, res) => {
   try {
     const user = await User.findById(req.user.userId).populate({
       path: "wishlist",
-      select: "name slug brand images variants tags rating reviewCount",
+      select: "name slug productCode brand images variants tags rating reviewCount weight weightUnit",
       match: { status: "Active" }
     });
-    return success(res, { wishlist: user.wishlist }, "Wishlist retrieved");
+    return success(res, {
+      wishlist: (user.wishlist || []).map((product) => normalizeProductForResponse(product))
+    }, "Wishlist retrieved");
   } catch (err) { return error(res, err.message); }
 };
 

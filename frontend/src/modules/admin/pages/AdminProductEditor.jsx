@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import SellerProductEditor from '../../seller/pages/SellerProductEditor';
+import SharedProductEditor from '../../shared/components/SharedProductEditor';
 import { adminService } from '../services/adminService';
 
 const AdminProductEditor = () => {
@@ -22,13 +22,25 @@ const AdminProductEditor = () => {
     }), []);
 
     const metalPricingApi = useMemo(() => ({
-        getMetalPricing: adminService.getMetalPricing
+        getMetalPricing: async () => {
+            const [metalPricing, taxSettings] = await Promise.all([
+                adminService.getMetalPricing(),
+                adminService.getTaxSettings()
+            ]);
+
+            return {
+                ...metalPricing,
+                gstRate: taxSettings?.gstRate ?? 0
+            };
+        }
     }), []);
 
     return (
-        <SellerProductEditor
+        <SharedProductEditor
             productApi={productApi}
             metalPricingApi={metalPricingApi}
+            categoryApi={adminService.getCategories}
+            editorMode="admin"
             backPath="/admin/products"
         />
     );

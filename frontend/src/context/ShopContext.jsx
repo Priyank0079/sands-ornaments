@@ -8,6 +8,39 @@ import { adminService } from '../modules/admin/services/adminService';
 
 const ShopContext = createContext();
 
+const normalizeVariantForCart = (variant = {}, fallbackProduct = {}) => ({
+    ...variant,
+    id: variant.id || variant._id,
+    _id: variant._id || variant.id,
+    price: Number(variant.price ?? variant.finalPrice) || 0,
+    mrp: Number(variant.mrp ?? variant.finalPrice ?? variant.price) || 0,
+    finalPrice: Number(variant.finalPrice ?? variant.price) || 0,
+    image: variant.image || fallbackProduct.image || fallbackProduct.images?.[0] || '',
+    weight: variant.weight ?? fallbackProduct.weight ?? 0,
+    weightUnit: variant.weightUnit || fallbackProduct.weightUnit || 'Grams'
+});
+
+const normalizeProductForCart = (product = {}, selectedVariant = null) => {
+    const normalizedVariant = selectedVariant
+        ? normalizeVariantForCart(selectedVariant, product)
+        : normalizeVariantForCart(product.variants?.[0] || {}, product);
+
+    return {
+        ...product,
+        id: product.id || product._id,
+        _id: product._id || product.id,
+        image: product.image || product.images?.[0] || normalizedVariant.image || '',
+        images: product.images || (product.image ? [product.image] : []),
+        price: normalizedVariant.price,
+        originalPrice: normalizedVariant.mrp,
+        selectedVariant: normalizedVariant,
+        variantId: normalizedVariant.id || normalizedVariant._id || null,
+        variants: Array.isArray(product.variants)
+            ? product.variants.map((variant) => normalizeVariantForCart(variant, product))
+            : []
+    };
+};
+
 export const ShopProvider = ({ children }) => {
     const { user, logout: authLogout } = useAuth();
     // Initialize from LocalStorage if available
@@ -337,17 +370,16 @@ export const ShopProvider = ({ children }) => {
 
         if (typeof arg1 === 'object') {
             // Logic for addToCart(product)
-            productData = arg1;
+            const selectedVariant = arg1.selectedVariant || arg1.variants?.find(v => (v.id || v._id) === (arg1.variantId || arg1.selectedVariantId)) || arg1.variants?.[0];
+            productData = normalizeProductForCart(arg1, selectedVariant);
             productId = productData.id || productData._id;
-            variantId = productData.selectedVariant?.id || productData.selectedVariant?._id || productData.variants?.[0]?.id || productData.variants?.[0]?._id;
-            if (productData.price === undefined && productData.variants?.[0]?.price !== undefined) {
-                productData = { ...productData, price: productData.variants[0].price, originalPrice: productData.variants[0].mrp };
-            }
+            variantId = productData.variantId;
         } else {
             // Logic for addToCart(userId, productId, quantity)
             productId = arg2;
             qty = arg3 || 1;
-            productData = products.find(p => p.id === productId);
+            const foundProduct = products.find(p => p.id === productId);
+            productData = foundProduct ? normalizeProductForCart(foundProduct) : null;
         }
 
         if (!productId) return;
@@ -360,7 +392,7 @@ export const ShopProvider = ({ children }) => {
                 );
             }
             // If productData not found in list, try to use whatever we have
-            const itemBase = productData || { id: productId, name: 'Product', price: 0 };
+            const itemBase = productData || { id: productId, name: 'Product', price: 0, originalPrice: 0, image: '' };
             return [...prev, { 
                 ...itemBase, 
                 id: productId, 

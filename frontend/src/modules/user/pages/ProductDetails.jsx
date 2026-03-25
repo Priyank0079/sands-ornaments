@@ -33,7 +33,7 @@ const AccordionItem = ({ title, children, isOpen, onClick }) => (
 const ProductDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { addToCart, removeFromCart, cart, addToWishlist, removeFromWishlist, wishlist, products, isLoading, globalGst } = useShop();
+    const { addToCart, removeFromCart, cart, addToWishlist, removeFromWishlist, wishlist, products, isLoading } = useShop();
     const { user } = useAuth();
     const catalogueProduct = (products || []).find(p => String(p.id || p._id) === String(id));
     const [detailProduct, setDetailProduct] = useState(null);
@@ -153,7 +153,7 @@ const ProductDetails = () => {
 
     useEffect(() => {
         if (product) {
-            setSelectedImage(product.image);
+            setSelectedImage(product.image || product.images?.[0] || null);
             const firstVariant = product.variants?.[0];
             setSelectedVariantId(firstVariant?.id || firstVariant?._id || null);
         }
@@ -253,6 +253,10 @@ const ProductDetails = () => {
         gst: selectedVariant?.gst ?? 0,
         finalPrice: selectedVariant?.finalPrice ?? variantPrice ?? 0
     };
+    const selectedVariantWeight = selectedVariant?.weight ?? product?.weight ?? 0;
+    const selectedVariantWeightUnit = selectedVariant?.weightUnit || product?.weightUnit || '';
+    const pricingSubtotal = Number(pricingBreakdown.metalPrice || 0) + Number(pricingBreakdown.makingCharge || 0) + Number(pricingBreakdown.diamondPrice || 0);
+    const gstPercent = pricingSubtotal > 0 ? Math.round((Number(pricingBreakdown.gst || 0) / pricingSubtotal) * 10000) / 100 : 0;
     const supplierName = product?.sellerId?.shopName || product?.supplierInfo || product?.brand || '';
 
     return (
@@ -357,6 +361,18 @@ const ProductDetails = () => {
                                     Sold by <span className="text-gray-700 font-bold">{supplierName}</span>
                                 </div>
                             )}
+                            <div className="mt-3 flex flex-wrap gap-2">
+                                {product?.huid && (
+                                    <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-gray-600">
+                                        HUID: {product.huid}
+                                    </span>
+                                )}
+                                {selectedVariant?.variantCode && (
+                                    <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-gray-600">
+                                        Variant Code: {selectedVariant.variantCode}
+                                    </span>
+                                )}
+                            </div>
                         </div>
 
                         <div className="border-b border-gray-100 pb-6">
@@ -388,7 +404,7 @@ const ProductDetails = () => {
                                     <span className="font-semibold text-gray-900">â‚¹{Number(pricingBreakdown.diamondPrice || 0).toLocaleString()}</span>
                                 </div>
                                 <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
-                                    <span className="text-gray-600">GST ({Number(globalGst || 0)}%)</span>
+                                    <span className="text-gray-600">GST ({gstPercent}%)</span>
                                     <span className="font-semibold text-gray-900">â‚¹{Number(pricingBreakdown.gst || 0).toLocaleString()}</span>
                                 </div>
                             </div>
@@ -523,11 +539,13 @@ const ProductDetails = () => {
                     {product.material && <p><span className="font-semibold">Material:</span> {product.material}</p>}
                     {product.silverCategory && <p><span className="font-semibold">Silver Purity:</span> {product.silverCategory}</p>}
                     {product.goldCategory && <p><span className="font-semibold">Gold Karat:</span> {product.goldCategory}K</p>}
-                    {product.weight && <p><span className="font-semibold">Weight:</span> {product.weight} {product.weightUnit || ''}</p>}
+                    {(selectedVariantWeight || selectedVariantWeight === 0) && <p><span className="font-semibold">Variant Weight:</span> {selectedVariantWeight} {selectedVariantWeightUnit}</p>}
+                    {selectedVariant?.variantCode && <p><span className="font-semibold">Variant Code:</span> {selectedVariant.variantCode}</p>}
+                    {product.huid && <p><span className="font-semibold">HUID:</span> {product.huid}</p>}
                     {product.specifications && (
                         <div className="prose prose-sm max-w-none text-gray-700" dangerouslySetInnerHTML={{ __html: product.specifications }} />
                     )}
-                    {!product.material && !product.weight && !product.specifications && !product.silverCategory && (
+                    {!product.material && !selectedVariantWeight && !product.specifications && !product.silverCategory && !product.huid && !selectedVariant?.variantCode && (
                         <p className="text-gray-500">No specifications provided.</p>
                     )}
                 </div>

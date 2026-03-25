@@ -8,7 +8,9 @@
     "dev": "nodemon server.js",
     "seed:admin": "node src/seeders/adminSeeder.js",
     "seed:categories": "node src/seeders/categorySeeder.js",
-    "seed:products": "node src/seeders/productSeeder.js"
+    "seed:products": "node src/seeders/productSeeder.js",
+    "migrate:product-variant-pricing:dry": "node scripts/migrate-product-variant-pricing.js",
+    "migrate:product-variant-pricing": "node scripts/migrate-product-variant-pricing.js --apply"
   },
   "dependencies": {
     "@fluidjs/multer-cloudinary": "^1.0.4",

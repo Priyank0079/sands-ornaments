@@ -2,6 +2,7 @@ const Product = require("../../../models/Product");
 const Category = require("../../../models/Category");
 const mongoose = require("mongoose");
 const { success, error } = require("../../../utils/apiResponse");
+const { normalizeProductForResponse } = require("../../../utils/productCompatibility");
 
 /**
  * GET /api/products
@@ -68,7 +69,7 @@ exports.getProducts = async (req, res) => {
 
     // 6. Execute Query with Pagination
     const products = await Product.find(query)
-      .select("name slug brand images variants tags rating reviewCount categories navShopByCategory navGiftsFor navOccasions")
+      .select("name slug productCode brand images variants tags rating reviewCount categories navShopByCategory navGiftsFor navOccasions weight weightUnit")
       .populate("categories", "name slug metal")
       .sort(sortOption)
       .limit(limit * 1)
@@ -77,7 +78,7 @@ exports.getProducts = async (req, res) => {
     const total = await Product.countDocuments(query);
 
     return success(res, {
-      products,
+      products: products.map((product) => normalizeProductForResponse(product)),
       pagination: {
         total,
         page: Number(page),
@@ -107,7 +108,7 @@ exports.getProductDetail = async (req, res) => {
 
     if (!product) return error(res, "Product not found", 404);
 
-    return success(res, { product }, "Product details retrieved");
+    return success(res, { product: normalizeProductForResponse(product) }, "Product details retrieved");
   } catch (err) { return error(res, err.message); }
 };
 

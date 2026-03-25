@@ -2,8 +2,10 @@ const router = require("express").Router();
 const productController = require("../controllers/product.controller");
 const authenticate = require("../../../middlewares/authenticate");
 const requireRole = require("../../../middlewares/requireRole");
+const validate = require("../../../middlewares/validate");
 const { productUpload } = require("../../../middlewares/uploadMiddleware");
 const parseFormData = require("../../../middlewares/parseFormData");
+const { productSchema } = require("../validators/product.validator");
 
 const SELLER_COMPLEX_FIELDS = [
   "categories",
@@ -12,7 +14,8 @@ const SELLER_COMPLEX_FIELDS = [
   "sizes",
   "navGiftsFor",
   "navOccasions",
-  "faqs"
+  "faqs",
+  "deletedImages"
 ];
 
 router.use(authenticate, requireRole("seller"));
@@ -24,12 +27,14 @@ router.post(
   "/", 
   productUpload.array("images", 10), 
   parseFormData(SELLER_COMPLEX_FIELDS),
+  validate(productSchema),
   productController.createProduct
 );
 router.put(
   "/:id", 
   productUpload.array("images", 10), 
   parseFormData(SELLER_COMPLEX_FIELDS),
+  validate(productSchema),
   productController.updateProduct
 );
 router.delete("/:id", productController.deleteProduct);

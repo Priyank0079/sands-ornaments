@@ -8,10 +8,10 @@ const getMetalRate = (material = "", weightUnit = "Grams", rates = {}) => {
   return perGram;
 };
 
-const computeMetalPrice = (product = {}, rates = {}) => {
-  const weight = Number(product.weight) || 0;
-  const rate = getMetalRate(product.material, product.weightUnit, rates);
-  return weight * rate;
+const computeMetalPrice = (material = "", weight = 0, weightUnit = "Grams", rates = {}) => {
+  const normalizedWeight = Number(weight) || 0;
+  const rate = getMetalRate(material, weightUnit, rates);
+  return normalizedWeight * rate;
 };
 
 const roundCurrency = (value) => Math.round((Number(value) || 0) * 100) / 100;
@@ -19,10 +19,19 @@ const roundCurrency = (value) => Math.round((Number(value) || 0) * 100) / 100;
 const applyMetalPricingToProduct = (product, rates = {}, gstRate = 0) => {
   if (!product) return product;
   const gstPercentage = Number(gstRate) || 0;
-  const metalPrice = roundCurrency(computeMetalPrice(product, rates));
+  const productMaterial = product.material;
+  const fallbackWeight = Number(product.weight) || 0;
+  const fallbackWeightUnit = product.weightUnit || "Grams";
 
   if (Array.isArray(product.variants)) {
     product.variants = product.variants.map((variant) => {
+      const variantWeight = variant.weight !== undefined && variant.weight !== null
+        ? Number(variant.weight) || 0
+        : fallbackWeight;
+      const variantWeightUnit = variant.weightUnit || fallbackWeightUnit;
+      const metalPrice = roundCurrency(
+        computeMetalPrice(productMaterial, variantWeight, variantWeightUnit, rates)
+      );
       const makingCharge = Number(variant.makingCharge) || 0;
       const diamondPrice = Number(variant.diamondPrice) || 0;
       const subtotal = roundCurrency(metalPrice + makingCharge + diamondPrice);
@@ -31,6 +40,8 @@ const applyMetalPricingToProduct = (product, rates = {}, gstRate = 0) => {
 
       return {
         ...variant,
+        weight: variantWeight,
+        weightUnit: variantWeightUnit,
         metalPrice,
         gst: gstValue,
         finalPrice,

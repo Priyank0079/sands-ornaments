@@ -16,6 +16,8 @@ const settingSchema = new mongoose.Schema({
   shippingCharges: { type: Number, default: 0 },
   freeShippingThreshold: { type: Number, default: 0 },
   gstRate: { type: Number, default: 0 },
+  metalPricingUpdatedAt: { type: Date, default: null },
+  taxSettingsUpdatedAt: { type: Date, default: null },
   metalRates: {
     goldPerGram: { type: Number, default: 0 },
     goldPerMilligram: { type: Number, default: 0 },

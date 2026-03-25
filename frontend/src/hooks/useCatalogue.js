@@ -66,9 +66,9 @@ export const useCatalogue = () => {
                 navGiftsFor: prod.navGiftsFor || [],
                 navOccasions: prod.navOccasions || [],
                 faqs: prod.faqs || [], // Added FAQs
-                variants: (prod.variants || []).map(v => ({
+                variants: (prod.variants || []).map((v, index) => ({
                     ...v,
-                    id: v._id || Math.random() // Ensure ID for selection logic
+                    id: v._id || v.id || `${prod._id}-variant-${index}`
                 }))
             });
             });
