@@ -9,25 +9,65 @@ exports.getMyCustomers = async (req, res) => {
     const sellerObjectId = mongoose.Types.ObjectId.isValid(sellerId)
       ? new mongoose.Types.ObjectId(sellerId)
       : sellerId;
-    
-    const customers = await Order.aggregate([
-      { $match: { "items.sellerId": sellerObjectId } },
-      { $sort: { createdAt: -1 } },
-      { $project: { userId: 1, customerName: 1, shippingAddress: 1 } },
-      { $group: { _id: "$userId", latest: { $first: "$$ROOT" } } },
-      { $project: { _id: 1, customerName: "$latest.customerName", shippingAddress: "$latest.shippingAddress" } }
-    ]);
 
-    const normalized = customers.map((customer) => {
-      const shipping = customer.shippingAddress || {};
+    const orders = await Order.find({ "items.sellerId": sellerObjectId })
+      .select("userId customerName customerEmail shippingAddress items createdAt")
+      .sort({ createdAt: -1 });
+
+    if (!orders.length) {
+      return success(res, { customers: [] });
+    }
+
+    const userIds = [...new Set(
+      orders
+        .map((order) => String(order.userId || ""))
+        .filter(Boolean)
+    )];
+
+    const users = await User.find({ _id: { $in: userIds } }).select("name email");
+    const userMap = new Map(users.map((user) => [String(user._id), user]));
+    const customersMap = new Map();
+
+    orders.forEach((order) => {
+      const userKey = String(order.userId || "");
+      if (!userKey) return;
+
+      const sellerItems = (order.items || []).filter((item) => (
+        String(item.sellerId) === String(sellerObjectId)
+      ));
+      if (!sellerItems.length) return;
+
+      const user = userMap.get(userKey);
+      const shipping = order.shippingAddress || {};
       const nameParts = [shipping.firstName, shipping.lastName].filter(Boolean);
-      const name = nameParts.join(" ").trim() || customer.customerName || "Customer";
+      const name = user?.name || nameParts.join(" ").trim() || order.customerName || "Customer";
+      const email = user?.email || order.customerEmail || shipping.email || "";
+      const spend = sellerItems.reduce((sum, item) => (
+        sum + (Number(item.price) || 0) * (Number(item.quantity) || 0)
+      ), 0);
 
-      return {
-        id: customer._id,
-        name
-      };
+      if (!customersMap.has(userKey)) {
+        customersMap.set(userKey, {
+          id: userKey,
+          name,
+          email,
+          totalOrders: 0,
+          totalSpend: 0,
+          lastOrderDate: order.createdAt
+        });
+      }
+
+      const current = customersMap.get(userKey);
+      current.totalOrders += 1;
+      current.totalSpend += spend;
+      if (!current.lastOrderDate || new Date(order.createdAt) > new Date(current.lastOrderDate)) {
+        current.lastOrderDate = order.createdAt;
+      }
     });
+
+    const normalized = Array.from(customersMap.values()).sort((a, b) => (
+      new Date(b.lastOrderDate) - new Date(a.lastOrderDate)
+    ));
 
     return success(res, { customers: normalized });
   } catch (err) { return error(res, err.message); }

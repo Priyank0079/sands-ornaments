@@ -4,7 +4,11 @@ const normalizeCustomer = (customer) => {
     if (!customer) return null;
     return {
         id: customer.id || customer._id,
-        name: customer.name || 'Customer'
+        name: customer.name || 'Customer',
+        email: customer.email || '',
+        totalOrders: Number(customer.totalOrders || 0),
+        totalSpend: Number(customer.totalSpend || 0),
+        lastOrderDate: customer.lastOrderDate || null
     };
 };
 

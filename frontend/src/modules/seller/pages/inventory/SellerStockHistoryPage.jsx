@@ -71,6 +71,46 @@ const SellerStockHistoryPage = () => {
         return matchesSearch && matchesFilter;
     }), [history, searchTerm, filterType]);
 
+    const exportCsv = () => {
+        if (filteredHistory.length === 0) {
+            toast.error("No stock history available to export");
+            return;
+        }
+
+        const rows = [
+            ['Date', 'Time', 'Product', 'Transaction Type', 'Change', 'Previous Stock', 'New Stock', 'Actor', 'Reason'],
+            ...filteredHistory.map((item) => {
+                const date = new Date(item.date);
+                return [
+                    date.toLocaleDateString(),
+                    date.toLocaleTimeString(),
+                    item.product.name,
+                    item.type,
+                    item.change,
+                    item.effect.from,
+                    item.effect.to,
+                    item.user,
+                    item.reason
+                ];
+            })
+        ];
+
+        const csv = rows
+            .map((row) => row.map((value) => `"${String(value ?? '').replace(/"/g, '""')}"`).join(','))
+            .join('\n');
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `seller-stock-history-${Date.now()}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        toast.success("Stock history exported");
+    };
+
     return (
         <div className="space-y-8 font-sans animate-in fade-in duration-500">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -78,7 +118,10 @@ const SellerStockHistoryPage = () => {
                     <h1 className="text-2xl font-bold text-gray-900 uppercase tracking-tight">Stock History</h1>
                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mt-1">Audit trail of all inventory movements</p>
                 </div>
-                <button className="px-4 py-2 bg-[#1a1a1a] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-lg active:scale-95 flex items-center gap-2">
+                <button
+                    onClick={exportCsv}
+                    className="px-4 py-2 bg-[#1a1a1a] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-lg active:scale-95 flex items-center gap-2"
+                >
                     <Download size={14} /> Export CSV
                 </button>
             </div>

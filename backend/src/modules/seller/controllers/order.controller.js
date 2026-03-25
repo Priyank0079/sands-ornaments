@@ -1,38 +1,138 @@
 const Order = require("../../../models/Order");
 const { success, error } = require("../../../utils/apiResponse");
 
+const normalizeOrderStatus = (value = "") => String(value || "").trim();
+
+const allowedTransitions = {
+  Processing: ["Confirmed", "Cancelled"],
+  Confirmed: ["Packed"],
+  Packed: ["Shipped"],
+  Shipped: ["Delivered"],
+};
+
+const filterSellerItems = (items = [], sellerId) =>
+  (items || []).filter((item) => String(item?.sellerId || "") === String(sellerId));
+
+const getPrimaryItemImage = (item = {}) =>
+  item.image ||
+  item.productId?.images?.[0] ||
+  item.productId?.image ||
+  "";
+
+const buildSellerOrderSummary = (order, sellerId) => {
+  const sellerItems = filterSellerItems(order.items, sellerId);
+  const sellerSubtotal = sellerItems.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0);
+  const allItemsOwnedBySeller = sellerItems.length > 0 && sellerItems.length === (order.items || []).length;
+
+  return {
+    _id: order._id,
+    orderId: order.orderId,
+    customerName: order.customerName,
+    customerEmail: order.customerEmail,
+    customerPhone: order.customerPhone,
+    userId: order.userId,
+    status: order.status,
+    paymentMethod: order.paymentMethod,
+    paymentStatus: order.paymentStatus,
+    subtotal: order.subtotal,
+    shipping: order.shipping,
+    total: order.total,
+    createdAt: order.createdAt,
+    updatedAt: order.updatedAt,
+    shippingAddress: order.shippingAddress,
+    shippingInfo: order.shippingInfo,
+    timeline: order.timeline,
+    sellerItems,
+    sellerItemCount: sellerItems.length,
+    sellerSubtotal,
+    allItemsOwnedBySeller,
+    canManageStatus: allItemsOwnedBySeller,
+    allowedNextStatuses: allItemsOwnedBySeller ? (allowedTransitions[order.status] || []) : [],
+  };
+};
+
 exports.getMyOrders = async (req, res) => {
   try {
     const sellerId = req.user.userId;
-    
-    // Find orders containing this seller's products
-    // Note: We return the whole order but the frontend should only show relevant items
-    const orders = await Order.find({ "items.sellerId": sellerId }).sort({ createdAt: -1 });
-    
-    return success(res, { orders });
+
+    const orders = await Order.find({ "items.sellerId": sellerId })
+      .populate("userId", "fullName email mobileNumber")
+      .populate("items.productId", "name images image")
+      .sort({ createdAt: -1 });
+
+    const sellerOrders = orders
+      .map((order) => buildSellerOrderSummary(order, sellerId))
+      .filter((order) => order.sellerItemCount > 0);
+
+    return success(res, { orders: sellerOrders }, "Seller orders retrieved");
   } catch (err) { return error(res, err.message); }
 };
 
-exports.updateOrderItemStatus = async (req, res) => {
+exports.getMyOrderDetail = async (req, res) => {
   try {
-    const { orderId, itemId } = req.params;
+    const sellerId = req.user.userId;
+    const order = await Order.findOne({ _id: req.params.id, "items.sellerId": sellerId })
+      .populate("userId", "fullName email mobileNumber")
+      .populate("items.productId", "name images image");
+
+    if (!order) return error(res, "Order not found", 404);
+
+    const sellerOrder = buildSellerOrderSummary(order, sellerId);
+    return success(res, { order: sellerOrder }, "Seller order retrieved");
+  } catch (err) { return error(res, err.message); }
+};
+
+exports.updateOrderStatus = async (req, res) => {
+  try {
+    const { orderId } = req.params;
     const { status, note } = req.body;
     const sellerId = req.user.userId;
+    const nextStatus = normalizeOrderStatus(status);
 
-    const order = await Order.findOne({ _id: orderId, "items._id": itemId, "items.sellerId": sellerId });
-    if (!order) return error(res, "Order item not found", 404);
+    if (!nextStatus) return error(res, "Status is required", 400);
 
-    const item = order.items.id(itemId);
-    item.status = status; // Note: In schema, items have their own status? 
-    // Yes, for marketplace isolation.
+    const order = await Order.findOne({ _id: orderId, "items.sellerId": sellerId })
+      .populate("userId", "fullName email mobileNumber")
+      .populate("items.productId", "name images image");
+
+    if (!order) return error(res, "Order not found", 404);
+
+    const sellerItems = filterSellerItems(order.items, sellerId);
+    if (sellerItems.length !== (order.items || []).length) {
+      return error(res, "This order contains items from multiple owners and must be managed by admin", 400);
+    }
+
+    const allowedStatuses = allowedTransitions[order.status] || [];
+    if (!allowedStatuses.includes(nextStatus)) {
+      return error(res, `Seller cannot move order from ${order.status} to ${nextStatus}`, 400);
+    }
+
+    order.status = nextStatus;
+    if (nextStatus === "Shipped") {
+      order.shippingInfo = {
+        ...order.shippingInfo,
+        carrier: order.shippingInfo?.carrier || "Manual Dispatch",
+      };
+    }
 
     order.timeline.push({
-      status: `Item ${status}`,
-      note: note || `Seller updated item status to ${status}`,
+      status: nextStatus,
+      note: note || `Seller updated order status to ${nextStatus}`,
       date: new Date()
     });
 
     await order.save();
-    return success(res, { order }, "Item status updated");
+
+    const refreshed = await Order.findById(order._id)
+      .populate("userId", "fullName email mobileNumber")
+      .populate("items.productId", "name images image");
+
+    return success(
+      res,
+      { order: buildSellerOrderSummary(refreshed, sellerId) },
+      `Order status updated to ${nextStatus}`
+    );
   } catch (err) { return error(res, err.message); }
 };
+
+exports.getOrderCardData = { buildSellerOrderSummary, getPrimaryItemImage };

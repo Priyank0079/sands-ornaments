@@ -53,6 +53,17 @@ const SellerHeader = ({ isSidebarOpen, setIsSidebarOpen }) => {
         }
     };
 
+    const getStatusMeta = () => {
+        switch (seller?.status) {
+            case 'APPROVED':
+                return { label: 'Verified Merchant', tone: 'text-emerald-600' };
+            case 'REJECTED':
+                return { label: 'Rejected Account', tone: 'text-red-600' };
+            default:
+                return { label: 'Pending Approval', tone: 'text-amber-600' };
+        }
+    };
+
     // Helper to get page title based on path
     const getPageTitle = () => {
         const path = location.pathname;
@@ -152,7 +163,7 @@ const SellerHeader = ({ isSidebarOpen, setIsSidebarOpen }) => {
                 <div className="flex items-center gap-2 lg:gap-3 group cursor-pointer">
                     <div className="text-right hidden sm:block font-medium">
                         <p className="text-[11px] lg:text-sm text-gray-900 font-bold tracking-tight uppercase line-clamp-1">{seller?.fullName || 'Seller'}</p>
-                        <p className="text-[9px] lg:text-xs text-gray-500 font-black uppercase tracking-widest mt-0.5">Verified Merchant</p>
+                        <p className={`text-[9px] lg:text-xs font-black uppercase tracking-widest mt-0.5 ${getStatusMeta().tone}`}>{getStatusMeta().label}</p>
                     </div>
                     <div className="relative">
                         <div className="w-8 h-8 lg:w-10 lg:h-10 bg-[#3E2723] text-white rounded-xl flex items-center justify-center font-black shadow-lg shadow-[#3E2723]/20 border border-white/10 group-hover:scale-105 transition-transform">

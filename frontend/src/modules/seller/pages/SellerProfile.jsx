@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Shield, Lock, CheckCircle2, AlertCircle, Building2, Mail, Phone, Landmark, FileText } from 'lucide-react';
+import { User, Shield, Lock, CheckCircle2, AlertCircle, Building2, Mail, Phone, Landmark, FileText, FileBadge2, ExternalLink, CalendarDays } from 'lucide-react';
 import { sellerService } from '../services/sellerService';
 import toast from 'react-hot-toast';
 
@@ -82,8 +82,40 @@ const SellerProfile = () => {
 
     const handleProfileSubmit = async (e) => {
         e.preventDefault();
+        const normalizedProfile = {
+            ...profile,
+            fullName: profile.fullName.trim(),
+            shopName: profile.shopName.trim(),
+            email: profile.email.trim().toLowerCase(),
+            mobileNumber: profile.mobileNumber.replace(/\D/g, ''),
+            gstNumber: profile.gstNumber.trim().toUpperCase(),
+            panNumber: profile.panNumber.trim().toUpperCase(),
+            bisNumber: profile.bisNumber.trim().toUpperCase(),
+            shopAddress: profile.shopAddress.trim(),
+            city: profile.city.trim(),
+            state: profile.state.trim(),
+            pincode: profile.pincode.replace(/\D/g, ''),
+            bankAccount: {
+                accountNumber: profile.bankAccount.accountNumber.replace(/\D/g, ''),
+                ifscCode: profile.bankAccount.ifscCode.trim().toUpperCase()
+            }
+        };
+
+        if (!normalizedProfile.fullName || !normalizedProfile.shopName || !normalizedProfile.email || !normalizedProfile.mobileNumber) {
+            toast.error('Full name, shop name, email, and mobile number are required');
+            return;
+        }
+        if (normalizedProfile.mobileNumber.length !== 10) {
+            toast.error('Enter a valid 10-digit mobile number');
+            return;
+        }
+        if (normalizedProfile.pincode && normalizedProfile.pincode.length !== 6) {
+            toast.error('Enter a valid 6-digit pincode');
+            return;
+        }
+
         setSavingProfile(true);
-        const res = await sellerService.updateProfile(profile);
+        const res = await sellerService.updateProfile(normalizedProfile);
         if (res.success) {
             const updated = res.data?.seller || res.seller;
             if (updated) {
@@ -100,8 +132,8 @@ const SellerProfile = () => {
 
     const handlePasswordSubmit = async (e) => {
         e.preventDefault();
-        if (passwords.new.length < 8) {
-            toast.error('Password must be at least 8 characters long');
+        if (passwords.new.length < 4) {
+            toast.error('Password must be at least 4 characters long');
             return;
         }
         if (passwords.new !== passwords.confirm) {
@@ -126,6 +158,16 @@ const SellerProfile = () => {
 
     const inputClasses = "w-full bg-[#FDFBF7] border border-[#EFEBE9] rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-[#8D6E63] focus:ring-4 focus:ring-[#8D6E63]/5 transition-all shadow-inner";
     const labelClasses = "text-[10px] font-black text-[#8D6E63] uppercase tracking-widest ml-1 mb-2 block";
+    const statusMeta = seller.status === 'APPROVED'
+        ? { badge: 'Verified Merchant', tone: 'text-emerald-500' }
+        : seller.status === 'REJECTED'
+            ? { badge: 'Rejected Merchant', tone: 'text-red-500' }
+            : { badge: 'Pending Approval', tone: 'text-amber-500' };
+    const documentCards = [
+        { key: 'aadharUrl', label: 'Aadhar', url: seller.documents?.aadharUrl },
+        { key: 'shopLicenseUrl', label: 'Shop License', url: seller.documents?.shopLicenseUrl },
+        { key: 'certificateUrl', label: 'Certificate', url: seller.documents?.certificateUrl }
+    ];
 
     return (
         <div className="max-w-5xl mx-auto space-y-10 pb-20 animate-in fade-in duration-500 font-sans">
@@ -147,9 +189,9 @@ const SellerProfile = () => {
                             </div>
                             <div className="pt-6 border-t border-white/10 space-y-4">
                                 <div className="flex items-center gap-2">
-                                    <Shield size={14} className="text-emerald-400" />
+                                    <Shield size={14} className={statusMeta.tone} />
                                     <span className="text-[10px] font-black uppercase tracking-widest">
-                                        {seller.status === 'APPROVED' ? 'Verified Merchant' : 'Pending Verification'}
+                                        {statusMeta.badge}
                                     </span>
                                 </div>
                                 <div className="text-[10px] font-bold text-white/60 uppercase tracking-widest leading-tight">
@@ -171,6 +213,39 @@ const SellerProfile = () => {
                                 <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Telecommunication</p>
                                 <p className="text-sm font-bold text-gray-900">{seller.mobileNumber || 'Not available'}</p>
                             </div>
+                            <div>
+                                <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Registration Date</p>
+                                <p className="text-sm font-bold text-gray-900">{seller.registrationDate ? new Date(seller.registrationDate).toLocaleDateString() : 'Not available'}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-[2rem] border border-gray-100 p-8 shadow-sm space-y-6">
+                        <div className="flex items-center gap-3">
+                            <FileBadge2 size={16} className="text-[#3E2723]" />
+                            <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Submitted Documents</h3>
+                        </div>
+                        <div className="space-y-3">
+                            {documentCards.map((doc) => (
+                                <div key={doc.key} className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+                                    <div>
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-500">{doc.label}</p>
+                                        <p className="text-xs font-bold text-gray-900 mt-1">{doc.url ? 'Uploaded' : 'Not uploaded'}</p>
+                                    </div>
+                                    {doc.url ? (
+                                        <a
+                                            href={doc.url}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-[#8D6E63] hover:text-[#3E2723]"
+                                        >
+                                            View <ExternalLink size={12} />
+                                        </a>
+                                    ) : (
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-300">Unavailable</span>
+                                    )}
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
@@ -198,14 +273,14 @@ const SellerProfile = () => {
                                     <label className={labelClasses}>Email</label>
                                     <div className="relative">
                                         <Mail className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                                        <input name="email" type="email" value={profile.email} onChange={handleProfileChange} className={`${inputClasses} pl-10`} placeholder="Email address" />
+                                        <input name="email" type="email" value={profile.email} onChange={handleProfileChange} className={`${inputClasses} pl-10`} placeholder="Email address" autoComplete="email" />
                                     </div>
                                 </div>
                                 <div>
                                     <label className={labelClasses}>Mobile Number</label>
                                     <div className="relative">
                                         <Phone className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                                        <input name="mobileNumber" value={profile.mobileNumber} onChange={handleProfileChange} className={`${inputClasses} pl-10`} placeholder="Mobile number" />
+                                        <input name="mobileNumber" value={profile.mobileNumber} onChange={handleProfileChange} className={`${inputClasses} pl-10`} placeholder="Mobile number" inputMode="numeric" maxLength={10} autoComplete="tel" />
                                     </div>
                                 </div>
                                 <div className="md:col-span-2">
@@ -222,7 +297,7 @@ const SellerProfile = () => {
                                 </div>
                                 <div>
                                     <label className={labelClasses}>Pincode</label>
-                                    <input name="pincode" value={profile.pincode} onChange={handleProfileChange} className={inputClasses} placeholder="Pincode" />
+                                    <input name="pincode" value={profile.pincode} onChange={handleProfileChange} className={inputClasses} placeholder="Pincode" inputMode="numeric" maxLength={6} />
                                 </div>
                             </div>
 
@@ -246,7 +321,7 @@ const SellerProfile = () => {
                                     <label className={labelClasses}>Bank Account Number</label>
                                     <div className="relative">
                                         <Landmark className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                                        <input name="bankAccount.accountNumber" value={profile.bankAccount.accountNumber} onChange={handleProfileChange} className={`${inputClasses} pl-10`} placeholder="Account number" />
+                                        <input name="bankAccount.accountNumber" value={profile.bankAccount.accountNumber} onChange={handleProfileChange} className={`${inputClasses} pl-10`} placeholder="Account number" inputMode="numeric" />
                                     </div>
                                 </div>
                                 <div>
@@ -304,7 +379,7 @@ const SellerProfile = () => {
                                             value={passwords.new}
                                             onChange={handlePasswordChange}
                                             className={inputClasses}
-                                            placeholder="Min 8 Characters"
+                                            placeholder="Min 4 Characters"
                                             required
                                         />
                                     </div>
@@ -326,7 +401,7 @@ const SellerProfile = () => {
                             <div className="p-6 bg-amber-50/50 rounded-2xl border border-amber-100 flex items-start gap-4">
                                 <AlertCircle size={18} className="text-amber-600 shrink-0 mt-0.5" />
                                 <p className="text-[10px] font-bold text-amber-800 leading-relaxed uppercase">
-                                    Security Update: Changing your authentication phrase will invalidate current sessions across all devices for this administrator profile.
+                                    Security Update: Changing your authentication phrase will apply to future seller logins. Use a value you can remember and keep it private.
                                 </p>
                             </div>
 

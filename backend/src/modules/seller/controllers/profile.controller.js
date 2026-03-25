@@ -43,6 +43,37 @@ exports.updateProfile = async (req, res) => {
       }
     }
 
+    const trimString = (value) => (typeof value === "string" ? value.trim() : value);
+    const upperString = (value) => (typeof value === "string" ? value.trim().toUpperCase() : value);
+    const digitsOnly = (value) => (typeof value === "string" ? value.replace(/\D/g, "") : value);
+
+    if (updates.fullName !== undefined) updates.fullName = trimString(updates.fullName);
+    if (updates.shopName !== undefined) updates.shopName = trimString(updates.shopName);
+    if (updates.email !== undefined) updates.email = String(updates.email || "").trim().toLowerCase();
+    if (updates.mobileNumber !== undefined) updates.mobileNumber = digitsOnly(String(updates.mobileNumber || "").trim());
+    if (updates.gstNumber !== undefined) updates.gstNumber = upperString(updates.gstNumber);
+    if (updates.panNumber !== undefined) updates.panNumber = upperString(updates.panNumber);
+    if (updates.bisNumber !== undefined) updates.bisNumber = upperString(updates.bisNumber);
+    if (updates.shopAddress !== undefined) updates.shopAddress = trimString(updates.shopAddress);
+    if (updates.city !== undefined) updates.city = trimString(updates.city);
+    if (updates.state !== undefined) updates.state = trimString(updates.state);
+    if (updates.pincode !== undefined) updates.pincode = digitsOnly(String(updates.pincode || "").trim());
+
+    if (updates.bankAccount && typeof updates.bankAccount === "object") {
+      updates.bankAccount = {
+        accountNumber: digitsOnly(String(updates.bankAccount.accountNumber || "").trim()),
+        ifscCode: upperString(updates.bankAccount.ifscCode)
+      };
+    }
+
+    if (updates.email !== undefined && !updates.email) {
+      return error(res, "Email is required", 400);
+    }
+
+    if (updates.mobileNumber !== undefined && !updates.mobileNumber) {
+      return error(res, "Mobile number is required", 400);
+    }
+
     if (updates.email) {
       const existingEmail = await Seller.findOne({
         email: updates.email,
@@ -75,8 +106,8 @@ exports.changePassword = async (req, res) => {
     if (!currentPassword || !newPassword) {
       return error(res, "Current and new password are required", 400);
     }
-    if (newPassword.length < 8) {
-      return error(res, "Password must be at least 8 characters long", 400);
+    if (newPassword.length < 4) {
+      return error(res, "Password must be at least 4 characters long", 400);
     }
 
     const seller = await Seller.findById(req.user.userId);

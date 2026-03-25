@@ -96,6 +96,38 @@ const SellerInventoryReportsPage = () => {
         return categoryData.reduce((top, current) => (current.value > (top?.value || 0) ? current : top), null);
     }, [categoryData]);
 
+    const exportActiveReport = () => {
+        const rows = activeTab === 'category'
+            ? [
+                ['Category', 'Unique Products', 'Total Quantity', 'Estimated Value'],
+                ...categoryData.map((item) => [item.category, item.uniqueProducts, item.totalQty, item.value])
+            ]
+            : [
+                ['Product Name', 'Category', 'Units Sold', 'Average Price', 'Total Revenue'],
+                ...salesData.map((item) => [item.name, item.category, item.sold, item.avgPrice, item.revenue])
+            ];
+
+        if (rows.length <= 1) {
+            toast.error(`No ${activeTab === 'category' ? 'category' : 'sales'} data available to export`);
+            return;
+        }
+
+        const csv = rows
+            .map((row) => row.map((value) => `"${String(value ?? '').replace(/"/g, '""')}"`).join(','))
+            .join('\n');
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `seller-${activeTab}-inventory-report-${Date.now()}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        toast.success(`${activeTab === 'category' ? 'Category' : 'Sales'} report exported`);
+    };
+
     return (
         <div className="space-y-8 font-sans animate-in fade-in duration-500">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -107,8 +139,11 @@ const SellerInventoryReportsPage = () => {
                     <button className="px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 transition-all shadow-sm flex items-center gap-2">
                         <Calendar size={14} /> This Month
                     </button>
-                    <button className="px-4 py-2 bg-[#1a1a1a] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-lg active:scale-95 flex items-center gap-2">
-                        <Download size={14} /> Export PDF
+                    <button
+                        onClick={exportActiveReport}
+                        className="px-4 py-2 bg-[#1a1a1a] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-lg active:scale-95 flex items-center gap-2"
+                    >
+                        <Download size={14} /> Export CSV
                     </button>
                 </div>
             </div>
