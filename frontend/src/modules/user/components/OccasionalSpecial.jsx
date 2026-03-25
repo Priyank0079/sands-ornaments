@@ -20,7 +20,7 @@ const OccasionalSpecial = () => {
         { id: 'bridesmaids', name: 'Gift for Bridesmaid', image: bridesmaidImgDefault, path: '/category/bridesmaids' },
     ];
 
-    const displayItems = sectionData?.items && sectionData.items.length > 0 ? sectionData.items : defaultCategories;
+    const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
 
     const buildPath = (item, fallback) => {
         if (!item) return fallback.path;
@@ -31,6 +31,21 @@ const OccasionalSpecial = () => {
         const limit = item.limit ? Number(item.limit) : 12;
         return `/shop?limit=${limit}&sort=random`;
     };
+
+    const normalizedConfiguredItems = configuredItems.map((item, index) => {
+        const fallback = defaultCategories[index] || defaultCategories[0];
+        return {
+            ...item,
+            id: item.itemId || item._id || item.id || `curated-${index}`,
+            name: item?.name || item?.label || fallback.name,
+            image: item?.image || fallback.image,
+            path: buildPath(item, fallback),
+            limit: item.limit ? Number(item.limit) : 12,
+            productIds: Array.isArray(item.productIds) ? item.productIds.filter(Boolean) : []
+        };
+    });
+
+    const displayItems = normalizedConfiguredItems.length > 0 ? normalizedConfiguredItems : defaultCategories;
 
     // Helper to get item safe
     const getItem = (index, fallback) => {
@@ -72,7 +87,7 @@ const OccasionalSpecial = () => {
                                 to={path}
                                 className="relative group overflow-hidden rounded-xl flex-shrink-0 w-full aspect-[4/5] cursor-pointer shadow-sm active:scale-95 transition-transform"
                             >
-                                <img src={cat.image} alt={label} className="w-full h-full object-cover" />
+                                <img src={cat.image || (defaultCategories[index] || defaultCategories[0]).image} alt={label} className="w-full h-full object-cover" />
                                 <div className="absolute inset-0 bg-gradient-to-t from-[#2F0A0F]/90 via-transparent to-transparent"></div>
                                 <span className="absolute bottom-3 left-0 right-0 text-white font-display text-lg tracking-wide text-center px-1">
                                     {label}
@@ -137,7 +152,7 @@ const OccasionalSpecial = () => {
                                     className="group relative rounded-2xl overflow-hidden aspect-square border border-gray-100 shadow-md"
                                 >
                                     <img
-                                        src={item.image}
+                                        src={item.image || defaultCategories[0].image}
                                         alt={label}
                                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                     />

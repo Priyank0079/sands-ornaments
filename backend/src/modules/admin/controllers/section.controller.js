@@ -39,6 +39,25 @@ const buildCategoryLimitPath = (categoryId, limit, sort, currentPath) => {
   return currentPath || `/shop?sort=${sort}`;
 };
 
+const normalizeObjectIdList = (values = []) => (
+  Array.isArray(values)
+    ? values.map((value) => String(value || "").trim()).filter(Boolean)
+    : []
+);
+
+const buildProductsPath = (productIds, currentPath) => {
+  const ids = normalizeObjectIdList(productIds);
+  if (ids.length > 0) return `/shop?products=${encodeURIComponent(ids.join(","))}`;
+  return currentPath || "/shop?status=coming-soon";
+};
+
+const buildRandomizedProductsPath = (productIds, limit, currentPath) => {
+  const ids = normalizeObjectIdList(productIds);
+  if (ids.length > 0) return `/shop?products=${encodeURIComponent(ids.join(","))}`;
+  if (limit) return `/shop?limit=${limit}&sort=random`;
+  return currentPath || "/shop?limit=12&sort=random";
+};
+
 const sanitizeSectionPayload = (sectionId, payload = {}) => {
   const cleaned = {
     label: payload.label,
@@ -159,6 +178,41 @@ const sanitizeSectionPayload = (sectionId, payload = {}) => {
         };
       })
       .filter((item) => Boolean(item.categoryId && item.limit));
+  }
+
+  if (sectionId === "perfect-gift" || sectionId === "new-launch") {
+    cleaned.items = cleaned.items.map((item, idx) => {
+      const productIds = normalizeObjectIdList(item.productIds);
+      const label = item.name || item.label || "";
+      return {
+        ...item,
+        productIds,
+        name: label,
+        label: item.label || label,
+        path: buildProductsPath(productIds, item.path),
+        sortOrder: item.sortOrder ?? idx
+      };
+    });
+  }
+
+  if (sectionId === "curated-for-you" || sectionId === "style-it-your-way") {
+    cleaned.items = cleaned.items.map((item, idx) => {
+      const productIds = normalizeObjectIdList(item.productIds);
+      const limit = parsePositiveNumber(item.limit) || 12;
+      const label = item.name || item.label || "";
+      return {
+        ...item,
+        productIds,
+        limit,
+        name: label,
+        label: item.label || label,
+        extraImages: Array.isArray(item.extraImages)
+          ? item.extraImages.map((img) => String(img || "").trim())
+          : undefined,
+        path: buildRandomizedProductsPath(productIds, limit, item.path),
+        sortOrder: item.sortOrder ?? idx
+      };
+    });
   }
 
   return cleaned;

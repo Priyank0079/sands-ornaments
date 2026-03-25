@@ -21,9 +21,22 @@ const recipients = [
 const PerfectGift = () => {
     const { homepageSections } = useShop();
 
-    // Use admin-configured items if available, otherwise fall back to defaults
     const sectionData = homepageSections?.['perfect-gift'];
-    const displayItems = sectionData?.items && sectionData.items.length > 0 ? sectionData.items : recipients;
+    const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
+    const normalizedConfiguredItems = configuredItems.map((item, index) => {
+        const productIds = Array.isArray(item.productIds) ? item.productIds.filter(Boolean) : [];
+        return {
+            ...item,
+            id: item.itemId || item._id || item.id || `gift-${index}`,
+            name: item.name || item.label || recipients[index]?.name || 'Gift',
+            image: item.image || recipients[index]?.image || giftMother,
+            path: productIds.length > 0
+                ? `/shop?products=${encodeURIComponent(productIds.join(','))}`
+                : (item.path || '/shop?status=coming-soon'),
+            productIds
+        };
+    });
+    const displayItems = normalizedConfiguredItems.length > 0 ? normalizedConfiguredItems : recipients;
 
     return (
         <section className="py-8 md:py-12 bg-gradient-to-b from-[#4A1015] to-[#2A0505] text-white"> {/* Reduced spacing */}
@@ -60,9 +73,7 @@ const PerfectGift = () => {
                         const desktopMargin = (index === 0 || index === 3) ? 'md:mt-0' : 'md:mt-24';
 
                         const itemLabel = item.name || item.label;
-                        const productIds = Array.isArray(item.productIds) ? item.productIds : [];
-                        const productQuery = productIds.length > 0 ? productIds.join(',') : '';
-                        const itemPath = productQuery ? `/shop?products=${encodeURIComponent(productQuery)}` : (item.path || '/shop?status=coming-soon');
+                        const itemPath = item.path || '/shop?status=coming-soon';
 
                         const key = item.itemId || item._id || item.id || itemLabel || index;
                         return (

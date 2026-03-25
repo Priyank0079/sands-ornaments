@@ -74,23 +74,26 @@ const StyleItYourWay = () => {
         }
     ];
 
-    const displayCollections = sectionData?.items && sectionData.items.length > 0
-        ? sectionData.items.map(item => {
-            const productIds = Array.isArray(item.productIds) ? item.productIds : [];
-            const limit = item.limit ? Number(item.limit) : 12;
-            const path = productIds.length > 0
-                ? `/shop?products=${encodeURIComponent(productIds.join(','))}`
-                : `/shop?limit=${limit}&sort=random`;
-            return {
-                id: item.id,
-                title: item.name,
-                subtitle: item.tag,
-                image: item.image,
-                thumbnails: item.extraImages || [],
-                path
-            };
-        })
-        : defaultCollections;
+    const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
+    const normalizedConfiguredItems = configuredItems.map((item, index) => {
+        const fallback = defaultCollections[index] || defaultCollections[0];
+        const productIds = Array.isArray(item.productIds) ? item.productIds.filter(Boolean) : [];
+        const limit = item.limit ? Number(item.limit) : 12;
+        const path = productIds.length > 0
+            ? `/shop?products=${encodeURIComponent(productIds.join(','))}`
+            : `/shop?limit=${limit}&sort=random`;
+        const extraImages = Array.isArray(item.extraImages) ? item.extraImages.filter(Boolean) : [];
+        return {
+            id: item.itemId || item._id || item.id || `style-${index}`,
+            title: item.name || item.label || fallback.title,
+            subtitle: item.tag || fallback.subtitle,
+            image: item.image || fallback.image,
+            thumbnails: extraImages.length > 0 ? extraImages : fallback.thumbnails,
+            path
+        };
+    });
+
+    const displayCollections = normalizedConfiguredItems.length > 0 ? normalizedConfiguredItems : defaultCollections;
 
     React.useEffect(() => {
         const isMobile = window.innerWidth < 768;

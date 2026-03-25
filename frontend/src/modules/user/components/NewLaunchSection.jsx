@@ -22,9 +22,22 @@ const newLaunches = [
 const NewLaunchSection = () => {
     const { homepageSections } = useShop();
 
-    // Use admin-configured items if available, otherwise fall back to defaults
     const sectionData = homepageSections?.['new-launch'];
-    const displayItems = sectionData?.items && sectionData.items.length > 0 ? sectionData.items : newLaunches;
+    const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
+    const normalizedConfiguredItems = configuredItems.map((item, index) => {
+        const productIds = Array.isArray(item.productIds) ? item.productIds.filter(Boolean) : [];
+        return {
+            ...item,
+            id: item.itemId || item._id || item.id || `launch-${index}`,
+            name: item.name || item.label || newLaunches[index]?.name || 'Limited Edition',
+            image: item.image || newLaunches[index]?.image || newEarrings,
+            path: productIds.length > 0
+                ? `/shop?products=${encodeURIComponent(productIds.join(','))}`
+                : (item.path || '/shop?status=coming-soon'),
+            productIds
+        };
+    });
+    const displayItems = normalizedConfiguredItems.length > 0 ? normalizedConfiguredItems : newLaunches;
 
     return (
         <section className="py-16 md:py-24 bg-[#FFF0F0] relative overflow-hidden">
@@ -54,9 +67,7 @@ const NewLaunchSection = () => {
                 <div className="flex flex-wrap md:flex-nowrap justify-center gap-6 md:gap-8">
                     {displayItems.map((item, index) => {
                         const itemLabel = item.name || item.label;
-                        const productIds = Array.isArray(item.productIds) ? item.productIds : [];
-                        const productQuery = productIds.length > 0 ? productIds.join(',') : '';
-                        const itemPath = productQuery ? `/shop?products=${encodeURIComponent(productQuery)}` : (item.path || '/shop?status=coming-soon');
+                        const itemPath = item.path || '/shop?status=coming-soon';
 
                         const key = item.itemId || item._id || item.id || itemLabel || index;
                         return (

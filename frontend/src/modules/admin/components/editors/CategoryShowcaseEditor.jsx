@@ -468,7 +468,11 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         if (sectionId === 'perfect-gift') {
             const normalizedItems = nextItems.map((item) => ({
                 ...item,
-                productIds: Array.isArray(item.productIds) ? item.productIds : []
+                productIds: Array.isArray(item.productIds) ? item.productIds : [],
+                label: item.label || item.name || '',
+                path: Array.isArray(item.productIds) && item.productIds.length > 0
+                    ? `/shop?products=${encodeURIComponent(item.productIds.join(','))}`
+                    : (item.path || '/shop?status=coming-soon')
             }));
             onSave({ items: normalizedItems });
             return;
@@ -476,7 +480,11 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         if (sectionId === 'new-launch') {
             const normalizedItems = nextItems.map((item) => ({
                 ...item,
-                productIds: Array.isArray(item.productIds) ? item.productIds : []
+                productIds: Array.isArray(item.productIds) ? item.productIds : [],
+                label: item.label || item.name || '',
+                path: Array.isArray(item.productIds) && item.productIds.length > 0
+                    ? `/shop?products=${encodeURIComponent(item.productIds.join(','))}`
+                    : (item.path || '/shop?status=coming-soon')
             }));
             onSave({ items: normalizedItems });
             return;
@@ -579,6 +587,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                     ...item,
                     limit,
                     productIds,
+                    label: item.label || item.name || '',
                     path
                 };
             });
@@ -602,6 +611,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                     ...item,
                     limit,
                     productIds,
+                    label: item.label || item.name || '',
                     path
                 };
             });
