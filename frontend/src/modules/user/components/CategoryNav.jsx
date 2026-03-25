@@ -15,6 +15,11 @@ import navOccasionAnniversary from '../assets/nav_occasion_anniversary.png';
 import navOccasionWedding from '../assets/nav_occasion_wedding.png';
 import navOccasionMothers from '../assets/nav_occasion_mothers.png';
 import navOccasionValentine from '../assets/nav_occasion_valentine.png';
+import {
+    fallbackGiftImage,
+    fallbackOccasionImage,
+    normalizeHomepageNavItems
+} from '../utils/homepageNav';
 
 const CategoryNav = () => {
     const [hoveredCategory, setHoveredCategory] = useState(null);
@@ -46,58 +51,10 @@ const CategoryNav = () => {
         { id: 'valentine', name: "Valentine Day", path: "valentine", image: navOccasionValentine }
     ];
 
-    const fallbackGiftImage = (label) => {
-        const map = {
-            womens: navGiftWomen,
-            women: navGiftWomen,
-            girls: navGiftGirls,
-            mens: navGiftMens,
-            men: navGiftMens,
-            couple: navGiftCouple,
-            kids: navGiftKids
-        };
-        const key = String(label || '').toLowerCase().replace(/\s+/g, '');
-        return map[key] || navGiftWomen;
-    };
-
-    const fallbackOccasionImage = (label) => {
-        const map = {
-            birthday: navOccasionBirthday,
-            anniversary: navOccasionAnniversary,
-            wedding: navOccasionWedding,
-            mothersday: navOccasionMothers,
-            "mother'sday": navOccasionMothers,
-            valentine: navOccasionValentine,
-            valentineday: navOccasionValentine
-        };
-        const key = String(label || '').toLowerCase().replace(/\s+/g, '');
-        return map[key] || navOccasionBirthday;
-    };
-
-    const buildFilterPath = (label, key) => {
-        const slug = String(label || '')
-            .trim()
-            .toLowerCase()
-            .replace(/['"]/g, '')
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/^-+|-+$/g, '');
-        return `/shop?${key}=${encodeURIComponent(slug)}`;
-    };
-
-    const ensureNavPath = (path, label, key) => {
-        if (path && path.includes(`${key}=`)) return path;
-        return buildFilterPath(label, key);
-    };
-
     const navGiftItems = useMemo(() => {
         const section = homepageSections?.['nav-gifts-for'];
         if (section?.items?.length) {
-            return section.items.map(item => ({
-                id: item.itemId || item.id || item._id,
-                name: item.name || item.label,
-                path: ensureNavPath(item.path, item.name || item.label, 'filter'),
-                image: item.image || fallbackGiftImage(item.name || item.label)
-            }));
+            return normalizeHomepageNavItems(section.items, 'filter', fallbackGiftImage);
         }
         return defaultGiftsFor;
     }, [homepageSections]);
@@ -105,12 +62,7 @@ const CategoryNav = () => {
     const navOccasionItems = useMemo(() => {
         const section = homepageSections?.['nav-occasions'];
         if (section?.items?.length) {
-            return section.items.map(item => ({
-                id: item.itemId || item.id || item._id,
-                name: item.name || item.label,
-                path: ensureNavPath(item.path, item.name || item.label, 'occasion'),
-                image: item.image || fallbackOccasionImage(item.name || item.label)
-            }));
+            return normalizeHomepageNavItems(section.items, 'occasion', fallbackOccasionImage);
         }
         return defaultOccasions;
     }, [homepageSections]);

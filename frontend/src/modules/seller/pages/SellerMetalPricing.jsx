@@ -39,7 +39,7 @@ const SellerMetalPricing = () => {
 
     return (
         <div className="max-w-[900px] mx-auto space-y-6 pb-20">
-            <PageHeader title="Metal Pricing" subtitle="Update your daily gold and silver rates (applies only to your products)" />
+            <PageHeader title="Metal Pricing" subtitle="Update your daily gold and silver rates for your products. GST percentage is controlled globally by admin." />
 
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

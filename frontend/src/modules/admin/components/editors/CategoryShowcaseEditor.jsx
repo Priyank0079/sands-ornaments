@@ -435,6 +435,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                     ...item,
                     categoryId: category._id,
                     name: category.name,
+                    label: category.name,
                     path: `/shop?category=${category._id}`,
                     image: item.image || category.image || item.image
                 };
@@ -455,7 +456,9 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                 return {
                     ...item,
                     priceMax,
+                    price: String(priceMax),
                     name: `Under INR ${priceMax}`,
+                    label: `Under INR ${priceMax}`,
                     path: `/shop?price_max=${priceMax}`
                 };
             });
@@ -496,6 +499,8 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                 return {
                     ...item,
                     categoryId: category._id,
+                    name: item.name || category.name,
+                    label: item.label || item.name || category.name,
                     limit,
                     path: `/shop?category=${category._id}&limit=${limit}&sort=latest`
                 };
@@ -521,6 +526,8 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                 return {
                     ...item,
                     categoryId: category._id,
+                    name: item.name || category.name,
+                    label: item.label || item.name || category.name,
                     limit,
                     path: `/shop?category=${category._id}&limit=${limit}&sort=most-sold`
                 };
@@ -546,6 +553,8 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                 return {
                     ...item,
                     categoryId: category._id,
+                    name: item.name || category.name,
+                    label: item.label || item.name || category.name,
                     limit,
                     path: `/shop?category=${category._id}&limit=${limit}&sort=latest`
                 };
@@ -599,6 +608,13 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             onSave({ items: normalizedItems });
             return;
         }
+        if (sectionId === 'nav-gifts-for' || sectionId === 'nav-occasions') {
+            const missingLabels = nextItems.filter(item => !(item.name || item.label || '').trim());
+            if (missingLabels.length > 0) {
+                toast.error('Enter a name for each navigation item before saving.');
+                return;
+            }
+        }
         const normalizedItems = nextItems.map((item) => {
             if (sectionId === 'nav-gifts-for' || sectionId === 'nav-occasions') {
                 const label = item.name || item.label || '';
@@ -612,7 +628,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                 const path = item.path && item.path.trim().length > 0
                     ? item.path
                     : `/shop?${key}=${encodeURIComponent(slug)}`;
-                return { ...item, path };
+                return { ...item, name: label, label, path };
             }
             return item;
         });

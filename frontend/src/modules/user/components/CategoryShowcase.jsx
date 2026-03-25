@@ -70,23 +70,35 @@ const CategoryShowcase = () => {
         return null;
     };
 
-    const displayItems = (sectionConfig?.items && sectionConfig.items.length > 0)
-        ? sectionConfig.items.map((item) => {
-            const resolvedCategory = getCategoryFromItem(item);
-            if (resolvedCategory) {
+    const sectionItems = Array.isArray(sectionConfig?.items) ? sectionConfig.items : [];
+
+    const displayItems = (sectionItems.length > 0)
+        ? sectionItems
+            .map((item, index) => {
+                const resolvedCategory = getCategoryFromItem(item);
+                if (!resolvedCategory) return null;
                 return {
-                    id: item.id || resolvedCategory._id,
+                    id: item.itemId || item.id || resolvedCategory._id || index,
                     name: resolvedCategory.name,
                     image: item.image || resolvedCategory.image || resolveFallbackImage(resolvedCategory.slug || resolvedCategory.name),
                     path: `/shop?category=${resolvedCategory._id}`,
                     tag: item.tag || ''
                 };
-            }
-            return {
-                ...item,
-                image: item.image || resolveFallbackImage(item.name)
-            };
-        })
+            })
+            .filter(Boolean)
+        : (() => {
+            const withProducts = activeCategories.filter(cat => productCategoryIds.has(String(cat._id)));
+            const baseList = withProducts.length > 0 ? withProducts : activeCategories;
+            return baseList.slice(0, 8).map(cat => ({
+                id: cat._id,
+                name: cat.name,
+                image: cat.image || resolveFallbackImage(cat.slug || cat.name),
+                path: `/shop?category=${cat._id}`
+            }));
+        })();
+
+    const finalItems = displayItems.length > 0
+        ? displayItems
         : (() => {
             const withProducts = activeCategories.filter(cat => productCategoryIds.has(String(cat._id)));
             const baseList = withProducts.length > 0 ? withProducts : activeCategories;
@@ -102,7 +114,7 @@ const CategoryShowcase = () => {
         <section className="py-4 bg-white overflow-hidden">
             <div className="container mx-auto px-0 md:px-4">
                 <div className="flex flex-nowrap overflow-x-auto justify-start gap-4 md:gap-8 px-4 md:p-10 pb-4 md:pb-12 scrollbar-hide snap-x snap-mandatory">
-                    {displayItems.map((cat, index) => (
+                    {finalItems.map((cat) => (
                         <Link to={cat.path} key={cat.id} className="group flex flex-col items-center flex-shrink-0 snap-start">
                             {/* Card with Premium Gradient and Shimmer Effect */}
                             <div className="relative w-36 h-36 md:w-52 md:h-52 bg-gradient-to-br from-[#D39A9F] to-[#4A1015] rounded-2xl md:rounded-[2.5rem] shadow-lg border md:border-2 border-[#C9A24D]/30 overflow-hidden transition-all duration-500 transform group-hover:-translate-y-3 group-hover:shadow-[0_20px_40px_rgba(74,16,21,0.2)] group-hover:border-[#C9A24D]">

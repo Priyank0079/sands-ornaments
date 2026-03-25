@@ -20,9 +20,37 @@ const categories = [
 const MostGifted = () => {
     const { homepageSections, categories: allCategories } = useShop();
 
-    // Use admin-configured items if available, otherwise fall back to defaults
     const sectionData = homepageSections?.['most-gifted'];
-    const displayItems = sectionData?.items && sectionData.items.length > 0 ? sectionData.items : categories;
+    const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
+    const normalizedConfiguredItems = configuredItems
+        .map((item, index) => {
+            const category = item.categoryId
+                ? allCategories.find(c => String(c._id || c.id) === String(item.categoryId))
+                : null;
+            const limit = Number(item.limit) || 0;
+            if (!category || limit <= 0) {
+                if (!item.path) return null;
+                return {
+                    ...item,
+                    id: item.itemId || item._id || item.id || `legacy-${index}`,
+                    name: item.name || item.label || 'Most Gifted',
+                    image: item.image || earringsImg,
+                    limit: Number(item.limit) || 12,
+                    path: item.path
+                };
+            }
+            return {
+                ...item,
+                id: item.itemId || item._id || item.id || `${category._id || category.id}-${index}`,
+                name: item.name || item.label || category.name,
+                image: item.image || earringsImg,
+                limit,
+                path: `/shop?category=${category._id || category.id}&limit=${limit}&sort=most-sold`
+            };
+        })
+        .filter(Boolean);
+
+    const displayItems = normalizedConfiguredItems.length > 0 ? normalizedConfiguredItems : categories;
 
     return (
         <section className="py-8 md:py-24 bg-[#FFF0F0] relative overflow-hidden">
@@ -71,14 +99,9 @@ const MostGifted = () => {
                     {/* Category Cards - Vertical & Dark */}
                     <div className="w-full lg:w-[55%] grid grid-cols-2 md:grid-cols-4 gap-4">
                         {displayItems.map((cat, index) => {
-                            const category = cat.categoryId
-                                ? allCategories.find(c => String(c._id || c.id) === String(cat.categoryId))
-                                : null;
                             const limit = Number(cat.limit) || 12;
-                            const itemLabel = cat.name || cat.label || category?.name || 'Most Gifted';
-                            const path = category
-                                ? `/shop?category=${category._id || category.id}&limit=${limit}&sort=most-sold`
-                                : (cat.path || `/shop?limit=${limit}&sort=most-sold`);
+                            const itemLabel = cat.name || cat.label || 'Most Gifted';
+                            const path = cat.path || `/shop?limit=${limit}&sort=most-sold`;
 
                             return (
                                 <Link

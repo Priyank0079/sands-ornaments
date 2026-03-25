@@ -4,21 +4,18 @@ import {
     LayoutDashboard, Package, ShoppingCart, Users, Image as ImageIcon,
     Bell, ChevronRight, ChevronDown, Star, HelpCircle, LogOut, Menu, X, ListTree,
     FileText, MessageSquare, Ticket, Settings, Plus, List, BookOpen,
-    Clock, RefreshCw, RefreshCcw, RotateCcw, Boxes, ClipboardList, MapPin, Truck, CheckCircle2, XCircle,
+    Clock, RefreshCw, RefreshCcw, RotateCcw, Boxes, ClipboardList, MapPin, Truck, CheckCircle2, XCircle, Percent,
     AlertTriangle, FileBarChart, Store
 } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
 import logo from '../assets/sands-logo.png';
 import logoName from '../assets/sands-logoname.png';
-import toast from 'react-hot-toast';
-import { adminService } from '../services/adminService';
 
 const AdminLayout = ({ children }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 1024);
     const location = useLocation();
     const navigate = useNavigate();
-    const { orders, globalGst, setGlobalGst } = useShop();
-    const [gstValue, setGstValue] = useState(globalGst);
+    const { orders } = useShop();
 
     const allOrders = useMemo(() => Object.values(orders || {}).flat(), [orders]);
     const getCount = (status) => allOrders.filter(o => o.status === status).length;
@@ -108,6 +105,7 @@ const AdminLayout = ({ children }) => {
         { name: 'Blogs', icon: BookOpen, path: '/admin/blogs' },
         { name: 'Sections', icon: LayoutDashboard, path: '/admin/sections' },
         { name: 'Metal Pricing', icon: RefreshCcw, path: '/admin/metal-pricing' },
+        { name: 'Tax Settings', icon: Percent, path: '/admin/tax-settings' },
         { name: 'Global Settings', icon: Settings, path: '/admin/settings' },
     ];
 
@@ -173,23 +171,6 @@ const AdminLayout = ({ children }) => {
             if (window.innerWidth <= 1024) {
                 setIsSidebarOpen(false);
             }
-        }
-    };
-
-    const handleSaveGst = async () => {
-        const normalizedGst = Number(gstValue) || 0;
-        setGlobalGst(normalizedGst);
-        try {
-            const current = await adminService.getMetalPricing();
-            const metalRates = current?.metalRates || {};
-            const res = await adminService.updateMetalPricing({ gstRate: normalizedGst, metalRates });
-            if (res?.success === false) {
-                toast.error(res.message || "Failed to sync GST");
-                return;
-            }
-            toast.success("Global GST fixed: " + normalizedGst);
-        } catch (err) {
-            toast.error("Failed to sync GST");
         }
     };
 
@@ -304,38 +285,6 @@ const AdminLayout = ({ children }) => {
                     })}
                 </nav>
 
-                {/* Global Configuration Card - Added Above Logout */}
-                {(isSidebarOpen || window.innerWidth <= 1024) && (
-                    <div className="px-6 py-4 mx-4 mb-4 rounded-3xl bg-white/5 border border-white/10 space-y-4 animate-in slide-in-from-bottom-2 duration-500">
-                        <div className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-amber-400"></div>
-                            <span className="text-[10px] font-black text-amber-200 uppercase tracking-widest leading-none">Global Master GST</span>
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <div className="relative">
-                                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40">
-                                    <span className="text-xs font-bold text-gray-500">₹</span>
-                                </div>
-                                <input 
-                                    type="number"
-                                    value={gstValue}
-                                    onChange={(e) => setGstValue(e.target.value)}
-                                    className="w-full bg-black/40 border border-white/5 rounded-xl py-2.5 pl-8 pr-4 text-xs font-black text-white outline-none focus:border-amber-500/50 transition-all placeholder:text-white/10"
-                                    placeholder="0"
-                                />
-                            </div>
-                            <button 
-                                onClick={handleSaveGst}
-                                className="w-full py-2 bg-amber-600/90 hover:bg-amber-600 text-white text-[9px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-amber-900/20"
-                            >
-                                Save Configuration
-                            </button>
-                        </div>
-                        <p className="text-[8px] font-bold text-white/20 uppercase tracking-widest text-center leading-relaxed">
-                            Global Tax Standard
-                        </p>
-                    </div>
-                )}
             </div>
 
                 {/* Logout Section - Fixed at Bottom */}

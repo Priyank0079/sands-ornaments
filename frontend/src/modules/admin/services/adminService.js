@@ -298,10 +298,10 @@ export const adminService = {
   getMetalPricing: async () => {
     try {
       const res = await api.get('admin/settings/metal-pricing');
-      return res.data?.data || res.data || { metalRates: {}, gstRate: 0 };
+      return res.data?.data || res.data || { metalRates: {} };
     } catch (err) {
       console.error("Admin fetch metal pricing failed:", err);
-      return { metalRates: {}, gstRate: 0 };
+      return { metalRates: {} };
     }
   },
   updateMetalPricing: async (payload) => {
@@ -311,6 +311,24 @@ export const adminService = {
     } catch (err) {
       console.error("Admin update metal pricing failed:", err);
       return { success: false, message: err.response?.data?.message || "Failed to update metal pricing" };
+    }
+  },
+  getTaxSettings: async () => {
+    try {
+      const res = await api.get('admin/settings/tax');
+      return res.data?.data || res.data || { gstRate: 0, totalProductCount: 0 };
+    } catch (err) {
+      console.error("Admin fetch tax settings failed:", err);
+      return { gstRate: 0, totalProductCount: 0 };
+    }
+  },
+  updateTaxSettings: async (payload) => {
+    try {
+      const res = await api.patch('admin/settings/tax', payload);
+      return res.data;
+    } catch (err) {
+      console.error("Admin update tax settings failed:", err);
+      return { success: false, message: err.response?.data?.message || "Failed to update tax settings" };
     }
   },
   getSections: async () => {

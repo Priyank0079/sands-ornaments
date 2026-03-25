@@ -33,7 +33,7 @@ const AccordionItem = ({ title, children, isOpen, onClick }) => (
 const ProductDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { addToCart, removeFromCart, cart, addToWishlist, removeFromWishlist, wishlist, products, isLoading } = useShop();
+    const { addToCart, removeFromCart, cart, addToWishlist, removeFromWishlist, wishlist, products, isLoading, globalGst } = useShop();
     const { user } = useAuth();
     const catalogueProduct = (products || []).find(p => String(p.id || p._id) === String(id));
     const [detailProduct, setDetailProduct] = useState(null);
@@ -388,7 +388,7 @@ const ProductDetails = () => {
                                     <span className="font-semibold text-gray-900">â‚¹{Number(pricingBreakdown.diamondPrice || 0).toLocaleString()}</span>
                                 </div>
                                 <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
-                                    <span className="text-gray-600">GST</span>
+                                    <span className="text-gray-600">GST ({Number(globalGst || 0)}%)</span>
                                     <span className="font-semibold text-gray-900">â‚¹{Number(pricingBreakdown.gst || 0).toLocaleString()}</span>
                                 </div>
                             </div>

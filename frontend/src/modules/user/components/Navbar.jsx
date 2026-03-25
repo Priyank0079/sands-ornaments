@@ -4,6 +4,7 @@ import { Search, Heart, ShoppingBag, User, Store, Menu, X, Bell, ChevronDown } f
 import { useShop } from '../../../context/ShopContext';
 import logo from '../../user/assets/SANDS JEWELS PINK (1).png';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ensureHomepageNavPath } from '../utils/homepageNav';
 
 const Navbar = () => {
     const { cart, wishlist, user, userNotifications, isMenuOpen, toggleMenu, homepageSections, categories, products } = useShop();
@@ -15,26 +16,11 @@ const Navbar = () => {
         const sectionGifts = homepageSections?.['nav-gifts-for'];
         const sectionOccasions = homepageSections?.['nav-occasions'];
 
-        const buildFilterPath = (label, key) => {
-            const slug = String(label || '')
-                .trim()
-                .toLowerCase()
-                .replace(/['"]/g, '')
-                .replace(/[^a-z0-9]+/g, '-')
-                .replace(/^-+|-+$/g, '');
-            return `/shop?${key}=${encodeURIComponent(slug)}`;
-        };
-
-        const ensureNavPath = (path, label, key) => {
-            if (path && path.includes(`${key}=`)) return path;
-            return buildFilterPath(label, key);
-        };
-
         const normalizeItems = (section, fallback, queryKey) => {
             if (section?.items?.length) {
                 return section.items.map(item => ({
                     name: item.name || item.label,
-                    path: queryKey ? ensureNavPath(item.path, item.name || item.label, queryKey) : (item.path || '/shop')
+                    path: queryKey ? ensureHomepageNavPath(item.path, item.name || item.label, queryKey) : (item.path || '/shop')
                 }));
             }
             return fallback;

@@ -14,16 +14,20 @@ const computeMetalPrice = (product = {}, rates = {}) => {
   return weight * rate;
 };
 
+const roundCurrency = (value) => Math.round((Number(value) || 0) * 100) / 100;
+
 const applyMetalPricingToProduct = (product, rates = {}, gstRate = 0) => {
   if (!product) return product;
-  const gstValue = Number(gstRate) || 0;
-  const metalPrice = computeMetalPrice(product, rates);
+  const gstPercentage = Number(gstRate) || 0;
+  const metalPrice = roundCurrency(computeMetalPrice(product, rates));
 
   if (Array.isArray(product.variants)) {
     product.variants = product.variants.map((variant) => {
       const makingCharge = Number(variant.makingCharge) || 0;
       const diamondPrice = Number(variant.diamondPrice) || 0;
-      const finalPrice = metalPrice + makingCharge + diamondPrice + gstValue;
+      const subtotal = roundCurrency(metalPrice + makingCharge + diamondPrice);
+      const gstValue = roundCurrency((subtotal * gstPercentage) / 100);
+      const finalPrice = roundCurrency(subtotal + gstValue);
 
       return {
         ...variant,

@@ -20,9 +20,37 @@ const latestItems = [
 const LatestDrop = () => {
     const { homepageSections, categories } = useShop();
 
-    // Use admin-configured items if available, otherwise fall back to defaults
     const sectionData = homepageSections?.['latest-drop'];
-    const displayItems = sectionData?.items && sectionData.items.length > 0 ? sectionData.items : latestItems;
+    const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
+    const normalizedConfiguredItems = configuredItems
+        .map((item, index) => {
+            const category = item.categoryId
+                ? categories.find(c => String(c._id || c.id) === String(item.categoryId))
+                : null;
+            const limit = Number(item.limit) || 0;
+            if (!category || limit <= 0) {
+                if (!item.path) return null;
+                return {
+                    ...item,
+                    id: item.itemId || item._id || item.id || `legacy-${index}`,
+                    name: item.name || item.label || 'Latest Drop',
+                    image: item.image || latestRing,
+                    limit: Number(item.limit) || 12,
+                    path: item.path
+                };
+            }
+            return {
+                ...item,
+                id: item.itemId || item._id || item.id || `${category._id || category.id}-${index}`,
+                name: item.name || item.label || category.name,
+                image: item.image || latestRing,
+                limit,
+                path: `/shop?category=${category._id || category.id}&limit=${limit}&sort=latest`
+            };
+        })
+        .filter(Boolean);
+
+    const displayItems = normalizedConfiguredItems.length > 0 ? normalizedConfiguredItems : latestItems;
 
     return (
         <section className="py-8 md:py-20 bg-white">
@@ -54,15 +82,10 @@ const LatestDrop = () => {
                 {/* Grid (Desktop) / Horizontal Scroll (Mobile) */}
                 <div className="flex overflow-x-auto md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8 pb-4 md:pb-0 px-4 md:px-0 scrollbar-hide snap-x snap-mandatory -mx-4 md:mx-0">
                     {displayItems.map((item, index) => {
-                        const category = item.categoryId
-                            ? categories.find(c => String(c._id || c.id) === String(item.categoryId))
-                            : null;
                         const limit = Number(item.limit) || 12;
-                        const name = item.name || item.label || category?.name || 'Latest Drop';
+                        const name = item.name || item.label || 'Latest Drop';
                         const image = item.image || latestRing;
-                        const path = category
-                            ? `/shop?category=${category._id || category.id}&limit=${limit}&sort=latest`
-                            : (item.path || `/shop?limit=${limit}&sort=latest`);
+                        const path = item.path || `/shop?limit=${limit}&sort=latest`;
 
                         return (
                             <motion.div

@@ -30,6 +30,8 @@ const quillFormats = [
     'link'
 ];
 
+const roundCurrency = (value) => Math.round((Number(value) || 0) * 100) / 100;
+
 const SellerProductEditor = ({ productApi, metalPricingApi, backPath = '/seller/products' }) => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -88,15 +90,16 @@ const SellerProductEditor = ({ productApi, metalPricingApi, backPath = '/seller/
 
     const getMetalPrice = () => {
         const weight = Number(formData.weight) || 0;
-        return weight * getMetalRate();
+        return roundCurrency(weight * getMetalRate());
     };
 
     const getPricingForVariant = (variant) => {
         const metalPrice = getMetalPrice();
         const makingCharge = Number(variant.makingCharge) || 0;
         const diamondPrice = Number(variant.diamondPrice) || 0;
-        const gstValue = Number(gstRate) || 0;
-        const finalPrice = metalPrice + makingCharge + diamondPrice + gstValue;
+        const subtotal = roundCurrency(metalPrice + makingCharge + diamondPrice);
+        const gstValue = roundCurrency((subtotal * (Number(gstRate) || 0)) / 100);
+        const finalPrice = roundCurrency(subtotal + gstValue);
         return { metalPrice, gstValue, finalPrice };
     };
 
@@ -195,7 +198,7 @@ const SellerProductEditor = ({ productApi, metalPricingApi, backPath = '/seller/
         navGiftsFor: [],
         navOccasions: [],
         variants: [
-            { id: Date.now(), name: 'Standard', makingCharge: '0', diamondPrice: '0', mrp: globalGst || '0', price: '', stock: 0, serialCodes: [], metalPrice: 0, gst: 0, finalPrice: 0 }
+            { id: Date.now(), name: 'Standard', makingCharge: '0', diamondPrice: '0', mrp: '0', price: '', stock: 0, serialCodes: [], metalPrice: 0, gst: 0, finalPrice: 0 }
         ],
         faqs: [],
         deletedImages: [],
@@ -433,7 +436,7 @@ const SellerProductEditor = ({ productApi, metalPricingApi, backPath = '/seller/
                 name: '', 
                 makingCharge: '0', 
                 diamondPrice: '0', 
-                mrp: (parseFloat(globalGst) || 0).toString(), 
+                mrp: '0', 
                 price: '', 
                 stock: 0,
                 serialCodes: []
@@ -1155,7 +1158,7 @@ const SellerProductEditor = ({ productApi, metalPricingApi, backPath = '/seller/
                                                 </div>
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">GST (Auto)</label>
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">GST ({Number(gstRate || 0)}% Auto)</label>
                                                 <div className="relative group/field">
                                                     <input 
                                                         type="number" 

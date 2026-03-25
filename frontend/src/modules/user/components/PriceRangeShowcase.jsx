@@ -19,9 +19,7 @@ const priceRanges = [
 const PriceRangeShowcase = () => {
     const { homepageSections } = useShop();
 
-    // Use admin-configured items if available, otherwise fall back to defaults
     const sectionData = homepageSections?.['price-range-showcase'];
-    const displayItems = sectionData?.items && sectionData.items.length > 0 ? sectionData.items : priceRanges;
 
     const parsePriceValue = (value) => {
         if (value === undefined || value === null) return null;
@@ -50,6 +48,24 @@ const PriceRangeShowcase = () => {
         }
         return null;
     };
+
+    const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
+    const normalizedConfiguredItems = configuredItems
+        .map((item, index) => {
+            const priceMax = getPriceMaxFromItem(item);
+            if (!priceMax) return null;
+            const itemLabel = item.name || item.label || `Under INR ${priceMax}`;
+            return {
+                ...item,
+                id: item.itemId || item._id || item.id || `${priceMax}-${index}`,
+                priceMax,
+                name: itemLabel,
+                path: `/shop?price_max=${priceMax}`
+            };
+        })
+        .filter(Boolean);
+
+    const displayItems = normalizedConfiguredItems.length > 0 ? normalizedConfiguredItems : priceRanges;
 
     return (
         <section className="pt-2 pb-16 md:pt-10 md:pb-24 bg-white">

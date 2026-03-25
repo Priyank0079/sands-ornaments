@@ -7,18 +7,44 @@ import bannerImgDefault from '../assets/proposal_banner.png';
 const ProposalBanner = () => {
     const { homepageSections, categories } = useShop();
     const sectionData = homepageSections?.['proposal-rings'];
-    const displayItems = sectionData?.items || [];
+    const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
+    const normalizedConfiguredItems = configuredItems
+        .map((item, index) => {
+            const category = item.categoryId
+                ? categories.find(c => String(c._id || c.id) === String(item.categoryId))
+                : null;
+            const limit = Number(item.limit) || 0;
+            if (!category || limit <= 0) {
+                if (!item.path) return null;
+                return {
+                    ...item,
+                    id: item.itemId || item._id || item.id || `legacy-${index}`,
+                    name: item.name || item.label || 'Proposal Rings',
+                    image: item.image || bannerImgDefault,
+                    limit: Number(item.limit) || 12,
+                    path: item.path
+                };
+            }
+            return {
+                ...item,
+                id: item.itemId || item._id || item.id || `${category._id || category.id}-${index}`,
+                name: item.name || item.label || category.name || 'Proposal Rings',
+                image: item.image || bannerImgDefault,
+                limit,
+                path: `/shop?category=${category._id || category.id}&limit=${limit}&sort=latest`
+            };
+        })
+        .filter(Boolean);
+
+    const displayItems = normalizedConfiguredItems.length > 0
+        ? normalizedConfiguredItems
+        : [{ id: 'proposal-fallback', name: 'Proposal Rings', image: bannerImgDefault, path: '/shop?sort=latest', limit: 12 }];
 
     // Use first item for banner if available
     const bannerItem = displayItems[0];
-    const bannerCategory = bannerItem?.categoryId
-        ? categories.find(c => String(c._id || c.id) === String(bannerItem.categoryId))
-        : null;
     const bannerLimit = Number(bannerItem?.limit) || 12;
     const bannerImage = bannerItem?.image || bannerImgDefault;
-    const bannerLink = bannerCategory
-        ? `/shop?category=${bannerCategory._id || bannerCategory.id}&limit=${bannerLimit}&sort=latest`
-        : (bannerItem?.path || "/category/rings");
+    const bannerLink = bannerItem?.path || `/shop?limit=${bannerLimit}&sort=latest`;
 
     return (
         <section className="w-full bg-[#1B0305] relative overflow-hidden">
@@ -74,13 +100,7 @@ const ProposalBanner = () => {
                 {displayItems.length > 1 && (
                     <div className="pb-16 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
                         {displayItems.slice(1).map((item, index) => {
-                            const category = item.categoryId
-                                ? categories.find(c => String(c._id || c.id) === String(item.categoryId))
-                                : null;
-                            const limit = Number(item.limit) || 12;
-                            const path = category
-                                ? `/shop?category=${category._id || category.id}&limit=${limit}&sort=latest`
-                                : (item.path || "/category/rings");
+                            const path = item.path || '/shop?sort=latest';
                             return (
                             <Link
                                 key={item.itemId || item._id || item.id || index}

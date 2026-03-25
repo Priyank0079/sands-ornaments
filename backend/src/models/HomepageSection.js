@@ -13,6 +13,7 @@ const homepageItemSchema = new mongoose.Schema({
   path: String,
   tag: String,
   price: String,
+  priceMax: { type: Number },
   extraImages: [String],
   sortOrder: { type: Number, default: 0 }
 }, { _id: false });

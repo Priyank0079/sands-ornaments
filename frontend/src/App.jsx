@@ -71,6 +71,7 @@ import AdminSellerDetails from './modules/admin/pages/AdminSellerDetails';
 import AdminNotifications from './modules/admin/pages/AdminNotifications';
 import QrScannerPage from './modules/seller/pages/QrScannerPage';
 import MetalPricing from './modules/admin/pages/MetalPricing';
+import TaxSettings from './modules/admin/pages/TaxSettings';
 
 // Seller Imports
 import SellerRoutes from './modules/seller/routes/sellerRoutes';
@@ -177,6 +178,7 @@ const AppContent = () => {
                   <Route path="/seller-details/:id" element={<AdminSellerDetails />} />
                   <Route path="/settings" element={<GlobalSettings />} />
                   <Route path="/metal-pricing" element={<MetalPricing />} />
+                  <Route path="/tax-settings" element={<TaxSettings />} />
                 </Routes>
               </AdminLayout>
             </AdminProtectedRoute>
