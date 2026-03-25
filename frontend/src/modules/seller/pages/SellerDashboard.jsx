@@ -44,11 +44,11 @@ const SellerDashboard = () => {
                     setAnalytics(a || null);
                     setRecentOrders((o || []).map(order => ({
                         id: order._id,
-                        customerName: order.user?.fullName || order.shippingAddress?.firstName || 'Customer',
-                        product: order.items?.[0]?.product?.name || 'Jewellery Item',
-                        price: order.totalAmount || 0,
+                        customerName: order.userId?.fullName || order.userId?.name || order.shippingAddress?.firstName || 'Customer',
+                        product: order.items?.[0]?.productId?.name || order.items?.[0]?.name || 'Jewellery Item',
+                        price: Number(order.total || 0),
                         paymentStatus: (order.paymentStatus || 'PENDING').toUpperCase(),
-                        orderStatus: order.orderStatus || order.status || 'PENDING'
+                        orderStatus: order.status || 'PENDING'
                     })));
                 }
             } catch (err) {

@@ -27,6 +27,28 @@ const mapSellerOrder = (order) => {
     };
 };
 
+const normalizeReturn = (returnReq) => {
+    if (!returnReq) return null;
+    const primaryItem = Array.isArray(returnReq.items) ? returnReq.items[0] : null;
+    return {
+        ...returnReq,
+        id: returnReq.returnId || returnReq._id,
+        orderDisplayId: returnReq.orderId?.orderId || returnReq.orderId || 'N/A',
+        product: primaryItem?.name || 'Returned item',
+        barcode: primaryItem?.sku || 'N/A',
+        quantity: Number(primaryItem?.qty || 0),
+        returnReason: returnReq.evidence?.reason || primaryItem?.reason || 'Not specified',
+        createdAt: returnReq.createdAt || returnReq.requestDate,
+        images: returnReq.evidence?.images || [],
+        video360: returnReq.evidence?.video || '',
+        customerName: returnReq.userId?.name || returnReq.customerName || 'Customer',
+        customerEmail: returnReq.userId?.email || '',
+        item: primaryItem,
+        user: returnReq.userId,
+        order: returnReq.orderId,
+    };
+};
+
 export const sellerOrderService = {
     getSellerOrders: async () => {
         const res = await api.get('seller/orders');
@@ -60,7 +82,8 @@ export const sellerOrderService = {
     getReturns: async () => {
         try {
             const res = await api.get('seller/returns');
-            return res.data?.data?.returns || res.data?.returns || [];
+            const returns = res.data?.data?.returns || res.data?.returns || [];
+            return returns.map(normalizeReturn).filter(Boolean);
         } catch (err) {
             console.error('Failed to fetch return requests:', err);
             return [];
@@ -69,16 +92,16 @@ export const sellerOrderService = {
 
     getReturnDetails: async (id) => {
         const res = await api.get(`seller/returns/${id}`);
-        return res.data?.data?.returnRequest || res.data?.returnRequest;
+        return normalizeReturn(res.data?.data?.returnReq || res.data?.returnReq);
     },
 
-    processReturn: async (returnId, status) => {
+    processReturn: async (returnId, status, remarks = '') => {
         try {
-            const res = await api.patch(`seller/returns/${returnId}/status`, { status });
+            const res = await api.patch(`seller/returns/${returnId}/process`, { status, remarks });
             return {
                 success: true,
                 message: res.data?.message || 'Return updated',
-                data: res.data?.data || null,
+                data: normalizeReturn(res.data?.data?.returnReq || res.data?.returnReq),
             };
         } catch (err) {
             return {
