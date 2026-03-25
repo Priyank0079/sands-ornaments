@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
 import bannerImgDefault from '../assets/proposal_banner.png';
+import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 
 const ProposalBanner = () => {
     const { homepageSections, categories } = useShop();
@@ -20,7 +21,7 @@ const ProposalBanner = () => {
                     ...item,
                     id: item.itemId || item._id || item.id || `legacy-${index}`,
                     name: item.name || item.label || 'Proposal Rings',
-                    image: item.image || bannerImgDefault,
+                    image: resolveLegacyCmsAsset(item.image, bannerImgDefault),
                     limit: Number(item.limit) || 12,
                     path: item.path
                 };
@@ -29,7 +30,7 @@ const ProposalBanner = () => {
                 ...item,
                 id: item.itemId || item._id || item.id || `${category._id || category.id}-${index}`,
                 name: item.name || item.label || category.name || 'Proposal Rings',
-                image: item.image || bannerImgDefault,
+                image: resolveLegacyCmsAsset(item.image, bannerImgDefault),
                 limit,
                 path: `/shop?category=${category._id || category.id}&limit=${limit}&sort=latest`
             };

@@ -9,6 +9,7 @@ import navOccasionAnniversary from '../assets/nav_occasion_anniversary.png';
 import navOccasionWedding from '../assets/nav_occasion_wedding.png';
 import navOccasionMothers from '../assets/nav_occasion_mothers.png';
 import navOccasionValentine from '../assets/nav_occasion_valentine.png';
+import { resolveLegacyCmsAsset } from './legacyCmsAssets';
 
 export const buildSectionSlug = (value = '') => String(value || '')
   .trim()
@@ -62,7 +63,7 @@ export const normalizeHomepageNavItems = (items = [], queryKey, imageResolver) =
         id: item.itemId || item.id || item._id || `${queryKey}-${index}`,
         name: label,
         path: ensureHomepageNavPath(item.path, label, queryKey),
-        image: item.image || imageResolver(label)
+        image: resolveLegacyCmsAsset(item.image, imageResolver(label))
       };
     })
     .filter(Boolean);

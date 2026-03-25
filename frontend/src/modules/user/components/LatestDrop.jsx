@@ -9,6 +9,7 @@ import latestRing from '../assets/latest_drop_ring.png';
 import latestNecklace from '../assets/latest_drop_necklace.png';
 import latestEarrings from '../assets/latest_drop_earrings.png';
 import latestBracelet from '../assets/latest_drop_bracelet.png';
+import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 
 const latestItems = [
     { id: '1', name: "Latest Rings", image: latestRing, path: "/shop?sort=latest", limit: 12 },
@@ -34,7 +35,7 @@ const LatestDrop = () => {
                     ...item,
                     id: item.itemId || item._id || item.id || `legacy-${index}`,
                     name: item.name || item.label || 'Latest Drop',
-                    image: item.image || latestRing,
+                    image: resolveLegacyCmsAsset(item.image, latestRing),
                     limit: Number(item.limit) || 12,
                     path: item.path
                 };
@@ -43,7 +44,7 @@ const LatestDrop = () => {
                 ...item,
                 id: item.itemId || item._id || item.id || `${category._id || category.id}-${index}`,
                 name: item.name || item.label || category.name,
-                image: item.image || latestRing,
+                image: resolveLegacyCmsAsset(item.image, latestRing),
                 limit,
                 path: `/shop?category=${category._id || category.id}&limit=${limit}&sort=latest`
             };

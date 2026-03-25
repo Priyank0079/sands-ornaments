@@ -6,6 +6,7 @@ import sangeetImgDefault from '../assets/sangeet.png';
 import receptionImgDefault from '../assets/reception.png';
 import bridalImgDefault from '../assets/bridal.png';
 import bridesmaidImgDefault from '../assets/hero_slide_3.png';
+import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 
 const OccasionalSpecial = () => {
     const { homepageSections } = useShop();
@@ -38,7 +39,7 @@ const OccasionalSpecial = () => {
             ...item,
             id: item.itemId || item._id || item.id || `curated-${index}`,
             name: item?.name || item?.label || fallback.name,
-            image: item?.image || fallback.image,
+            image: resolveLegacyCmsAsset(item?.image, fallback.image),
             path: buildPath(item, fallback),
             limit: item.limit ? Number(item.limit) : 12,
             productIds: Array.isArray(item.productIds) ? item.productIds.filter(Boolean) : []
@@ -87,7 +88,7 @@ const OccasionalSpecial = () => {
                                 to={path}
                                 className="relative group overflow-hidden rounded-xl flex-shrink-0 w-full aspect-[4/5] cursor-pointer shadow-sm active:scale-95 transition-transform"
                             >
-                                <img src={cat.image || (defaultCategories[index] || defaultCategories[0]).image} alt={label} className="w-full h-full object-cover" />
+                                <img src={resolveLegacyCmsAsset(cat.image, (defaultCategories[index] || defaultCategories[0]).image)} alt={label} className="w-full h-full object-cover" />
                                 <div className="absolute inset-0 bg-gradient-to-t from-[#2F0A0F]/90 via-transparent to-transparent"></div>
                                 <span className="absolute bottom-3 left-0 right-0 text-white font-display text-lg tracking-wide text-center px-1">
                                     {label}
@@ -152,7 +153,7 @@ const OccasionalSpecial = () => {
                                     className="group relative rounded-2xl overflow-hidden aspect-square border border-gray-100 shadow-md"
                                 >
                                     <img
-                                        src={item.image || defaultCategories[0].image}
+                                        src={resolveLegacyCmsAsset(item.image, defaultCategories[0].image)}
                                         alt={label}
                                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                     />

@@ -10,6 +10,7 @@ import newChains from '../assets/new_launch_chains.png';
 import newStuds from '../assets/new_launch_studs.png';
 import newBracelets from '../assets/new_launch_bracelets.png';
 import newAnklets from '../assets/new_launch_anklets.png';
+import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 
 const newLaunches = [
     { id: 'earrings', name: "Earrings", image: newEarrings, path: "/shop", productIds: [] },
@@ -30,7 +31,7 @@ const NewLaunchSection = () => {
             ...item,
             id: item.itemId || item._id || item.id || `launch-${index}`,
             name: item.name || item.label || newLaunches[index]?.name || 'Limited Edition',
-            image: item.image || newLaunches[index]?.image || newEarrings,
+            image: resolveLegacyCmsAsset(item.image, newLaunches[index]?.image || newEarrings),
             path: productIds.length > 0
                 ? `/shop?products=${encodeURIComponent(productIds.join(','))}`
                 : (item.path || '/shop?status=coming-soon'),

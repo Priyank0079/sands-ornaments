@@ -11,6 +11,7 @@ import catEarrings from '../assets/cat_earrings_wine.png';
 import catBracelet from '../assets/cat_bracelet_wine.png';
 import catAnklet from '../assets/cat_anklet_wine.png';
 import catChain from '../assets/cat_chain_wine.png';
+import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 
 const fallbackImageMap = {
     pendants: catPendant,
@@ -80,7 +81,7 @@ const CategoryShowcase = () => {
                 return {
                     id: item.itemId || item.id || resolvedCategory._id || index,
                     name: resolvedCategory.name,
-                    image: item.image || resolvedCategory.image || resolveFallbackImage(resolvedCategory.slug || resolvedCategory.name),
+                    image: resolveLegacyCmsAsset(item.image || resolvedCategory.image, resolveFallbackImage(resolvedCategory.slug || resolvedCategory.name)),
                     path: `/shop?category=${resolvedCategory._id}`,
                     tag: item.tag || ''
                 };
@@ -92,7 +93,7 @@ const CategoryShowcase = () => {
             return baseList.slice(0, 8).map(cat => ({
                 id: cat._id,
                 name: cat.name,
-                image: cat.image || resolveFallbackImage(cat.slug || cat.name),
+                image: resolveLegacyCmsAsset(cat.image, resolveFallbackImage(cat.slug || cat.name)),
                 path: `/shop?category=${cat._id}`
             }));
         })();
@@ -105,7 +106,7 @@ const CategoryShowcase = () => {
             return baseList.slice(0, 8).map(cat => ({
                 id: cat._id,
                 name: cat.name,
-                image: cat.image || resolveFallbackImage(cat.slug || cat.name),
+                image: resolveLegacyCmsAsset(cat.image, resolveFallbackImage(cat.slug || cat.name)),
                 path: `/shop?category=${cat._id}`
             }));
         })();

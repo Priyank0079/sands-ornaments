@@ -8,6 +8,7 @@ import price999 from '../assets/price_under_999.png';
 import price1999 from '../assets/price_under_1999.png';
 import price2999 from '../assets/price_under_2999.png';
 import price3999 from '../assets/price_under_3999.png';
+import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 
 const priceRanges = [
     { id: 'under-999', name: "Under INR 999", priceMax: 999, image: price999, path: "/shop?price_max=999" },
@@ -60,6 +61,7 @@ const PriceRangeShowcase = () => {
                 id: item.itemId || item._id || item.id || `${priceMax}-${index}`,
                 priceMax,
                 name: itemLabel,
+                image: resolveLegacyCmsAsset(item.image, price999),
                 path: `/shop?price_max=${priceMax}`
             };
         })
@@ -110,7 +112,7 @@ const PriceRangeShowcase = () => {
                                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-500 z-10" />
 
                                     <img
-                                        src={item.image}
+                                        src={resolveLegacyCmsAsset(item.image, price999)}
                                         alt={itemLabel}
                                         className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-110"
                                     />

@@ -9,6 +9,7 @@ import earringsImg from '../assets/pink_earrings_1767775466166.png';
 import chainImg from '../assets/pink_chains_1767775516641.png';
 import ankletImg from '../assets/pink_anklets_1767775536388.png';
 import bannerModel from '../assets/gift_wife_silver.png';
+import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 
 const categories = [
     { id: 1, name: "Earrings", image: earringsImg, path: "/shop?sort=most-sold", limit: 12 },
@@ -34,7 +35,7 @@ const MostGifted = () => {
                     ...item,
                     id: item.itemId || item._id || item.id || `legacy-${index}`,
                     name: item.name || item.label || 'Most Gifted',
-                    image: item.image || earringsImg,
+                    image: resolveLegacyCmsAsset(item.image, earringsImg),
                     limit: Number(item.limit) || 12,
                     path: item.path
                 };
@@ -43,7 +44,7 @@ const MostGifted = () => {
                 ...item,
                 id: item.itemId || item._id || item.id || `${category._id || category.id}-${index}`,
                 name: item.name || item.label || category.name,
-                image: item.image || earringsImg,
+                image: resolveLegacyCmsAsset(item.image, earringsImg),
                 limit,
                 path: `/shop?category=${category._id || category.id}&limit=${limit}&sort=most-sold`
             };
@@ -111,7 +112,7 @@ const MostGifted = () => {
                                 >
                                     {/* Product Image */}
                                     <img
-                                        src={cat.image || earringsImg}
+                                        src={resolveLegacyCmsAsset(cat.image, earringsImg)}
                                         alt={itemLabel}
                                         className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-[2000ms] opacity-90 group-hover:opacity-100"
                                     />

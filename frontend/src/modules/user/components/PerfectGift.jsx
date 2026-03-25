@@ -10,6 +10,7 @@ import giftFriends from '../assets/gift_friends_silver.png';
 import giftWife from '../assets/gift_wife_silver.png';
 import giftSister from '../assets/gift_sister_silver.png';
 import dividerImg from '../assets/ornament-divider.png';
+import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 
 const recipients = [
     { id: 'mother', name: "Mother", image: giftMother, path: "/shop", productIds: [] },
@@ -29,7 +30,7 @@ const PerfectGift = () => {
             ...item,
             id: item.itemId || item._id || item.id || `gift-${index}`,
             name: item.name || item.label || recipients[index]?.name || 'Gift',
-            image: item.image || recipients[index]?.image || giftMother,
+            image: resolveLegacyCmsAsset(item.image, recipients[index]?.image || giftMother),
             path: productIds.length > 0
                 ? `/shop?products=${encodeURIComponent(productIds.join(','))}`
                 : (item.path || '/shop?status=coming-soon'),
