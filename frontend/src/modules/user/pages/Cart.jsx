@@ -7,10 +7,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 const Cart = () => {
     const { cart, removeFromCart, updateQuantity } = useShop();
     const navigate = useNavigate();
+    const currencyText = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
 
     const subtotal = cart.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
     const shipping = subtotal > 499 ? 0 : 50;
     const total = subtotal + shipping;
+    const gstIncluded = cart.reduce((acc, item) => acc + ((Number(item.gst || item.selectedVariant?.gst || 0)) * (item.quantity || 1)), 0);
+    const variantLabel = (item) => item.selectedVariant?.name || item.selectedVariant?.variantName || '';
+    const variantWeightLabel = (item) => {
+        const weight = item.selectedVariant?.weight;
+        const unit = item.selectedVariant?.weightUnit;
+        if (weight === undefined || weight === null || weight === '') return '';
+        return `${weight}${unit ? ` ${unit}` : ''}`;
+    };
+    const variantKey = (item) => item.variantId || item.packId || 'default';
 
     if (cart.length === 0) {
         return (
@@ -82,7 +92,7 @@ const Cart = () => {
                         <AnimatePresence mode="popLayout">
                             {cart.map((item, idx) => (
                                 <motion.div
-                                    key={item.id}
+                                    key={`${item.id}-${variantKey(item)}`}
                                     layout
                                     initial={{ opacity: 0, x: -20 }}
                                     animate={{ opacity: 1, x: 0 }}
@@ -92,7 +102,13 @@ const Cart = () => {
                                 >
                                     {/* Image */}
                                     <div className="w-20 h-24 md:w-32 md:h-40 flex-shrink-0 bg-gray-50 rounded-xl md:rounded-2xl overflow-hidden border border-gray-50">
-                                        <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                        {item.image ? (
+                                            <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center bg-[#F7F2F3] text-[#B88B90] text-[8px] md:text-xs font-bold uppercase tracking-[0.25em] text-center px-2">
+                                                No Image
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Details */}
@@ -104,6 +120,21 @@ const Cart = () => {
                                                     <span className="text-[8px] md:text-xs font-bold uppercase tracking-wider text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded-md border border-gray-100">
                                                         {item.category}
                                                     </span>
+                                                    {variantLabel(item) && (
+                                                        <span className="text-[8px] md:text-xs font-bold uppercase tracking-wider text-black bg-white border border-[#EBCDD0] px-1.5 py-0.5 rounded-md">
+                                                            {variantLabel(item)}
+                                                        </span>
+                                                    )}
+                                                    {item.selectedVariant?.variantCode && (
+                                                        <span className="text-[8px] md:text-xs font-mono text-gray-500 bg-white border border-[#EBCDD0] px-1.5 py-0.5 rounded-md">
+                                                            {item.selectedVariant.variantCode}
+                                                        </span>
+                                                    )}
+                                                    {variantWeightLabel(item) && (
+                                                        <span className="text-[8px] md:text-xs font-bold uppercase tracking-wider text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded-md border border-gray-100">
+                                                            {variantWeightLabel(item)}
+                                                        </span>
+                                                    )}
                                                     {item.selectedSize && (
                                                         <span className="text-[8px] md:text-xs font-bold uppercase tracking-wider text-black bg-white border border-[#EBCDD0] px-1.5 py-0.5 rounded-md">
                                                             Size: {item.selectedSize}
@@ -113,7 +144,7 @@ const Cart = () => {
                                                 </div>
                                             </div>
                                             <button
-                                                onClick={() => removeFromCart(item.id)}
+                                                onClick={() => removeFromCart(item.id, variantKey(item))}
                                                 className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all active:scale-90"
                                             >
                                                 <Trash2 className="w-3.5 h-3.5 md:w-5 md:h-5" strokeWidth={1.5} />
@@ -123,7 +154,7 @@ const Cart = () => {
                                         <div className="mt-auto flex items-end justify-between">
                                             <div className="flex items-center bg-gray-50 border border-gray-100 rounded-lg p-0.5 w-fit">
                                                 <button
-                                                    onClick={() => updateQuantity(item.id, -1)}
+                                                    onClick={() => updateQuantity(item.id, -1, variantKey(item))}
                                                     disabled={item.quantity <= 1}
                                                     className="w-6 h-6 md:w-9 md:h-9 flex items-center justify-center rounded-md hover:bg-white hover:shadow-sm text-gray-600 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
                                                 >
@@ -133,7 +164,7 @@ const Cart = () => {
                                                     {item.quantity || 1}
                                                 </span>
                                                 <button
-                                                    onClick={() => updateQuantity(item.id, 1)}
+                                                    onClick={() => updateQuantity(item.id, 1, variantKey(item))}
                                                     className="w-6 h-6 md:w-9 md:h-9 flex items-center justify-center rounded-md hover:bg-white hover:shadow-sm text-gray-600 transition-all"
                                                 >
                                                     <Plus className="w-3 h-3" />
@@ -141,7 +172,7 @@ const Cart = () => {
                                             </div>
                                             <div className="text-right">
                                                 <p className="text-[8px] uppercase tracking-[0.1em] font-bold text-gray-400 mb-0">Total</p>
-                                                <p className="text-sm md:text-lg font-bold text-black">₹{(item.price * (item.quantity || 1)).toLocaleString()}</p>
+                                                <p className="text-sm md:text-lg font-bold text-black">{currencyText(item.price * (item.quantity || 1))}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -172,14 +203,14 @@ const Cart = () => {
                             <div className="space-y-4">
                                 <div className="flex justify-between text-sm md:text-base font-semibold text-gray-500">
                                     <span className="uppercase tracking-widest text-[10px] md:text-xs">Subtotal</span>
-                                    <span className="text-black">₹{subtotal.toLocaleString()}</span>
+                                    <span className="text-black">{currencyText(subtotal)}</span>
                                 </div>
                                 <div className="flex justify-between text-sm md:text-base font-semibold text-gray-500">
                                     <span className="uppercase tracking-widest text-[10px] md:text-xs">Shipping</span>
                                     {shipping === 0 ? (
                                         <span className="text-emerald-600 font-bold tracking-tight">FREE</span>
                                     ) : (
-                                        <span className="text-black">₹{shipping}</span>
+                                        <span className="text-black">{currencyText(shipping)}</span>
                                     )}
                                 </div>
 
@@ -188,9 +219,11 @@ const Cart = () => {
                             <div className="pt-8 border-t border-gray-100">
                                 <div className="flex justify-between items-end mb-1">
                                     <span className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em]">Grand Total</span>
-                                    <span className="text-xl md:text-2xl font-bold text-black">₹{total.toLocaleString()}</span>
+                                    <span className="text-xl md:text-2xl font-bold text-black">{currencyText(total)}</span>
                                 </div>
-                                <p className="text-[10px] md:text-xs text-gray-400 font-medium italic">* Includes 3% GST and all applicable charges</p>
+                                <p className="text-[10px] md:text-xs text-gray-400 font-medium italic">
+                                    {gstIncluded > 0 ? `Includes ${currencyText(gstIncluded)} GST across selected items` : 'Taxes and applicable charges are included where applicable'}
+                                </p>
                             </div>
 
                             <div className="space-y-3 pt-2">

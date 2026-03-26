@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from 'react';
 import { useShop } from '../../../context/ShopContext';
 import { useAuth } from '../../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -8,6 +9,10 @@ const Checkout = () => {
     const { cart, placeOrder, addresses, addAddress, defaultAddressId, coupons, validateCoupon } = useShop();
     const { user, sendOtp, verifyOtp } = useAuth();
     const navigate = useNavigate();
+    const currencyText = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
+    const gstIncluded = cart.reduce((acc, item) => acc + ((Number(item.gst || item.selectedVariant?.gst || 0)) * (item.quantity || 1)), 0);
+    const cartItemKey = (item) => `${item.id}-${item.variantId || item.packId || 'default'}`;
+    const couponSummary = (coupon) => coupon?.description || coupon?.desc || 'Offer available on eligible items';
 
     // Login State
     const [loginStep, setLoginStep] = useState(1); // 1: Phone, 2: OTP
@@ -30,6 +35,7 @@ const Checkout = () => {
     const [paymentMethod, setPaymentMethod] = useState('online');
     const [loading, setLoading] = useState(false);
     const [addressSelection, setAddressSelection] = useState(addresses.length > 0 ? 'saved' : 'new');
+    const [selectedSavedAddressId, setSelectedSavedAddressId] = useState(defaultAddressId || null);
     const [saveNewAddress, setSaveNewAddress] = useState(false);
 
     const [showCouponModal, setShowCouponModal] = useState(false);
@@ -172,7 +178,7 @@ const Checkout = () => {
     };
 
     // Pre-fill default address if it exists
-    React.useEffect(() => {
+    useEffect(() => {
         if (user && addresses.length > 0 && defaultAddressId) {
             const defaultAddr = addresses.find(a => a._id === defaultAddressId);
             if (defaultAddr) {
@@ -189,11 +195,12 @@ const Checkout = () => {
                     pincode: defaultAddr.pincode
                 });
                 setAddressSelection('saved');
+                setSelectedSavedAddressId(defaultAddr._id);
             }
         }
     }, [user, addresses, defaultAddressId]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (cart.length === 0) {
             navigate('/cart');
         }
@@ -323,8 +330,9 @@ const Checkout = () => {
                                                     pincode: addr.pincode
                                                 });
                                                 setAddressSelection('saved');
+                                                setSelectedSavedAddressId(addr._id);
                                             }}
-                                            className={`p-5 rounded-xl border-2 cursor-pointer transition-all relative ${formData.flatNo === addr.flatNo && formData.area === addr.area ? 'border-black bg-gray-50' : 'border-gray-100 hover:border-black/30'}`}
+                                            className={`p-5 rounded-xl border-2 cursor-pointer transition-all relative ${selectedSavedAddressId === addr._id ? 'border-black bg-gray-50' : 'border-gray-100 hover:border-black/30'}`}
                                         >
                                             <div className="flex justify-between mb-3">
                                                 <div className="flex gap-2">
@@ -333,7 +341,7 @@ const Checkout = () => {
                                                         <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 bg-[#D39A9F] text-white rounded-sm">Default</span>
                                                     )}
                                                 </div>
-                                                {(formData.flatNo === addr.flatNo && formData.area === addr.area) && <div className="bg-black text-white rounded-full p-0.5"><Check className="w-3 h-3" /></div>}
+                                                {(selectedSavedAddressId === addr._id) && <div className="bg-black text-white rounded-full p-0.5"><Check className="w-3 h-3" /></div>}
                                             </div>
                                             <p className="font-bold text-black text-sm mb-1">{addr.name}</p>
                                             <p className="text-xs text-gray-500 leading-relaxed font-serif">{addr.flatNo}, {addr.area}, {addr.city}</p>
@@ -355,6 +363,7 @@ const Checkout = () => {
                                                 pincode: ''
                                             });
                                             setAddressSelection('new');
+                                            setSelectedSavedAddressId(null);
                                         }}
                                         className={`p-5 rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-gray-50 min-h-[140px] ${addressSelection === 'new' ? 'border-black bg-gray-50' : 'border-gray-200 text-gray-400'}`}
                                     >
@@ -571,14 +580,20 @@ const Checkout = () => {
                         {/* Mini Cart in Summary */}
                         <div className="max-h-60 overflow-y-auto mb-6 pr-2 space-y-5 custom-scrollbar">
                             {cart.map((item) => (
-                                <div key={item.id} className="flex gap-4">
+                                <div key={cartItemKey(item)} className="flex gap-4">
                                     <div className="w-16 h-16 bg-white rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
-                                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                                        {item.image ? (
+                                            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center bg-[#F7F2F3] text-[#B88B90] text-[8px] font-bold uppercase tracking-[0.2em] text-center px-1">
+                                                No Image
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="flex-1">
                                         <p className="text-sm font-bold text-black line-clamp-2 font-display uppercase tracking-wide text-[11px]">{item.name}</p>
                                         <p className="text-xs text-gray-500 mt-1 font-serif">Qty: {item.quantity || 1}</p>
-                                        <p className="text-sm font-bold text-black mt-1">₹{(item.price * (item.quantity || 1)).toLocaleString()}</p>
+                                        <p className="text-sm font-bold text-black mt-1">{currencyText(item.price * (item.quantity || 1))}</p>
                                     </div>
                                 </div>
                             ))}
@@ -604,7 +619,7 @@ const Checkout = () => {
                                         </div>
                                         <div>
                                             <p className="text-xs font-bold text-black uppercase tracking-wider">{appliedCoupon.code}</p>
-                                            <p className="text-[10px] text-gray-500">₹{parseFloat(discount).toFixed(0)} saved</p>
+                                            <p className="text-[10px] text-gray-500">{currencyText(parseFloat(discount).toFixed(0))} saved</p>
                                         </div>
                                     </div>
                                     <button
@@ -620,16 +635,16 @@ const Checkout = () => {
                         <div className="space-y-3 text-sm text-gray-600 mb-6 pt-4 border-t border-[#EBCDD0]">
                             <div className="flex justify-between items-center">
                                 <span className="font-serif">Subtotal</span>
-                                <span className="text-black font-bold font-sans">₹{subtotal.toLocaleString()}</span>
+                                <span className="text-black font-bold font-sans">{currencyText(subtotal)}</span>
                             </div>
                             <div className="flex justify-between items-center">
                                 <span className="font-serif">Shipping</span>
-                                <span className="font-sans font-bold">{shipping === 0 ? <span className="text-emerald-600">Free</span> : `₹${shipping}`}</span>
+                                <span className="font-sans font-bold">{shipping === 0 ? <span className="text-emerald-600">Free</span> : currencyText(shipping)}</span>
                             </div>
                             {appliedCoupon && (
                                 <div className="flex justify-between items-center text-[#D39A9F]">
                                     <span className="font-serif">Discount</span>
-                                    <span className="font-bold font-sans">- ₹{parseFloat(discount).toFixed(0)}</span>
+                                    <span className="font-bold font-sans">- {currencyText(parseFloat(discount).toFixed(0))}</span>
                                 </div>
                             )}
                         </div>
@@ -637,9 +652,11 @@ const Checkout = () => {
                         <div className="border-t border-[#EBCDD0] pt-4 mb-6">
                             <div className="flex justify-between items-center">
                                 <span className="font-bold text-lg text-black font-display uppercase tracking-wide">Total</span>
-                                <span className="font-bold text-2xl text-black font-sans">₹{total.toLocaleString()}</span>
+                                <span className="font-bold text-2xl text-black font-sans">{currencyText(total)}</span>
                             </div>
-                            <p className="text-[10px] text-gray-400 mt-1 text-right font-medium uppercase tracking-wider">Inclusive of all taxes</p>
+                            <p className="text-[10px] text-gray-400 mt-1 text-right font-medium uppercase tracking-wider">
+                                {gstIncluded > 0 ? `${currencyText(gstIncluded)} GST included in item totals` : 'Inclusive of applicable taxes'}
+                            </p>
                         </div>
 
                         <div className="bg-white p-4 rounded-xl text-xs text-gray-500 mb-6 flex gap-3 border border-gray-100 shadow-sm">
@@ -719,8 +736,8 @@ const Checkout = () => {
                                                     Apply
                                                 </button>
                                             </div>
-                                            <p className="text-sm font-bold text-black mb-0.5">Save ₹{typeof coupon.amount === 'number' ? coupon.amount.toFixed(0) : coupon.amount}</p>
-                                            <p className="text-xs text-gray-500 font-serif">{coupon.desc}</p>
+                                            <p className="text-sm font-bold text-black mb-0.5">Save {currencyText(typeof coupon.amount === 'number' ? coupon.amount.toFixed(0) : coupon.amount || coupon.value || 0)}</p>
+                                            <p className="text-xs text-gray-500 font-serif">{couponSummary(coupon)}</p>
                                         </div>
                                     ))}
                                 </div>

@@ -33,6 +33,8 @@ const normalizeProductForCart = (product = {}, selectedVariant = null) => {
         images: product.images || (product.image ? [product.image] : []),
         price: normalizedVariant.price,
         originalPrice: normalizedVariant.mrp,
+        gst: Number(normalizedVariant.gst ?? product.gst) || 0,
+        finalPrice: normalizedVariant.finalPrice,
         selectedVariant: normalizedVariant,
         variantId: normalizedVariant.id || normalizedVariant._id || null,
         variants: Array.isArray(product.variants)
@@ -413,6 +415,7 @@ export const ShopProvider = ({ children }) => {
                 id: productId, 
                 variantId: variantId, 
                 packId: variantId || productId, // For CartPage compatibility
+                gst: Number(itemBase.gst ?? itemBase.selectedVariant?.gst) || 0,
                 quantity: qty,
                 qty: qty // For CartPage compatibility
             }];
@@ -422,7 +425,9 @@ export const ShopProvider = ({ children }) => {
 
     const updateQuantity = (productId, amount, variantId) => {
         setCart((prev) => prev.map((item) => {
-            if (item.id === productId && (!variantId || item.variantId === variantId)) {
+            const itemVariantKey = item.variantId || item.packId || null;
+            const targetVariantKey = variantId || null;
+            if (item.id === productId && (targetVariantKey === null || itemVariantKey === targetVariantKey)) {
                 const newQuantity = Math.max(1, item.quantity + amount);
                 return { ...item, quantity: newQuantity, qty: newQuantity };
             }
@@ -471,9 +476,27 @@ export const ShopProvider = ({ children }) => {
     };
 
     const removeFromCart = (userId, productId) => {
-        // Handle both (productId) and (userId, productId)
-        const idToRemove = typeof userId === 'string' && productId ? productId : userId;
-        setCart((prev) => prev.filter(item => item.id !== idToRemove && item.packId !== idToRemove && item.variantId !== idToRemove));
+        // Supports removeFromCart(productId), removeFromCart(productId, variantId), and legacy signatures.
+        if (typeof userId === 'object' && userId !== null) {
+            const productIdToRemove = userId.productId || userId.id;
+            const variantIdToRemove = userId.variantId || userId.packId || null;
+            setCart((prev) => prev.filter((item) => !(item.id === productIdToRemove && (variantIdToRemove == null || (item.variantId || item.packId) === variantIdToRemove))));
+            return;
+        }
+
+        setCart((prev) => prev.filter((item) => {
+            if (!productId) {
+                return item.id !== userId && item.packId !== userId && item.variantId !== userId;
+            }
+
+            const matchesVariantScopedRemoval = item.id === userId && (item.variantId || item.packId) === productId;
+            if (matchesVariantScopedRemoval) return false;
+
+            const matchesLegacyRemoval = item.id === productId || item.packId === productId || item.variantId === productId;
+            if (matchesLegacyRemoval) return false;
+
+            return true;
+        }));
     };
 
     const removeFromWishlist = async (productId) => {
