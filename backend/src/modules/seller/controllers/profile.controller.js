@@ -126,12 +126,15 @@ exports.changePassword = async (req, res) => {
 
 exports.getMetalPricing = async (req, res) => {
   try {
-    const seller = await Seller.findById(req.user.userId).select("metalRates");
+    const seller = await Seller.findById(req.user.userId).select("metalRates updatedAt");
     if (!seller) return error(res, "Seller not found", 404);
     const settings = await Setting.findOne();
+    const sellerProductCount = await Product.countDocuments({ sellerId: req.user.userId });
     return success(res, {
       metalRates: seller.metalRates || {},
-      gstRate: settings?.gstRate || 0
+      gstRate: settings?.gstRate || 0,
+      sellerProductCount,
+      updatedAt: seller.updatedAt || null
     }, "Metal pricing retrieved");
   } catch (err) { return error(res, err.message); }
 };
@@ -159,6 +162,12 @@ exports.updateMetalPricing = async (req, res) => {
       await product.save();
     }
 
-    return success(res, { metalRates: seller.metalRates, gstRate }, "Metal pricing updated successfully");
+    const sellerProductCount = products.length;
+    return success(res, {
+      metalRates: seller.metalRates,
+      gstRate,
+      sellerProductCount,
+      updatedAt: seller.updatedAt || null
+    }, "Metal pricing updated successfully");
   } catch (err) { return error(res, err.message); }
 };

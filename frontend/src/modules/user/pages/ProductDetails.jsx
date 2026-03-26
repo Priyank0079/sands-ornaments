@@ -258,6 +258,7 @@ const ProductDetails = () => {
     const pricingSubtotal = Number(pricingBreakdown.metalPrice || 0) + Number(pricingBreakdown.makingCharge || 0) + Number(pricingBreakdown.diamondPrice || 0);
     const gstPercent = pricingSubtotal > 0 ? Math.round((Number(pricingBreakdown.gst || 0) / pricingSubtotal) * 10000) / 100 : 0;
     const supplierName = product?.sellerId?.shopName || product?.supplierInfo || product?.brand || '';
+    const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString()}`;
 
     return (
         <div className="bg-white min-h-screen py-8 pb-24 md:pb-8 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out fill-mode-both selection:bg-[#D39A9F] selection:text-white">
@@ -388,6 +389,7 @@ const ProductDetails = () => {
                             <p className="text-xs text-gray-500 font-medium">Inclusive of all taxes</p>
                         </div>
 
+                        {false && (
                         <div className="border-b border-gray-100 pb-6">
                             <div className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-3">Price Breakdown</div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
@@ -411,6 +413,33 @@ const ProductDetails = () => {
                             <div className="mt-4 flex items-center justify-between border-t border-gray-200 pt-4">
                                 <span className="text-sm font-bold uppercase tracking-widest text-gray-500">Final Price</span>
                                 <span className="text-lg font-bold text-black">â‚¹{Number(pricingBreakdown.finalPrice || variantPrice || 0).toLocaleString()}</span>
+                            </div>
+                        </div>
+                        )}
+
+                        <div className="border-b border-gray-100 pb-6">
+                            <div className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-3">Price Breakdown</div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                                <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
+                                    <span className="text-gray-600">Metal Price</span>
+                                    <span className="font-semibold text-gray-900">{formatCurrency(pricingBreakdown.metalPrice)}</span>
+                                </div>
+                                <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
+                                    <span className="text-gray-600">Making Charge</span>
+                                    <span className="font-semibold text-gray-900">{formatCurrency(pricingBreakdown.makingCharge)}</span>
+                                </div>
+                                <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
+                                    <span className="text-gray-600">Diamond Price</span>
+                                    <span className="font-semibold text-gray-900">{formatCurrency(pricingBreakdown.diamondPrice)}</span>
+                                </div>
+                                <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
+                                    <span className="text-gray-600">GST ({gstPercent}%)</span>
+                                    <span className="font-semibold text-gray-900">{formatCurrency(pricingBreakdown.gst)}</span>
+                                </div>
+                            </div>
+                            <div className="mt-4 flex items-center justify-between border-t border-gray-200 pt-4">
+                                <span className="text-sm font-bold uppercase tracking-widest text-gray-500">Final Price</span>
+                                <span className="text-lg font-bold text-black">{formatCurrency(pricingBreakdown.finalPrice || variantPrice || 0)}</span>
                             </div>
                         </div>
 

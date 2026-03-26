@@ -6,12 +6,9 @@ import PageHeader from '../../admin/components/common/PageHeader';
 import { FormSection, Input, Select, TextArea } from '../../admin/components/common/FormControls';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
-import { sellerProductService } from '../../seller/services/sellerProductService';
-import { sellerService } from '../../seller/services/sellerService';
 import api from '../../../services/api';
 import toast from 'react-hot-toast';
 import { downloadImage, downloadSvgNode, downloadTextFile } from '../../../utils/downloadUtils';
-import { useShop } from '../../../context/ShopContext';
 
 const quillModules = {
     toolbar: [
@@ -254,14 +251,13 @@ const SharedProductEditor = ({
         return fallback.map(label => ({ label, value: toSlugValue(label) }));
     };
 
-    const { globalGst } = useShop();
     const [metalRates, setMetalRates] = useState({
         goldPerGram: 0,
         goldPerMilligram: 0,
         silverPerGram: 0,
         silverPerMilligram: 0
     });
-    const [gstRate, setGstRate] = useState(parseFloat(globalGst) || 0);
+    const [gstRate, setGstRate] = useState(0);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -322,21 +318,14 @@ const SharedProductEditor = ({
         { label: 'Milligrams', value: 'Milligrams' }
     ];
 
-    const resolvedProductApi = productApi || {
-        getProduct: sellerProductService.getSellerProductRaw,
-        createProduct: sellerProductService.addProduct,
-        updateProduct: sellerProductService.updateProduct
-    };
-
-    const resolvedMetalPricingApi = metalPricingApi || {
-        getMetalPricing: sellerService.getMetalPricing
-    };
+    const resolvedProductApi = productApi;
+    const resolvedMetalPricingApi = metalPricingApi;
 
     useEffect(() => {
         const loadCategories = async () => {
             try {
                 const [categoryResult, cmsRes] = await Promise.all([
-                    categoryApi ? categoryApi() : api.get('public/categories'),
+                    categoryApi ? categoryApi() : Promise.resolve([]),
                     api.get('public/cms/homepage').catch(() => null)
                 ]);
                 const list = Array.isArray(categoryResult)
@@ -359,6 +348,7 @@ const SharedProductEditor = ({
     useEffect(() => {
         const loadPricing = async () => {
             try {
+                if (!resolvedMetalPricingApi?.getMetalPricing) return;
                 const res = await resolvedMetalPricingApi.getMetalPricing();
                 if (res?.metalRates) {
                     setMetalRates({
@@ -411,6 +401,7 @@ const SharedProductEditor = ({
                 return;
             }
             try {
+                if (!resolvedProductApi?.getProduct) return;
                 const data = await resolvedProductApi.getProduct(id);
                 if (data) {
                     const normalizedCategories = (data.categories || []).map(c => ({
