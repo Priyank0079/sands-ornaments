@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+﻿import React, { useMemo, useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
 import { useAuth } from '../../../context/AuthContext';
@@ -129,7 +129,9 @@ const ProductDetails = () => {
     const handleReviewSubmit = async () => {
         if (!reviewTitle.trim() && !reviewComment.trim() && rating === 0) return;
         if (!user) {
-            toast.error('Please login to submit a review');
+            const redirectPath = `${window.location.pathname}${window.location.search}`;
+            toast.error('Please login to write a review');
+            navigate(`/login?redirect=${encodeURIComponent(redirectPath)}`);
             return;
         }
 
@@ -271,8 +273,10 @@ const ProductDetails = () => {
     const supplierName = product?.sellerId?.shopName || product?.supplierInfo || product?.brand || '';
     const currencyText = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
     const primaryImage = selectedImage || product.image || product.images?.[0] || null;
-    const reviewCount = product?.reviewCount ?? product?.reviews ?? reviews.length ?? 0;
-    const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString()}`;
+    const reviewCount = product?.reviewCount ?? reviews.length ?? 0;
+    const averageRating = Number(product?.rating || 0);
+    const hasReviews = reviewCount > 0 && averageRating > 0;
+    const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
 
     return (
         <div className="bg-white min-h-screen py-8 pb-24 md:pb-8 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out fill-mode-both selection:bg-[#D39A9F] selection:text-white">
@@ -371,9 +375,11 @@ const ProductDetails = () => {
                             <div className="flex items-center gap-4 text-sm px-1">
                                 <div className="flex items-center text-[#D39A9F]">
                                     {[...Array(5)].map((_, i) => (
-                                        <Star key={i} className={`w-3.5 h-3.5 ${i < Math.round(product.rating) ? 'fill-current' : 'text-gray-300'} `} />
+                                        <Star key={i} className={`w-3.5 h-3.5 ${i < Math.round(averageRating) ? 'fill-current' : 'text-gray-300'} `} />
                                     ))}
-                                    <span className="ml-2 text-gray-500 font-medium">({reviewCount} Reviews)</span>
+                                    <span className="ml-2 text-gray-500 font-medium">
+                                        {hasReviews ? `(${reviewCount} Reviews)` : '(No reviews yet)'}
+                                    </span>
                                 </div>
 
                             </div>
@@ -415,24 +421,24 @@ const ProductDetails = () => {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                                 <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
                                     <span className="text-gray-600">Metal Price</span>
-                                    <span className="font-semibold text-gray-900">â‚¹{Number(pricingBreakdown.metalPrice || 0).toLocaleString()}</span>
+                                    <span className="font-semibold text-gray-900">{currencyText(pricingBreakdown.metalPrice || 0)}</span>
                                 </div>
                                 <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
                                     <span className="text-gray-600">Making Charge</span>
-                                    <span className="font-semibold text-gray-900">â‚¹{Number(pricingBreakdown.makingCharge || 0).toLocaleString()}</span>
+                                    <span className="font-semibold text-gray-900">{currencyText(pricingBreakdown.makingCharge || 0)}</span>
                                 </div>
                                 <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
                                     <span className="text-gray-600">Diamond Price</span>
-                                    <span className="font-semibold text-gray-900">â‚¹{Number(pricingBreakdown.diamondPrice || 0).toLocaleString()}</span>
+                                    <span className="font-semibold text-gray-900">{currencyText(pricingBreakdown.diamondPrice || 0)}</span>
                                 </div>
                                 <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
                                     <span className="text-gray-600">GST ({gstPercent}%)</span>
-                                    <span className="font-semibold text-gray-900">â‚¹{Number(pricingBreakdown.gst || 0).toLocaleString()}</span>
+                                    <span className="font-semibold text-gray-900">{currencyText(pricingBreakdown.gst || 0)}</span>
                                 </div>
                             </div>
                             <div className="mt-4 flex items-center justify-between border-t border-gray-200 pt-4">
                                 <span className="text-sm font-bold uppercase tracking-widest text-gray-500">Final Price</span>
-                                <span className="text-lg font-bold text-black">â‚¹{Number(pricingBreakdown.finalPrice || variantPrice || 0).toLocaleString()}</span>
+                                <span className="text-lg font-bold text-black">{currencyText(pricingBreakdown.finalPrice || variantPrice || 0)}</span>
                             </div>
                         </div>
                         )}
@@ -841,13 +847,22 @@ const ProductDetails = () => {
                                 ))}
                             </div>
                             <span className="text-lg font-medium text-gray-800 flex items-center gap-1">
-                                {reviewCount} Reviews
+                                {hasReviews ? `${reviewCount} Reviews` : 'No reviews yet'}
                                 <ChevronDown className="w-4 h-4 text-gray-500" />
                             </span>
                         </div>
                         <div className="flex gap-3 relative w-full md:w-auto">
                             <button
-                                onClick={() => { setIsWriteReviewOpen(true); setReviewStep(1); }}
+                                onClick={() => {
+                                    if (!user) {
+                                        const redirectPath = `${window.location.pathname}${window.location.search}`;
+                                        toast.error('Please login to write a review');
+                                        navigate(`/login?redirect=${encodeURIComponent(redirectPath)}`);
+                                        return;
+                                    }
+                                    setIsWriteReviewOpen(true);
+                                    setReviewStep(1);
+                                }}
                                 className="flex-1 md:flex-none border border-gray-300 px-4 py-2.5 rounded text-sm font-bold uppercase tracking-widest text-black hover:border-black hover:bg-black hover:text-white transition-colors text-center"
                             >
                                 Write a review
@@ -918,6 +933,9 @@ const ProductDetails = () => {
 
                         {/* Modal Content */}
                         <div className="p-4 md:p-6">
+                            <div className="mb-6 rounded-xl border border-[#EBCDD0] bg-[#FDF7F8] px-4 py-3 text-xs md:text-sm text-gray-600">
+                                Reviews can be submitted only for delivered purchases and will appear after approval.
+                            </div>
                             {/* Step Indicators */}
                             <div className="flex justify-center gap-2 mb-6 md:mb-8">
                                 {[1, 2, 3].map((step) => (
@@ -1037,3 +1055,4 @@ const ProductDetails = () => {
 };
 
 export default ProductDetails;
+

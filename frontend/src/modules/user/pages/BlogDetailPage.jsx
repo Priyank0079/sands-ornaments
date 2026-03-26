@@ -3,6 +3,8 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Calendar } from 'lucide-react';
 import api from '../../../services/api';
 
+const blogFallbackImage = 'https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?auto=format&fit=crop&q=80&w=900';
+
 const BlogDetailPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -87,11 +89,9 @@ const BlogDetailPage = () => {
         </div>
 
         <div className="overflow-hidden rounded-[2.5rem] border border-[#3E2723]/8 shadow-sm bg-white">
-          {blog.coverImage && (
-            <div className="aspect-[16/8] bg-gray-100">
-              <img src={blog.coverImage} alt={blog.title} className="w-full h-full object-cover" />
-            </div>
-          )}
+          <div className="aspect-[16/8] bg-gray-100">
+            <img src={blog.coverImage || blogFallbackImage} alt={blog.title} className="w-full h-full object-cover" />
+          </div>
 
           <div className="p-8 md:p-14">
             <div

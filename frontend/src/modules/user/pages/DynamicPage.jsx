@@ -37,6 +37,9 @@ const DynamicPage = ({ slug: propSlug }) => {
         }
     }, [page]);
 
+    const updatedAtLabel = page?.lastUpdated || page?.updatedAt || page?.createdAt || null;
+    const hasContent = Boolean(String(page?.content || '').trim());
+
     if (loading) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDF5F6]">
@@ -64,7 +67,6 @@ const DynamicPage = ({ slug: propSlug }) => {
     return (
         <div className="min-h-screen bg-[#FDF5F6] selection:bg-[#3E2723] selection:text-white pb-20">
             <div className="container mx-auto px-4 max-w-4xl pt-12 md:pt-20">
-                {/* Back Link */}
                 <button
                     onClick={() => navigate(-1)}
                     className="flex items-center gap-2 text-black/40 hover:text-black transition-all group font-bold uppercase tracking-widest text-[10px] mb-8"
@@ -73,30 +75,39 @@ const DynamicPage = ({ slug: propSlug }) => {
                     Back
                 </button>
 
-                {/* Header */}
                 <div className="text-center mb-16 md:mb-24 animate-in fade-in slide-in-from-bottom-4 duration-700">
                     <h1 className="text-5xl md:text-7xl font-display text-black mb-6 leading-tight">
                         {page.title}
                     </h1>
                     <div className="w-24 h-0.5 bg-[#3E2723]/10 mx-auto mb-6"></div>
-                    <div className="flex items-center justify-center gap-4 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-black/30">
-                        <div className="flex items-center gap-2">
-                            <Clock size={14} />
-                            <span>Last updated {new Date(page.lastUpdated).toLocaleDateString()}</span>
+                    {updatedAtLabel && (
+                        <div className="flex items-center justify-center gap-4 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-black/30">
+                            <div className="flex items-center gap-2">
+                                <Clock size={14} />
+                                <span>Last updated {new Date(updatedAtLabel).toLocaleDateString()}</span>
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
 
-                {/* Content */}
                 <div className="bg-white rounded-[2.5rem] p-8 md:p-16 shadow-sm border border-[#3E2723]/5 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
-                    <div 
-                        className="prose prose-lg prose-stone max-w-none 
-                        prose-headings:font-display prose-headings:text-black 
-                        prose-p:text-gray-600 prose-p:leading-relaxed prose-p:font-serif
-                        prose-li:text-gray-600 prose-li:font-serif
-                        prose-strong:text-black prose-strong:font-bold"
-                        dangerouslySetInnerHTML={{ __html: page.content }}
-                    />
+                    {hasContent ? (
+                        <div 
+                            className="prose prose-lg prose-stone max-w-none 
+                            prose-headings:font-display prose-headings:text-black 
+                            prose-p:text-gray-600 prose-p:leading-relaxed prose-p:font-serif
+                            prose-li:text-gray-600 prose-li:font-serif
+                            prose-strong:text-black prose-strong:font-bold"
+                            dangerouslySetInnerHTML={{ __html: page.content }}
+                        />
+                    ) : (
+                        <div className="rounded-[1.5rem] border border-dashed border-[#3E2723]/10 bg-[#FDF5F6] px-6 py-12 text-center">
+                            <h2 className="text-2xl font-display text-black mb-3">Content coming soon</h2>
+                            <p className="text-gray-500 font-serif">
+                                This page has been created, but the content has not been published yet.
+                            </p>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

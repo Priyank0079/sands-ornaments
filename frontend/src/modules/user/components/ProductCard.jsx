@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Heart, ShoppingBag, Star } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
 import { Link, useNavigate } from 'react-router-dom';
@@ -37,6 +37,9 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
     const collectionLabel = categoryLabel
         ? `925 ${metalLabel} ${categoryLabel}`
         : `925 ${metalLabel} Jewellery`;
+    const ratingValue = Number(product.rating || 0);
+    const reviewCount = Number(product.reviewCount ?? product.reviews ?? 0);
+    const hasReviews = reviewCount > 0 && ratingValue > 0;
 
     const handleAddToCart = (e) => {
         e.preventDefault();
@@ -115,7 +118,7 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
                         <span className="absolute top-2 md:top-4 right-0 bg-gradient-to-r from-[#D39A9F] to-[#4A1015] text-white text-[7px] md:text-[10px] font-bold px-2 py-0.5 md:px-3 md:py-1 shadow-sm tracking-widest z-10" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%, 8px 50%)', paddingLeft: '12px' }}>
                             NEW
                         </span>
-                    ) : product.rating >= 4.5 ? (
+                    ) : hasReviews && ratingValue >= 4.5 ? (
                         <span className="absolute top-2 md:top-4 right-0 bg-gradient-to-r from-[#D39A9F] to-[#4A1015] text-white text-[7px] md:text-[10px] font-bold px-2 py-0.5 md:px-3 md:py-1 shadow-sm tracking-widest z-10" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%, 8px 50%)', paddingLeft: '12px' }}>
                             TRENDING
                         </span>
@@ -137,9 +140,9 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
 
                     {/* Rating Badge - Bottom Left (Image Overlay) */}
                     <div className="absolute bottom-2 left-2 bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded flex items-center gap-1 shadow-sm z-10 w-fit">
-                        <span className="text-[10px] font-bold text-black">{product.rating || 4.8}</span>
+                        <span className="text-[10px] font-bold text-black">{hasReviews ? ratingValue.toFixed(1) : 'New'}</span>
                         <Star className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
-                        <span className="text-[10px] text-gray-500 border-l border-gray-300 pl-1 ml-0.5">{product.reviews || 133}</span>
+                        <span className="text-[10px] text-gray-500 border-l border-gray-300 pl-1 ml-0.5">{hasReviews ? reviewCount : 'No reviews'}</span>
                     </div>
                 </div>
 
@@ -199,3 +202,4 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
 };
 
 export default ProductCard;
+

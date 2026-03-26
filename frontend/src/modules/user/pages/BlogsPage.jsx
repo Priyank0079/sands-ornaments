@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import api from '../../../services/api';
 
 const stripHtml = (html = '') => html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+const blogFallbackImage = 'https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?auto=format&fit=crop&q=80&w=900';
 
 const BlogsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -64,7 +65,7 @@ const BlogsPage = () => {
               <article key={blog._id} className="bg-white rounded-[2rem] border border-[#3E2723]/8 overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col">
                 <Link to={`/blogs/${blog.slug}`} className="block aspect-[4/3] bg-gray-100 overflow-hidden">
                   <img
-                    src={blog.coverImage || 'https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?auto=format&fit=crop&q=80&w=900'}
+                    src={blog.coverImage || blogFallbackImage}
                     alt={blog.title}
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
                   />
