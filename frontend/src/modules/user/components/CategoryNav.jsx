@@ -95,14 +95,22 @@ const CategoryNav = () => {
         { id: 'about', name: 'About Us', path: '/about', type: 'link' }
     ];
 
-    const visibleCategories = dynamicCategories.filter(
-        (c) => c.isActive !== false && c.showInNavbar !== false
+    const visibleCategories = useMemo(() => (
+        dynamicCategories.filter((c) => c.isActive !== false && c.showInNavbar !== false)
+    ), [dynamicCategories]);
+
+    const getCategoriesByMetal = (metal) => (
+        visibleCategories.filter((c) => c.metal?.toLowerCase() === metal.toLowerCase())
     );
 
-    const getCategoriesByMetal = (metal) => {
-        const byMetal = visibleCategories.filter(c => c.metal?.toLowerCase() === metal.toLowerCase());
-        return byMetal;
-    };
+    const getMetalCategoryCards = (metal) => (
+        getCategoriesByMetal(metal).map((cat) => ({
+            id: cat._id || cat.id,
+            name: cat.name,
+            path: `/shop?category=${cat._id || cat.id}`,
+            image: cat.image || ''
+        }))
+    );
 
     return (
         <div className="bg-[#4A1015] border-b border-white/5 hidden md:block sticky top-[65px] z-40 shadow-xl font-sans">
@@ -146,11 +154,7 @@ const CategoryNav = () => {
                                                         >
                                                             {/* Gold Collection */}
                                                             <button 
-                                                                onClick={() => {
-                                                                    setHoveredCategory(null);
-                                                                    setSelectedMetal(null);
-                                                                    navigate('/gold-collection');
-                                                                }}
+                                                                onClick={() => setSelectedMetal('gold')}
                                                                 className="group relative bg-[#FDFBF7] border border-gray-100 rounded-[2rem] p-10 text-center transition-all hover:shadow-2xl hover:shadow-[#D4AF37]/10 hover:-translate-y-1 overflow-hidden"
                                                             >
                                                                 <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
@@ -183,40 +187,15 @@ const CategoryNav = () => {
                                                             </button>
                                                         </motion.div>
                                                     ) : (
-                                                        selectedMetal === 'gold' ? (
-                                                            <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-300">
-                                                                <div className="flex items-center justify-between border-b border-gray-100 pb-6">
-                                                                    <div className="flex items-center gap-4">
-                                                                        <div className="w-12 h-12 rounded-full flex items-center justify-center bg-[#D4AF37] transition-transform">
-                                                                            <span className="text-white font-black text-xs italic">Au</span>
-                                                                        </div>
-                                                                        <div>
-                                                                            <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">Gold Collection</h3>
-                                                                            <p className="text-[10px] font-bold text-[#D39A9F] uppercase tracking-[0.2em]">Exclusive line coming soon</p>
-                                                                        </div>
-                                                                    </div>
-                                                                    <button 
-                                                                        onClick={() => setSelectedMetal(null)}
-                                                                        className="text-[10px] font-black uppercase tracking-widest text-[#D39A9F] hover:text-black transition-colors flex items-center gap-2"
-                                                                    >
-                                                                        <ArrowLeft className="w-4 h-4" /> Back to Metals
-                                                                    </button>
-                                                                </div>
-                                                                <div className="flex flex-col items-center justify-center py-12 space-y-4">
-                                                                    <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center">
-                                                                        <div className="w-12 h-12 border-2 border-dashed border-[#D39A9F] rounded-full animate-spin" />
-                                                                    </div>
-                                                                    <div className="text-center space-y-2">
-                                                                        <h4 className="font-display text-3xl text-black">Gold Collection</h4>
-                                                                        <p className="text-gray-400 font-serif italic text-sm">We're crafting something special. Check back soon.</p>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        ) : (
+                                                        (() => {
+                                                            const list = getMetalCategoryCards(selectedMetal);
+                                                            const hasCategories = list.length > 0;
+
+                                                            return (
                                                             <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-300">
                                                                 <div className="flex items-center justify-between border-b border-gray-100 pb-6">
                                                                 <Link 
-                                                                    to={`/shop?metal=${selectedMetal}`}
+                                                                    to={hasCategories ? `/shop?metal=${selectedMetal}` : '/gold-collection'}
                                                                     onClick={() => { setHoveredCategory(null); setSelectedMetal(null); }}
                                                                     className="flex items-center gap-4 group/header"
                                                                 >
@@ -225,7 +204,9 @@ const CategoryNav = () => {
                                                                     </div>
                                                                     <div>
                                                                         <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight group-hover/header:text-[#D39A9F] transition-colors">{selectedMetal} Collection</h3>
-                                                                        <p className="text-[10px] font-bold text-[#D39A9F] uppercase tracking-[0.2em]">Explore our dynamic {selectedMetal} range</p>
+                                                                        <p className="text-[10px] font-bold text-[#D39A9F] uppercase tracking-[0.2em]">
+                                                                            {hasCategories ? `Explore our dynamic ${selectedMetal} range` : 'Exclusive line coming soon'}
+                                                                        </p>
                                                                     </div>
                                                                 </Link>
                                                                     <button 
@@ -236,14 +217,7 @@ const CategoryNav = () => {
                                                                     </button>
                                                                 </div>
 
-                                                                {(() => {
-                                                                    const list = getCategoriesByMetal(selectedMetal).map((cat) => ({
-                                                                        id: cat._id,
-                                                                        name: cat.name,
-                                                                        path: `/shop?category=${cat._id}`,
-                                                                        image: cat.image || ''
-                                                                    }));
-                                                                    return list.length > 0 ? (
+                                                                {hasCategories ? (
                                                                     <motion.div 
                                                                         initial={{ opacity: 0, y: 20 }}
                                                                         animate={{ opacity: 1, y: 0 }}
@@ -269,14 +243,18 @@ const CategoryNav = () => {
                                                                             <div className="w-10 h-10 border-2 border-dashed border-[#D39A9F] rounded-full animate-spin" />
                                                                         </div>
                                                                         <div className="text-center">
-                                                                            <h4 className="font-display text-2xl text-black">Coming Soon</h4>
-                                                                            <p className="text-gray-400 font-serif italic text-sm">We're expanding our {selectedMetal} collection. Stay tuned!</p>
+                                                                            <h4 className="font-display text-2xl text-black">{selectedMetal === 'gold' ? 'Gold Collection' : 'Coming Soon'}</h4>
+                                                                            <p className="text-gray-400 font-serif italic text-sm">
+                                                                                {selectedMetal === 'gold'
+                                                                                    ? "We're crafting something special. Check back soon."
+                                                                                    : `We're expanding our ${selectedMetal} collection. Stay tuned!`}
+                                                                            </p>
                                                                         </div>
                                                                     </div>
-                                                                    );
-                                                                })()}
+                                                                    )}
                                                             </div>
-                                                        )
+                                                            );
+                                                        })()
                                                     )}
                                                 </div>
                                             ) : (

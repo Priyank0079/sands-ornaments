@@ -37,10 +37,13 @@ const Navbar = () => {
         };
 
         return {
-            shopByCategory: [
-                ...getCategoriesByMetal('silver'),
-                { name: "All Products", path: "/shop" }
-            ],
+            shopByCategory: {
+                silver: [
+                    ...getCategoriesByMetal('silver'),
+                    { name: "All Products", path: "/shop" }
+                ],
+                gold: getCategoriesByMetal('gold')
+            },
             giftsFor: normalizeItems(sectionGifts, [
                 { name: "Womens", path: "/shop?filter=womens" },
                 { name: "Girls", path: "/shop?filter=girls" },
@@ -218,16 +221,16 @@ const Navbar = () => {
                                                 >
                                                     {!mobileSelectedMetal ? (
                                                         <div className="grid grid-cols-2 gap-3 pl-4 py-3">
-                                                            <Link 
-                                                                to="/gold-collection"
-                                                                onClick={() => { toggleMenu(false); setMobileSelectedMetal(null); }}
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setMobileSelectedMetal('gold')}
                                                                 className="flex flex-col items-center justify-center p-4 bg-[#FDFBF7] border border-gray-100 rounded-2xl hover:bg-[#D4AF37]/5 transition-colors text-center"
                                                             >
                                                                 <div className="w-10 h-10 bg-[#D4AF37] rounded-full flex items-center justify-center mb-2 shadow-sm">
                                                                     <span className="text-white font-black text-xs">Au</span>
                                                                 </div>
                                                                 <span className="text-[10px] font-black text-black uppercase">GOLD</span>
-                                                            </Link>
+                                                            </button>
                                                             <button 
                                                                 onClick={() => setMobileSelectedMetal('silver')}
                                                                 className="flex flex-col items-center justify-center p-4 bg-[#FDFBF7] border border-gray-100 rounded-2xl hover:bg-gray-100 transition-colors"
@@ -241,7 +244,9 @@ const Navbar = () => {
                                                     ) : (
                                                         <div className="space-y-3">
                                                             <div className="flex items-center justify-between pl-4 pr-2">
-                                                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Silver Items</span>
+                                                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                                                    {mobileSelectedMetal === 'gold' ? 'Gold Items' : 'Silver Items'}
+                                                                </span>
                                                                 <button 
                                                                     onClick={() => setMobileSelectedMetal(null)}
                                                                     className="text-xs text-[#D39A9F]"
@@ -249,15 +254,29 @@ const Navbar = () => {
                                                                     Change
                                                                 </button>
                                                             </div>
-                                                            <ul className="pl-4 py-2 space-y-3">
-                                                                {sidebarMenu.shopByCategory.map((item, idx) => (
-                                                                    <li key={idx}>
-                                                                        <Link to={item.path} onClick={() => { toggleMenu(false); setMobileSelectedMetal(null); }} className="text-gray-600 text-sm hover:text-[#D39A9F] block">
-                                                                            {item.name}
-                                                                        </Link>
-                                                                    </li>
-                                                                ))}
-                                                            </ul>
+                                                            {sidebarMenu.shopByCategory[mobileSelectedMetal]?.length > 0 ? (
+                                                                <ul className="pl-4 py-2 space-y-3">
+                                                                    {sidebarMenu.shopByCategory[mobileSelectedMetal].map((item, idx) => (
+                                                                        <li key={idx}>
+                                                                            <Link to={item.path} onClick={() => { toggleMenu(false); setMobileSelectedMetal(null); }} className="text-gray-600 text-sm hover:text-[#D39A9F] block">
+                                                                                {item.name}
+                                                                            </Link>
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                            ) : (
+                                                                <div className="pl-4 py-4 pr-2 space-y-2">
+                                                                    <p className="text-sm font-semibold text-black">Coming Soon</p>
+                                                                    <p className="text-xs text-gray-500">Gold categories will appear here as soon as they are added.</p>
+                                                                    <Link
+                                                                        to="/gold-collection"
+                                                                        onClick={() => { toggleMenu(false); setMobileSelectedMetal(null); }}
+                                                                        className="inline-flex text-xs font-bold uppercase tracking-wider text-[#D39A9F] hover:text-black transition-colors"
+                                                                    >
+                                                                        View Gold Update
+                                                                    </Link>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     )}
                                                 </motion.div>
