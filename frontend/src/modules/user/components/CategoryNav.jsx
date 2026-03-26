@@ -243,12 +243,8 @@ const CategoryNav = () => {
                                                                             <div className="w-10 h-10 border-2 border-dashed border-[#D39A9F] rounded-full animate-spin" />
                                                                         </div>
                                                                         <div className="text-center">
-                                                                            <h4 className="font-display text-2xl text-black">{selectedMetal === 'gold' ? 'Gold Collection' : 'Coming Soon'}</h4>
-                                                                            <p className="text-gray-400 font-serif italic text-sm">
-                                                                                {selectedMetal === 'gold'
-                                                                                    ? "We're crafting something special. Check back soon."
-                                                                                    : `We're expanding our ${selectedMetal} collection. Stay tuned!`}
-                                                                            </p>
+                                                                            <h4 className="font-display text-2xl text-black">Coming Soon</h4>
+                                                                            <p className="text-gray-400 font-serif italic text-sm">We're expanding our {selectedMetal} collection. Stay tuned!</p>
                                                                         </div>
                                                                     </div>
                                                                     )}

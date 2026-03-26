@@ -3,11 +3,14 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
 import ProductCard from '../components/ProductCard';
 import ProductSkeleton from '../components/ProductSkeleton';
-import { 
-    Filter, ChevronDown, Check, Star, 
-    ArrowRight, ShoppingBag, X, SlidersHorizontal,
+import {
+    Filter, ChevronDown, ShoppingBag, SlidersHorizontal,
     ArrowLeft, ArrowUpDown
 } from 'lucide-react';
+
+const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
+
+const currencyText = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
 
 const Shop = () => {
     const { products, categories, isLoading } = useShop();
@@ -36,6 +39,68 @@ const Shop = () => {
     const limitQuery = queryParams.get('limit');
     const sortQuery = queryParams.get('sort');
     const searchQuery = queryParams.get('search');
+
+    useEffect(() => {
+        const categoryQuery = queryParams.get('category');
+        const parsedPrice = Number(String(priceMaxQuery || '').replace(/[^0-9]/g, ''));
+
+        if (categoryQuery) {
+            const categoryFromQuery = categories.find((c) => (
+                c._id === categoryQuery ||
+                c.id === categoryQuery ||
+                c.slug === categoryQuery ||
+                c.path === categoryQuery ||
+                c.name === categoryQuery
+            ));
+            if (categoryFromQuery && selectedCategory !== categoryFromQuery.name) {
+                setSelectedCategory(categoryFromQuery.name);
+            }
+        } else if (selectedCategory !== 'All') {
+            setSelectedCategory('All');
+        }
+
+        setFilterNewArrivals(location.pathname === '/new-arrivals');
+        setFilterTrending(location.pathname === '/trending');
+
+        if (sortQuery === 'most-sold' && sortBy !== 'Best Selling') {
+            setSortBy('Best Selling');
+        } else if (sortQuery === 'latest' && sortBy !== 'Newest') {
+            setSortBy('Newest');
+        } else if (sortQuery === 'price-asc' && sortBy !== 'Price: Low to High') {
+            setSortBy('Price: Low to High');
+        } else if (sortQuery === 'price-desc' && sortBy !== 'Price: High to Low') {
+            setSortBy('Price: High to Low');
+        }
+
+        if (Number.isFinite(parsedPrice) && parsedPrice > 0) {
+            if (priceRange !== parsedPrice) {
+                setPriceRange(parsedPrice);
+            }
+        } else if (priceRange !== 50000) {
+            setPriceRange(50000);
+        }
+    }, [location.search, location.pathname, categories]);
+
+    const updateShopQuery = (updates = {}, pathOverride = location.pathname) => {
+        const params = new URLSearchParams(location.search);
+
+        Object.entries(updates).forEach(([key, value]) => {
+            if (
+                value === undefined ||
+                value === null ||
+                value === '' ||
+                value === false ||
+                value === 'All'
+            ) {
+                params.delete(key);
+            } else {
+                params.set(key, String(value));
+            }
+        });
+
+        const nextSearch = params.toString();
+        navigate(`${pathOverride}${nextSearch ? `?${nextSearch}` : ''}`, { replace: true });
+    };
 
     // Effect to handle URL-based Logic + Local Category Filter
     useEffect(() => {
@@ -77,19 +142,13 @@ const Shop = () => {
             return copy;
         };
 
-        let categoryQueryObj = null;
-        if (categoryQuery) {
-            categoryQueryObj = categories.find(c => (
-                c._id === categoryQuery ||
-                c.id === categoryQuery ||
-                c.name === categoryQuery ||
-                c.slug === categoryQuery ||
-                c.path === categoryQuery
-            )) || null;
-            if (categoryQueryObj && selectedCategory !== categoryQueryObj.name) {
-                setSelectedCategory(categoryQueryObj.name);
-            }
-        }
+        const categoryQueryObj = categoryQuery ? categories.find(c => (
+            c._id === categoryQuery ||
+            c.id === categoryQuery ||
+            c.name === categoryQuery ||
+            c.slug === categoryQuery ||
+            c.path === categoryQuery
+        )) || null : null;
 
         const matchesCategory = (product, value, cat) => {
             if (!value && !cat) return true;
@@ -150,9 +209,6 @@ const Shop = () => {
 
         if (priceMaxQuery) {
             const parsedPrice = Number(String(priceMaxQuery).replace(/[^0-9]/g, ''));
-            if (Number.isFinite(parsedPrice) && parsedPrice > 0 && priceRange !== parsedPrice) {
-                setPriceRange(parsedPrice);
-            }
             title = `Under INR ${parsedPrice}`;
         }
         if (productsQuery) {
@@ -287,6 +343,61 @@ const Shop = () => {
     // Handle Category Change
     const handleCategoryChange = (val) => {
         setSelectedCategory(val);
+        const selectedCat = categories.find((cat) => cat.name === val);
+        updateShopQuery({
+            category: val === 'All' ? null : (selectedCat?._id || selectedCat?.id || selectedCat?.slug || selectedCat?.path || val)
+        });
+    };
+
+    const handleSortChange = (option) => {
+        setSortBy(option);
+        const sortMap = {
+            'Newest': 'latest',
+            'Best Selling': 'most-sold',
+            'Price: Low to High': 'price-asc',
+            'Price: High to Low': 'price-desc'
+        };
+        updateShopQuery({ sort: sortMap[option] || null });
+    };
+
+    const handlePriceRangeChange = (value) => {
+        const nextValue = Number(value);
+        setPriceRange(nextValue);
+        updateShopQuery({ price_max: nextValue >= 50000 ? null : nextValue });
+    };
+
+    const handleCollectionToggle = (type, checked) => {
+        if (type === 'new-arrivals') {
+            if (checked) {
+                setFilterNewArrivals(true);
+                setFilterTrending(false);
+                navigate(`/new-arrivals${location.search || ''}`, { replace: true });
+            } else {
+                setFilterNewArrivals(false);
+                navigate(`/shop${location.search || ''}`, { replace: true });
+            }
+            return;
+        }
+
+        if (type === 'trending') {
+            if (checked) {
+                setFilterTrending(true);
+                setFilterNewArrivals(false);
+                navigate(`/trending${location.search || ''}`, { replace: true });
+            } else {
+                setFilterTrending(false);
+                navigate(`/shop${location.search || ''}`, { replace: true });
+            }
+        }
+    };
+
+    const clearAllFilters = () => {
+        setSelectedCategory('All');
+        setFilterNewArrivals(false);
+        setFilterTrending(false);
+        setPriceRange(50000);
+        setSortBy('Newest');
+        navigate('/shop');
     };
 
     return (
@@ -326,7 +437,7 @@ const Shop = () => {
                                     {['Newest', 'Price: High to Low', 'Price: Low to High', 'Best Selling'].map((option) => (
                                         <button
                                             key={option}
-                                            onClick={() => { setSortBy(option); setIsWebSortOpen(false); }}
+                                            onClick={() => { handleSortChange(option); setIsWebSortOpen(false); }}
                                             className={`w-full text-left px-4 py-2.5 text-sm hover:bg-[#FDF5F6] transition-colors flex items-center justify-between group ${sortBy === option ? 'text-black font-bold bg-[#FDF5F6]' : 'text-gray-600'}`}
                                         >
                                             <span>{option}</span>
@@ -370,7 +481,7 @@ const Shop = () => {
                                     We're currently handcrafting new exquisite designs for <span className="text-black font-semibold">{selectedCategory}</span>. Stay tuned!
                                 </p>
                                 <button 
-                                    onClick={() => { setSelectedCategory('All'); navigate('/shop'); }}
+                                    onClick={clearAllFilters}
                                     className="bg-black text-white px-8 py-3 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-[#D39A9F] transition-all shadow-lg"
                                 >
                                     Explore Other Collections
@@ -394,7 +505,7 @@ const Shop = () => {
                             <h3 className="text-2xl font-serif text-black mb-2">No products found</h3>
                             <p className="text-gray-500">Try adjusting your filters to find your perfect match.</p>
                             <button 
-                                onClick={() => { setSelectedCategory('All'); setPriceRange(10000); navigate('/shop'); }} 
+                                onClick={clearAllFilters} 
                                 className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#D39A9F] hover:underline"
                             >
                                 <SlidersHorizontal className="w-4 h-4" /> Clear all filters
@@ -423,7 +534,7 @@ const Shop = () => {
                         <Filter className="w-3 h-3" /> Filter
                     </span>
                     <span className="text-[10px] text-gray-600 font-medium mt-0.5">
-                        {(selectedCategory !== 'All' || filterNewArrivals || filterTrending || priceRange < 10000) ? 'Filters applied' : 'No filter applied'}
+                        {(selectedCategory !== 'All' || filterNewArrivals || filterTrending || priceRange < 50000 || !!searchQuery || !!filterQuery || !!occasionQuery) ? 'Filters applied' : 'No filter applied'}
                     </span>
                 </button>
             </div>
@@ -494,7 +605,7 @@ const Shop = () => {
                                     <input
                                         type="checkbox"
                                         checked={filterNewArrivals}
-                                        onChange={(e) => setFilterNewArrivals(e.target.checked)}
+                                        onChange={(e) => handleCollectionToggle('new-arrivals', e.target.checked)}
                                         className="rounded border-gray-300 text-black focus:ring-[#D39A9F] h-4 w-4"
                                     />
                                     <span className={`text-sm group-hover:text-black transition-colors ${filterNewArrivals ? 'text-black font-medium' : 'text-gray-600'}`}>
@@ -505,7 +616,7 @@ const Shop = () => {
                                     <input
                                         type="checkbox"
                                         checked={filterTrending}
-                                        onChange={(e) => setFilterTrending(e.target.checked)}
+                                        onChange={(e) => handleCollectionToggle('trending', e.target.checked)}
                                         className="rounded border-gray-300 text-black focus:ring-[#D39A9F] h-4 w-4"
                                     />
                                     <span className={`text-sm group-hover:text-black transition-colors ${filterTrending ? 'text-black font-medium' : 'text-gray-600'}`}>
@@ -517,34 +628,19 @@ const Shop = () => {
 
                         {/* 2. Price Filter */}
                         <div className="pt-6 border-t border-[#EBCDD0]">
-                            <h4 className="font-bold text-black text-sm uppercase tracking-wider mb-4">Max Price: ₹{priceRange.toLocaleString()}</h4>
+                            <h4 className="font-bold text-black text-sm uppercase tracking-wider mb-4">Max Price: {currencyText(priceRange)}</h4>
                             <input
                                 type="range"
                                 min="500"
-                                max="10000"
+                                max="50000"
                                 step="500"
                                 value={priceRange}
-                                onChange={(e) => setPriceRange(Number(e.target.value))}
+                                onChange={(e) => handlePriceRangeChange(e.target.value)}
                                 className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#D39A9F]"
                             />
                             <div className="flex justify-between text-xs text-gray-600 mt-2">
-                                <span>₹500</span>
-                                <span>₹10,000+</span>
-                            </div>
-                        </div>
-
-                        {/* 3. Availability (Mock) */}
-                        <div>
-                            <h4 className="font-bold text-black text-sm uppercase tracking-wider mb-4">Availability</h4>
-                            <div className="space-y-3">
-                                <label className="flex items-center space-x-3 cursor-pointer">
-                                    <input type="checkbox" className="rounded border-gray-300 text-black focus:ring-[#D39A9F]" defaultChecked />
-                                    <span className="text-sm text-gray-600">In Stock</span>
-                                </label>
-                                <label className="flex items-center space-x-3 cursor-pointer">
-                                    <input type="checkbox" className="rounded border-gray-300 text-black focus:ring-[#D39A9F]" />
-                                    <span className="text-sm text-gray-600">Out of Stock</span>
-                                </label>
+                                <span>{currencyText(500)}</span>
+                                <span>{currencyText(50000)}+</span>
                             </div>
                         </div>
                     </div>
@@ -552,7 +648,7 @@ const Shop = () => {
                     {/* Sidebar Footer */}
                     <div className="p-6 border-t border-[#EBCDD0] bg-white">
                         <button
-                            onClick={() => { setSelectedCategory('All'); setFilterNewArrivals(false); setFilterTrending(false); setPriceRange(10000); }}
+                            onClick={clearAllFilters}
                             className="w-full py-3 border border-[#EBCDD0] text-black font-medium rounded-lg hover:bg-[#FDF5F6] hover:shadow-sm transition-all text-sm mb-3"
                         >
                             Reset Filters
@@ -578,7 +674,7 @@ const Shop = () => {
                             {['Newest', 'Price: High to Low', 'Price: Low to High', 'Best Selling'].map((option) => (
                                 <button
                                     key={option}
-                                    onClick={() => { setSortBy(option); setIsSortOpen(false); }}
+                                    onClick={() => { handleSortChange(option); setIsSortOpen(false); }}
                                     className="w-full flex items-center justify-between text-left py-2 group"
                                 >
                                     <span className={`text-sm transition-colors ${sortBy === option ? 'font-bold text-black' : 'text-gray-600 group-hover:text-black'}`}>{option}</span>

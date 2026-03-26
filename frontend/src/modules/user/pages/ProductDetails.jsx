@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
 import { useAuth } from '../../../context/AuthContext';
@@ -33,7 +33,7 @@ const AccordionItem = ({ title, children, isOpen, onClick }) => (
 const ProductDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { addToCart, removeFromCart, cart, addToWishlist, removeFromWishlist, wishlist, products, isLoading } = useShop();
+    const { addToCart, addToWishlist, removeFromWishlist, wishlist, products, isLoading } = useShop();
     const { user } = useAuth();
     const catalogueProduct = (products || []).find(p => String(p.id || p._id) === String(id));
     const [detailProduct, setDetailProduct] = useState(null);
@@ -112,6 +112,19 @@ const ProductDetails = () => {
     const [reviews, setReviews] = useState([]);
     const [reviewTitle, setReviewTitle] = useState('');
     const [reviewComment, setReviewComment] = useState('');
+    const sortedReviews = useMemo(() => {
+        const parseReviewDate = (value) => {
+            if (!value) return 0;
+            const [day, month, year] = String(value).split('/');
+            return new Date(`${year}-${month}-${day}`).getTime() || 0;
+        };
+
+        const list = [...reviews];
+        if (sortBy === 'Newest') return list.sort((a, b) => parseReviewDate(b.date) - parseReviewDate(a.date));
+        if (sortBy === 'Highest Ratings') return list.sort((a, b) => b.rating - a.rating);
+        if (sortBy === 'Lowest Ratings') return list.sort((a, b) => a.rating - b.rating);
+        return list.sort((a, b) => (b.rating - a.rating) || (parseReviewDate(b.date) - parseReviewDate(a.date)));
+    }, [reviews, sortBy]);
 
     const handleReviewSubmit = async () => {
         if (!reviewTitle.trim() && !reviewComment.trim() && rating === 0) return;
@@ -171,8 +184,6 @@ const ProductDetails = () => {
     // Derived State
     const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
     const isWishlisted = safeWishlist.some(item => item.id === product?.id);
-    const discount = product ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
-
     const toggleSection = (section) => {
         setOpenSection(openSection === section ? null : section);
     };
@@ -258,6 +269,9 @@ const ProductDetails = () => {
     const pricingSubtotal = Number(pricingBreakdown.metalPrice || 0) + Number(pricingBreakdown.makingCharge || 0) + Number(pricingBreakdown.diamondPrice || 0);
     const gstPercent = pricingSubtotal > 0 ? Math.round((Number(pricingBreakdown.gst || 0) / pricingSubtotal) * 10000) / 100 : 0;
     const supplierName = product?.sellerId?.shopName || product?.supplierInfo || product?.brand || '';
+    const currencyText = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
+    const primaryImage = selectedImage || product.image || product.images?.[0] || null;
+    const reviewCount = product?.reviewCount ?? product?.reviews ?? reviews.length ?? 0;
     const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString()}`;
 
     return (
@@ -298,9 +312,9 @@ const ProductDetails = () => {
 
 
             {/* Flying Image Animation Element */}
-            {flying && (
+            {flying && primaryImage && (
                 <img
-                    src={product.image}
+                    src={primaryImage}
                     alt=""
                     className={`fixed z-[9999] w-64 h-64 object-cover shadow-2xl pointer-events-none border-4 border-white ${flyingType === 'cart' ? 'animate-fly-cart' : 'animate-fly-heart'}`}
                     style={{ left: '50%', top: '50%' }}
@@ -313,7 +327,13 @@ const ProductDetails = () => {
                     <div className="relative space-y-4">
                         {/* Main Large Image */}
                         <div className="h-[350px] lg:h-[480px] w-full bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm relative group">
-                            <img src={selectedImage || product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-500 hover:scale-105 cursor-zoom-in" />
+                            {primaryImage ? (
+                                <img src={primaryImage} alt={product.name} className="w-full h-full object-cover transition-transform duration-500 hover:scale-105 cursor-zoom-in" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-[#F7F2F3] text-[#B88B90] text-xs font-bold uppercase tracking-[0.25em]">
+                                    No Image
+                                </div>
+                            )}
                             <div className="absolute top-3 right-3 md:top-4 md:right-4 flex flex-col gap-2 z-10">
                                 <button className="bg-white/90 p-2 md:p-2.5 rounded-full shadow-md hover:bg-[#D39A9F] hover:text-white text-black transition-all">
                                     <Share2 className="w-4 h-4 md:w-5 md:h-5" strokeWidth={1.5} />
@@ -353,7 +373,7 @@ const ProductDetails = () => {
                                     {[...Array(5)].map((_, i) => (
                                         <Star key={i} className={`w-3.5 h-3.5 ${i < Math.round(product.rating) ? 'fill-current' : 'text-gray-300'} `} />
                                     ))}
-                                    <span className="ml-2 text-gray-500 font-medium">({product.reviews} Reviews)</span>
+                                    <span className="ml-2 text-gray-500 font-medium">({reviewCount} Reviews)</span>
                                 </div>
 
                             </div>
@@ -378,10 +398,10 @@ const ProductDetails = () => {
 
                         <div className="border-b border-gray-100 pb-6">
                             <div className="flex items-baseline gap-3 mb-1">
-                                <span className="text-2xl md:text-3xl font-bold md:font-semibold text-black">₹{variantPrice.toLocaleString()}</span>
+                                <span className="text-2xl md:text-3xl font-bold md:font-semibold text-black">{currencyText(variantPrice)}</span>
                                 {variantMrp > variantPrice && (
                                     <>
-                                        <span className="text-base md:text-lg text-gray-400 line-through font-medium">₹{variantMrp.toLocaleString()}</span>
+                                        <span className="text-base md:text-lg text-gray-400 line-through font-medium">{currencyText(variantMrp)}</span>
                                         <span className="bg-black text-white text-[10px] font-bold px-2 py-1 rounded-sm tracking-wider">SAVE {variantDiscount}%</span>
                                     </>
                                 )}
@@ -422,24 +442,24 @@ const ProductDetails = () => {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                                 <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
                                     <span className="text-gray-600">Metal Price</span>
-                                    <span className="font-semibold text-gray-900">{formatCurrency(pricingBreakdown.metalPrice)}</span>
+                                    <span className="font-semibold text-gray-900">{currencyText(pricingBreakdown.metalPrice)}</span>
                                 </div>
                                 <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
                                     <span className="text-gray-600">Making Charge</span>
-                                    <span className="font-semibold text-gray-900">{formatCurrency(pricingBreakdown.makingCharge)}</span>
+                                    <span className="font-semibold text-gray-900">{currencyText(pricingBreakdown.makingCharge)}</span>
                                 </div>
                                 <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
                                     <span className="text-gray-600">Diamond Price</span>
-                                    <span className="font-semibold text-gray-900">{formatCurrency(pricingBreakdown.diamondPrice)}</span>
+                                    <span className="font-semibold text-gray-900">{currencyText(pricingBreakdown.diamondPrice)}</span>
                                 </div>
                                 <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
                                     <span className="text-gray-600">GST ({gstPercent}%)</span>
-                                    <span className="font-semibold text-gray-900">{formatCurrency(pricingBreakdown.gst)}</span>
+                                    <span className="font-semibold text-gray-900">{currencyText(pricingBreakdown.gst)}</span>
                                 </div>
                             </div>
                             <div className="mt-4 flex items-center justify-between border-t border-gray-200 pt-4">
                                 <span className="text-sm font-bold uppercase tracking-widest text-gray-500">Final Price</span>
-                                <span className="text-lg font-bold text-black">{formatCurrency(pricingBreakdown.finalPrice || variantPrice || 0)}</span>
+                                <span className="text-lg font-bold text-black">{currencyText(pricingBreakdown.finalPrice || variantPrice || 0)}</span>
                             </div>
                         </div>
 
@@ -779,7 +799,7 @@ const ProductDetails = () => {
                             className={`pb-4 text-sm md:text-base font-bold uppercase tracking-[0.15em] transition-all relative ${activeTab === 'recent' ? 'text-black' : 'text-gray-400 hover:text-gray-600'}`}
                             onClick={() => setActiveTab('recent')}
                         >
-                            Recently viewed
+                            More to explore
                             {activeTab === 'recent' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-black animate-in fade-in slide-in-from-left-2 duration-300"></span>}
                         </button>
                     </div>
@@ -821,7 +841,7 @@ const ProductDetails = () => {
                                 ))}
                             </div>
                             <span className="text-lg font-medium text-gray-800 flex items-center gap-1">
-                                {product.reviews} Reviews
+                                {reviewCount} Reviews
                                 <ChevronDown className="w-4 h-4 text-gray-500" />
                             </span>
                         </div>
@@ -863,7 +883,7 @@ const ProductDetails = () => {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                        {reviews.map((review, idx) => (
+                        {sortedReviews.map((review, idx) => (
                             <div key={idx} className="bg-white p-4 md:p-6 rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
                                 <div className="flex justify-between items-start mb-2">
                                     <div>

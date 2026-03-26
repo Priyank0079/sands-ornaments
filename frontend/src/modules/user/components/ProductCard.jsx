@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
 import { Heart, ShoppingBag, Star } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+
+const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
 
 const ProductCard = ({ product, isWishlistPage = false }) => {
     const { addToCart, addToWishlist, removeFromWishlist, wishlist } = useShop();
+    const navigate = useNavigate();
     const [flying, setFlying] = useState(false);
     const [flyingType, setFlyingType] = useState('cart'); // 'cart' or 'heart'
+    const currencyText = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
 
     const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
     const isWishlisted = safeWishlist.some(item => item.id === product.id);
-    const primaryImage = product.image || product.images?.[0] || '';
+    const primaryImage = product.image || product.images?.[0] || null;
 
     const variantPrices = (product.variants || [])
         .map(v => Number(v.price))
@@ -28,6 +32,11 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
     const discount = effectiveOriginalPrice > effectivePrice
         ? Math.round(((effectiveOriginalPrice - effectivePrice) / effectiveOriginalPrice) * 100)
         : 0;
+    const categoryLabel = product.category || '';
+    const metalLabel = product.metal?.toLowerCase() === 'gold' ? 'Gold' : 'Silver';
+    const collectionLabel = categoryLabel
+        ? `925 ${metalLabel} ${categoryLabel}`
+        : `925 ${metalLabel} Jewellery`;
 
     const handleAddToCart = (e) => {
         e.preventDefault();
@@ -75,7 +84,7 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
             </style>
 
             {/* Flying Image Animation Element */}
-            {flying && (
+            {flying && primaryImage && (
                 <img
                     src={primaryImage}
                     alt=""
@@ -88,11 +97,17 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
                 {/* Image Container */}
                 <div className="relative aspect-square md:aspect-[5/4] max-h-[160px] md:max-h-none overflow-hidden bg-[#F5F5F5] shrink-0">
                     <div className="block w-full h-full">
-                        <img
-                            src={primaryImage}
-                            alt={product.name}
-                            className="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-110"
-                        />
+                        {primaryImage ? (
+                            <img
+                                src={primaryImage}
+                                alt={product.name}
+                                className="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-110"
+                            />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-[#F7F2F3] text-[#B88B90] text-[10px] md:text-xs font-bold uppercase tracking-[0.25em]">
+                                No Image
+                            </div>
+                        )}
                     </div>
 
                     {/* Dynamic Badges */}
@@ -106,9 +121,9 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
                         </span>
                     ) : null}
 
-                    {/* Tag: 9 to 5 Silver Jewellery - Top Left (Hidden on Mobile) */}
+                    {/* Dynamic Collection Tag - Top Left (Hidden on Mobile) */}
                     <div className="hidden md:block absolute top-4 left-2 bg-white/95 backdrop-blur-md px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-[#4A1015] rounded-sm shadow-md z-20 border border-[#4A1015]/10">
-                        9 to 5 Silver Jewellery
+                        {collectionLabel}
                     </div>
 
                     {/* Wishlist Heart - Bottom Right */}
@@ -128,15 +143,15 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
                     </div>
                 </div>
 
-                <div className={`${isWishlistPage ? 'p-1.5 md:p-3' : 'p-1.5 md:p-3'} text-left flex flex-col flex-1 pb-1.5 md:pb-2`}>
+                <div className={`${isWishlistPage ? 'p-2 md:p-3.5' : 'p-1.5 md:p-3'} text-left flex flex-col flex-1 pb-1.5 md:pb-2`}>
 
                     {/* Price Section first */}
                     <div className="flex items-baseline gap-2 mb-1">
                         <span className={`text-black font-bold ${isWishlistPage ? 'text-sm' : 'text-base'}`}>
-                            {variantCount > 1 ? `From ₹${Number(fromPrice || 0).toLocaleString()}` : `₹${Number(product.price || 0).toLocaleString()}`}
+                            {variantCount > 1 ? `From ${currencyText(fromPrice)}` : currencyText(product.price || 0)}
                         </span>
                         {effectiveOriginalPrice > effectivePrice && (
-                            <span className="text-gray-400 line-through text-xs">₹{Number(effectiveOriginalPrice || 0).toLocaleString()}</span>
+                            <span className="text-gray-400 line-through text-xs">{currencyText(effectiveOriginalPrice)}</span>
                         )}
                     </div>
 
@@ -147,19 +162,28 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
                     )}
 
                     {/* Title */}
-                    <h3 className={`text-black font-serif ${isWishlistPage ? 'text-sm' : 'text-base md:text-lg'} font-medium leading-tight mb-2 line-clamp-2`}>
+                    <h3 className={`text-black font-serif ${isWishlistPage ? 'text-sm md:text-base' : 'text-base md:text-lg'} font-medium leading-tight mb-2 line-clamp-2`}>
                         {product.name}
                     </h3>
 
-                    {/* Caring Tips Short Link */}
-                    <Link 
-                        to={`/product/${product.id}#care`}
-                        className="text-[10px] font-bold text-[#D39A9F] uppercase tracking-widest hover:text-[#4A1015] transition-colors flex items-center gap-1 mt-auto pb-2"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <span>Caring Tips</span>
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#D39A9F]" />
-                    </Link>
+                    {isWishlistPage ? (
+                        <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-auto pb-2">
+                            Saved for later
+                        </div>
+                    ) : (
+                        <button
+                            type="button"
+                            className="text-[10px] font-bold text-[#D39A9F] uppercase tracking-widest hover:text-[#4A1015] transition-colors flex items-center gap-1 mt-auto pb-2"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                navigate(`/product/${product.id}#care`);
+                            }}
+                        >
+                            <span>Caring Tips</span>
+                            <div className="w-1.5 h-1.5 rounded-full bg-[#D39A9F]" />
+                        </button>
+                    )}
                 </div>
 
                 {/* Add to Cart Button - Full Width Flush Bottom with Premium Gradient */}

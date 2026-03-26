@@ -2,7 +2,7 @@ import React from 'react';
 import ProductCard from '../components/ProductCard';
 import { useShop } from '../../../context/ShopContext';
 import { Link, useNavigate } from 'react-router-dom';
-import { Heart, ArrowLeft, Sparkles } from 'lucide-react';
+import { Heart, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Wishlist = () => {
@@ -34,9 +34,9 @@ const Wishlist = () => {
                         <div className="w-24 h-24 bg-[#EBCDD0]/20 rounded-full flex items-center justify-center mb-8 shadow-inner border border-[#EBCDD0]">
                             <Heart className="w-10 h-10 text-[#D39A9F]" fill="none" strokeWidth={1.5} />
                         </div>
-                        <h2 className="text-2xl md:text-3xl font-serif font-bold text-black mb-4">Your Boutique is Empty</h2>
+                        <h2 className="text-2xl md:text-3xl font-serif font-bold text-black mb-4">Your Wishlist is Empty</h2>
                         <p className="text-gray-500 mb-10 max-w-sm leading-relaxed text-sm md:text-base">
-                            Explore our exquisite collection and tap the heart icon to save your favorite ornaments here.
+                            Explore our collection and tap the heart icon to save the pieces you want to revisit here.
                         </p>
                         <Link
                             to="/shop"
@@ -63,7 +63,7 @@ const Wishlist = () => {
                                     }}
                                     className="relative flex justify-center"
                                 >
-                                    <ProductCard product={product} />
+                                    <ProductCard product={product} isWishlistPage />
                                 </motion.div>
                             ))}
                         </AnimatePresence>

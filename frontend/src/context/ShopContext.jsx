@@ -165,16 +165,31 @@ export const ShopProvider = ({ children }) => {
                 const normalized = (list || []).map((item) => {
                     const variants = item.variants || [];
                     const firstVariant = variants[0] || {};
+                    const rawCategory = Array.isArray(item.categories) ? item.categories[0] : null;
+                    const categoryName = typeof rawCategory === 'string' ? rawCategory : (rawCategory?.name || item.category || '');
+                    const categoryId = rawCategory?._id || rawCategory?.id || item.categoryId || '';
+                    const categorySlug = rawCategory?.slug || item.categorySlug || '';
+                    const metal = rawCategory?.metal || item.metal || '';
                     return {
                         ...item,
                         id: item._id || item.id,
-                        price: item.price ?? firstVariant.price ?? 0,
-                        originalPrice: item.originalPrice ?? firstVariant.mrp ?? 0,
-                        image: item.image || item.images?.[0] || '',
-                        images: item.images || [],
+                        price: item.price ?? item.finalPrice ?? firstVariant.price ?? firstVariant.finalPrice ?? 0,
+                        originalPrice: item.originalPrice ?? item.mrp ?? firstVariant.mrp ?? firstVariant.price ?? 0,
+                        image: item.image || item.images?.[0] || firstVariant.image || '',
+                        images: item.images || (item.image ? [item.image] : []),
                         rating: item.rating || 0,
-                        reviews: item.reviewCount || 0,
-                        variants: variants.map(v => ({ ...v, id: v._id || v.id }))
+                        reviews: item.reviewCount || item.reviews || 0,
+                        category: categoryName,
+                        categoryId,
+                        categorySlug,
+                        metal,
+                        variants: variants.map(v => ({
+                            ...v,
+                            id: v._id || v.id,
+                            image: v.image || item.image || item.images?.[0] || '',
+                            price: Number(v.price ?? v.finalPrice) || 0,
+                            mrp: Number(v.mrp ?? v.price ?? v.finalPrice) || 0
+                        }))
                     };
                 });
                 setWishlist(normalized);
@@ -442,8 +457,8 @@ export const ShopProvider = ({ children }) => {
 
     const addToWishlist = async (product) => {
         if (!user) {
-            toast.error("Please login to add to wishlist");
-            window.location.href = "/login";
+            toast.error("Please login to save items to your wishlist");
+            window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
             return;
         }
         try {
