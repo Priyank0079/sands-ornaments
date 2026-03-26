@@ -20,22 +20,29 @@ const newLaunches = [
     { id: 'anklets', name: "Anklets", image: newAnklets, path: "/shop", productIds: [] }
 ];
 
+const resolveLaunchPath = (item, fallbackPath = '/shop') => {
+    const productIds = Array.isArray(item?.productIds) ? item.productIds.filter(Boolean) : [];
+    if (productIds.length > 0) {
+        return `/shop?products=${encodeURIComponent(productIds.join(','))}`;
+    }
+
+    if (item?.path) return item.path;
+    return fallbackPath;
+};
+
 const NewLaunchSection = () => {
     const { homepageSections } = useShop();
 
     const sectionData = homepageSections?.['new-launch'];
     const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
     const normalizedConfiguredItems = configuredItems.map((item, index) => {
-        const productIds = Array.isArray(item.productIds) ? item.productIds.filter(Boolean) : [];
         return {
             ...item,
             id: item.itemId || item._id || item.id || `launch-${index}`,
             name: item.name || item.label || newLaunches[index]?.name || 'Limited Edition',
             image: resolveLegacyCmsAsset(item.image, newLaunches[index]?.image || newEarrings),
-            path: productIds.length > 0
-                ? `/shop?products=${encodeURIComponent(productIds.join(','))}`
-                : (item.path || '/shop?status=coming-soon'),
-            productIds
+            path: resolveLaunchPath(item, newLaunches[index]?.path || '/shop'),
+            productIds: Array.isArray(item.productIds) ? item.productIds.filter(Boolean) : []
         };
     });
     const displayItems = normalizedConfiguredItems.length > 0 ? normalizedConfiguredItems : newLaunches;
@@ -68,7 +75,7 @@ const NewLaunchSection = () => {
                 <div className="flex flex-wrap md:flex-nowrap justify-center gap-6 md:gap-8">
                     {displayItems.map((item, index) => {
                         const itemLabel = item.name || item.label;
-                        const itemPath = item.path || '/shop?status=coming-soon';
+                        const itemPath = item.path || '/shop';
 
                         const key = item.itemId || item._id || item.id || itemLabel || index;
                         return (

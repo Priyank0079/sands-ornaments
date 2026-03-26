@@ -49,21 +49,19 @@ const OccasionalSpecial = () => {
     const displayItems = normalizedConfiguredItems.length > 0 ? normalizedConfiguredItems : defaultCategories;
 
     // Helper to get item safe
-    const getItem = (index, fallback) => {
+    const getItem = (index) => {
         const item = displayItems[index];
+        if (!item) return null;
         return {
-            name: item?.name || item?.label || fallback.name,
-            image: item?.image || fallback.image,
-            path: buildPath(item, fallback)
+            name: item?.name || item?.label || 'Curated Pick',
+            image: resolveLegacyCmsAsset(item?.image, defaultCategories[0].image),
+            path: buildPath(item, defaultCategories[0])
         };
     };
 
     // Extract first 5 for the main layout
-    const item1 = getItem(0, defaultCategories[0]);
-    const item2 = getItem(1, defaultCategories[1]);
-    const item3 = getItem(2, defaultCategories[2]);
-    const item4 = getItem(3, defaultCategories[3]);
-    const item5 = getItem(4, defaultCategories[4]);
+    const heroItems = displayItems.slice(0, 5).map((_, index) => getItem(index)).filter(Boolean);
+    const [item1, item2, item3, item4, item5] = heroItems;
 
     return (
         <section className="py-4 md:py-12 bg-white">
@@ -99,6 +97,7 @@ const OccasionalSpecial = () => {
                 </div>
 
                 {/* Desktop View: Grid Layout (Existing) */}
+                {heroItems.length >= 5 && (
                 <div className="hidden md:grid grid-cols-3 gap-6 auto-rows-[250px]">
                     {/* Column 1 - Stacked */}
                     <div className="flex flex-col gap-6 h-full md:row-span-2">
@@ -139,6 +138,7 @@ const OccasionalSpecial = () => {
                         </Link>
                     </div>
                 </div>
+                )}
 
                 {/* Additional Items Grid */}
                 {displayItems.length > 5 && (

@@ -19,22 +19,29 @@ const recipients = [
     { id: 'sister', name: "Sister", image: giftSister, path: "/shop", productIds: [] }
 ];
 
+const resolveGiftPath = (item, fallbackPath = '/shop') => {
+    const productIds = Array.isArray(item?.productIds) ? item.productIds.filter(Boolean) : [];
+    if (productIds.length > 0) {
+        return `/shop?products=${encodeURIComponent(productIds.join(','))}`;
+    }
+
+    if (item?.path) return item.path;
+    return fallbackPath;
+};
+
 const PerfectGift = () => {
     const { homepageSections } = useShop();
 
     const sectionData = homepageSections?.['perfect-gift'];
     const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
     const normalizedConfiguredItems = configuredItems.map((item, index) => {
-        const productIds = Array.isArray(item.productIds) ? item.productIds.filter(Boolean) : [];
         return {
             ...item,
             id: item.itemId || item._id || item.id || `gift-${index}`,
             name: item.name || item.label || recipients[index]?.name || 'Gift',
             image: resolveLegacyCmsAsset(item.image, recipients[index]?.image || giftMother),
-            path: productIds.length > 0
-                ? `/shop?products=${encodeURIComponent(productIds.join(','))}`
-                : (item.path || '/shop?status=coming-soon'),
-            productIds
+            path: resolveGiftPath(item, recipients[index]?.path || '/shop'),
+            productIds: Array.isArray(item.productIds) ? item.productIds.filter(Boolean) : []
         };
     });
     const displayItems = normalizedConfiguredItems.length > 0 ? normalizedConfiguredItems : recipients;

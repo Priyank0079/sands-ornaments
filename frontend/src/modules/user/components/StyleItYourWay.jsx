@@ -82,7 +82,7 @@ const StyleItYourWay = () => {
         const limit = item.limit ? Number(item.limit) : 12;
         const path = productIds.length > 0
             ? `/shop?products=${encodeURIComponent(productIds.join(','))}`
-            : `/shop?limit=${limit}&sort=random`;
+            : (item.path || `/shop?limit=${limit}&sort=random`);
         const extraImages = Array.isArray(item.extraImages) ? item.extraImages.filter(Boolean) : [];
         return {
             id: item.itemId || item._id || item.id || `style-${index}`,

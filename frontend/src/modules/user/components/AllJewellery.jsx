@@ -1,17 +1,24 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingBag } from 'lucide-react';
-import { products } from '../assets/data';
+import { useShop } from '../../../context/ShopContext';
 import ProductCard from './ProductCard';
 
 const AllJewellery = () => {
-    // Show 4 rows of 4 products (16 total)
-    const displayProducts = products.slice(0, 16);
+    const { products = [] } = useShop();
+
+    const displayProducts = useMemo(() => {
+        return [...products]
+            .filter((product) => product?.id && product?.name)
+            .sort((a, b) => new Date(b.createdAt || b.updatedAt || 0) - new Date(a.createdAt || a.updatedAt || 0))
+            .slice(0, 16);
+    }, [products]);
+
+    if (displayProducts.length === 0) return null;
 
     return (
         <section className="py-8 md:py-24 bg-white">
             <div className="container mx-auto px-2 md:px-4">
-                {/* Header - Centered for Mobile, Original for Desktop */}
                 <div className="flex flex-col md:flex-row md:justify-between items-center md:items-end text-center md:text-left mb-10 md:mb-16 gap-6">
                     <div className="flex flex-col items-center md:items-start">
                         <span className="text-[10px] md:text-sm uppercase tracking-[0.4em] text-[#C9A24D] font-bold mb-1 md:mb-2">Our Collection</span>
@@ -20,14 +27,12 @@ const AllJewellery = () => {
                     </div>
                 </div>
 
-                {/* Grid - Using the standard ProductCard component */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
                     {displayProducts.map((product) => (
-                        <ProductCard key={product.id} product={product} />
+                        <ProductCard key={product.id || product._id} product={product} />
                     ))}
                 </div>
 
-                {/* Subtle View All Link at Bottom */}
                 <div className="mt-8 md:mt-16 flex justify-center">
                     <Link
                         to="/shop"
