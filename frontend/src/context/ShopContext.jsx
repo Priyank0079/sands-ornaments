@@ -214,7 +214,16 @@ export const ShopProvider = ({ children }) => {
             const res = await api.get('user/returns');
             if (res.data.success) {
                 const list = res.data.data?.returns || res.data.returns || [];
-                setReturns(list.map(ret => ({ ...ret, id: ret._id || ret.id })));
+                setReturns(list.map(ret => ({
+                    ...ret,
+                    id: ret._id || ret.id,
+                    displayId: ret.returnId || ret._id || ret.id,
+                    requestDate: ret.createdAt || ret.requestDate || ret.date,
+                    reason: ret.evidence?.reason || ret.reason || ret.items?.[0]?.reason || '',
+                    comments: ret.evidence?.comment || ret.comments || '',
+                    images: ret.evidence?.images || ret.images || [],
+                    type: 'refund'
+                })));
             }
         } catch (err) { console.error("Fetch returns failed", err); }
     };
@@ -224,7 +233,17 @@ export const ShopProvider = ({ children }) => {
             const res = await api.get('user/replacements');
             if (res.data.success) {
                 const list = res.data.data?.replacements || res.data.replacements || [];
-                setReplacements(list.map(rep => ({ ...rep, id: rep._id || rep.id })));
+                setReplacements(list.map(rep => ({
+                    ...rep,
+                    id: rep._id || rep.id,
+                    displayId: rep.replacementId || rep._id || rep.id,
+                    requestDate: rep.createdAt || rep.requestDate || rep.date,
+                    reason: rep.evidence?.reason || rep.reason || rep.originalItems?.[0]?.reason || '',
+                    comments: rep.evidence?.comment || rep.comments || '',
+                    images: rep.evidence?.images || rep.images || [],
+                    items: rep.originalItems || rep.items || [],
+                    type: 'replacement'
+                })));
             }
         } catch (err) { console.error("Fetch replacements failed", err); }
     };

@@ -8,10 +8,10 @@ const formatDate = (value) => {
     return new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 };
 
-const ReturnsPage = () => {
+const ReplacementsPage = () => {
     const navigate = useNavigate();
-    const { returns } = useShop();
-    const safeReturns = Array.isArray(returns) ? returns : [];
+    const { replacements } = useShop();
+    const safeReplacements = Array.isArray(replacements) ? replacements : [];
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -23,8 +23,9 @@ const ReturnsPage = () => {
             case 'Pickup Scheduled':
             case 'Pickup Completed':
                 return 'bg-purple-100 text-purple-700 border-purple-200';
+            case 'Replacement Shipped':
+            case 'Delivered':
             case 'Closed':
-            case 'Refunded':
                 return 'bg-green-100 text-green-700 border-green-200';
             case 'Rejected':
                 return 'bg-red-100 text-red-700 border-red-200';
@@ -33,15 +34,15 @@ const ReturnsPage = () => {
         }
     };
 
-    if (safeReturns.length === 0) {
+    if (safeReplacements.length === 0) {
         return (
             <div className="bg-[#fcfcfc] min-h-screen py-12 flex flex-col items-center justify-center text-center px-4">
                 <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-6 text-gray-400">
                     <RefreshCw size={32} />
                 </div>
-                <h2 className="text-2xl font-black text-footerBg mb-2">No Returns Yet</h2>
+                <h2 className="text-2xl font-black text-footerBg mb-2">No Replacements Yet</h2>
                 <p className="text-gray-500 mb-8 max-w-sm">
-                    You have not raised any return requests yet.
+                    You have not raised any replacement requests yet.
                 </p>
                 <Link to="/profile/orders" className="bg-footerBg text-white px-8 py-3 rounded-xl font-bold hover:bg-opacity-90 transition-all shadow-lg">
                     Go To My Orders
@@ -58,13 +59,13 @@ const ReturnsPage = () => {
                         <ArrowLeft size={20} />
                     </button>
                     <div>
-                        <h1 className="text-xl md:text-3xl font-black text-footerBg uppercase tracking-tighter md:tracking-tight leading-none">Returns</h1>
-                        <p className="text-[8px] md:text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-1">Manage Your Refund Requests</p>
+                        <h1 className="text-xl md:text-3xl font-black text-footerBg uppercase tracking-tighter md:tracking-tight leading-none">Replacements</h1>
+                        <p className="text-[8px] md:text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-1">Manage Your Exchange Requests</p>
                     </div>
                 </div>
 
                 <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
-                    {safeReturns.map((request, index) => (
+                    {safeReplacements.map((request, index) => (
                         <div
                             key={request.id}
                             className="bg-white rounded-xl md:rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-all"
@@ -95,7 +96,7 @@ const ReturnsPage = () => {
 
                                     <div className="pt-1 flex flex-col gap-3">
                                         <button
-                                            onClick={() => navigate(`/return/${request.id}`)}
+                                            onClick={() => navigate(`/replacement/${request.id}`)}
                                             className="w-full md:w-fit md:ml-auto md:px-10 bg-slate-50 border border-slate-100 text-footerBg py-2.5 md:py-3 rounded-xl text-[9px] md:text-xs font-black uppercase tracking-widest active:scale-95 transition-all flex items-center justify-center gap-2 group hover:bg-footerBg hover:text-white"
                                         >
                                             View Status
@@ -119,4 +120,4 @@ const ReturnsPage = () => {
     );
 };
 
-export default ReturnsPage;
+export default ReplacementsPage;

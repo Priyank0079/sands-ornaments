@@ -25,6 +25,12 @@ import BlogsPage from './modules/user/pages/BlogsPage';
 import BlogDetailPage from './modules/user/pages/BlogDetailPage';
 import DynamicPage from './modules/user/pages/DynamicPage';
 import GoldComingSoon from './modules/user/pages/GoldComingSoon';
+import UserReturnsPage from './modules/user/pages/ReturnsPage';
+import UserReturnDetailPage from './modules/user/pages/ReturnDetailPage';
+import UserReturnRequestPage from './modules/user/pages/ReturnRequestPage';
+import UserReplacementsPage from './modules/user/pages/ReplacementsPage';
+import UserReplacementDetailPage from './modules/user/pages/ReplacementDetailPage';
+import UserReplacementRequestPage from './modules/user/pages/ReplacementRequestPage';
 
 // Admin Imports
 import AdminLogin from './modules/admin/pages/Login';
@@ -109,6 +115,12 @@ const AppContent = () => {
           <Route path="/signup" element={<Login />} />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/profile/:activeTab?/:subId?" element={<Profile />} />
+          <Route path="/returns" element={<UserReturnsPage />} />
+          <Route path="/return/:returnId" element={<UserReturnDetailPage />} />
+          <Route path="/request-return/:orderId" element={<UserReturnRequestPage />} />
+          <Route path="/replacements" element={<UserReplacementsPage />} />
+          <Route path="/replacement/:replacementId" element={<UserReplacementDetailPage />} />
+          <Route path="/request-replacement/:orderId" element={<UserReplacementRequestPage />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/about" element={<DynamicPage slug="about-us" />} />
           <Route path="/help" element={<HelpCenter />} />

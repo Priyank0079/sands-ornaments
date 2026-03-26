@@ -5,8 +5,6 @@ import toast from 'react-hot-toast';
 import { useShop } from '../../../context/ShopContext';
 import api from '../../../services/api';
 
-const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
-
 const resolveImageSrc = (...values) => values.find((value) => typeof value === 'string' && value.trim()) || null;
 
 const ProductThumb = ({ src, alt = '', className }) => {
@@ -23,26 +21,26 @@ const ProductThumb = ({ src, alt = '', className }) => {
     return <img src={imageSrc} alt={alt} className={className} />;
 };
 
-const ReturnRequestPage = () => {
+const ReplacementRequestPage = () => {
     const { orderId } = useParams();
     const navigate = useNavigate();
-    const { user, orders, returns, refreshReturns } = useShop();
+    const { user, orders, replacements, refreshReplacements } = useShop();
     const safeOrders = Array.isArray(orders) ? orders : [];
-    const safeReturns = Array.isArray(returns) ? returns : [];
+    const safeReplacements = Array.isArray(replacements) ? replacements : [];
     const order = user ? safeOrders.find((item) => String(item.id || item._id) === String(orderId)) : null;
     const fileInputRef = useRef(null);
 
-    const existingReturnedVariantIds = useMemo(() => {
+    const existingReplacementVariantIds = useMemo(() => {
         const ids = new Set();
-        safeReturns
+        safeReplacements
             .filter((request) => String(request.orderId?._id || request.orderId) === String(order?.id || order?._id))
             .forEach((request) => {
-                (request.items || []).forEach((item) => {
+                (request.items || request.originalItems || []).forEach((item) => {
                     ids.add(String(item.variantId || ''));
                 });
             });
         return ids;
-    }, [safeReturns, order]);
+    }, [safeReplacements, order]);
 
     const [selectedItemId, setSelectedItemId] = useState('');
     const [reason, setReason] = useState('');
@@ -62,9 +60,9 @@ const ReturnRequestPage = () => {
     const reasons = [
         'Damaged / Defective Product',
         'Wrong Item Delivered',
+        'Size Issue',
         'Quality Issues',
         'Item Not As Described',
-        'Package Tampered',
         'Changed Mind'
     ];
 
@@ -72,7 +70,7 @@ const ReturnRequestPage = () => {
         e.preventDefault();
 
         if (!selectedItemId) {
-            toast.error('Please select one item to return');
+            toast.error('Please select one item for replacement');
             return;
         }
 
@@ -85,15 +83,15 @@ const ReturnRequestPage = () => {
             formData.append('description', comments);
             selectedFiles.forEach((file) => formData.append('evidence', file));
 
-            await api.post('/user/returns', formData, {
+            await api.post('/user/replacements', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
-            await refreshReturns();
-            toast.success('Return request submitted');
-            navigate('/returns');
+            await refreshReplacements();
+            toast.success('Replacement request submitted');
+            navigate('/replacements');
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to submit return request');
+            toast.error(err.response?.data?.message || 'Failed to submit replacement request');
         } finally {
             setLoading(false);
         }
@@ -107,7 +105,7 @@ const ReturnRequestPage = () => {
                         <ArrowLeft size={24} />
                     </button>
                     <div>
-                        <h1 className="text-2xl font-black text-footerBg uppercase tracking-tight">Request Return</h1>
+                        <h1 className="text-2xl font-black text-footerBg uppercase tracking-tight">Request Replacement</h1>
                         <p className="text-gray-500 text-sm mt-1">Order #{order.displayId || order.orderId || order.id}</p>
                     </div>
                 </div>
@@ -121,21 +119,21 @@ const ReturnRequestPage = () => {
                         <div className="space-y-4">
                             {(order.items || []).map((item) => {
                                 const itemId = item._id || item.id;
-                                const alreadyReturned = existingReturnedVariantIds.has(String(item.variantId || ''));
+                                const alreadyRequested = existingReplacementVariantIds.has(String(item.variantId || ''));
                                 const checked = selectedItemId === itemId;
 
                                 return (
                                     <label
                                         key={itemId}
-                                        className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all ${alreadyReturned ? 'bg-gray-50 border-gray-100 grayscale opacity-60 cursor-not-allowed' : checked ? 'border-primary bg-primary/5 cursor-pointer ring-2 ring-primary/10' : 'border-gray-100 hover:border-gray-200 cursor-pointer'}`}
+                                        className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all ${alreadyRequested ? 'bg-gray-50 border-gray-100 grayscale opacity-60 cursor-not-allowed' : checked ? 'border-primary bg-primary/5 cursor-pointer ring-2 ring-primary/10' : 'border-gray-100 hover:border-gray-200 cursor-pointer'}`}
                                     >
                                         <input
                                             type="radio"
-                                            name="return-item"
+                                            name="replacement-item"
                                             className="mt-1 w-5 h-5 accent-primary border-gray-300"
-                                            checked={checked || alreadyReturned}
-                                            disabled={alreadyReturned}
-                                            onChange={() => !alreadyReturned && setSelectedItemId(itemId)}
+                                            checked={checked || alreadyRequested}
+                                            disabled={alreadyRequested}
+                                            onChange={() => !alreadyRequested && setSelectedItemId(itemId)}
                                         />
                                         <ProductThumb
                                             src={item.image}
@@ -145,12 +143,12 @@ const ReturnRequestPage = () => {
                                         <div className="flex-1">
                                             <div className="flex justify-between items-start gap-3">
                                                 <p className="font-bold text-footerBg text-sm leading-tight max-w-[200px]">{item.name}</p>
-                                                {alreadyReturned && (
+                                                {alreadyRequested && (
                                                     <span className="text-[9px] bg-gray-200 text-gray-500 px-2 py-0.5 rounded font-black uppercase tracking-wider">Requested</span>
                                                 )}
                                             </div>
                                             <p className="text-xs text-gray-500 mt-1 font-medium">
-                                                Qty: {item.quantity || 1} × {formatCurrency(item.price)}
+                                                Qty: {item.quantity || 1}
                                             </p>
                                         </div>
                                     </label>
@@ -167,7 +165,7 @@ const ReturnRequestPage = () => {
 
                         <div className="space-y-6">
                             <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase mb-2 block tracking-widest">Reason For Return</label>
+                                <label className="text-xs font-bold text-gray-500 uppercase mb-2 block tracking-widest">Reason For Replacement</label>
                                 <select
                                     required
                                     value={reason}
@@ -225,7 +223,7 @@ const ReturnRequestPage = () => {
                         <AlertCircle size={18} className="text-blue-600 mt-0.5 shrink-0" />
                         <p className="text-xs text-blue-800 leading-relaxed">
                             <strong>Note:</strong> Items must be in original condition with tags and packaging intact.
-                            Pickup will be scheduled after approval.
+                            Pickup will be scheduled after approval, and replacement progress will appear in your account.
                         </p>
                     </div>
 
@@ -246,4 +244,4 @@ const ReturnRequestPage = () => {
     );
 };
 
-export default ReturnRequestPage;
+export default ReplacementRequestPage;

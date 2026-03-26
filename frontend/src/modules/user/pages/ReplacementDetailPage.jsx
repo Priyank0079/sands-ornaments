@@ -3,8 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, CheckCircle, Clock, RefreshCw, Truck, XCircle, AlertCircle, Package } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
 
-const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
-
 const resolveImageSrc = (...values) => values.find((value) => typeof value === 'string' && value.trim()) || null;
 
 const ProductThumb = ({ src, alt = '', className }) => {
@@ -21,27 +19,27 @@ const ProductThumb = ({ src, alt = '', className }) => {
     return <img src={imageSrc} alt={alt} className={className} />;
 };
 
-const ReturnDetailPage = () => {
-    const { returnId } = useParams();
+const ReplacementDetailPage = () => {
+    const { replacementId } = useParams();
     const navigate = useNavigate();
-    const { returns } = useShop();
-    const safeReturns = Array.isArray(returns) ? returns : [];
-    const returnRequest = safeReturns.find((item) => String(item.id || item._id) === String(returnId));
+    const { replacements } = useShop();
+    const safeReplacements = Array.isArray(replacements) ? replacements : [];
+    const replacementRequest = safeReplacements.find((item) => String(item.id || item._id) === String(replacementId));
 
-    if (!returnRequest) {
-        return <div className="min-h-screen flex items-center justify-center">Return request not found</div>;
+    if (!replacementRequest) {
+        return <div className="min-h-screen flex items-center justify-center">Replacement request not found</div>;
     }
 
-    const timelineFromRequest = Array.isArray(returnRequest.timeline) && returnRequest.timeline.length > 0
-        ? returnRequest.timeline
-        : [{ status: returnRequest.status || 'Pending', note: 'Return request is being reviewed.' }];
+    const timelineFromRequest = Array.isArray(replacementRequest.timeline) && replacementRequest.timeline.length > 0
+        ? replacementRequest.timeline
+        : [{ status: replacementRequest.status || 'Pending', note: 'Replacement request is being reviewed.' }];
 
     const iconForStatus = (status) => {
         const normalized = String(status || '').toLowerCase();
         if (normalized.includes('reject')) return XCircle;
         if (normalized.includes('approve')) return CheckCircle;
         if (normalized.includes('pickup')) return Truck;
-        if (normalized.includes('close') || normalized.includes('refund')) return RefreshCw;
+        if (normalized.includes('ship') || normalized.includes('deliver') || normalized.includes('close')) return RefreshCw;
         return Clock;
     };
 
@@ -52,19 +50,19 @@ const ReturnDetailPage = () => {
         current: index === timelineFromRequest.length - 1
     }));
 
-    const refundAmount = (returnRequest.items || []).reduce((sum, item) => sum + ((item.price || 0) * (item.qty || item.quantity || 0)), 0);
-    const evidenceImages = Array.isArray(returnRequest.images) ? returnRequest.images : [];
+    const evidenceImages = Array.isArray(replacementRequest.images) ? replacementRequest.images : [];
+    const originalItems = Array.isArray(replacementRequest.items) ? replacementRequest.items : [];
 
     return (
         <div className="bg-[#fcfcfc] min-h-screen py-4 md:py-12">
             <div className="container mx-auto px-3 md:px-12 max-w-4xl">
                 <div className="flex items-center gap-2 md:gap-4 mb-6 md:mb-10">
-                    <button onClick={() => navigate('/returns')} className="p-2 -ml-2 hover:bg-gray-100 rounded-lg transition-colors text-footerBg/70">
+                    <button onClick={() => navigate('/replacements')} className="p-2 -ml-2 hover:bg-gray-100 rounded-lg transition-colors text-footerBg/70">
                         <ArrowLeft size={20} />
                     </button>
                     <div>
-                        <h1 className="text-xl md:text-3xl font-black text-footerBg uppercase tracking-tighter md:tracking-tight leading-none">Return Status</h1>
-                        <p className="text-[10px] md:text-sm font-mono text-slate-400 mt-1">#{returnRequest.displayId || returnRequest.id}</p>
+                        <h1 className="text-xl md:text-3xl font-black text-footerBg uppercase tracking-tighter md:tracking-tight leading-none">Replacement Status</h1>
+                        <p className="text-[10px] md:text-sm font-mono text-slate-400 mt-1">#{replacementRequest.displayId || replacementRequest.id}</p>
                     </div>
                 </div>
 
@@ -99,14 +97,11 @@ const ReturnDetailPage = () => {
                         </div>
 
                         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                            <div className="p-4 bg-slate-50/50 border-b border-gray-100 flex justify-between items-center">
-                                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Returned Item(s)</h3>
-                                <div className="text-primary text-[10px] font-black uppercase px-2 py-0.5 rounded-lg border border-primary/10">
-                                    {formatCurrency(refundAmount)}
-                                </div>
+                            <div className="p-4 bg-slate-50/50 border-b border-gray-100">
+                                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Original Item(s)</h3>
                             </div>
                             <div className="divide-y divide-gray-50">
-                                {(returnRequest.items || []).map((item, i) => (
+                                {originalItems.map((item, i) => (
                                     <div key={i} className="p-4 flex gap-4 items-center">
                                         <div className="relative shrink-0">
                                             <ProductThumb
@@ -121,12 +116,7 @@ const ReturnDetailPage = () => {
                                         <div className="flex-1 min-w-0">
                                             <h4 className="text-[13px] md:text-sm font-black text-footerBg truncate mb-0.5">{item.name}</h4>
                                             <p className="text-[11px] font-bold text-slate-400 tracking-tight">
-                                                Qty: {item.qty || item.quantity || 1} <span className="mx-1 opacity-20">×</span> {formatCurrency(item.price)}
-                                            </p>
-                                        </div>
-                                        <div className="text-right shrink-0">
-                                            <p className="text-[13px] md:text-sm font-black text-footerBg">
-                                                {formatCurrency((item.price || 0) * (item.qty || item.quantity || 1))}
+                                                Qty: {item.qty || item.quantity || 1}
                                             </p>
                                         </div>
                                     </div>
@@ -139,22 +129,22 @@ const ReturnDetailPage = () => {
                         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-6">
                             <div className="flex justify-between items-center bg-slate-50 p-3 rounded-xl">
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Type</span>
-                                <span className="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-600">
-                                    Refund
+                                <span className="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-orange-100 text-orange-600">
+                                    Replacement
                                 </span>
                             </div>
 
                             <div className="space-y-4">
                                 <div>
                                     <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-1">Reason</p>
-                                    <p className="text-sm font-black text-footerBg leading-snug">{returnRequest.reason || 'Reason shared with support'}</p>
+                                    <p className="text-sm font-black text-footerBg leading-snug">{replacementRequest.reason || 'Reason shared with support'}</p>
                                 </div>
 
-                                {returnRequest.comments && (
+                                {replacementRequest.comments && (
                                     <div>
                                         <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-1">Comments</p>
                                         <p className="text-[11px] font-medium text-slate-400 italic leading-relaxed border-l-2 border-slate-100 pl-3">
-                                            "{returnRequest.comments}"
+                                            "{replacementRequest.comments}"
                                         </p>
                                     </div>
                                 )}
@@ -179,7 +169,7 @@ const ReturnDetailPage = () => {
                             <div className="pt-5 border-t border-gray-50 flex items-center gap-3 bg-blue-50/50 p-4 -m-5 mt-5">
                                 <AlertCircle size={16} className="text-blue-600 shrink-0" />
                                 <p className="text-[10px] font-bold text-blue-700 leading-snug">
-                                    Keep tags and packaging intact. Our executive will contact you before pickup.
+                                    We will contact you before pickup and share the replacement progress here.
                                 </p>
                             </div>
                         </div>
@@ -190,4 +180,4 @@ const ReturnDetailPage = () => {
     );
 };
 
-export default ReturnDetailPage;
+export default ReplacementDetailPage;
