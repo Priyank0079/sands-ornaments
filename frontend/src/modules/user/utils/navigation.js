@@ -32,13 +32,39 @@ const PREFIX_ALLOWED_ROUTES = [
   '/order-tracking/',
 ];
 
+const ROUTE_ALIASES = {
+  '/returns': '/return-policy',
+  '/contact': '/help',
+  '/stores': '/about',
+};
+
 export const normalizeStoreLink = (link) => {
   if (typeof link !== 'string') return '/shop';
 
-  const value = link.trim();
+  const value = ROUTE_ALIASES[link.trim()] || link.trim();
   if (!value.startsWith('/')) return '/shop';
   if (EXACT_ALLOWED_ROUTES.has(value)) return value;
   if (PREFIX_ALLOWED_ROUTES.some((prefix) => value.startsWith(prefix))) return value;
 
   return '/shop';
+};
+
+export const normalizeFooterLink = (link) => normalizeStoreLink(link);
+
+export const normalizeExternalLink = (link) => {
+  if (typeof link !== 'string') return '#';
+
+  const value = link.trim();
+  if (!value) return '#';
+
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      return value;
+    }
+  } catch (error) {
+    return '#';
+  }
+
+  return '#';
 };

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, Heart, ShoppingBag, User, Store, Menu, X, Bell, ChevronDown } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
 import logo from '../../user/assets/SANDS JEWELS PINK (1).png';
@@ -9,7 +9,9 @@ import { ensureHomepageNavPath } from '../utils/homepageNav';
 const Navbar = () => {
     const { cart, wishlist, user, userNotifications, isMenuOpen, toggleMenu, homepageSections, categories, products } = useShop();
     const location = useLocation();
+    const navigate = useNavigate();
     const isHome = location.pathname === '/';
+    const [searchTerm, setSearchTerm] = useState('');
 
     // Sidebar Menu Data
     const sidebarMenu = useMemo(() => {
@@ -64,6 +66,26 @@ const Navbar = () => {
         setOpenSection(openSection === section ? null : section);
     };
 
+    const submitSearch = () => {
+        const query = searchTerm.trim();
+        if (!query) {
+            navigate('/shop');
+            return;
+        }
+
+        navigate(`/shop?search=${encodeURIComponent(query)}`);
+        if (isMenuOpen) {
+            toggleMenu(false);
+        }
+    };
+
+    const handleSearchKeyDown = (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            submitSearch();
+        }
+    };
+
     return (
         <>
             <nav className="w-full transition-all duration-300 bg-white/95 backdrop-blur-md shadow-sm relative">
@@ -89,16 +111,26 @@ const Navbar = () => {
                         <input
                             type="text"
                             placeholder="Search for silver jewellery..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onKeyDown={handleSearchKeyDown}
                             className="w-full bg-white border border-gray-100 rounded-full py-2.5 px-6 pl-12 text-sm focus:outline-none focus:border-[#D39A9F] focus:ring-2 focus:ring-[#D39A9F]/20 transition-all shadow-sm group-hover:shadow-md text-black placeholder-gray-400"
                         />
-                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-[#D39A9F] transition-colors" />
+                        <button
+                            type="button"
+                            onClick={submitSearch}
+                            className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#D39A9F] group-focus-within:text-[#D39A9F] transition-colors"
+                            aria-label="Search products"
+                        >
+                            <Search className="w-5 h-5" />
+                        </button>
                     </div>
 
                     {/* Icons - Simplified on mobile */}
                     <div className="flex items-center space-x-4 md:space-x-6 flex-shrink-0 text-black">
-                        <Link to="/shop" className="md:hidden hover:opacity-70">
+                        <button type="button" onClick={submitSearch} className="md:hidden hover:opacity-70" aria-label="Search products">
                             <Search className="w-5 h-5 md:w-6 md:h-6" />
-                        </Link>
+                        </button>
 
                         <button className="hover:opacity-70 relative group">
                             <Link to="/notifications">
@@ -297,7 +329,7 @@ const Navbar = () => {
 
                                     {/* 4. Super 1,999 */}
                                     <div className="py-2">
-                                        <Link to="/shop?maxPrice=1999" onClick={() => toggleMenu(false)} className="font-display font-semibold text-black hover:text-[#D39A9F] block tracking-wide">
+                                        <Link to="/shop?price_max=1999" onClick={() => toggleMenu(false)} className="font-display font-semibold text-black hover:text-[#D39A9F] block tracking-wide">
                                             SUPER 1,999
                                         </Link>
                                     </div>

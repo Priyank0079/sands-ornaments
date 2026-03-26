@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Facebook, Twitter, Instagram, Youtube, Truck, Mail, Phone, MapPin, Heart, ShieldCheck, Star } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import logo from '../assets/sands-logo.png'; // Using the official logo
+import { normalizeExternalLink, normalizeFooterLink } from '../utils/navigation';
 
 const Footer = () => {
     const location = useLocation();
@@ -62,6 +63,18 @@ const Footer = () => {
 
     if (isOrderSuccess) return null;
 
+    const renderFooterLink = (link, idx) => {
+        const safePath = normalizeFooterLink(link.path);
+        return (
+            <li key={idx}>
+                <Link to={safePath} className="text-xs text-gray-600 font-medium hover:text-[#4A1015] transition-all hover:pl-2 flex items-center gap-2 group">
+                    <span className="w-1 h-1 bg-[#C9A24D] rounded-full opacity-0 group-hover:opacity-100 transition-all"></span>
+                    {link.name}
+                </Link>
+            </li>
+        );
+    };
+
     return (
         <footer className="relative bg-white pt-8 pb-4 overflow-hidden">
             {/* Decorative Top Border - Luxury Gradient */}
@@ -117,12 +130,7 @@ const Footer = () => {
                             <h4 className="font-display text-[#4A1015] font-bold uppercase tracking-[0.25em] text-[10px] border-b border-[#EBCDD0] pb-1 inline-block">{settings.footerColumn1Title}</h4>
                             <ul className="space-y-1.5">
                                 {settings.footerExperienceLinks?.map((link, idx) => (
-                                    <li key={idx}>
-                                        <Link to={link.path} className="text-xs text-gray-600 font-medium hover:text-[#4A1015] transition-all hover:pl-2 flex items-center gap-2 group">
-                                            <span className="w-1 h-1 bg-[#C9A24D] rounded-full opacity-0 group-hover:opacity-100 transition-all"></span>
-                                            {link.name}
-                                        </Link>
-                                    </li>
+                                    renderFooterLink(link, idx)
                                 ))}
                             </ul>
                         </div>
@@ -131,12 +139,7 @@ const Footer = () => {
                             <h4 className="font-display text-[#4A1015] font-bold uppercase tracking-[0.25em] text-[10px] border-b border-[#EBCDD0] pb-1 inline-block">{settings.footerColumn2Title}</h4>
                             <ul className="space-y-1.5">
                                 {settings.footerPoliciesLinks?.map((link, idx) => (
-                                    <li key={idx}>
-                                        <Link to={link.path} className="text-xs text-gray-600 font-medium hover:text-[#4A1015] transition-all hover:pl-2 flex items-center gap-2 group">
-                                            <span className="w-1 h-1 bg-[#C9A24D] rounded-full opacity-0 group-hover:opacity-100 transition-all"></span>
-                                            {link.name}
-                                        </Link>
-                                    </li>
+                                    renderFooterLink(link, idx)
                                 ))}
                             </ul>
                         </div>
@@ -145,12 +148,7 @@ const Footer = () => {
                             <h4 className="font-display text-[#4A1015] font-bold uppercase tracking-[0.25em] text-[10px] border-b border-[#EBCDD0] pb-1 inline-block">{settings.footerColumn3Title}</h4>
                             <ul className="space-y-1.5">
                                 {settings.footerWorldLinks?.map((link, idx) => (
-                                    <li key={idx}>
-                                        <Link to={link.path} className="text-xs text-gray-600 font-medium hover:text-[#4A1015] transition-all hover:pl-2 flex items-center gap-2 group">
-                                            <span className="w-1 h-1 bg-[#C9A24D] rounded-full opacity-0 group-hover:opacity-100 transition-all"></span>
-                                            {link.name}
-                                        </Link>
-                                    </li>
+                                    renderFooterLink(link, idx)
                                 ))}
                             </ul>
                         </div>
@@ -192,7 +190,7 @@ const Footer = () => {
                                     { Icon: Instagram, link: settings.socialLinks?.instagram },
                                     { Icon: Youtube, link: settings.socialLinks?.youtube }
                                 ].map((social, i) => (
-                                    <a key={i} href={social.link || '#'} target="_blank" rel="noreferrer" className="w-8 h-8 border border-gray-200 rounded-md flex items-center justify-center text-gray-500 hover:border-[#4A1015] hover:bg-[#4A1015] hover:text-white hover:-translate-y-1 transition-all duration-500 shadow-sm">
+                                    <a key={i} href={normalizeExternalLink(social.link)} target="_blank" rel="noreferrer" className="w-8 h-8 border border-gray-200 rounded-md flex items-center justify-center text-gray-500 hover:border-[#4A1015] hover:bg-[#4A1015] hover:text-white hover:-translate-y-1 transition-all duration-500 shadow-sm">
                                         <social.Icon className="w-3.5 h-3.5" />
                                     </a>
                                 ))}

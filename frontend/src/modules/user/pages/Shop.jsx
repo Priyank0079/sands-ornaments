@@ -35,6 +35,7 @@ const Shop = () => {
     const productsQuery = queryParams.get('products');
     const limitQuery = queryParams.get('limit');
     const sortQuery = queryParams.get('sort');
+    const searchQuery = queryParams.get('search');
 
     // Effect to handle URL-based Logic + Local Category Filter
     useEffect(() => {
@@ -173,6 +174,9 @@ const Shop = () => {
         if (sortQuery === 'random') {
             title = selectedCategory !== 'All' ? selectedCategory : 'Curated For You';
         }
+        if (searchQuery) {
+            title = `Search: ${searchQuery}`;
+        }
 
         // Apply Title overrides from Local Filters
         if (selectedCategory !== 'All') {
@@ -212,6 +216,28 @@ const Shop = () => {
             };
 
             result = result.filter(matchesNavTags);
+        }
+
+        if (searchQuery) {
+            const normalizedSearch = String(searchQuery).trim().toLowerCase();
+            result = result.filter((product) => {
+                const haystack = [
+                    product.name,
+                    product.description,
+                    product.shortDescription,
+                    product.category,
+                    product.categorySlug,
+                    ...(product.tags || []),
+                    ...(product.navGiftsFor || []),
+                    ...(product.navOccasions || []),
+                    ...(product.variants || []).map((variant) => variant.name)
+                ]
+                    .filter(Boolean)
+                    .join(' ')
+                    .toLowerCase();
+
+                return haystack.includes(normalizedSearch);
+            });
         }
 
         // 2.2 Apply Collection Filters

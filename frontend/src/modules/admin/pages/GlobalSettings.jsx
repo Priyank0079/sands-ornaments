@@ -46,8 +46,8 @@ const GlobalSettings = () => {
             footerColumn3Title: 'Our World',
 
             footerExperienceLinks: [
-                { id: 1, name: "Easy Returns", path: "/returns" },
-                { id: 2, name: "Contact Us", path: "/contact" },
+                { id: 1, name: "Easy Returns", path: "/return-policy" },
+                { id: 2, name: "Contact Us", path: "/help" },
                 { id: 3, name: "FAQs", path: "/help" },
                 { id: 4, name: "Blogs", path: "/blogs" },
             ],
@@ -60,7 +60,7 @@ const GlobalSettings = () => {
             footerWorldLinks: [
                 { id: 1, name: "About Us", path: "/about" },
                 { id: 2, name: "Jewellery Care Guide", path: "/care-guide" },
-                { id: 3, name: "Store Locator", path: "/stores" },
+                { id: 3, name: "Store Locator", path: "/about" },
                 { id: 4, name: "Our Craft", path: "/craft" },
             ],
 
