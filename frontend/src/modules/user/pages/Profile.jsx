@@ -5,6 +5,55 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import api from '../../../services/api';
 import toast from 'react-hot-toast';
 
+const EMPTY_ADDRESS = {
+    name: '',
+    phone: '',
+    flatNo: '',
+    area: '',
+    city: '',
+    district: '',
+    state: '',
+    pincode: '',
+    type: 'Home',
+    isDefault: false
+};
+
+const formatCurrency = (value, minimumFractionDigits = 0) => (
+    `₹${Number(value || 0).toLocaleString('en-IN', {
+        minimumFractionDigits,
+        maximumFractionDigits: minimumFractionDigits
+    })}`
+);
+
+const resolveImageSrc = (...values) => values.find((value) => typeof value === 'string' && value.trim()) || null;
+
+const normalizeAddressPayload = (address) => ({
+    name: String(address.name || '').trim(),
+    phone: String(address.phone || '').replace(/\D/g, ''),
+    flatNo: String(address.flatNo || '').trim(),
+    area: String(address.area || '').trim(),
+    city: String(address.city || '').trim(),
+    district: String(address.district || '').trim(),
+    state: String(address.state || '').trim(),
+    pincode: String(address.pincode || '').replace(/\D/g, ''),
+    type: String(address.type || 'Home').trim() || 'Home',
+    isDefault: Boolean(address.isDefault)
+});
+
+const ProductThumb = ({ src, alt = '', className, fallbackClassName = '', fallbackIconClassName = 'w-4 h-4' }) => {
+    const imageSrc = resolveImageSrc(src);
+
+    if (!imageSrc) {
+        return (
+            <div className={`${className} ${fallbackClassName} bg-[#FAFAFA] text-[#8D6E63] flex items-center justify-center`}>
+                <Package className={fallbackIconClassName} />
+            </div>
+        );
+    }
+
+    return <img src={imageSrc} alt={alt} className={className} />;
+};
+
 const ReturnActionModal = ({ isOpen, onClose, type, order, onSuccess }) => {
     const { showNotification } = useShop();
     const [selectedItems, setSelectedItems] = useState([]);
@@ -94,10 +143,16 @@ const ReturnActionModal = ({ isOpen, onClose, type, order, onSuccess }) => {
                                 <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${selectedItems.includes(item._id || item.id) ? 'bg-black border-black' : 'border-gray-300'}`}>
                                     {selectedItems.includes(item._id || item.id) && <Check className="w-2.5 h-2.5 text-white" />}
                                 </div>
-                                    <img src={item.image} alt="" className="w-10 h-10 rounded-md object-cover" />
+                                    <ProductThumb
+                                        src={item.image}
+                                        alt={item.name}
+                                        className="w-10 h-10 rounded-md object-cover"
+                                        fallbackClassName="border border-gray-100"
+                                        fallbackIconClassName="w-3 h-3"
+                                    />
                                     <div className="flex-1 min-w-0">
                                         <p className="text-xs font-bold text-black line-clamp-1">{item.name}</p>
-                                        <p className="text-[10px] text-gray-500">₹{Number(item.price || 0).toLocaleString()}</p>
+                                        <p className="text-[10px] text-gray-500">{formatCurrency(item.price)}</p>
                                     </div>
                                 </div>
                             ))}
@@ -280,27 +335,29 @@ const OrderCard = ({ order, isExpanded, onToggle }) => {
                     <>
                         <div className="flex items-center gap-3 py-1">
                             <div className="flex -space-x-3 overflow-hidden">
-                                {order.items.slice(0, 3).map((item, idx) => (
-                                    <img
+                                {items.slice(0, 3).map((item, idx) => (
+                                    <ProductThumb
                                         key={idx}
                                         src={item.image}
-                                        alt=""
+                                        alt={item.name}
                                         className="w-10 h-10 rounded-lg border-2 border-white object-cover shadow-sm"
+                                        fallbackClassName="border-gray-100 bg-white"
+                                        fallbackIconClassName="w-3 h-3"
                                     />
                                 ))}
-                                {order.items.length > 3 && (
+                                {items.length > 3 && (
                                     <div className="w-10 h-10 rounded-lg border-2 border-white bg-gray-50 flex items-center justify-center text-[10px] font-bold text-gray-400 shadow-sm">
-                                        +{order.items.length - 3}
+                                        +{items.length - 3}
                                     </div>
                                 )}
                             </div>
                             <div className="flex-grow">
                                 <p className="text-[10px] font-bold text-[#8D6E63] uppercase tracking-wider">Items</p>
-                                <p className="text-xs font-medium text-gray-700">{order.items.length} {order.items.length === 1 ? 'Product' : 'Products'}</p>
+                                <p className="text-xs font-medium text-gray-700">{items.length} {items.length === 1 ? 'Product' : 'Products'}</p>
                             </div>
                             <div className="text-right">
                                 <p className="text-[10px] font-bold text-[#8D6E63] uppercase tracking-wider">Total</p>
-                                <p className="text-sm font-bold text-[#3E2723]">₹{order.total.toLocaleString()}</p>
+                                <p className="text-sm font-bold text-[#3E2723]">{formatCurrency(order.total)}</p>
                             </div>
                         </div>
 
@@ -325,20 +382,26 @@ const OrderCard = ({ order, isExpanded, onToggle }) => {
                 {showDetails && !activeRequest && (
                     <div className="pt-2 animate-in fade-in slide-in-from-top-2 duration-300">
                         <div className="space-y-3 bg-[#FDF5F6] p-3 rounded-xl border border-[#EBCDD0]">
-                            {order.items.map((item, idx) => (
+                            {items.map((item, idx) => (
                                 <div key={idx} className="flex items-center gap-3">
-                                    <img src={item.image} className="w-12 h-12 rounded-lg object-cover border border-white shadow-sm" alt="" />
+                                    <ProductThumb
+                                        src={item.image}
+                                        alt={item.name}
+                                        className="w-12 h-12 rounded-lg object-cover border border-white shadow-sm"
+                                        fallbackClassName="bg-white"
+                                        fallbackIconClassName="w-4 h-4"
+                                    />
                                     <div className="flex-grow min-w-0">
                                         <p className="text-[10px] font-bold text-[#3E2723] truncate">{item.name}</p>
-                                        <p className="text-[10px] text-[#8D6E63]">Qty: {item.quantity} • ₹{item.price.toLocaleString()}</p>
+                                        <p className="text-[10px] text-[#8D6E63]">Qty: {item.quantity} • {formatCurrency(item.price)}</p>
                                     </div>
-                                    <p className="text-xs font-bold text-[#3E2723]">₹{(item.price * item.quantity).toLocaleString()}</p>
+                                    <p className="text-xs font-bold text-[#3E2723]">{formatCurrency((item.price || 0) * (item.quantity || 0))}</p>
                                 </div>
                             ))}
                             <div className="border-t border-[#EFEBE9] pt-2 mt-1 space-y-1">
-                                <div className="flex justify-between text-[10px] text-[#8D6E63]"><p>Subtotal</p><p>₹{subtotal.toLocaleString()}</p></div>
-                                <div className="flex justify-between text-[10px] text-[#8D6E63]"><p>Shipping</p><p>₹{shipping.toLocaleString()}</p></div>
-                                <div className="flex justify-between text-[10px] font-bold text-[#3E2723] pt-1"><p>Grand Total</p><p>₹{order.total.toLocaleString()}</p></div>
+                                <div className="flex justify-between text-[10px] text-[#8D6E63]"><p>Subtotal</p><p>{formatCurrency(subtotal)}</p></div>
+                                <div className="flex justify-between text-[10px] text-[#8D6E63]"><p>Shipping</p><p>{formatCurrency(shipping)}</p></div>
+                                <div className="flex justify-between text-[10px] font-bold text-[#3E2723] pt-1"><p>Grand Total</p><p>{formatCurrency(order.total)}</p></div>
                             </div>
                         </div>
                     </div>
@@ -359,7 +422,7 @@ const OrderCard = ({ order, isExpanded, onToggle }) => {
                         </div>
                         <div>
                             <span className="text-gray-500 mr-1">Items:</span>
-                            <span className="font-bold text-gray-900">{order.items.length}</span>
+                            <span className="font-bold text-gray-900">{items.length}</span>
                         </div>
                     </div>
                     <div
@@ -411,18 +474,24 @@ const OrderCard = ({ order, isExpanded, onToggle }) => {
                     <div className="bg-[#FAFAFA] border-t border-gray-100 animate-in fade-in slide-in-from-top-2 duration-300">
                         {/* Products Reel */}
                         <div className="flex gap-4 md:gap-8 overflow-x-auto p-4 md:p-6 scrollbar-hide">
-                            {order.items.map((item, idx) => (
+                            {items.map((item, idx) => (
                                 <div key={idx} className="flex-shrink-0 w-32 md:w-48 text-center group">
                                     <div className="relative mb-2 inline-block">
                                         <div className="w-16 h-16 md:w-20 md:h-20 mx-auto rounded-lg overflow-hidden border border-gray-200 bg-white">
-                                            <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                            <ProductThumb
+                                                src={item.image}
+                                                alt={item.name}
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                fallbackClassName="bg-[#FAFAFA]"
+                                                fallbackIconClassName="w-5 h-5"
+                                            />
                                         </div>
                                         <span className="absolute -top-1.5 -right-1.5 bg-[#3E2723] text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full border-2 border-white shadow-sm">
                                             {item.quantity}
                                         </span>
                                     </div>
                                     <h4 className="text-[10px] md:text-xs text-[#3E2723] font-medium leading-relaxed line-clamp-2 px-1 h-7 font-serif">{item.name}</h4>
-                                    <p className="text-xs md:text-sm font-bold text-[#5D4037] mt-1">₹{item.price.toLocaleString()}.00</p>
+                                    <p className="text-xs md:text-sm font-bold text-[#5D4037] mt-1">{formatCurrency(item.price, 2)}</p>
                                 </div>
                             ))}
                         </div>
@@ -432,15 +501,15 @@ const OrderCard = ({ order, isExpanded, onToggle }) => {
                             <div className="py-4 space-y-3 text-sm">
                                 <div className="flex justify-between text-[#8D6E63]">
                                     <span>Sub total</span>
-                                    <span>₹{subtotal.toLocaleString()}.00</span>
+                                    <span>{formatCurrency(subtotal, 2)}</span>
                                 </div>
                                 <div className="flex justify-between text-[#8D6E63]">
                                     <span>Shipping cost</span>
-                                    <span>₹{shipping.toLocaleString()}.00</span>
+                                    <span>{formatCurrency(shipping, 2)}</span>
                                 </div>
                                 <div className="flex justify-between text-[#8D6E63]">
                                     <span>IGST 3.0%</span>
-                                    <span>₹{tax.toFixed(2)}</span>
+                                    <span>{formatCurrency(tax, 2)}</span>
                                 </div>
                             </div>
                         </div>
@@ -450,7 +519,7 @@ const OrderCard = ({ order, isExpanded, onToggle }) => {
                 {/* Grand Total Bar */}
                 <div className="bg-[#F3F4F6] border-t border-gray-200 text-black p-3.5 md:p-4 md:px-6 flex justify-between items-center text-base md:text-lg font-bold">
                     <span>Grand total</span>
-                    <span>₹{order.total.toLocaleString()}.00</span>
+                    <span>{formatCurrency(order.total, 2)}</span>
                 </div>
             </div>
         </div>
@@ -470,9 +539,7 @@ const Profile = () => {
     const isEditing = subId === 'edit';
     const showAddressForm = subId === 'add';
 
-    const [newAddress, setNewAddress] = useState({
-        name: '', phone: '', flatNo: '', area: '', city: '', district: '', state: '', pincode: '', type: 'Home', isDefault: false
-    });
+    const [newAddress, setNewAddress] = useState(EMPTY_ADDRESS);
 
     const [formData, setFormData] = useState({
         firstName: '', lastName: '', email: '', phone: ''
@@ -511,9 +578,9 @@ const Profile = () => {
 
     const handleAddAddress = (e) => {
         e.preventDefault();
-        addAddress(newAddress);
+        addAddress(normalizeAddressPayload(newAddress));
         navigate('/profile/addresses');
-        setNewAddress({ name: '', phone: '', flatNo: '', area: '', city: '', district: '', state: '', pincode: '', type: 'Home', isDefault: false });
+        setNewAddress(EMPTY_ADDRESS);
     };
 
     return (
@@ -742,13 +809,23 @@ const Profile = () => {
                                 <div className="flex justify-center md:justify-between items-center mb-4 md:mb-6">
                                     <h2 className="text-xl md:text-2xl font-display font-bold text-black text-center md:text-left tracking-wide">My Orders</h2>
                                 </div>
-                                {orders.length === 0 ? (
+                                {safeOrders.length === 0 ? (
                                     <div className="bg-white p-12 rounded-2xl shadow-sm text-center">
                                         <ShoppingBag className="w-12 h-12 text-gray-200 mx-auto mb-4" />
                                         <p className="text-gray-500 mb-6">No orders yet.</p>
                                         <Link to="/shop" className="bg-black text-white px-8 py-3 rounded-full hover:bg-[#D39A9F]">Start Shopping</Link>
                                     </div>
-                                ) : orders.map(order => <OrderCard key={order.id} order={order} isExpanded={subId === order.id} onToggle={() => navigate(subId === order.id ? '/profile/orders' : `/profile/orders/${order.id}`)} />)}
+                                ) : safeOrders.map(order => {
+                                    const orderId = order.id || order._id;
+                                    return (
+                                        <OrderCard
+                                            key={orderId}
+                                            order={order}
+                                            isExpanded={subId === orderId}
+                                            onToggle={() => navigate(subId === orderId ? '/profile/orders' : `/profile/orders/${orderId}`)}
+                                        />
+                                    );
+                                })}
                             </div>
                         ) : activeTab === 'payments' ? (
                             <div className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
@@ -842,17 +919,22 @@ const Profile = () => {
                                 )}
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                                    {addresses.map(addr => (
-                                        <div key={addr.id} className="bg-[#FDF5F6] p-4 md:p-6 rounded-2xl md:rounded-2xl shadow-sm relative border border-[#EBCDD0] md:border-transparent">
+                                    {safeAddresses.map(addr => {
+                                        const addressId = addr.id || addr._id;
+                                        return (
+                                        <div key={addressId} className="bg-[#FDF5F6] p-4 md:p-6 rounded-2xl md:rounded-2xl shadow-sm relative border border-[#EBCDD0] md:border-transparent">
                                             <div className="flex justify-between mb-2">
                                                 <span className="text-[9px] md:text-[10px] font-bold uppercase py-1 px-2 bg-white md:bg-white rounded text-black tracking-wider shadow-sm">{addr.type}</span>
-                                                <button onClick={() => removeAddress(addr.id)} className="text-red-400 p-1 active:scale-90 transition-transform"><Trash2 className="w-4 h-4" /></button>
+                                                <button onClick={() => removeAddress(addressId)} className="text-red-400 p-1 active:scale-90 transition-transform"><Trash2 className="w-4 h-4" /></button>
                                             </div>
                                             <h4 className="font-bold text-sm md:text-base text-black mb-1">{addr.name}</h4>
-                                            <p className="text-xs md:text-sm text-gray-500 leading-relaxed mb-3">{addr.flatNo}, {addr.city} - {addr.pincode}</p>
-                                            {defaultAddressId !== addr.id && <button onClick={() => setDefaultAddress(addr.id)} className="text-[10px] md:text-xs underline font-bold text-[#D39A9F] hover:text-black">Set Default</button>}
+                                            <p className="text-xs md:text-sm text-gray-500 leading-relaxed mb-3">
+                                                {[addr.flatNo, addr.area, addr.city].filter(Boolean).join(', ')}
+                                                {addr.pincode ? ` - ${addr.pincode}` : ''}
+                                            </p>
+                                            {defaultAddressId !== addressId && <button onClick={() => setDefaultAddress(addressId)} className="text-[10px] md:text-xs underline font-bold text-[#D39A9F] hover:text-black">Set Default</button>}
                                         </div>
-                                    ))}
+                                    );})}
                                 </div>
                             </div>
                         )}

@@ -381,7 +381,7 @@ export const ShopProvider = ({ children }) => {
 
         if (!user) {
             toast.error("Please login to add to cart");
-            window.location.href = "/login";
+            window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
             return;
         }
 

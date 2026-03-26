@@ -4,6 +4,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Crown, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
 
 import logo from '../assets/SANDS JEWELS PINK (1).png';
 
@@ -14,6 +15,8 @@ const Login = () => {
 
     // Determine mode based on URL
     const isSignup = location.pathname === '/signup';
+    const redirectParam = new URLSearchParams(location.search).get('redirect');
+    const redirectTarget = redirectParam && redirectParam.startsWith('/') ? redirectParam : '/profile';
 
     const [phoneNumber, setPhoneNumber] = useState('');
     const [loginStep, setLoginStep] = useState(1);
@@ -39,10 +42,10 @@ const Login = () => {
             if (res.success) {
                 setLoginStep(2);
             } else {
-                alert(res.message);
+                toast.error(res.message);
             }
         } else {
-            alert("Please enter a valid 10-digit phone number");
+            toast.error("Please enter a valid 10-digit phone number");
         }
     };
 
@@ -50,15 +53,23 @@ const Login = () => {
         e.preventDefault();
         const enteredOtp = otp.join('');
         if (enteredOtp.length === 4) {
-            const res = await verifyOtp(phoneNumber, enteredOtp);
+            const res = await verifyOtp(
+                phoneNumber,
+                enteredOtp,
+                isSignup
+                    ? {
+                        name: fullName.trim(),
+                        email: email.trim()
+                    }
+                    : {}
+            );
             if (res.success) {
-                // Redirect to Profile page after successful login/signup
-                navigate('/profile');
+                navigate(redirectTarget, { replace: true });
             } else {
-                alert(res.message);
+                toast.error(res.message);
             }
         } else {
-            alert("Please enter the 4-digit OTP");
+            toast.error("Please enter the 4-digit OTP");
         }
     };
 

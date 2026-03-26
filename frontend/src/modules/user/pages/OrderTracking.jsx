@@ -1,23 +1,49 @@
 import React from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
-import { ChevronRight, Package, ArrowLeft, RefreshCw, Check, CheckCircle, Clock } from 'lucide-react';
+import { Package, ArrowLeft, RefreshCw, Check, Clock } from 'lucide-react';
 import FAQSection from '../components/FAQSection';
+
+const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
+
+const formatDateTime = (dateTimestamp) => {
+    if (!dateTimestamp) return 'Pending';
+    return new Date(dateTimestamp).toLocaleString('en-US', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+};
+
+const resolveImageSrc = (...values) => values.find((value) => typeof value === 'string' && value.trim()) || null;
+
+const ProductThumb = ({ src, alt = '', className, fallbackIconClassName = 'w-4 h-4', fallbackClassName = '' }) => {
+    const imageSrc = resolveImageSrc(src);
+
+    if (!imageSrc) {
+        return (
+            <div className={`${className} ${fallbackClassName} bg-[#FAFAFA] text-gray-400 flex items-center justify-center`}>
+                <Package className={fallbackIconClassName} />
+            </div>
+        );
+    }
+
+    return <img src={imageSrc} className={className} alt={alt} />;
+};
 
 const OrderTracking = () => {
     const { orderId, view } = useParams();
     const { orders, returns, replacements } = useShop();
     const navigate = useNavigate();
+    const safeOrders = Array.isArray(orders) ? orders : [];
+    const safeReturns = Array.isArray(returns) ? returns : [];
+    const safeReplacements = Array.isArray(replacements) ? replacements : [];
 
     // Normalize IDs for comparison
-    const order = orders.find(o => {
+    const order = safeOrders.find(o => {
         const id = String(o.id || o._id || '');
         const displayId = String(o.displayId || o.orderId || '');
         return id === orderId || displayId === orderId || displayId.replace('ORD-', '') === orderId;
     });
 
-    const returnRecord = returns.find(r => String(r.orderId?._id || r.orderId) === String(order?.id || order?._id));
-    const replacementRecord = replacements.find(r => String(r.orderId?._id || r.orderId) === String(order?.id || order?._id));
+    const returnRecord = safeReturns.find(r => String(r.orderId?._id || r.orderId) === String(order?.id || order?._id));
+    const replacementRecord = safeReplacements.find(r => String(r.orderId?._id || r.orderId) === String(order?.id || order?._id));
     const activeRequest = returnRecord || replacementRecord;
     const requestType = returnRecord ? 'return' : replacementRecord ? 'exchange' : null;
     const returnRequest = activeRequest ? {
@@ -40,52 +66,29 @@ const OrderTracking = () => {
     };
     const returnStep = returnRequest ? (returnStatusMap[returnRequest.status] || 1) : 0;
 
-    // Standard Delivery Progress State
-    const [currentStepIndex, setCurrentStepIndex] = React.useState(() => {
-        const savedStep = localStorage.getItem(`tracking_step_${orderId}`);
-        return savedStep ? parseInt(savedStep, 10) : 5; // Default to delivered for demo
-    });
-
-    React.useEffect(() => {
-        if (!order) return;
-        setCurrentStepIndex(order.status === 'Delivered' ? 5 : 2);
-    }, [order]);
-
     if (!order) {
         return (
             <div className="min-h-screen pt-32 pb-12 px-4 flex flex-col items-center justify-center bg-white">
                 <h2 className="text-2xl font-display text-black mb-4">Order Not Found</h2>
-                <Link to="/profile" className="text-black underline hover:text-[#D39A9F]">Back to Profile</Link>
+                <Link to="/profile/orders" className="text-black underline hover:text-[#D39A9F]">Back to Orders</Link>
             </div>
         );
     }
 
-    const formatDateTime = (dateTimestamp) => {
-        return new Date(dateTimestamp).toLocaleString('en-US', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-    };
-
     // --- DELIVERY TIMELINE CALCULATION ---
-    const deliveryBaseDate = new Date(order.createdAt || order.date || Date.now()).getTime();
     const deliveryStepsRaw = (order.timeline && order.timeline.length > 0)
         ? order.timeline.map(step => ({
-            status: step.status,
-            date: formatDateTime(step.date)
+            status: step.status || order.status || 'Processing',
+            date: formatDateTime(step.date || step.createdAt || order.createdAt || order.date)
         }))
-        : [
-            { status: 'Order Placed', date: formatDateTime(deliveryBaseDate) },
-            { status: 'Processing', date: formatDateTime(deliveryBaseDate + 3600000) },
-            { status: 'Dispatched', date: formatDateTime(deliveryBaseDate + 86400000) },
-            { status: 'In Transit', date: formatDateTime(deliveryBaseDate + 172800000) },
-            { status: 'Out For Delivery', date: formatDateTime(deliveryBaseDate + 259200000) },
-            { status: 'Delivered', date: formatDateTime(deliveryBaseDate + 266400000), isLast: true }
-        ];
+        : [{ status: order.status || 'Processing', date: formatDateTime(order.createdAt || order.date) }];
 
-    const deliverySteps = deliveryStepsRaw.map((step, index) => ({
+    const deliverySteps = deliveryStepsRaw.map((step, index, arr) => ({
         ...step,
-        completed: index <= currentStepIndex,
-        current: index === currentStepIndex
+        completed: true,
+        current: index === arr.length - 1
     }));
-    const currentDeliveryStatus = deliverySteps[currentStepIndex];
+    const currentDeliveryStatus = deliverySteps[deliverySteps.length - 1];
 
     // --- RETURN / EXCHANGE TIMELINE CALCULATION ---
     const returnBaseDate = returnRequest ? new Date(returnRequest.date).getTime() : Date.now();
@@ -132,8 +135,6 @@ const OrderTracking = () => {
 
     // --- VIEW LOGIC ---
     const isReturnView = view === 'return';
-    const isDetailView = view === 'detail';
-
     const activeTimelineSteps = isReturnView ? returnSteps : deliverySteps;
     const activeTitle = isReturnView ? (returnRequest?.type === 'exchange' ? 'Exchange Status' : 'Return Status') : 'Tracking Details';
     const activeStatusObj = isReturnView ? currentReturnStatus : currentDeliveryStatus;
@@ -206,7 +207,7 @@ const OrderTracking = () => {
     return (
         <div className="min-h-screen bg-white font-sans pt-0 md:pt-12 pb-12 selection:bg-[#D39A9F] selection:text-white">
             <div className="md:hidden bg-white shadow-sm p-4 sticky top-0 z-20 flex items-center gap-4">
-                <Link to="/profile" className="p-2 -ml-2 text-black">
+                <Link to="/profile/orders" className="p-2 -ml-2 text-black">
                     <ArrowLeft className="w-5 h-5" />
                 </Link>
                 <h1 className="text-lg font-bold font-display text-black">Order #{(order.displayId || order.orderId || order.id || '').toString().replace('ORD-', '')}</h1>
@@ -214,7 +215,7 @@ const OrderTracking = () => {
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-0">
                 <div className="hidden md:block mb-6">
-                    <Link to="/profile" className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-black transition-colors group uppercase tracking-widest font-bold text-[10px]">
+                    <Link to="/profile/orders" className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-black transition-colors group uppercase tracking-widest font-bold text-[10px]">
                         <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
                         Back to Orders
                     </Link>
@@ -260,34 +261,21 @@ const OrderTracking = () => {
                                 <div className="flex gap-3 items-center">
                                     {returnRequest.items.map((item, idx) => (
                                         <div key={idx} className="relative">
-                                            <img src={item.image} className="w-12 h-12 md:w-14 md:h-14 rounded-lg object-cover border border-gray-100 grayscale-[0.2]" alt="" />
-                                            {/* Badge for status */}
-                                            <div className="absolute -top-1.5 -right-1.5 bg-amber-500 text-white text-[8px] px-1 py-0.5 rounded-full font-bold shadow-sm">Old</div>
-                                        </div>
-                                    ))}
-
-                                    {/* Arrow indicating exchange */}
-                                    {returnRequest.type === 'exchange' && (
-                                        <div className="text-gray-400">
-                                            <RefreshCw className="w-4 h-4" />
-                                        </div>
-                                    )}
-
-                                    {/* New Item (Simulated for Exchange) */}
-                                    {returnRequest.type === 'exchange' && returnRequest.items.map((item, idx) => (
-                                        <div key={`new-${idx}`} className="relative">
-                                            <img src={item.image} className="w-12 h-12 md:w-14 md:h-14 rounded-lg object-cover border border-green-200" alt="" />
-                                            <div className="absolute -top-1.5 -right-1.5 bg-green-600 text-white text-[8px] px-1 py-0.5 rounded-full font-bold shadow-sm">New</div>
+                                            <ProductThumb
+                                                src={item.image}
+                                                alt={item.name}
+                                                className="w-12 h-12 md:w-14 md:h-14 rounded-lg object-cover border border-gray-100 grayscale-[0.2]"
+                                                fallbackClassName="border-gray-100"
+                                                fallbackIconClassName="w-4 h-4"
+                                            />
                                         </div>
                                     ))}
 
                                     <div className="flex flex-col justify-center pl-1">
                                         <p className="text-xs font-bold text-black">ID: {returnRequest.id}</p>
-                                        {returnRequest.type === 'exchange' ? (
-                                            <p className="text-[10px] text-gray-500 font-bold mt-0.5">Size Changed: <span className="text-black">M</span></p>
-                                        ) : (
-                                            <p className="text-[10px] text-gray-500 mt-0.5">Refund Method: Original Source</p>
-                                        )}
+                                        <p className="text-[10px] text-gray-500 mt-0.5 capitalize">
+                                            {returnRequest.type} request • {returnRequest.status}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -315,12 +303,18 @@ const OrderTracking = () => {
                             <div className="flex gap-4 overflow-x-auto pb-1 scrollbar-hide">
                                 {order.items.map((item, idx) => (
                                     <div key={idx} className="flex-shrink-0 w-12 md:w-14">
-                                        <img src={item.image} className="w-12 h-12 md:w-14 md:h-14 rounded-lg object-cover border border-gray-100" alt="" />
+                                        <ProductThumb
+                                            src={item.image}
+                                            alt={item.name}
+                                            className="w-12 h-12 md:w-14 md:h-14 rounded-lg object-cover border border-gray-100"
+                                            fallbackClassName="border-gray-100"
+                                            fallbackIconClassName="w-4 h-4"
+                                        />
                                     </div>
                                 ))}
                                 <div className="flex flex-col justify-center pl-1">
                                     <p className="text-xs font-bold text-black">{order.items.length} Items</p>
-                                    <p className="text-[10px] text-gray-500 mt-0.5">Total: ₹{order.total.toLocaleString()}</p>
+                                    <p className="text-[10px] text-gray-500 mt-0.5">Total: {formatCurrency(order.total)}</p>
                                 </div>
                             </div>
                         </div>
