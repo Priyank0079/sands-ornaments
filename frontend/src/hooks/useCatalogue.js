@@ -66,6 +66,8 @@ export const useCatalogue = () => {
                 navGiftsFor: prod.navGiftsFor || [],
                 navOccasions: prod.navOccasions || [],
                 faqs: prod.faqs || [], // Added FAQs
+                goldCategory: prod.goldCategory || '',
+                silverCategory: prod.silverCategory || '',
                 variants: (prod.variants || []).map((v, index) => ({
                     ...v,
                     id: v._id || v.id || `${prod._id}-variant-${index}`

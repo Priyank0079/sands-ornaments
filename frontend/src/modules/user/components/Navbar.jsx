@@ -31,18 +31,57 @@ const Navbar = () => {
         const visibleCategories = (categories || []).filter(
             (c) => c.isActive !== false && c.showInNavbar !== false
         );
-        const getCategoriesByMetal = (metal) => {
-            const byMetal = visibleCategories.filter(c => c.metal?.toLowerCase() === metal.toLowerCase());
-            return byMetal.map(cat => ({ name: cat.name, path: `/shop?category=${cat._id || cat.id}` }));
+        const getCategoriesByMetal = (metal) => (
+            visibleCategories.filter(c => c.metal?.toLowerCase() === metal.toLowerCase())
+        );
+        const normalizeSilverTier = (value) => {
+            const normalized = String(value || '').trim().toLowerCase();
+            if (!normalized) return 'silver';
+            if (normalized === '925 sterling silver') return '925 sterling silver';
+            return 'silver';
+        };
+        const getTieredCategories = (metal, purityValue) => {
+            const metalCategories = getCategoriesByMetal(metal);
+            const productsForMetal = (products || []).filter((p) => {
+                const categoryMatch = metalCategories.some((c) => String(c._id || c.id) === String(p.categoryId));
+                return categoryMatch || String(p.metal || '').toLowerCase() === metal.toLowerCase();
+            });
+            const productMatchesPurity = (product) => {
+                if (metal === 'gold') {
+                    return String(product.goldCategory || '') === String(purityValue || '');
+                }
+                const tier = normalizeSilverTier(product.silverCategory);
+                return tier === purityValue;
+            };
+            const matchedCategoryIds = new Set(
+                productsForMetal.filter(productMatchesPurity).map((p) => String(p.categoryId)).filter(Boolean)
+            );
+            return metalCategories
+                .filter((cat) => matchedCategoryIds.has(String(cat._id || cat.id)))
+                .map((cat) => ({
+                    name: cat.name,
+                    path: `/shop?metal=${metal}&${metal === 'gold' ? 'karat' : 'silver_type'}=${encodeURIComponent(purityValue)}&category=${cat._id || cat.id}`
+                }));
         };
 
         return {
             shopByCategory: {
-                silver: [
-                    ...getCategoriesByMetal('silver'),
-                    { name: "All Products", path: "/shop" }
-                ],
-                gold: getCategoriesByMetal('gold')
+                silver: {
+                    tiers: [
+                        { label: '925 Sterling Silver', value: '925 sterling silver' },
+                        { label: 'Silver', value: 'silver' }
+                    ],
+                    categories: (purity) => getTieredCategories('silver', purity)
+                },
+                gold: {
+                    tiers: [
+                        { label: '14 Karat', value: '14' },
+                        { label: '18 Karat', value: '18' },
+                        { label: '22 Karat', value: '22' },
+                        { label: '24 Karat', value: '24' }
+                    ],
+                    categories: (purity) => getTieredCategories('gold', purity)
+                }
             },
             giftsFor: normalizeItems(sectionGifts, [
                 { name: "Womens", path: "/shop?filter=womens" },
@@ -64,6 +103,7 @@ const Navbar = () => {
     // Sidebar Accordion State
     const [openSection, setOpenSection] = useState('shopByCategory'); // Default open
     const [mobileSelectedMetal, setMobileSelectedMetal] = useState(null); // null, 'gold', 'silver'
+    const [mobileSelectedPurity, setMobileSelectedPurity] = useState(null);
 
     const toggleSection = (section) => {
         setOpenSection(openSection === section ? null : section);
@@ -194,7 +234,7 @@ const Navbar = () => {
                                 {/* Header */}
                                 <div className="flex justify-between items-center mb-8">
                                     <span className="font-display text-xl font-bold tracking-widest text-black">MENU</span>
-                                    <button onClick={() => { toggleMenu(false); setMobileSelectedMetal(null); }} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                                    <button onClick={() => { toggleMenu(false); setMobileSelectedMetal(null); setMobileSelectedPurity(null); }} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                                         <X className="w-6 h-6 text-black" />
                                     </button>
                                 </div>
@@ -223,7 +263,7 @@ const Navbar = () => {
                                                         <div className="grid grid-cols-2 gap-3 pl-4 py-3">
                                                             <button
                                                                 type="button"
-                                                                onClick={() => setMobileSelectedMetal('gold')}
+                                                                onClick={() => { setMobileSelectedMetal('gold'); setMobileSelectedPurity(null); }}
                                                                 className="flex flex-col items-center justify-center p-4 bg-[#FDFBF7] border border-gray-100 rounded-2xl hover:bg-[#D4AF37]/5 transition-colors text-center"
                                                             >
                                                                 <div className="w-10 h-10 bg-[#D4AF37] rounded-full flex items-center justify-center mb-2 shadow-sm">
@@ -232,7 +272,7 @@ const Navbar = () => {
                                                                 <span className="text-[10px] font-black text-black uppercase">GOLD</span>
                                                             </button>
                                                             <button 
-                                                                onClick={() => setMobileSelectedMetal('silver')}
+                                                                onClick={() => { setMobileSelectedMetal('silver'); setMobileSelectedPurity(null); }}
                                                                 className="flex flex-col items-center justify-center p-4 bg-[#FDFBF7] border border-gray-100 rounded-2xl hover:bg-gray-100 transition-colors"
                                                             >
                                                                 <div className="w-10 h-10 bg-[#8D6E63] rounded-full flex items-center justify-center mb-2 shadow-sm">
@@ -248,17 +288,30 @@ const Navbar = () => {
                                                                     {mobileSelectedMetal === 'gold' ? 'Gold Items' : 'Silver Items'}
                                                                 </span>
                                                                 <button 
-                                                                    onClick={() => setMobileSelectedMetal(null)}
+                                                                    onClick={() => { setMobileSelectedMetal(null); setMobileSelectedPurity(null); }}
                                                                     className="text-xs text-[#D39A9F]"
                                                                 >
                                                                     Change
                                                                 </button>
                                                             </div>
-                                                            {sidebarMenu.shopByCategory[mobileSelectedMetal]?.length > 0 ? (
+                                                            {!mobileSelectedPurity ? (
+                                                                <div className="grid grid-cols-2 gap-3 pl-4 py-3">
+                                                                    {sidebarMenu.shopByCategory[mobileSelectedMetal].tiers.map((tier) => (
+                                                                        <button
+                                                                            key={tier.value}
+                                                                            type="button"
+                                                                            onClick={() => setMobileSelectedPurity(tier.value)}
+                                                                            className="flex flex-col items-center justify-center p-4 bg-white border border-gray-100 rounded-2xl hover:bg-[#FDF5F6] transition-colors text-center"
+                                                                        >
+                                                                            <span className="text-[10px] font-black text-black uppercase">{tier.label}</span>
+                                                                        </button>
+                                                                    ))}
+                                                                </div>
+                                                            ) : sidebarMenu.shopByCategory[mobileSelectedMetal].categories(mobileSelectedPurity)?.length > 0 ? (
                                                                 <ul className="pl-4 py-2 space-y-3">
-                                                                    {sidebarMenu.shopByCategory[mobileSelectedMetal].map((item, idx) => (
+                                                                    {sidebarMenu.shopByCategory[mobileSelectedMetal].categories(mobileSelectedPurity).map((item, idx) => (
                                                                         <li key={idx}>
-                                                                            <Link to={item.path} onClick={() => { toggleMenu(false); setMobileSelectedMetal(null); }} className="text-gray-600 text-sm hover:text-[#D39A9F] block">
+                                                                            <Link to={item.path} onClick={() => { toggleMenu(false); setMobileSelectedMetal(null); setMobileSelectedPurity(null); }} className="text-gray-600 text-sm hover:text-[#D39A9F] block">
                                                                                 {item.name}
                                                                             </Link>
                                                                         </li>
@@ -267,14 +320,28 @@ const Navbar = () => {
                                                             ) : (
                                                                 <div className="pl-4 py-4 pr-2 space-y-2">
                                                                     <p className="text-sm font-semibold text-black">Coming Soon</p>
-                                                                    <p className="text-xs text-gray-500">Gold categories will appear here as soon as they are added.</p>
+                                                                    <p className="text-xs text-gray-500">
+                                                                        {mobileSelectedPurity
+                                                                            ? `Categories for ${mobileSelectedPurity} will appear here as soon as they are added.`
+                                                                            : 'Categories will appear here as soon as they are added.'
+                                                                        }
+                                                                    </p>
                                                                     <Link
                                                                         to="/gold-collection"
-                                                                        onClick={() => { toggleMenu(false); setMobileSelectedMetal(null); }}
+                                                                        onClick={() => { toggleMenu(false); setMobileSelectedMetal(null); setMobileSelectedPurity(null); }}
                                                                         className="inline-flex text-xs font-bold uppercase tracking-wider text-[#D39A9F] hover:text-black transition-colors"
                                                                     >
                                                                         View Gold Update
                                                                     </Link>
+                                                                    {mobileSelectedPurity && (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => setMobileSelectedPurity(null)}
+                                                                            className="text-[10px] font-black uppercase tracking-widest text-[#D39A9F] hover:text-black transition-colors flex items-center gap-2"
+                                                                        >
+                                                                            <ArrowLeft className="w-4 h-4" /> Back to Purity
+                                                                        </button>
+                                                                    )}
                                                                 </div>
                                                             )}
                                                         </div>

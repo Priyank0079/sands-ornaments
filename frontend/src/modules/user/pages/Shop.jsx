@@ -39,6 +39,8 @@ const Shop = () => {
     const limitQuery = queryParams.get('limit');
     const sortQuery = queryParams.get('sort');
     const searchQuery = queryParams.get('search');
+    const karatQuery = queryParams.get('karat');
+    const silverTypeQuery = queryParams.get('silver_type');
 
     useEffect(() => {
         const categoryQuery = queryParams.get('category');
@@ -179,6 +181,21 @@ const Shop = () => {
             const cat = categories.find(c => String(c._id || c.id) === String(catId));
             return cat?.metal || product.metal;
         };
+        const normalizeSilverTier = (value) => {
+            const normalized = String(value || '').trim().toLowerCase();
+            if (!normalized) return 'silver';
+            if (normalized === '925 sterling silver') return '925 sterling silver';
+            return 'silver';
+        };
+        const matchesPurityTier = (product) => {
+            if (metalQuery?.toLowerCase() === 'gold' && karatQuery) {
+                return String(product.goldCategory || '') === String(karatQuery);
+            }
+            if (metalQuery?.toLowerCase() === 'silver' && silverTypeQuery) {
+                return normalizeSilverTier(product.silverCategory) === normalizeSilverTier(silverTypeQuery);
+            }
+            return true;
+        };
 
         // 1. Determine Base Products & Title from URL
         if (path === '/new-arrivals') {
@@ -193,6 +210,13 @@ const Shop = () => {
                 const metal = getProductMetal(p);
                 return metal?.toLowerCase() === metalQuery.toLowerCase();
             });
+            if (karatQuery) {
+                title = `${metalQuery.toUpperCase()} ${karatQuery} Karat`;
+            } else if (silverTypeQuery) {
+                title = metalQuery.toLowerCase() === 'silver'
+                    ? (normalizeSilverTier(silverTypeQuery) === '925 sterling silver' ? '925 Sterling Silver' : 'Silver')
+                    : title;
+            }
         } else if (category) {
             const currentCat = categories.find(c => c.path === category || c.slug === category);
             title = currentCat ? currentCat.name : category.charAt(0).toUpperCase() + category.slice(1);
@@ -201,6 +225,10 @@ const Shop = () => {
             title = `Gifts for ${filterQuery.charAt(0).toUpperCase() + filterQuery.slice(1)}`;
         } else if (occasionQuery) {
             title = `${occasionQuery.charAt(0).toUpperCase() + occasionQuery.slice(1)} Picks`;
+        }
+
+        if (metalQuery && (karatQuery || silverTypeQuery)) {
+            baseProducts = baseProducts.filter(matchesPurityTier);
         }
 
         if (categoryQuery) {

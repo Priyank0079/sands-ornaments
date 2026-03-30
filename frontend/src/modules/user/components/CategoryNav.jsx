@@ -24,6 +24,7 @@ import {
 const CategoryNav = () => {
     const [hoveredCategory, setHoveredCategory] = useState(null);
     const [selectedMetal, setSelectedMetal] = useState(null);
+    const [selectedPurity, setSelectedPurity] = useState(null);
     const { categories: dynamicCategories, products, homepageSections } = useShop();
     const navigate = useNavigate();
 
@@ -99,6 +100,54 @@ const CategoryNav = () => {
         dynamicCategories.filter((c) => c.isActive !== false && c.showInNavbar !== false)
     ), [dynamicCategories]);
 
+    const normalizeSilverTier = (value) => {
+        const normalized = String(value || '').trim().toLowerCase();
+        if (!normalized) return 'silver';
+        if (normalized === '925 sterling silver') return '925 sterling silver';
+        return 'silver';
+    };
+
+    const getTieredCategoryCards = (metal, purityValue) => {
+        const metalCategories = getCategoriesByMetal(metal);
+        const productsForMetal = (products || []).filter((p) => {
+            const categoryMatch = metalCategories.some((c) => String(c._id || c.id) === String(p.categoryId));
+            return categoryMatch || String(p.metal || '').toLowerCase() === metal.toLowerCase();
+        });
+
+        const productMatchesPurity = (product) => {
+            if (metal === 'gold') {
+                return String(product.goldCategory || '') === String(purityValue || '');
+            }
+            const tier = normalizeSilverTier(product.silverCategory);
+            return tier === purityValue;
+        };
+
+        const matchedCategoryIds = new Set(
+            productsForMetal.filter(productMatchesPurity).map((p) => String(p.categoryId)).filter(Boolean)
+        );
+
+        return metalCategories
+            .filter((cat) => matchedCategoryIds.has(String(cat._id || cat.id)))
+            .map((cat) => ({
+                id: cat._id || cat.id,
+                name: cat.name,
+                path: `/shop?metal=${metal}&${metal === 'gold' ? 'karat' : 'silver_type'}=${encodeURIComponent(purityValue)}&category=${cat._id || cat.id}`,
+                image: cat.image || ''
+            }));
+    };
+
+    const goldPurityCards = [
+        { id: '14', name: '14 Karat', value: '14' },
+        { id: '18', name: '18 Karat', value: '18' },
+        { id: '22', name: '22 Karat', value: '22' },
+        { id: '24', name: '24 Karat', value: '24' }
+    ];
+
+    const silverPurityCards = [
+        { id: '925-sterling', name: '925 Sterling Silver', value: '925 sterling silver' },
+        { id: 'silver', name: 'Silver', value: 'silver' }
+    ];
+
     const getCategoriesByMetal = (metal) => (
         visibleCategories.filter((c) => c.metal?.toLowerCase() === metal.toLowerCase())
     );
@@ -121,7 +170,7 @@ const CategoryNav = () => {
                             key={item.id}
                             className="h-full flex items-center"
                             onMouseEnter={() => setHoveredCategory(item.id)}
-                            onMouseLeave={() => { setHoveredCategory(null); setSelectedMetal(null); }}
+                            onMouseLeave={() => { setHoveredCategory(null); setSelectedMetal(null); setSelectedPurity(null); }}
                         >
                             <Link
                                 to={item.path}
@@ -154,7 +203,7 @@ const CategoryNav = () => {
                                                         >
                                                             {/* Gold Collection */}
                                                             <button 
-                                                                onClick={() => setSelectedMetal('gold')}
+                                                                onClick={() => { setSelectedMetal('gold'); setSelectedPurity(null); }}
                                                                 className="group relative bg-[#FDFBF7] border border-gray-100 rounded-[2rem] p-10 text-center transition-all hover:shadow-2xl hover:shadow-[#D4AF37]/10 hover:-translate-y-1 overflow-hidden"
                                                             >
                                                                 <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
@@ -171,7 +220,7 @@ const CategoryNav = () => {
 
                                                             {/* Silver Collection */}
                                                             <button 
-                                                                onClick={() => setSelectedMetal('silver')}
+                                                                onClick={() => { setSelectedMetal('silver'); setSelectedPurity(null); }}
                                                                 className="group relative bg-white border border-gray-100 rounded-[2rem] p-10 text-center transition-all hover:shadow-2xl hover:shadow-[#D39A9F]/10 hover:-translate-y-1 overflow-hidden"
                                                             >
                                                                 <div className="absolute top-0 right-0 w-32 h-32 bg-[#D39A9F]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
@@ -188,7 +237,8 @@ const CategoryNav = () => {
                                                         </motion.div>
                                                     ) : (
                                                         (() => {
-                                                            const list = getMetalCategoryCards(selectedMetal);
+                                                            const purityCards = selectedMetal === 'gold' ? goldPurityCards : silverPurityCards;
+                                                            const list = selectedPurity ? getTieredCategoryCards(selectedMetal, selectedPurity) : [];
                                                             const hasCategories = list.length > 0;
 
                                                             return (
@@ -196,7 +246,7 @@ const CategoryNav = () => {
                                                                 <div className="flex items-center justify-between border-b border-gray-100 pb-6">
                                                                 <Link 
                                                                     to={hasCategories ? `/shop?metal=${selectedMetal}` : '/gold-collection'}
-                                                                    onClick={() => { setHoveredCategory(null); setSelectedMetal(null); }}
+                                                                    onClick={() => { setHoveredCategory(null); setSelectedMetal(null); setSelectedPurity(null); }}
                                                                     className="flex items-center gap-4 group/header"
                                                                 >
                                                                     <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-transform group-hover/header:rotate-12 ${selectedMetal === 'gold' ? 'bg-[#D4AF37]' : 'bg-gray-300'}`}>
@@ -210,14 +260,37 @@ const CategoryNav = () => {
                                                                     </div>
                                                                 </Link>
                                                                     <button 
-                                                                        onClick={() => setSelectedMetal(null)}
+                                                                        onClick={() => { setSelectedMetal(null); setSelectedPurity(null); }}
                                                                         className="text-[10px] font-black uppercase tracking-widest text-[#D39A9F] hover:text-black transition-colors flex items-center gap-2"
                                                                     >
                                                                         <ArrowLeft className="w-4 h-4" /> Back to Metals
                                                                     </button>
                                                                 </div>
 
-                                                                {hasCategories ? (
+                                                                {!selectedPurity ? (
+                                                                    <motion.div
+                                                                        initial={{ opacity: 0, y: 10 }}
+                                                                        animate={{ opacity: 1, y: 0 }}
+                                                                        className={`grid ${selectedMetal === 'gold' ? 'grid-cols-4' : 'grid-cols-2'} gap-8`}
+                                                                    >
+                                                                        {purityCards.map((purity) => (
+                                                                            <button
+                                                                                key={purity.id}
+                                                                                onClick={() => setSelectedPurity(purity.value)}
+                                                                                className="group relative bg-[#FDFBF7] border border-gray-100 rounded-[2rem] p-8 text-center transition-all hover:shadow-2xl hover:shadow-[#D39A9F]/10 hover:-translate-y-1 overflow-hidden"
+                                                                            >
+                                                                                <div className="relative z-10 space-y-2">
+                                                                                    <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#D39A9F]">
+                                                                                        {selectedMetal === 'gold' ? 'Gold Karat' : 'Silver Purity'}
+                                                                                    </div>
+                                                                                    <div className="text-xl font-black text-gray-900 uppercase">
+                                                                                        {purity.name}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </button>
+                                                                        ))}
+                                                                    </motion.div>
+                                                                ) : hasCategories ? (
                                                                     <motion.div 
                                                                         initial={{ opacity: 0, y: 20 }}
                                                                         animate={{ opacity: 1, y: 0 }}
@@ -227,7 +300,7 @@ const CategoryNav = () => {
                                                                             <Link 
                                                                                 key={cat.id || cat._id} 
                                                                                 to={cat.path?.startsWith('/') ? cat.path : `/shop?category=${cat.id || cat._id}`}
-                                                                                onClick={() => { setHoveredCategory(null); setSelectedMetal(null); }}
+                                                                                onClick={() => { setHoveredCategory(null); setSelectedMetal(null); setSelectedPurity(null); }}
                                                                                 className="flex flex-col items-center text-center gap-3 group"
                                                                             >
                                                                                 <div className="w-20 h-20 rounded-full overflow-hidden border border-gray-100 shadow-sm transition-all group-hover:shadow-md mx-auto group-hover:-translate-y-1 ring-4 ring-white">
@@ -244,8 +317,14 @@ const CategoryNav = () => {
                                                                         </div>
                                                                         <div className="text-center">
                                                                             <h4 className="font-display text-2xl text-black">Coming Soon</h4>
-                                                                            <p className="text-gray-400 font-serif italic text-sm">We're expanding our {selectedMetal} collection. Stay tuned!</p>
+                                                                            <p className="text-gray-400 font-serif italic text-sm">We are expanding our {selectedMetal} collection for {selectedPurity}.</p>
                                                                         </div>
+                                                                        <button
+                                                                            onClick={() => setSelectedPurity(null)}
+                                                                            className="text-[10px] font-black uppercase tracking-widest text-[#D39A9F] hover:text-black transition-colors flex items-center gap-2"
+                                                                        >
+                                                                            <ArrowLeft className="w-4 h-4" /> Back to Purity
+                                                                        </button>
                                                                     </div>
                                                                     )}
                                                             </div>
