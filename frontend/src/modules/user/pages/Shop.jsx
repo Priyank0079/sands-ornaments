@@ -177,6 +177,8 @@ const Shop = () => {
             return false;
         };
         const getProductMetal = (product) => {
+            const material = String(product?.material || '').trim();
+            if (material) return material;
             const catId = product.categoryId || product.category_id || '';
             const cat = categories.find(c => String(c._id || c.id) === String(catId));
             return cat?.metal || product.metal;

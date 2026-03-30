@@ -31,9 +31,6 @@ const Navbar = () => {
         const visibleCategories = (categories || []).filter(
             (c) => c.isActive !== false && c.showInNavbar !== false
         );
-        const getCategoriesByMetal = (metal) => (
-            visibleCategories.filter(c => c.metal?.toLowerCase() === metal.toLowerCase())
-        );
         const normalizeSilverTier = (value) => {
             const normalized = String(value || '').trim().toLowerCase();
             if (!normalized) return 'silver';
@@ -41,11 +38,9 @@ const Navbar = () => {
             return 'silver';
         };
         const getTieredCategories = (metal, purityValue) => {
-            const metalCategories = getCategoriesByMetal(metal);
-            const productsForMetal = (products || []).filter((p) => {
-                const categoryMatch = metalCategories.some((c) => String(c._id || c.id) === String(p.categoryId));
-                return categoryMatch || String(p.metal || '').toLowerCase() === metal.toLowerCase();
-            });
+            const productsForMetal = (products || []).filter((p) => (
+                String(p.material || p.metal || '').toLowerCase() === metal.toLowerCase()
+            ));
             const productMatchesPurity = (product) => {
                 if (metal === 'gold') {
                     return String(product.goldCategory || '') === String(purityValue || '');
@@ -56,7 +51,7 @@ const Navbar = () => {
             const matchedCategoryIds = new Set(
                 productsForMetal.filter(productMatchesPurity).map((p) => String(p.categoryId)).filter(Boolean)
             );
-            return metalCategories
+            return visibleCategories
                 .filter((cat) => matchedCategoryIds.has(String(cat._id || cat.id)))
                 .map((cat) => ({
                     name: cat.name,

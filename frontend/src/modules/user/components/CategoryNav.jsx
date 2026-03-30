@@ -108,11 +108,10 @@ const CategoryNav = () => {
     };
 
     const getTieredCategoryCards = (metal, purityValue) => {
-        const metalCategories = getCategoriesByMetal(metal);
-        const productsForMetal = (products || []).filter((p) => {
-            const categoryMatch = metalCategories.some((c) => String(c._id || c.id) === String(p.categoryId));
-            return categoryMatch || String(p.metal || '').toLowerCase() === metal.toLowerCase();
-        });
+        const allCategories = visibleCategories;
+        const productsForMetal = (products || []).filter((p) => (
+            String(p.material || p.metal || '').toLowerCase() === metal.toLowerCase()
+        ));
 
         const productMatchesPurity = (product) => {
             if (metal === 'gold') {
@@ -126,7 +125,7 @@ const CategoryNav = () => {
             productsForMetal.filter(productMatchesPurity).map((p) => String(p.categoryId)).filter(Boolean)
         );
 
-        return metalCategories
+        return allCategories
             .filter((cat) => matchedCategoryIds.has(String(cat._id || cat.id)))
             .map((cat) => ({
                 id: cat._id || cat.id,

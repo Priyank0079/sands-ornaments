@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Edit2, Trash2, Eye, EyeOff, Box, CheckCircle, AlertCircle, Plus } from 'lucide-react';
+import { Edit2, Trash2, Eye, EyeOff, Box, CheckCircle } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader';
 import DataTable from '../../components/common/DataTable';
 import AdminStatsCard from '../../components/AdminStatsCard';
@@ -12,7 +12,7 @@ const CategoryPage = () => {
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedMetal, setSelectedMetal] = useState(null);
+    const [selectedMetal, setSelectedMetal] = useState('all');
     const [statusFilter, setStatusFilter] = useState('all');
 
     useEffect(() => {
@@ -179,94 +179,16 @@ const CategoryPage = () => {
 
     if (loading) return <div className="p-20 text-center font-bold text-gray-400 animate-pulse tracking-widest uppercase">Initializing Category Vault...</div>;
 
-    if (!selectedMetal) {
-        return (
-            <div className="space-y-10 animate-in fade-in duration-500">
-                <PageHeader
-                    title="Metal Selection"
-                    subtitle="Select a collection metal type to manage its respective categories."
-                />
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto py-10">
-                    {/* Gold Collection */}
-                    <button
-                        onClick={() => setSelectedMetal('gold')}
-                        className="group relative bg-[#FDFBF7] border border-gray-100 rounded-[2.5rem] p-12 text-center transition-all hover:shadow-2xl hover:shadow-[#D4AF37]/10 hover:-translate-y-2 overflow-hidden"
-                    >
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[#D4AF37]/10 transition-colors" />
-                        <div className="relative z-10 space-y-6">
-                            <div className="w-24 h-24 bg-gradient-to-br from-[#D4AF37] to-[#AA8C2C] rounded-full mx-auto flex items-center justify-center shadow-lg shadow-[#D4AF37]/20 group-hover:scale-110 transition-transform">
-                                <span className="text-3xl font-black text-white italic">Au</span>
-                            </div>
-                            <div>
-                                <h3 className="text-2xl font-black text-gray-900 uppercase tracking-tight">Gold Collection</h3>
-                                <p className="text-[10px] font-bold text-[#AA8C2C] uppercase tracking-[0.2em] mt-2">Premium 18K & 22K Hallmarked</p>
-                            </div>
-                            <div className="pt-4">
-                                <span className="inline-block px-4 py-2 bg-[#D4AF37]/10 text-[#AA8C2C] rounded-full text-[10px] font-black uppercase tracking-widest border border-[#D4AF37]/20">Active Management</span>
-                            </div>
-                        </div>
-                    </button>
-
-                    {/* Silver Collection */}
-                    <button
-                        onClick={() => setSelectedMetal('silver')}
-                        className="group relative bg-white border border-gray-100 rounded-[2.5rem] p-12 text-center transition-all hover:shadow-2xl hover:shadow-[#8D6E63]/10 hover:-translate-y-2 overflow-hidden"
-                    >
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-[#8D6E63]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[#8D6E63]/10 transition-colors" />
-                        <div className="relative z-10 space-y-6">
-                            <div className="w-24 h-24 bg-gradient-to-br from-[#C0C0C0] to-[#8D8D8D] rounded-full mx-auto flex items-center justify-center shadow-lg shadow-gray-300 group-hover:scale-110 transition-transform">
-                                <span className="text-3xl font-black text-white italic">Ag</span>
-                            </div>
-                            <div>
-                                <h3 className="text-2xl font-black text-gray-900 uppercase tracking-tight">Silver Collection</h3>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-2">Sterling 925 Hallmarked</p>
-                            </div>
-                            <div className="pt-4">
-                                <span className="inline-block px-4 py-2 bg-[#8D6E63]/10 text-[#8D6E63] rounded-full text-[10px] font-black uppercase tracking-widest border border-[#8D6E63]/20">Active Management</span>
-                            </div>
-                        </div>
-                    </button>
-                    {/* All Collections */}
-                    <button
-                        onClick={() => setSelectedMetal('all')}
-                        className="group relative bg-[#F8F9FA] border border-gray-100 rounded-[2.5rem] p-12 text-center transition-all hover:shadow-2xl hover:shadow-gray-200/50 hover:-translate-y-2 overflow-hidden md:col-span-2"
-                    >
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-gray-200/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-gray-200/10 transition-colors" />
-                        <div className="relative z-10 flex flex-col items-center gap-6">
-                            <div className="w-24 h-24 bg-gradient-to-br from-gray-700 to-black rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                                <Box className="w-10 h-10 text-white" />
-                            </div>
-                            <div>
-                                <h3 className="text-2xl font-black text-gray-900 uppercase tracking-tight">All Collections</h3>
-                                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mt-2">Complete Catalog Overview</p>
-                            </div>
-                        </div>
-                    </button>
-                </div>
-            </div>
-        );
-    }
-
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
-            <div className="flex items-center gap-4">
-                <button
-                    onClick={() => setSelectedMetal(null)}
-                    className="p-2.5 hover:bg-white rounded-xl border border-gray-100 shadow-sm transition-all text-gray-400 hover:text-black"
-                    title="Change Metal"
-                >
-                    <AlertCircle className="w-5 h-5" />
-                </button>
-                <PageHeader
-                    title={selectedMetal === 'all' ? "Master Category Management" : `${selectedMetal.toUpperCase()} Category Management`}
-                    subtitle={selectedMetal === 'all' ? "Overview of all collections across metals." : `Manage ${selectedMetal === 'gold' ? '18K/22K gold' : 'sterling silver'} collections.`}
-                    action={{
-                        label: "Add New Category",
-                        onClick: () => navigate(`/admin/categories/new${selectedMetal !== 'all' ? `?metal=${selectedMetal}` : ''}`)
-                    }}
-                />
-            </div>
+            <PageHeader
+                title="Category Management"
+                subtitle="Manage shared categories across all collections."
+                action={{
+                    label: "Add New Category",
+                    onClick: () => navigate(`/admin/categories/new`)
+                }}
+            />
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

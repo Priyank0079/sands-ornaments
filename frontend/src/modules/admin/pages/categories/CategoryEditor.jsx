@@ -1,15 +1,14 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ImagePlus, Save, X } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader';
-import { FormSection, Input, Select, TextArea } from '../../components/common/FormControls';
+import { FormSection, Input, TextArea } from '../../components/common/FormControls';
 import { adminService } from '../../services/adminService';
 import toast from 'react-hot-toast';
 
 const CategoryEditor = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
     const isEditMode = Boolean(id);
 
     const [loading, setLoading] = useState(isEditMode);
@@ -22,20 +21,12 @@ const CategoryEditor = () => {
         name: '',
         slug: '',
         description: '',
-        metal: 'silver',
         sortOrder: 0,
         showInNavbar: true,
         showInCollection: true,
         isActive: true,
         deletedImages: []
     });
-
-    useEffect(() => {
-        const metalParam = searchParams.get('metal');
-        if (metalParam && ['gold', 'silver'].includes(metalParam.toLowerCase())) {
-            setFormData(prev => ({ ...prev, metal: metalParam.toLowerCase() }));
-        }
-    }, [searchParams]);
 
     useEffect(() => {
         const fetchAll = async () => {
@@ -60,7 +51,6 @@ const CategoryEditor = () => {
                         name: data.name || '',
                         slug: data.slug || '',
                         description: data.description || '',
-                        metal: data.metal || 'silver',
                         sortOrder: data.sortOrder ?? 0,
                         showInNavbar: data.showInNavbar !== false,
                         showInCollection: data.showInCollection !== false,
@@ -115,7 +105,6 @@ const CategoryEditor = () => {
     const validate = () => {
         const nextErrors = {};
         if (!formData.name.trim()) nextErrors.name = 'Category name is required';
-        if (!formData.metal) nextErrors.metal = 'Metal type is required';
         if (formData.sortOrder === '' || formData.sortOrder === null || formData.sortOrder === undefined) {
             nextErrors.sortOrder = 'Sort order is required';
         }
@@ -148,7 +137,6 @@ const CategoryEditor = () => {
             data.append('name', formData.name.trim());
             if (formData.slug?.trim()) data.append('slug', formData.slug.trim());
             data.append('description', formData.description || '');
-            data.append('metal', formData.metal);
             data.append('sortOrder', Number(formData.sortOrder) || 0);
             data.append('showInNavbar', formData.showInNavbar);
             data.append('showInCollection', formData.showInCollection);
@@ -178,11 +166,6 @@ const CategoryEditor = () => {
             setLoading(false);
         }
     };
-
-    const metalOptions = useMemo(() => ([
-        { label: 'Silver', value: 'silver' },
-        { label: 'Gold', value: 'gold' }
-    ]), []);
 
     if (loading) {
         return (
@@ -219,13 +202,6 @@ const CategoryEditor = () => {
                                 placeholder="Auto-generated from name"
                             />
                         </div>
-                        <Select
-                            label="Metal"
-                            name="metal"
-                            value={formData.metal}
-                            onChange={handleChange}
-                            options={metalOptions}
-                        />
                         <Input
                             label="Sort Order"
                             name="sortOrder"
