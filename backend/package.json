@@ -10,7 +10,9 @@
     "seed:categories": "node src/seeders/categorySeeder.js",
     "seed:products": "node src/seeders/productSeeder.js",
     "migrate:product-variant-pricing:dry": "node scripts/migrate-product-variant-pricing.js",
-    "migrate:product-variant-pricing": "node scripts/migrate-product-variant-pricing.js --apply"
+    "migrate:product-variant-pricing": "node scripts/migrate-product-variant-pricing.js --apply",
+    "migrate:product-purity:dry": "node scripts/migrate-product-purity.js",
+    "migrate:product-purity": "node scripts/migrate-product-purity.js --apply"
   },
   "dependencies": {
     "@fluidjs/multer-cloudinary": "^1.0.4",
