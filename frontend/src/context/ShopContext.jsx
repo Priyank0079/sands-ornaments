@@ -316,7 +316,7 @@ export const ShopProvider = ({ children }) => {
             
             // 1. Create order on backend
             // Note: backend expects { items: [{productId, variantId, quantity}], shippingAddress, paymentMethod, couponCode }
-            const res = await api.post('/user/orders', {
+            const res = await api.post('/user/orders/place', {
                 items: (items || cart).map(item => ({
                     productId: item.id || item._id,
                     variantId: item.variantId || item.variants?.[0]?.id || item.variants?.[0]?._id,
@@ -346,7 +346,12 @@ export const ShopProvider = ({ children }) => {
             return order._id;
 
         } catch (err) {
-            toast.error(err.response?.data?.message || "Checkout failed");
+            const apiError = err.response?.data;
+            if (apiError?.error === "VALIDATION_ERROR") {
+                toast.error("Please check your shipping address and try again.");
+            } else {
+                toast.error(apiError?.message || "Checkout failed");
+            }
             return null;
         }
     };
