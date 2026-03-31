@@ -5,13 +5,35 @@ import { adminService } from '../services/adminService';
 import toast from 'react-hot-toast';
 
 const INITIAL_RATES = {
-  goldPerGram: 0,
-  goldPerMilligram: 0,
-  silverPerGram: 0,
-  silverPerMilligram: 0
+  gold10g: {
+    k14: 0,
+    k18: 0,
+    k22: 0,
+    k24: 0
+  },
+  silver10g: {
+    sterling925: 0,
+    silverOther: 0
+  }
 };
 
 const formatCurrency = (value) => `Rs ${Number(value || 0).toLocaleString()}`;
+
+const normalizeRatesFromApi = (rates = {}) => ({
+  gold10g: {
+    k14: Number(rates.gold10g?.k14) || 0,
+    k18: Number(rates.gold10g?.k18) || 0,
+    k22: Number(rates.gold10g?.k22) || 0,
+    k24: Number(rates.gold10g?.k24) || 0
+  },
+  silver10g: {
+    sterling925: Number(rates.silver10g?.sterling925) || 0,
+    silverOther: Number(rates.silver10g?.silverOther) || 0
+  }
+});
+
+const toPerGram = (value) => (Number(value || 0) / 10);
+const toPerMilligram = (value) => toPerGram(value) / 1000;
 
 const MetalPricing = () => {
   const [loading, setLoading] = useState(true);
@@ -24,12 +46,7 @@ const MetalPricing = () => {
     const load = async () => {
       setLoading(true);
       const res = await adminService.getMetalPricing();
-      setMetalRates({
-        goldPerGram: Number(res.metalRates?.goldPerGram) || 0,
-        goldPerMilligram: Number(res.metalRates?.goldPerMilligram) || 0,
-        silverPerGram: Number(res.metalRates?.silverPerGram) || 0,
-        silverPerMilligram: Number(res.metalRates?.silverPerMilligram) || 0
-      });
+      setMetalRates(normalizeRatesFromApi(res.metalRates || {}));
       setProductCount(Number(res.adminProductCount) || 0);
       setUpdatedAt(res.updatedAt || null);
       setLoading(false);
@@ -37,25 +54,22 @@ const MetalPricing = () => {
     load();
   }, []);
 
-  const updateRate = (field, value) => {
+  const updateRate = (section, field, value) => {
     const numericValue = value === '' ? '' : Number(value);
-    setMetalRates((prev) => {
-      const nextRates = {
-        ...prev,
+    setMetalRates((prev) => ({
+      ...prev,
+      [section]: {
+        ...prev[section],
         [field]: numericValue
-      };
-
-      if (field === 'goldPerGram') nextRates.goldPerMilligram = numericValue === '' ? '' : Number(numericValue) / 1000;
-      if (field === 'goldPerMilligram') nextRates.goldPerGram = numericValue === '' ? '' : Number(numericValue) * 1000;
-      if (field === 'silverPerGram') nextRates.silverPerMilligram = numericValue === '' ? '' : Number(numericValue) / 1000;
-      if (field === 'silverPerMilligram') nextRates.silverPerGram = numericValue === '' ? '' : Number(numericValue) * 1000;
-
-      return nextRates;
-    });
+      }
+    }));
   };
 
   const handleSave = async () => {
-    const allRates = Object.values(metalRates);
+    const allRates = [
+      ...Object.values(metalRates.gold10g || {}),
+      ...Object.values(metalRates.silver10g || {})
+    ];
     if (allRates.some((value) => Number(value) < 0)) {
       toast.error('Metal rates cannot be negative');
       return;
@@ -64,10 +78,16 @@ const MetalPricing = () => {
     setSaving(true);
     const payload = {
       metalRates: {
-        goldPerGram: Number(metalRates.goldPerGram) || 0,
-        goldPerMilligram: Number(metalRates.goldPerMilligram) || 0,
-        silverPerGram: Number(metalRates.silverPerGram) || 0,
-        silverPerMilligram: Number(metalRates.silverPerMilligram) || 0
+        gold10g: {
+          k14: Number(metalRates.gold10g?.k14) || 0,
+          k18: Number(metalRates.gold10g?.k18) || 0,
+          k22: Number(metalRates.gold10g?.k22) || 0,
+          k24: Number(metalRates.gold10g?.k24) || 0
+        },
+        silver10g: {
+          sterling925: Number(metalRates.silver10g?.sterling925) || 0,
+          silverOther: Number(metalRates.silver10g?.silverOther) || 0
+        }
       }
     };
 
@@ -75,12 +95,7 @@ const MetalPricing = () => {
     if (res.success) {
       toast.success('Metal pricing updated');
       const refresh = await adminService.getMetalPricing();
-      setMetalRates({
-        goldPerGram: Number(refresh.metalRates?.goldPerGram) || 0,
-        goldPerMilligram: Number(refresh.metalRates?.goldPerMilligram) || 0,
-        silverPerGram: Number(refresh.metalRates?.silverPerGram) || 0,
-        silverPerMilligram: Number(refresh.metalRates?.silverPerMilligram) || 0
-      });
+      setMetalRates(normalizeRatesFromApi(refresh.metalRates || {}));
       setProductCount(Number(refresh.adminProductCount) || 0);
       setUpdatedAt(refresh.updatedAt || null);
     } else {
@@ -123,63 +138,98 @@ const MetalPricing = () => {
 
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-6">
         <div className="rounded-2xl border border-amber-100 bg-amber-50 p-4 text-sm text-amber-900">
-          This page controls only admin metal rates. Seller products continue using seller-specific metal rates from the seller module. Global GST is managed separately in Tax Settings.
+          Set admin metal pricing per 10 grams. These rates apply only to admin-owned products. Seller products continue using seller-specific metal rates from the seller module. Global GST is managed separately in Tax Settings.
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-3">
-            <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest">Gold Rates</h3>
-            <div className="space-y-3">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Per Gram</label>
-              <input
-                type="number"
-                value={metalRates.goldPerGram}
-                onChange={(e) => updateRate('goldPerGram', e.target.value)}
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm font-bold text-gray-800 focus:outline-none focus:border-[#3E2723]/40"
-                placeholder="0"
-                disabled={loading}
-              />
-              <p className="text-xs text-gray-500">Per milligram syncs automatically: {formatCurrency(metalRates.goldPerMilligram)}</p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest">Gold Rates (Per 10g)</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">14 Karat</label>
+                <input
+                  type="number"
+                  value={metalRates.gold10g?.k14}
+                  onChange={(e) => updateRate('gold10g', 'k14', e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm font-bold text-gray-800 focus:outline-none focus:border-[#3E2723]/40"
+                  placeholder="0"
+                  disabled={loading}
+                />
+                <p className="text-[11px] text-gray-500">Per gram: {formatCurrency(toPerGram(metalRates.gold10g?.k14))}</p>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">18 Karat</label>
+                <input
+                  type="number"
+                  value={metalRates.gold10g?.k18}
+                  onChange={(e) => updateRate('gold10g', 'k18', e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm font-bold text-gray-800 focus:outline-none focus:border-[#3E2723]/40"
+                  placeholder="0"
+                  disabled={loading}
+                />
+                <p className="text-[11px] text-gray-500">Per gram: {formatCurrency(toPerGram(metalRates.gold10g?.k18))}</p>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">22 Karat</label>
+                <input
+                  type="number"
+                  value={metalRates.gold10g?.k22}
+                  onChange={(e) => updateRate('gold10g', 'k22', e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm font-bold text-gray-800 focus:outline-none focus:border-[#3E2723]/40"
+                  placeholder="0"
+                  disabled={loading}
+                />
+                <p className="text-[11px] text-gray-500">Per gram: {formatCurrency(toPerGram(metalRates.gold10g?.k22))}</p>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">24 Karat</label>
+                <input
+                  type="number"
+                  value={metalRates.gold10g?.k24}
+                  onChange={(e) => updateRate('gold10g', 'k24', e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm font-bold text-gray-800 focus:outline-none focus:border-[#3E2723]/40"
+                  placeholder="0"
+                  disabled={loading}
+                />
+                <p className="text-[11px] text-gray-500">Per gram: {formatCurrency(toPerGram(metalRates.gold10g?.k24))}</p>
+              </div>
             </div>
           </div>
 
-          <div className="space-y-3">
-            <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest">Silver Rates</h3>
-            <div className="space-y-3">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Per Gram</label>
-              <input
-                type="number"
-                value={metalRates.silverPerGram}
-                onChange={(e) => updateRate('silverPerGram', e.target.value)}
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm font-bold text-gray-800 focus:outline-none focus:border-[#3E2723]/40"
-                placeholder="0"
-                disabled={loading}
-              />
-              <p className="text-xs text-gray-500">Per milligram syncs automatically: {formatCurrency(metalRates.silverPerMilligram)}</p>
+          <div className="space-y-4">
+            <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest">Silver Rates (Per 10g)</h3>
+            <div className="grid grid-cols-1 gap-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">925 Sterling Silver</label>
+                <input
+                  type="number"
+                  value={metalRates.silver10g?.sterling925}
+                  onChange={(e) => updateRate('silver10g', 'sterling925', e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm font-bold text-gray-800 focus:outline-none focus:border-[#3E2723]/40"
+                  placeholder="0"
+                  disabled={loading}
+                />
+                <p className="text-[11px] text-gray-500">Per gram: {formatCurrency(toPerGram(metalRates.silver10g?.sterling925))}</p>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Silver (All Other)</label>
+                <input
+                  type="number"
+                  value={metalRates.silver10g?.silverOther}
+                  onChange={(e) => updateRate('silver10g', 'silverOther', e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm font-bold text-gray-800 focus:outline-none focus:border-[#3E2723]/40"
+                  placeholder="0"
+                  disabled={loading}
+                />
+                <p className="text-[11px] text-gray-500">Per gram: {formatCurrency(toPerGram(metalRates.silver10g?.silverOther))}</p>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-3">
-            <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest">Read-Only Unit Sync</h3>
-            <div className="space-y-3">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Gold Per Milligram</label>
-              <input
-                type="number"
-                value={Number(metalRates.goldPerMilligram || 0).toFixed(4)}
-                readOnly
-                className="w-full bg-gray-100 border border-gray-200 rounded-xl py-3 px-4 text-sm font-bold text-gray-600"
-              />
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Silver Per Milligram</label>
-              <input
-                type="number"
-                value={Number(metalRates.silverPerMilligram || 0).toFixed(4)}
-                readOnly
-                className="w-full bg-gray-100 border border-gray-200 rounded-xl py-3 px-4 text-sm font-bold text-gray-600"
-              />
-            </div>
-          </div>
+        <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 text-xs text-gray-600">
+          Per milligram values are derived automatically from the per‑10g rates: for example, 10g ÷ 10 ÷ 1000.
+          Current example: 18K per milligram is {formatCurrency(toPerMilligram(metalRates.gold10g?.k18))}.
         </div>
 
         <button

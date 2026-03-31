@@ -163,13 +163,45 @@ const SharedProductEditor = ({
         return base.substring(0, 4) || 'ITEM';
     };
 
+    const normalizeString = (value = '') => String(value || '').trim().toLowerCase();
+
+    const getTenGramRate = () => {
+        const material = normalizeString(formData.material);
+        if (material === 'gold') {
+            const goldCategory = normalizeString(formData.goldCategory);
+            const gold10g = metalRates.gold10g || {};
+            const fallback = Number(metalRates.goldPerGram || 0) * 10;
+
+            if (goldCategory === '14') return Number(gold10g.k14) || fallback;
+            if (goldCategory === '18') return Number(gold10g.k18) || fallback;
+            if (goldCategory === '22') return Number(gold10g.k22) || fallback;
+            if (goldCategory === '24') return Number(gold10g.k24) || fallback;
+
+            return Number(gold10g.k18) || Number(gold10g.k22) || Number(gold10g.k14) || Number(gold10g.k24) || fallback;
+        }
+
+        if (material === 'silver') {
+            const silverCategory = normalizeString(formData.silverCategory);
+            const silver10g = metalRates.silver10g || {};
+            const fallback = Number(metalRates.silverPerGram || 0) * 10;
+            const isSterling = silverCategory === '925 sterling silver';
+
+            if (isSterling) return Number(silver10g.sterling925) || fallback;
+            return Number(silver10g.silverOther) || fallback;
+        }
+
+        return 0;
+    };
+
     const getMetalRate = (variant) => {
         const unit = String(variant?.weightUnit || formData.weightUnit || 'Grams').toLowerCase();
-        const isGold = String(formData.material || '').toLowerCase() === 'gold';
+        const perTenGram = Number(getTenGramRate()) || 0;
+        const perGram = perTenGram / 10;
+        const perMilligram = perGram / 1000;
         if (unit === 'milligrams' || unit === 'milligram') {
-            return isGold ? Number(metalRates.goldPerMilligram) || 0 : Number(metalRates.silverPerMilligram) || 0;
+            return perMilligram;
         }
-        return isGold ? Number(metalRates.goldPerGram) || 0 : Number(metalRates.silverPerGram) || 0;
+        return perGram;
     };
 
     const getMetalPrice = (variant) => {
@@ -255,7 +287,17 @@ const SharedProductEditor = ({
         goldPerGram: 0,
         goldPerMilligram: 0,
         silverPerGram: 0,
-        silverPerMilligram: 0
+        silverPerMilligram: 0,
+        gold10g: {
+            k14: 0,
+            k18: 0,
+            k22: 0,
+            k24: 0
+        },
+        silver10g: {
+            sterling925: 0,
+            silverOther: 0
+        }
     });
     const [gstRate, setGstRate] = useState(0);
 
@@ -351,12 +393,10 @@ const SharedProductEditor = ({
                 if (!resolvedMetalPricingApi?.getMetalPricing) return;
                 const res = await resolvedMetalPricingApi.getMetalPricing();
                 if (res?.metalRates) {
-                    setMetalRates({
-                        goldPerGram: res.metalRates.goldPerGram ?? 0,
-                        goldPerMilligram: res.metalRates.goldPerMilligram ?? 0,
-                        silverPerGram: res.metalRates.silverPerGram ?? 0,
-                        silverPerMilligram: res.metalRates.silverPerMilligram ?? 0
-                    });
+                    setMetalRates(prev => ({
+                        ...prev,
+                        ...res.metalRates
+                    }));
                 }
                 if (res?.gstRate !== undefined && res?.gstRate !== null) {
                     setGstRate(Number(res.gstRate) || 0);
@@ -1581,6 +1621,19 @@ const SharedProductEditor = ({
                         </FormSection>
                     </div>
                 </div>
+
+                {!isViewMode && (
+                    <div className="mt-10 flex justify-end">
+                        <button
+                            type="button"
+                            onClick={handleSubmit}
+                            disabled={loading || isSaving || !formData.categories?.[0]?.category}
+                            className="px-6 py-3 rounded-xl bg-[#3E2723] text-white text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-md disabled:opacity-60"
+                        >
+                            {primaryActionLabel}
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* AI Enhancement Modal */}
