@@ -277,6 +277,9 @@ const ProductDetails = () => {
     const averageRating = Number(product?.rating || 0);
     const hasReviews = reviewCount > 0 && averageRating > 0;
     const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
+    const normalizeString = (value = '') => String(value || '').trim().toLowerCase();
+    const isSterling925 = normalizeString(product?.material) === 'silver'
+        && normalizeString(product?.silverCategory) === '925 sterling silver';
 
     return (
         <div className="bg-white min-h-screen py-8 pb-24 md:pb-8 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out fill-mode-both selection:bg-[#D39A9F] selection:text-white">
@@ -443,31 +446,33 @@ const ProductDetails = () => {
                         </div>
                         )}
 
-                        <div className="border-b border-gray-100 pb-6">
-                            <div className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-3">Price Breakdown</div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                                <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
-                                    <span className="text-gray-600">Metal Price</span>
-                                    <span className="font-semibold text-gray-900">{currencyText(pricingBreakdown.metalPrice)}</span>
+                        {!isSterling925 && (
+                            <div className="border-b border-gray-100 pb-6">
+                                <div className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-3">Price Breakdown</div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                                    <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
+                                        <span className="text-gray-600">Metal Price</span>
+                                        <span className="font-semibold text-gray-900">{currencyText(pricingBreakdown.metalPrice)}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
+                                        <span className="text-gray-600">Making Charge</span>
+                                        <span className="font-semibold text-gray-900">{currencyText(pricingBreakdown.makingCharge)}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
+                                        <span className="text-gray-600">Diamond Price</span>
+                                        <span className="font-semibold text-gray-900">{currencyText(pricingBreakdown.diamondPrice)}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
+                                        <span className="text-gray-600">GST ({gstPercent}%)</span>
+                                        <span className="font-semibold text-gray-900">{currencyText(pricingBreakdown.gst)}</span>
+                                    </div>
                                 </div>
-                                <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
-                                    <span className="text-gray-600">Making Charge</span>
-                                    <span className="font-semibold text-gray-900">{currencyText(pricingBreakdown.makingCharge)}</span>
-                                </div>
-                                <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
-                                    <span className="text-gray-600">Diamond Price</span>
-                                    <span className="font-semibold text-gray-900">{currencyText(pricingBreakdown.diamondPrice)}</span>
-                                </div>
-                                <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
-                                    <span className="text-gray-600">GST ({gstPercent}%)</span>
-                                    <span className="font-semibold text-gray-900">{currencyText(pricingBreakdown.gst)}</span>
+                                <div className="mt-4 flex items-center justify-between border-t border-gray-200 pt-4">
+                                    <span className="text-sm font-bold uppercase tracking-widest text-gray-500">Final Price</span>
+                                    <span className="text-lg font-bold text-black">{currencyText(pricingBreakdown.finalPrice || variantPrice || 0)}</span>
                                 </div>
                             </div>
-                            <div className="mt-4 flex items-center justify-between border-t border-gray-200 pt-4">
-                                <span className="text-sm font-bold uppercase tracking-widest text-gray-500">Final Price</span>
-                                <span className="text-lg font-bold text-black">{currencyText(pricingBreakdown.finalPrice || variantPrice || 0)}</span>
-                            </div>
-                        </div>
+                        )}
 
                         <div className="space-y-4 pb-2 md:pb-6">
                             {product.variants && product.variants.length > 1 && (
@@ -594,7 +599,9 @@ const ProductDetails = () => {
                     {product.material && <p><span className="font-semibold">Material:</span> {product.material}</p>}
                     {product.silverCategory && <p><span className="font-semibold">Silver Purity:</span> {product.silverCategory}</p>}
                     {product.goldCategory && <p><span className="font-semibold">Gold Karat:</span> {product.goldCategory}K</p>}
-                    {(selectedVariantWeight || selectedVariantWeight === 0) && <p><span className="font-semibold">Variant Weight:</span> {selectedVariantWeight} {selectedVariantWeightUnit}</p>}
+                    {!isSterling925 && (selectedVariantWeight || selectedVariantWeight === 0) && (
+                        <p><span className="font-semibold">Variant Weight:</span> {selectedVariantWeight} {selectedVariantWeightUnit}</p>
+                    )}
                     {selectedVariant?.variantCode && <p><span className="font-semibold">Variant Code:</span> {selectedVariant.variantCode}</p>}
                     {product.huid && <p><span className="font-semibold">HUID:</span> {product.huid}</p>}
                     {product.specifications && (

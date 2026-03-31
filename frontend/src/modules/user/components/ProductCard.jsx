@@ -148,7 +148,6 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
 
                 <div className={`${isWishlistPage ? 'p-2 md:p-3.5' : 'p-1.5 md:p-3'} text-left flex flex-col flex-1 pb-1.5 md:pb-2`}>
 
-                    {/* Price Section first */}
                     <div className="flex items-baseline gap-2 mb-1">
                         <span className={`text-black font-bold ${isWishlistPage ? 'text-sm' : 'text-base'}`}>
                             {variantCount > 1 ? `From ${currencyText(fromPrice)}` : currencyText(product.price || 0)}

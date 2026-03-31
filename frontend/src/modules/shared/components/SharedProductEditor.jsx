@@ -447,9 +447,28 @@ const SharedProductEditor = ({
                     const normalizedCategories = (data.categories || []).map(c => ({
                         category: typeof c === 'object' ? (c._id || c.name || '') : c
                     }));
+                    const {
+                        _id,
+                        id: legacyId,
+                        sellerId,
+                        sku,
+                        rating,
+                        reviewCount,
+                        createdAt,
+                        updatedAt,
+                        __v,
+                        slug,
+                        brand,
+                        status,
+                        active,
+                        showInNavbar,
+                        showInCollection,
+                        ...restData
+                    } = data;
+
                     setFormData(prev => ({
                         ...prev,
-                        ...data,
+                        ...restData,
                         material: data.material || data.metal || 'Silver',
                         weight: data.weight || '',
                         weightUnit: data.weightUnit || 'Grams',
@@ -686,10 +705,58 @@ const SharedProductEditor = ({
             return;
         }
 
+        const forbiddenKeys = [
+            '_id',
+            'id',
+            'sku',
+            'sellerId',
+            'rating',
+            'reviewCount',
+            'createdAt',
+            'updatedAt',
+            '__v',
+            'slug',
+            'brand',
+            'status',
+            'active',
+            'showInNavbar',
+            'showInCollection'
+        ];
+        const presentForbidden = forbiddenKeys.filter((key) => formData[key] !== undefined);
+        if (presentForbidden.length > 0) {
+            console.warn('[ProductEditor] Stripping read-only fields from payload:', presentForbidden);
+        }
+
         setIsSaving(true);
         try {
             const productForm = new FormData();
-            const excludes = ['variants', 'categories', 'tags', 'deletedImages', 'navGiftsFor', 'navOccasions', 'navShopByCategory', 'faqs', 'isSerialized', 'productCodes'];
+            const excludes = [
+                'variants',
+                'categories',
+                'tags',
+                'deletedImages',
+                'navGiftsFor',
+                'navOccasions',
+                'navShopByCategory',
+                'faqs',
+                'isSerialized',
+                'productCodes',
+                '_id',
+                'id',
+                'sku',
+                'sellerId',
+                'rating',
+                'reviewCount',
+                'createdAt',
+                'updatedAt',
+                '__v',
+                'slug',
+                'brand',
+                'status',
+                'active',
+                'showInNavbar',
+                'showInCollection'
+            ];
 
             Object.keys(formData).forEach(key => {
                 if (excludes.includes(key)) return;
