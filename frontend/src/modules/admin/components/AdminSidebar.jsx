@@ -31,7 +31,8 @@ import {
     MapPin,
     RefreshCw,
     AlertTriangle,
-    FileBarChart
+    FileBarChart,
+    FileText
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
@@ -82,6 +83,7 @@ const AdminSidebar = () => {
         { icon: Ticket, label: 'Coupons', path: '/admin/coupons' },
         { icon: Monitor, label: 'Banners', path: '/admin/banners' },
         { icon: Share2, label: 'Referrals', path: '/admin/referrals' },
+        { icon: FileText, label: 'Seller Terms', path: '/admin/seller-terms' },
     ];
 
     const isActive = (path) => location.pathname.startsWith(path);

@@ -1,5 +1,6 @@
 const Seller = require("../../../models/Seller");
 const Notification = require("../../../models/Notification");
+const Page = require("../../../models/Page");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { success, error } = require("../../../utils/apiResponse");
@@ -26,7 +27,8 @@ exports.register = async (req, res) => {
       city,
       state,
       pincode,
-      bankAccount
+      bankAccount,
+      acceptTerms
     } = req.body;
 
     const normalizedEmail = String(email || "").trim().toLowerCase();
@@ -34,6 +36,16 @@ exports.register = async (req, res) => {
 
     const existing = await Seller.findOne({ $or: [{ email: normalizedEmail }, { mobileNumber: normalizedMobile }] });
     if (existing) return error(res, "Seller with this email or mobile already exists", 400);
+
+    const sellerTermsPage = await Page.findOne({ slug: "seller-terms" });
+    if (!sellerTermsPage || !String(sellerTermsPage.content || "").trim()) {
+      return error(res, "Seller terms are not configured yet. Please contact support.", 400);
+    }
+
+    const acceptedTerms = acceptTerms === true || acceptTerms === "true" || acceptTerms === "1";
+    if (!acceptedTerms) {
+      return error(res, "Please accept the seller terms & conditions to continue.", 400);
+    }
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
@@ -65,6 +77,8 @@ exports.register = async (req, res) => {
       state,
       pincode,
       bankAccount: parsedBankAccount,
+      termsAcceptedAt: new Date(),
+      termsVersion: sellerTermsPage.lastUpdated || sellerTermsPage.updatedAt || new Date(),
       documents: {
         aadharUrl: aadharFile?.path || undefined,
         shopLicenseUrl: shopLicenseFile?.path || undefined,

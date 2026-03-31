@@ -1,43 +1,128 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { 
     User, Phone, Mail, Lock, Store, MapPin, Building, Hash, 
     CreditCard, Landmark, FileUp, ArrowRight, AlertCircle, CheckCircle2, ShieldCheck 
 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
+import api from '../../../services/api';
 import loginBg from '../assets/admin-login-bg.png';
 
 const SellerRegister = () => {
     const navigate = useNavigate();
     const { sellerRegister } = useAuth();
-    const [step, setStep] = useState(1);
+    const [step, setStep] = useState(() => {
+        if (typeof window === 'undefined') return 1;
+        const saved = window.sessionStorage.getItem('sellerRegisterStep');
+        const parsed = saved ? Number(saved) : 1;
+        return Number.isFinite(parsed) && parsed >= 1 && parsed <= 4 ? parsed : 1;
+    });
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
-    
-    const [formData, setFormData] = useState({
-        // Personal
-        fullName: '',
-        mobileNumber: '',
-        email: '',
-        password: '',
-        // Business
-        shopName: '',
-        shopAddress: '',
-        city: '',
-        state: '',
-        pincode: '',
-        // Verification
-        gstNumber: '',
-        panNumber: '',
-        bisNumber: '',
-        // Documents (Simulation)
-        aadhar: null,
-        shopLicense: null,
-        certificate: null,
-        // Bank
-        accountNumber: '',
-        ifscCode: ''
+    const [termsContent, setTermsContent] = useState('');
+    const [termsLoading, setTermsLoading] = useState(true);
+    const [termsError, setTermsError] = useState('');
+    const [acceptTerms, setAcceptTerms] = useState(() => {
+        if (typeof window === 'undefined') return false;
+        return window.sessionStorage.getItem('sellerRegisterAcceptTerms') === 'true';
     });
+
+    const [formData, setFormData] = useState(() => {
+        if (typeof window === 'undefined') {
+            return {
+                fullName: '',
+                mobileNumber: '',
+                email: '',
+                password: '',
+                shopName: '',
+                shopAddress: '',
+                city: '',
+                state: '',
+                pincode: '',
+                gstNumber: '',
+                panNumber: '',
+                bisNumber: '',
+                aadhar: null,
+                shopLicense: null,
+                certificate: null,
+                accountNumber: '',
+                ifscCode: ''
+            };
+        }
+
+        const stored = window.sessionStorage.getItem('sellerRegisterFormData');
+        const parsed = stored ? JSON.parse(stored) : null;
+        return {
+            // Personal
+            fullName: parsed?.fullName || '',
+            mobileNumber: parsed?.mobileNumber || '',
+            email: parsed?.email || '',
+            password: parsed?.password || '',
+            // Business
+            shopName: parsed?.shopName || '',
+            shopAddress: parsed?.shopAddress || '',
+            city: parsed?.city || '',
+            state: parsed?.state || '',
+            pincode: parsed?.pincode || '',
+            // Verification
+            gstNumber: parsed?.gstNumber || '',
+            panNumber: parsed?.panNumber || '',
+            bisNumber: parsed?.bisNumber || '',
+            // Documents (cannot restore file inputs)
+            aadhar: null,
+            shopLicense: null,
+            certificate: null,
+            // Bank
+            accountNumber: parsed?.accountNumber || '',
+            ifscCode: parsed?.ifscCode || ''
+        };
+    });
+
+    useEffect(() => {
+        const fetchSellerTerms = async () => {
+            setTermsLoading(true);
+            setTermsError('');
+            try {
+                const res = await api.get('public/pages/seller-terms');
+                const page = res.data?.data?.page || res.data?.page || null;
+                if (page?.content) {
+                    setTermsContent(page.content);
+                } else {
+                    setTermsContent('');
+                    setTermsError('Seller terms are not configured yet.');
+                }
+            } catch (err) {
+                setTermsContent('');
+                setTermsError('Unable to load seller terms right now.');
+            } finally {
+                setTermsLoading(false);
+            }
+        };
+
+        fetchSellerTerms();
+    }, []);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        if (submitted) {
+            window.sessionStorage.removeItem('sellerRegisterStep');
+            window.sessionStorage.removeItem('sellerRegisterFormData');
+            window.sessionStorage.removeItem('sellerRegisterAcceptTerms');
+            return;
+        }
+        window.sessionStorage.setItem('sellerRegisterStep', String(step));
+    }, [step, submitted]);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const { aadhar, shopLicense, certificate, ...persistable } = formData;
+        window.sessionStorage.setItem('sellerRegisterFormData', JSON.stringify(persistable));
+    }, [formData]);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        window.sessionStorage.setItem('sellerRegisterAcceptTerms', String(acceptTerms));
+    }, [acceptTerms]);
 
     const handleChange = (e) => {
         const { name, value, files } = e.target;
@@ -55,6 +140,16 @@ const SellerRegister = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!termsContent) {
+            alert(termsError || "Seller terms are not available. Please try again later.");
+            return;
+        }
+        if (!acceptTerms) {
+            alert("Please accept the seller terms & conditions to continue.");
+            return;
+        }
+
         setLoading(true);
         
         try {
@@ -68,6 +163,7 @@ const SellerRegister = () => {
                 accountNumber: formData.accountNumber,
                 ifscCode: formData.ifscCode
             }));
+            payload.append('acceptTerms', String(acceptTerms));
 
             const res = await sellerRegister(payload);
             if (res.success) {
@@ -288,6 +384,37 @@ const SellerRegister = () => {
                                         </div>
                                     </div>
                                 </div>
+
+                                <div className="space-y-3">
+                                    <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-2">Seller Terms & Conditions</h3>
+                                    {termsLoading ? (
+                                        <div className="text-xs font-bold uppercase tracking-widest text-gray-400">Loading terms...</div>
+                                    ) : termsContent ? (
+                                        <div className="text-xs text-gray-500 font-semibold">
+                                            Please review our{' '}
+                                            <Link
+                                                to="/page/seller-terms"
+                                                className="text-[#3E2723] font-black underline underline-offset-4 hover:text-[#2D1B18] transition-colors"
+                                            >
+                                                Seller Terms & Conditions
+                                            </Link>
+                                            .
+                                        </div>
+                                    ) : (
+                                        <div className="text-xs font-bold text-red-500">{termsError || 'Seller terms are unavailable.'}</div>
+                                    )}
+                                    <label className="flex items-start gap-3 text-xs font-semibold text-gray-700">
+                                        <input
+                                            type="checkbox"
+                                            className="mt-1 h-4 w-4 rounded border-gray-300 text-[#3E2723] focus:ring-[#3E2723]"
+                                            checked={acceptTerms}
+                                            onChange={(e) => setAcceptTerms(e.target.checked)}
+                                            disabled={!termsContent}
+                                            required
+                                        />
+                                        <span>I agree to the seller terms & conditions.</span>
+                                    </label>
+                                </div>
                             </div>
                         )}
 
@@ -295,7 +422,7 @@ const SellerRegister = () => {
                             {step > 1 && (
                                 <button type="button" onClick={() => setStep(step - 1)} className="flex-1 px-8 py-5 rounded-2xl text-[10px] font-black text-white bg-[#D39A9F] uppercase tracking-[0.3em] hover:bg-[#C88B90] transition-all">Back</button>
                             )}
-                            <button type="submit" disabled={loading} className="flex-[2] bg-[#3E2723] text-white py-5 rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] shadow-2xl shadow-[#3E2723]/20 hover:bg-[#2D1B18] transition-all active:scale-95 flex items-center justify-center gap-3">
+                            <button type="submit" disabled={loading || (step === 4 && (!termsContent || !acceptTerms))} className="flex-[2] bg-[#3E2723] text-white py-5 rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] shadow-2xl shadow-[#3E2723]/20 hover:bg-[#2D1B18] transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-60 disabled:cursor-not-allowed">
                                 {loading ? (
                                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                 ) : (
