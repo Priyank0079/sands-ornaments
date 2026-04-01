@@ -14,7 +14,10 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
 
     const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
     const isWishlisted = safeWishlist.some(item => item.id === product.id);
-    const primaryImage = product.image || product.images?.[0] || null;
+    const firstVariantImage = (product.variants || []).find(
+        (variant) => Array.isArray(variant?.variantImages) && variant.variantImages.length > 0
+    )?.variantImages?.[0] || null;
+    const primaryImage = product.image || product.images?.[0] || firstVariantImage || null;
 
     const variantPrices = (product.variants || [])
         .map(v => Number(v.price))

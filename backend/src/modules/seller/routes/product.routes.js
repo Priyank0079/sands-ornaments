@@ -25,14 +25,14 @@ router.post("/scan", productController.scanProduct);
 router.get("/:id", productController.getMyProduct);
 router.post(
   "/", 
-  productUpload.array("images", 10), 
+  productUpload.any(), 
   parseFormData(SELLER_COMPLEX_FIELDS),
   validate(productSchema),
   productController.createProduct
 );
 router.put(
   "/:id", 
-  productUpload.array("images", 10), 
+  productUpload.any(), 
   parseFormData(SELLER_COMPLEX_FIELDS),
   validate(productSchema),
   productController.updateProduct

@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import api from '../../../services/api';
+import toast from 'react-hot-toast';
 import loginBg from '../assets/admin-login-bg.png';
 
 const SellerRegister = () => {
@@ -22,10 +23,15 @@ const SellerRegister = () => {
     const [termsContent, setTermsContent] = useState('');
     const [termsLoading, setTermsLoading] = useState(true);
     const [termsError, setTermsError] = useState('');
+    const [showTermsModal, setShowTermsModal] = useState(false);
+    const [termsNotified, setTermsNotified] = useState(false);
     const [acceptTerms, setAcceptTerms] = useState(() => {
         if (typeof window === 'undefined') return false;
         return window.sessionStorage.getItem('sellerRegisterAcceptTerms') === 'true';
     });
+    const [errors, setErrors] = useState({});
+    const allowedDocTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    const maxDocSize = 10 * 1024 * 1024;
 
     const [formData, setFormData] = useState(() => {
         if (typeof window === 'undefined') {
@@ -103,6 +109,13 @@ const SellerRegister = () => {
     }, []);
 
     useEffect(() => {
+        if (termsError && !termsNotified) {
+            toast.error(termsError);
+            setTermsNotified(true);
+        }
+    }, [termsError, termsNotified]);
+
+    useEffect(() => {
         if (typeof window === 'undefined') return;
         if (submitted) {
             window.sessionStorage.removeItem('sellerRegisterStep');
@@ -126,27 +139,129 @@ const SellerRegister = () => {
 
     const handleChange = (e) => {
         const { name, value, files } = e.target;
+        const selectedFile = files ? files[0] : null;
+
+        if (selectedFile) {
+            if (!allowedDocTypes.includes(selectedFile.type)) {
+                setErrors(prev => ({ ...prev, [name]: 'Only JPG, PNG, or WEBP files are allowed.' }));
+                toast.error('Please upload a JPG, PNG, or WEBP file.');
+                return;
+            }
+            if (selectedFile.size > maxDocSize) {
+                setErrors(prev => ({ ...prev, [name]: 'File must be under 10MB.' }));
+                toast.error('File size must be under 10MB.');
+                return;
+            }
+        }
+
+        setErrors(prev => {
+            if (!name || !prev[name]) return prev;
+            const next = { ...prev };
+            delete next[name];
+            return next;
+        });
+
         setFormData(prev => ({
             ...prev,
-            [name]: files ? files[0] : value
+            [name]: selectedFile || value
         }));
+    };
+
+    const validateStep = (stepToValidate, data) => {
+        const nextErrors = {};
+        const trimmedEmail = String(data.email || '').trim();
+        const trimmedMobile = String(data.mobileNumber || '').trim();
+        const trimmedPincode = String(data.pincode || '').trim();
+        const trimmedGst = String(data.gstNumber || '').trim();
+        const trimmedPan = String(data.panNumber || '').trim();
+        const trimmedBis = String(data.bisNumber || '').trim();
+        const trimmedIfsc = String(data.ifscCode || '').trim();
+
+        if (stepToValidate === 1) {
+            if (!data.fullName?.trim()) nextErrors.fullName = 'Full name is required';
+            if (!trimmedMobile) {
+                nextErrors.mobileNumber = 'Mobile number is required';
+            } else if (!/^\d{10}$/.test(trimmedMobile)) {
+                nextErrors.mobileNumber = 'Enter a valid 10 digit mobile number';
+            }
+            if (!trimmedEmail) {
+                nextErrors.email = 'Email is required';
+            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+                nextErrors.email = 'Enter a valid email address';
+            }
+            if (!data.password?.trim()) nextErrors.password = 'Password is required';
+        }
+
+        if (stepToValidate === 2) {
+            if (!data.shopName?.trim()) nextErrors.shopName = 'Shop name is required';
+            if (!data.shopAddress?.trim()) nextErrors.shopAddress = 'Shop address is required';
+            if (!data.city?.trim()) nextErrors.city = 'City is required';
+            if (!data.state?.trim()) nextErrors.state = 'State is required';
+            if (!trimmedPincode) {
+                nextErrors.pincode = 'Pincode is required';
+            } else if (!/^\d{6}$/.test(trimmedPincode)) {
+                nextErrors.pincode = 'Enter a valid 6 digit pincode';
+            }
+        }
+
+        if (stepToValidate === 3) {
+            if (!trimmedGst) {
+                nextErrors.gstNumber = 'GST number is required';
+            } else if (!/^\d{2}[A-Z]{5}\d{4}[A-Z]{1}\d[Z]{1}[A-Z\d]{1}$/i.test(trimmedGst)) {
+                nextErrors.gstNumber = 'Enter a valid GST number';
+            }
+            if (!trimmedPan) {
+                nextErrors.panNumber = 'PAN number is required';
+            } else if (!/^[A-Z]{5}\d{4}[A-Z]{1}$/i.test(trimmedPan)) {
+                nextErrors.panNumber = 'Enter a valid PAN number';
+            }
+            if (!trimmedBis) nextErrors.bisNumber = 'BIS license number is required';
+        }
+
+        if (stepToValidate === 4) {
+            if (!data.accountNumber?.trim()) nextErrors.accountNumber = 'Account number is required';
+            if (!trimmedIfsc) {
+                nextErrors.ifscCode = 'IFSC code is required';
+            } else if (!/^[A-Z]{4}0[A-Z0-9]{6}$/i.test(trimmedIfsc)) {
+                nextErrors.ifscCode = 'Enter a valid IFSC code';
+            }
+            if (!data.aadhar) nextErrors.aadhar = 'Aadhar document is required';
+            if (!data.shopLicense) nextErrors.shopLicense = 'Shop license document is required';
+            if (!data.certificate) nextErrors.certificate = 'Certificate document is required';
+        }
+
+        return nextErrors;
     };
 
     const handleNext = (e) => {
         e.preventDefault();
+        const nextErrors = validateStep(step, formData);
+        if (Object.keys(nextErrors).length > 0) {
+            setErrors(nextErrors);
+            const firstMessage = Object.values(nextErrors)[0];
+            toast.error(firstMessage || 'Please fix the highlighted fields before continuing.');
+            return;
+        }
         setStep(prev => prev + 1);
         window.scrollTo(0, 0);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const nextErrors = validateStep(4, formData);
+        if (Object.keys(nextErrors).length > 0) {
+            setErrors(nextErrors);
+            const firstMessage = Object.values(nextErrors)[0];
+            toast.error(firstMessage || 'Please fix the highlighted fields before submitting.');
+            return;
+        }
 
         if (!termsContent) {
-            alert(termsError || "Seller terms are not available. Please try again later.");
+            toast.error(termsError || "Seller terms are not available. Please try again later.");
             return;
         }
         if (!acceptTerms) {
-            alert("Please accept the seller terms & conditions to continue.");
+            toast.error("Please accept the seller terms & conditions to continue.");
             return;
         }
 
@@ -169,10 +284,17 @@ const SellerRegister = () => {
             if (res.success) {
                 setSubmitted(true);
             } else {
-                alert(res.message || "Registration failed. Please check your details.");
+                const message = res.message || "Registration failed. Please check your details.";
+                if (/email/i.test(message) && /exist/i.test(message)) {
+                    setErrors(prev => ({ ...prev, email: message }));
+                } else if (/mobile/i.test(message) && /exist/i.test(message)) {
+                    setErrors(prev => ({ ...prev, mobileNumber: message }));
+                }
+                toast.error(message);
             }
         } catch (err) {
-            alert("Connection error. Please try again.");
+            const message = err.response?.data?.message || "Connection error. Please try again.";
+            toast.error(message);
         } finally {
             setLoading(false);
         }
@@ -242,6 +364,7 @@ const SellerRegister = () => {
                                         <input required name="fullName" value={formData.fullName} onChange={handleChange} className={inputClasses} placeholder="Ex: Rajesh Kumar" />
                                         <User className={iconClasses} />
                                     </div>
+                                    {errors.fullName && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.fullName}</p>}
                                 </div>
                                 <div className="space-y-2">
                                     <label className={labelClasses}>Mobile Number <span className="text-red-500">*</span></label>
@@ -249,6 +372,7 @@ const SellerRegister = () => {
                                         <input required name="mobileNumber" value={formData.mobileNumber} onChange={handleChange} className={inputClasses} placeholder="9876543210" />
                                         <Phone className={iconClasses} />
                                     </div>
+                                    {errors.mobileNumber && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.mobileNumber}</p>}
                                 </div>
                                 <div className="space-y-2">
                                     <label className={labelClasses}>Email Address <span className="text-red-500">*</span></label>
@@ -256,6 +380,7 @@ const SellerRegister = () => {
                                         <input required type="email" name="email" value={formData.email} onChange={handleChange} className={inputClasses} placeholder="rajesh@example.com" />
                                         <Mail className={iconClasses} />
                                     </div>
+                                    {errors.email && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.email}</p>}
                                 </div>
                                 <div className="space-y-2">
                                     <label className={labelClasses}>Password <span className="text-red-500">*</span></label>
@@ -263,6 +388,7 @@ const SellerRegister = () => {
                                         <input required type="password" name="password" value={formData.password} onChange={handleChange} className={inputClasses} placeholder="********" />
                                         <Lock className={iconClasses} />
                                     </div>
+                                    {errors.password && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.password}</p>}
                                 </div>
                             </div>
                         )}
@@ -275,6 +401,7 @@ const SellerRegister = () => {
                                         <input required name="shopName" value={formData.shopName} onChange={handleChange} className={inputClasses} placeholder="Ex: Royal Gold & Diamonds" />
                                         <Store className={iconClasses} />
                                     </div>
+                                    {errors.shopName && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.shopName}</p>}
                                 </div>
                                 <div className="space-y-2">
                                     <label className={labelClasses}>Shop Address <span className="text-red-500">*</span></label>
@@ -282,6 +409,7 @@ const SellerRegister = () => {
                                         <input required name="shopAddress" value={formData.shopAddress} onChange={handleChange} className={inputClasses} placeholder="123, Marketplace Street" />
                                         <MapPin className={iconClasses} />
                                     </div>
+                                    {errors.shopAddress && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.shopAddress}</p>}
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                      <div className="space-y-2">
@@ -290,6 +418,7 @@ const SellerRegister = () => {
                                             <input required name="city" value={formData.city} onChange={handleChange} className={inputClasses} placeholder="Mumbai" />
                                             <Building className={iconClasses} />
                                         </div>
+                                        {errors.city && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.city}</p>}
                                     </div>
                                     <div className="space-y-2">
                                         <label className={labelClasses}>State <span className="text-red-500">*</span></label>
@@ -297,6 +426,7 @@ const SellerRegister = () => {
                                             <input required name="state" value={formData.state} onChange={handleChange} className={inputClasses} placeholder="Maharashtra" />
                                             <MapPin className={iconClasses} />
                                         </div>
+                                        {errors.state && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.state}</p>}
                                     </div>
                                 </div>
                                 <div className="space-y-2">
@@ -305,6 +435,7 @@ const SellerRegister = () => {
                                         <input required name="pincode" value={formData.pincode} onChange={handleChange} className={inputClasses} placeholder="400001" />
                                         <Hash className={iconClasses} />
                                     </div>
+                                    {errors.pincode && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.pincode}</p>}
                                 </div>
                             </div>
                         )}
@@ -317,6 +448,7 @@ const SellerRegister = () => {
                                         <input required name="gstNumber" value={formData.gstNumber} onChange={handleChange} className={inputClasses} placeholder="22AAAAA0000A1Z5" />
                                         <ShieldCheck className={iconClasses} />
                                     </div>
+                                    {errors.gstNumber && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.gstNumber}</p>}
                                 </div>
                                 <div className="space-y-2">
                                     <label className={labelClasses}>PAN Number <span className="text-red-500">*</span></label>
@@ -324,6 +456,7 @@ const SellerRegister = () => {
                                         <input required name="panNumber" value={formData.panNumber} onChange={handleChange} className={inputClasses} placeholder="ABCDE1234F" />
                                         <ShieldCheck className={iconClasses} />
                                     </div>
+                                    {errors.panNumber && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.panNumber}</p>}
                                 </div>
                                 <div className="space-y-2">
                                     <label className={labelClasses}>BIS Hallmark License Number <span className="text-red-500">*</span></label>
@@ -331,6 +464,7 @@ const SellerRegister = () => {
                                         <input required name="bisNumber" value={formData.bisNumber} onChange={handleChange} className={inputClasses} placeholder="HM/C-1234567890" />
                                         <CheckCircle2 className={iconClasses} />
                                     </div>
+                                    {errors.bisNumber && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.bisNumber}</p>}
                                 </div>
                             </div>
                         )}
@@ -345,6 +479,7 @@ const SellerRegister = () => {
                                             <input required name="accountNumber" value={formData.accountNumber} onChange={handleChange} className={inputClasses} placeholder="000000000000" />
                                             <CreditCard className={iconClasses} />
                                         </div>
+                                        {errors.accountNumber && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.accountNumber}</p>}
                                     </div>
                                     <div className="space-y-2">
                                         <label className={labelClasses}>IFSC Code <span className="text-red-500">*</span></label>
@@ -352,6 +487,7 @@ const SellerRegister = () => {
                                             <input required name="ifscCode" value={formData.ifscCode} onChange={handleChange} className={inputClasses} placeholder="SBIN0000001" />
                                             <Landmark className={iconClasses} />
                                         </div>
+                                        {errors.ifscCode && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.ifscCode}</p>}
                                     </div>
                                 </div>
 
@@ -363,24 +499,27 @@ const SellerRegister = () => {
                                             <label className="flex flex-col items-center justify-center w-full h-32 bg-[#FDFBF7] border-2 border-dashed border-[#EFEBE9] rounded-xl cursor-pointer hover:border-[#8D6E63] transition-all group">
                                                 <FileUp className="w-6 h-6 text-gray-400 group-hover:text-[#8D6E63] mb-2" />
                                                 <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">{formData.aadhar ? 'File Selected' : 'Choose File'}</span>
-                                                <input required type="file" name="aadhar" onChange={handleChange} className="hidden" />
+                                                <input required type="file" name="aadhar" accept="image/jpeg,image/png,image/webp" onChange={handleChange} className="hidden" />
                                             </label>
+                                            {errors.aadhar && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.aadhar}</p>}
                                         </div>
                                         <div className="space-y-2">
                                             <label className={labelClasses}>Shop License <span className="text-red-500">*</span></label>
                                             <label className="flex flex-col items-center justify-center w-full h-32 bg-[#FDFBF7] border-2 border-dashed border-[#EFEBE9] rounded-xl cursor-pointer hover:border-[#8D6E63] transition-all group">
                                                 <FileUp className="w-6 h-6 text-gray-400 group-hover:text-[#8D6E63] mb-2" />
                                                 <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">{formData.shopLicense ? 'File Selected' : 'Choose File'}</span>
-                                                <input required type="file" name="shopLicense" onChange={handleChange} className="hidden" />
+                                                <input required type="file" name="shopLicense" accept="image/jpeg,image/png,image/webp" onChange={handleChange} className="hidden" />
                                             </label>
+                                            {errors.shopLicense && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.shopLicense}</p>}
                                         </div>
                                         <div className="space-y-2">
                                             <label className={labelClasses}>Certificate Upload <span className="text-red-500">*</span></label>
                                             <label className="flex flex-col items-center justify-center w-full h-32 bg-[#FDFBF7] border-2 border-dashed border-[#EFEBE9] rounded-xl cursor-pointer hover:border-[#8D6E63] transition-all group">
                                                 <FileUp className="w-6 h-6 text-gray-400 group-hover:text-[#8D6E63] mb-2" />
                                                 <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">{formData.certificate ? 'File Selected' : 'Choose File'}</span>
-                                                <input required type="file" name="certificate" onChange={handleChange} className="hidden" />
+                                                <input required type="file" name="certificate" accept="image/jpeg,image/png,image/webp" onChange={handleChange} className="hidden" />
                                             </label>
+                                            {errors.certificate && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.certificate}</p>}
                                         </div>
                                     </div>
                                 </div>
@@ -392,12 +531,13 @@ const SellerRegister = () => {
                                     ) : termsContent ? (
                                         <div className="text-xs text-gray-500 font-semibold">
                                             Please review our{' '}
-                                            <Link
-                                                to="/page/seller-terms"
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowTermsModal(true)}
                                                 className="text-[#3E2723] font-black underline underline-offset-4 hover:text-[#2D1B18] transition-colors"
                                             >
                                                 Seller Terms & Conditions
-                                            </Link>
+                                            </button>
                                             .
                                         </div>
                                     ) : (
@@ -436,6 +576,25 @@ const SellerRegister = () => {
                     </form>
                 </div>
             </div>
+            {showTermsModal && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <div className="bg-white max-w-2xl w-full rounded-3xl shadow-2xl overflow-hidden">
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                            <h3 className="text-sm font-black uppercase tracking-widest text-[#3E2723]">Seller Terms & Conditions</h3>
+                            <button
+                                type="button"
+                                onClick={() => setShowTermsModal(false)}
+                                className="text-xs font-black uppercase tracking-widest text-gray-500 hover:text-[#3E2723]"
+                            >
+                                Close
+                            </button>
+                        </div>
+                        <div className="p-6 max-h-[70vh] overflow-y-auto text-sm text-gray-600 leading-relaxed">
+                            <div dangerouslySetInnerHTML={{ __html: termsContent }} />
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -32,6 +32,11 @@ const productSchema = new mongoose.Schema({
     variantCode: { type: String, trim: true },
     weight: { type: Number, min: 0 },
     weightUnit: { type: String, enum: ["Grams", "Milligrams"], default: "Grams" },
+    variantImages: [{ type: String }],
+    variantFaqs: [{
+      question: { type: String, trim: true },
+      answer: { type: String, trim: true }
+    }],
     makingCharge: { type: Number, default: 0 },
     diamondPrice: { type: Number, default: 0 },
     mrp: { type: Number, required: true },

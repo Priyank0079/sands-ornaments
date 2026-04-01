@@ -18,6 +18,12 @@ const variantSchema = Joi.object({
   diamondPrice: Joi.number().min(0).optional(),
   gst: Joi.number().min(0).optional(),
   finalPrice: Joi.number().min(0).optional(),
+  variantImages: Joi.array().items(Joi.string().trim()).optional(),
+  variantFaqs: Joi.array().items(Joi.object({
+    _id: Joi.string().trim().allow(""),
+    question: Joi.string().trim().required(),
+    answer: Joi.string().trim().required()
+  })).optional(),
   serialCodes: Joi.array().items(Joi.object({
     _id: Joi.string().trim().allow(""),
     code: Joi.string().trim().required(),

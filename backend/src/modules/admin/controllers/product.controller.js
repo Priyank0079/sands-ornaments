@@ -47,6 +47,15 @@ const normalizeVariantFields = (variants = [], fallback = {}) => {
   return variants.map((variant) => ({
     ...variant,
     variantCode: variant.variantCode || "",
+    variantImages: Array.isArray(variant.variantImages)
+      ? variant.variantImages.filter(Boolean)
+      : [],
+    variantFaqs: Array.isArray(variant.variantFaqs)
+      ? variant.variantFaqs.map((faq) => ({
+        question: String(faq?.question || "").trim(),
+        answer: String(faq?.answer || "").trim()
+      })).filter((faq) => faq.question || faq.answer)
+      : [],
     weight: variant.weight !== undefined && variant.weight !== null && variant.weight !== ""
       ? Number(variant.weight) || 0
       : fallbackWeight,
@@ -77,6 +86,39 @@ const ensureVariantCodes = (variants = [], productCode = "") => {
   }));
 };
 
+const splitUploadedProductImages = (files = [], variantCount = 0) => {
+  const normalizedFiles = Array.isArray(files) ? files : [];
+  const productImages = normalizedFiles
+    .filter((file) => file?.fieldname === "images")
+    .map((file) => file.path)
+    .filter(Boolean);
+
+  const variantImageMap = {};
+  for (let index = 0; index < variantCount; index += 1) {
+    const fieldname = `variantImages_${index}`;
+    const uploaded = normalizedFiles
+      .filter((file) => file?.fieldname === fieldname)
+      .map((file) => file.path)
+      .filter(Boolean);
+    if (uploaded.length > 0) {
+      variantImageMap[index] = uploaded;
+    }
+  }
+
+  return { productImages, variantImageMap };
+};
+
+const collectReferencedImageUrls = (productLike = {}) => {
+  const productImages = Array.isArray(productLike.images) ? productLike.images.filter(Boolean) : [];
+  const variantImages = Array.isArray(productLike.variants)
+    ? productLike.variants.flatMap((variant) => (
+      Array.isArray(variant?.variantImages) ? variant.variantImages.filter(Boolean) : []
+    ))
+    : [];
+
+  return new Set([...productImages, ...variantImages]);
+};
+
 
 // ─────────────────────────────────────────────────────────────────
 // POST /api/admin/products
@@ -100,11 +142,6 @@ exports.createProduct = async (req, res) => {
     const existingProductCode = await Product.findOne({ productCode: data.productCode }).select("_id");
     if (existingProductCode) return error(res, "Product code already exists.", 409);
 
-    let images = [];
-    if (req.files && req.files.length > 0) {
-      images = req.files.map(file => file.path);
-    }
-
     if (data.variants && data.variants.length > 0) {
       data.variants = normalizeVariantFields(data.variants, {
         weight: data.weight,
@@ -121,6 +158,15 @@ exports.createProduct = async (req, res) => {
         return v;
       });
       data.variants = ensureVariantCodes(data.variants, data.productCode);
+    }
+
+    const { productImages, variantImageMap } = splitUploadedProductImages(req.files, data.variants?.length || 0);
+    let images = productImages;
+    if (Array.isArray(data.variants) && data.variants.length > 0) {
+      data.variants = data.variants.map((variant, index) => ({
+        ...variant,
+        variantImages: [...(variant.variantImages || []), ...(variantImageMap[index] || [])]
+      }));
     }
 
     const settings = await Setting.findOne();
@@ -228,6 +274,7 @@ exports.updateProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) return error(res, "Product not found", 404);
+    const originalReferencedImages = collectReferencedImageUrls(product.toObject ? product.toObject() : product);
 
     const data = { ...req.body };
     if (data.categories) {
@@ -251,21 +298,16 @@ exports.updateProduct = async (req, res) => {
       data.productCode = await generateUniqueProductCode(Product);
     }
 
-    // Handle specific image deletions
-    if (data.deletedImages && Array.isArray(data.deletedImages)) {
-      for (const imageUrl of data.deletedImages) {
-        try {
-          await deleteFromCloudinary(imageUrl);
-          product.images = product.images.filter(img => img !== imageUrl);
-        } catch (err) {
-          console.error(`Failed to delete image ${imageUrl} from Cloudinary:`, err);
-        }
-      }
+    const deletedImages = Array.isArray(data.deletedImages) ? data.deletedImages.filter(Boolean) : [];
+    if (deletedImages.length > 0) {
+      product.images = (product.images || []).filter((img) => !deletedImages.includes(img));
     }
 
     // Append new images (don't allow overwrite via body)
-    if (req.files && req.files.length > 0) {
-      const newImages = req.files.map(file => file.path);
+    const { productImages, variantImageMap } = splitUploadedProductImages(req.files, data.variants?.length || product.variants?.length || 0);
+
+    if (productImages.length > 0) {
+      const newImages = productImages;
       product.images = [...product.images, ...newImages];
     }
 
@@ -286,10 +328,17 @@ exports.updateProduct = async (req, res) => {
         }
         return v;
       });
+      product.variants = product.variants.map((variant, index) => ({
+        ...variant,
+        variantImages: [...(variant.variantImages || []), ...(variantImageMap[index] || [])]
+      }));
       product.variants = ensureVariantCodes(product.variants, product.productCode || data.productCode || "");
     }
 
     product.isSerialized = true;
+
+    const nextReferencedImages = collectReferencedImageUrls(product);
+    const removedImageUrls = [...originalReferencedImages].filter((imageUrl) => !nextReferencedImages.has(imageUrl));
 
     const settings = await Setting.findOne();
     const metalRates = settings?.metalRates || {};
@@ -297,6 +346,13 @@ exports.updateProduct = async (req, res) => {
     applyMetalPricingToProduct(product, metalRates, gstRate);
 
     await product.save();
+
+    if (removedImageUrls.length > 0) {
+      await Promise.allSettled(
+        removedImageUrls.map((imageUrl) => deleteFromCloudinary(imageUrl))
+      );
+    }
+
     return success(res, { product }, "Product updated successfully");
   } catch (err) { return error(res, err.message); }
 };

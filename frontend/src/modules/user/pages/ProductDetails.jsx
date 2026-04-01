@@ -231,6 +231,45 @@ const ProductDetails = () => {
     };
 
 
+    const selectedVariant = product?.variants?.find(v => String(v.id || v._id) === String(selectedVariantId)) || product?.variants?.[0];
+    const variantPrice = selectedVariant?.price ?? product.price;
+    const variantMrp = selectedVariant?.mrp ?? product.originalPrice;
+    const variantDiscount = variantMrp > variantPrice ? Math.round(((variantMrp - variantPrice) / variantMrp) * 100) : 0;
+    const pricingBreakdown = {
+        metalPrice: selectedVariant?.metalPrice ?? 0,
+        makingCharge: selectedVariant?.makingCharge ?? 0,
+        diamondPrice: selectedVariant?.diamondPrice ?? 0,
+        gst: selectedVariant?.gst ?? 0,
+        finalPrice: selectedVariant?.finalPrice ?? variantPrice ?? 0
+    };
+    const selectedVariantWeight = selectedVariant?.weight ?? product?.weight ?? 0;
+    const selectedVariantWeightUnit = selectedVariant?.weightUnit || product?.weightUnit || '';
+    const pricingSubtotal = Number(pricingBreakdown.metalPrice || 0) + Number(pricingBreakdown.makingCharge || 0) + Number(pricingBreakdown.diamondPrice || 0);
+    const gstPercent = pricingSubtotal > 0 ? Math.round((Number(pricingBreakdown.gst || 0) / pricingSubtotal) * 10000) / 100 : 0;
+    const supplierName = product?.sellerId?.shopName || product?.supplierInfo || product?.brand || '';
+    const currencyText = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
+    const variantImages = Array.isArray(selectedVariant?.variantImages) && selectedVariant.variantImages.length > 0
+        ? selectedVariant.variantImages
+        : (product?.images || (product?.image ? [product.image] : []));
+    const primaryImage = selectedImage || variantImages?.[0] || product?.image || product?.images?.[0] || null;
+    const reviewCount = product?.reviewCount ?? reviews.length ?? 0;
+    const averageRating = Number(product?.rating || 0);
+    const hasReviews = reviewCount > 0 && averageRating > 0;
+    const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
+    const normalizeString = (value = '') => String(value || '').trim().toLowerCase();
+    const isSterling925 = normalizeString(product?.material) === 'silver'
+        && normalizeString(product?.silverCategory) === '925 sterling silver';
+
+    useEffect(() => {
+        if (!product) return;
+        if (!variantImages || variantImages.length === 0) {
+            setSelectedImage(null);
+            return;
+        }
+        if (selectedImage && variantImages.includes(selectedImage)) return;
+        setSelectedImage(variantImages[0]);
+    }, [selectedVariantId, product, variantImages, selectedImage]);
+
     if (isLoading || detailLoading) {
         return (
             <div className="bg-white min-h-screen flex items-center justify-center">
@@ -254,32 +293,6 @@ const ProductDetails = () => {
             </div>
         );
     }
-
-    const selectedVariant = product?.variants?.find(v => String(v.id || v._id) === String(selectedVariantId)) || product?.variants?.[0];
-    const variantPrice = selectedVariant?.price ?? product.price;
-    const variantMrp = selectedVariant?.mrp ?? product.originalPrice;
-    const variantDiscount = variantMrp > variantPrice ? Math.round(((variantMrp - variantPrice) / variantMrp) * 100) : 0;
-    const pricingBreakdown = {
-        metalPrice: selectedVariant?.metalPrice ?? 0,
-        makingCharge: selectedVariant?.makingCharge ?? 0,
-        diamondPrice: selectedVariant?.diamondPrice ?? 0,
-        gst: selectedVariant?.gst ?? 0,
-        finalPrice: selectedVariant?.finalPrice ?? variantPrice ?? 0
-    };
-    const selectedVariantWeight = selectedVariant?.weight ?? product?.weight ?? 0;
-    const selectedVariantWeightUnit = selectedVariant?.weightUnit || product?.weightUnit || '';
-    const pricingSubtotal = Number(pricingBreakdown.metalPrice || 0) + Number(pricingBreakdown.makingCharge || 0) + Number(pricingBreakdown.diamondPrice || 0);
-    const gstPercent = pricingSubtotal > 0 ? Math.round((Number(pricingBreakdown.gst || 0) / pricingSubtotal) * 10000) / 100 : 0;
-    const supplierName = product?.sellerId?.shopName || product?.supplierInfo || product?.brand || '';
-    const currencyText = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
-    const primaryImage = selectedImage || product.image || product.images?.[0] || null;
-    const reviewCount = product?.reviewCount ?? reviews.length ?? 0;
-    const averageRating = Number(product?.rating || 0);
-    const hasReviews = reviewCount > 0 && averageRating > 0;
-    const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
-    const normalizeString = (value = '') => String(value || '').trim().toLowerCase();
-    const isSterling925 = normalizeString(product?.material) === 'silver'
-        && normalizeString(product?.silverCategory) === '925 sterling silver';
 
     return (
         <div className="bg-white min-h-screen py-8 pb-24 md:pb-8 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out fill-mode-both selection:bg-[#D39A9F] selection:text-white">
@@ -355,9 +368,9 @@ const ProductDetails = () => {
                         </div>
 
                         {/* Thumbnails Row */}
-                        {product.images && product.images.length > 1 && (
+                        {variantImages && variantImages.length > 1 && (
                             <div className="flex gap-4 overflow-x-auto pb-2 px-1 scrollbar-hide">
-                                {product.images.map((img, idx) => (
+                                {variantImages.map((img, idx) => (
                                     <button
                                         key={idx}
                                         onClick={() => setSelectedImage(img)}
@@ -618,14 +631,17 @@ const ProductDetails = () => {
                 isOpen={openSection === 'faqs'}
                 onClick={() => toggleSection('faqs')}
             >
-                {product.faqs && product.faqs.length > 0 ? (
+                {(selectedVariant?.variantFaqs && selectedVariant.variantFaqs.length > 0) || (product.faqs && product.faqs.length > 0) ? (
                     <div className="space-y-3">
-                        {product.faqs.map((faq, idx) => (
-                            <div key={`${faq.question}-${idx}`} className="border border-gray-100 rounded-lg p-3">
-                                <p className="font-semibold text-gray-900">{faq.question}</p>
-                                <p className="text-gray-600 mt-1">{faq.answer}</p>
-                            </div>
-                        ))}
+                        {(selectedVariant?.variantFaqs && selectedVariant.variantFaqs.length > 0
+                            ? selectedVariant.variantFaqs
+                            : product.faqs
+                        ).map((faq, idx) => (
+                                <div key={`${faq.question || 'faq'}-${idx}`} className="border border-gray-100 rounded-lg p-3">
+                                    <p className="font-semibold text-gray-900">{faq.question}</p>
+                                    <p className="text-gray-600 mt-1">{faq.answer}</p>
+                                </div>
+                            ))}
                     </div>
                 ) : (
                     <p className="text-gray-500">No FAQs available for this product yet.</p>
