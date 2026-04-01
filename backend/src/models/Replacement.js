@@ -24,8 +24,13 @@ const replacementSchema = new mongoose.Schema({
   stockAction: { type: String, enum: ["Restock", "Discard"], default: null },
   pickup: { partner: String, awb: String, scheduledDate: Date, status: String },
   shipment: { partner: String, awb: String, status: String, trackingLink: String },
+  inventory: {
+    processedAt: Date,
+    processedByStatus: String,
+    actionApplied: String
+  },
   adminComment: String,
-  timeline: [{ status: String, date: { type: Date, default: Date.now } }],
+  timeline: [{ status: String, date: { type: Date, default: Date.now }, note: String }],
 }, { timestamps: true });
 
 module.exports = mongoose.model("Replacement", replacementSchema);

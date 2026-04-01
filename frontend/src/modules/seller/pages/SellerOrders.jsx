@@ -5,6 +5,8 @@ import AdminTable from '../../admin/components/AdminTable';
 import { sellerOrderService } from '../services/sellerOrderService';
 import toast from 'react-hot-toast';
 
+const formatCurrency = (value) => `INR ${Number(value || 0).toLocaleString()}`;
+
 const STATUS_COLORS = {
     Processing: 'bg-amber-50 text-amber-700 border-amber-100',
     Confirmed: 'bg-blue-50 text-blue-700 border-blue-100',
@@ -72,7 +74,7 @@ const SellerOrders = () => {
                 <div className="flex flex-col">
                     <span className="text-[10px] font-black text-gray-900 uppercase truncate max-w-[180px]">{row.product}</span>
                     <span className="text-[9px] text-gray-400 font-bold uppercase">
-                        Qty: {row.quantity} {row.sellerItemCount > 1 ? `• ${row.sellerItemCount} items` : ''}
+                        Qty: {row.quantity} {row.sellerItemCount > 1 ? `| ${row.sellerItemCount} items` : ''}
                     </span>
                 </div>
             )
@@ -80,7 +82,7 @@ const SellerOrders = () => {
         {
             header: 'AMOUNT',
             className: 'w-[11%]',
-            render: (row) => <span className="text-[10px] font-black text-gray-900">₹{Number(row.sellerSubtotal || row.totalAmount || 0).toLocaleString()}</span>
+            render: (row) => <span className="text-[10px] font-black text-gray-900">{formatCurrency(row.sellerSubtotal || row.totalAmount || 0)}</span>
         },
         {
             header: 'PAYMENT',
@@ -148,9 +150,9 @@ const SellerOrders = () => {
                     )}
                     {row.canManageStatus && row.orderStatus === 'Packed' && (
                         <button
-                            onClick={() => handleAction(row.id, 'Shipped')}
+                            onClick={() => navigate(`/seller/order-details/${row.id}`)}
                             className="p-1.5 hover:bg-indigo-50 rounded-lg text-gray-400 hover:text-indigo-600 transition-all"
-                            title="Mark shipped"
+                            title="Open detail to add shipping info"
                         >
                             <Truck size={16} />
                         </button>

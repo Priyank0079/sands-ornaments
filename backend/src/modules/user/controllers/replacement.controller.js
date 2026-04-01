@@ -11,6 +11,10 @@ exports.requestReplacement = async (req, res) => {
     const order = await Order.findOne({ _id: orderId, userId });
     if (!order) return error(res, "Order not found", 404);
 
+    if (order.status !== "Delivered") {
+      return error(res, "Replacements can only be requested for delivered orders", 400);
+    }
+
     const item = order.items.id(itemId);
     if (!item) return error(res, "Item not found in order", 404);
 
@@ -36,6 +40,15 @@ exports.requestReplacement = async (req, res) => {
       status: "Pending",
       timeline: [{ status: "Requested", note: "Replacement request submitted" }]
     });
+
+    order.status = "Return Requested";
+    order.timeline = Array.isArray(order.timeline) ? order.timeline : [];
+    order.timeline.push({
+      status: "Return Requested",
+      note: `Replacement requested for ${item.name || "order item"}`,
+      date: new Date()
+    });
+    await order.save();
 
     return success(res, { replacement }, "Replacement requested successfully", 201);
   } catch (err) { return error(res, err.message); }

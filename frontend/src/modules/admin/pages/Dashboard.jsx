@@ -2,16 +2,30 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../../services/api';
 import {
-    Plus, Ticket, Clock, RotateCcw, AlertTriangle, Image as ImageIcon,
-    Users, IndianRupee, ListTree, Package, ShoppingBag,
-    Truck, MapPin, XCircle, Activity, Ban, BatteryWarning,
-    RefreshCw, CheckCircle2, MessageSquare, Store
+    Plus, Ticket, Clock, RotateCcw, AlertTriangle,
+    Users, IndianRupee, ShoppingBag,
+    ChevronRight, Store
 } from 'lucide-react';
 import AdminStatsCard from '../components/AdminStatsCard';
 import AdminTable from '../components/AdminTable';
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
+    const formatCurrency = (value) => `INR ${Number(value || 0).toLocaleString()}`;
+    const getStatusTone = (status) => {
+        switch (String(status || 'Processing')) {
+            case 'Delivered':
+                return 'text-emerald-600 bg-emerald-50';
+            case 'Cancelled':
+                return 'text-red-600 bg-red-50';
+            case 'Shipped':
+            case 'Out for Delivery':
+                return 'text-blue-600 bg-blue-50';
+            default:
+                return 'text-orange-500 bg-orange-50';
+        }
+    };
+
     const [statsData, setStatsData] = React.useState({
         users: 0,
         orders: 0,
@@ -21,35 +35,37 @@ const AdminDashboard = () => {
         recent: []
     });
 
-    const [loading, setLoading] = React.useState(true);
-
     React.useEffect(() => {
         const fetchStats = async () => {
             try {
                 const res = await api.get('admin/stats');
                 if (res.data.success) {
-                    const { stats, recentOrders } = res.data;
+                    const payload = res.data.data || {};
+                    const summary = payload.summary || {};
+                    const recentOrders = payload.recentOrders || [];
+
                     setStatsData({
-                        users: stats.totalUsers || 0,
-                        orders: stats.totalOrders || 0,
-                        pendingOrders: stats.pendingOrders || 0,
-                        sellers: stats.totalSellers || 0,
-                        revenue: stats.totalRevenue || 0,
-                        recent: recentOrders.map(o => ({
-                            id: o._id,
-                            date: new Date(o.createdAt).toLocaleDateString(),
-                            customer: o.user?.fullName || o.shippingAddress?.firstName || 'Customer',
-                            amount: `₹${(o.totalAmount || 0).toLocaleString()}`,
-                            status: (o.orderStatus || 'PENDING').toUpperCase()
+                        users: summary.totalUsers || 0,
+                        orders: summary.totalOrders || 0,
+                        pendingOrders: (payload.statusDistribution || []).reduce((sum, item) => (
+                            ['Processing', 'Confirmed', 'Packed'].includes(item?._id) ? sum + Number(item.count || 0) : sum
+                        ), 0),
+                        sellers: 0,
+                        revenue: summary.totalRevenue || 0,
+                        recent: recentOrders.map((order) => ({
+                            id: order.orderId || order._id,
+                            date: new Date(order.createdAt).toLocaleDateString(),
+                            customer: order.customerName || order.userId?.name || order.user?.name || order.shippingAddress?.firstName || 'Customer',
+                            amount: formatCurrency(order.total || order.totalAmount || 0),
+                            status: order.status || order.orderStatus || 'Processing'
                         }))
                     });
                 }
             } catch (err) {
-                console.error("Failed to fetch admin stats:", err);
-            } finally {
-                setLoading(false);
+                console.error('Failed to fetch admin stats:', err);
             }
         };
+
         fetchStats();
     }, []);
 
@@ -64,7 +80,7 @@ const AdminDashboard = () => {
 
     const stats = [
         { label: 'TOTAL USERS', value: statsData.users, icon: Users, color: 'text-blue-500', bgColor: 'bg-blue-50' },
-        { label: 'TOTAL REVENUE', value: `₹${statsData.revenue.toLocaleString()}`, icon: IndianRupee, color: 'text-emerald-500', bgColor: 'bg-emerald-50' },
+        { label: 'TOTAL REVENUE', value: formatCurrency(statsData.revenue), icon: IndianRupee, color: 'text-emerald-500', bgColor: 'bg-emerald-50' },
         { label: 'TOTAL SELLERS', value: statsData.sellers, icon: Store, color: 'text-indigo-500', bgColor: 'bg-indigo-50' },
         { label: 'TOTAL ORDERS', value: statsData.orders, icon: ShoppingBag, color: 'text-blue-500', bgColor: 'bg-blue-50' },
         { label: 'PENDING ORDERS', value: statsData.pendingOrders, icon: Clock, color: 'text-orange-500', bgColor: 'bg-orange-50', badge: statsData.pendingOrders > 0 ? 'ACTION REQUIRED' : '', badgeColor: 'text-red-500' },
@@ -99,7 +115,7 @@ const AdminDashboard = () => {
             header: 'STATUS',
             className: 'w-[20%] text-right',
             render: (row) => (
-                <span className="inline-block text-[10px] font-bold text-orange-500 uppercase tracking-widest bg-orange-50 px-2 py-1 rounded-md">
+                <span className={`inline-block text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-md ${getStatusTone(row.status)}`}>
                     {row.status}
                 </span>
             )
@@ -108,13 +124,11 @@ const AdminDashboard = () => {
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
-            {/* Header */}
             <div className="text-left">
                 <h1 className="text-2xl font-bold text-gray-900 uppercase tracking-tight">ADMIN DASHBOARD</h1>
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mt-1">PLATFORM ANALYTICS & QUICK CONTROLS</p>
             </div>
 
-            {/* Quick Management Section */}
             <div>
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 text-left">QUICK MANAGEMENT</p>
                 <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
@@ -135,7 +149,6 @@ const AdminDashboard = () => {
                 </div>
             </div>
 
-            {/* Metrics Grid */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 {stats.map((stat, idx) => (
                     <AdminStatsCard
@@ -151,34 +164,8 @@ const AdminDashboard = () => {
                 ))}
             </div>
 
-            {/* Bottom Section: Recent Orders & Stock Alerts */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <button 
-                    onClick={() => {
-                        const notifs = JSON.parse(localStorage.getItem('admin_notifications') || '[]');
-                        notifs.unshift({
-                            id: Date.now(),
-                            title: 'New Seller Registration',
-                            message: 'A new merchant has just registered for a seller account.',
-                            date: new Date().toISOString(),
-                            unread: true,
-                            isRead: false,
-                            type: 'SELLER_REQUEST',
-                            priority: 'High',
-                            time: 'just now',
-                            link: '/admin/sellers'
-                        });
-                        localStorage.setItem('admin_notifications', JSON.stringify(notifs));
-                        alert('Simulation started! You should see a popup in a few seconds.');
-                    }}
-                    className="flex flex-col items-center justify-center p-6 bg-indigo-50 rounded-2xl border border-indigo-100 hover:shadow-md transition-all group lg:col-span-1 h-full"
-                >
-                    <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 transition-transform">
-                        <Store className="w-6 h-6 text-indigo-500" />
-                    </div>
-                    <span className="text-[10px] font-black text-indigo-900 uppercase tracking-widest text-center">Simulate Seller</span>
-                </button>
-                <button 
+                <button
                     onClick={() => navigate('/admin/sellers')}
                     className="flex flex-col items-center justify-center p-6 bg-sky-50 rounded-2xl border border-sky-100 hover:shadow-md transition-all group lg:col-span-1 h-full"
                 >
@@ -187,7 +174,7 @@ const AdminDashboard = () => {
                     </div>
                     <span className="text-[10px] font-black text-sky-900 uppercase tracking-widest text-center">Manage Sellers</span>
                 </button>
-                {/* Recent Orders */}
+
                 <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                     <div className="flex justify-between items-center mb-6">
                         <div className="text-left">
@@ -197,42 +184,6 @@ const AdminDashboard = () => {
                         <button onClick={() => navigate('/admin/orders')} className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest hover:text-emerald-700">VIEW ALL</button>
                     </div>
                     <AdminTable columns={orderColumns} data={statsData.recent} />
-                </div>
-
-                {/* Stock Alerts Widget */}
-                <div className="bg-[#0F172A] rounded-2xl shadow-xl p-6 text-white relative overflow-hidden">
-                    <div className="relative z-10">
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="p-2 bg-red-500/10 rounded-lg">
-                                <AlertTriangle className="w-5 h-5 text-red-500" />
-                            </div>
-                            <h2 className="text-sm font-bold uppercase tracking-wide">STOCK ALERTS</h2>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div className="bg-[#1E293B] rounded-xl p-4 border border-white/5">
-                                <p className="text-[10px] font-bold text-white uppercase tracking-widest mb-3 line-clamp-1">PREMIUM JUMBO ROASTED ROYALE CASHEWS</p>
-                                <div className="space-y-2">
-                                    <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-widest">
-                                        <span className="text-gray-400">SIZE: 250G</span>
-                                        <span className="text-red-400">0 LEFT</span>
-                                    </div>
-                                    <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-widest">
-                                        <span className="text-gray-400">SIZE: 500G</span>
-                                        <span className="text-red-400">0 LEFT</span>
-                                    </div>
-                                    <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-widest">
-                                        <span className="text-gray-400">SIZE: 1KG</span>
-                                        <span className="text-red-400">0 LEFT</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Background decorations */}
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
                 </div>
             </div>
         </div>

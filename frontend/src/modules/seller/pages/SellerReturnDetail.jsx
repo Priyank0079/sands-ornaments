@@ -10,6 +10,7 @@ import {
     User,
     XCircle
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { sellerOrderService } from '../services/sellerOrderService';
 
 const SellerReturnDetail = () => {
@@ -26,7 +27,7 @@ const SellerReturnDetail = () => {
                 if (!active) return;
                 setReturnReq(data);
             } catch (err) {
-                console.error("Return load failed");
+                toast.error('Unable to load this seller return right now.');
             } finally {
                 if (active) setLoading(false);
             }
@@ -39,6 +40,9 @@ const SellerReturnDetail = () => {
         const res = await sellerOrderService.processReturn(id, status);
         if (res.success && res.data) {
             setReturnReq(res.data);
+            toast.success(res.message || `Return ${status.toLowerCase()} successfully.`);
+        } else {
+            toast.error(res.message || 'Unable to process this return right now.');
         }
     };
 
@@ -68,6 +72,7 @@ const SellerReturnDetail = () => {
                     </button>
                     <div>
                         <h1 className="text-2xl font-black text-gray-900 uppercase tracking-tight">Return Authorization #{returnReq.id}</h1>
+                        <p className="text-[10px] font-black text-[#8D6E63] uppercase tracking-[0.2em] mt-2">Display ID: {returnReq.returnDisplayId}</p>
                         <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mt-1 flex items-center gap-2">
                             STATUS: <span className={`font-black ${statusTone}`}>{returnReq.status}</span>
                         </p>
@@ -122,6 +127,9 @@ const SellerReturnDetail = () => {
                             <h3 className={sectionTitleClasses}><AlertCircle size={14} className="text-amber-500" /> Client Feedback</h3>
                             <div className="p-8 bg-amber-50/30 rounded-3xl border border-amber-100/50">
                                 <p className="text-sm font-bold text-gray-700 leading-relaxed italic">"{returnReq.returnReason}"</p>
+                                {returnReq.comment ? (
+                                    <p className="text-xs font-bold text-gray-500 leading-relaxed mt-4 not-italic">Customer note: {returnReq.comment}</p>
+                                ) : null}
                             </div>
                         </div>
                     </div>
@@ -197,6 +205,10 @@ const SellerReturnDetail = () => {
                                 <div>
                                     <p className={labelClasses}>Transaction Value</p>
                                     <p className="text-xl font-black text-[#3E2723] mt-1 tracking-tighter">Rs. {Number(returnReq.order?.total || 0).toLocaleString()}</p>
+                                </div>
+                                <div>
+                                    <p className={labelClasses}>Current Payment Status</p>
+                                    <p className="text-sm font-black text-[#3E2723] mt-1 uppercase tracking-tight">{returnReq.order?.paymentStatus || 'Unknown'}</p>
                                 </div>
                                 <div className="p-4 bg-red-50/50 rounded-2xl border border-red-100/30">
                                     <p className="text-[8px] font-black text-red-400 uppercase tracking-widest mb-1">Operational Note</p>

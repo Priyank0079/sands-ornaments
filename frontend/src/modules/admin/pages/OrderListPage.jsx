@@ -3,15 +3,9 @@ import {
     Search,
     Download,
     Eye,
-    ChevronLeft,
-    ChevronRight,
-    ArrowUpDown,
     CheckCircle2,
     Clock,
     Package,
-    XCircle,
-    Truck,
-    Filter
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Pagination from '../components/Pagination';
@@ -89,12 +83,13 @@ const OrderListPage = () => {
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'Pending': return 'bg-gray-100 text-gray-600';
             case 'Processing': return 'bg-amber-100 text-amber-600';
+            case 'Confirmed': return 'bg-blue-100 text-blue-600';
+            case 'Packed': return 'bg-violet-100 text-violet-600';
             case 'Shipped': return 'bg-blue-100 text-blue-600';
+            case 'Out for Delivery': return 'bg-sky-100 text-sky-600';
             case 'Delivered': return 'bg-emerald-100 text-emerald-600';
             case 'Cancelled': return 'bg-red-100 text-red-600';
-            case 'Rejected': return 'bg-red-50 text-red-600 border-red-100';
             default: return 'bg-gray-100 text-gray-600';
         }
     };
@@ -185,6 +180,7 @@ const OrderListPage = () => {
                                 <th className="px-6 py-4 text-[10px] md:text-xs font-bold text-gray-800 uppercase tracking-widest text-center">Items</th>
                                 <th className="px-6 py-4 text-[10px] md:text-xs font-bold text-gray-800 uppercase tracking-widest">Value</th>
                                 <th className="px-6 py-4 text-[10px] md:text-xs font-bold text-gray-800 uppercase tracking-widest">Status</th>
+                                <th className="px-6 py-4 text-[10px] md:text-xs font-bold text-gray-800 uppercase tracking-widest">Shipping</th>
                                 <th className="px-6 py-4 text-[10px] md:text-xs font-bold text-gray-800 uppercase tracking-widest text-right">Actions</th>
                             </tr>
                         </thead>
@@ -201,39 +197,42 @@ const OrderListPage = () => {
                                         {new Date(order.createdAt).toLocaleDateString()}
                                     </td>
                                     <td className="px-6 py-5">
-                                        <div className="font-bold text-xs text-black">{order.user?.fullName || order.shippingAddress?.firstName || 'Customer'}</div>
+                                        <div className="font-bold text-xs text-black">{order.customerName || 'Customer'}</div>
+                                        <div className="text-[10px] font-bold text-gray-400 mt-1">{order.customerPhone || order.customerEmail || 'No contact saved'}</div>
                                     </td>
                                     <td className="px-6 py-5">
-                                        <span className={`px-3 py-1 rounded-md text-[9px] font-bold uppercase tracking-widest ${order.items?.length > 1 ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'
-                                            }`}>
-                                            {order.items?.length > 1 ? 'Multi-Item' : 'Single Item'}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-5">
-                                        <span className={`font-bold text-xs ${(order.paymentMethod || '').toUpperCase() === 'COD' ? 'text-orange-600' : 'text-emerald-600'}`}>
-                                            {(order.paymentMethod || '').toUpperCase()}
-                                        </span>
+                                        <div className="flex flex-col gap-1">
+                                            <span className={`font-bold text-xs ${(order.paymentMethod || '').toUpperCase() === 'COD' ? 'text-orange-600' : 'text-emerald-600'}`}>
+                                                {(order.paymentMethod || '').toUpperCase()}
+                                            </span>
+                                            <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">
+                                                {String(order.paymentStatus || 'pending').toUpperCase()}
+                                            </span>
+                                        </div>
                                     </td>
                                     <td className="px-6 py-5 text-center font-bold text-xs text-gray-600">
-                                        {order.items?.length}
+                                        <span className={`px-3 py-1 rounded-md text-[9px] font-bold uppercase tracking-widest ${order.itemCount > 1 ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'
+                                            }`}>
+                                            {order.itemCount > 1 ? `${order.itemCount} Items` : '1 Item'}
+                                        </span>
                                     </td>
                                     <td className="px-6 py-5 font-black text-xs text-gray-900">
-                                        INR {(order.total || order.totalAmount || 0).toLocaleString()}
+                                        INR {(order.totalAmount || 0).toLocaleString()}
                                     </td>
                                     <td className="px-6 py-5">
-                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${getStatusColor(order.status || order.orderStatus)}`}>
+                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${getStatusColor(order.orderStatus)}`}>
                                             <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
-                                            {order.status || order.orderStatus}
+                                            {order.orderStatus}
                                         </span>
                                     </td>
                                     <td className="px-6 py-5">
                                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-right">
-                                            {order.shippingCarrier || 'PENDING'}
+                                            {order.shippingCarrier || 'Manual Pending'}
                                         </span>
                                     </td>
                                     <td className="px-6 py-5 text-right">
                                         <button
-                                            onClick={() => navigate(`/admin/orders/${order._id}`)}
+                                            onClick={() => navigate(`/admin/orders/${order.id}`)}
                                             className="px-4 py-2 bg-[#1a1a1a] text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-md shadow-gray-200"
                                         >
                                             View
@@ -243,7 +242,7 @@ const OrderListPage = () => {
                             ))}
                             {filteredOrders.length === 0 && (
                                 <tr>
-                                    <td colSpan="11" className="px-6 py-20 text-center">
+                                    <td colSpan="10" className="px-6 py-20 text-center">
                                         <div className="flex flex-col items-center justify-center opacity-50">
                                             <Package size={48} className="text-gray-300 mb-4" />
                                             <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">No orders found</p>

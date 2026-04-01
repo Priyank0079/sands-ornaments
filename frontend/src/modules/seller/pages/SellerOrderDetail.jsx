@@ -8,11 +8,27 @@ import { sellerOrderService } from '../services/sellerOrderService';
 import SellerFAQ from '../components/SellerFAQ';
 import toast from 'react-hot-toast';
 
+const formatDateInputValue = (value) => {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    return date.toISOString().slice(0, 10);
+};
+
+const formatCurrency = (value) => `INR ${Number(value || 0).toLocaleString()}`;
+
 const SellerOrderDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [note, setNote] = useState('');
+    const [shippingForm, setShippingForm] = useState({
+        carrier: '',
+        trackingId: '',
+        trackingUrl: '',
+        estimatedDelivery: ''
+    });
 
     useEffect(() => {
         const fetchOrder = async () => {
@@ -29,14 +45,25 @@ const SellerOrderDetail = () => {
         fetchOrder();
     }, [id]);
 
-    const handleStatusUpdate = async (status) => {
-        const res = await sellerOrderService.updateOrderStatus(id, status);
+    useEffect(() => {
+        if (!order) return;
+        setShippingForm({
+            carrier: order.shippingInfo?.carrier || '',
+            trackingId: order.shippingInfo?.trackingId || '',
+            trackingUrl: order.shippingInfo?.trackingUrl || '',
+            estimatedDelivery: formatDateInputValue(order.shippingInfo?.estimatedDelivery)
+        });
+    }, [order]);
+
+    const handleStatusUpdate = async (status, customNote = note) => {
+        const res = await sellerOrderService.updateOrderStatus(id, status, customNote, shippingForm);
         if (!res.success) {
             toast.error(res.message || 'Unable to update order status.');
             return;
         }
         toast.success(res.message || 'Order updated');
         if (res.order) setOrder(res.order);
+        setNote('');
     };
 
     const primaryItem = useMemo(() => order?.primaryItem || order?.sellerItems?.[0] || null, [order]);
@@ -44,13 +71,15 @@ const SellerOrderDetail = () => {
     if (loading) return <div className="p-20 text-center text-gray-400 font-black uppercase tracking-widest animate-pulse">Synchronizing Data...</div>;
     if (!order) return <div className="p-20 text-center text-gray-400 font-black uppercase tracking-widest">Order Not Found</div>;
 
-    const cardClasses = "bg-white rounded-2xl border border-gray-100 p-8 shadow-sm h-full";
-    const sectionTitleClasses = "text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-8 flex items-center gap-2";
-    const labelClasses = "text-[9px] font-black text-gray-400 uppercase tracking-widest";
-    const valueClasses = "text-sm font-bold text-gray-900 mt-1 uppercase";
+    const cardClasses = 'bg-white rounded-2xl border border-gray-100 p-8 shadow-sm h-full';
+    const sectionTitleClasses = 'text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-8 flex items-center gap-2';
+    const labelClasses = 'text-[9px] font-black text-gray-400 uppercase tracking-widest';
+    const valueClasses = 'text-sm font-bold text-gray-900 mt-1 uppercase';
     const shippingAddress = order.shippingAddress || {};
     const canManage = order.canManageStatus;
     const currentStatus = order.orderStatus;
+    const canEditShipping = canManage && ['Packed', 'Shipped'].includes(currentStatus);
+    const sellerItems = order.sellerItems || [];
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500 font-sans pb-20">
@@ -65,7 +94,7 @@ const SellerOrderDetail = () => {
                     <div>
                         <h1 className="text-2xl font-black text-gray-900 uppercase tracking-tight">ORDER #{order.orderId}</h1>
                         <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mt-1 flex items-center gap-2">
-                             STATUS: <span className="text-[#3E2723]">{currentStatus}</span>
+                            STATUS: <span className="text-[#3E2723]">{currentStatus}</span>
                         </p>
                     </div>
                 </div>
@@ -149,7 +178,7 @@ const SellerOrderDetail = () => {
                         <div className="space-y-4">
                             <div className="flex justify-between text-xs font-bold text-gray-400 uppercase tracking-widest">
                                 <span>Seller Subtotal</span>
-                                <span className="text-gray-900">₹{Number(order.sellerSubtotal || 0).toLocaleString()}</span>
+                                <span className="text-gray-900">{formatCurrency(order.sellerSubtotal || 0)}</span>
                             </div>
                             <div className="flex justify-between text-xs font-bold text-gray-400 uppercase tracking-widest">
                                 <span>Items</span>
@@ -157,13 +186,86 @@ const SellerOrderDetail = () => {
                             </div>
                             <div className="pt-4 border-t border-gray-100 flex justify-between">
                                 <span className="text-[10px] font-black text-[#3E2723] uppercase tracking-[0.2em]">Order Total</span>
-                                <span className="text-xl font-black text-gray-900 tracking-tighter">₹{Number(order.totalAmount || 0).toLocaleString()}</span>
+                                <span className="text-xl font-black text-gray-900 tracking-tighter">{formatCurrency(order.totalAmount || 0)}</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div className="lg:col-span-2 space-y-8">
+                    <div className={cardClasses}>
+                        <h3 className={sectionTitleClasses}><Truck size={14} className="text-[#3E2723]" /> Shipment Control</h3>
+                        <div className="space-y-5">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <p className={labelClasses}>Carrier</p>
+                                    <input
+                                        type="text"
+                                        value={shippingForm.carrier}
+                                        onChange={(e) => setShippingForm((prev) => ({ ...prev, carrier: e.target.value }))}
+                                        disabled={!canEditShipping}
+                                        className="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 text-sm font-bold text-gray-900 disabled:bg-gray-50 disabled:text-gray-400"
+                                        placeholder="Manual courier name"
+                                    />
+                                </div>
+                                <div>
+                                    <p className={labelClasses}>Tracking ID</p>
+                                    <input
+                                        type="text"
+                                        value={shippingForm.trackingId}
+                                        onChange={(e) => setShippingForm((prev) => ({ ...prev, trackingId: e.target.value }))}
+                                        disabled={!canEditShipping}
+                                        className="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 text-sm font-bold text-gray-900 disabled:bg-gray-50 disabled:text-gray-400"
+                                        placeholder="AWB / tracking number"
+                                    />
+                                </div>
+                                <div>
+                                    <p className={labelClasses}>Tracking URL</p>
+                                    <input
+                                        type="text"
+                                        value={shippingForm.trackingUrl}
+                                        onChange={(e) => setShippingForm((prev) => ({ ...prev, trackingUrl: e.target.value }))}
+                                        disabled={!canEditShipping}
+                                        className="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 text-sm font-bold text-gray-900 disabled:bg-gray-50 disabled:text-gray-400"
+                                        placeholder="Optional tracking link"
+                                    />
+                                </div>
+                                <div>
+                                    <p className={labelClasses}>Estimated Delivery</p>
+                                    <input
+                                        type="date"
+                                        value={shippingForm.estimatedDelivery}
+                                        onChange={(e) => setShippingForm((prev) => ({ ...prev, estimatedDelivery: e.target.value }))}
+                                        disabled={!canEditShipping}
+                                        className="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 text-sm font-bold text-gray-900 disabled:bg-gray-50 disabled:text-gray-400"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <p className={labelClasses}>Internal Note</p>
+                                <textarea
+                                    value={note}
+                                    onChange={(e) => setNote(e.target.value)}
+                                    disabled={!canManage}
+                                    className="mt-2 w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm font-bold text-gray-900 disabled:bg-gray-50 disabled:text-gray-400 min-h-[88px] resize-none"
+                                    placeholder="Add a note for packing or shipment updates..."
+                                />
+                            </div>
+                            {canEditShipping ? (
+                                <button
+                                    onClick={() => handleStatusUpdate(currentStatus, note)}
+                                    className="px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest border border-[#3E2723]/20 text-[#3E2723] hover:bg-[#3E2723]/5 transition-all"
+                                >
+                                    Save Shipping Info
+                                </button>
+                            ) : (
+                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
+                                    Shipping info becomes editable once the order reaches packed status.
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
                     <div className={cardClasses}>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                             <div>
@@ -201,7 +303,7 @@ const SellerOrderDetail = () => {
                     <div className={cardClasses}>
                         <h3 className={sectionTitleClasses}><Box size={14} className="text-[#3E2723]" /> Seller Items</h3>
                         <div className="space-y-4">
-                            {(order.sellerItems || []).map((item) => (
+                            {sellerItems.map((item) => (
                                 <div key={item._id} className="flex gap-6 items-center p-6 bg-[#FDFBF7] rounded-[2rem] border border-[#EFEBE9]">
                                     <div className="w-24 h-24 bg-white rounded-2xl border border-gray-100 flex items-center justify-center p-3 shadow-inner">
                                         {item.image || item.productId?.images?.[0] || item.productId?.image ? (
@@ -222,11 +324,11 @@ const SellerOrderDetail = () => {
                                             </div>
                                             <div>
                                                 <p className={labelClasses}>Unit Price</p>
-                                                <p className="text-sm font-black text-gray-900 mt-1">₹{Number(item.price || 0).toLocaleString()}</p>
+                                                <p className="text-sm font-black text-gray-900 mt-1">{formatCurrency(item.price || 0)}</p>
                                             </div>
                                             <div>
                                                 <p className={labelClasses}>Line Total</p>
-                                                <p className="text-sm font-black text-emerald-600 mt-1">₹{Number((item.price || 0) * (item.quantity || 0)).toLocaleString()}</p>
+                                                <p className="text-sm font-black text-emerald-600 mt-1">{formatCurrency((item.price || 0) * (item.quantity || 0))}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -238,8 +340,8 @@ const SellerOrderDetail = () => {
                     <div className={cardClasses}>
                         <h3 className={sectionTitleClasses}><Truck size={14} className="text-[#3E2723]" /> Order Timeline</h3>
                         <div className="relative pl-8 space-y-8 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[2px] before:bg-gray-100">
-                             {(order.timeline || []).map((step, i) => (
-                                <div key={`${step.status}-${i}`} className="relative">
+                            {(order.timeline || []).map((step, index) => (
+                                <div key={`${step.status}-${index}`} className="relative">
                                     <div className="absolute -left-[27px] w-3.5 h-3.5 rounded-full border-2 border-[#3E2723] bg-[#3E2723]" />
                                     <div>
                                         <p className="text-[10px] font-black uppercase tracking-widest text-[#3E2723]">
@@ -251,7 +353,7 @@ const SellerOrderDetail = () => {
                                         )}
                                     </div>
                                 </div>
-                             ))}
+                            ))}
                         </div>
                     </div>
                 </div>

@@ -22,6 +22,10 @@ const returnSchema = new mongoose.Schema({
   },
   pickup: { partner: String, awb: String, scheduledDate: Date, status: String },
   refund: { amount: Number, method: String, transactionId: String, initiatedAt: Date },
+  inventory: {
+    restockedAt: Date,
+    restockedByStatus: String
+  },
   adminComment: String,
   timeline: [{ status: String, date: { type: Date, default: Date.now }, note: String }],
   logs: [{ action: String, comment: String, by: String, date: { type: Date, default: Date.now } }],
