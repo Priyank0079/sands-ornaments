@@ -42,6 +42,15 @@ exports.requestReturn = async (req, res) => {
       timeline: [{ status: "Requested", note: "Return request submitted" }]
     });
 
+    order.status = "Return Requested";
+    order.timeline = Array.isArray(order.timeline) ? order.timeline : [];
+    order.timeline.push({
+      status: "Return Requested",
+      note: `Return requested for ${item.name || "order item"}`,
+      date: new Date()
+    });
+    await order.save();
+
     return success(res, { returnRequest }, "Return requested successfully", 201);
   } catch (err) { return error(res, err.message); }
 };

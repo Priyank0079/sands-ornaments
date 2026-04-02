@@ -3,6 +3,152 @@ import api from '../../../services/api';
 const isFormData = (payload) =>
   typeof FormData !== 'undefined' && payload instanceof FormData;
 
+const getAdminOrderCustomerName = (order = {}) =>
+  order.customerName ||
+  order.userId?.name ||
+  [order.shippingAddress?.firstName, order.shippingAddress?.lastName].filter(Boolean).join(' ').trim() ||
+  'Customer';
+
+const getAdminOrderCustomerEmail = (order = {}) =>
+  order.customerEmail ||
+  order.userId?.email ||
+  order.shippingAddress?.email ||
+  '';
+
+const getAdminOrderCustomerPhone = (order = {}) =>
+  order.customerPhone ||
+  order.userId?.phone ||
+  order.shippingAddress?.phone ||
+  '';
+
+const getAdminOrderPrimaryImage = (item = {}) =>
+  item?.image ||
+  item?.productId?.images?.[0] ||
+  item?.productId?.image ||
+  '';
+
+const normalizeAdminOrder = (order) => {
+  if (!order) return null;
+
+  const items = Array.isArray(order.items) ? order.items : [];
+  const customerName = getAdminOrderCustomerName(order);
+  const customerEmail = getAdminOrderCustomerEmail(order);
+  const customerPhone = getAdminOrderCustomerPhone(order);
+  const shippingInfo = order.shippingInfo || {};
+  const timeline = Array.isArray(order.timeline) ? order.timeline : [];
+
+  return {
+    ...order,
+    id: order._id,
+    user: order.userId || null,
+    customerName,
+    customerEmail,
+    customerPhone,
+    orderStatus: order.status,
+    totalAmount: Number(order.total || 0),
+    itemCount: items.length,
+    shippingCarrier: shippingInfo.carrier || '',
+    trackingId: shippingInfo.trackingId || '',
+    trackingUrl: shippingInfo.trackingUrl || '',
+    estimatedDelivery: shippingInfo.estimatedDelivery || null,
+    address: {
+      name: customerName,
+      phone: customerPhone,
+      street: [order.shippingAddress?.flatNo, order.shippingAddress?.area].filter(Boolean).join(', '),
+      city: order.shippingAddress?.city || '',
+      district: order.shippingAddress?.district || '',
+      state: order.shippingAddress?.state || '',
+      zip: order.shippingAddress?.pincode || ''
+    },
+    items: items.map((item) => ({
+      ...item,
+      id: item._id || item.variantId || item.productId?._id,
+      image: getAdminOrderPrimaryImage(item)
+    })),
+    timeline
+  };
+};
+
+const normalizeAdminReturn = (returnReq) => {
+  if (!returnReq) return null;
+
+  const items = Array.isArray(returnReq.items) ? returnReq.items : [];
+  const primaryItem = items[0] || null;
+  const evidence = returnReq.evidence || {};
+  const order = returnReq.orderId || null;
+  const customer = returnReq.userId || null;
+  const refund = returnReq.refund || {};
+  const pickup = returnReq.pickup || {};
+
+  return {
+    ...returnReq,
+    id: returnReq._id,
+    returnDisplayId: returnReq.returnId || returnReq._id,
+    order: order,
+    orderDisplayId: order?.orderId || 'N/A',
+    user: customer,
+    customerName: customer?.name || 'Customer',
+    customerEmail: customer?.email || '',
+    customerPhone: customer?.phone || '',
+    itemCount: items.length,
+    items,
+    primaryItem,
+    reason: evidence.reason || primaryItem?.reason || 'Not specified',
+    comment: evidence.comment || '',
+    adminComment: returnReq.adminComment || '',
+    evidenceImages: Array.isArray(evidence.images) ? evidence.images : [],
+    evidenceVideo: evidence.video || '',
+    refundAmount: Number(refund.amount || 0),
+    refundMethod: refund.method || '',
+    refundTransactionId: refund.transactionId || '',
+    refundInitiatedAt: refund.initiatedAt || null,
+    pickupAddress: returnReq.pickupAddress || order?.shippingAddress || null,
+    pickup,
+    timeline: Array.isArray(returnReq.timeline) ? returnReq.timeline : [],
+    logs: Array.isArray(returnReq.logs) ? returnReq.logs : []
+  };
+};
+
+const normalizeAdminReplacement = (replacement) => {
+  if (!replacement) return null;
+
+  const originalItems = Array.isArray(replacement.originalItems) ? replacement.originalItems : [];
+  const replacementItems = Array.isArray(replacement.replacementItems) ? replacement.replacementItems : [];
+  const evidence = replacement.evidence || {};
+  const customer = replacement.userId || null;
+  const order = replacement.orderId || null;
+
+  return {
+    ...replacement,
+    id: replacement._id,
+    replacementDisplayId: replacement.replacementId || replacement._id,
+    adminComment: replacement.adminComment || '',
+    replacementMode: replacement.replacementMode || 'after_pickup',
+    itemCondition: replacement.itemCondition || '',
+    stockAction: replacement.stockAction || '',
+    user: customer,
+    customerName: customer?.name || 'Customer',
+    customerEmail: customer?.email || '',
+    customerPhone: customer?.phone || '',
+    order: order,
+    orderDisplayId: order?.orderId || 'N/A',
+    originalItems,
+    replacementItems,
+    originalItemCount: originalItems.length,
+    replacementItemCount: replacementItems.length,
+    primaryOriginalItem: originalItems[0] || null,
+    primaryReplacementItem: replacementItems[0] || null,
+    reason: evidence.reason || originalItems[0]?.reason || 'Not specified',
+    comment: evidence.comment || '',
+    evidenceImages: Array.isArray(evidence.images) ? evidence.images : [],
+    evidenceVideo: evidence.video || '',
+    pickupAddress: order?.shippingAddress || null,
+    pickup: replacement.pickup || {},
+    shipment: replacement.shipment || {},
+    timeline: Array.isArray(replacement.timeline) ? replacement.timeline : []
+  };
+};
+
 export const adminService = {
   // Product Orchestration
   getProducts: async (params = {}) => {
@@ -394,7 +540,8 @@ export const adminService = {
   getOrders: async (params = {}) => {
     try {
       const res = await api.get('admin/orders', { params });
-      return res.data.data?.orders || res.data.orders || [];
+      const orders = res.data.data?.orders || res.data.orders || [];
+      return orders.map(normalizeAdminOrder).filter(Boolean);
     } catch (err) {
       console.error("Admin fetch orders failed:", err);
       return [];
@@ -403,19 +550,27 @@ export const adminService = {
   getOrderDetails: async (id) => {
     try {
       const res = await api.get(`admin/orders/${id}`);
-      return res.data.order;
+      return normalizeAdminOrder(res.data.data?.order || res.data.order);
     } catch (err) {
       console.error("Admin fetch order details failed:", err);
       throw err;
     }
   },
-  updateOrderStatus: async (id, status) => {
+  updateOrderStatus: async (id, payload) => {
     try {
-      const res = await api.patch(`admin/orders/${id}/status`, { status });
-      return res.data.success;
+      const requestBody = typeof payload === 'string' ? { status: payload } : payload;
+      const res = await api.patch(`admin/orders/${id}/status`, requestBody);
+      return {
+        success: res.data.success,
+        message: res.data.message || 'Order updated',
+        order: normalizeAdminOrder(res.data.data?.order || res.data.order)
+      };
     } catch (err) {
       console.error("Admin update order status failed:", err);
-      return false;
+      return {
+        success: false,
+        message: err.response?.data?.message || "Failed to update order"
+      };
     }
   },
 
@@ -423,7 +578,8 @@ export const adminService = {
   getReturns: async () => {
     try {
       const res = await api.get('admin/returns');
-      return res.data.returns || [];
+      const returns = res.data.data?.returns || res.data.returns || [];
+      return returns.map(normalizeAdminReturn).filter(Boolean);
     } catch (err) {
       console.error("Admin fetch returns failed:", err);
       return [];
@@ -432,19 +588,63 @@ export const adminService = {
   getReturnDetails: async (id) => {
     try {
       const res = await api.get(`admin/returns/${id}`);
-      return res.data.returnRequest;
+      return normalizeAdminReturn(res.data.data?.returnReq || res.data.returnRequest || res.data.returnReq);
     } catch (err) {
       console.error("Admin fetch return details failed:", err);
       throw err;
     }
   },
-  processReturn: async (id, status) => {
+  processReturn: async (id, payload) => {
     try {
-      const res = await api.patch(`admin/returns/${id}/status`, { status });
-      return res.data.success;
+      const requestBody = typeof payload === 'string' ? { status: payload } : payload;
+      const res = await api.patch(`admin/returns/${id}/status`, requestBody);
+      return {
+        success: res.data.success,
+        message: res.data.message || 'Return updated',
+        returnReq: normalizeAdminReturn(res.data.data?.returnReq || res.data.returnReq)
+      };
     } catch (err) {
       console.error("Admin process return failed:", err);
-      return false;
+      return {
+        success: false,
+        message: err.response?.data?.message || "Failed to process return"
+      };
+    }
+  },
+  getReplacements: async () => {
+    try {
+      const res = await api.get('admin/replacements');
+      const replacements = res.data.data?.replacements || res.data.replacements || [];
+      return replacements.map(normalizeAdminReplacement).filter(Boolean);
+    } catch (err) {
+      console.error("Admin fetch replacements failed:", err);
+      return [];
+    }
+  },
+  getReplacementDetails: async (id) => {
+    try {
+      const res = await api.get(`admin/replacements/${id}`);
+      return normalizeAdminReplacement(res.data.data?.repl || res.data.repl || res.data.data?.replacement || res.data.replacement);
+    } catch (err) {
+      console.error("Admin fetch replacement details failed:", err);
+      throw err;
+    }
+  },
+  processReplacement: async (id, payload) => {
+    try {
+      const requestBody = typeof payload === 'string' ? { status: payload } : payload;
+      const res = await api.patch(`admin/replacements/${id}/status`, requestBody);
+      return {
+        success: res.data.success,
+        message: res.data.message || 'Replacement updated',
+        repl: normalizeAdminReplacement(res.data.data?.repl || res.data.repl)
+      };
+    } catch (err) {
+      console.error("Admin process replacement failed:", err);
+      return {
+        success: false,
+        message: err.response?.data?.message || "Failed to process replacement"
+      };
     }
   },
 

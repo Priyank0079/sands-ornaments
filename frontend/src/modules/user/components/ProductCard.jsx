@@ -14,7 +14,10 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
 
     const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
     const isWishlisted = safeWishlist.some(item => item.id === product.id);
-    const primaryImage = product.image || product.images?.[0] || null;
+    const firstVariantImage = (product.variants || []).find(
+        (variant) => Array.isArray(variant?.variantImages) && variant.variantImages.length > 0
+    )?.variantImages?.[0] || null;
+    const primaryImage = product.image || product.images?.[0] || firstVariantImage || null;
 
     const variantPrices = (product.variants || [])
         .map(v => Number(v.price))
@@ -148,7 +151,6 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
 
                 <div className={`${isWishlistPage ? 'p-2 md:p-3.5' : 'p-1.5 md:p-3'} text-left flex flex-col flex-1 pb-1.5 md:pb-2`}>
 
-                    {/* Price Section first */}
                     <div className="flex items-baseline gap-2 mb-1">
                         <span className={`text-black font-bold ${isWishlistPage ? 'text-sm' : 'text-base'}`}>
                             {variantCount > 1 ? `From ${currencyText(fromPrice)}` : currencyText(product.price || 0)}

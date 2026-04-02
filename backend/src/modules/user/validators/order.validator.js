@@ -16,6 +16,7 @@ const placeOrderSchema = Joi.object({
     flatNo: Joi.string().required(),
     area: Joi.string().required(),
     city: Joi.string().required(),
+    district: Joi.string().allow(""),
     state: Joi.string().required(),
     pincode: Joi.string().length(6).required(),
   }).required(),

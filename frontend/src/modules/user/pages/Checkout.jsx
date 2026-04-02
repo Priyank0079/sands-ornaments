@@ -6,7 +6,7 @@ import { Truck, CreditCard, Banknote, ShieldCheck, Lock, Plus, Check, MapPin, Ch
 import toast from 'react-hot-toast';
 
 const Checkout = () => {
-    const { cart, placeOrder, addresses, addAddress, defaultAddressId, coupons, validateCoupon } = useShop();
+    const { cart, placeOrder, addresses, addAddress, defaultAddressId, coupons, applyCoupon, appliedCoupon, couponDiscount, clearAppliedCoupon } = useShop();
     const { user, sendOtp, verifyOtp } = useAuth();
     const navigate = useNavigate();
     const currencyText = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
@@ -40,8 +40,7 @@ const Checkout = () => {
 
     const [showCouponModal, setShowCouponModal] = useState(false);
     const [couponCode, setCouponCode] = useState('');
-    const [appliedCoupon, setAppliedCoupon] = useState(null);
-    const [discount, setDiscount] = useState(0);
+    const discount = Number(couponDiscount || 0);
 
     // Calculate totals
     const subtotal = cart.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
@@ -65,19 +64,16 @@ const Checkout = () => {
     const handleApplyCouponValidated = async (coupon) => {
         const code = coupon?.code || couponCode;
         if (!code) return;
-        const result = await validateCoupon(code, subtotal, cart);
+        const result = await applyCoupon(code, subtotal, cart);
         if (!result.valid) {
             toast.error(result.error || 'Invalid coupon');
             return;
         }
-        setAppliedCoupon(result.coupon);
-        setDiscount(result.discount || 0);
         setShowCouponModal(false);
     };
 
     const removeCoupon = () => {
-        setAppliedCoupon(null);
-        setDiscount(0);
+        clearAppliedCoupon();
         setCouponCode('');
     };
 
@@ -654,9 +650,9 @@ const Checkout = () => {
                                 <span className="font-bold text-lg text-black font-display uppercase tracking-wide">Total</span>
                                 <span className="font-bold text-2xl text-black font-sans">{currencyText(total)}</span>
                             </div>
-                            <p className="text-[10px] text-gray-400 mt-1 text-right font-medium uppercase tracking-wider">
+                            {/* <p className="text-[10px] text-gray-400 mt-1 text-right font-medium uppercase tracking-wider">
                                 {gstIncluded > 0 ? `${currencyText(gstIncluded)} GST included in item totals` : 'Inclusive of applicable taxes'}
-                            </p>
+                            </p> */}
                         </div>
 
                         <div className="bg-white p-4 rounded-xl text-xs text-gray-500 mb-6 flex gap-3 border border-gray-100 shadow-sm">

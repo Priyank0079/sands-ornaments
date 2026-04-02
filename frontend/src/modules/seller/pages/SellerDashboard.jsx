@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { 
-    Package, ShoppingBag, RotateCcw, TrendingUp, TrendingDown,
+import {
+    Package, ShoppingBag, RotateCcw, TrendingUp,
     IndianRupee, Clock, CheckCircle2, Boxes, AlertCircle,
-    ArrowRight, ShoppingCart, Calendar, ChevronRight, Eye
+    ArrowRight, ShoppingCart, ChevronRight, Eye
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../../services/api';
+
+const formatCurrency = (value) => `INR ${Number(value || 0).toLocaleString()}`;
 
 const SellerDashboard = () => {
     const navigate = useNavigate();
@@ -21,7 +23,6 @@ const SellerDashboard = () => {
     });
     const [analytics, setAnalytics] = useState(null);
     const [recentOrders, setRecentOrders] = useState([]);
-
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -30,33 +31,35 @@ const SellerDashboard = () => {
                 const res = await api.get('seller/dashboard/stats');
                 if (res.data.success) {
                     const payload = res.data.data || res.data;
-                    const { stats: s, recentOrders: o, analytics: a } = payload;
+                    const { stats: sellerStats, recentOrders: orderRows, analytics: dashboardAnalytics } = payload;
+
                     setStats({
-                        totalProducts: s?.totalProducts ?? payload.totalProducts ?? 0,
-                        totalInventory: s?.totalStock ?? 0,
-                        pendingOrders: s?.pendingOrders ?? 0,
-                        acceptedOrders: s?.acceptedOrders ?? 0,
-                        deliveredOrders: s?.deliveredOrders ?? 0,
-                        returnRequests: s?.returnRequests ?? 0,
-                        totalRevenue: s?.totalRevenue ?? payload.totalEarnings ?? 0,
-                        lowStockItems: s?.lowStockProducts ?? []
+                        totalProducts: sellerStats?.totalProducts ?? payload.totalProducts ?? 0,
+                        totalInventory: sellerStats?.totalStock ?? 0,
+                        pendingOrders: sellerStats?.pendingOrders ?? 0,
+                        acceptedOrders: sellerStats?.acceptedOrders ?? 0,
+                        deliveredOrders: sellerStats?.deliveredOrders ?? 0,
+                        returnRequests: sellerStats?.returnRequests ?? 0,
+                        totalRevenue: sellerStats?.totalRevenue ?? payload.totalEarnings ?? 0,
+                        lowStockItems: sellerStats?.lowStockProducts ?? []
                     });
-                    setAnalytics(a || null);
-                    setRecentOrders((o || []).map(order => ({
+                    setAnalytics(dashboardAnalytics || null);
+                    setRecentOrders((orderRows || []).map((order) => ({
                         id: order._id,
                         customerName: order.userId?.fullName || order.userId?.name || order.shippingAddress?.firstName || 'Customer',
                         product: order.items?.[0]?.productId?.name || order.items?.[0]?.name || 'Jewellery Item',
                         price: Number(order.total || 0),
-                        paymentStatus: (order.paymentStatus || 'PENDING').toUpperCase(),
-                        orderStatus: order.status || 'PENDING'
+                        paymentStatus: String(order.paymentStatus || 'pending').toLowerCase(),
+                        orderStatus: order.status || 'Processing'
                     })));
                 }
             } catch (err) {
-                console.error("Failed to fetch seller stats:", err);
+                console.error('Failed to fetch seller stats:', err);
             } finally {
                 setLoading(false);
             }
         };
+
         fetchSellerStats();
     }, []);
 
@@ -67,44 +70,50 @@ const SellerDashboard = () => {
         { label: 'In-Transit Orders', value: stats.acceptedOrders, icon: ShoppingBag, color: 'text-indigo-600', bg: 'bg-indigo-50' },
         { label: 'Completed Orders', value: stats.deliveredOrders, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
         { label: 'Return Requests', value: stats.returnRequests, icon: RotateCcw, color: 'text-red-600', bg: 'bg-red-50' },
-        { label: 'Gross Revenue', value: `₹${stats.totalRevenue.toLocaleString()}`, icon: IndianRupee, color: 'text-[#3E2723]', bg: 'bg-[#FDFBF7]', wide: true },
+        { label: 'Gross Revenue', value: formatCurrency(stats.totalRevenue), icon: IndianRupee, color: 'text-[#3E2723]', bg: 'bg-[#FDFBF7]', wide: true },
         { label: "Today's Volume", value: analytics?.todayStats?.orders || 0, icon: ShoppingCart, color: 'text-sky-600', bg: 'bg-sky-50' },
-        { label: "Monthly Target", value: `₹${(analytics?.monthlyStats?.revenue || 0).toLocaleString()}`, icon: TrendingUp, color: 'text-rose-600', bg: 'bg-rose-50' },
+        { label: 'Monthly Target', value: formatCurrency(analytics?.monthlyStats?.revenue || 0), icon: TrendingUp, color: 'text-rose-600', bg: 'bg-rose-50' },
     ];
+
+    const ordersFilter = (arr, status) => arr.filter((order) => order.orderStatus === status);
 
     const statusWidgets = [
         { label: 'Pending', count: stats.pendingOrders, color: 'bg-amber-500' },
         { label: 'Processing', count: stats.acceptedOrders, color: 'bg-indigo-500' },
-        { label: 'Shipped', count: ordersFilter(recentOrders, 'SHIPPED').length, color: 'bg-blue-500' },
+        { label: 'Shipped', count: ordersFilter(recentOrders, 'Shipped').length, color: 'bg-blue-500' },
         { label: 'Delivered', count: stats.deliveredOrders, color: 'bg-emerald-500' },
         { label: 'Returned', count: stats.returnRequests, color: 'bg-red-500' }
     ];
 
-    function ordersFilter(arr, status) {
-        return arr.filter(o => o.orderStatus === status);
+    if (loading) {
+        return (
+            <div className="p-20 text-center text-gray-400 font-black uppercase tracking-widest animate-pulse">
+                Synchronizing seller dashboard...
+            </div>
+        );
     }
 
     return (
         <div className="space-y-10 font-sans pb-20 animate-in fade-in duration-700">
-            {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-black text-gray-900 uppercase tracking-tight text-left">OPERATIONAL DASHBOARD</h1>
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mt-1 text-left">Comprehensive store performance & transaction metrics</p>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mt-1 text-left">Comprehensive store performance and transaction metrics</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <span className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-100">
                         <TrendingUp size={12} /> Store Availability: Online
                     </span>
                     <div className="h-6 w-px bg-gray-200 mx-2" />
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                        {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                    </span>
                 </div>
             </div>
 
-            {/* Top Metrics Grid */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                {statCards.map((stat, i) => (
-                    <div key={i} className={`bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm flex flex-col justify-between group hover:shadow-xl hover:shadow-[#3E2723]/5 transition-all duration-500 ${stat.wide ? 'xl:col-span-1' : ''}`}>
+                {statCards.map((stat, index) => (
+                    <div key={index} className={`bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm flex flex-col justify-between group hover:shadow-xl hover:shadow-[#3E2723]/5 transition-all duration-500 ${stat.wide ? 'xl:col-span-1' : ''}`}>
                         <div className="flex items-center justify-between mb-8">
                             <div className={`p-3 rounded-2xl ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}>
                                 <stat.icon size={20} />
@@ -119,7 +128,6 @@ const SellerDashboard = () => {
                 ))}
             </div>
 
-            {/* Low Inventory Alert */}
             {stats.lowStockItems.length > 0 && (
                 <div className="bg-red-50 border border-red-100 rounded-[2rem] p-8 flex flex-col md:flex-row items-center justify-between gap-6 animate-pulse">
                     <div className="flex items-center gap-6">
@@ -137,9 +145,7 @@ const SellerDashboard = () => {
                 </div>
             )}
 
-            {/* Analytics Section */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                {/* Orders Chart (Line/Area) */}
                 <div className="lg:col-span-8 bg-white rounded-[2.5rem] border border-gray-100 p-8 shadow-sm">
                     <div className="flex items-center justify-between mb-10">
                         <div>
@@ -147,66 +153,48 @@ const SellerDashboard = () => {
                             <p className="text-[9px] font-bold text-gray-400 uppercase mt-1 italic">30-Day Acquisition Cycle</p>
                         </div>
                         <div className="flex gap-2">
-                             <div className="flex items-center gap-1.5 text-[9px] font-black uppercase text-[#3E2723]">
-                                 <div className="w-1.5 h-1.5 rounded-full bg-[#3E2723]" /> Orders
-                             </div>
+                            <div className="flex items-center gap-1.5 text-[9px] font-black uppercase text-[#3E2723]">
+                                <div className="w-1.5 h-1.5 rounded-full bg-[#3E2723]" /> Orders
+                            </div>
                         </div>
                     </div>
-                    
-                    {/* SVG Chart Implementation */}
+
                     <div className="relative h-64 w-full group">
                         <svg className="w-full h-full overflow-visible" preserveAspectRatio="none">
-                             <defs>
+                            <defs>
                                 <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="0%" stopColor="#3E2723" stopOpacity="0.1" />
                                     <stop offset="100%" stopColor="#3E2723" stopOpacity="0" />
                                 </linearGradient>
-                             </defs>
-                             {/* Grid Lines */}
-                             {[0, 25, 50, 75, 100].map(v => (
-                                 <line key={v} x1="0" y1={`${v}%`} x2="100%" y2={`${v}%`} stroke="#F8F9FA" strokeWidth="1" />
-                             ))}
-                             {/* Area/Path */}
-                             <path 
-                                d="M0,80 Q10,70 20,40 T40,60 T60,20 T80,45 T100,30 L100,100 L0,100 Z" 
-                                fill="url(#gradient)" 
-                                className="transition-all duration-700"
-                             />
-                             <path 
-                                d="M0,80 Q10,70 20,40 T40,60 T60,20 T80,45 T100,30" 
-                                fill="none" 
-                                stroke="#3E2723" 
-                                strokeWidth="3" 
-                                strokeLinecap="round"
-                                className="transition-all duration-700"
-                             />
+                            </defs>
+                            {[0, 25, 50, 75, 100].map((value) => (
+                                <line key={value} x1="0" y1={`${value}%`} x2="100%" y2={`${value}%`} stroke="#F8F9FA" strokeWidth="1" />
+                            ))}
+                            <path d="M0,80 Q10,70 20,40 T40,60 T60,20 T80,45 T100,30 L100,100 L0,100 Z" fill="url(#gradient)" className="transition-all duration-700" />
+                            <path d="M0,80 Q10,70 20,40 T40,60 T60,20 T80,45 T100,30" fill="none" stroke="#3E2723" strokeWidth="3" strokeLinecap="round" className="transition-all duration-700" />
                         </svg>
                         <div className="absolute inset-0 flex items-end justify-between px-2 pt-10">
-                            {analytics?.dailyOrders?.slice(-7)?.map((d, i) => (
-                                <div key={i} className="flex flex-col items-center gap-2">
-                                    <div className="text-[8px] font-bold text-gray-300 uppercase">{d.date.split(' ')[0]}</div>
+                            {analytics?.dailyOrders?.slice(-7)?.map((day, index) => (
+                                <div key={index} className="flex flex-col items-center gap-2">
+                                    <div className="text-[8px] font-bold text-gray-300 uppercase">{day.date.split(' ')[0]}</div>
                                 </div>
                             ))}
                         </div>
                     </div>
                 </div>
 
-                {/* Category Mix */}
                 <div className="lg:col-span-4 bg-[#3E2723] rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden group">
                     <div className="relative z-10">
                         <h3 className="text-[11px] font-black text-white/40 uppercase tracking-[0.2em] mb-8 group-hover:text-white transition-colors">Category Composition</h3>
                         <div className="space-y-6">
-                            {analytics?.categoryPerformance?.map((cat, i) => (
-                                <div key={i} className="space-y-2">
+                            {analytics?.categoryPerformance?.map((category, index) => (
+                                <div key={index} className="space-y-2">
                                     <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
-                                        <span className="opacity-80">{cat.name}</span>
-                                        <span>{cat.value}%</span>
+                                        <span className="opacity-80">{category.name}</span>
+                                        <span>{category.value}%</span>
                                     </div>
                                     <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-                                        <div 
-                                            className="h-full bg-white transition-all duration-1000 ease-out" 
-                                            style={{ width: `${cat.value}%` }} 
-                                        />
+                                        <div className="h-full bg-white transition-all duration-1000 ease-out" style={{ width: `${category.value}%` }} />
                                     </div>
                                 </div>
                             ))}
@@ -220,17 +208,13 @@ const SellerDashboard = () => {
                 </div>
             </div>
 
-            {/* Dashboard Bottom Section */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                
-                {/* Status Summary & Revenue Bar Chart */}
                 <div className="lg:col-span-4 space-y-8">
-                     {/* Order Status Summary */}
-                     <div className="bg-white rounded-[2rem] border border-gray-100 p-8 shadow-sm">
+                    <div className="bg-white rounded-[2rem] border border-gray-100 p-8 shadow-sm">
                         <h3 className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] mb-8">Fulfillment Summary</h3>
                         <div className="grid grid-cols-2 gap-4">
-                            {statusWidgets.map((widget, i) => (
-                                <div key={i} className="p-4 rounded-2xl bg-gray-50 border border-gray-100 flex flex-col gap-2">
+                            {statusWidgets.map((widget, index) => (
+                                <div key={index} className="p-4 rounded-2xl bg-gray-50 border border-gray-100 flex flex-col gap-2">
                                     <div className="flex items-center gap-2">
                                         <div className={`w-2 h-2 rounded-full ${widget.color}`} />
                                         <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">{widget.label}</span>
@@ -239,30 +223,30 @@ const SellerDashboard = () => {
                                 </div>
                             ))}
                         </div>
-                     </div>
+                    </div>
 
-                     {/* Revenue Chart (Simple Bar) */}
-                     <div className="bg-white rounded-[2rem] border border-gray-100 p-8 shadow-sm">
+                    <div className="bg-white rounded-[2rem] border border-gray-100 p-8 shadow-sm">
                         <div className="flex items-center justify-between mb-8">
                             <h3 className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em]">Revenue Velocity</h3>
-                             <IndianRupee size={16} className="text-gray-200" />
+                            <IndianRupee size={16} className="text-gray-200" />
                         </div>
                         <div className="flex items-end justify-between h-32 gap-3 px-2">
-                            {analytics?.weeklyRevenue?.map((w, i) => (
-                                <div key={i} className="flex-1 group relative">
-                                    <div 
+                            {analytics?.weeklyRevenue?.map((week, index) => (
+                                <div key={index} className="flex-1 group relative">
+                                    <div
                                         className="w-full bg-[#EFEBE9] group-hover:bg-[#8D6E63] rounded-t-lg transition-all duration-500"
-                                        style={{ height: `${(w.revenue / 220000) * 100}%` }}
+                                        style={{ height: `${(week.revenue / 220000) * 100}%` }}
                                     />
-                                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[8px] font-black opacity-0 group-hover:opacity-100 transition-opacity">₹{Math.round(w.revenue/1000)}k</div>
-                                    <div className="mt-3 text-[8px] font-black text-gray-300 uppercase text-center">{w.week}</div>
+                                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[8px] font-black opacity-0 group-hover:opacity-100 transition-opacity">
+                                        {formatCurrency(week.revenue)}
+                                    </div>
+                                    <div className="mt-3 text-[8px] font-black text-gray-300 uppercase text-center">{week.week}</div>
                                 </div>
                             ))}
                         </div>
-                     </div>
+                    </div>
                 </div>
 
-                {/* Recent Orders Table */}
                 <div className="lg:col-span-8 bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
                     <div className="p-8 border-b border-gray-50 flex items-center justify-between bg-white sticky top-0 z-10">
                         <h3 className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em]">Live Transaction Stream</h3>
@@ -293,16 +277,16 @@ const SellerDashboard = () => {
                                         <td className="px-4 py-5 max-w-[150px]">
                                             <div className="text-[10px] font-bold text-gray-700 uppercase truncate">{order.product}</div>
                                         </td>
-                                        <td className="px-4 py-5 text-[10px] font-black text-gray-900 tracking-tighter">₹{order.price.toLocaleString()}</td>
+                                        <td className="px-4 py-5 text-[10px] font-black text-gray-900 tracking-tighter">{formatCurrency(order.price)}</td>
                                         <td className="px-4 py-5">
                                             <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ${
-                                                order.paymentStatus === 'PAID' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
+                                                ['paid', 'cod'].includes(order.paymentStatus) ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
                                             }`}>
-                                                {order.paymentStatus}
+                                                {order.paymentStatus.toUpperCase()}
                                             </span>
                                         </td>
                                         <td className="px-8 py-5 text-right">
-                                            <button 
+                                            <button
                                                 onClick={() => navigate(`/seller/order-details/${order.id}`)}
                                                 className="p-2 hover:bg-white rounded-xl border border-transparent hover:border-gray-200 transition-all text-gray-400 hover:text-[#3E2723]"
                                             >

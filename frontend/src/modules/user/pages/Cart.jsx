@@ -3,15 +3,18 @@ import { useShop } from '../../../context/ShopContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, ArrowRight, ShoppingBag, Gift, ShieldCheck, ArrowLeft, Plus, Minus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import CouponsModal from '../components/CouponsModal';
 
 const Cart = () => {
-    const { cart, removeFromCart, updateQuantity } = useShop();
+    const { cart, removeFromCart, updateQuantity, coupons, applyCoupon, appliedCoupon, couponDiscount, clearAppliedCoupon } = useShop();
     const navigate = useNavigate();
+    const [showCouponModal, setShowCouponModal] = React.useState(false);
     const currencyText = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
 
     const subtotal = cart.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
     const shipping = subtotal > 499 ? 0 : 50;
-    const total = subtotal + shipping;
+    const discount = Number(couponDiscount || 0);
+    const total = subtotal + shipping - discount;
     const gstIncluded = cart.reduce((acc, item) => acc + ((Number(item.gst || item.selectedVariant?.gst || 0)) * (item.quantity || 1)), 0);
     const variantLabel = (item) => item.selectedVariant?.name || item.selectedVariant?.variantName || '';
     const variantWeightLabel = (item) => {
@@ -21,6 +24,13 @@ const Cart = () => {
         return `${weight}${unit ? ` ${unit}` : ''}`;
     };
     const variantKey = (item) => item.variantId || item.packId || 'default';
+    const availableCoupons = coupons ? coupons.filter(c => c.active !== false) : [];
+
+    const handleApplyCoupon = async (code) => {
+        const result = await applyCoupon(code, subtotal, cart);
+        if (!result.valid) return;
+        setShowCouponModal(false);
+    };
 
     if (cart.length === 0) {
         return (
@@ -213,7 +223,47 @@ const Cart = () => {
                                         <span className="text-black">{currencyText(shipping)}</span>
                                     )}
                                 </div>
+                                {appliedCoupon && (
+                                    <div className="flex justify-between text-sm md:text-base font-semibold text-[#D39A9F]">
+                                        <span className="uppercase tracking-widest text-[10px] md:text-xs">Discount</span>
+                                        <span className="text-black">- {currencyText(parseFloat(discount || 0).toFixed(0))}</span>
+                                    </div>
+                                )}
 
+                            </div>
+
+                            <div className="pt-6 border-t border-gray-100 space-y-3">
+                                {!appliedCoupon ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowCouponModal(true)}
+                                        className="w-full bg-white border-2 border-dashed border-[#EBCDD0] p-4 rounded-xl flex items-center justify-between group cursor-pointer hover:border-[#D39A9F] transition-colors"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <Gift className="w-4 h-4 text-[#D39A9F]" />
+                                            <span className="text-[10px] font-bold text-black uppercase tracking-wider">Apply Coupon</span>
+                                        </div>
+                                        <ArrowRight className="w-4 h-4 text-gray-300 group-hover:translate-x-1 transition-transform" />
+                                    </button>
+                                ) : (
+                                    <div className="bg-[#EBCDD0]/20 border border-[#EBCDD0] p-4 rounded-xl flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="bg-[#D39A9F] p-1.5 rounded text-white">
+                                                <Gift className="w-3.5 h-3.5" />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-bold text-black uppercase tracking-wider">{appliedCoupon.code}</p>
+                                                <p className="text-[10px] text-gray-500">{currencyText(parseFloat(discount || 0).toFixed(0))} saved</p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={clearAppliedCoupon}
+                                            className="text-[10px] font-bold text-red-500 hover:text-red-600 uppercase tracking-wider"
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="pt-8 border-t border-gray-100">
@@ -246,6 +296,12 @@ const Cart = () => {
                     </div>
                 </div>
             </div>
+            <CouponsModal
+                isOpen={showCouponModal}
+                onClose={() => setShowCouponModal(false)}
+                coupons={availableCoupons}
+                onApply={handleApplyCoupon}
+            />
         </div>
     );
 };

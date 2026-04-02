@@ -32,17 +32,20 @@ const normalizeReturn = (returnReq) => {
     const primaryItem = Array.isArray(returnReq.items) ? returnReq.items[0] : null;
     return {
         ...returnReq,
-        id: returnReq.returnId || returnReq._id,
+        id: returnReq._id,
+        returnDisplayId: returnReq.returnId || returnReq._id,
         orderDisplayId: returnReq.orderId?.orderId || returnReq.orderId || 'N/A',
         product: primaryItem?.name || 'Returned item',
         barcode: primaryItem?.sku || 'N/A',
         quantity: Number(primaryItem?.qty || 0),
         returnReason: returnReq.evidence?.reason || primaryItem?.reason || 'Not specified',
+        comment: returnReq.evidence?.comment || '',
         createdAt: returnReq.createdAt || returnReq.requestDate,
         images: returnReq.evidence?.images || [],
         video360: returnReq.evidence?.video || '',
         customerName: returnReq.userId?.name || returnReq.customerName || 'Customer',
         customerEmail: returnReq.userId?.email || '',
+        customerPhone: returnReq.userId?.phone || '',
         item: primaryItem,
         user: returnReq.userId,
         order: returnReq.orderId,
@@ -62,9 +65,9 @@ export const sellerOrderService = {
         return order ? mapSellerOrder(order) : null;
     },
 
-    updateOrderStatus: async (orderId, status, note = '') => {
+    updateOrderStatus: async (orderId, status, note = '', shippingInfo = null) => {
         try {
-            const res = await api.patch(`seller/orders/${orderId}/status`, { status, note });
+            const res = await api.patch(`seller/orders/${orderId}/status`, { status, note, shippingInfo });
             const order = res.data?.data?.order;
             return {
                 success: true,

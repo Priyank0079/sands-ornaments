@@ -48,6 +48,8 @@ const SharedProductEditor = ({
     const [loading, setLoading] = useState(isEditMode || isViewMode);
     const [imageFiles, setImageFiles] = useState([]);
     const [previewImages, setPreviewImages] = useState([]);
+    const [variantImageFiles, setVariantImageFiles] = useState({});
+    const [variantImagePreviews, setVariantImagePreviews] = useState({});
     const [isSaving, setIsSaving] = useState(false);
     const [errors, setErrors] = useState({});
     const [navGiftOptions, setNavGiftOptions] = useState([]);
@@ -55,7 +57,6 @@ const SharedProductEditor = ({
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [createdProductData, setCreatedProductData] = useState(null);
     const serialBarcodeRefs = useRef({});
-    
     // AI Enhancement States
     const [enhancingIndex, setEnhancingIndex] = useState(null);
     const [showEnhanceModal, setShowEnhanceModal] = useState(false);
@@ -163,13 +164,45 @@ const SharedProductEditor = ({
         return base.substring(0, 4) || 'ITEM';
     };
 
+    const normalizeString = (value = '') => String(value || '').trim().toLowerCase();
+
+    const getTenGramRate = () => {
+        const material = normalizeString(formData.material);
+        if (material === 'gold') {
+            const goldCategory = normalizeString(formData.goldCategory);
+            const gold10g = metalRates.gold10g || {};
+            const fallback = Number(metalRates.goldPerGram || 0) * 10;
+
+            if (goldCategory === '14') return Number(gold10g.k14) || fallback;
+            if (goldCategory === '18') return Number(gold10g.k18) || fallback;
+            if (goldCategory === '22') return Number(gold10g.k22) || fallback;
+            if (goldCategory === '24') return Number(gold10g.k24) || fallback;
+
+            return Number(gold10g.k18) || Number(gold10g.k22) || Number(gold10g.k14) || Number(gold10g.k24) || fallback;
+        }
+
+        if (material === 'silver') {
+            const silverCategory = normalizeString(formData.silverCategory);
+            const silver10g = metalRates.silver10g || {};
+            const fallback = Number(metalRates.silverPerGram || 0) * 10;
+            const isSterling = silverCategory === '925 sterling silver';
+
+            if (isSterling) return Number(silver10g.sterling925) || fallback;
+            return Number(silver10g.silverOther) || fallback;
+        }
+
+        return 0;
+    };
+
     const getMetalRate = (variant) => {
         const unit = String(variant?.weightUnit || formData.weightUnit || 'Grams').toLowerCase();
-        const isGold = String(formData.material || '').toLowerCase() === 'gold';
+        const perTenGram = Number(getTenGramRate()) || 0;
+        const perGram = perTenGram / 10;
+        const perMilligram = perGram / 1000;
         if (unit === 'milligrams' || unit === 'milligram') {
-            return isGold ? Number(metalRates.goldPerMilligram) || 0 : Number(metalRates.silverPerMilligram) || 0;
+            return perMilligram;
         }
-        return isGold ? Number(metalRates.goldPerGram) || 0 : Number(metalRates.silverPerGram) || 0;
+        return perGram;
     };
 
     const getMetalPrice = (variant) => {
@@ -255,7 +288,17 @@ const SharedProductEditor = ({
         goldPerGram: 0,
         goldPerMilligram: 0,
         silverPerGram: 0,
-        silverPerMilligram: 0
+        silverPerMilligram: 0,
+        gold10g: {
+            k14: 0,
+            k18: 0,
+            k22: 0,
+            k24: 0
+        },
+        silver10g: {
+            sterling925: 0,
+            silverOther: 0
+        }
     });
     const [gstRate, setGstRate] = useState(0);
 
@@ -281,7 +324,7 @@ const SharedProductEditor = ({
         navGiftsFor: [],
         navOccasions: [],
         variants: [
-            { id: Date.now(), name: 'Standard', weight: '', weightUnit: 'Grams', makingCharge: '0', diamondPrice: '0', mrp: '0', price: '', stock: 0, serialCodes: [], metalPrice: 0, gst: 0, finalPrice: 0, variantCode: '' }
+            { id: Date.now(), name: 'Standard', weight: '', weightUnit: 'Grams', makingCharge: '0', diamondPrice: '0', mrp: '0', price: '', stock: 0, serialCodes: [], metalPrice: 0, gst: 0, finalPrice: 0, variantCode: '', variantImages: [], variantFaqs: [] }
         ],
         faqs: [],
         deletedImages: [],
@@ -351,12 +394,10 @@ const SharedProductEditor = ({
                 if (!resolvedMetalPricingApi?.getMetalPricing) return;
                 const res = await resolvedMetalPricingApi.getMetalPricing();
                 if (res?.metalRates) {
-                    setMetalRates({
-                        goldPerGram: res.metalRates.goldPerGram ?? 0,
-                        goldPerMilligram: res.metalRates.goldPerMilligram ?? 0,
-                        silverPerGram: res.metalRates.silverPerGram ?? 0,
-                        silverPerMilligram: res.metalRates.silverPerMilligram ?? 0
-                    });
+                    setMetalRates(prev => ({
+                        ...prev,
+                        ...res.metalRates
+                    }));
                 }
                 if (res?.gstRate !== undefined && res?.gstRate !== null) {
                     setGstRate(Number(res.gstRate) || 0);
@@ -407,9 +448,29 @@ const SharedProductEditor = ({
                     const normalizedCategories = (data.categories || []).map(c => ({
                         category: typeof c === 'object' ? (c._id || c.name || '') : c
                     }));
+                    const {
+                        _id,
+                        id: legacyId,
+                        image,
+                        sellerId,
+                        sku,
+                        rating,
+                        reviewCount,
+                        createdAt,
+                        updatedAt,
+                        __v,
+                        slug,
+                        brand,
+                        status,
+                        active,
+                        showInNavbar,
+                        showInCollection,
+                        ...restData
+                    } = data;
+
                     setFormData(prev => ({
                         ...prev,
-                        ...data,
+                        ...restData,
                         material: data.material || data.metal || 'Silver',
                         weight: data.weight || '',
                         weightUnit: data.weightUnit || 'Grams',
@@ -433,7 +494,9 @@ const SharedProductEditor = ({
                                 makingCharge: (v.makingCharge || 0).toString(),
                                 diamondPrice: (v.diamondPrice || 0).toString(),
                                 serialCodes: ensured.serialCodes,
-                                stock: ensured.stock
+                                stock: ensured.stock,
+                                variantImages: Array.isArray(v.variantImages) ? v.variantImages : [],
+                                variantFaqs: Array.isArray(v.variantFaqs) ? v.variantFaqs : []
                             };
                         }) || prev.variants,
                         faqs: data.faqs || [],
@@ -447,6 +510,8 @@ const SharedProductEditor = ({
                     if (data.images) {
                         setPreviewImages(data.images);
                     }
+                    setVariantImageFiles({});
+                    setVariantImagePreviews({});
                 }
             } catch (err) {
                 toast.error("Failed to load product");
@@ -463,6 +528,49 @@ const SharedProductEditor = ({
         const previews = newFiles.map(file => URL.createObjectURL(file));
         setImageFiles(prev => [...prev, ...newFiles]);
         setPreviewImages(prev => [...prev, ...previews].slice(0, 5));
+    };
+
+    const handleVariantImageUpload = (variantId, filesList) => {
+        const files = Array.from(filesList || []);
+        if (!variantId || files.length === 0) return;
+
+        const previews = files.map((file) => URL.createObjectURL(file));
+        setVariantImageFiles((prev) => ({
+            ...prev,
+            [variantId]: [...(prev[variantId] || []), ...files]
+        }));
+        setVariantImagePreviews((prev) => ({
+            ...prev,
+            [variantId]: [...(prev[variantId] || []), ...previews]
+        }));
+    };
+
+    const handleRemoveVariantUpload = (variantId, previewIndex) => {
+        if (!variantId || previewIndex < 0) return;
+        setVariantImageFiles((prev) => ({
+            ...prev,
+            [variantId]: (prev[variantId] || []).filter((_, index) => index !== previewIndex)
+        }));
+        setVariantImagePreviews((prev) => ({
+            ...prev,
+            [variantId]: (prev[variantId] || []).filter((_, index) => index !== previewIndex)
+        }));
+    };
+
+    const handleRemoveSavedVariantImage = (variantId, imageUrl) => {
+        if (!variantId || !imageUrl) return;
+        setFormData((prev) => ({
+            ...prev,
+            variants: prev.variants.map((variant) => {
+                if (variant.id !== variantId) return variant;
+                return {
+                    ...variant,
+                    variantImages: Array.isArray(variant.variantImages)
+                        ? variant.variantImages.filter((img) => img !== imageUrl)
+                        : []
+                };
+            })
+        }));
     };
 
     const handleRemoveImage = (index) => {
@@ -550,13 +658,25 @@ const SharedProductEditor = ({
                 price: '', 
                 stock: 0,
                 serialCodes: [],
-                variantCode: ''
+                variantCode: '',
+                variantImages: [],
+                variantFaqs: []
             }]
         }));
     };
 
     const removeVariant = (id) => {
         if (formData.variants.length <= 1) return;
+        setVariantImageFiles((prev) => {
+            const next = { ...prev };
+            delete next[id];
+            return next;
+        });
+        setVariantImagePreviews((prev) => {
+            const next = { ...prev };
+            delete next[id];
+            return next;
+        });
         setFormData(prev => ({
             ...prev,
             variants: prev.variants.filter(v => v.id !== id)
@@ -570,6 +690,49 @@ const SharedProductEditor = ({
             variants: prev.variants.map((v, index) => {
                 if (v.id !== id) return v;
                 return syncVariantSerialQuantity(v, index, count);
+            })
+        }));
+    };
+
+    const clearVariantFaqOverride = (variantId) => {
+        setFormData(prev => ({
+            ...prev,
+            variants: prev.variants.map(variant => (
+                variant.id === variantId ? { ...variant, variantFaqs: [] } : variant
+            ))
+        }));
+    };
+
+    const addVariantFaq = (variantId) => {
+        setFormData(prev => ({
+            ...prev,
+            variants: prev.variants.map(v => {
+                if (v.id !== variantId) return v;
+                const current = Array.isArray(v.variantFaqs) ? v.variantFaqs : [];
+                return { ...v, variantFaqs: [...current, { question: '', answer: '' }] };
+            })
+        }));
+    };
+
+    const removeVariantFaq = (variantId, faqIndex) => {
+        setFormData(prev => ({
+            ...prev,
+            variants: prev.variants.map(v => {
+                if (v.id !== variantId) return v;
+                const current = Array.isArray(v.variantFaqs) ? v.variantFaqs : [];
+                return { ...v, variantFaqs: current.filter((_, i) => i !== faqIndex) };
+            })
+        }));
+    };
+
+    const handleVariantFaqChange = (variantId, faqIndex, field, value) => {
+        setFormData(prev => ({
+            ...prev,
+            variants: prev.variants.map(v => {
+                if (v.id !== variantId) return v;
+                const current = Array.isArray(v.variantFaqs) ? v.variantFaqs : [];
+                const next = current.map((faq, i) => i === faqIndex ? { ...faq, [field]: value } : faq);
+                return { ...v, variantFaqs: next };
             })
         }));
     };
@@ -646,10 +809,60 @@ const SharedProductEditor = ({
             return;
         }
 
+        const forbiddenKeys = [
+            'image',
+            '_id',
+            'id',
+            'sku',
+            'sellerId',
+            'rating',
+            'reviewCount',
+            'createdAt',
+            'updatedAt',
+            '__v',
+            'slug',
+            'brand',
+            'status',
+            'active',
+            'showInNavbar',
+            'showInCollection'
+        ];
+        const presentForbidden = forbiddenKeys.filter((key) => formData[key] !== undefined);
+        if (presentForbidden.length > 0) {
+            console.warn('[ProductEditor] Stripping read-only fields from payload:', presentForbidden);
+        }
+
         setIsSaving(true);
         try {
             const productForm = new FormData();
-            const excludes = ['variants', 'categories', 'tags', 'deletedImages', 'navGiftsFor', 'navOccasions', 'navShopByCategory', 'faqs', 'isSerialized', 'productCodes'];
+            const excludes = [
+                'variants',
+                'categories',
+                'tags',
+                'deletedImages',
+                'navGiftsFor',
+                'navOccasions',
+                'navShopByCategory',
+                'faqs',
+                'isSerialized',
+                'productCodes',
+                'image',
+                '_id',
+                'id',
+                'sku',
+                'sellerId',
+                'rating',
+                'reviewCount',
+                'createdAt',
+                'updatedAt',
+                '__v',
+                'slug',
+                'brand',
+                'status',
+                'active',
+                'showInNavbar',
+                'showInCollection'
+            ];
 
             Object.keys(formData).forEach(key => {
                 if (excludes.includes(key)) return;
@@ -664,10 +877,21 @@ const SharedProductEditor = ({
             const normalizedVariants = formData.variants.map((variantItem) => {
                 const serialCodes = normalizeSerialCodes(variantItem.serialCodes || []);
                 const availableCount = serialCodes.filter(code => (code.status || 'AVAILABLE') === 'AVAILABLE').length;
+                const variantImages = Array.isArray(variantItem.variantImages)
+                    ? variantItem.variantImages.filter(img => typeof img === 'string' && img.trim() && !img.startsWith('blob:'))
+                    : [];
+                const variantFaqs = Array.isArray(variantItem.variantFaqs)
+                    ? variantItem.variantFaqs.map((faq) => ({
+                        question: String(faq.question || '').trim(),
+                        answer: String(faq.answer || '').trim()
+                    })).filter(faq => faq.question || faq.answer)
+                    : [];
                 return {
                     ...variantItem,
                     serialCodes,
-                    stock: availableCount
+                    stock: availableCount,
+                    variantImages,
+                    variantFaqs
                 };
             });
 
@@ -694,6 +918,10 @@ const SharedProductEditor = ({
             productForm.append('isSerialized', 'true');
 
             imageFiles.forEach(file => productForm.append('images', file));
+            formData.variants.forEach((variantItem, index) => {
+                const uploadFiles = variantImageFiles[variantItem.id] || [];
+                uploadFiles.forEach((file) => productForm.append(`variantImages_${index}`, file));
+            });
 
             if (isEditMode) {
                 const res = await resolvedProductApi.updateProduct(id, productForm);
@@ -1520,6 +1748,163 @@ const SharedProductEditor = ({
                                                 )}
                                             </div>
                                         </div>
+
+                                        <div className="border-t border-gray-100/60 pt-8 space-y-6">
+                                            <div className="flex items-center justify-between gap-3">
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em]">Variant Media & FAQs</p>
+                                                <p className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">Step 5</p>
+                                            </div>
+
+                                            <div className="space-y-4">
+                                                <div className="flex items-center justify-between">
+                                                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Variant Images</p>
+                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+                                                        {Array.isArray(v.variantImages) && v.variantImages.length > 0
+                                                            ? `${v.variantImages.length} selected`
+                                                            : 'Using all product images'}
+                                                    </span>
+                                                </div>
+
+                                                <div className="flex flex-wrap gap-3">
+                                                    {!isViewMode && (
+                                                        <label className="px-4 py-2 rounded-xl border border-gray-200 text-[10px] font-black uppercase tracking-widest text-gray-700 hover:border-[#3E2723] hover:text-[#3E2723] transition-all cursor-pointer">
+                                                            Upload Variant Images
+                                                            <input
+                                                                type="file"
+                                                                multiple
+                                                                accept="image/*"
+                                                                className="hidden"
+                                                                onChange={(e) => handleVariantImageUpload(v.id, e.target.files)}
+                                                            />
+                                                        </label>
+                                                    )}
+                                                </div>
+                                                {(variantImagePreviews[v.id] || []).length > 0 && (
+                                                    <div className="space-y-2">
+                                                        <p className="text-[10px] text-gray-400">New variant uploads will be attached after save.</p>
+                                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                                            {(variantImagePreviews[v.id] || []).map((img, previewIdx) => (
+                                                                <div key={`${v.id}-upload-preview-${previewIdx}`} className="relative rounded-xl overflow-hidden border border-gray-200">
+                                                                    <img src={img} alt="" className="w-full h-20 object-cover" />
+                                                                    {!isViewMode && (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => handleRemoveVariantUpload(v.id, previewIdx)}
+                                                                            className="absolute top-2 right-2 h-7 w-7 rounded-full bg-white/90 border border-gray-200 text-gray-600 hover:text-red-600 transition-all flex items-center justify-center shadow-sm"
+                                                                            title="Remove uploaded variant image"
+                                                                        >
+                                                                            <X size={14} />
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {Array.isArray(v.variantImages) && v.variantImages.length > 0 && (
+                                                    <div className="space-y-2">
+                                                        <p className="text-[10px] text-gray-400">Current saved variant images</p>
+                                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                                            {v.variantImages.map((img, imageIdx) => (
+                                                                <div key={`${v.id}-saved-variant-image-${imageIdx}`} className="relative rounded-xl overflow-hidden border border-gray-200">
+                                                                    <img src={img} alt="" className="w-full h-20 object-cover" />
+                                                                    {!isViewMode && (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => handleRemoveSavedVariantImage(v.id, img)}
+                                                                            className="absolute top-2 right-2 h-7 w-7 rounded-full bg-white/90 border border-gray-200 text-gray-600 hover:text-red-600 transition-all flex items-center justify-center shadow-sm"
+                                                                            title="Remove saved variant image"
+                                                                        >
+                                                                            <X size={14} />
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {Array.isArray(v.variantImages) && v.variantImages.length === 0 && (
+                                                    <div className="text-xs text-gray-400">
+                                                        This variant will automatically use the product-level images until you upload variant-specific ones.
+                                                    </div>
+                                                )}
+                                                {previewImages.some(img => typeof img === 'string' && img.startsWith('blob:')) && (
+                                                    <p className="text-[10px] text-gray-400">
+                                                        Newly uploaded product images will appear after the product is saved. Variant uploads added here will save directly to this variant.
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            <div className="space-y-3">
+                                                <div className="flex items-center justify-between">
+                                                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Variant FAQs</p>
+                                                    {!isViewMode && (
+                                                        <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={Array.isArray(v.variantFaqs) && v.variantFaqs.length > 0}
+                                                                onChange={(e) => {
+                                                                    if (e.target.checked) {
+                                                                        addVariantFaq(v.id);
+                                                                    } else {
+                                                                        clearVariantFaqOverride(v.id);
+                                                                    }
+                                                                }}
+                                                            />
+                                                            Override FAQs
+                                                        </label>
+                                                    )}
+                                                </div>
+                                                <div className="space-y-3">
+                                                    {(v.variantFaqs || []).length > 0 ? (
+                                                        <>
+                                                            {(v.variantFaqs || []).map((faq, faqIndex) => (
+                                                                <div key={`${v.id}-faq-${faqIndex}`} className="p-4 rounded-xl bg-white border border-gray-100 relative group">
+                                                                    <Input
+                                                                        label="Question"
+                                                                        value={faq.question}
+                                                                        onChange={(e) => handleVariantFaqChange(v.id, faqIndex, 'question', e.target.value)}
+                                                                        placeholder="e.g. Is this variant heavier?"
+                                                                        disabled={isViewMode}
+                                                                    />
+                                                                    <div className="space-y-1.5">
+                                                                        <label className="block text-xs font-semibold text-gray-700 tracking-wide">Answer</label>
+                                                                        <textarea
+                                                                            value={faq.answer}
+                                                                            onChange={(e) => handleVariantFaqChange(v.id, faqIndex, 'answer', e.target.value)}
+                                                                            placeholder="Explain what makes this variant different."
+                                                                            disabled={isViewMode}
+                                                                            className="w-full bg-white border border-gray-200 rounded-lg py-2.5 px-3.5 text-sm text-gray-900 focus:outline-none focus:border-[#3E2723] focus:ring-2 focus:ring-[#3E2723]/10 transition-all shadow-sm"
+                                                                            rows={2}
+                                                                        />
+                                                                    </div>
+                                                                    {!isViewMode && (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => removeVariantFaq(v.id, faqIndex)}
+                                                                            className="absolute -top-2 -right-2 p-1.5 bg-white text-gray-400 hover:text-red-500 border border-gray-200 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-all"
+                                                                        >
+                                                                            <Trash2 size={14} />
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            ))}
+                                                            {!isViewMode && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => addVariantFaq(v.id)}
+                                                                    className="text-[10px] font-black text-[#3E2723] uppercase tracking-widest hover:underline"
+                                                                >
+                                                                    <Plus size={12} /> Add FAQ
+                                                                </button>
+                                                            )}
+                                                        </>
+                                                    ) : (
+                                                        <div className="text-xs text-gray-400">Using product FAQs.</div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 )})}
                             </div>
@@ -1581,6 +1966,19 @@ const SharedProductEditor = ({
                         </FormSection>
                     </div>
                 </div>
+
+                {!isViewMode && (
+                    <div className="mt-10 flex justify-end">
+                        <button
+                            type="button"
+                            onClick={handleSubmit}
+                            disabled={loading || isSaving || !formData.categories?.[0]?.category}
+                            className="px-6 py-3 rounded-xl bg-[#3E2723] text-white text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-md disabled:opacity-60"
+                        >
+                            {primaryActionLabel}
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* AI Enhancement Modal */}

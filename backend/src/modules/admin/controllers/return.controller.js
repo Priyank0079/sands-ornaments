@@ -5,6 +5,59 @@ const StockLog = require("../../../models/StockLog");
 const { success, error } = require("../../../utils/apiResponse");
 const { isSerializedVariant, restockSerializedUnits } = require("../../../utils/inventorySync");
 
+const VALID_STATUSES = [
+  "Pending",
+  "Approved",
+  "Rejected",
+  "Pickup Scheduled",
+  "Pickup Completed",
+  "Refund Initiated",
+  "Refunded",
+  "Closed"
+];
+
+const ALLOWED_TRANSITIONS = {
+  Pending: ["Approved", "Rejected"],
+  Approved: ["Pickup Scheduled", "Refund Initiated", "Refunded", "Closed"],
+  Rejected: [],
+  "Pickup Scheduled": ["Pickup Completed"],
+  "Pickup Completed": ["Refund Initiated", "Refunded", "Closed"],
+  "Refund Initiated": ["Refunded", "Closed"],
+  Refunded: ["Closed"],
+  Closed: []
+};
+
+const STATUSES_THAT_KEEP_ORDER_IN_RETURN_FLOW = [
+  "Pending",
+  "Approved",
+  "Pickup Scheduled",
+  "Pickup Completed",
+  "Refund Initiated"
+];
+
+const shouldMarkOrderAsReturned = (currentStatus, nextStatus) => {
+  if (nextStatus === "Refunded") return true;
+  if (nextStatus !== "Closed") return false;
+
+  return ["Approved", "Pickup Scheduled", "Pickup Completed", "Refund Initiated", "Refunded", "Closed"].includes(currentStatus);
+};
+
+const buildOrderStatusFromReturnStatus = (currentStatus, nextStatus) => {
+  if (STATUSES_THAT_KEEP_ORDER_IN_RETURN_FLOW.includes(nextStatus)) {
+    return "Return Requested";
+  }
+
+  if (nextStatus === "Rejected") {
+    return "Delivered";
+  }
+
+  if (shouldMarkOrderAsReturned(currentStatus, nextStatus)) {
+    return "Returned";
+  }
+
+  return null;
+};
+
 exports.getAllReturns = async (req, res) => {
   try {
     const { status } = req.query;
@@ -17,34 +70,98 @@ exports.getAllReturns = async (req, res) => {
   } catch (err) { return error(res, err.message); }
 };
 
+exports.getReturnDetail = async (req, res) => {
+  try {
+    const returnReq = await Return.findById(req.params.id)
+      .populate("userId", "name email phone")
+      .populate("orderId", "orderId paymentStatus total shippingAddress");
+    if (!returnReq) return error(res, "Return request not found", 404);
+    return success(res, { returnReq }, "Return detail retrieved");
+  } catch (err) { return error(res, err.message); }
+};
+
 exports.updateReturnStatus = async (req, res) => {
   try {
-    const { status, note, refundAmount } = req.body;
-    const returnReq = await Return.findById(req.params.id).populate("orderId");
+    const {
+      status,
+      note,
+      refundAmount,
+      refundMethod,
+      refundTransactionId,
+      pickupPartner,
+      pickupAwb,
+      pickupScheduledDate
+    } = req.body;
+    const returnReq = await Return.findById(req.params.id)
+      .populate("orderId", "orderId paymentStatus total shippingAddress");
     if (!returnReq) return error(res, "Return request not found", 404);
-
-    const VALID_STATUSES = ["Pending", "Approved", "Rejected", "Refunded", "Completed"];
     if (!VALID_STATUSES.includes(status)) {
       return error(res, `Invalid status. Must be one of: ${VALID_STATUSES.join(", ")}`, 400);
     }
 
-    returnReq.status = status;
-    if (refundAmount) returnReq.refundAmount = refundAmount;
+    const currentStatus = String(returnReq.status || "").trim();
+    const nextStatus = String(status || "").trim();
+    const allowed = ALLOWED_TRANSITIONS[currentStatus] || [];
+    if (currentStatus !== nextStatus && !allowed.includes(nextStatus)) {
+      return error(res, `Invalid status transition from ${currentStatus} to ${nextStatus}`, 400);
+    }
+
+    returnReq.status = nextStatus;
+    if (typeof note === "string" && note.trim()) {
+      returnReq.adminComment = note.trim();
+    }
+    if (refundAmount !== undefined && refundAmount !== null && refundAmount !== "") {
+      returnReq.refund = {
+        ...(returnReq.refund || {}),
+        amount: Number(refundAmount) || 0,
+        initiatedAt: ["Refund Initiated", "Refunded"].includes(nextStatus)
+          ? (returnReq.refund?.initiatedAt || new Date())
+          : returnReq.refund?.initiatedAt
+      };
+    }
+    if (typeof refundMethod === "string" && refundMethod.trim()) {
+      returnReq.refund = {
+        ...(returnReq.refund || {}),
+        method: refundMethod.trim()
+      };
+    }
+    if (typeof refundTransactionId === "string" && refundTransactionId.trim()) {
+      returnReq.refund = {
+        ...(returnReq.refund || {}),
+        transactionId: refundTransactionId.trim()
+      };
+    }
+    if (nextStatus === "Pickup Scheduled" || nextStatus === "Pickup Completed") {
+      returnReq.pickup = {
+        ...(returnReq.pickup || {}),
+        partner: typeof pickupPartner === "string" && pickupPartner.trim() ? pickupPartner.trim() : returnReq.pickup?.partner,
+        awb: typeof pickupAwb === "string" && pickupAwb.trim() ? pickupAwb.trim() : returnReq.pickup?.awb,
+        scheduledDate: pickupScheduledDate || returnReq.pickup?.scheduledDate || new Date(),
+        status: nextStatus === "Pickup Completed" ? "Completed" : "Scheduled"
+      };
+    }
     returnReq.timeline.push({
-      status,
-      note: note || `Return status updated to ${status}`,
+      status: nextStatus,
+      note: note || `Return status updated to ${nextStatus}`,
       date: new Date(),
+    });
+    returnReq.logs.push({
+      action: "STATUS_UPDATE",
+      comment: note || `Return status updated to ${nextStatus}`,
+      by: "admin",
+      date: new Date()
     });
     await returnReq.save();
 
-    // BUG-09 FIX: When return is approved/refunded, restock inventory and update order payment status
-    if (status === "Approved" || status === "Refunded") {
-      const order = returnReq.orderId; // populated above
+    const order = returnReq.orderId;
 
+    const needsRestock = nextStatus === "Refunded" && !returnReq.inventory?.restockedAt;
+    if (needsRestock) {
+      // Restock each returned item only once when the refund is actually completed
       if (order) {
-        // Restock each returned item
         for (const item of returnReq.items) {
-          if (item.productId && item.variantId && item.quantity) {
+          const quantity = Number(item.qty ?? item.quantity ?? 0);
+          if (item.productId && item.variantId && quantity > 0) {
             const product = await Product.findById(item.productId);
             if (!product) continue;
 
@@ -52,10 +169,7 @@ exports.updateReturnStatus = async (req, res) => {
             if (!variant) continue;
 
             const previousStock = Number(variant.stock) || 0;
-            const quantity = Number(item.quantity) || 0;
             const variantIndex = product.variants.findIndex(v => String(v._id) === String(item.variantId));
-
-            if (quantity <= 0) continue;
 
             if (isSerializedVariant(product, variant)) {
               restockSerializedUnits({
@@ -78,22 +192,53 @@ exports.updateReturnStatus = async (req, res) => {
               previousStock,
               newStock: variant.stock,
               change: variant.stock - previousStock,
-              reason: `Return ${status} for order ${order.orderId || order._id}`,
+              reason: `Return ${nextStatus} for order ${order.orderId || order._id}`,
               adminId: req.user.userId
             });
           }
         }
 
-        // Mark order as refunded when status is Refunded
-        if (status === "Refunded") {
-          await Order.updateOne(
-            { _id: order._id },
-            { $set: { paymentStatus: "refunded" } }
-          );
-        }
+        returnReq.inventory = {
+          ...(returnReq.inventory || {}),
+          restockedAt: new Date(),
+          restockedByStatus: nextStatus
+        };
+        await returnReq.save();
       }
     }
 
-    return success(res, { returnReq }, `Return ${status} successfully`);
+    if (order) {
+      const nextOrderStatus = buildOrderStatusFromReturnStatus(currentStatus, nextStatus);
+      const orderUpdate = {};
+
+      if (nextStatus === "Refunded") {
+        orderUpdate.paymentStatus = "refunded";
+      }
+      if (nextOrderStatus) {
+        orderUpdate.status = nextOrderStatus;
+      }
+
+      if (Object.keys(orderUpdate).length > 0) {
+        await Order.updateOne(
+          { _id: order._id },
+          {
+            $set: orderUpdate,
+            $push: {
+              timeline: {
+                status: orderUpdate.status || order.status,
+                note: note || `Return updated to ${nextStatus}`,
+                date: new Date()
+              }
+            }
+          }
+        );
+      }
+    }
+
+    const refreshed = await Return.findById(returnReq._id)
+      .populate("userId", "name email phone")
+      .populate("orderId", "orderId paymentStatus total shippingAddress");
+
+    return success(res, { returnReq: refreshed }, `Return ${nextStatus} successfully`);
   } catch (err) { return error(res, err.message); }
 };

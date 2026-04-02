@@ -33,12 +33,26 @@ const normalizeProductForResponse = (product) => {
     ? plainProduct.variants.map((variant, index) => ({
         ...variant,
         variantCode: getLegacyVariantCode(productCode, variant, index),
+        variantImages: Array.isArray(variant?.variantImages) ? variant.variantImages : [],
+        variantFaqs: Array.isArray(variant?.variantFaqs) ? variant.variantFaqs : [],
         weight: variant?.weight !== undefined && variant?.weight !== null && variant?.weight !== ""
           ? Number(variant.weight) || 0
           : fallbackWeight,
         weightUnit: variant?.weightUnit || fallbackWeightUnit
       }))
     : [];
+
+  const firstVariantImage = plainProduct.variants.find(
+    (variant) => Array.isArray(variant?.variantImages) && variant.variantImages.length > 0
+  )?.variantImages?.[0] || null;
+
+  if (!plainProduct.image && firstVariantImage) {
+    plainProduct.image = firstVariantImage;
+  }
+
+  if ((!Array.isArray(plainProduct.images) || plainProduct.images.length === 0) && firstVariantImage) {
+    plainProduct.images = [firstVariantImage];
+  }
 
   return plainProduct;
 };

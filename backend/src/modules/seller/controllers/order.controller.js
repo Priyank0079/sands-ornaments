@@ -85,7 +85,7 @@ exports.getMyOrderDetail = async (req, res) => {
 exports.updateOrderStatus = async (req, res) => {
   try {
     const { orderId } = req.params;
-    const { status, note } = req.body;
+    const { status, note, shippingInfo } = req.body;
     const sellerId = req.user.userId;
     const nextStatus = normalizeOrderStatus(status);
 
@@ -102,12 +102,43 @@ exports.updateOrderStatus = async (req, res) => {
       return error(res, "This order contains items from multiple owners and must be managed by admin", 400);
     }
 
+    const normalizedShippingInfo = shippingInfo && typeof shippingInfo === "object"
+      ? {
+          carrier: String(shippingInfo.carrier || "").trim(),
+          trackingId: String(shippingInfo.trackingId || "").trim(),
+          trackingUrl: String(shippingInfo.trackingUrl || "").trim(),
+          estimatedDelivery: shippingInfo.estimatedDelivery || undefined
+        }
+      : null;
+
     const allowedStatuses = allowedTransitions[order.status] || [];
-    if (!allowedStatuses.includes(nextStatus)) {
+    const isSameStatusUpdate = nextStatus === order.status;
+    if (!isSameStatusUpdate && !allowedStatuses.includes(nextStatus)) {
       return error(res, `Seller cannot move order from ${order.status} to ${nextStatus}`, 400);
     }
 
-    order.status = nextStatus;
+    if (["Shipped", "Delivered"].includes(nextStatus)) {
+      const mergedShippingInfo = {
+        ...(order.shippingInfo || {}),
+        ...(normalizedShippingInfo || {})
+      };
+
+      if (!String(mergedShippingInfo.carrier || "").trim()) {
+        return error(res, "Carrier is required before marking this order for shipment", 400);
+      }
+
+      order.shippingInfo = mergedShippingInfo;
+    } else if (normalizedShippingInfo) {
+      order.shippingInfo = {
+        ...(order.shippingInfo || {}),
+        ...normalizedShippingInfo
+      };
+    }
+
+    if (!isSameStatusUpdate) {
+      order.status = nextStatus;
+    }
+
     if (nextStatus === "Shipped") {
       order.shippingInfo = {
         ...order.shippingInfo,
@@ -116,8 +147,8 @@ exports.updateOrderStatus = async (req, res) => {
     }
 
     order.timeline.push({
-      status: nextStatus,
-      note: note || `Seller updated order status to ${nextStatus}`,
+      status: isSameStatusUpdate ? order.status : nextStatus,
+      note: note || (isSameStatusUpdate ? "Seller updated shipping info" : `Seller updated order status to ${nextStatus}`),
       date: new Date()
     });
 

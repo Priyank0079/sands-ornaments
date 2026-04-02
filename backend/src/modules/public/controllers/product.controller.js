@@ -69,7 +69,7 @@ exports.getProducts = async (req, res) => {
 
     // 6. Execute Query with Pagination
     const products = await Product.find(query)
-      .select("name slug productCode brand images variants tags rating reviewCount categories navShopByCategory navGiftsFor navOccasions weight weightUnit")
+      .select("name slug productCode brand images variants tags rating reviewCount categories navShopByCategory navGiftsFor navOccasions weight weightUnit goldCategory silverCategory material")
       .populate("categories", "name slug metal")
       .sort(sortOption)
       .limit(limit * 1)

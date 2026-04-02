@@ -31,8 +31,20 @@ const sellerSchema = new mongoose.Schema({
     goldPerGram: { type: Number, default: 0 },
     goldPerMilligram: { type: Number, default: 0 },
     silverPerGram: { type: Number, default: 0 },
-    silverPerMilligram: { type: Number, default: 0 }
-  }
+    silverPerMilligram: { type: Number, default: 0 },
+    gold10g: {
+      k14: { type: Number, default: 0 },
+      k18: { type: Number, default: 0 },
+      k22: { type: Number, default: 0 },
+      k24: { type: Number, default: 0 }
+    },
+    silver10g: {
+      sterling925: { type: Number, default: 0 },
+      silverOther: { type: Number, default: 0 }
+    }
+  },
+  termsAcceptedAt: { type: Date },
+  termsVersion: { type: Date }
 }, { timestamps: true });
 
 module.exports = mongoose.model("Seller", sellerSchema);

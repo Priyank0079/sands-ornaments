@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RotateCcw, CheckCircle, XCircle, Eye } from 'lucide-react';
+import toast from 'react-hot-toast';
 import AdminTable from '../../admin/components/AdminTable';
 import { sellerOrderService } from '../services/sellerOrderService';
 
@@ -16,7 +17,7 @@ const SellerReturns = () => {
                 const data = await sellerOrderService.getReturns();
                 setReturns(data);
             } catch (err) {
-                console.error("Returns load failed");
+                toast.error('Unable to load seller returns right now.');
             } finally {
                 setLoading(false);
             }
@@ -29,6 +30,9 @@ const SellerReturns = () => {
         if (res.success) {
             const data = await sellerOrderService.getReturns();
             setReturns(data);
+            toast.success(res.message || `Return ${status.toLowerCase()} successfully.`);
+        } else {
+            toast.error(res.message || 'Unable to process return right now.');
         }
     };
 
@@ -67,9 +71,10 @@ const SellerReturns = () => {
                 <span className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest border ${
                     row.status === 'Approved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
                     row.status === 'Rejected' ? 'bg-red-50 text-red-600 border-red-100' :
+                    row.status === 'Refunded' ? 'bg-blue-50 text-blue-600 border-blue-100' :
                     'bg-amber-50 text-amber-600 border-amber-100'
                 }`}>
-                    {String(row.status || '').toUpperCase()}
+                    {String(row.status || '')}
                 </span>
             )
         },
@@ -88,18 +93,18 @@ const SellerReturns = () => {
                     {row.status === 'Pending' && (
                         <>
                             <button 
-                                onClick={() => handleAction(row._id || row.id, 'Approved')}
+                                onClick={() => handleAction(row.id, 'Approved')}
                                 className="p-2 hover:bg-emerald-50 rounded-lg text-emerald-600 transition-all border border-emerald-100 flex items-center gap-2 text-[8px] font-black uppercase tracking-widest"
                                 title="Approve"
                             >
                                 <CheckCircle size={14} />
                             </button>
                             <button 
-                                onClick={() => handleAction(row._id || row.id, 'Rejected')}
+                                onClick={() => handleAction(row.id, 'Rejected')}
                                 className="p-2 hover:bg-red-50 rounded-lg text-red-600 transition-all border border-red-100 flex items-center gap-2 text-[8px] font-black uppercase tracking-widest"
                                 title="Reject"
                             >
-                                <XCircle size={14} />
+                                    <XCircle size={14} />
                             </button>
                         </>
                     )}
@@ -116,7 +121,11 @@ const SellerReturns = () => {
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                <AdminTable columns={columns} data={returns} emptyMessage="No return requests found" />
+                {loading ? (
+                    <div className="px-6 py-20 text-center text-sm font-black uppercase tracking-widest text-gray-400">Loading return requests...</div>
+                ) : (
+                    <AdminTable columns={columns} data={returns} emptyMessage="No return requests found" />
+                )}
             </div>
         </div>
     );

@@ -188,6 +188,7 @@ const AppContent = () => {
                   <Route path="/sections/:id" element={<SectionEditor />} />
                   <Route path="/pages" element={<PageManagement />} />
                   <Route path="/pages/:pageId" element={<DynamicPageEditor />} />
+                  <Route path="/seller-terms" element={<DynamicPageEditor pageId="seller-terms" />} />
                   <Route path="/sellers" element={<AdminSellersPage />} />
                   <Route path="/seller-details/:id" element={<AdminSellerDetails />} />
                   <Route path="/settings" element={<GlobalSettings />} />

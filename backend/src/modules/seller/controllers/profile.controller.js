@@ -4,6 +4,7 @@ const { success, error } = require("../../../utils/apiResponse");
 const Setting = require("../../../models/Setting");
 const Product = require("../../../models/Product");
 const { applyMetalPricingToProduct } = require("../../../utils/metalPricing");
+const { normalizeMetalRates, hasNegativeRate } = require("../../../utils/metalRateNormalization");
 
 exports.getProfile = async (req, res) => {
   try {
@@ -130,8 +131,9 @@ exports.getMetalPricing = async (req, res) => {
     if (!seller) return error(res, "Seller not found", 404);
     const settings = await Setting.findOne();
     const sellerProductCount = await Product.countDocuments({ sellerId: req.user.userId });
+    const normalizedRates = normalizeMetalRates({}, seller.metalRates || {});
     return success(res, {
-      metalRates: seller.metalRates || {},
+      metalRates: normalizedRates,
       gstRate: settings?.gstRate || 0,
       sellerProductCount,
       updatedAt: seller.updatedAt || null
@@ -146,10 +148,11 @@ exports.updateMetalPricing = async (req, res) => {
     if (!seller) return error(res, "Seller not found", 404);
 
     if (metalRates && typeof metalRates === "object") {
-      seller.metalRates = {
-        ...seller.metalRates,
-        ...metalRates
-      };
+      const normalized = normalizeMetalRates(metalRates, seller.metalRates || {});
+      if (hasNegativeRate(normalized)) {
+        return error(res, "Metal rates cannot be negative", 400);
+      }
+      seller.metalRates = normalized;
     }
     await seller.save();
 

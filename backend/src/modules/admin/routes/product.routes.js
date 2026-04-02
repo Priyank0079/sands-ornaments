@@ -22,7 +22,7 @@ router.get("/:id", productController.getProductDetail);
 
 router.post(
   "/",
-  productUpload.array("images", 10),
+  productUpload.any(),
   parseFormData(PRODUCT_COMPLEX_FIELDS),
   validate(productSchema),
   productController.createProduct
@@ -30,7 +30,7 @@ router.post(
 
 router.put(
   "/:id",
-  productUpload.array("images", 10),
+  productUpload.any(),
   parseFormData(PRODUCT_COMPLEX_FIELDS),
   validate(productSchema),
   productController.updateProduct

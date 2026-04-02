@@ -3,42 +3,19 @@ const { success, error } = require("../../../utils/apiResponse");
 const Product = require("../../../models/Product");
 const Seller = require("../../../models/Seller");
 const { applyMetalPricingToProduct } = require("../../../utils/metalPricing");
-
-const normalizeRateValue = (value, fallback = 0) => {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : fallback;
-};
-
-const normalizeMetalRates = (incoming = {}, existing = {}) => {
-  const normalized = {
-    goldPerGram: normalizeRateValue(incoming.goldPerGram, normalizeRateValue(existing.goldPerGram, 0)),
-    goldPerMilligram: normalizeRateValue(incoming.goldPerMilligram, normalizeRateValue(existing.goldPerMilligram, 0)),
-    silverPerGram: normalizeRateValue(incoming.silverPerGram, normalizeRateValue(existing.silverPerGram, 0)),
-    silverPerMilligram: normalizeRateValue(incoming.silverPerMilligram, normalizeRateValue(existing.silverPerMilligram, 0))
-  };
-
-  if (incoming.goldPerGram !== undefined && incoming.goldPerMilligram === undefined) {
-    normalized.goldPerMilligram = normalized.goldPerGram / 1000;
-  }
-  if (incoming.goldPerMilligram !== undefined && incoming.goldPerGram === undefined) {
-    normalized.goldPerGram = normalized.goldPerMilligram * 1000;
-  }
-  if (incoming.silverPerGram !== undefined && incoming.silverPerMilligram === undefined) {
-    normalized.silverPerMilligram = normalized.silverPerGram / 1000;
-  }
-  if (incoming.silverPerMilligram !== undefined && incoming.silverPerGram === undefined) {
-    normalized.silverPerGram = normalized.silverPerMilligram * 1000;
-  }
-
-  return normalized;
-};
-
-const hasNegativeRate = (rates = {}) =>
-  Object.values(rates).some((value) => Number(value) < 0);
+const { normalizeMetalRates, hasNegativeRate } = require("../../../utils/metalRateNormalization");
 
 const getOrCreateSettings = async () => {
   let settings = await Setting.findOne();
-  if (!settings) settings = await Setting.create({});
+  if (!settings) {
+    settings = await Setting.create({});
+  } else {
+    const normalized = normalizeMetalRates({}, settings.metalRates || {});
+    if (JSON.stringify(settings.metalRates || {}) !== JSON.stringify(normalized)) {
+      settings.metalRates = normalized;
+      await settings.save();
+    }
+  }
   return settings;
 };
 
@@ -49,7 +26,14 @@ const buildSellerRateMap = async (products = []) => {
       .filter(Boolean)
   )];
   const sellers = await Seller.find({ _id: { $in: sellerIds } }).select("_id metalRates");
-  return new Map(sellers.map((seller) => [String(seller._id), seller.metalRates || {}]));
+  return new Map(sellers.map((seller) => {
+    const normalized = normalizeMetalRates({}, seller.metalRates || {});
+    if (JSON.stringify(seller.metalRates || {}) !== JSON.stringify(normalized)) {
+      seller.metalRates = normalized;
+      seller.save().catch((err) => console.error("Seller metal rates normalization failed:", err.message));
+    }
+    return [String(seller._id), normalized];
+  }));
 };
 
 const countAdminOwnedProducts = async () => Product.countDocuments({
@@ -83,8 +67,9 @@ exports.getMetalPricing = async (req, res) => {
   try {
     const settings = await getOrCreateSettings();
     const adminProductCount = await countAdminOwnedProducts();
+    const normalizedRates = normalizeMetalRates({}, settings.metalRates || {});
     return success(res, {
-      metalRates: settings.metalRates || {},
+      metalRates: normalizedRates,
       adminProductCount,
       updatedAt: settings.metalPricingUpdatedAt || settings.updatedAt || settings.createdAt || null
     }, "Metal pricing retrieved");

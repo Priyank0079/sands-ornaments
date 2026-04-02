@@ -1,5 +1,6 @@
 const Seller = require("../../../models/Seller");
 const Notification = require("../../../models/Notification");
+const Page = require("../../../models/Page");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { success, error } = require("../../../utils/apiResponse");
@@ -26,14 +27,47 @@ exports.register = async (req, res) => {
       city,
       state,
       pincode,
-      bankAccount
+      bankAccount,
+      acceptTerms
     } = req.body;
 
     const normalizedEmail = String(email || "").trim().toLowerCase();
     const normalizedMobile = String(mobileNumber || "").trim();
 
-    const existing = await Seller.findOne({ $or: [{ email: normalizedEmail }, { mobileNumber: normalizedMobile }] });
-    if (existing) return error(res, "Seller with this email or mobile already exists", 400);
+    if (!shopName || !String(shopName).trim()) return error(res, "Shop name is required", 400);
+    if (!fullName || !String(fullName).trim()) return error(res, "Full name is required", 400);
+    if (!normalizedEmail) return error(res, "Email is required", 400);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) return error(res, "Please enter a valid email address", 400);
+    if (!normalizedMobile) return error(res, "Mobile number is required", 400);
+    if (!/^\d{10}$/.test(normalizedMobile)) return error(res, "Mobile number must be 10 digits", 400);
+    if (!password || !String(password).trim()) return error(res, "Password is required", 400);
+    if (!gstNumber || !String(gstNumber).trim()) return error(res, "GST number is required", 400);
+    if (!panNumber || !String(panNumber).trim()) return error(res, "PAN number is required", 400);
+    if (!bisNumber || !String(bisNumber).trim()) return error(res, "BIS license number is required", 400);
+    if (!shopAddress || !String(shopAddress).trim()) return error(res, "Shop address is required", 400);
+    if (!city || !String(city).trim()) return error(res, "City is required", 400);
+    if (!state || !String(state).trim()) return error(res, "State is required", 400);
+    if (!pincode || !String(pincode).trim()) return error(res, "Pincode is required", 400);
+
+    const existingEmail = normalizedEmail
+      ? await Seller.findOne({ email: normalizedEmail })
+      : null;
+    if (existingEmail) return error(res, "Seller with this email already exists", 400);
+
+    const existingMobile = normalizedMobile
+      ? await Seller.findOne({ mobileNumber: normalizedMobile })
+      : null;
+    if (existingMobile) return error(res, "Seller with this mobile number already exists", 400);
+
+    const sellerTermsPage = await Page.findOne({ slug: "seller-terms" });
+    if (!sellerTermsPage || !String(sellerTermsPage.content || "").trim()) {
+      return error(res, "Seller terms are not configured yet. Please contact support.", 400);
+    }
+
+    const acceptedTerms = acceptTerms === true || acceptTerms === "true" || acceptTerms === "1";
+    if (!acceptedTerms) {
+      return error(res, "Please accept the seller terms & conditions to continue.", 400);
+    }
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
@@ -50,6 +84,16 @@ exports.register = async (req, res) => {
         parsedBankAccount = undefined;
       }
     }
+    if (!parsedBankAccount || !String(parsedBankAccount.accountNumber || "").trim()) {
+      return error(res, "Bank account number is required", 400);
+    }
+    if (!String(parsedBankAccount.ifscCode || "").trim()) {
+      return error(res, "Bank IFSC code is required", 400);
+    }
+
+    if (!aadharFile?.path) return error(res, "Aadhar document is required", 400);
+    if (!shopLicenseFile?.path) return error(res, "Shop license document is required", 400);
+    if (!certificateFile?.path) return error(res, "Certificate document is required", 400);
 
     const seller = await Seller.create({
       shopName,
@@ -65,6 +109,8 @@ exports.register = async (req, res) => {
       state,
       pincode,
       bankAccount: parsedBankAccount,
+      termsAcceptedAt: new Date(),
+      termsVersion: sellerTermsPage.lastUpdated || sellerTermsPage.updatedAt || new Date(),
       documents: {
         aadharUrl: aadharFile?.path || undefined,
         shopLicenseUrl: shopLicenseFile?.path || undefined,

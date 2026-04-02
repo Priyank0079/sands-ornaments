@@ -74,6 +74,14 @@ export const ShopProvider = ({ children }) => {
         return localStorage.getItem('defaultAddressId') || null;
     });
     const [coupons, setCoupons] = useState([]);
+    const [appliedCoupon, setAppliedCoupon] = useState(() => {
+        const saved = localStorage.getItem('appliedCoupon');
+        return saved ? JSON.parse(saved) : null;
+    });
+    const [couponDiscount, setCouponDiscount] = useState(() => {
+        const saved = localStorage.getItem('couponDiscount');
+        return saved ? Number(saved) : 0;
+    });
     const [globalGst, _setGlobalGst] = useState(() => {
         return localStorage.getItem('admin_global_gst') || '0';
     });
@@ -284,6 +292,15 @@ export const ShopProvider = ({ children }) => {
         localStorage.setItem('farmlyf_coupons', JSON.stringify(coupons));
     }, [coupons]);
 
+    useEffect(() => {
+        if (appliedCoupon) {
+            localStorage.setItem('appliedCoupon', JSON.stringify(appliedCoupon));
+        } else {
+            localStorage.removeItem('appliedCoupon');
+        }
+        localStorage.setItem('couponDiscount', String(couponDiscount || 0));
+    }, [appliedCoupon, couponDiscount]);
+
     // Persist Products
     useEffect(() => {
         localStorage.setItem('farmlyf_products', JSON.stringify(products));
@@ -307,6 +324,7 @@ export const ShopProvider = ({ children }) => {
         authLogout();
         setCart([]);
         setWishlist([]);
+        clearAppliedCoupon();
     };
 
     const placeOrder = async (orderDetails) => {
@@ -316,7 +334,7 @@ export const ShopProvider = ({ children }) => {
             
             // 1. Create order on backend
             // Note: backend expects { items: [{productId, variantId, quantity}], shippingAddress, paymentMethod, couponCode }
-            const res = await api.post('/user/orders', {
+            const res = await api.post('/user/orders/place', {
                 items: (items || cart).map(item => ({
                     productId: item.id || item._id,
                     variantId: item.variantId || item.variants?.[0]?.id || item.variants?.[0]?._id,
@@ -346,7 +364,12 @@ export const ShopProvider = ({ children }) => {
             return order._id;
 
         } catch (err) {
-            toast.error(err.response?.data?.message || "Checkout failed");
+            const apiError = err.response?.data;
+            if (apiError?.error === "VALIDATION_ERROR") {
+                toast.error("Please check your shipping address and try again.");
+            } else {
+                toast.error(apiError?.message || "Checkout failed");
+            }
             return null;
         }
     };
@@ -530,6 +553,22 @@ export const ShopProvider = ({ children }) => {
 
     const clearCart = () => {
         setCart([]);
+        clearAppliedCoupon();
+    };
+
+    const applyCoupon = async (code, cartTotal, items) => {
+        const result = await validateCoupon(code, cartTotal, items);
+        if (!result.valid) {
+            return result;
+        }
+        setAppliedCoupon(result.coupon);
+        setCouponDiscount(result.discount || 0);
+        return result;
+    };
+
+    const clearAppliedCoupon = () => {
+        setAppliedCoupon(null);
+        setCouponDiscount(0);
     };
 
     const addAddress = async (address) => {
@@ -820,6 +859,7 @@ export const ShopProvider = ({ children }) => {
 
             showNotification, deleteAccount,
             coupons, addCoupon, updateCoupon, deleteCoupon, toggleCoupon, getActiveCoupons, validateCoupon,
+            appliedCoupon, couponDiscount, applyCoupon, clearAppliedCoupon,
             notificationsEnabled, userNotifications, toggleNotificationSettings, deleteUserNotification,
             isMenuOpen, toggleMenu,
 

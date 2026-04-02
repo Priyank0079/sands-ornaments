@@ -62,10 +62,13 @@ export const useCatalogue = () => {
                 categoryId: rawCategoryId || '',
                 categorySlug: rawCategorySlug || '',
                 metal: rawCategoryMetal || '',
+                material: prod.material || rawCategoryMetal || '',
                 navShopByCategory: prod.navShopByCategory || [],
                 navGiftsFor: prod.navGiftsFor || [],
                 navOccasions: prod.navOccasions || [],
                 faqs: prod.faqs || [], // Added FAQs
+                goldCategory: prod.goldCategory || '',
+                silverCategory: prod.silverCategory || '',
                 variants: (prod.variants || []).map((v, index) => ({
                     ...v,
                     id: v._id || v.id || `${prod._id}-variant-${index}`

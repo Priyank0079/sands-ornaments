@@ -5,6 +5,7 @@ const requireRole = require("../../../middlewares/requireRole");
 
 router.use(authenticate, requireRole("admin"));
 router.get("/", replacementController.getAllReplacements);
+router.get("/:id", replacementController.getReplacementDetail);
 router.patch("/:id/status", replacementController.updateReplacementStatus);
 
 module.exports = router;
