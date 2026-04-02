@@ -18,7 +18,7 @@ const AllJewellery = () => {
 
     return (
         <section className="py-8 md:py-24 bg-white">
-            <div className="container mx-auto px-2 md:px-4">
+            <div className="container mx-auto px-4 md:px-6">
                 <div className="flex flex-col md:flex-row md:justify-between items-center md:items-end text-center md:text-left mb-10 md:mb-16 gap-6">
                     <div className="flex flex-col items-center md:items-start">
                         <span className="text-[10px] md:text-sm uppercase tracking-[0.4em] text-[#C9A24D] font-bold mb-1 md:mb-2">Our Collection</span>

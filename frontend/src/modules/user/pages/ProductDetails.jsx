@@ -1,4 +1,4 @@
-﻿import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
 import { useAuth } from '../../../context/AuthContext';
@@ -6,6 +6,7 @@ import api from '../../../services/api';
 import toast from 'react-hot-toast';
 import ProductCard from '../components/ProductCard';
 import { Heart, ShoppingBag, Star, Share2, Plus, Minus, Truck, ShieldCheck, Smile, Gift, ChevronDown, SlidersHorizontal, X, Camera, Check, ArrowLeft, Droplets, Sparkles } from 'lucide-react';
+import { COLLECTION_MOCK_PRODUCTS } from '../data/mockCollectionData.js';
 
 const AccordionItem = ({ title, children, isOpen, onClick }) => (
     <div className="border-b border-[#EBCDD0]/50">
@@ -35,15 +36,43 @@ const ProductDetails = () => {
     const navigate = useNavigate();
     const { addToCart, addToWishlist, removeFromWishlist, wishlist, products, isLoading } = useShop();
     const { user } = useAuth();
-    const catalogueProduct = (products || []).find(p => String(p.id || p._id) === String(id));
+    
+    // Find in mock collection if not in database
+    const mockProduct = useMemo(() => {
+        if (!id || !id.startsWith('m')) return null;
+        for (const cat in COLLECTION_MOCK_PRODUCTS) {
+            const found = COLLECTION_MOCK_PRODUCTS[cat].find(p => p.id === id);
+            if (found) {
+                return {
+                    ...found,
+                    image: found.img,
+                    images: [found.img],
+                    description: found.description || `Experience the luxury of our ${found.name}. Handcrafted to perfection, this ${found.metal} ${found.purity} piece represents the pinnacle of jewellery craftsmanship. Exclusive to Sands Ornaments.`,
+                    variants: found.variants || [{ id: `${found.id}-v1`, name: found.purity || 'Standard', price: found.price, mrp: found.price * 1.2 }],
+                    category: found.category || found.metal,
+                    brand: 'SANDS ROYAL',
+                    specifications: `Material: ${found.metal}<br/>Purity: ${found.purity}<br/>Weight: Approx 12g<br/>Certification: Hallmarked`,
+                    careTips: `Keep away from moisture.<br/>Store in an airtight container.<br/>Clean with a soft cloth after use.`
+                };
+            }
+        }
+        return null;
+    }, [id]);
+
+    const catalogueProduct = useMemo(() => (products || []).find(p => String(p.id || p._id) === String(id)), [products, id]);
     const [detailProduct, setDetailProduct] = useState(null);
     const [detailLoading, setDetailLoading] = useState(false);
-    const product = detailProduct || catalogueProduct;
+
+    // Prioritize mock product for IDs starting with 'm', otherwise use API or catalogue data
+    const product = useMemo(() => {
+        if (id && String(id).startsWith('m')) return mockProduct;
+        return detailProduct || catalogueProduct || null;
+    }, [id, mockProduct, detailProduct, catalogueProduct]);
 
     useEffect(() => {
         let ignore = false;
         const loadDetail = async () => {
-            if (!id) return;
+            if (!id || id.startsWith('m')) return; // Don't fetch for mock products
             setDetailLoading(true);
             try {
                 const res = await api.get(`public/products/${id}`);
@@ -272,7 +301,11 @@ const ProductDetails = () => {
     const gstPercent = pricingSubtotal > 0 ? Math.round((Number(pricingBreakdown.gst || 0) / pricingSubtotal) * 10000) / 100 : 0;
     const supplierName = product?.sellerId?.shopName || product?.supplierInfo || product?.brand || '';
     const currencyText = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
-    const primaryImage = selectedImage || product.image || product.images?.[0] || null;
+    
+    // Compute primary image with robust fallback
+    const primaryImage = useMemo(() => {
+        return selectedImage || product?.image || product?.images?.[0] || null;
+    }, [selectedImage, product]);
     const reviewCount = product?.reviewCount ?? reviews.length ?? 0;
     const averageRating = Number(product?.rating || 0);
     const hasReviews = reviewCount > 0 && averageRating > 0;
@@ -281,10 +314,10 @@ const ProductDetails = () => {
     return (
         <div className="bg-white min-h-screen py-8 pb-24 md:pb-8 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out fill-mode-both selection:bg-[#D39A9F] selection:text-white">
             {/* Back Button */}
-            <div className="container mx-auto px-4 mb-6 md:mb-10">
+            <div className="container mx-auto px-4 md:px-6 mb-6 md:mb-10 pt-2 lg:pt-4">
                 <button
                     onClick={() => navigate(-1)}
-                    className="flex items-center gap-2 text-black hover:text-[#D39A9F] transition-all group font-bold uppercase tracking-widest text-[10px] md:text-xs"
+                    className="flex items-center gap-2 text-black hover:text-[#9C5B61] transition-all group font-bold uppercase tracking-widest text-[10px] md:text-xs"
                 >
                     <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white shadow-sm flex items-center justify-center border border-gray-100 group-hover:-translate-x-1 transition-transform">
                         <ArrowLeft className="w-4 h-4 md:w-5 h-5 text-gray-500" />
@@ -325,8 +358,8 @@ const ProductDetails = () => {
                 />
             )}
 
-            <div className="container mx-auto px-4 lg:px-12">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
+            <div className="container mx-auto px-4 md:px-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
                     {/* Left: Product Image Gallery */}
                     <div className="relative space-y-4">
                         {/* Main Large Image */}
@@ -408,7 +441,7 @@ const ProductDetails = () => {
                                 {variantMrp > variantPrice && (
                                     <>
                                         <span className="text-base md:text-lg text-gray-400 line-through font-medium">{currencyText(variantMrp)}</span>
-                                        <span className="bg-black text-white text-[10px] font-bold px-2 py-1 rounded-sm tracking-wider">SAVE {variantDiscount}%</span>
+                                        <span className="bg-[#9C5B61] text-white text-[10px] font-bold px-2 py-1 rounded-sm tracking-wider">SAVE {variantDiscount}%</span>
                                     </>
                                 )}
                             </div>
@@ -502,7 +535,7 @@ const ProductDetails = () => {
 
                             <div className="flex items-center gap-2 text-emerald-700 text-sm font-medium">
                                 <ShieldCheck className="w-4 h-4" />
-                                <span>In stock - ready to ship</span>
+                                <span>In stock - ready to ship from Sands Royal</span>
                             </div>
 
                             {/* Desktop Actions (Inline) */}
@@ -569,170 +602,163 @@ const ProductDetails = () => {
                             </div>
                         </div>
 
-                        <div className="border-t border-gray-200">
-            <AccordionItem
-                title="Description"
-                isOpen={openSection === 'description'}
-                onClick={() => toggleSection('description')}
-            >
-                {product.description ? (
-                    <div className="prose prose-sm max-w-none text-gray-700" dangerouslySetInnerHTML={{ __html: product.description }} />
-                ) : (
-                    <>
-                        <p className="mb-4">Elegance meets craftsmanship in this stunning {product.name}. Handcrafted with precision from 925 Sterling Silver, this piece is designed to be a timeless addition to your collection.</p>
-                        <p>Whether you're dressing up for a special occasion or adding a touch of sparkle to your daily look, this piece versatile enough to complement any style.</p>
-                    </>
-                )}
-            </AccordionItem>
+                        </div>
 
-            <AccordionItem
-                title="Specifications"
-                isOpen={openSection === 'specifications'}
-                onClick={() => toggleSection('specifications')}
-            >
-                <div className="space-y-2 text-gray-700">
-                    {product.material && <p><span className="font-semibold">Material:</span> {product.material}</p>}
-                    {product.silverCategory && <p><span className="font-semibold">Silver Purity:</span> {product.silverCategory}</p>}
-                    {product.goldCategory && <p><span className="font-semibold">Gold Karat:</span> {product.goldCategory}K</p>}
-                    {(selectedVariantWeight || selectedVariantWeight === 0) && <p><span className="font-semibold">Variant Weight:</span> {selectedVariantWeight} {selectedVariantWeightUnit}</p>}
-                    {selectedVariant?.variantCode && <p><span className="font-semibold">Variant Code:</span> {selectedVariant.variantCode}</p>}
-                    {product.huid && <p><span className="font-semibold">HUID:</span> {product.huid}</p>}
-                    {product.specifications && (
-                        <div className="prose prose-sm max-w-none text-gray-700" dangerouslySetInnerHTML={{ __html: product.specifications }} />
-                    )}
-                    {!product.material && !selectedVariantWeight && !product.specifications && !product.silverCategory && !product.huid && !selectedVariant?.variantCode && (
-                        <p className="text-gray-500">No specifications provided.</p>
-                    )}
-                </div>
-            </AccordionItem>
-
-            <AccordionItem
-                title="FAQs"
-                isOpen={openSection === 'faqs'}
-                onClick={() => toggleSection('faqs')}
-            >
-                {product.faqs && product.faqs.length > 0 ? (
-                    <div className="space-y-3">
-                        {product.faqs.map((faq, idx) => (
-                            <div key={`${faq.question}-${idx}`} className="border border-gray-100 rounded-lg p-3">
-                                <p className="font-semibold text-gray-900">{faq.question}</p>
-                                <p className="text-gray-600 mt-1">{faq.answer}</p>
+                        <div className="mt-2 hidden lg:block">
+                            <div className="flex items-center justify-between mb-4">
+                                <span className="text-sm font-bold text-black font-display">Check Availability & Delivery</span>
                             </div>
-                        ))}
+
+                            <div className="flex gap-2 mb-6">
+                                <input
+                                    type="text"
+                                    placeholder="Enter your pincode"
+                                    className="flex-1 border border-gray-300 rounded px-4 py-2.5 text-sm focus:outline-none focus:border-[#9C5B61] transition-colors"
+                                />
+                                <button className="bg-[#9C5B61] text-white px-8 py-2.5 rounded font-medium text-sm hover:bg-[#834d52] transition-colors">
+                                    Check
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-0 border border-gray-200 rounded-sm overflow-hidden bg-white">
+                                <div className="flex flex-col items-center justify-center p-3 border-r border-gray-200 hover:bg-gray-50 transition-colors">
+                                    <Truck className="w-4 h-4 text-gray-400 mb-1" />
+                                    <span className="text-[10px] text-gray-700 font-medium text-center">Fast Delivery</span>
+                                </div>
+                                <div className="flex flex-col items-center justify-center p-3 border-r border-gray-200 hover:bg-gray-50 transition-colors">
+                                    <ShieldCheck className="w-4 h-4 text-gray-400 mb-1" />
+                                    <span className="text-[10px] text-gray-700 font-medium text-center">925 Silver</span>
+                                </div>
+                                <div className="flex flex-col items-center justify-center p-3 hover:bg-gray-50 transition-colors">
+                                    <Gift className="w-4 h-4 text-gray-400 mb-1" />
+                                    <span className="text-[10px] text-gray-700 font-medium text-center">Gift Wrap</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                ) : (
-                    <p className="text-gray-500">No FAQs available for this product yet.</p>
-                )}
-            </AccordionItem>
+                </div>
 
+                {/* ================= LOWER CONTENT SECTION (ACCORDIONS) ================= */}
+                <div className="max-w-6xl mx-auto mt-16 border-t border-gray-100 pt-12">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                        {/* Left: Product Badges / USP */}
+                        <div className="lg:col-span-4 space-y-6">
+                            <div className="bg-[#FDF5F6]/50 rounded-2xl p-6 border border-[#EBCDD0]/30">
+                                <h3 className="text-lg font-display font-bold text-black mb-6 flex items-center gap-2">
+                                    <Sparkles className="w-5 h-5 text-[#9C5B61]" />
+                                    The Sands Guarantee
+                                </h3>
+                                <div className="space-y-6">
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-10 h-10 rounded-full bg-white flex-shrink-0 flex items-center justify-center shadow-sm border border-[#EBCDD0]/20">
+                                            <ShieldCheck className="w-5 h-5 text-[#9C5B61]" />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-xs font-bold uppercase tracking-wider text-black mb-1">Authentic 925 Silver</h4>
+                                            <p className="text-[11px] text-gray-500 leading-relaxed font-sans">Every piece comes with a certificate of authenticity and 925 hallmark.</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-10 h-10 rounded-full bg-white flex-shrink-0 flex items-center justify-center shadow-sm border border-[#EBCDD0]/20">
+                                            <Smile className="w-5 h-5 text-[#9C5B61]" />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-xs font-bold uppercase tracking-wider text-black mb-1">Skin Friendly</h4>
+                                            <p className="text-[11px] text-gray-500 leading-relaxed font-sans">Nickel and Lead free, designed for comfort and long-term wear.</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-10 h-10 rounded-full bg-white flex-shrink-0 flex items-center justify-center shadow-sm border border-[#EBCDD0]/20">
+                                            <Gift className="w-5 h-5 text-[#9C5B61]" />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-xs font-bold uppercase tracking-wider text-black mb-1">Premium Packaging</h4>
+                                            <p className="text-[11px] text-gray-500 leading-relaxed font-sans">Gift-ready luxury boxes that protect your jewellery forever.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
+                        {/* Right: Detailed Product Info Accordion */}
+                        <div className="lg:col-span-8">
+                            <div className="divide-y divide-gray-100">
+                                <AccordionItem title="Description" isOpen={openSection === 'description'} onClick={() => toggleSection('description')}>
+                                    {product.description ? (
+                                        <div className="prose prose-sm max-w-none text-gray-700" dangerouslySetInnerHTML={{ __html: product.description }} />
+                                    ) : (
+                                        <>
+                                            <p className="mb-4">Elegance meets craftsmanship in this stunning {product.name}. Handcrafted with precision from 925 Sterling Silver, this piece is designed to be a timeless addition to your collection.</p>
+                                            <p>Whether you're dressing up for a special occasion or adding a touch of sparkle to your daily look, this piece versatile enough to complement any style.</p>
+                                        </>
+                                    )}
+                                </AccordionItem>
 
+                                <AccordionItem title="Specifications" isOpen={openSection === 'specifications'} onClick={() => toggleSection('specifications')}>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 text-gray-700">
+                                        {product.material && <div><span className="text-[10px] font-bold uppercase text-gray-400 block mb-0.5">Material</span> <span className="font-semibold">{product.material}</span></div>}
+                                        {product.silverCategory && <div><span className="text-[10px] font-bold uppercase text-gray-400 block mb-0.5">Purity</span> <span className="font-semibold">{product.silverCategory}</span></div>}
+                                        {(selectedVariantWeight || selectedVariantWeight === 0) && <div><span className="text-[10px] font-bold uppercase text-gray-400 block mb-0.5">Weight</span> <span className="font-semibold">{selectedVariantWeight} {selectedVariantWeightUnit}</span></div>}
+                                        {product.huid && <div><span className="text-[10px] font-bold uppercase text-gray-400 block mb-0.5">HUID</span> <span className="font-semibold">{product.huid}</span></div>}
+                                        {selectedVariant?.variantCode && <div><span className="text-[10px] font-bold uppercase text-gray-400 block mb-0.5">Variant ID</span> <span className="font-mono text-xs">{selectedVariant.variantCode}</span></div>}
+                                    </div>
+                                    {product.specifications && (
+                                        <div className="mt-4 pt-4 border-t border-gray-50 prose prose-sm max-w-none text-gray-600" dangerouslySetInnerHTML={{ __html: product.specifications }} />
+                                    )}
+                                </AccordionItem>
 
+                                <AccordionItem title="Styling Tips" isOpen={openSection === 'styling'} onClick={() => toggleSection('styling')}>
+                                    {product.stylingTips ? (
+                                        <div className="prose prose-sm max-w-none text-gray-600 font-sans" dangerouslySetInnerHTML={{ __html: product.stylingTips }} />
+                                    ) : (
+                                        <p>Pair this versatile {product.category || 'jewellery'} with both western and ethnic wear to elevate your look.</p>
+                                    )}
+                                </AccordionItem>
 
-                            <AccordionItem
-                                title="Styling Tips"
-                                isOpen={openSection === 'styling'}
-                                onClick={() => toggleSection('styling')}
-                            >
-                                {product.stylingTips ? (
-                                    <div className="prose prose-sm max-w-none text-gray-600 font-sans" dangerouslySetInnerHTML={{ __html: product.stylingTips }} />
-                                ) : (
-                                    <p>Pair this versatile piece with both western and ethnic wear to elevate your look.</p>
-                                )}
-                            </AccordionItem>
-
-                            <AccordionItem
-                                title="Jewelry Care Guide"
-                                isOpen={openSection === 'care'}
-                                onClick={() => toggleSection('care')}
-                            >
-                                {product.careTips ? (
-                                    <div className="prose prose-sm max-w-none text-gray-700 font-sans" dangerouslySetInnerHTML={{ __html: product.careTips }} />
-                                ) : (
+                                <AccordionItem title="Jewelry Care Guide" isOpen={openSection === 'care'} onClick={() => toggleSection('care')}>
                                     <div className="space-y-4">
                                         <p className="text-gray-600 italic">Follow these tips to keep your {product.name} shining forever:</p>
-                                        <div className="grid grid-cols-2 gap-3 pb-2">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-2">
                                             {[
                                                 { icon: <Droplets className="w-4 h-4" />, title: "Keep Dry", desc: "Remove before swimming or bathing" },
                                                 { icon: <Sparkles className="w-4 h-4" />, title: "Apply First", desc: "Put on jewelry after makeup/perfume" },
                                                 { icon: <ShieldCheck className="w-4 h-4" />, title: "Safe Storage", desc: "Store in a cool, dry airtight box" },
                                                 { icon: <Smile className="w-4 h-4" />, title: "Clean Softly", desc: "Wipe with a soft polishing cloth" }
                                             ].map((item, idx) => (
-                                                <div key={idx} className="bg-[#FDFBF7] p-3 rounded-xl border border-[#EFEBE9] flex flex-col items-center text-center gap-1.5 transition-transform hover:scale-105">
-                                                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[#D39A9F] shadow-sm border border-[#EBCDD0]/30">
+                                                <div key={idx} className="bg-[#FDFBF7]/50 p-4 rounded-xl border border-[#EBCDD0]/20 flex items-center gap-4 transition-all hover:bg-white hover:shadow-sm">
+                                                    <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#9C5B61] shadow-sm border border-[#EBCDD0]/30 flex-shrink-0">
                                                         {item.icon}
                                                     </div>
-                                                    <h5 className="text-[10px] font-bold text-black uppercase tracking-wider">{item.title}</h5>
-                                                    <p className="text-[9px] text-gray-500 font-medium leading-tight">{item.desc}</p>
+                                                    <div>
+                                                        <h5 className="text-[11px] font-bold text-black uppercase tracking-wider">{item.title}</h5>
+                                                        <p className="text-[10px] text-gray-500 font-medium">{item.desc}</p>
+                                                    </div>
                                                 </div>
                                             ))}
                                         </div>
                                     </div>
-                                )}
-                            </AccordionItem>
-                        </div>
+                                </AccordionItem>
 
-                        <div className="grid grid-cols-3 gap-2 md:gap-4 bg-[#FDF5F6] p-4 md:p-6 rounded-2xl mt-2 border border-[#EBCDD0]/50">
-                            <div className="flex flex-col items-center text-center gap-2">
-                                <ShieldCheck className="w-6 h-6 text-[#D39A9F]" strokeWidth={1.5} />
-                                <span className="text-[10px] uppercase font-bold tracking-wide text-black">Lifetime Warranty</span>
-                            </div>
-                            <div className="flex flex-col items-center text-center gap-2">
-                                <Smile className="w-6 h-6 text-[#D39A9F]" strokeWidth={1.5} />
-                                <span className="text-[10px] uppercase font-bold tracking-wide text-black">Skin Safe Jewellery</span>
-                            </div>
-                            <div className="flex flex-col items-center text-center gap-2">
-                                <Gift className="w-6 h-6 text-[#D39A9F]" strokeWidth={1.5} />
-                                <span className="text-[10px] uppercase font-bold tracking-wide text-black">18k Gold Tone Plated</span>
-                            </div>
-                        </div>
-
-                        <div className="mt-2">
-                            <div className="flex items-center justify-between mb-4">
-                                <span className="text-sm font-bold text-black font-display">Estimated Delivery Date</span>
-                                <button
-                                    onClick={() => setOpenSection('pincode')}
-                                    className="text-xs font-bold text-[#D39A9F] hover:text-black uppercase tracking-wider border-b border-[#D39A9F] pb-0.5"
-                                >
-                                    Check Pincode
-                                </button>
-                            </div>
-
-                            {openSection === 'pincode' && (
-                                <div className="flex gap-2 mb-6 animate-in slide-in-from-top-2 duration-300">
-                                    <input
-                                        type="text"
-                                        placeholder="Enter your pincode"
-                                        className="flex-1 border border-gray-300 rounded px-4 py-2.5 text-sm focus:outline-none focus:border-[#8D6E63] transition-colors"
-                                    />
-                                    <button className="bg-[#C19A83] text-white px-8 py-2.5 rounded font-medium text-sm hover:bg-[#A1887F] transition-colors">
-                                        Check
-                                    </button>
-                                </div>
-                            )}
-
-                            <div className="grid grid-cols-3 gap-0 border border-gray-200 rounded-sm overflow-hidden">
-                                <div className="flex flex-col items-center justify-center p-4 border-r border-gray-200 bg-white hover:bg-gray-50 transition-colors">
-                                    <div className="w-8 h-8 rounded-full border border-gray-400 flex items-center justify-center mb-2 text-gray-600">
-                                        <Truck className="w-4 h-4" strokeWidth={1.5} />
-                                    </div>
-                                    <span className="text-[11px] text-gray-700 font-medium text-center">2 Days Return</span>
-                                </div>
-                                <div className="flex flex-col items-center justify-center p-4 border-r border-gray-200 bg-white hover:bg-gray-50 transition-colors">
-                                    <div className="w-8 h-8 rounded-full border border-gray-400 flex items-center justify-center mb-2 text-gray-600">
-                                        <Truck className="w-4 h-4" strokeWidth={1.5} />
-                                    </div>
-                                    <span className="text-[11px] text-gray-700 font-medium text-center">10 Days Exchange</span>
-                                </div>
-                                <div className="flex flex-col items-center justify-center p-4 bg-white hover:bg-gray-50 transition-colors">
-                                    <div className="w-8 h-8 rounded-full border border-gray-400 flex items-center justify-center mb-2 text-gray-600">
-                                        <Truck className="w-4 h-4" strokeWidth={1.5} />
-                                    </div>
-                                    <span className="text-[11px] text-gray-700 font-medium text-center">Cash On Delivery</span>
-                                </div>
+                                <AccordionItem title="Frequently Asked Questions" isOpen={openSection === 'faqs'} onClick={() => toggleSection('faqs')}>
+                                    {product.faqs && product.faqs.length > 0 ? (
+                                        <div className="space-y-4 pt-2">
+                                            {product.faqs.map((faq, idx) => (
+                                                <div key={`${faq.question}-${idx}`} className="bg-gray-50/50 rounded-xl p-4 transition-colors hover:bg-gray-50">
+                                                    <p className="font-bold text-sm text-gray-900 flex items-start gap-2">
+                                                        <span className="text-[#9C5B61]">Q.</span> {faq.question}
+                                                    </p>
+                                                    <p className="text-gray-600 mt-2 text-sm leading-relaxed pl-6">
+                                                        {faq.answer}
+                                                    </p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-gray-500 italic">No FAQs available for this specific product yet. Contact our support for any queries.</p>
+                                    )}
+                                </AccordionItem>
                             </div>
                         </div>
-
                     </div>
                 </div>
 
@@ -917,7 +943,6 @@ const ProductDetails = () => {
                         ))}
                     </div>
                 </div>
-            </div>
 
             {/* Write Review Modal Overlay */}
             {isWriteReviewOpen && (

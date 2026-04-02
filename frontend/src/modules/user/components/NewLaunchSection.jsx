@@ -50,7 +50,7 @@ const NewLaunchSection = () => {
     return (
         <section className="py-16 md:py-24 bg-[#FFF0F0] relative overflow-hidden">
 
-            <div className="container mx-auto px-2 md:px-4 relative z-10">
+            <div className="container mx-auto px-4 md:px-6 relative z-10">
 
                 {/* Header Area */}
                 {/* Header Area - Center Heading, Right Button */}

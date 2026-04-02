@@ -1,7 +1,7 @@
 
 {/* Trendy Products / Editorial Split Section */ }
 <section className="py-24 bg-white overflow-hidden">
-    <div className="container mx-auto px-4">
+    <div className="container mx-auto px-4 md:px-6">
 
         {/* Item 1: Image Left, Text Right */}
         <div className="flex flex-col md:flex-row items-center gap-12 md:gap-24 mb-24">

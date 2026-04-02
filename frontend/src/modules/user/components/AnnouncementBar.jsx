@@ -39,10 +39,10 @@ const AnnouncementBar = () => {
     }, []);
 
     return (
-        <div className="bg-[#1F1F1F] text-[#F7F2EF] overflow-hidden py-2 relative z-[60]">
+        <div className="bg-[#9C5B61] text-[#F7F2EF] overflow-hidden py-2 relative z-[60]">
             <div className="flex animate-marquee whitespace-nowrap">
-                {[...Array(6)].map((_, i) => (
-                    <div key={i} className="flex items-center mx-20 gap-32">
+                {[...Array(2)].map((_, i) => (
+                    <div key={i} className="flex items-center gap-8 md:gap-16 px-4 md:px-6">
                         {announcements.map((item, idx) => {
                             return (
                                 <div key={idx} className="flex items-center gap-2">
@@ -64,11 +64,13 @@ const AnnouncementBar = () => {
             <style>
                 {`
                 @keyframes marquee {
-                    0% { transform: translateX(-100%); }
-                    100% { transform: translateX(0%); }
+                    0% { transform: translateX(0); }
+                    100% { transform: translateX(-50%); }
                 }
                 .animate-marquee {
-                    animation: marquee 30s linear infinite;
+                    animation: marquee 40s linear infinite;
+                    display: flex;
+                    width: max-content;
                 }
             `}
             </style>

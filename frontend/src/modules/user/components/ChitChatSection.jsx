@@ -27,7 +27,7 @@ const ChitChatSection = () => {
             <div className="absolute top-0 right-0 w-96 h-96 bg-[#4A1015] rounded-full blur-[120px] opacity-20 translate-x-1/2 -translate-y-1/2"></div>
             <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#C9A24D] rounded-full blur-[100px] opacity-10 -translate-x-1/3 translate-y-1/3"></div>
 
-            <div className="container mx-auto px-2 md:px-4 relative z-10">
+            <div className="container mx-auto px-4 md:px-6 relative z-10">
                 <div className="max-w-5xl mx-auto bg-white/5 backdrop-blur-md rounded-2xl md:rounded-3xl border border-white/10 overflow-hidden shadow-xl md:shadow-2xl">
                     <div className="flex flex-col md:flex-row">
 

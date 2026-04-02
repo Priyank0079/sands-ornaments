@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, Heart, ShoppingBag, User, Store, Menu, X, Bell, ChevronDown } from 'lucide-react';
+import { Search, Heart, ShoppingBag, User, Store, Menu, X, Bell, ChevronDown, Camera, Mic, Diamond } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
 import logo from '../../user/assets/SANDS JEWELS PINK (1).png';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,6 +12,31 @@ const Navbar = () => {
     const navigate = useNavigate();
     const isHome = location.pathname === '/';
     const [searchTerm, setSearchTerm] = useState('');
+    const [placeholderIdx, setPlaceholderIdx] = useState(0);
+    const [isScrolled, setIsScrolled] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 20);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    const placeholders = useMemo(() => [
+        "Search for jewellery...",
+        "Search for silver...",
+        "Search for gold...",
+        "Search for men...",
+        "Search for women..."
+    ], []);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setPlaceholderIdx((prev) => (prev + 1) % placeholders.length);
+        }, 1500); // Rotating every 1.5s for a balance between speed and readability
+        return () => clearInterval(interval);
+    }, [placeholders]);
 
     // Sidebar Menu Data
     const sidebarMenu = useMemo(() => {
@@ -91,82 +116,115 @@ const Navbar = () => {
 
     return (
         <>
-            <nav className="w-full transition-all duration-300 bg-white/95 backdrop-blur-md shadow-sm relative">
-                {/* Top Bar - Asymmetric padding: Top 6, Bottom 3 */}
-                <div className="container mx-auto px-4 md:px-6 pt-1 md:pt-1.5 pb-1 md:pb-1 flex items-center justify-between gap-4">
+            <nav className={`w-full transition-all duration-500 z-[100] ${isScrolled ? 'bg-white/80 backdrop-blur-lg py-1' : 'bg-white py-2 md:py-4 border-b border-gray-50'}`}>
+                <div className="container mx-auto px-4 md:px-6 flex items-center justify-between gap-6">
 
-                    {/* Left: Menu Button & Logo */}
-                    <div className="flex items-center gap-4 flex-1 md:flex-none">
-
-                        {/* Logo */}
-                        <Link to="/" className="relative h-10 w-10 md:h-14 md:w-14 flex items-center justify-center flex-shrink-0 group z-50">
+                    {/* Left: Logo */}
+                    <div className="flex items-center gap-4 flex-shrink-0">
+                        <Link to="/" className="relative flex items-center justify-center z-50">
                             <img
                                 src={logo}
                                 alt="Sands Jewels"
-                                className="absolute top-1/2 left-0 -translate-y-1/2 h-28 w-28 md:h-40 md:w-40 max-w-none object-contain transition-transform duration-300 group-hover:scale-105 drop-shadow-md"
+                                className="h-10 md:h-14 w-auto object-contain transition-transform duration-300 hover:scale-110 scale-[1.3] md:scale-[1.5] origin-left"
                             />
                         </Link>
                     </div>
 
 
-                    {/* Search Bar - Prominent and Centered (Desktop Only) */}
-                    <div className="hidden md:flex flex-1 max-w-2xl mx-auto relative group">
+                    <motion.div 
+                        initial={false}
+                        whileFocus={{ scale: 1.01 }}
+                        className="hidden md:flex flex-1 max-w-3xl mx-auto relative group"
+                    >
+                        <div className="absolute left-5 top-1/2 -translate-y-1/2 text-[#9C5B61]">
+                            <Search className="w-5 h-5 stroke-[2.5]" />
+                        </div>
                         <input
                             type="text"
-                            placeholder="Search for silver jewellery..."
+                            placeholder={placeholders[placeholderIdx]}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             onKeyDown={handleSearchKeyDown}
-                            className="w-full bg-white border border-gray-100 rounded-full py-2.5 px-6 pl-12 text-sm focus:outline-none focus:border-[#D39A9F] focus:ring-2 focus:ring-[#D39A9F]/20 transition-all shadow-sm group-hover:shadow-md text-black placeholder-gray-400"
+                            className="w-full bg-white border border-gray-400 rounded-full py-3 px-14 text-sm focus:outline-none focus:border-[#9C5B61] focus:ring-4 focus:ring-[#9C5B61]/10 transition-all text-black placeholder-gray-400 font-medium"
                         />
-                        <button
-                            type="button"
-                            onClick={submitSearch}
-                            className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#D39A9F] group-focus-within:text-[#D39A9F] transition-colors"
+                        <div className="absolute right-5 top-1/2 -translate-y-1/2 flex items-center gap-4 text-[#9C5B61]">
+                            <button className="hover:scale-110 active:scale-95 transition-transform duration-200">
+                                <Camera className="w-5 h-5" />
+                            </button>
+                            <button className="hover:scale-110 active:scale-95 transition-transform duration-200">
+                                <Mic className="w-5 h-5" />
+                            </button>
+                        </div>
+                    </motion.div>
+
+                    {/* Icons Section - Matching Target UI Icons and Color */}
+                    <div className="flex items-center space-x-5 md:space-x-8 flex-shrink-0 text-[#9C5B61]">
+                        {/* Mobile Search Trigger */}
+                        <motion.button 
+                            whileHover={{ scale: 1.15 }}
+                            whileTap={{ scale: 0.9 }}
+                            type="button" 
+                            onClick={submitSearch} 
+                            className="md:hidden" 
                             aria-label="Search products"
                         >
-                            <Search className="w-5 h-5" />
-                        </button>
-                    </div>
+                            <Search className="w-6 h-6" />
+                        </motion.button>
 
-                    {/* Icons - Simplified on mobile */}
-                    <div className="flex items-center space-x-4 md:space-x-6 flex-shrink-0 text-black">
-                        <button type="button" onClick={submitSearch} className="md:hidden hover:opacity-70" aria-label="Search products">
-                            <Search className="w-5 h-5 md:w-6 md:h-6" />
-                        </button>
+                        {/* Diamond Icon */}
+                        <motion.div whileHover={{ scale: 1.15, rotate: 15 }} whileTap={{ scale: 0.9 }}>
+                            <Link to="/shop?purity=diamond" className="hidden md:block">
+                                <Diamond className="w-6 h-6" />
+                            </Link>
+                        </motion.div>
 
-                        <button className="hover:opacity-70 relative group">
-                            <Link to="/notifications">
-                                <Bell className="w-5 h-5 md:w-6 md:h-6" />
-                                {userNotifications?.length > 0 && (
-                                    <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full animate-pulse"></span>
+                        {/* Store/Branch Icon */}
+                        <motion.div whileHover={{ scale: 1.15, y: -2 }} whileTap={{ scale: 0.9 }}>
+                            <Link to="/stores" className="hidden md:block">
+                                <Store className="w-6 h-6" />
+                            </Link>
+                        </motion.div>
+
+                        {/* Wishlist Icon */}
+                        <motion.div whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }} className="relative">
+                            <Link to="/wishlist">
+                                <Heart className="w-6 h-6" />
+                                {wishlist?.length > 0 && (
+                                    <motion.span 
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                        className="absolute -top-1.5 -right-1.5 bg-[#9C5B61] text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full border border-white"
+                                    >
+                                        {wishlist.length}
+                                    </motion.span>
                                 )}
                             </Link>
-                        </button>
+                        </motion.div>
 
-                        <Link to="/cart" className="hover:opacity-70 relative">
-                            <ShoppingBag className="w-5 h-5 md:w-6 md:h-6" />
-                            {cart?.length > 0 && (
-                                <span className="absolute -top-2 -right-2 bg-gradient-to-br from-[#D39A9F] to-[#4A1015] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full border-2 border-white">{cart.length}</span>
-                            )}
-                        </Link>
+                        {/* User/Profile Icon */}
+                        <motion.div whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}>
+                            <Link to={user ? "/profile" : "/login"} className="hidden md:block">
+                                <User className="w-6 h-6" />
+                            </Link>
+                        </motion.div>
 
-                        {/* Desktop Only Icons */}
-                        <Link to="/wishlist" className="hidden md:block hover:opacity-70 relative">
-                            <Heart className="w-6 h-6" />
-                            {wishlist?.length > 0 && (
-                                <span className="absolute -top-2 -right-2 bg-gradient-to-br from-[#D39A9F] to-[#4A1015] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full border-2 border-white">{wishlist.length}</span>
-                            )}
-                        </Link>
-
-                        <Link to={user ? "/profile" : "/login"} className="hidden md:block hover:opacity-70">
-                            <User className="w-6 h-6" />
-                        </Link>
+                        {/* Cart/Bag Icon */}
+                        <motion.div whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }} className="relative">
+                            <Link to="/cart">
+                                <ShoppingBag className="w-6 h-6" />
+                                {cart?.length > 0 && (
+                                    <motion.span 
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                        className="absolute -top-1.5 -right-1.5 bg-[#9C5B61] text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full border border-white"
+                                    >
+                                        {cart.length}
+                                    </motion.span>
+                                )}
+                            </Link>
+                        </motion.div>
                     </div>
                 </div>
-
-                {/* Decorative Bottom Gradient Line */}
-                <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#D39A9F] via-[#4A1015] to-[#D39A9F] opacity-80"></div>
             </nav>
 
             {/* Sidebar / Drawer */}
@@ -202,11 +260,23 @@ const Navbar = () => {
                                 {/* Menu Items */}
                                 <div className="space-y-4">
 
-                                    {/* 1. Shop By Category */}
+                                    {/* 0. All Jewellery */}
+                                <div className="border-b border-gray-100 pb-2">
+                                    <Link 
+                                        to="/collections" 
+                                        onClick={() => toggleMenu(false)}
+                                        className="w-full flex items-center justify-between py-2 text-left font-display font-semibold text-black hover:text-[#9C5B61] transition-colors uppercase"
+                                    >
+                                        ALL JEWELLERY
+                                        <ChevronRight className="w-4 h-4" />
+                                    </Link>
+                                </div>
+
+                                {/* 1. Shop By Category */}
                                     <div className="border-b border-gray-100 pb-2">
                                         <button
                                             onClick={() => toggleSection('shopByCategory')}
-                                            className="w-full flex items-center justify-between py-2 text-left font-display font-semibold text-black hover:text-[#4A1015] transition-colors"
+                                            className="w-full flex items-center justify-between py-2 text-left font-display font-semibold text-black hover:text-[#9C5B61] transition-colors"
                                         >
                                             SHOP BY CATEGORY
                                             <ChevronDown className={`w-4 h-4 transition-transform ${openSection === 'shopByCategory' ? 'rotate-180' : ''}`} />
@@ -249,7 +319,7 @@ const Navbar = () => {
                                                                 </span>
                                                                 <button 
                                                                     onClick={() => setMobileSelectedMetal(null)}
-                                                                    className="text-xs text-[#D39A9F]"
+                                                                    className="text-xs text-[#9C5B61]"
                                                                 >
                                                                     Change
                                                                 </button>
@@ -258,7 +328,7 @@ const Navbar = () => {
                                                                 <ul className="pl-4 py-2 space-y-3">
                                                                     {sidebarMenu.shopByCategory[mobileSelectedMetal].map((item, idx) => (
                                                                         <li key={idx}>
-                                                                            <Link to={item.path} onClick={() => { toggleMenu(false); setMobileSelectedMetal(null); }} className="text-gray-600 text-sm hover:text-[#D39A9F] block">
+                                                                            <Link to={item.path} onClick={() => { toggleMenu(false); setMobileSelectedMetal(null); }} className="text-gray-600 text-sm hover:text-[#9C5B61] block">
                                                                                 {item.name}
                                                                             </Link>
                                                                         </li>
@@ -271,7 +341,7 @@ const Navbar = () => {
                                                                     <Link
                                                                         to="/gold-collection"
                                                                         onClick={() => { toggleMenu(false); setMobileSelectedMetal(null); }}
-                                                                        className="inline-flex text-xs font-bold uppercase tracking-wider text-[#D39A9F] hover:text-black transition-colors"
+                                                                        className="inline-flex text-xs font-bold uppercase tracking-wider text-[#9C5B61] hover:text-black transition-colors"
                                                                     >
                                                                         View Gold Update
                                                                     </Link>
@@ -288,7 +358,7 @@ const Navbar = () => {
                                     <div className="border-b border-gray-100 pb-2">
                                         <button
                                             onClick={() => toggleSection('giftsFor')}
-                                            className="w-full flex items-center justify-between py-2 text-left font-display font-semibold text-black hover:text-[#4A1015] transition-colors"
+                                            className="w-full flex items-center justify-between py-2 text-left font-display font-semibold text-black hover:text-[#9C5B61] transition-colors"
                                         >
                                             GIFTS FOR
                                             <ChevronDown className={`w-4 h-4 transition-transform ${openSection === 'giftsFor' ? 'rotate-180' : ''}`} />
@@ -304,7 +374,7 @@ const Navbar = () => {
                                                     <ul className="pl-4 py-2 space-y-3">
                                                         {sidebarMenu.giftsFor.map((item, idx) => (
                                                             <li key={idx}>
-                                                                <Link to={item.path} onClick={() => toggleMenu(false)} className="text-gray-600 text-sm hover:text-[#D39A9F] block">
+                                                                <Link to={item.path} onClick={() => toggleMenu(false)} className="text-gray-600 text-sm hover:text-[#9C5B61] block">
                                                                     {item.name}
                                                                 </Link>
                                                             </li>
@@ -319,7 +389,7 @@ const Navbar = () => {
                                     <div className="border-b border-gray-100 pb-2">
                                         <button
                                             onClick={() => toggleSection('occasions')}
-                                            className="w-full flex items-center justify-between py-2 text-left font-display font-semibold text-black hover:text-[#4A1015] transition-colors"
+                                            className="w-full flex items-center justify-between py-2 text-left font-display font-semibold text-black hover:text-[#9C5B61] transition-colors"
                                         >
                                             OCCASIONS
                                             <ChevronDown className={`w-4 h-4 transition-transform ${openSection === 'occasions' ? 'rotate-180' : ''}`} />
@@ -335,7 +405,7 @@ const Navbar = () => {
                                                     <ul className="pl-4 py-2 space-y-3">
                                                         {sidebarMenu.occasions.map((item, idx) => (
                                                             <li key={idx}>
-                                                                <Link to={item.path} onClick={() => toggleMenu(false)} className="text-gray-600 text-sm hover:text-[#D39A9F] block">
+                                                                <Link to={item.path} onClick={() => toggleMenu(false)} className="text-gray-600 text-sm hover:text-[#9C5B61] block">
                                                                     {item.name}
                                                                 </Link>
                                                             </li>
@@ -348,21 +418,21 @@ const Navbar = () => {
 
                                     {/* 4. Super 1,999 */}
                                     <div className="py-2">
-                                        <Link to="/shop?price_max=1999" onClick={() => toggleMenu(false)} className="font-display font-semibold text-black hover:text-[#D39A9F] block tracking-wide">
+                                        <Link to="/shop?price_max=1999" onClick={() => toggleMenu(false)} className="font-display font-semibold text-black hover:text-[#9C5B61] block tracking-wide">
                                             SUPER 1,999
                                         </Link>
                                     </div>
 
                                     {/* 5. Blogs */}
                                     <div className="py-2">
-                                        <Link to="/blogs" onClick={() => toggleMenu(false)} className="font-display font-semibold text-black hover:text-[#D39A9F] block tracking-wide">
+                                        <Link to="/blogs" onClick={() => toggleMenu(false)} className="font-display font-semibold text-black hover:text-[#9C5B61] block tracking-wide">
                                             BLOGS
                                         </Link>
                                     </div>
 
                                     {/* 6. About Us */}
                                     <div className="py-2">
-                                        <Link to="/about" onClick={() => toggleMenu(false)} className="font-display font-semibold text-black hover:text-[#D39A9F] block tracking-wide">
+                                        <Link to="/about" onClick={() => toggleMenu(false)} className="font-display font-semibold text-black hover:text-[#9C5B61] block tracking-wide">
                                             ABOUT US
                                         </Link>
                                     </div>
@@ -375,24 +445,24 @@ const Navbar = () => {
             </AnimatePresence>
 
             {/* Floating Bottom Navigation - Mobile Only */}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-[#EBCDD0] px-6 py-3 flex items-center justify-between z-[100] shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
-                <Link to="/" className="flex flex-col items-center gap-1 text-gray-500 hover:text-black group">
+            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 px-6 py-3 flex items-center justify-between z-[100] shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+                <Link to="/" className="flex flex-col items-center gap-1 text-gray-400 hover:text-[#9C5B61] group">
                     <Store className="w-5 h-5 md:w-6 md:h-6 group-active:scale-90 transition-transform" />
                     <span className="text-[10px] font-bold uppercase tracking-tighter">Home</span>
                 </Link>
                 {/* Mobile Menu Trigger Replacement (Replacing Shop) */}
-                <button onClick={() => toggleMenu(true)} className="flex flex-col items-center gap-1 text-gray-500 hover:text-black group">
+                <button onClick={() => toggleMenu(true)} className="flex flex-col items-center gap-1 text-gray-400 hover:text-[#9C5B61] group">
                     <Menu className="w-5 h-5 md:w-6 md:h-6 group-active:scale-90 transition-transform" />
                     <span className="text-[10px] font-bold uppercase tracking-tighter">Menu</span>
                 </button>
-                <Link to="/wishlist" className="flex flex-col items-center gap-1 text-gray-500 hover:text-black group relative">
+                <Link to="/wishlist" className="flex flex-col items-center gap-1 text-gray-400 hover:text-[#9C5B61] group relative">
                     <Heart className="w-5 h-5 md:w-6 md:h-6 group-active:scale-90 transition-transform" />
                     {wishlist?.length > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-[#D39A9F] text-white text-[8px] w-3.5 h-3.5 flex items-center justify-center rounded-full">{wishlist.length}</span>
+                        <span className="absolute -top-1 -right-1 bg-[#9C5B61] text-white text-[8px] w-3.5 h-3.5 flex items-center justify-center rounded-full">{wishlist.length}</span>
                     )}
                     <span className="text-[10px] font-bold uppercase tracking-tighter">Wishlist</span>
                 </Link>
-                <Link to={user ? "/profile" : "/login"} className="flex flex-col items-center gap-1 text-gray-500 hover:text-black group">
+                <Link to={user ? "/profile" : "/login"} className="flex flex-col items-center gap-1 text-gray-400 hover:text-[#9C5B61] group">
                     <User className="w-5 h-5 md:w-6 md:h-6 group-active:scale-90 transition-transform" />
                     <span className="text-[10px] font-bold uppercase tracking-tighter">Account</span>
                 </Link>

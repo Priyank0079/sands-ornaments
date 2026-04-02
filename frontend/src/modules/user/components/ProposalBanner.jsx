@@ -52,7 +52,7 @@ const ProposalBanner = () => {
             {/* Background Gradient Mesh */}
             <div className="absolute inset-0 bg-gradient-to-r from-[#2A0505] via-[#4A1015] to-[#2A0505] opacity-90"></div>
 
-            <div className="container mx-auto px-2 md:px-4 relative z-10">
+            <div className="container mx-auto px-4 md:px-6 relative z-10">
                 <div className="flex flex-col md:flex-row items-center justify-between py-12 md:py-16 gap-8">
 
                     {/* Visual Section - Left Side */}

@@ -31,6 +31,7 @@ import UserReturnRequestPage from './modules/user/pages/ReturnRequestPage';
 import UserReplacementsPage from './modules/user/pages/ReplacementsPage';
 import UserReplacementDetailPage from './modules/user/pages/ReplacementDetailPage';
 import UserReplacementRequestPage from './modules/user/pages/ReplacementRequestPage';
+import JewelleryCollectionsPage from './modules/user/pages/JewelleryCollectionsPage';
 
 // Admin Imports
 import AdminLogin from './modules/admin/pages/Login';
@@ -138,6 +139,7 @@ const AppContent = () => {
           <Route path="/trending" element={<Shop />} />
           <Route path="/category/:category" element={<Shop />} />
           <Route path="/gold-collection" element={<GoldComingSoon />} />
+          <Route path="/collections" element={<JewelleryCollectionsPage />} />
           <Route path="/blogs" element={<BlogsPage />} />
           <Route path="/blogs/:slug" element={<BlogDetailPage />} />
 

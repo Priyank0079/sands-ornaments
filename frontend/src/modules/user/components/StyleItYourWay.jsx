@@ -119,7 +119,7 @@ const StyleItYourWay = () => {
 
     return (
         <section className="pt-8 pb-2 md:pt-24 md:pb-4 bg-white relative">
-            <div className="container mx-auto px-2 md:px-4">
+            <div className="container mx-auto px-4 md:px-6">
 
                 {/* Centered Header */}
                 <div className="flex flex-col items-center text-center mb-12">
@@ -183,22 +183,7 @@ const StyleItYourWay = () => {
                     ))}
                 </div>
 
-                {/* Navigation Buttons for Desktop - Positioned Below Carousel */}
-                <div className="hidden md:flex justify-center gap-6 mt-8">
-                    <button
-                        onClick={() => scroll('left')}
-                        className="p-4 rounded-full border-2 border-[#722F37]/20 hover:bg-[#722F37] hover:text-white text-[#722F37] transition-all duration-300 shadow-sm hover:shadow-lg"
-                    >
-                        <ChevronLeft className="w-8 h-8" />
-                    </button>
-                    <button
-                        onClick={() => scroll('right')}
-                        className="p-4 rounded-full border-2 border-[#722F37]/20 hover:bg-[#722F37] hover:text-white text-[#722F37] transition-all duration-300 shadow-sm hover:shadow-lg"
-                    >
-                        <ChevronRight className="w-8 h-8" />
-                    </button>
-                </div>
-
+                {/* Navigation Buttons Removed as per user request */}
             </div>
         </section>
     );

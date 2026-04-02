@@ -30,7 +30,7 @@ const FAQSection = () => {
 
     return (
         <section className="py-8 md:py-20 bg-[#FAF9F6] relative overflow-hidden">
-            <div className="container mx-auto px-2 md:px-4 max-w-4xl relative z-10">
+            <div className="container mx-auto px-4 md:px-6 max-w-4xl relative z-10">
                 <div className="text-center mb-8 md:mb-16">
                     <span className="text-[#C9A24D] text-[10px] md:text-sm font-bold tracking-[0.2em] uppercase mb-2 block">Common Questions</span>
                     <h2 className="font-display text-2xl md:text-5xl text-[#2F0A0F]">Frequently Asked Questions</h2>

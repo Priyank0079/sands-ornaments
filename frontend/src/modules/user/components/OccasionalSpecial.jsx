@@ -65,7 +65,7 @@ const OccasionalSpecial = () => {
 
     return (
         <section className="py-4 md:py-12 bg-white">
-            <div className="container mx-auto px-2 md:px-4">
+            <div className="container mx-auto px-4 md:px-6 relative z-10">
                 {/* Section Header */}
                 <div className="text-center mb-6">
                     <h2 className="font-display text-2xl md:text-5xl text-[#2F0A0F] mb-1 md:mb-4">

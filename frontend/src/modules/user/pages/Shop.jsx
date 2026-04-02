@@ -411,7 +411,7 @@ const Shop = () => {
                     Back
                 </button>
             </div>
-            <div className="container mx-auto px-4 pt-4 pb-32 md:pb-8">
+            <div className="container mx-auto px-4 md:px-6 pt-4 pb-32 md:pb-8">
                 {/* Header Section - Single Row: Title Left, Filter Button Right */}
                 {/* Header Section - Compact Mobile */}
                 <div className="sticky top-[50px] md:top-[141px] z-30 bg-white pt-2 md:pt-4 flex flex-row justify-between items-center mb-4 md:mb-10 pb-2 md:pb-6 border-b border-[#EBCDD0] gap-4 transition-all duration-300">
