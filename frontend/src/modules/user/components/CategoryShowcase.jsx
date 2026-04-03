@@ -91,7 +91,7 @@ const CategoryShowcase = () => {
     return (
         <section className="pb-16 pt-12 bg-white overflow-hidden">
             <div className="container mx-auto px-4 md:px-6">
-                
+
                 {/* Elegant Header */}
                 <div className="text-center mb-16 md:mb-20 animate-in fade-in slide-in-from-bottom-8 duration-1000">
                     <span className="text-[#D39A9F] text-[10px] md:text-xs font-black uppercase tracking-[0.4em] mb-4 block">Curated Collections</span>
@@ -102,25 +102,25 @@ const CategoryShowcase = () => {
                     <div className="w-16 h-px bg-[#D39A9F] mx-auto mt-8 opacity-40"></div>
                 </div>
 
-                <div className="flex flex-nowrap overflow-x-auto justify-start gap-4 md:gap-10 px-4 md:px-10 md:pt-4 md:pb-12 scrollbar-hide snap-x snap-mandatory">
+                <div className="flex flex-nowrap overflow-x-auto justify-center gap-2 md:gap-4 px-4 md:px-10 md:pt-4 md:pb-12 scrollbar-hide snap-x snap-mandatory">
                     {finalItems.map((cat) => {
                         const fallbacks = cat.fallback || resolveFallbackImage(cat.name);
                         const isHovered = activeHoverId === cat.id;
-                        
+
                         // Use the high-end model shot (angle2) for a drama-filled hover state
                         const hoverImageSrc = fallbacks?.angle2 || fallbacks?.angle1 || cat.image;
 
                         return (
-                            <Link 
-                                to={cat.path} 
-                                key={cat.id} 
+                            <Link
+                                to={cat.path}
+                                key={cat.id}
                                 className="group flex flex-col items-center flex-shrink-0 snap-start"
                                 onMouseEnter={() => setActiveHoverId(cat.id)}
                                 onMouseLeave={() => setActiveHoverId(null)}
                             >
                                 {/* Professional Card Container - BOLDER OLD GOLD BORDER */}
                                 <div className="relative w-40 h-40 md:w-64 md:h-64 bg-[#F9F3F1] rounded-2xl md:rounded-[2rem] border border-[#E8D7D0]/60 overflow-hidden transition-all duration-700 group-hover:shadow-[0_30px_60px_rgba(142,74,80,0.15)] group-hover:border-[#B8860B] group-hover:border-[4px]">
-                                    
+
                                     {/* Layered Image Cross-Fade (NO FLASH) */}
                                     <div className="absolute inset-0 flex items-center justify-center transition-transform duration-1000 ease-out group-hover:scale-110">
                                         {/* Base Product Shot */}
@@ -129,7 +129,7 @@ const CategoryShowcase = () => {
                                             alt={cat.name}
                                             className="absolute inset-0 w-full h-full object-cover z-0"
                                         />
-                                        
+
                                         {/* High-End Model Look - DUAL ZOOM (125%) */}
                                         <img
                                             src={hoverImageSrc}

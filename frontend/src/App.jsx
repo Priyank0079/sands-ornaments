@@ -3,6 +3,7 @@ import { ShopProvider } from './context/ShopContext';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './modules/user/components/Navbar';
 import Footer from './modules/user/components/Footer';
+import ScrollToTop from './ScrollToTop';
 import Home from './modules/user/pages/Home';
 import Shop from './modules/user/pages/Shop';
 import Cart from './modules/user/pages/Cart';
@@ -215,6 +216,7 @@ function App() {
     <AuthProvider>
       <ShopProvider>
         <Router>
+          <ScrollToTop />
           <AppContent />
         </Router>
       </ShopProvider>
