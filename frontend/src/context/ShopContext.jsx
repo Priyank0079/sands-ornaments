@@ -62,12 +62,12 @@ export const ShopProvider = ({ children }) => {
     const [supportTickets, setSupportTickets] = useState([]);
     const [returns, setReturns] = useState([]);
     const [replacements, setReplacements] = useState([]);
-    const { 
-        products, 
-        categories, 
-        banners, 
-        coupons: apiCoupons, 
-        isLoading: isCatalogueLoading 
+    const {
+        products,
+        categories,
+        banners,
+        coupons: apiCoupons,
+        isLoading: isCatalogueLoading
     } = useCatalogue();
 
     const [defaultAddressId, setDefaultAddressId] = useState(() => {
@@ -90,7 +90,7 @@ export const ShopProvider = ({ children }) => {
         _setGlobalGst(val);
         localStorage.setItem('admin_global_gst', val);
     };
-    
+
     useEffect(() => {
         if (apiCoupons.length > 0) setCoupons(apiCoupons);
     }, [apiCoupons]);
@@ -331,7 +331,7 @@ export const ShopProvider = ({ children }) => {
         try {
             const { items, shippingAddress, paymentMethod, couponCode, addressId } = orderDetails;
             const resolvedAddress = shippingAddress || addresses.find(a => a._id === addressId);
-            
+
             // 1. Create order on backend
             // Note: backend expects { items: [{productId, variantId, quantity}], shippingAddress, paymentMethod, couponCode }
             const res = await api.post('/user/orders/place', {
@@ -452,10 +452,10 @@ export const ShopProvider = ({ children }) => {
             }
             // If productData not found in list, try to use whatever we have
             const itemBase = productData || { id: productId, name: 'Product', price: 0, originalPrice: 0, image: '' };
-            return [...prev, { 
-                ...itemBase, 
-                id: productId, 
-                variantId: variantId, 
+            return [...prev, {
+                ...itemBase,
+                id: productId,
+                variantId: variantId,
                 packId: variantId || productId, // For CartPage compatibility
                 gst: Number(itemBase.gst ?? itemBase.selectedVariant?.gst) || 0,
                 quantity: qty,

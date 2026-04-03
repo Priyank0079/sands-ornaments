@@ -160,7 +160,7 @@ const CheckoutPage = () => {
 
             const orderId = await placeOrder(orderData);
             setLoading(false);
-            
+
             if (orderId) {
                 navigate(`/order-success/${orderId}`);
             }

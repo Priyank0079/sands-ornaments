@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
 
 // Import images - Main (Angle 1) and Wine/Hover (Angle 2)
@@ -16,63 +15,54 @@ import catBraceletWine from '../assets/cat_bracelet_wine.png';
 import catAnklet from '../assets/cat_anklets.png';
 import catAnkletWine from '../assets/cat_anklet_wine.png';
 import catChain from '../assets/cat_chain_wine.png';
+
+// Import model shots (angle 2) for maximum hover impact
 import latestRing from '../assets/latest_drop_ring.png';
 import latestBracelet from '../assets/latest_drop_bracelet.png';
 import latestNecklace from '../assets/latest_drop_necklace.png';
 import latestEarrings from '../assets/latest_drop_earrings.png';
 import newAnklets from '../assets/new_launch_anklets.png';
+
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 
 const fallbackImageMap = {
     pendants: { main: catPendant, angle1: catPendantWine, angle2: latestNecklace },
+    pendant: { main: catPendant, angle1: catPendantWine, angle2: latestNecklace },
+    necklaces: { main: catPendant, angle1: catPendantWine, angle2: latestNecklace },
+    necklace: { main: catPendant, angle1: catPendantWine, angle2: latestNecklace },
     rings: { main: catRing, angle1: catRingWine, angle2: latestRing },
+    ring: { main: catRing, angle1: catRingWine, angle2: latestRing },
     earrings: { main: catEarrings, angle1: catEarringsWine, angle2: latestEarrings },
+    earring: { main: catEarrings, angle1: catEarringsWine, angle2: latestEarrings },
     bracelets: { main: catBracelet, angle1: catBraceletWine, angle2: latestBracelet },
+    bracelet: { main: catBracelet, angle1: catBraceletWine, angle2: latestBracelet },
     anklets: { main: catAnklet, angle1: catAnkletWine, angle2: newAnklets },
-    chains: { main: catChain, angle1: catChain, angle2: catChain }
+    anklet: { main: catAnklet, angle1: catAnkletWine, angle2: newAnklets },
+    chains: { main: catChain, angle1: catChain, angle2: catChain },
+    chain: { main: catChain, angle1: catChain, angle2: catChain }
 };
 
 const resolveFallbackImage = (slugOrName) => {
     if (!slugOrName) return null;
-    const key = String(slugOrName).toLowerCase().replace(/\s+/g, '-');
-    return fallbackImageMap[key] || null;
+    const clean = String(slugOrName).toLowerCase().trim().replace(/\s+/g, '-');
+    return fallbackImageMap[clean] || null;
 };
 
 const CategoryShowcase = () => {
     const { homepageSections, categories, products } = useShop();
     const sectionConfig = homepageSections['category-showcase'];
+    const [activeHoverId, setActiveHoverId] = React.useState(null);
 
     const activeCategories = (categories || []).filter(
         (cat) => cat.isActive !== false && cat.showInCollection !== false
     );
     const productCategoryIds = new Set((products || []).map(p => String(p.categoryId || '')));
 
-    const getCategoryFromPath = (path) => {
-        if (!path || activeCategories.length === 0) return null;
-        try {
-            if (path.startsWith('/category/')) {
-                const slug = path.replace('/category/', '').split('?')[0];
-                return activeCategories.find(c => c.slug === slug || c.path === slug) || null;
-            }
-            if (path.includes('category=')) {
-                const query = path.split('category=')[1]?.split('&')[0];
-                return activeCategories.find(c => c._id === query || c.id === query || c.slug === query || c.path === query || c.name === query) || null;
-            }
-        } catch (err) {
-            return null;
-        }
-        return null;
-    };
-
     const getCategoryFromItem = (item) => {
         if (!item) return null;
         if (item.categoryId) {
-            const match = activeCategories.find(c => String(c._id) === String(item.categoryId) || String(c.id) === String(item.categoryId));
+            const match = activeCategories.find(c => String(c._id) === String(item.categoryId));
             if (match) return match;
-        }
-        if (item.path) {
-            const fromPath = getCategoryFromPath(item.path);
-            if (fromPath) return fromPath;
         }
         if (item.name) {
             const byName = activeCategories.find(c => c.name === item.name);
@@ -82,13 +72,7 @@ const CategoryShowcase = () => {
     };
 
     const sectionItems = Array.isArray(sectionConfig?.items) ? sectionConfig.items : [];
-
-    // Merge displayItems and finalItems into a single source of truth
-    const baseItems = (sectionItems.length > 0) ? sectionItems : (() => {
-        const withProducts = activeCategories.filter(cat => productCategoryIds.has(String(cat._id)));
-        const baseList = withProducts.length > 0 ? withProducts : activeCategories;
-        return baseList.slice(0, 8);
-    })();
+    const baseItems = (sectionItems.length > 0) ? sectionItems : activeCategories.slice(0, 8);
 
     const finalItems = baseItems.map((item, index) => {
         const resolvedCategory = getCategoryFromItem(item);
@@ -104,27 +88,28 @@ const CategoryShowcase = () => {
         };
     }).filter(it => it.name);
 
-    const [activeHoverId, setActiveHoverId] = React.useState(null);
-    const [angleIndex, setAngleIndex] = React.useState(0);
-
-    React.useEffect(() => {
-        let interval;
-        if (activeHoverId !== null) {
-            interval = setInterval(() => {
-                setAngleIndex((prev) => (prev + 1) % 3);
-            }, 1000);
-        } else {
-            setAngleIndex(0);
-        }
-        return () => clearInterval(interval);
-    }, [activeHoverId]);
-
     return (
-        <section className="pb-4 pt-0 bg-white overflow-hidden">
+        <section className="pb-16 pt-12 bg-white overflow-hidden">
             <div className="container mx-auto px-4 md:px-6">
+                
+                {/* Elegant Header */}
+                <div className="text-center mb-16 md:mb-20 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+                    <span className="text-[#D39A9F] text-[10px] md:text-xs font-black uppercase tracking-[0.4em] mb-4 block">Curated Collections</span>
+                    <h2 className="font-serif text-4xl md:text-6xl text-[#8E4A50] mb-6 leading-tight">Shop by Category</h2>
+                    <p className="text-gray-400 text-xs md:text-sm max-w-xl mx-auto leading-relaxed font-medium uppercase tracking-[0.1em]">
+                        Discover our handcrafted silver masterpieces, each piece telling <br className="hidden md:block" /> a unique story of timeless elegance.
+                    </p>
+                    <div className="w-16 h-px bg-[#D39A9F] mx-auto mt-8 opacity-40"></div>
+                </div>
+
                 <div className="flex flex-nowrap overflow-x-auto justify-start gap-4 md:gap-10 px-4 md:px-10 md:pt-4 md:pb-12 scrollbar-hide snap-x snap-mandatory">
-                    {finalItems.map((cat, idx) => {
+                    {finalItems.map((cat) => {
                         const fallbacks = cat.fallback || resolveFallbackImage(cat.name);
+                        const isHovered = activeHoverId === cat.id;
+                        
+                        // Use the high-end model shot (angle2) for a drama-filled hover state
+                        const hoverImageSrc = fallbacks?.angle2 || fallbacks?.angle1 || cat.image;
+
                         return (
                             <Link 
                                 to={cat.path} 
@@ -133,75 +118,40 @@ const CategoryShowcase = () => {
                                 onMouseEnter={() => setActiveHoverId(cat.id)}
                                 onMouseLeave={() => setActiveHoverId(null)}
                             >
-                                {/* Square Card Design - Elegant & Professional */}
-                                <div className="relative w-40 h-40 md:w-64 md:h-64 bg-[#F9F3F1] rounded-2xl md:rounded-[2rem] shadow-sm border border-[#E8D7D0]/60 overflow-hidden transition-all duration-500 transform group-hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] group-hover:border-[#C9A24D]">
+                                {/* Professional Card Container - BOLDER OLD GOLD BORDER */}
+                                <div className="relative w-40 h-40 md:w-64 md:h-64 bg-[#F9F3F1] rounded-2xl md:rounded-[2rem] border border-[#E8D7D0]/60 overflow-hidden transition-all duration-700 group-hover:shadow-[0_30px_60px_rgba(142,74,80,0.15)] group-hover:border-[#B8860B] group-hover:border-[4px]">
                                     
-                                    {/* Cycling Product Angles */}
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <motion.img
-                                            key={`${cat.id}-0`}
-                                            initial={false}
-                                            animate={{ 
-                                                opacity: activeHoverId === cat.id ? (angleIndex === 0 ? 1 : 0) : 1,
-                                                scale: activeHoverId === cat.id ? 1.05 : 1
-                                            }}
-                                            transition={{ duration: 0.6 }}
+                                    {/* Layered Image Cross-Fade (NO FLASH) */}
+                                    <div className="absolute inset-0 flex items-center justify-center transition-transform duration-1000 ease-out group-hover:scale-110">
+                                        {/* Base Product Shot */}
+                                        <img
                                             src={cat.image}
-                                            alt={`${cat.name} view 1`}
-                                            className="absolute inset-0 w-full h-full object-cover"
+                                            alt={cat.name}
+                                            className="absolute inset-0 w-full h-full object-cover z-0"
                                         />
                                         
-                                        {fallbacks?.angle1 && (
-                                            <motion.img
-                                                key={`${cat.id}-1`}
-                                                initial={{ opacity: 0 }}
-                                                animate={{ 
-                                                    opacity: activeHoverId === cat.id && angleIndex === 1 ? 1 : 0,
-                                                }}
-                                                transition={{ duration: 0.6 }}
-                                                src={fallbacks.angle1}
-                                                alt={`${cat.name} view 2`}
-                                                className="absolute inset-0 w-full h-full object-cover"
-                                            />
-                                        )}
-
-                                        {fallbacks?.angle2 && (
-                                            <motion.img
-                                                key={`${cat.id}-2`}
-                                                initial={{ opacity: 0 }}
-                                                animate={{ 
-                                                    opacity: activeHoverId === cat.id && angleIndex === 2 ? 1 : 0,
-                                                }}
-                                                transition={{ duration: 0.6 }}
-                                                src={fallbacks.angle2}
-                                                alt={`${cat.name} view 3`}
-                                                className="absolute inset-0 w-full h-full object-cover"
-                                            />
-                                        )}
-
-                                        {/* Premium Shimmer */}
-                                        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-1000 ease-in-out z-20"></div>
+                                        {/* High-End Model Look - DUAL ZOOM (125%) */}
+                                        <img
+                                            src={hoverImageSrc}
+                                            alt={`${cat.name} stylized`}
+                                            className={`absolute inset-0 w-full h-full object-cover z-10 transition-all duration-1000 ease-in-out group-hover:scale-115 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
+                                        />
                                     </div>
 
-                                    {/* Top Tag - Minimal */}
+                                    {/* Minimalist Tag */}
                                     {cat.tag && (
-                                        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full font-black text-[8px] md:text-[10px] text-[#4A1015] tracking-[0.1em] z-30 shadow-sm uppercase">
+                                        <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full font-black text-[8px] md:text-[10px] text-[#4A1015] tracking-[0.1em] z-20 shadow-sm uppercase">
                                             {cat.tag}
                                         </div>
                                     )}
                                 </div>
 
-                                {/* Category Name Below - Serif Styling */}
+                                {/* Typography Section */}
                                 <div className="mt-4 md:mt-6 flex flex-col items-center gap-1.5">
-                                    <span className="font-serif font-bold text-sm md:text-lg text-[#2A2A2A] uppercase tracking-[0.25em] transition-colors duration-300 group-hover:text-[#C9A24D]">
+                                    <span className={`font-serif font-bold text-sm md:text-lg uppercase tracking-[0.25em] transition-colors duration-500 ${isHovered ? 'text-[#8E4A50]' : 'text-[#2A2A2A]'}`}>
                                         {cat.name}
                                     </span>
-                                    <motion.div 
-                                        className="h-[1px] bg-[#C9A24D]"
-                                        initial={{ width: 0 }}
-                                        animate={activeHoverId === cat.id ? { width: "100%" } : { width: 0 }}
-                                        transition={{ duration: 0.3 }}
-                                    />
+                                    <div className={`h-px bg-[#8E4A50] transition-all duration-700 ease-out ${isHovered ? 'w-full' : 'w-0'}`} />
                                 </div>
                             </Link>
                         );

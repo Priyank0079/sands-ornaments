@@ -56,7 +56,7 @@ const ProposalBanner = () => {
                 <div className="flex flex-col md:flex-row items-center justify-between py-12 md:py-16 gap-8">
 
                     {/* Visual Section - Left Side */}
-                    <div className="w-full md:w-1/2 relative group">
+                    <div className="w-full md:w-1/2 relative group md:pt-10">
                         <div className="relative rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-[#4A1015]/30">
                             <img
                                 src={bannerImage}
@@ -76,9 +76,9 @@ const ProposalBanner = () => {
                             <span className="text-[#D4AF37] text-xs md:text-sm font-serif tracking-[0.2em] uppercase">The Forever Collection</span>
                         </div>
 
-                        <h2 className="font-display text-4xl md:text-6xl text-white leading-tight">
-                            {sectionData?.label || "Proposal Rings"} <br />
-                            <span className="italic font-serif font-light text-[#E5E5E5] text-3xl md:text-5xl">For Her</span>
+                        <h2 className="font-display text-4xl md:text-6xl text-white leading-[1.1]">
+                            {sectionData?.label || "Proposal Rings"}
+                            <span className="block italic font-serif font-light text-[#EBCDD0] text-3xl md:text-5xl mt-1">For Her</span>
                         </h2>
 
                         <p className="text-gray-300 font-serif text-lg md:text-xl max-w-lg mx-auto md:mx-0 leading-relaxed">

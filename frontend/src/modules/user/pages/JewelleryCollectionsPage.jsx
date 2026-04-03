@@ -139,7 +139,7 @@ const JewelleryCollectionsPage = () => {
                         <nav className="flex items-center gap-2 mt-1 text-[10px] font-medium uppercase tracking-widest text-gray-500">
                             <span>Home</span>
                             <ChevronRight className="w-2.5 h-2.5" />
-                            <span className={viewLevel === 'METALS' ? 'text-[#9C5B61]' : ''} onClick={() => setViewLevel('METALS')} className="cursor-pointer">All Jewellery</span>
+                            <span className={`cursor-pointer ${viewLevel === 'METALS' ? 'text-[#9C5B61]' : ''}`} onClick={() => setViewLevel('METALS')}>All Jewellery</span>
                             {selectedMetal && (
                                 <>
                                     <ChevronRight className="w-2.5 h-2.5" />

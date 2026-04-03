@@ -70,26 +70,19 @@ const PriceRangeShowcase = () => {
     const displayItems = normalizedConfiguredItems.length > 0 ? normalizedConfiguredItems : priceRanges;
 
     return (
-        <section className="pt-2 pb-16 md:pt-10 md:pb-24 bg-white">
+        <section className="py-24 bg-[#EAC1C3] overflow-hidden">
             <div className="container mx-auto px-4 md:px-6">
-                <div className="text-center mb-10">
-                    <motion.h2
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
-                        className="text-3xl md:text-5xl font-display font-medium text-black mb-4"
-                    >
+                
+                {/* Sands Royal Style Header */}
+                <div className="text-center mb-16 md:mb-20 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+                    <span className="text-[#8E4A50] text-[10px] md:text-xs font-black uppercase tracking-[0.4em] mb-4 block italic">Budget Friendly</span>
+                    <h2 className="font-serif text-4xl md:text-6xl text-[#8E4A50] mb-6 leading-tight">
                         {sectionData?.label || "Luxury in Range"}
-                    </motion.h2>
-                    <motion.div
-                        initial={{ width: 0 }}
-                        whileInView={{ width: 80 }}
-                        transition={{ duration: 0.8, delay: 0.3 }}
-                        className="h-1 bg-[#C9A24D] mx-auto rounded-full"
-                    ></motion.div>
+                    </h2>
+                    <div className="w-16 h-px bg-[#8E4A50] mx-auto opacity-40"></div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 lg:gap-10 max-w-7xl mx-auto px-4">
                     {displayItems.map((item, index) => {
                         const priceMax = getPriceMaxFromItem(item);
                         const itemLabel = priceMax ? `UNDER INR ${priceMax}` : (item.name || item.label || '');
@@ -103,27 +96,33 @@ const PriceRangeShowcase = () => {
                                 initial={{ opacity: 0, y: 30 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
-                                transition={{ duration: 0.6, delay: index * 0.1 }}
+                                transition={{ duration: 0.8, delay: index * 0.1 }}
                             >
                                 <Link
                                     to={itemPath || '/shop'}
-                                    className="group relative block w-full aspect-[3/4] md:aspect-[3/4] lg:aspect-[4/3] rounded-2xl md:rounded-[2.5rem] overflow-hidden shadow-md md:shadow-lg hover:shadow-[0_20px_50px_rgba(74,16,21,0.3)] transition-all duration-500 border-[3px] border-transparent hover:border-[#4A1015]"
+                                    className="group relative block w-full aspect-[4/5] rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-[0_15px_45px_rgba(142,74,80,0.12)] transition-all duration-700 border border-white/20 hover:border-[#8E4A50]"
                                 >
-                                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-500 z-10" />
-
+                                    {/* Subtle Image Zoom */}
                                     <img
                                         src={resolveLegacyCmsAsset(item.image, price999)}
                                         alt={itemLabel}
-                                        className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-110"
+                                        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                                     />
 
-                                    <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 z-20 bg-gradient-to-t from-black/80 to-transparent">
-                                        <h3 className="text-xl md:text-3xl font-display font-bold text-white text-center drop-shadow-md">
-                                            <span className="text-xs md:text-base font-light block mb-0.5 md:mb-1 opacity-90">Shop</span>
-                                            {itemLabel}
-                                        </h3>
-                                        <div className="h-0.5 w-0 group-hover:w-1/2 bg-[#C9A24D] mx-auto mt-2 transition-all duration-500 rounded-full" />
+                                    {/* Elegant Glassmorphic Bottom Overlay - Compact Height Refined */}
+                                    <div className="absolute inset-x-0 bottom-0 p-4 md:p-6 z-20 bg-gradient-to-t from-[#4A1015]/95 via-[#4A1015]/30 to-transparent backdrop-blur-[4px] transition-all duration-500 group-hover:bg-[#8E4A50]/90">
+                                        <div className="flex flex-col items-center">
+                                            <span className="text-[9px] md:text-[11px] font-bold uppercase tracking-[0.3em] text-[#EAC1C3]/70 mb-1 block">Explore</span>
+                                            <h3 className="text-lg md:text-2xl font-serif italic text-white text-center leading-tight">
+                                                {itemLabel}
+                                            </h3>
+                                            {/* Subtitle / Tiny detail if needed - Keeping it minimal */}
+                                            <div className="h-px bg-white/30 w-0 group-hover:w-12 transition-all duration-700 mt-2 mx-auto" />
+                                        </div>
                                     </div>
+
+                                    {/* Soft Dark Vignette Overlay */}
+                                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500 z-10" />
                                 </Link>
                             </motion.div>
                         );
