@@ -63,7 +63,7 @@ const Testimonials = () => {
                         >
                             {/* The Card Structure Inspired by Reference */}
                             <div className="bg-white rounded-3xl shadow-[0_20px_50px_rgba(74,16,21,0.08)] overflow-visible pt-16 pb-8 px-8 mt-12 relative min-h-[300px] flex flex-col items-center text-center">
-                                
+
                                 {/* Top Header Block - Deep Wine */}
                                 <div className="absolute top-0 left-0 right-0 h-24 bg-[#4A1015] rounded-t-3xl rounded-br-[100px] z-0 flex flex-col justify-end p-6 pl-8">
                                     <h4 className="text-white font-bold text-sm md:text-base uppercase tracking-widest leading-none mb-1">
@@ -83,9 +83,9 @@ const Testimonials = () => {
 
                                 {/* Profile Image - Floating Top Right */}
                                 <div className="absolute -top-12 -right-2 md:-right-6 w-24 h-24 md:w-32 md:h-32 rounded-full border-[6px] border-[#F3E8EE] shadow-xl overflow-hidden z-20">
-                                    <img 
-                                        src={testimonial.image} 
-                                        alt={testimonial.name} 
+                                    <img
+                                        src={testimonial.image}
+                                        alt={testimonial.name}
                                         className="w-full h-full object-cover"
                                     />
                                 </div>
@@ -96,7 +96,7 @@ const Testimonials = () => {
                                     <p className="text-gray-600 font-serif italic text-sm md:text-base leading-relaxed mb-6 relative z-10">
                                         "{testimonial.text}"
                                     </p>
-                                    
+
                                     <div className="flex flex-col items-center">
                                         <div className="h-[1px] w-12 bg-[#D39A9F]/30 mb-3" />
                                         <span className="text-[#D39A9F] text-[10px] md:text-xs font-bold uppercase tracking-[0.2em]">

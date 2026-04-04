@@ -77,7 +77,7 @@ const OccasionalSpecial = () => {
 
                 {/* Mobile View: 2-Column Grid */}
                 <div className="grid grid-cols-2 md:hidden gap-3 px-2 mb-8">
-                        {displayItems.map((cat, index) => {
+                    {displayItems.map((cat, index) => {
                         const label = cat.name || cat.label;
                         const path = buildPath(cat, defaultCategories[index] || defaultCategories[0]);
                         return (
@@ -98,46 +98,46 @@ const OccasionalSpecial = () => {
 
                 {/* Desktop View: Grid Layout (Existing) */}
                 {heroItems.length >= 5 && (
-                <div className="hidden md:grid grid-cols-3 gap-6 auto-rows-[250px]">
-                    {/* Column 1 - Stacked */}
-                    <div className="flex flex-col gap-6 h-full md:row-span-2">
-                    <Link to={item1.path} className="relative group overflow-hidden rounded-2xl flex-1 cursor-pointer shadow-md hover:shadow-xl transition-all duration-300">
-                        <img src={item1.image} alt={item1.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#2F0A0F]/80 via-transparent to-transparent"></div>
-                        <span className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white font-display text-2xl tracking-wide w-full text-center">{item1.name}</span>
-                    </Link>
-                    <Link to={item2.path} className="relative group overflow-hidden rounded-2xl flex-1 cursor-pointer shadow-md hover:shadow-xl transition-all duration-300">
-                        <img src={item2.image} alt={item2.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#2F0A0F]/80 via-transparent to-transparent"></div>
-                        <span className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white font-display text-2xl tracking-wide w-full text-center">{item2.name}</span>
-                    </Link>
-                    </div>
+                    <div className="hidden md:grid grid-cols-3 gap-6 auto-rows-[250px]">
+                        {/* Column 1 - Stacked */}
+                        <div className="flex flex-col gap-6 h-full md:row-span-2">
+                            <Link to={item1.path} className="relative group overflow-hidden rounded-2xl flex-1 cursor-pointer shadow-md hover:shadow-xl transition-all duration-300">
+                                <img src={item1.image} alt={item1.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-[#2F0A0F]/80 via-transparent to-transparent"></div>
+                                <span className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white font-display text-2xl tracking-wide w-full text-center">{item1.name}</span>
+                            </Link>
+                            <Link to={item2.path} className="relative group overflow-hidden rounded-2xl flex-1 cursor-pointer shadow-md hover:shadow-xl transition-all duration-300">
+                                <img src={item2.image} alt={item2.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-[#2F0A0F]/80 via-transparent to-transparent"></div>
+                                <span className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white font-display text-2xl tracking-wide w-full text-center">{item2.name}</span>
+                            </Link>
+                        </div>
 
-                    {/* Column 2 - Tall Centerpiece */}
-                    <Link to={item3.path} className="relative group overflow-hidden rounded-2xl md:row-span-2 shadow-lg hover:shadow-2xl transition-all duration-300">
-                        <img src={item3.image} alt={item3.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#2F0A0F]/80 via-transparent to-transparent"></div>
-                        <span className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white font-display text-4xl tracking-wide w-full text-center drop-shadow-md">{item3.name}</span>
-                    </Link>
+                        {/* Column 2 - Tall Centerpiece */}
+                        <Link to={item3.path} className="relative group overflow-hidden rounded-2xl md:row-span-2 shadow-lg hover:shadow-2xl transition-all duration-300">
+                            <img src={item3.image} alt={item3.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#2F0A0F]/80 via-transparent to-transparent"></div>
+                            <span className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white font-display text-4xl tracking-wide w-full text-center drop-shadow-md">{item3.name}</span>
+                        </Link>
 
-                    {/* Column 3 - Stacked */}
-                    <div className="flex flex-col gap-6 h-full md:row-span-2">
-                        <Link to={item4.path} className="relative group overflow-hidden rounded-2xl flex-[1.3] cursor-pointer shadow-md hover:shadow-xl transition-all duration-300">
-                            <img src={item4.image} alt={item4.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#2F0A0F]/80 via-transparent to-transparent"></div>
-                            <span className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white font-display text-2xl tracking-wide whitespace-nowrap drop-shadow-sm w-full text-center">
-                                {item4.name}
-                            </span>
-                        </Link>
-                        <Link to={item5.path} className="relative group overflow-hidden rounded-2xl flex-[0.7] cursor-pointer shadow-md hover:shadow-xl transition-all duration-300">
-                            <img src={item5.image} alt={item5.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#2F0A0F]/80 via-transparent to-transparent"></div>
-                            <span className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white font-display text-2xl tracking-wide whitespace-nowrap drop-shadow-sm w-full text-center">
-                                {item5.name}
-                            </span>
-                        </Link>
+                        {/* Column 3 - Stacked */}
+                        <div className="flex flex-col gap-6 h-full md:row-span-2">
+                            <Link to={item4.path} className="relative group overflow-hidden rounded-2xl flex-[1.3] cursor-pointer shadow-md hover:shadow-xl transition-all duration-300">
+                                <img src={item4.image} alt={item4.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-[#2F0A0F]/80 via-transparent to-transparent"></div>
+                                <span className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white font-display text-2xl tracking-wide whitespace-nowrap drop-shadow-sm w-full text-center">
+                                    {item4.name}
+                                </span>
+                            </Link>
+                            <Link to={item5.path} className="relative group overflow-hidden rounded-2xl flex-[0.7] cursor-pointer shadow-md hover:shadow-xl transition-all duration-300">
+                                <img src={item5.image} alt={item5.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-[#2F0A0F]/80 via-transparent to-transparent"></div>
+                                <span className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white font-display text-2xl tracking-wide whitespace-nowrap drop-shadow-sm w-full text-center">
+                                    {item5.name}
+                                </span>
+                            </Link>
+                        </div>
                     </div>
-                </div>
                 )}
 
                 {/* Additional Items Grid */}
