@@ -40,7 +40,7 @@ const PremiumCategoryCards = () => {
     return (
         <section
             ref={containerRef}
-            className="pt-4 md:pt-6 pb-12 md:pb-16 bg-[#FFF5F6] overflow-visible select-none relative"
+            className="pt-4 md:pt-6 pb-8 md:pb-12 bg-[#FFF5F6] overflow-visible select-none relative"
         >
             {/* Subtle Decorative Elements */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-20">

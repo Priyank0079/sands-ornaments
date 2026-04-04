@@ -17,17 +17,17 @@ const AllJewellery = () => {
     if (displayProducts.length === 0) return null;
 
     return (
-        <section className="py-8 md:py-24 bg-white">
+        <section className="py-6 md:py-16 bg-white">
             <div className="container mx-auto px-4 md:px-6">
                 <div className="flex flex-col md:flex-row md:justify-between items-center md:items-end text-center md:text-left mb-10 md:mb-16 gap-6">
                     <div className="flex flex-col items-center md:items-start">
                         <span className="text-[10px] md:text-sm uppercase tracking-[0.4em] text-[#C9A24D] font-bold mb-1 md:mb-2">Our Collection</span>
-                        <h2 className="text-2xl md:text-5xl font-display text-[#722F37]">All Jewellery</h2>
+                        <h2 className="text-xl md:text-4xl font-display text-[#722F37]">All Jewellery</h2>
                         <div className="h-1 w-12 bg-[#C9A24D] mt-2 rounded-full md:hidden"></div>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
                     {displayProducts.map((product) => (
                         <ProductCard key={product.id || product._id} product={product} />
                     ))}

@@ -169,7 +169,7 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
 
             <Link to={`/product/${product.id}`} className="group relative w-full h-full flex flex-col bg-white rounded-2xl md:rounded-3xl overflow-hidden border border-gray-100 transition-all duration-700 hover:shadow-[0_20px_50px_rgba(74,16,21,0.06)]">
                 {/* Image Container - CLEAN IMAGE SWAP (No Zooming) */}
-                <div className="relative aspect-[3/4] overflow-hidden bg-[#F5F5F5] shrink-0">
+                <div className="relative aspect-[4/5] overflow-hidden bg-[#F5F5F5] shrink-0">
                     <div className="absolute inset-0">
                         {primaryImage ? (
                             <>
@@ -227,9 +227,9 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
                 </div>
 
                 {/* Info Section */}
-                <div className={`${isWishlistPage ? 'p-2 md:p-3' : 'p-2 md:p-3'} text-left flex flex-col flex-1`}>
+                <div className={`${isWishlistPage ? 'p-1.5 md:p-2' : 'p-1.5 md:p-2'} text-left flex flex-col flex-1`}>
                     <div className="flex items-baseline gap-1.5 mb-0.5">
-                        <span className={`text-black font-bold ${isWishlistPage ? 'text-xs' : 'text-sm md:text-base'}`}>
+                        <span className={`text-black font-bold ${isWishlistPage ? 'text-[10px]' : 'text-xs md:text-sm'}`}>
                             {variantCount > 1 ? `From ${currencyText(fromPrice)}` : currencyText(product.price || 0)}
                         </span>
                         {effectiveOriginalPrice > effectivePrice && (
@@ -243,7 +243,7 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
                         </div>
                     )}
 
-                    <h3 className={`text-black font-serif ${isWishlistPage ? 'text-xs' : 'text-sm md:text-base'} font-medium leading-tight mb-1.5 line-clamp-1 h-5 md:h-6`}>
+                    <h3 className={`text-black font-serif ${isWishlistPage ? 'text-[10px]' : 'text-xs md:text-sm'} font-medium leading-tight mb-1 line-clamp-1 h-4 md:h-5`}>
                         {product.name}
                     </h3>
 
@@ -270,7 +270,7 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
                 {/* Premium Add to Cart Button */}
                 <button
                     onClick={handleAddToCart}
-                    className="w-full bg-gradient-to-r from-[#D39A9F] to-[#4A1015] text-white py-2 md:py-2.5 text-[9px] md:text-xs font-bold hover:brightness-110 active:scale-[0.98] transition-all uppercase tracking-[0.2em] mt-auto"
+                    className="w-full bg-gradient-to-r from-[#D39A9F] to-[#4A1015] text-white py-1.5 md:py-2 text-[8px] md:text-[10px] font-bold hover:brightness-110 active:scale-[0.98] transition-all uppercase tracking-[0.2em] mt-auto"
                 >
                     Add to Cart
                 </button>

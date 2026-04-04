@@ -55,7 +55,7 @@ const MostGifted = () => {
     const displayItems = normalizedConfiguredItems.length > 0 ? normalizedConfiguredItems : categories;
 
     return (
-        <section className="py-16 md:py-24 bg-[#FFF0F0] relative overflow-hidden">
+        <section className="py-6 md:py-12 bg-white relative overflow-hidden">
             {/* Live Floating Particles Background */}
             <div className="absolute inset-0 pointer-events-none z-0">
                 {[...Array(6)].map((_, i) => (
@@ -126,9 +126,9 @@ const MostGifted = () => {
                                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                             >
                                 <span className="text-[#C9A24D] text-[10px] md:text-xs font-bold tracking-[0.4em] uppercase mb-3 block drop-shadow-md">Collection Focus</span>
-                                <h1 className="font-display text-3xl md:text-5xl text-white mb-6 leading-tight drop-shadow-xl uppercase tracking-wider">
+                                <h2 className="font-display text-2xl md:text-4xl font-medium text-white mb-4 leading-tight drop-shadow-xl uppercase tracking-wider">
                                     {sectionData?.label || "Most Gifted Items"}
-                                </h1>
+                                </h2>
                             </motion.div>
 
                             <Link
@@ -176,7 +176,7 @@ const MostGifted = () => {
                                             <motion.div 
                                                 animate={{ width: ["0%", "30%", "0%"] }}
                                                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: index }}
-                                                className="h-[1px] bg-[#C9A24D] mx-auto mt-2.5 opacity-60"
+                                                className="w-[45%] md:w-48 lg:w-56 h-[1px] bg-[#C9A24D] mx-auto mt-2.5 opacity-60"
                                             />
                                         </div>
 

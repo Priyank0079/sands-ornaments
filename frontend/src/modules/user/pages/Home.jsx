@@ -12,6 +12,7 @@ import OccasionalSpecial from '../components/OccasionalSpecial';
 import ProposalBanner from '../components/ProposalBanner';
 import StyleItYourWay from '../components/StyleItYourWay';
 import AllJewellery from '../components/AllJewellery';
+import Testimonials from '../components/Testimonials';
 import BrandPromises from '../components/BrandPromises';
 import FAQSection from '../components/FAQSection';
 import ChitChatSection from '../components/ChitChatSection';
@@ -53,6 +54,7 @@ const Home = () => {
             <OccasionalSpecial />
             <StyleItYourWay />
             <AllJewellery />
+            <Testimonials />
             <BrandPromises />
             <ChitChatSection />
             <FAQSection />

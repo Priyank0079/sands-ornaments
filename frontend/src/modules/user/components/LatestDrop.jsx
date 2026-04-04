@@ -54,7 +54,7 @@ const LatestDrop = () => {
     const displayItems = normalizedConfiguredItems.length > 0 ? normalizedConfiguredItems : latestItems;
 
     return (
-        <section className="py-8 md:py-20 bg-white">
+        <section className="py-6 md:py-12 bg-white">
             <div className="container mx-auto px-4 md:px-6">
 
                 {/* Header */}
@@ -64,7 +64,7 @@ const LatestDrop = () => {
                         <span className="text-[#4A1015] font-display tracking-[0.2em] font-bold text-[10px] md:text-sm uppercase mb-2 block">
                             Fresh Arrivals
                         </span>
-                        <h2 className="font-display text-2xl md:text-5xl font-medium text-[#1F1F1F]">
+                        <h2 className="font-display text-2xl md:text-4xl font-medium text-[#1F1F1F]">
                             {sectionData?.label || "Latest Drop"}
                         </h2>
                     </div>

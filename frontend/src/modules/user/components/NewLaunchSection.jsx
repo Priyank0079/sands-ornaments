@@ -48,7 +48,7 @@ const NewLaunchSection = () => {
     const displayItems = normalizedConfiguredItems.length > 0 ? normalizedConfiguredItems : newLaunches;
 
     return (
-        <section className="py-16 md:py-24 bg-[#FFF0F0] relative overflow-hidden">
+        <section className="py-10 md:py-16 bg-[#FFF0F0] relative overflow-hidden">
 
             <div className="container mx-auto px-4 md:px-6 relative z-10">
 
@@ -85,7 +85,7 @@ const NewLaunchSection = () => {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                                className="w-[45%] md:w-56 lg:w-64"
+                                className="w-[45%] md:w-48 lg:w-56"
                             >
                                 <Link to={itemPath} className="group block relative">
                                     {/* Square Card Container */}

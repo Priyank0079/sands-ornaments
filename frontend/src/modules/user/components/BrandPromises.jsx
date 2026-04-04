@@ -55,7 +55,7 @@ const BrandPromises = () => {
                         >
                             {/* The Arch - Minimalist Line Art */}
                             <div className="absolute inset-x-0 inset-y-0 border border-[#D39A9F]/25 rounded-t-full rounded-b-[2px] transition-all duration-500 group-hover:border-[#D39A9F]/50 shadow-[0_4px_25px_rgba(211,154,159,0.03)]" />
-                            
+
                             {/* Content */}
                             <div className="relative z-10 flex flex-col items-center text-center w-full">
                                 {/* Minimal Central Icon */}
@@ -67,7 +67,7 @@ const BrandPromises = () => {
                                 <div className="relative mb-2 w-full px-2">
                                     {/* The Horizontal Pink Brush Stroke Effect */}
                                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] h-3 md:h-4 bg-[#D39A9F]/10 blur-md rounded-full -z-10 group-hover:bg-[#D39A9F]/20 transition-all duration-500" />
-                                    
+
                                     <h3 className="font-serif italic text-lg md:text-2xl text-[#8E4A50] leading-none whitespace-nowrap tracking-tight">
                                         {item.title}
                                     </h3>
