@@ -61,7 +61,75 @@ const ProductDetails = () => {
 
     // Find in mock collection if not in database
     const mockProduct = useMemo(() => {
-        if (!id || !id.startsWith('m')) return null;
+        if (!id) return null;
+
+        // Check for Men's Dummy Products
+        const menDummies = {
+            'p1': {
+                id: 'p1',
+                name: "Silver Fibonacci Flow Ring For Him",
+                price: 2899,
+                originalPrice: 4699,
+                image: "/images/men-categories/rings.png",
+                category: "Rings",
+                metal: "925 Sterling Silver",
+                purity: "Pure Silver",
+                description: "Inspired by the mathematical perfection of nature, the Fibonacci Flow Ring features a continuous, swirling pattern that symbolizes eternal growth and harmony. Hand-finished for a premium mirror polish.",
+                specifications: "Material: 925 Sterling Silver<br/>Finish: Hi-Shine Rhodium Plating<br/>Weight: Approx 6.5g<br/>Style: Contemporary Minimalist",
+                careTips: "Clean with a dry microfibre cloth.<br/>Avoid contact with perfumes and sweat.<br/>Store in the provided Sands Royal box."
+            },
+            'p2': {
+                id: 'p2',
+                name: "Silver Anjaneya Pendant With Box Chain",
+                price: 3799,
+                originalPrice: 6199,
+                image: "/images/men-categories/pendants.png",
+                category: "Pendants",
+                metal: "925 Sterling Silver",
+                purity: "Pure Silver",
+                description: "A powerful symbol of devotion and strength, the Anjaneya Pendant captures the essence of Lord Hanuman in exquisite detail. Comes with a sturdy silver box chain for a complete look.",
+                specifications: "Material: 925 Sterling Silver<br/>Pendant Height: 25mm<br/>Chain Length: 20-22 inches adjustable<br/>Weight: Approx 12g",
+                careTips: "Remove before showering.<br/>Store separately to avoid scratches.<br/>Wipe with a soft cloth after wearing."
+            },
+            'p4': {
+                id: 'p4',
+                name: "Silver Trooper Bracelet For Him",
+                price: 4199,
+                originalPrice: 6999,
+                image: "/images/men-categories/bracelets.png",
+                category: "Bracelets",
+                metal: "925 Sterling Silver",
+                purity: "Pure Silver",
+                description: "Bold, rugged, and undeniably masculine. The Trooper Bracelet features heavy-duty links and a secure industrial clasp, designed for the man who leads with confidence.",
+                specifications: "Material: 925 Sterling Silver<br/>Link Width: 8mm<br/>Length: 8.5 inches<br/>Weight: Approx 18g",
+                careTips: "Rinse with lukewarm water if exposed to salt.<br/>Dry completely before storing.<br/>Keep in an airtight bag when not in use."
+            },
+            'p5': {
+                id: 'p5',
+                name: "Silver Statement Link Chain",
+                price: 6599,
+                originalPrice: 9999,
+                image: "/images/men-categories/chains.png",
+                category: "Chains",
+                metal: "925 Sterling Silver",
+                purity: "Pure Silver",
+                description: "The ultimate statement piece. This classic link chain offers a substantial feel and a brilliant luster that commands attention. A staple for any modern wardrobe.",
+                specifications: "Material: 925 Sterling Silver<br/>Thickness: 5mm<br/>Length: 24 inches<br/>Weight: Approx 25g",
+                careTips: "Lay flat when storing to avoid kinks.<br/>Professional cleaning recommended every 6 months.<br/>Always put on last after grooming."
+            }
+        };
+
+        if (menDummies[id]) {
+            const found = menDummies[id];
+            return {
+                ...found,
+                images: [found.image],
+                variants: [{ id: `${found.id}-v1`, name: 'Standard', weight: '7-25', weightUnit: 'g', price: found.price, mrp: found.originalPrice }],
+                brand: 'SANDS ROYAL'
+            };
+        }
+
+        if (!id.startsWith('m')) return null;
         for (const cat in COLLECTION_MOCK_PRODUCTS) {
             const found = COLLECTION_MOCK_PRODUCTS[cat].find(p => p.id === id);
             if (found) {

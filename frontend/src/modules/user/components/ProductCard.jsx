@@ -118,7 +118,10 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
         setFlyingType('cart');
         setFlying(true);
         addToCart(product);
-        setTimeout(() => setFlying(false), 800);
+        setTimeout(() => {
+            setFlying(false);
+            navigate('/cart');
+        }, 800);
     };
 
     const handleWishlist = (e) => {

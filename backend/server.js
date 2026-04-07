@@ -5,9 +5,11 @@ const app = require("./src/app");
 const connectDB = require("./src/config/db");
 
 const PORT = process.env.PORT || 5000;
+const HOST = "0.0.0.0"; // Bind to all interfaces for network access
 
 connectDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`\u2705  Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+  app.listen(PORT, HOST, () => {
+    console.log(`✅  Server running on http://${HOST}:${PORT}`);
   });
 });
+// restart

@@ -82,8 +82,8 @@ const PerfectGift = () => {
                     </div>
                 </div>
 
-                {/* Cinematic Single Row Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6 lg:gap-8 max-w-[1500px] mx-auto px-4">
+                {/* Seamless Card Grid matching reference but elevated */}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-6 max-w-[1500px] mx-auto px-2 md:px-4">
                     {displayItems.slice(0, 6).map((item, index) => {
                         const itemLabel = item.name || item.label;
                         const itemPath = item.path || '/shop';
@@ -93,46 +93,39 @@ const PerfectGift = () => {
                                 key={item.id}
                                 initial={{ opacity: 0, y: 30 }}
                                 whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true, margin: "-100px" }}
+                                viewport={{ once: true, margin: "-50px" }}
                                 transition={{ 
                                     duration: 0.8, 
                                     delay: index * 0.1,
                                     ease: [0.16, 1, 0.3, 1]
                                 }}
-                                className="group relative"
                             >
-                                <Link to={itemPath} className="block w-full">
-                                    {/* Image Container - Square with Premium Interaction */}
-                                    <div className="relative aspect-square overflow-hidden mb-6 bg-white transition-all duration-700 rounded-lg shadow-[0_10px_30px_rgba(0,0,0,0.05)] group-hover:shadow-[0_25px_60px_rgba(201,162,77,0.15)] group-hover:scale-[1.02]">
+                                <Link to={itemPath} className="group relative block w-full h-full">
+                                    <div className="relative aspect-[4/5] overflow-hidden rounded-2xl md:rounded-[24px] bg-white shadow-[0_4px_15px_rgba(0,0,0,0.02)] group-hover:shadow-[0_15px_40px_rgba(74,16,21,0.12)] transition-all duration-700 border border-black/5">
                                         
-                                        {/* Image Zoom */}
+                                        {/* Image */}
                                         <img
                                             src={item.image}
                                             alt={itemLabel}
-                                            className="w-full h-full object-cover transition-transform duration-[1500ms] ease-out group-hover:scale-110"
+                                            className="w-full h-full object-cover transition-transform duration-[1500ms] ease-out group-hover:scale-105"
                                         />
 
-                                        {/* Golden Border Inset Effect (appears on hover) */}
-                                        <div className="absolute inset-0 border-[0px] group-hover:border-[10px] border-white/10 transition-all duration-700 pointer-events-none" />
-                                        <div className="absolute inset-2 md:inset-4 border-[0.5px] border-white/0 group-hover:border-white/40 transition-all duration-700 pointer-events-none" />
-                                        
-                                        {/* Subtle Shine/Overlay */}
-                                        <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                                    </div>
+                                        {/* Premium subtle inner shadow */}
+                                        <div className="absolute inset-0 shadow-[inset_0_0_50px_rgba(0,0,0,0.05)] pointer-events-none" />
 
-                                    {/* Elegant Typography Section */}
-                                    <div className="text-center flex flex-col items-center gap-1.5 cursor-pointer">
-                                        <h3 className="font-serif text-[13px] md:text-[15px] font-medium text-[#4A1015]/80 tracking-[0.2em] group-hover:text-[#4A1015] transition-all duration-500 uppercase">
-                                            {itemLabel}
-                                        </h3>
-                                        
-                                        {/* Growing Animated Underline */}
-                                        <motion.div 
-                                            initial={{ width: 0 }}
-                                            whileInView={{ width: 0 }}
-                                            whileHover={{ width: "60%" }}
-                                            className="h-[1px] bg-[#C9A24D] transition-all duration-500 origin-center group-hover:w-16"
-                                        />
+                                        {/* Bottom White Dock - Giva Style but vastly superior */}
+                                        <div className="absolute bottom-0 inset-x-0 bg-white/95 backdrop-blur-md z-20 h-14 md:h-16 flex flex-col items-center justify-center transition-all duration-500 overflow-hidden group-hover:bg-white shadow-[0_-5px_20px_rgba(0,0,0,0.03)] border-t border-white/50">
+                                            
+                                            <h3 className="font-sans text-[15px] md:text-[18px] font-semibold text-[#111111] tracking-wide transition-transform duration-500 transform group-hover:translate-y-[-4px]">
+                                                {itemLabel}
+                                            </h3>
+                                            
+                                            {/* Golden accent bar that expands on hover */}
+                                            <div className="absolute bottom-3 md:bottom-[14px]">
+                                                <div className="h-[2px] w-0 bg-[#C9A24D] opacity-0 group-hover:w-8 group-hover:opacity-100 transition-all duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)]" />
+                                            </div>
+
+                                        </div>
                                     </div>
                                 </Link>
                             </motion.div>

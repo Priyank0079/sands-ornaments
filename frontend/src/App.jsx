@@ -11,6 +11,9 @@ import ProductDetails from './modules/user/pages/ProductDetails';
 import Login from './modules/user/pages/Login';
 import Wishlist from './modules/user/pages/Wishlist';
 import Profile from './modules/user/pages/Profile';
+import ShopForMen from './modules/user/pages/ShopForMen';
+import ShopForWomen from './modules/user/pages/ShopForWomen';
+import ShopForFamily from './modules/user/pages/ShopForFamily';
 import AdminDashboard from './modules/admin/pages/Dashboard';
 import AboutUs from './modules/user/pages/AboutUs';
 import CategoryNav from './modules/user/components/CategoryNav';
@@ -140,6 +143,9 @@ const AppContent = () => {
           <Route path="/page/:slug" element={<DynamicPage />} />
           <Route path="/new-arrivals" element={<Shop />} />
           <Route path="/trending" element={<Shop />} />
+          <Route path="/category/men" element={<ShopForMen />} />
+          <Route path="/category/women" element={<ShopForWomen />} />
+          <Route path="/category/family" element={<ShopForFamily />} />
           <Route path="/category/:category" element={<Shop />} />
           <Route path="/gold-collection" element={<GoldComingSoon />} />
           <Route path="/collections" element={<JewelleryCollectionsPage />} />

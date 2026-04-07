@@ -354,12 +354,153 @@ const Shop = () => {
             result.sort((a, b) => (b.isNew === a.isNew) ? 0 : b.isNew ? 1 : -1);
         }
 
+        const menDummyProducts = [
+            {
+                id: 'p1',
+                name: "Silver Fibonacci Flow Ring For Him",
+                price: 2899,
+                originalPrice: 4699,
+                discountPrice: 1739,
+                image: "/images/men-categories/rings.png",
+                rating: 4.6,
+                reviews: 107,
+                isNew: true,
+                category: "Rings",
+                categorySlug: "rings",
+                metal: "silver",
+                variants: [{ id: 'p1-v1', price: 2899, mrp: 4699 }]
+            },
+            {
+                id: 'p2',
+                name: "Silver Anjaneya Pendant With Box Chain",
+                price: 3799,
+                originalPrice: 6199,
+                discountPrice: 2279,
+                image: "/images/men-categories/pendants.png",
+                rating: 4.6,
+                reviews: 100,
+                isNew: false,
+                category: "Pendants",
+                categorySlug: "pendants",
+                metal: "silver",
+                variants: [{ id: 'p2-v1', price: 3799, mrp: 6199 }]
+            },
+            {
+                id: 'p4',
+                name: "Silver Trooper Bracelet For Him",
+                price: 4199,
+                originalPrice: 6999,
+                discountPrice: 2519,
+                image: "/images/men-categories/bracelets.png",
+                rating: 4.9,
+                reviews: 215,
+                isNew: true,
+                category: "Bracelets",
+                categorySlug: "bracelets",
+                metal: "silver",
+                variants: [{ id: 'p4-v1', price: 4199, mrp: 6999 }]
+            },
+            {
+                id: 'p5',
+                name: "Silver Statement Link Chain",
+                price: 6599,
+                originalPrice: 9999,
+                discountPrice: 3959,
+                image: "/images/men-categories/chains.png",
+                rating: 4.8,
+                reviews: 84,
+                isNew: false,
+                category: "Chains",
+                categorySlug: "chains",
+                metal: "silver",
+                variants: [{ id: 'p5-v1', price: 6599, mrp: 9999 }]
+            }
+        ];
+        
+        const womenDummyProducts = [
+            {
+                id: 'w1',
+                name: "Rose Glow Sterling Drop Earrings",
+                price: 1899,
+                originalPrice: 3299,
+                discountPrice: 1699,
+                image: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=2000",
+                rating: 4.8,
+                reviews: 245,
+                isNew: true,
+                category: "Earrings",
+                categorySlug: "earrings",
+                metal: "silver",
+                variants: [{ id: 'w1-v1', price: 1899, mrp: 3299 }]
+            },
+            {
+                id: 'w2',
+                name: "Eternal Blossom Pendant Necklace",
+                price: 2499,
+                originalPrice: 4199,
+                discountPrice: 2249,
+                image: "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?q=80&w=2000",
+                rating: 4.9,
+                reviews: 180,
+                isNew: false,
+                category: "Pendants",
+                categorySlug: "pendants",
+                metal: "silver",
+                variants: [{ id: 'w2-v1', price: 2499, mrp: 4199 }]
+            },
+            {
+                id: 'w3',
+                name: "Infinite Love Stackable Silver Ring",
+                price: 1299,
+                originalPrice: 2499,
+                discountPrice: 1169,
+                image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=2000",
+                rating: 4.6,
+                reviews: 92,
+                isNew: true,
+                category: "Rings",
+                categorySlug: "rings",
+                metal: "silver",
+                variants: [{ id: 'w3-v1', price: 1299, mrp: 2499 }]
+            }
+        ];
+
         // 5. Apply Limit (query)
         if (limitQuery) {
             const parsedLimit = Number(String(limitQuery).replace(/[^0-9]/g, ''));
             if (Number.isFinite(parsedLimit) && parsedLimit > 0) {
                 result = result.slice(0, parsedLimit);
             }
+        }
+
+        // 6. Inject Dummy Products for Men/Women Categories if empty
+        const isMenCategory = category?.toLowerCase() === 'men' || 
+                             selectedCategory?.toLowerCase() === 'men' ||
+                             location.pathname.includes('/men') ||
+                             menDummyProducts.some(p => p.categorySlug === category || p.categorySlug === selectedCategory?.toLowerCase());
+
+        const isWomenCategory = category?.toLowerCase() === 'women' || 
+                               category?.toLowerCase() === 'womens' ||
+                               selectedCategory?.toLowerCase() === 'women' ||
+                               location.pathname.includes('/women') ||
+                               womenDummyProducts.some(p => p.categorySlug === category || p.categorySlug === selectedCategory?.toLowerCase());
+
+        if (result.length === 0 && isMenCategory) {
+            result = menDummyProducts;
+            if (category && category !== 'men') {
+                result = result.filter(p => p.categorySlug === category);
+            } else if (selectedCategory && selectedCategory !== 'All' && selectedCategory !== 'Men') {
+                result = result.filter(p => p.category.toLowerCase() === selectedCategory.toLowerCase());
+            }
+            if (result.length === 0) result = menDummyProducts.slice(0, 2);
+        } else if (result.length === 0 && isWomenCategory) {
+            result = womenDummyProducts;
+            if (category && category !== 'women' && category !== 'womens') {
+                result = result.filter(p => p.categorySlug === category);
+            } else if (selectedCategory && selectedCategory !== 'All' && selectedCategory !== 'Women') {
+                result = result.filter(p => p.category.toLowerCase() === selectedCategory.toLowerCase());
+            }
+            if (result.length === 0) result = womenDummyProducts.slice(0, 3);
         }
 
         setFilteredProducts([...result]); // Create new array to force re-render
