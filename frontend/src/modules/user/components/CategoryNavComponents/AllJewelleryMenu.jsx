@@ -61,7 +61,11 @@ const AllJewelleryMenu = ({ menuViewLevel, setMenuViewLevel, menuSelectedMetal, 
             <AnimatePresence mode="wait">
                 {menuViewLevel === 'METALS' && (
                     <motion.div key="m_metals" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-3">
-                        <div onClick={() => { setMenuSelectedMetal('gold'); setMenuViewLevel('CATEGORIES'); }} className="group relative h-[100px] rounded-xl overflow-hidden cursor-pointer border border-gray-100 shadow-sm transition-all hover:border-[#9C5B61]/20">
+                        <div 
+                            onMouseEnter={() => { setMenuSelectedMetal('gold'); setMenuViewLevel('CATEGORIES'); }}
+                            onClick={() => { setMenuSelectedMetal('gold'); setMenuViewLevel('CATEGORIES'); }}
+                            className="group relative h-[100px] rounded-xl overflow-hidden cursor-pointer border border-gray-100 shadow-sm transition-all hover:border-[#9C5B61]/20"
+                        >
                             <img src={goldBanner} alt="Gold" className="w-full h-full object-cover group-hover:scale-105 transition-all" />
                             <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors" />
                             <div className="absolute inset-x-8 inset-y-0 flex flex-col justify-center text-white">
@@ -70,7 +74,11 @@ const AllJewelleryMenu = ({ menuViewLevel, setMenuViewLevel, menuSelectedMetal, 
                             </div>
                             <ChevronRight className="absolute right-8 top-1/2 -translate-y-1/2 text-white w-5 h-5 group-hover:translate-x-1 transition-transform" />
                         </div>
-                        <div onClick={() => { setMenuSelectedMetal('silver'); setMenuViewLevel('CATEGORIES'); }} className="group relative h-[100px] rounded-xl overflow-hidden cursor-pointer border border-gray-100 shadow-sm transition-all hover:border-[#9C5B61]/20">
+                        <div 
+                            onMouseEnter={() => { setMenuSelectedMetal('silver'); setMenuViewLevel('CATEGORIES'); }}
+                            onClick={() => { setMenuSelectedMetal('silver'); setMenuViewLevel('CATEGORIES'); }}
+                            className="group relative h-[100px] rounded-xl overflow-hidden cursor-pointer border border-gray-100 shadow-sm transition-all hover:border-[#9C5B61]/20"
+                        >
                             <img src={silverBanner} alt="Silver" className="w-full h-full object-cover group-hover:scale-105 transition-all" />
                             <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors" />
                             <div className="absolute inset-x-8 inset-y-0 flex flex-col justify-center text-white">
@@ -85,7 +93,12 @@ const AllJewelleryMenu = ({ menuViewLevel, setMenuViewLevel, menuSelectedMetal, 
                 {menuViewLevel === 'CATEGORIES' && (
                     <motion.div key="m_cats" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-4 gap-4">
                         {(menuSelectedMetal === 'gold' ? goldSubCategories : silverSubCategories).map((cat) => (
-                            <div key={cat.id} onClick={() => { setMenuSelectedCategory(cat); setMenuViewLevel('PRODUCTS'); }} className="group bg-white rounded-xl p-3 cursor-pointer border border-gray-50 hover:border-[#9C5B61]/20 text-center transition-all shadow-sm">
+                            <div 
+                                key={cat.id} 
+                                onMouseEnter={() => { setMenuSelectedCategory(cat); setMenuViewLevel('PRODUCTS'); }}
+                                onClick={() => { setMenuSelectedCategory(cat); setMenuViewLevel('PRODUCTS'); }}
+                                className="group bg-white rounded-xl p-3 cursor-pointer border border-gray-50 hover:border-[#9C5B61]/20 text-center transition-all shadow-sm"
+                            >
                                 <div className="aspect-square rounded-lg overflow-hidden mb-3 bg-gray-50">
                                     <img src={cat.image} alt={cat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                 </div>

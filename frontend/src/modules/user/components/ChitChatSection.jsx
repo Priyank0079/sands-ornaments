@@ -22,81 +22,96 @@ const ChitChatSection = () => {
     };
 
     return (
-        <section className="py-8 md:py-20 bg-gradient-to-br from-[#4A1015] to-[#2A0505] relative overflow-hidden">
-            {/* Background Elements */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-[#4A1015] rounded-full blur-[120px] opacity-20 translate-x-1/2 -translate-y-1/2"></div>
-            <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#C9A24D] rounded-full blur-[100px] opacity-10 -translate-x-1/3 translate-y-1/3"></div>
+        <section className="py-10 md:py-14 bg-[#3E0C10] relative overflow-hidden">
+            {/* Subtle Background Lighting */}
+            <div className="absolute top-0 right-0 w-96 h-96 bg-[#4A1015] rounded-full blur-[100px] opacity-40 translate-x-1/3 -translate-y-1/3 pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#C9A24D] rounded-full blur-[120px] opacity-10 -translate-x-1/2 translate-y-1/2 pointer-events-none"></div>
 
-            <div className="container mx-auto px-4 md:px-6 relative z-10">
-                <div className="max-w-5xl mx-auto bg-white/5 backdrop-blur-md rounded-2xl md:rounded-3xl border border-white/10 overflow-hidden shadow-xl md:shadow-2xl">
+            <div className="container mx-auto px-4 md:px-6 relative z-10 max-w-[1000px]">
+                <div className="mx-auto bg-white/5 backdrop-blur-lg rounded-2xl border border-white/5 overflow-hidden shadow-2xl">
                     <div className="flex flex-col md:flex-row">
 
-                        {/* Text Content Side */}
-                        <div className="w-full md:w-5/12 p-6 md:p-12 bg-[#4A1015]/50 relative flex flex-col justify-center">
-                            <div className="mb-4 md:mb-6">
-                                <img src={sandsLogo} alt="Sands Jewels" className="w-12 md:w-16 h-auto mb-4 md:mb-6 opacity-90" />
-                                <h2 className="font-display text-2xl md:text-4xl text-white mb-2 md:mb-4">We're Here for You</h2>
-                                <p className="text-gray-300 font-serif text-sm md:text-lg leading-relaxed">
-                                    Have a question about a product? Need styling advice? Or just want to say hello?
-                                    We'd love to hear from you!
+                        {/* Text Content Side (Slimmer & Elegant) */}
+                        <div className="w-full md:w-5/12 p-6 md:p-10 bg-[#4A1015]/40 relative flex flex-col justify-center">
+                            <div className="mb-4">
+                                <img 
+                                    src={sandsLogo} 
+                                    alt="Sands Jewels" 
+                                    className="w-10 md:w-12 h-auto mb-4 opacity-80" 
+                                    style={{ filter: 'brightness(0) invert(1)' }} 
+                                />
+                                <h2 className="font-serif text-2xl md:text-3xl text-white mb-2 leading-tight tracking-wide">
+                                    We're Here for You
+                                </h2>
+                                <p className="text-white/70 font-sans text-sm leading-relaxed md:max-w-[280px]">
+                                    Questions or styling advice? We'd love to hear from you.
                                 </p>
                             </div>
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-4 text-white/80">
-                                    <div className="w-2 h-2 rounded-full bg-[#34D399]"></div>
-                                    <span className="text-xs md:text-sm tracking-wide">Typically replies within 2 hours</span>
+                            
+                            <div className="flex items-center gap-3 mt-auto pt-4 md:pt-0">
+                                <div className="relative flex h-2 w-2">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#34D399] opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#34D399]"></span>
                                 </div>
+                                <span className="text-[11px] text-white/80 tracking-widest font-semibold uppercase">
+                                    Replies within 2 hours
+                                </span>
                             </div>
                         </div>
 
-                        {/* Form Side */}
-                        <div className="w-full md:w-7/12 p-6 md:p-12 bg-white">
-                            <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
-                                <div>
-                                    <label htmlFor="name" className="block text-xs md:text-sm font-bold text-[#4A1015] uppercase tracking-wider mb-1 md:mb-2">Name</label>
-                                    <input
-                                        type="text"
-                                        id="name"
-                                        name="name"
-                                        value={formData.name}
-                                        onChange={handleChange}
-                                        className="w-full px-3 md:px-4 py-2 md:py-3 bg-[#F5F5F5] border border-transparent rounded-lg focus:bg-white focus:border-[#4A1015] focus:ring-0 transition-all outline-none text-[#4A1015] placeholder-gray-400 text-sm"
-                                        placeholder="Your Name"
-                                        required
-                                    />
+                        {/* Form Side (Compact & Professional) */}
+                        <div className="w-full md:w-7/12 p-6 md:p-10 bg-white shadow-inner flex flex-col justify-center">
+                            <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
+                                {/* Name & Email side-by-side to save height */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
+                                    <div>
+                                        <label htmlFor="name" className="block text-[10px] font-bold text-[#8E4A50] uppercase tracking-[0.2em] mb-1.5">Name</label>
+                                        <input
+                                            type="text"
+                                            id="name"
+                                            name="name"
+                                            value={formData.name}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-2.5 bg-[#F9F9F9] border border-gray-200 rounded-md focus:bg-white focus:border-[#8E4A50] focus:ring-1 focus:ring-[#8E4A50]/20 transition-all outline-none text-[#111] placeholder-gray-400 text-sm"
+                                            placeholder="Your Name"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="email" className="block text-[10px] font-bold text-[#8E4A50] uppercase tracking-[0.2em] mb-1.5">Email</label>
+                                        <input
+                                            type="email"
+                                            id="email"
+                                            name="email"
+                                            value={formData.email}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-2.5 bg-[#F9F9F9] border border-gray-200 rounded-md focus:bg-white focus:border-[#8E4A50] focus:ring-1 focus:ring-[#8E4A50]/20 transition-all outline-none text-[#111] placeholder-gray-400 text-sm"
+                                            placeholder="your@email.com"
+                                            required
+                                        />
+                                    </div>
                                 </div>
+                                
                                 <div>
-                                    <label htmlFor="email" className="block text-xs md:text-sm font-bold text-[#4A1015] uppercase tracking-wider mb-1 md:mb-2">Email</label>
-                                    <input
-                                        type="email"
-                                        id="email"
-                                        name="email"
-                                        value={formData.email}
-                                        onChange={handleChange}
-                                        className="w-full px-3 md:px-4 py-2 md:py-3 bg-[#F5F5F5] border border-transparent rounded-lg focus:bg-white focus:border-[#4A1015] focus:ring-0 transition-all outline-none text-[#4A1015] placeholder-gray-400 text-sm"
-                                        placeholder="your@email.com"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label htmlFor="message" className="block text-xs md:text-sm font-bold text-[#4A1015] uppercase tracking-wider mb-1 md:mb-2">Query</label>
+                                    <label htmlFor="message" className="block text-[10px] font-bold text-[#8E4A50] uppercase tracking-[0.2em] mb-1.5">Message</label>
                                     <textarea
                                         id="message"
                                         name="message"
                                         value={formData.message}
                                         onChange={handleChange}
-                                        rows="3"
-                                        className="w-full px-3 md:px-4 py-2 md:py-3 bg-[#F5F5F5] border border-transparent rounded-lg focus:bg-white focus:border-[#4A1015] focus:ring-0 transition-all outline-none text-[#4A1015] placeholder-gray-400 resize-none text-sm"
+                                        rows="2"
+                                        className="w-full px-4 py-3 bg-[#F9F9F9] border border-gray-200 rounded-md focus:bg-white focus:border-[#8E4A50] focus:ring-1 focus:ring-[#8E4A50]/20 transition-all outline-none text-[#111] placeholder-gray-400 resize-none text-sm leading-relaxed"
                                         placeholder="How can we help you today?"
                                         required
                                     ></textarea>
                                 </div>
+                                
                                 <button
                                     type="submit"
-                                    className="w-full bg-[#4A1015] text-white font-bold py-3 md:py-4 rounded-lg hover:bg-[#2F0005] transition-all transform hover:-translate-y-1 shadow-lg flex items-center justify-center gap-2 text-sm md:text-base"
+                                    className="w-full bg-[#4A1015] text-white font-semibold tracking-wider text-sm py-3 rounded-md hover:bg-[#340b0e] transition-all flex items-center justify-center gap-2 group mt-2"
                                 >
                                     <span>Send Message</span>
-                                    <Send className="w-4 h-4" />
+                                    <Send className="w-3.5 h-3.5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                                 </button>
                             </form>
                         </div>

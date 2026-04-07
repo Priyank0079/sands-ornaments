@@ -6,7 +6,7 @@ import { useAuth } from './AuthContext';
 import { useCatalogue } from '../hooks/useCatalogue';
 import { adminService } from '../modules/admin/services/adminService';
 
-const ShopContext = createContext();
+export const ShopContext = createContext();
 
 const normalizeVariantForCart = (variant = {}, fallbackProduct = {}) => ({
     ...variant,

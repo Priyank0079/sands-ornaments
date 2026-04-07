@@ -70,19 +70,18 @@ const PriceRangeShowcase = () => {
     const displayItems = normalizedConfiguredItems.length > 0 ? normalizedConfiguredItems : priceRanges;
 
     return (
-        <section className="py-24 bg-[#EAC1C3] overflow-hidden">
+        <section className="py-20 bg-[#FAFAFA] overflow-hidden">
             <div className="container mx-auto px-4 md:px-6">
                 
-                {/* Sands Royal Style Header */}
-                <div className="text-center mb-16 md:mb-20 animate-in fade-in slide-in-from-bottom-8 duration-1000">
-                    <span className="text-[#8E4A50] text-[10px] md:text-xs font-black uppercase tracking-[0.4em] mb-4 block italic">Budget Friendly</span>
-                    <h2 className="font-serif text-4xl md:text-6xl text-[#8E4A50] mb-6 leading-tight">
-                        {sectionData?.label || "Luxury in Range"}
+                {/* Clean Professional Header */}
+                <div className="text-center mb-12 md:mb-16">
+                    <h2 className="font-sans text-3xl md:text-4xl text-[#111111] font-semibold mb-4 tracking-wide uppercase">
+                        {sectionData?.label || "Curated Selection"}
                     </h2>
-                    <div className="w-16 h-px bg-[#8E4A50] mx-auto opacity-40"></div>
+                    <div className="w-16 h-1 bg-[#FFD6DB] mx-auto rounded-full"></div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 lg:gap-10 max-w-7xl mx-auto px-4">
+                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8 max-w-[1400px] mx-auto">
                     {displayItems.map((item, index) => {
                         const priceMax = getPriceMaxFromItem(item);
                         const itemLabel = priceMax ? `UNDER INR ${priceMax}` : (item.name || item.label || '');
@@ -92,37 +91,42 @@ const PriceRangeShowcase = () => {
                         return (
                             <motion.div
                                 key={key}
-                                className="w-full"
-                                initial={{ opacity: 0, y: 30 }}
+                                className="w-full h-full"
+                                initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
-                                transition={{ duration: 0.8, delay: index * 0.1 }}
+                                transition={{ duration: 0.5, delay: index * 0.1 }}
                             >
                                 <Link
                                     to={itemPath || '/shop'}
-                                    className="group relative block w-full aspect-[4/5] rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-[0_15px_45px_rgba(142,74,80,0.12)] transition-all duration-700 border border-white/20 hover:border-[#8E4A50]"
+                                    className="group flex flex-col h-full bg-white rounded-md border border-gray-100/80 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden"
                                 >
-                                    {/* Subtle Image Zoom */}
-                                    <img
-                                        src={resolveLegacyCmsAsset(item.image, price999)}
-                                        alt={itemLabel}
-                                        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-                                    />
-
-                                    {/* Elegant Glassmorphic Bottom Overlay - Compact Height Refined */}
-                                    <div className="absolute inset-x-0 bottom-0 p-4 md:p-6 z-20 bg-gradient-to-t from-[#4A1015]/95 via-[#4A1015]/30 to-transparent backdrop-blur-[4px] transition-all duration-500 group-hover:bg-[#8E4A50]/90">
-                                        <div className="flex flex-col items-center">
-                                            <span className="text-[9px] md:text-[11px] font-bold uppercase tracking-[0.3em] text-[#EAC1C3]/70 mb-1 block">Explore</span>
-                                            <h3 className="text-lg md:text-2xl font-serif italic text-white text-center leading-tight">
-                                                {itemLabel}
-                                            </h3>
-                                            {/* Subtitle / Tiny detail if needed - Keeping it minimal */}
-                                            <div className="h-px bg-white/30 w-0 group-hover:w-12 transition-all duration-700 mt-2 mx-auto" />
-                                        </div>
+                                    {/* Image Section - Match 2nd image proportion */}
+                                    <div className="relative w-full aspect-[4/5] bg-[#F5F5F5] overflow-hidden">
+                                        <img
+                                            src={resolveLegacyCmsAsset(item.image, price999)}
+                                            alt={itemLabel}
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                        />
                                     </div>
 
-                                    {/* Soft Dark Vignette Overlay */}
-                                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500 z-10" />
+                                    {/* Clean Text Content matching the screenshot layout */}
+                                    <div className="p-4 md:p-5 flex flex-col flex-grow justify-between bg-white text-left">
+                                        
+                                        <div className="mb-4">
+                                            <h3 className="text-[#1A1A1A] font-sans font-bold text-lg md:text-xl tracking-wide">
+                                                {itemLabel}
+                                            </h3>
+                                            <p className="text-[#6D6D6D] text-xs md:text-sm mt-1 font-medium">
+                                                Discover the collection
+                                            </p>
+                                        </div>
+
+                                        {/* Pink Action Button at the absolute bottom */}
+                                        <div className="mt-auto w-full bg-[#FFD6DB] text-[#222222] font-semibold text-sm md:text-base text-center py-3 rounded-sm group-hover:bg-[#FFC2C9] transition-colors duration-300">
+                                            Shop Now
+                                        </div>
+                                    </div>
                                 </Link>
                             </motion.div>
                         );

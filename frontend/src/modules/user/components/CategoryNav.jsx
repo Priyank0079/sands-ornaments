@@ -1,6 +1,6 @@
 import React, { useMemo, useState, Suspense, lazy } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { MoveRight, Gift, Sparkles, BookOpen, Info, Users, UserCircle2, User } from 'lucide-react';
+import { MoveRight, Gift, Sparkles, BookOpen, Info, Users, UserCircle2, User, Home as HomeIcon } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -38,9 +38,9 @@ import navOccasionMothers from '../assets/nav_occasion_mothers.png';
 import navOccasionValentine from '../assets/nav_occasion_valentine.png';
 
 const navGiftItems = [
-    { id: 'g1', name: 'FOR WOMEN', path: 'womens', image: navGiftWomen },
-    { id: 'g2', name: 'FOR GIRLS', path: 'girls', image: navGiftGirls },
-    { id: 'g3', name: 'FOR MEN', path: 'mens', image: navGiftMens },
+    { id: 'g1', name: 'FOR WOMEN', path: '/category/women', image: navGiftWomen },
+    { id: 'g2', name: 'FOR GIRLS', path: '/category/women', image: navGiftGirls },
+    { id: 'g3', name: 'FOR MEN', path: '/category/men', image: navGiftMens },
     { id: 'g4', name: 'FOR COUPLES', path: 'couples', image: navGiftCouple },
     { id: 'g5', name: 'FOR KIDS', path: 'kids', image: navGiftKids },
 ];
@@ -78,10 +78,11 @@ const CategoryNav = () => {
     };
 
     const navItems = [
+        { id: 'home', name: 'HOME', path: '/', type: 'link', icon: <HomeIcon className="w-5 h-5 opacity-80" /> },
         allJewelleryItem,
-        { id: 'men', name: 'SHOP FOR MEN', path: '/shop?filter=mens', type: 'link', icon: <User className="w-5 h-5 opacity-80" /> },
-        { id: 'women', name: 'SHOP FOR WOMEN', path: '/shop?filter=womens', type: 'link', icon: <UserCircle2 className="w-5 h-5 opacity-80" /> },
-        { id: 'family', name: 'SHOP FOR FAMILY', path: '/shop?filter=family', type: 'link', icon: <Users className="w-5 h-5 opacity-80" /> },
+        { id: 'men', name: 'SHOP FOR MEN', path: '/category/men', type: 'link', icon: <User className="w-5 h-5 opacity-80" /> },
+        { id: 'women', name: 'SHOP FOR WOMEN', path: '/category/women', type: 'link', icon: <UserCircle2 className="w-5 h-5 opacity-80" /> },
+        { id: 'family', name: 'SHOP FOR FAMILY', path: '/category/family', type: 'link', icon: <Users className="w-5 h-5 opacity-80" /> },
         { id: 'gifts', name: 'GIFTS FOR', path: '/shop', type: 'mega-menu', icon: <Gift className="w-5 h-5 opacity-80" />, subcategories: navGiftItems, introTitle: "Gifts of Love", introDesc: "Find the perfect token." },
         { id: 'occasions', name: 'OCCASIONS', path: '/shop', type: 'mega-menu', icon: <Sparkles className="w-5 h-5 opacity-80" />, subcategories: navOccasionItems, introTitle: "Celebrate Moments", introDesc: "Timeless elegance." },
         { id: 'blogs', name: 'BLOGS', path: '/blogs', type: 'link', icon: <BookOpen className="w-5 h-5 opacity-80" /> },

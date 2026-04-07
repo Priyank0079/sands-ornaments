@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronRight, Sparkles } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
 
 // Import images
@@ -25,7 +24,6 @@ const resolveLaunchPath = (item, fallbackPath = '/shop') => {
     if (productIds.length > 0) {
         return `/shop?products=${encodeURIComponent(productIds.join(','))}`;
     }
-
     if (item?.path) return item.path;
     return fallbackPath;
 };
@@ -45,90 +43,161 @@ const NewLaunchSection = () => {
             productIds: Array.isArray(item.productIds) ? item.productIds.filter(Boolean) : []
         };
     });
-    const displayItems = normalizedConfiguredItems.length > 0 ? normalizedConfiguredItems : newLaunches;
+    const baseItems = normalizedConfiguredItems.length > 0 ? normalizedConfiguredItems : newLaunches;
+
+    // We want exactly 10 items for a smooth curved cylinder 3D carousel
+    const cylinderItems = useMemo(() => {
+        const items = [];
+        while(items.length < 10) {
+            items.push(...baseItems);
+        }
+        return items.slice(0, 10);
+    }, [baseItems]);
+
+    // Responsive measurements for the 3D cylinder
+    const [radius, setRadius] = useState(550);
+    const [cardWidth, setCardWidth] = useState(340);
+    const [cardHeight, setCardHeight] = useState(480);
+
+    useEffect(() => {
+        const updateDims = () => {
+            if (window.innerWidth < 640) {
+                setRadius(320);
+                setCardWidth(200);
+                setCardHeight(300);
+            } else if (window.innerWidth < 1024) {
+                setRadius(450);
+                setCardWidth(280);
+                setCardHeight(400);
+            } else {
+                setRadius(550);
+                setCardWidth(340);
+                setCardHeight(480);
+            }
+        };
+        updateDims();
+        window.addEventListener('resize', updateDims);
+        return () => window.removeEventListener('resize', updateDims);
+    }, []);
 
     return (
-        <section className="py-10 md:py-16 bg-[#FFF0F0] relative overflow-hidden">
+        <section 
+            className="py-16 md:py-24 bg-[#FFF0F0] relative overflow-hidden"
+            style={{
+                '--radius': `${radius}px`,
+                '--cardW': `${cardWidth}px`,
+                '--cardH': `${cardHeight}px`
+            }}
+        >
+            {/* Inline styles for the 3D Cylinder Animation */}
+            <style>
+                {`
+                @keyframes spinCylinder {
+                    0% { transform: translateZ(calc(var(--radius) * -1)) rotateY(0deg); }
+                    100% { transform: translateZ(calc(var(--radius) * -1)) rotateY(-360deg); }
+                }
+                .scene {
+                    perspective: 1400px; /* Reduced extreme fish-eye */
+                    width: 100%;
+                    height: var(--cardH);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-top: 3rem;
+                }
+                .rotator {
+                    width: var(--cardW);
+                    height: var(--cardH);
+                    position: relative;
+                    transform-style: preserve-3d;
+                    /* Super smooth continuous scrolling */
+                    animation: spinCylinder 35s infinite linear;
+                }
+                .rotator:hover {
+                    animation-play-state: paused;
+                }
+                .cylinder-card {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    backface-visibility: hidden;
+                    border-radius: 1.5rem;
+                }
+                `}
+            </style>
 
-            <div className="container mx-auto px-4 md:px-6 relative z-10">
+            <div className="container mx-auto px-4 md:px-6 relative z-10 overflow-visible">
 
                 {/* Header Area */}
-                {/* Header Area - Center Heading, Right Button */}
-                <div className="relative flex flex-col md:block items-center justify-center mb-10">
-
-                    {/* Centered Content */}
-                    <div className="flex flex-col items-center justify-center gap-3 text-center md:w-full">
-                        {/* Simple Wine Badge */}
-                        <div className="inline-block bg-[#722F37] text-white px-4 py-1 font-display tracking-wider text-xs uppercase rounded-sm shadow-sm opacity-90">
-                            New Launch
-                        </div>
-
-                        {/* Classy & Sweet Heading - Straight */}
-                        <h3 className="font-display text-[#1F1F1F] text-3xl md:text-4xl font-medium tracking-wider uppercase">
-                            {sectionData?.label || "Limited Edition"}
-                        </h3>
+                <motion.div 
+                    initial={{ opacity: 0, y: -20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="relative flex flex-col items-center justify-center mb-6 md:mb-10 text-center"
+                >
+                    <div className="inline-block bg-[#722F37] text-white px-5 py-1.5 font-display tracking-widest text-xs uppercase rounded-full shadow-md mb-4">
+                        New Launch
                     </div>
+                    <h3 className="font-display text-[#1F1F1F] text-4xl md:text-5xl font-medium tracking-wide uppercase">
+                        {sectionData?.label || "Limited Edition"}
+                    </h3>
+                </motion.div>
 
-                </div>
+                {/* 3D Curved Carousel Area */}
+                <div className="scene">
+                    <div className="rotator">
+                        {cylinderItems.map((item, index) => {
+                            const itemLabel = item.name || item.label;
+                            const itemPath = item.path || '/shop';
+                            // Calculate proper angle for 10 items (360 / 10 = 36)
+                            const angle = index * 36;
 
-                {/* Cards Row */}
-                <div className="flex flex-wrap md:flex-nowrap justify-center gap-6 md:gap-8">
-                    {displayItems.map((item, index) => {
-                        const itemLabel = item.name || item.label;
-                        const itemPath = item.path || '/shop';
-
-                        const key = item.itemId || item._id || item.id || itemLabel || index;
-                        return (
-                            <motion.div
-                                key={key}
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.5, delay: index * 0.1 }}
-                                className="w-[45%] md:w-48 lg:w-56"
-                            >
-                                <Link to={itemPath} className="group block relative">
-                                    {/* Square Card Container */}
-                                    <div className="relative rounded-3xl overflow-hidden aspect-square bg-white shadow-[0_15px_35px_rgba(0,0,0,0.2)] group-hover:shadow-[0_25px_50px_rgba(114,47,55,0.4)] transition-all duration-500 transform group-hover:-translate-y-2 isolate">
-
-
-
+                            return (
+                                <div
+                                    key={`cyl-${Math.random()}-${index}`}
+                                    className="cylinder-card shadow-2xl group"
+                                    style={{
+                                        transform: `rotateY(${angle}deg) translateZ(var(--radius))`,
+                                    }}
+                                >
+                                    <Link to={itemPath} className="block w-full h-full relative isolate rounded-3xl overflow-hidden cursor-pointer bg-white">
                                         {/* Image */}
-                                        <div className="absolute inset-0 overflow-hidden">
+                                        <div className="absolute inset-0 bg-[#FCD8D8]/50">
                                             <img
                                                 src={item.image}
                                                 alt={itemLabel}
-                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                             />
                                         </div>
 
-                                        {/* Gradient Overlay */}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-[#2A0505]/90 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300"></div>
+                                        {/* Classic Gradient Overlay */}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-[#2A0505]/90 via-[#2A0505]/30 to-transparent"></div>
 
-                                        {/* Content - Bottom Center */}
-                                        <div className="absolute bottom-0 left-0 right-0 p-6 flex flex-col items-center justify-end text-center z-10">
-
-                                            {/* Name */}
-                                            <h4 className="font-display font-medium text-xl text-white tracking-wide mb-1 transform transition-transform duration-300 group-hover:-translate-y-1">
+                                        {/* Text Section overlay at bottom */}
+                                        <div className="absolute bottom-0 left-0 right-0 p-8 flex flex-col items-center justify-end text-center z-10">
+                                            <h4 className="font-display font-medium text-2xl lg:text-3xl text-white tracking-widest mb-3 transform transition-transform duration-300 group-hover:-translate-y-2 drop-shadow-md">
                                                 {itemLabel}
                                             </h4>
-
-                                            {/* Divider */}
-                                            <div className="w-8 h-0.5 bg-[#C9A24D] rounded-full mb-2 opacity-50 group-hover:w-16 group-hover:opacity-100 transition-all duration-500"></div>
-
-                                            {/* Action Text */}
-                                            <span className="text-[#C9A24D] text-xs font-medium uppercase tracking-[0.2em] opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 delay-100">
-                                                Discover
-                                            </span>
+                                            
+                                            {/* Discover/Animated Arrow */}
+                                            <div className="flex items-center gap-3 text-[#C9A24D] opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 delay-75">
+                                                <div className="h-[1px] w-6 bg-[#C9A24D]"></div>
+                                                <span className="text-sm font-bold uppercase tracking-[0.25em]">
+                                                    Explore
+                                                </span>
+                                                <div className="h-[1px] w-6 bg-[#C9A24D]"></div>
+                                            </div>
                                         </div>
 
-                                        {/* Border Glow Effect */}
-                                        <div className="absolute inset-0 border-2 border-transparent group-hover:border-[#C9A24D]/30 rounded-3xl transition-colors duration-300 pointer-events-none"></div>
-                                    </div>
-                                </Link>
-                            </motion.div>
-                        )
-                    })}
+                                        {/* Border Glow on Hover */}
+                                        <div className="absolute inset-0 border-2 border-transparent group-hover:border-[#C9A24D]/50 rounded-3xl transition-colors duration-500 pointer-events-none"></div>
+                                    </Link>
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
 
             </div>
