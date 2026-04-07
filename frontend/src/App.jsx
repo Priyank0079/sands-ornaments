@@ -24,6 +24,7 @@ import Notifications from './modules/user/pages/Notifications';
 import AnnouncementBar from './modules/user/components/AnnouncementBar';
 import BlogsPage from './modules/user/pages/BlogsPage';
 import BlogDetailPage from './modules/user/pages/BlogDetailPage';
+import PincodeModal from './modules/user/components/PincodeModal';
 import DynamicPage from './modules/user/pages/DynamicPage';
 import GoldComingSoon from './modules/user/pages/GoldComingSoon';
 import UserReturnsPage from './modules/user/pages/ReturnsPage';
@@ -97,6 +98,7 @@ const AppContent = () => {
           <div className="fixed top-0 left-0 right-0 z-[100] w-full">
             <AnnouncementBar />
             <Navbar />
+            <PincodeModal />
           </div>
           <div className="h-[84px] md:h-[104px] w-full"></div>
         </>

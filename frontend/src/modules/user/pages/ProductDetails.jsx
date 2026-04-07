@@ -51,8 +51,13 @@ const AccordionItem = ({ title, children, isOpen, onClick }) => (
 const ProductDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { addToCart, addToWishlist, removeFromWishlist, wishlist, products, isLoading } = useShop();
+    const { addToCart, addToWishlist, removeFromWishlist, wishlist, products, isLoading, pincode, updatePincode } = useShop();
     const { user } = useAuth();
+    const [localPincode, setLocalPincode] = useState(pincode || '');
+
+    useEffect(() => {
+        setLocalPincode(pincode);
+    }, [pincode]);
 
     // Find in mock collection if not in database
     const mockProduct = useMemo(() => {
@@ -715,9 +720,21 @@ const ProductDetails = () => {
                             <input
                                 type="text"
                                 placeholder="Enter your pincode"
+                                value={localPincode}
+                                onChange={(e) => setLocalPincode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                                 className="flex-1 border border-gray-300 rounded px-4 py-2.5 text-sm focus:outline-none focus:border-[#9C5B61] transition-colors"
                             />
-                            <button className="bg-[#9C5B61] text-white px-8 py-2.5 rounded font-medium text-sm hover:bg-[#834d52] transition-colors">
+                            <button 
+                                onClick={() => {
+                                    if (localPincode.length === 6) {
+                                        updatePincode(localPincode);
+                                        toast.success("Pincode applied!");
+                                    } else {
+                                        toast.error("Please enter a 6-digit pincode");
+                                    }
+                                }}
+                                className="bg-[#9C5B61] text-white px-8 py-2.5 rounded font-medium text-sm hover:bg-[#834d52] transition-colors"
+                            >
                                 Check
                             </button>
                         </div>

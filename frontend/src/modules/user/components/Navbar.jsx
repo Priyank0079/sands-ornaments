@@ -1,13 +1,13 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, Heart, ShoppingBag, User, Store, Menu, X, Bell, ChevronDown, Camera, Mic, Diamond } from 'lucide-react';
+import { Search, Heart, ShoppingBag, User, Store, Menu, X, Bell, ChevronDown, ChevronRight, Camera, Mic, Diamond, MapPin } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
 import logo from '../../user/assets/SANDS JEWELS PINK (1).png';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ensureHomepageNavPath } from '../utils/homepageNav';
 
 const Navbar = () => {
-    const { cart, wishlist, user, userNotifications, isMenuOpen, toggleMenu, homepageSections, categories, products } = useShop();
+    const { cart, wishlist, user, userNotifications, isMenuOpen, toggleMenu, homepageSections, categories, products, pincode, setIsPincodeModalOpen } = useShop();
     const location = useLocation();
     const navigate = useNavigate();
     const isHome = location.pathname === '/';
@@ -120,14 +120,33 @@ const Navbar = () => {
                 <div className="container mx-auto px-4 md:px-6 flex items-center justify-between gap-6">
 
                     {/* Left: Logo */}
-                    <div className="flex items-center gap-4 flex-shrink-0">
+                    <div className="flex items-center gap-20 lg:gap-32 flex-shrink-0">
                         <Link to="/" className="relative flex items-center justify-center z-50">
                             <img
                                 src={logo}
                                 alt="Sands Jewels"
-                                className="h-10 md:h-14 w-auto object-contain transition-transform duration-300 hover:scale-110 scale-[1.3] md:scale-[1.5] origin-left"
+                                className="h-10 md:h-14 w-auto object-contain transition-transform duration-300 hover:scale-110 scale-[1.1] md:scale-[1.3] origin-left"
                             />
                         </Link>
+                        
+                        {/* Location Selector - Desktop only */}
+                        <div 
+                            onClick={() => setIsPincodeModalOpen(true)}
+                            className="hidden lg:flex items-center gap-2.5 px-3.5 py-1.5 border border-[#9C5B61]/20 rounded-xl cursor-pointer hover:bg-[#9C5B61]/5 hover:border-[#9C5B61]/40 transition-all duration-300 group shadow-sm hover:shadow-md"
+                        >
+                            <div className="bg-[#9C5B61]/10 p-1.5 rounded-lg group-hover:scale-110 transition-transform duration-300">
+                                <MapPin className="w-4 h-4 text-[#9C5B61]" />
+                            </div>
+                            <div className="flex flex-col -space-y-0.5">
+                                <span className="text-[10px] font-bold text-black uppercase tracking-widest opacity-80">Where to Deliver?</span>
+                                <div className="flex items-center gap-1">
+                                    <span className="text-[11px] text-gray-500 font-semibold whitespace-nowrap">
+                                        {pincode ? `Pincode: ${pincode}` : 'Update Pincode'}
+                                    </span>
+                                    <ChevronDown className="w-3 h-3 text-[#9C5B61] group-hover:rotate-180 transition-transform duration-300" />
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
 

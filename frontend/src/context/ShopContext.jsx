@@ -97,6 +97,19 @@ export const ShopProvider = ({ children }) => {
 
     const [notification, setNotification] = useState(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isPincodeModalOpen, setIsPincodeModalOpen] = useState(false);
+    const [pincode, setPincode] = useState(() => {
+        return localStorage.getItem('user_pincode') || '';
+    });
+
+    const updatePincode = (newPincode) => {
+        setPincode(newPincode);
+        if (newPincode) {
+            localStorage.setItem('user_pincode', newPincode);
+        } else {
+            localStorage.removeItem('user_pincode');
+        }
+    };
 
     const toggleMenu = (state) => {
         setIsMenuOpen(state !== undefined ? state : !isMenuOpen);
@@ -861,7 +874,8 @@ export const ShopProvider = ({ children }) => {
             coupons, addCoupon, updateCoupon, deleteCoupon, toggleCoupon, getActiveCoupons, validateCoupon,
             appliedCoupon, couponDiscount, applyCoupon, clearAppliedCoupon,
             notificationsEnabled, userNotifications, toggleNotificationSettings, deleteUserNotification,
-            isMenuOpen, toggleMenu,
+            isMenuOpen, toggleMenu, isPincodeModalOpen, setIsPincodeModalOpen,
+            pincode, updatePincode,
 
             products, updateProduct, bulkUpdatePrices,
             categories, banners, isLoading: isCatalogueLoading,
