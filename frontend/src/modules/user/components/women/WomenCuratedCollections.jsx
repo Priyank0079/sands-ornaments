@@ -1,173 +1,144 @@
 import React, { useContext } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronRight, ShoppingBag, Sparkles } from 'lucide-react';
+import { ChevronRight, Sparkles } from 'lucide-react';
 import { ShopContext } from '../../../../context/ShopContext';
-import toast from 'react-hot-toast';
+
+// Static assets from public folder
+const GiftsImg = '/images/collections/GiftsForHer.png';
+const BridalImg = '/images/collections/BridalBliss.png';
+const OfficeImg = '/images/collections/OfficeChic.png';
+const SilverImg = '/images/collections/SilverClassics.png';
+const RingsImg = '/images/collections/DazzlingRings.png';
+const BohoImg = '/images/collections/BohoAnklets.png';
 
 const collections = [
     {
         id: 1,
-        title: "Gifts for Her",
-        subtitle: "The surprise her heart'll adore. Gift her Silver",
-        image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=1200&auto=format&fit=crop",
-        link: "/shop?category=women-gifts"
-    },
-    {
-        id: 2,
-        title: "Bridal Bliss",
-        subtitle: "Elegance for your most special day.",
-        image: "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200&auto=format&fit=crop",
-        link: "/shop?category=bridal"
-    },
-    {
-        id: 3,
-        title: "Office Chic",
-        subtitle: "Minimalist designs for the modern professional.",
-        image: "https://images.unsplash.com/photo-1529139572765-3974d3cf1606?q=80&w=1200&auto=format&fit=crop",
-        link: "/shop?category=office"
-    },
-    {
-        id: 4,
         title: "925 Silver Classics",
-        subtitle: "Timeless purity in every shimmer.",
-        image: "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?q=80&w=1200&auto=format&fit=crop",
+        subtitle: "Timeless purity in every shimmer",
+        image: SilverImg,
         link: "/shop?category=silver"
     },
     {
-        id: 5,
+        id: 2,
         title: "Dazzling Rings",
-        subtitle: "Let your hands do the talking.",
-        image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=1200&auto=format&fit=crop",
+        subtitle: "Let your hands do the talking",
+        image: RingsImg,
         link: "/shop?category=rings"
     },
     {
-        id: 6,
+        id: 3,
         title: "Boho Anklets",
-        subtitle: "Trendy pieces for the free-spirited.",
-        image: "https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?q=80&w=1200&auto=format&fit=crop",
+        subtitle: "Trendy pieces for the free-spirited",
+        image: BohoImg,
         link: "/shop?category=anklets"
+    },
+    {
+        id: 4,
+        title: "Gifts for Her",
+        subtitle: "The surprise her heart'll adore",
+        image: GiftsImg,
+        link: "/shop?category=women-gifts"
+    },
+    {
+        id: 5,
+        title: "Bridal Bliss",
+        subtitle: "Elegance for your special day",
+        image: BridalImg,
+        link: "/shop?category=bridal"
+    },
+    {
+        id: 6,
+        title: "Office Chic",
+        subtitle: "Minimalist modern designs",
+        image: OfficeImg,
+        link: "/shop?category=office"
     }
 ];
 
-// Duplicate for seamless loop
+// Duplicate for seamless loop marquee
 const duplicatedCollections = [...collections, ...collections];
 
 const WomenCuratedCollections = () => {
-    const { addToCart, products } = useContext(ShopContext);
-
-    const handleQuickAdd = (e, item) => {
-        e.stopPropagation();
-        
-        const realProduct = products.find(p => p.category?.toLowerCase() === item.title.toLowerCase().replace('shop ', '').replace(' for her', ''));
-        
-        if (realProduct) {
-            addToCart(realProduct);
-            toast.success(`Exclusive ${item.title} item added to cart!`, { icon: '🌸' });
-        } else {
-            const mockProduct = {
-                id: item.id + '-women-mock',
-                _id: item.id + '-women-mock',
-                name: item.title,
-                price: 2499,
-                image: item.image,
-                variants: [{ id: item.id + '-v1', price: 2499 }]
-            };
-            addToCart(mockProduct);
-            toast.success(`${item.title} item added to bag!`, {
-                style: { background: '#D39A9F', color: '#fff', fontSize: '12px' },
-                icon: '🛍️'
-            });
-        }
-    };
-
     return (
-        <section className="py-24 bg-white overflow-hidden select-none relative">
-            {/* Background Decorative Text */}
+        <section className="py-24 bg-white overflow-hidden relative">
+            {/* Background Decorative Large Text */}
             <div className="absolute top-0 left-0 w-full opacity-[0.03] pointer-events-none select-none">
-                <div className="text-[15vw] font-serif font-bold whitespace-nowrap leading-none transition-transform duration-1000">
+                <div className="text-[15vw] font-serif font-black whitespace-nowrap leading-none tracking-tighter">
                     SANDS ROYAL WOMEN SANDS ROYAL WOMEN
                 </div>
             </div>
 
-            <div className="container mx-auto px-4 md:px-8 relative z-10">
-                {/* Header */}
-                <div className="text-center mb-10 relative">
+            <div className="max-w-7xl mx-auto px-6 relative z-10">
+                {/* Simplified Professional Header */}
+                <div className="text-center mb-16">
                     <motion.div
-                        initial={{ opacity: 0, y: 15 }}
+                        initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="inline-block"
+                        className="space-y-4"
                     >
-                        <div className="flex items-center justify-center gap-2 text-[#D39A9F] mb-1">
-                            <Sparkles className="w-4 h-4 opacity-70" />
-                            <span className="text-[9px] font-bold uppercase tracking-[0.6em] text-[#D39A9F]/80">The Exclusive List</span>
-                            <Sparkles className="w-4 h-4 opacity-70" />
+                        <div className="flex items-center justify-center gap-3 text-rose-400">
+                            <Sparkles className="w-4 h-4" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.5em]">The Exclusive List</span>
+                            <Sparkles className="w-4 h-4" />
                         </div>
-                        <h2 className="text-3xl md:text-[40px] font-serif font-black text-black mb-3 uppercase tracking-tighter leading-none">
-                            Signature <span className="italic text-[#D39A9F] font-light">Collections</span>
+                        <h2 className="text-4xl md:text-6xl font-serif text-black uppercase tracking-tight">
+                            Signature <span className="italic font-light text-rose-400">Collections</span>
                         </h2>
-                        <div className="w-16 h-1 bg-[#D39A9F]/40 mx-auto rounded-full"></div>
+                        <div className="w-20 h-[1.5px] bg-rose-200 mx-auto" />
                     </motion.div>
                 </div>
 
-                {/* Marquee Container */}
-                <div className="flex relative w-full overflow-hidden">
-                    {/* The Scrolling Strip */}
+                {/* Marquee Carousel Container */}
+                <div className="flex relative w-full overflow-hidden py-10">
                     <motion.div 
-                        className="flex gap-6 pr-6"
+                        className="flex gap-8 group"
                         animate={{ x: ["0%", "-50%"] }}
                         transition={{ 
                             x: {
-                                duration: 35, 
+                                duration: 40, 
                                 repeat: Infinity,
                                 ease: "linear"
                             }
                         }}
                     >
                         {duplicatedCollections.map((item, idx) => (
-                            <motion.div 
+                            <div 
                                 key={`${item.id}-${idx}`}
-                                className="flex-shrink-0 w-[240px] md:w-[310px] aspect-[4/5] relative rounded-[2rem] overflow-hidden shadow-2xl group/card border border-[#EBCDD0]/10"
+                                className="flex-shrink-0 w-[280px] md:w-[350px] aspect-[4/5] relative rounded-[2.5rem] overflow-hidden shadow-2xl transition-all duration-700 bg-zinc-100 group/card"
                             >
                                 <img 
                                     src={item.image} 
                                     alt={item.title}
-                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-[2.5s] group-hover/card:scale-110 brightness-[0.95] group-hover/card:brightness-100"
+                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-[3s] group-hover/card:scale-110"
                                 />
                                 
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent transition-opacity duration-500 group-hover/card:via-black/30"></div>
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60 group-hover/card:opacity-40 transition-opacity" />
 
-                                {/* Quick Add Button Overlay */}
-                                <div className="absolute top-5 right-5 opacity-0 group-hover/card:opacity-100 transition-all duration-500 transform translate-y-3 group-hover/card:translate-y-0">
-                                    <button 
-                                        onClick={(e) => handleQuickAdd(e, item)}
-                                        className="p-3 bg-white text-black rounded-full shadow-2xl hover:bg-[#D39A9F] hover:text-white transition-all duration-300 scale-90 group-hover/card:scale-100"
-                                    >
-                                        <ShoppingBag className="w-4 h-4" />
-                                    </button>
-                                </div>
-
-                                {/* Text Content - More compact and professional */}
-                                <div className="absolute bottom-5 left-4 right-4 group-hover/card:bottom-6 transition-all duration-700">
-                                    <div className="bg-white/95 backdrop-blur-2xl p-5 md:p-6 rounded-[1.8rem] border border-[#EBCDD0]/30 shadow-2xl transform transition-all duration-1000 group-hover/card:bg-[#D39A9F] group/inner">
-                                        <p className="text-[#D39A9F] text-[9px] md:text-[10px] font-bold mb-1 uppercase tracking-[0.25em] line-clamp-1 group-hover/card:text-white/80 transition-colors">
-                                            {item.subtitle}
-                                        </p>
-                                        <div className="flex items-center justify-between gap-4">
-                                            <h3 className="text-black font-serif font-black text-lg md:text-xl uppercase tracking-tighter group-hover/card:text-white transition-colors leading-tight">
+                                {/* Professional & Simple Text Box */}
+                                <div className="absolute bottom-6 left-5 right-5">
+                                    <div className="bg-white/95 backdrop-blur-md px-6 py-5 rounded-[1.8rem] shadow-2xl flex items-center justify-between gap-4 translate-y-2 group-hover/card:translate-y-0 transition-transform duration-700">
+                                        <div className="space-y-0.5 overflow-hidden">
+                                            <p className="text-rose-400 text-[9px] font-black uppercase tracking-widest line-clamp-1">
+                                                {item.subtitle}
+                                            </p>
+                                            <h3 className="text-zinc-900 font-serif text-lg md:text-xl leading-none truncate tracking-tight">
                                                 {item.title}
                                             </h3>
-                                            <div className="w-7 h-7 rounded-full bg-[#D39A9F]/10 flex items-center justify-center group-hover/card:bg-white/20 transition-colors flex-shrink-0">
-                                                <ChevronRight className="w-4 h-4 text-black group-hover/card:text-white" />
-                                            </div>
+                                        </div>
+                                        
+                                        {/* Premium Round Button */}
+                                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center transition-all duration-500 group-hover/card:bg-zinc-900 group-hover/card:text-white group/btn">
+                                            <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover/btn:translate-x-0.5" />
                                         </div>
                                     </div>
                                 </div>
-                            </motion.div>
+                            </div>
                         ))}
                     </motion.div>
                     
-                    {/* Soft Vignette Gradients */}
+                    {/* Edge Fades for the Professional Look */}
                     <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
                     <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
                 </div>

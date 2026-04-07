@@ -6,6 +6,8 @@ import WomenOccasionCarousel from '../components/women/WomenOccasionCarousel';
 import WomenDiscoverHue from '../components/women/WomenDiscoverHue';
 import WomenPromoBanners from '../components/women/WomenPromoBanners';
 import WomenProductsListing from '../components/women/WomenProductsListing';
+import WomenProductCategories from '../components/women/WomenProductCategories';
+import WomenPersonalisedBanner from '../components/women/WomenPersonalisedBanner';
 
 const ShopForWomen = () => {
     useEffect(() => {
@@ -18,6 +20,9 @@ const ShopForWomen = () => {
             {/* 1. Hero Section (Img 1) */}
             <WomenHeroCarousel />
 
+            {/* New Category Section (Based on Image) */}
+            <WomenProductCategories />
+
             {/* 2. Category Section (Img 2) */}
             <WomenCategoriesGrid />
 
@@ -26,6 +31,9 @@ const ShopForWomen = () => {
 
             {/* 4. Shop by Occasion (Img 4) */}
             <WomenOccasionCarousel />
+
+            {/* New Personalised Banner */}
+            <WomenPersonalisedBanner />
 
             {/* 4.5 Discover Your Hue (Img 4.5) */}
             <WomenDiscoverHue />
