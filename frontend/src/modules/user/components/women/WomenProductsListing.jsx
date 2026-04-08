@@ -126,11 +126,11 @@ const WomenProductsListing = () => {
     };
 
     return (
-        <section className="py-24" style={{ background: PINK_BG }}>
+        <section className="py-12 md:py-24" style={{ background: PINK_BG }}>
             <div className="container mx-auto px-4 md:px-8 max-w-[1500px]">
 
                 {/* Section Header */}
-                <div className="text-center mb-16">
+                <div className="text-center mb-10 md:mb-16">
                     <motion.div
                         initial={{ opacity: 0, y: -20 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -147,7 +147,7 @@ const WomenProductsListing = () => {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.7, delay: 0.1 }}
-                        className="text-4xl md:text-5xl font-serif text-zinc-900 tracking-tight mb-3"
+                        className="text-3xl sm:text-4xl md:text-5xl font-serif text-zinc-900 tracking-tight mb-3"
                     >
                         Women's <span className="italic" style={{ color: PINK }}>Exclusives</span>
                     </motion.h2>
@@ -155,7 +155,7 @@ const WomenProductsListing = () => {
                 </div>
 
                 {/* Product Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                     {dummyProducts.map((product, idx) => (
                         <motion.div
                             key={product.id}
@@ -194,7 +194,7 @@ const WomenProductsListing = () => {
                                 </div>
 
                                 {/* Content */}
-                                <div className="p-5 flex flex-col flex-grow">
+                                <div className="p-4 md:p-5 flex flex-col flex-grow">
                                     {/* Rating */}
                                     <div className="flex items-center gap-1 mb-2">
                                         {[...Array(5)].map((_, i) => (
@@ -236,7 +236,7 @@ const WomenProductsListing = () => {
                 </div>
 
                 {/* Explore Button */}
-                <div className="mt-16 text-center">
+                <div className="mt-10 md:mt-16 text-center">
                     <motion.button
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}

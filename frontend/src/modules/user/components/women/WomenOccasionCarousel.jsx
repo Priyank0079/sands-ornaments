@@ -53,14 +53,14 @@ const WomenOccasionCarousel = () => {
     const targetRef = useRef(null);
 
     return (
-        <section className="py-24 bg-[#FBF0F2] overflow-hidden select-none">
-            <div className="container mx-auto px-6 mb-12">
+        <section className="py-12 md:py-24 bg-[#FBF0F2] overflow-hidden select-none">
+            <div className="container mx-auto px-4 mb-8 md:mb-12">
                 <div className="flex flex-col items-center text-center">
                     <motion.h3 
                         initial={{ opacity: 0, y: -20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8 }}
-                        className="text-3xl md:text-5xl font-serif text-[#333] mb-8"
+                        className="text-2xl sm:text-3xl md:text-5xl font-serif text-[#333] mb-5 md:mb-8"
                     >
                         Shop by Occasion
                     </motion.h3>
@@ -69,7 +69,7 @@ const WomenOccasionCarousel = () => {
 
             <div 
                 ref={targetRef}
-                className="flex items-center gap-4 md:gap-8 overflow-x-auto pb-12 px-6 md:px-24 snap-x snap-mandatory scroll-smooth no-scrollbar"
+                className="flex items-center gap-3 md:gap-8 overflow-x-auto pb-12 px-4 md:px-24 snap-x snap-mandatory scroll-smooth no-scrollbar"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
                 {occasions.map((item, index) => (
@@ -80,7 +80,7 @@ const WomenOccasionCarousel = () => {
                         transition={{ duration: 0.6, delay: index * 0.1 }}
                         viewport={{ once: true }}
                         onClick={() => navigate(item.path)}
-                        className={`snap-center shrink-0 cursor-pointer group transition-all duration-700 w-[240px] md:w-[320px] ${item.height}`}
+                        className={`snap-center shrink-0 cursor-pointer group transition-all duration-700 w-[160px] sm:w-[200px] md:w-[320px] ${item.height}`}
                     >
                         {/* Card Container */}
                         <div className={`relative w-full h-full rounded-[30px] md:rounded-[40px] overflow-hidden border-2 border-white shadow-xl transition-all duration-700 group-hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.3)] group-hover:scale-[1.02]`}>
@@ -93,7 +93,7 @@ const WomenOccasionCarousel = () => {
                             
                             {/* Title Label in White Box */}
                             <div className="absolute inset-x-0 bottom-6 md:bottom-10 flex justify-center px-4">
-                                <span className="bg-white px-8 md:px-12 py-3 md:py-4 rounded-[20px] md:rounded-[25px] text-zinc-800 font-bold text-base md:text-xl shadow-lg transition-all duration-500 group-hover:bg-zinc-900 group-hover:text-white">
+                                <span className="bg-white px-4 sm:px-8 md:px-12 py-2 md:py-4 rounded-[15px] md:rounded-[25px] text-zinc-800 font-bold text-sm md:text-xl shadow-lg transition-all duration-500 group-hover:bg-zinc-900 group-hover:text-white">
                                     {item.title}
                                 </span>
                             </div>

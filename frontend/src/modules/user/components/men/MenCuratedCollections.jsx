@@ -75,7 +75,7 @@ const MenCuratedCollections = () => {
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.5, delay: idx * 0.05 }}
                                 onClick={() => navigate(item.link)}
-                                className="flex-shrink-0 w-[260px] md:w-[240px] lg:w-[280px] h-[320px] md:h-[400px] relative group cursor-pointer overflow-hidden bg-black snap-center first:ml-4 last:mr-4 lg:first:ml-0 lg:last:mr-0"
+                                className="flex-shrink-0 w-[160px] sm:w-[220px] md:w-[240px] lg:w-[280px] h-[260px] sm:h-[320px] md:h-[400px] relative group cursor-pointer overflow-hidden bg-black snap-center first:ml-4 last:mr-4 lg:first:ml-0 lg:last:mr-0"
                             >
                                 {item.type === 'video' ? (
                                     <video 

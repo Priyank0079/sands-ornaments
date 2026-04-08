@@ -92,8 +92,8 @@ const WomenCuratedCollections = () => {
     }, [isHovered]);
 
     return (
-        <section className="py-20 bg-white">
-            <div className="max-w-[1400px] mx-auto px-6">
+        <section className="py-12 md:py-20 bg-white">
+            <div className="max-w-[1400px] mx-auto px-3 sm:px-6">
                 {/* Header matching ref 2 */}
                 <div className="text-center mb-12">
                     <motion.h2 
@@ -101,7 +101,7 @@ const WomenCuratedCollections = () => {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.6 }}
-                        className="text-3xl md:text-4xl font-normal text-zinc-900 tracking-tight"
+                        className="text-2xl sm:text-3xl md:text-4xl font-normal text-zinc-900 tracking-tight"
                     >
                         Curated Collections
                     </motion.h2>
@@ -155,7 +155,7 @@ const WomenCuratedCollections = () => {
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.8, delay: index * 0.1, ease: 'easeOut' }}
                                 whileHover={{ y: -5 }}
-                                className="flex-shrink-0 w-[240px] md:w-[320px] aspect-[3/4] relative overflow-hidden cursor-pointer group snap-start"
+                                className="flex-shrink-0 w-[160px] sm:w-[220px] md:w-[320px] aspect-[3/4] relative overflow-hidden cursor-pointer group snap-start"
                             >
                                 {/* Media Content */}
                                 <div className="absolute inset-0 w-full h-full">

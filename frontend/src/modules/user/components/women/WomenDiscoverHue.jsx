@@ -38,21 +38,21 @@ const WomenDiscoverHue = () => {
     const navigate = useNavigate();
 
     return (
-        <section className="py-24 bg-[#FFF9FA] overflow-hidden">
+        <section className="py-12 md:py-24 bg-[#FFF9FA] overflow-hidden">
             <div className="max-w-[1200px] mx-auto px-6">
-                <div className="text-center mb-16 space-y-4">
+                <div className="text-center mb-10 md:mb-16 space-y-3 md:space-y-4">
                     <motion.h2 
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="text-4xl md:text-5xl font-serif text-zinc-900 tracking-tight"
+                        className="text-2xl sm:text-3xl md:text-5xl font-serif text-zinc-900 tracking-tight"
                     >
                         Discover Your Hue
                     </motion.h2>
                     <div className="w-20 h-1 bg-rose-200 mx-auto rounded-full" />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 pb-10">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 pb-10">
                     {hues.map((hue, index) => (
                         <motion.div
                             key={hue.id}
