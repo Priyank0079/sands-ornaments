@@ -3,8 +3,7 @@ import { motion } from 'framer-motion';
 import { Sparkles, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-// Static asset from public folder
-const PersonalisedImg = '/images/PersonalisedBannerWide.png';
+import PersonalisedImg from '../../../../assets/promos/PersonalisedBannerWide.png';
 
 const WomenPersonalisedBanner = () => {
     const navigate = useNavigate();

@@ -1,30 +1,27 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+
+import SilverImg from '../../../../assets/collections/SilverClassics.png';
+import RingsImg from '../../../../assets/collections/DazzlingRings.png';
 
 // Assets from public folder
 const GiftsImg = '/images/collections/GiftsForHer.png';
 const BridalImg = '/images/collections/BridalBliss.png';
 const OfficeImg = '/images/collections/OfficeChic.png';
-const SilverImg = '/images/collections/SilverClassics.png';
-const RingsImg = '/images/collections/DazzlingRings.png';
 const BohoImg = '/images/collections/BohoAnklets.png';
-const CollectionVideo = '/images/collections/collection_video.mp4';
-const RingsVideo = '/images/collections/rings_video.mp4';
 
 const collections = [
     {
         id: 1,
         title: "925 Silver Classics",
         image: SilverImg,
-        video: CollectionVideo,
         link: "/shop?category=silver"
     },
     {
         id: 2,
         title: "Astra Collection",
         image: RingsImg,
-        video: RingsVideo,
         link: "/shop?category=rings"
     },
     {
@@ -57,6 +54,7 @@ const WomenCuratedCollections = () => {
     const scrollRef = useRef(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(true);
+    const [isHovered, setIsHovered] = useState(false);
 
     const checkScroll = () => {
         if (scrollRef.current) {
@@ -74,17 +72,46 @@ const WomenCuratedCollections = () => {
         }
     };
 
+    // Auto-scroll functionality
+    useEffect(() => {
+        if (isHovered) return;
+
+        const interval = setInterval(() => {
+            if (scrollRef.current) {
+                const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+                // If we've reached the end, scroll back to start smoothly
+                if (scrollLeft >= scrollWidth - clientWidth - 10) {
+                    scrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    scroll('right');
+                }
+            }
+        }, 3500); // 3.5 seconds per slide
+
+        return () => clearInterval(interval);
+    }, [isHovered]);
+
     return (
         <section className="py-20 bg-white">
             <div className="max-w-[1400px] mx-auto px-6">
                 {/* Header matching ref 2 */}
                 <div className="text-center mb-12">
-                    <h2 className="text-3xl md:text-4xl font-normal text-zinc-900 tracking-tight">
+                    <motion.h2 
+                        initial={{ opacity: 0, y: -20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6 }}
+                        className="text-3xl md:text-4xl font-normal text-zinc-900 tracking-tight"
+                    >
                         Curated Collections
-                    </h2>
+                    </motion.h2>
                 </div>
 
-                <div className="relative group/slider">
+                <div 
+                    className="relative group/slider"
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                >
                     {/* Navigation Buttons */}
                     <AnimatePresence>
                         {canScrollLeft && (
@@ -120,9 +147,13 @@ const WomenCuratedCollections = () => {
                         onScroll={checkScroll}
                         className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-4"
                     >
-                        {collections.map((item) => (
+                        {collections.map((item, index) => (
                             <motion.div
                                 key={item.id}
+                                initial={{ opacity: 0, x: 100 }}
+                                whileInView={{ opacity: 1, x: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.8, delay: index * 0.1, ease: 'easeOut' }}
                                 whileHover={{ y: -5 }}
                                 className="flex-shrink-0 w-[240px] md:w-[320px] aspect-[3/4] relative overflow-hidden cursor-pointer group snap-start"
                             >

@@ -12,11 +12,10 @@ const dummyProducts = [
         price: "1,899",
         originalPrice: "3,299",
         discountPrice: "1,699",
-        image: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=90&w=1600&auto=format&fit=crop",
+        image: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=90&w=800&auto=format&fit=crop",
         rating: 4.8,
         reviews: 245,
         badge: "Trending",
-        color: "#D39A9F"
     },
     {
         id: 'w2',
@@ -24,11 +23,10 @@ const dummyProducts = [
         price: "2,499",
         originalPrice: "4,199",
         discountPrice: "2,249",
-        image: "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?q=90&w=1600&auto=format&fit=crop",
+        image: "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?q=90&w=800&auto=format&fit=crop",
         rating: 4.9,
         reviews: 180,
         badge: "Bestseller",
-        color: "#D39A9F"
     },
     {
         id: 'w3',
@@ -36,11 +34,10 @@ const dummyProducts = [
         price: "1,299",
         originalPrice: "2,499",
         discountPrice: "1,169",
-        image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=90&w=1600&auto=format&fit=crop",
+        image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=90&w=800&auto=format&fit=crop",
         rating: 4.6,
         reviews: 92,
         badge: "New",
-        color: "#D39A9F"
     },
     {
         id: 'w4',
@@ -48,11 +45,10 @@ const dummyProducts = [
         price: "3,199",
         originalPrice: "5,800",
         discountPrice: "2,879",
-        image: "https://images.unsplash.com/photo-1512163143273-bde0e3cc7407?q=90&w=1600&auto=format&fit=crop",
+        image: "https://images.unsplash.com/photo-1611591437281-460bfbe15201?q=90&w=800&auto=format&fit=crop",
         rating: 4.7,
         reviews: 156,
-        badge: "",
-        color: "#D39A9F"
+        badge: "Exclusive",
     },
     {
         id: 'w5',
@@ -60,11 +56,10 @@ const dummyProducts = [
         price: "1,499",
         originalPrice: "2,699",
         discountPrice: "1,349",
-        image: "https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?q=90&w=1600&auto=format&fit=crop",
+        image: "https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?q=90&w=800&auto=format&fit=crop",
         rating: 4.5,
         reviews: 64,
         badge: "Trending",
-        color: "#D39A9F"
     },
     {
         id: 'w6',
@@ -72,23 +67,21 @@ const dummyProducts = [
         price: "4,599",
         originalPrice: "7,999",
         discountPrice: "4,139",
-        image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=90&w=1600&auto=format&fit=crop",
+        image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=90&w=800&auto=format&fit=crop",
         rating: 5.0,
         reviews: 310,
         badge: "Eco-Lux",
-        color: "#D39A9F"
     },
     {
         id: 'w7',
-        name: "Delicate Moonnose Silver Pin",
-        price: "699",
-        originalPrice: "1,200",
-        discountPrice: "629",
-        image: "https://images.unsplash.com/photo-1525507119028-ed4c629a60a3?q=90&w=1600&auto=format&fit=crop",
+        name: "Layered Gold-Dip Zodiac Necklace",
+        price: "2,799",
+        originalPrice: "4,500",
+        discountPrice: "2,519",
+        image: "https://images.unsplash.com/photo-1576022162960-e498c9feab83?q=90&w=800&auto=format&fit=crop",
         rating: 4.4,
-        reviews: 42,
-        badge: "",
-        color: "#D39A9F"
+        reviews: 87,
+        badge: "New",
     },
     {
         id: 'w8',
@@ -96,13 +89,15 @@ const dummyProducts = [
         price: "2,199",
         originalPrice: "3,800",
         discountPrice: "1,979",
-        image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=90&w=1600&auto=format&fit=crop",
+        image: "https://images.unsplash.com/photo-1584302416574-8d3c3f2d36b3?q=90&w=800&auto=format&fit=crop",
         rating: 4.7,
         reviews: 115,
         badge: "Luxury",
-        color: "#D39A9F"
     }
 ];
+
+const PINK = '#E8638A';
+const PINK_BG = '#FFF0F4';
 
 const WomenProductsListing = () => {
     const navigate = useNavigate();
@@ -110,7 +105,6 @@ const WomenProductsListing = () => {
 
     const handleAddToCart = (product) => {
         const realProduct = products.find(p => p.id === product.id || p.name === product.name);
-        
         if (realProduct) {
             addToCart(realProduct);
         } else {
@@ -124,100 +118,136 @@ const WomenProductsListing = () => {
             };
             addToCart(mockToCart);
         }
-        
         toast.success(`${product.name} added to your bag!`, {
-            style: { background: '#D39A9F', color: '#fff', fontSize: '12px' },
+            style: { background: PINK, color: '#fff', fontSize: '12px' },
             icon: '💖'
         });
-        
-        setTimeout(() => {
-            navigate('/cart');
-        }, 800);
+        setTimeout(() => navigate('/cart'), 800);
     };
 
     return (
-        <section className="py-24 bg-white">
+        <section className="py-24" style={{ background: PINK_BG }}>
             <div className="container mx-auto px-4 md:px-8 max-w-[1500px]">
-                
-                <div className="text-center mb-20 relative">
+
+                {/* Section Header */}
+                <div className="text-center mb-16">
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
+                        initial={{ opacity: 0, y: -20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
+                        transition={{ duration: 0.6 }}
+                        className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
+                        style={{ background: `${PINK}22`, border: `1px solid ${PINK}44` }}
                     >
-                        <h2 className="text-4xl md:text-5xl font-serif font-black text-black mb-4 uppercase tracking-tighter">
-                            Women's <span className="italic text-[#D39A9F]">Exclusives</span>
-                        </h2>
-                        <div className="w-24 h-1.5 bg-[#FDF5F6] border-2 border-[#D39A9F] mx-auto rounded-full" />
+                        <Sparkles className="w-3.5 h-3.5" style={{ color: PINK }} />
+                        <span className="text-xs font-black uppercase tracking-widest" style={{ color: PINK }}>For Her</span>
                     </motion.div>
+                    <motion.h2
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.7, delay: 0.1 }}
+                        className="text-4xl md:text-5xl font-serif text-zinc-900 tracking-tight mb-3"
+                    >
+                        Women's <span className="italic" style={{ color: PINK }}>Exclusives</span>
+                    </motion.h2>
+                    <div className="w-20 h-1 mx-auto rounded-full" style={{ background: PINK }} />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10">
+                {/* Product Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {dummyProducts.map((product, idx) => (
                         <motion.div
                             key={product.id}
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            whileInView={{ opacity: 1, scale: 1 }}
+                            initial={{ opacity: 0, y: 40 }}
+                            whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
-                            transition={{ duration: 0.5, delay: (idx % 4) * 0.1 }}
+                            transition={{ duration: 0.55, delay: (idx % 4) * 0.1 }}
                             className="group relative"
                         >
-                            <div className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-[0_5px_15px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)] transition-all duration-500 h-full flex flex-col">
-                                {/* Image Section */}
-                                <div 
-                                    className="relative aspect-[4/5] cursor-pointer overflow-hidden bg-slate-50"
+                            <div className="bg-white rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(232,99,138,0.1)] hover:shadow-[0_16px_40px_rgba(232,99,138,0.22)] transition-all duration-500 flex flex-col h-full border border-pink-50">
+
+                                {/* Top Badge Bar */}
+                                {product.badge && (
+                                    <div
+                                        className="absolute top-4 left-4 z-10 px-3 py-1 rounded-full text-white text-[10px] font-black uppercase tracking-wider shadow-md"
+                                        style={{ background: PINK }}
+                                    >
+                                        {product.badge}
+                                    </div>
+                                )}
+
+                                {/* Image */}
+                                <div
+                                    className="relative aspect-[4/5] overflow-hidden bg-pink-50 cursor-pointer"
                                     onClick={() => navigate(`/product/${product.id}`)}
                                 >
-                                    <img 
-                                        src={product.image} 
-                                        alt={product.name} 
-                                        className="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-110"
+                                    <img
+                                        src={product.image}
+                                        alt={product.name}
+                                        className="w-full h-full object-cover transition-transform duration-[1.8s] group-hover:scale-110"
                                     />
-                                    
-                                    {/* Subtle Wishlist */}
-                                    <button className="absolute top-4 right-4 p-2 bg-white/80 rounded-full shadow-sm hover:bg-pink-50 transition-colors">
-                                        <Heart className="w-3.5 h-3.5 text-gray-400 group-hover:text-pink-500" />
+                                    {/* Wishlist */}
+                                    <button className="absolute top-4 right-4 p-2 bg-white/90 rounded-full shadow hover:bg-pink-50 transition-colors">
+                                        <Heart className="w-3.5 h-3.5 text-gray-400 group-hover:text-pink-500 transition-colors" />
                                     </button>
                                 </div>
 
-                                {/* Content Section (Image 1 Style) */}
-                                <div className="p-8 text-left bg-white flex flex-col flex-grow border-t border-gray-50">
-                                    <h3 
-                                        className="text-xl md:text-2xl font-black text-gray-900 leading-tight uppercase tracking-[-0.02em] mb-1 line-clamp-2 cursor-pointer"
+                                {/* Content */}
+                                <div className="p-5 flex flex-col flex-grow">
+                                    {/* Rating */}
+                                    <div className="flex items-center gap-1 mb-2">
+                                        {[...Array(5)].map((_, i) => (
+                                            <Star
+                                                key={i}
+                                                className={`w-3 h-3 ${i < Math.floor(product.rating) ? 'fill-amber-400 text-amber-400' : 'text-gray-200'}`}
+                                            />
+                                        ))}
+                                        <span className="text-[10px] text-gray-400 ml-1">({product.reviews})</span>
+                                    </div>
+
+                                    <h3
+                                        className="text-sm font-bold text-gray-800 mb-3 line-clamp-2 leading-snug cursor-pointer hover:text-pink-500 transition-colors"
                                         onClick={() => navigate(`/product/${product.id}`)}
                                     >
-                                        {/* Adaptive Title matching "UNDER INR 2000" style */}
                                         {product.name}
                                     </h3>
-                                    
-                                    <p className="text-sm text-gray-400 font-medium mb-6">
-                                        Discover the collection
-                                    </p>
-                                    
-                                    <div className="mt-auto">
-                                        <button 
-                                            onClick={() => handleAddToCart(product)}
-                                            className="w-full bg-[#FFDDE2]/80 hover:bg-[#FFDDE2] text-[#4A1015] py-4 rounded-xl font-bold text-xs md:text-sm tracking-widest uppercase transition-all flex items-center justify-center gap-3 active:scale-95"
-                                        >
-                                            Shop Now
-                                        </button>
+
+                                    <div className="flex items-baseline gap-2 mb-4">
+                                        <span className="text-xl font-black text-zinc-900">₹{product.price}</span>
+                                        <span className="text-xs text-gray-400 line-through">₹{product.originalPrice}</span>
                                     </div>
+
+                                    {/* CTA */}
+                                    <button
+                                        onClick={() => handleAddToCart(product)}
+                                        className="mt-auto w-full py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 text-white"
+                                        style={{ background: PINK }}
+                                        onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
+                                        onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                                    >
+                                        <ShoppingBag className="w-3.5 h-3.5" />
+                                        Add to Bag
+                                    </button>
                                 </div>
                             </div>
                         </motion.div>
                     ))}
                 </div>
 
-                {/* Explore More Button */}
-                <div className="mt-20 text-center">
-                    <button 
+                {/* Explore Button */}
+                <div className="mt-16 text-center">
+                    <motion.button
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
                         onClick={() => navigate('/shop?category=women')}
-                        className="px-12 py-5 border-2 border-[#D39A9F] text-[#D39A9F] rounded-full font-bold uppercase tracking-widest text-xs hover:bg-[#D39A9F] hover:text-white transition-all shadow-lg hover:shadow-xl"
+                        className="px-12 py-4 rounded-full font-bold uppercase tracking-widest text-xs transition-all shadow-lg hover:shadow-xl text-white"
+                        style={{ background: PINK }}
                     >
-                        Explore Entire Boutique
-                    </button>
+                        Explore All Women's Jewellery →
+                    </motion.button>
                 </div>
-
             </div>
         </section>
     );

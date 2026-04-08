@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, Star, ShoppingBag } from 'lucide-react';
+import { Heart, Star, ShoppingBag, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ShopContext } from '../../../../context/ShopContext';
 import toast from 'react-hot-toast';
@@ -12,11 +12,10 @@ const dummyProducts = [
         price: "2,899",
         originalPrice: "4,699",
         discountPrice: "1,739",
-        image: "/images/men-categories/rings.png",
+        image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=90&w=800&auto=format&fit=crop",
         rating: 4.6,
         reviews: 107,
         badge: "New Arrival",
-        buttonText: "Add to Cart"
     },
     {
         id: 'p2',
@@ -24,11 +23,10 @@ const dummyProducts = [
         price: "3,799",
         originalPrice: "6,199",
         discountPrice: "2,279",
-        image: "/images/men-categories/pendants.png",
+        image: "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?q=90&w=800&auto=format&fit=crop",
         rating: 4.6,
         reviews: 100,
         badge: "",
-        buttonText: "Add to Cart"
     },
     {
         id: 'p3',
@@ -36,11 +34,10 @@ const dummyProducts = [
         price: "3,499",
         originalPrice: "5,499",
         discountPrice: "2,099",
-        image: "/images/men-categories/sets.png",
+        image: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=90&w=800&auto=format&fit=crop",
         rating: 3.8,
         reviews: 51,
         badge: "",
-        buttonText: "Add to Cart"
     },
     {
         id: 'p4',
@@ -48,11 +45,10 @@ const dummyProducts = [
         price: "4,199",
         originalPrice: "6,999",
         discountPrice: "2,519",
-        image: "/images/men-categories/bracelets.png",
+        image: "https://images.unsplash.com/photo-1611591437281-460bfbe15201?q=90&w=800&auto=format&fit=crop",
         rating: 4.9,
         reviews: 215,
         badge: "Bestseller",
-        buttonText: "Add to Cart"
     },
     {
         id: 'p5',
@@ -60,11 +56,10 @@ const dummyProducts = [
         price: "6,599",
         originalPrice: "9,999",
         discountPrice: "3,959",
-        image: "/images/men-categories/chains.png",
+        image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=90&w=800&auto=format&fit=crop",
         rating: 4.8,
         reviews: 84,
-        badge: "",
-        buttonText: "Add to Cart"
+        badge: "Luxury",
     },
     {
         id: 'p6',
@@ -72,11 +67,10 @@ const dummyProducts = [
         price: "2,999",
         originalPrice: "4,500",
         discountPrice: "1,799",
-        image: "/images/men-categories/cufflinks.png",
+        image: "https://images.unsplash.com/photo-1584302416574-8d3c3f2d36b3?q=90&w=800&auto=format&fit=crop",
         rating: 4.5,
         reviews: 42,
         badge: "Trending",
-        buttonText: "Add to Cart"
     },
     {
         id: 'p7',
@@ -84,11 +78,10 @@ const dummyProducts = [
         price: "1,899",
         originalPrice: "2,999",
         discountPrice: "1,139",
-        image: "/images/men-categories/spiritual.png",
+        image: "https://images.unsplash.com/photo-1576022162960-e498c9feab83?q=90&w=800&auto=format&fit=crop",
         rating: 4.3,
         reviews: 67,
         badge: "",
-        buttonText: "Add to Cart"
     },
     {
         id: 'p8',
@@ -96,27 +89,26 @@ const dummyProducts = [
         price: "3,150",
         originalPrice: "4,800",
         discountPrice: "1,890",
-        image: "/images/men-categories/custom.png",
+        image: "https://images.unsplash.com/photo-1623934199716-dc3c23e62df9?q=90&w=800&auto=format&fit=crop",
         rating: 4.7,
         reviews: 130,
         badge: "",
-        buttonText: "Add to Cart"
     }
 ];
+
+const BLUE = '#2563EB';
+const BLUE_DARK = '#0B1528';
+const BLUE_BG = '#F0F5FF';
 
 const MenProductsListing = () => {
     const navigate = useNavigate();
     const { addToCart, products } = useContext(ShopContext);
 
     const handleAddToCart = (product) => {
-        // In a real app, we would match dummyProducts with real DB products.
-        // For now, we'll try to find a matching product in context or pass the dummy data.
         const realProduct = products.find(p => p.id === product.id || p.name === product.name);
-
         if (realProduct) {
             addToCart(realProduct);
         } else {
-            // Transform dummy to context-friendly format
             const mockToCart = {
                 ...product,
                 _id: product.id,
@@ -127,101 +119,146 @@ const MenProductsListing = () => {
             };
             addToCart(mockToCart);
         }
-
-        // Instant feedback and navigation
-        setTimeout(() => {
-            navigate('/cart');
-        }, 500);
+        setTimeout(() => navigate('/cart'), 500);
     };
 
     return (
-        <section className="py-20 bg-white">
+        <section className="py-24" style={{ background: BLUE_BG }}>
             <div className="container mx-auto px-4 md:px-8 max-w-[1500px]">
 
+                {/* Section Header */}
                 <div className="text-center mb-16">
-                    <h2 className="text-3xl md:text-4xl font-black text-[#111] mb-4 uppercase tracking-wide">
-                        Men's Exclusives
-                    </h2>
-                    <div className="w-20 h-1.5 bg-[#3B82F6] mx-auto rounded-full" />
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6 }}
+                        className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
+                        style={{ background: `${BLUE}22`, border: `1px solid ${BLUE}44` }}
+                    >
+                        <Zap className="w-3.5 h-3.5" style={{ color: BLUE }} />
+                        <span className="text-xs font-black uppercase tracking-widest" style={{ color: BLUE }}>For Him</span>
+                    </motion.div>
+                    <motion.h2
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.7, delay: 0.1 }}
+                        className="text-4xl md:text-5xl font-serif text-zinc-900 tracking-tight mb-3"
+                    >
+                        Men's <span className="italic" style={{ color: BLUE }}>Exclusives</span>
+                    </motion.h2>
+                    <div className="w-20 h-1 mx-auto rounded-full" style={{ background: BLUE }} />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+                {/* Product Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {dummyProducts.map((product, idx) => (
                         <motion.div
                             key={product.id}
-                            initial={{ opacity: 0, y: 30 }}
+                            initial={{ opacity: 0, y: 40 }}
                             whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true, margin: "-50px" }}
-                            transition={{ duration: 0.5, delay: (idx % 4) * 0.1 }}
-                            className="bg-white border rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col group border-gray-100"
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.55, delay: (idx % 4) * 0.1 }}
+                            className="group relative"
                         >
-                            {/* Top Banner */}
-                            <div className="w-full bg-[#0B1528] py-2 text-center text-white font-bold text-[10px] tracking-[0.2em] uppercase">
-                                Quick View
-                            </div>
-
-                            {/* Image Section */}
                             <div
-                                className="relative aspect-[4/5] bg-gray-50 cursor-pointer overflow-hidden p-6"
-                                onClick={() => navigate(`/product/${product.id}`)}
+                                className="bg-white rounded-2xl overflow-hidden transition-all duration-500 flex flex-col h-full border border-blue-50"
+                                style={{ boxShadow: '0 4px 20px rgba(37,99,235,0.08)', }}
+                                onMouseEnter={e => e.currentTarget.style.boxShadow = '0 16px 40px rgba(37,99,235,0.18)'}
+                                onMouseLeave={e => e.currentTarget.style.boxShadow = '0 4px 20px rgba(37,99,235,0.08)'}
                             >
-                                <img
-                                    src={product.image}
-                                    alt={product.name}
-                                    className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700"
-                                />
-
-                                {/* Wishlist Icon */}
-                                <button className="absolute top-4 right-4 p-2 bg-white rounded-full shadow-lg hover:bg-red-50 transition-colors">
-                                    <Heart className="w-5 h-5 text-gray-400 hover:text-red-500 transition-colors" />
-                                </button>
-
-                                {/* Rating Badge */}
-                                <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur border border-gray-100 px-2.5 py-1 flex items-center gap-1.5 rounded-lg text-[10px] font-bold text-gray-700 shadow-md">
-                                    {product.rating} <Star className="w-3 h-3 text-orange-400 fill-orange-400" /> <span className="text-gray-300 font-normal">|</span> {product.reviews}
-                                </div>
-                            </div>
-
-                            {/* Content Section */}
-                            <div className="p-5 flex flex-col flex-grow bg-white">
-                                <div className="flex items-baseline gap-2 mb-2">
-                                    <span className="text-2xl font-black text-[#111]">₹{product.price}</span>
-                                    <span className="text-sm text-gray-400 line-through">₹{product.originalPrice}</span>
+                                {/* Top Quick View Bar */}
+                                <div className="w-full py-2 text-center text-white font-bold text-[10px] tracking-[0.2em] uppercase" style={{ background: BLUE_DARK }}>
+                                    Quick View
                                 </div>
 
-                                <h3
-                                    className="text-sm font-bold text-gray-600 mb-4 line-clamp-2 min-h-[40px] cursor-pointer hover:text-[#3B82F6] transition-colors leading-relaxed"
+                                {/* Badge */}
+                                {product.badge && (
+                                    <div
+                                        className="absolute top-10 left-4 z-10 px-3 py-1 rounded-full text-white text-[10px] font-black uppercase tracking-wider shadow"
+                                        style={{ background: BLUE }}
+                                    >
+                                        {product.badge}
+                                    </div>
+                                )}
+
+                                {/* Image */}
+                                <div
+                                    className="relative aspect-[4/5] overflow-hidden bg-blue-50 cursor-pointer"
                                     onClick={() => navigate(`/product/${product.id}`)}
                                 >
-                                    {product.name}
-                                </h3>
-
-                                <div className="mt-auto bg-blue-50/50 p-3 rounded-xl border border-blue-100/50">
-                                    <p className="text-[#3B82F6] text-[11px] font-bold tracking-wide uppercase mb-1">
-                                        Special Offer
-                                    </p>
-                                    <p className="text-gray-600 text-[11px]">
-                                        Get it for <span className="font-bold text-[#111]">₹{product.discountPrice}</span> with exclusive member coupons
-                                    </p>
+                                    <img
+                                        src={product.image}
+                                        alt={product.name}
+                                        className="w-full h-full object-cover transition-transform duration-[1.8s] group-hover:scale-110"
+                                    />
+                                    <button className="absolute top-4 right-4 p-2 bg-white/90 rounded-full shadow hover:bg-blue-50 transition-colors">
+                                        <Heart className="w-3.5 h-3.5 text-gray-400 group-hover:text-blue-500 transition-colors" />
+                                    </button>
+                                    {/* Rating Badge */}
+                                    <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur px-2.5 py-1 flex items-center gap-1.5 rounded-lg text-[10px] font-bold text-gray-700 shadow">
+                                        {product.rating} <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                                        <span className="text-gray-300">|</span> {product.reviews}
+                                    </div>
                                 </div>
 
-                            </div>
+                                {/* Content */}
+                                <div className="p-5 flex flex-col flex-grow">
+                                    <div className="flex items-baseline gap-2 mb-2">
+                                        <span className="text-xl font-black text-zinc-900">₹{product.price}</span>
+                                        <span className="text-xs text-gray-400 line-through">₹{product.originalPrice}</span>
+                                    </div>
+                                    <h3
+                                        className="text-sm font-bold text-gray-600 mb-4 line-clamp-2 leading-snug cursor-pointer transition-colors"
+                                        style={{ minHeight: '40px' }}
+                                        onClick={() => navigate(`/product/${product.id}`)}
+                                        onMouseEnter={e => e.currentTarget.style.color = BLUE}
+                                        onMouseLeave={e => e.currentTarget.style.color = ''}
+                                    >
+                                        {product.name}
+                                    </h3>
 
-                            {/* Bottom Button */}
-                            <div className="px-5 pb-5">
-                                <button
-                                    onClick={() => handleAddToCart(product)}
-                                    className="w-full py-3.5 bg-[#0B1528] text-white font-bold text-xs tracking-[0.2em] uppercase hover:bg-[#3B82F6] transition-all duration-300 rounded-xl flex items-center justify-center gap-3 shadow-lg shadow-[#0B1528]/10"
-                                >
-                                    <ShoppingBag className="w-4 h-4" />
-                                    {product.buttonText}
-                                </button>
-                            </div>
+                                    {/* Offer box */}
+                                    <div className="mt-auto rounded-xl p-3 mb-4 border" style={{ background: `${BLUE}0D`, borderColor: `${BLUE}22` }}>
+                                        <p className="text-[11px] font-bold uppercase tracking-wide mb-1" style={{ color: BLUE }}>Special Offer</p>
+                                        <p className="text-gray-600 text-[11px]">
+                                            Get it for <span className="font-bold text-zinc-900">₹{product.discountPrice}</span> with member coupons
+                                        </p>
+                                    </div>
+                                </div>
 
+                                {/* CTA */}
+                                <div className="px-5 pb-5">
+                                    <button
+                                        onClick={() => handleAddToCart(product)}
+                                        className="w-full py-3.5 font-bold text-xs tracking-[0.2em] uppercase rounded-xl flex items-center justify-center gap-2 text-white transition-all duration-300"
+                                        style={{ background: BLUE_DARK }}
+                                        onMouseEnter={e => e.currentTarget.style.background = BLUE}
+                                        onMouseLeave={e => e.currentTarget.style.background = BLUE_DARK}
+                                    >
+                                        <ShoppingBag className="w-4 h-4" />
+                                        Add to Cart
+                                    </button>
+                                </div>
+                            </div>
                         </motion.div>
                     ))}
                 </div>
 
+                {/* Explore Button */}
+                <div className="mt-16 text-center">
+                    <motion.button
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        onClick={() => navigate('/shop?category=men')}
+                        className="px-12 py-4 rounded-full font-bold uppercase tracking-widest text-xs text-white transition-all shadow-lg hover:shadow-xl"
+                        style={{ background: BLUE }}
+                    >
+                        Explore All Men's Jewellery →
+                    </motion.button>
+                </div>
             </div>
         </section>
     );
