@@ -1,27 +1,49 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, Heart, ShoppingBag, User, Store, Menu, X, Bell, ChevronDown, ChevronRight, Camera, Mic, Diamond, MapPin } from 'lucide-react';
+import { Search, Heart, ShoppingBag, User, Store, Menu, X, ChevronDown, ChevronRight, Camera, Mic, Diamond, MapPin } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
 import logo from '../../user/assets/SANDS JEWELS PINK (1).png';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ensureHomepageNavPath } from '../utils/homepageNav';
 
 const Navbar = () => {
-    const { cart, wishlist, user, userNotifications, isMenuOpen, toggleMenu, homepageSections, categories, products, pincode, setIsPincodeModalOpen } = useShop();
+    // 1. Local UI state to avoid global context re-renders
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [openSection, setOpenSection] = useState(null);
+    
+    // 2. Optimized shop context access - only destructure what's visually needed
+    const { 
+        cart, 
+        wishlist, 
+        user, 
+        homepageSections, 
+        pincode, 
+        setIsPincodeModalOpen 
+    } = useShop();
+
     const location = useLocation();
     const navigate = useNavigate();
-    const isHome = location.pathname === '/';
     const [searchTerm, setSearchTerm] = useState('');
     const [placeholderIdx, setPlaceholderIdx] = useState(0);
     const [isScrolled, setIsScrolled] = useState(false);
 
+    // 3. Performance: Auto-close menu on navigation change
+    useEffect(() => {
+        setIsMenuOpen(false);
+        setOpenSection(null);
+    }, [location.pathname]);
+
     useEffect(() => {
         const handleScroll = () => {
-            setIsScrolled(window.scrollY > 20);
+            if (window.scrollY > 20) {
+                if (!isScrolled) setIsScrolled(true);
+            } else {
+                if (isScrolled) setIsScrolled(false);
+            }
         };
-        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+    }, [isScrolled]);
 
     const placeholders = useMemo(() => [
         "Search for jewellery...",
@@ -34,11 +56,11 @@ const Navbar = () => {
     useEffect(() => {
         const interval = setInterval(() => {
             setPlaceholderIdx((prev) => (prev + 1) % placeholders.length);
-        }, 1500); // Rotating every 1.5s for a balance between speed and readability
+        }, 2000);
         return () => clearInterval(interval);
     }, [placeholders]);
 
-    // Sidebar Menu Data
+    // Sidebar Menu Data - memoized
     const sidebarMenu = useMemo(() => {
         const sectionGifts = homepageSections?.['nav-gifts-for'];
         const sectionOccasions = homepageSections?.['nav-occasions'];
@@ -53,28 +75,13 @@ const Navbar = () => {
             return fallback;
         };
 
-        const visibleCategories = (categories || []).filter(
-            (c) => c.isActive !== false && c.showInNavbar !== false
-        );
-        const getCategoriesByMetal = (metal) => {
-            const byMetal = visibleCategories.filter(c => c.metal?.toLowerCase() === metal.toLowerCase());
-            return byMetal.map(cat => ({ name: cat.name, path: `/shop?category=${cat._id || cat.id}` }));
-        };
-
         return {
-            shopByCategory: {
-                silver: [
-                    ...getCategoriesByMetal('silver'),
-                    { name: "All Products", path: "/shop" }
-                ],
-                gold: getCategoriesByMetal('gold')
-            },
             giftsFor: normalizeItems(sectionGifts, [
-                { name: "Womens", path: "/shop?filter=womens" },
-                { name: "Girls", path: "/shop?filter=girls" },
-                { name: "Mens", path: "/shop?filter=mens" },
-                { name: "Couple", path: "/shop?filter=couple" },
-                { name: "Kids", path: "/shop?filter=kids" }
+                { name: "For Women", path: "/category/women" },
+                { name: "For Girls", path: "/category/women" },
+                { name: "For Men", path: "/category/men" },
+                { name: "For Couples", path: "/shop?filter=couple" },
+                { name: "For Kids", path: "/shop?filter=kids" }
             ], 'filter'),
             occasions: normalizeItems(sectionOccasions, [
                 { name: "Birthday", path: "/shop?occasion=birthday" },
@@ -84,28 +91,21 @@ const Navbar = () => {
                 { name: "Valentine Day", path: "/shop?occasion=valentine" }
             ], 'occasion')
         };
-    }, [homepageSections, categories, products]);
-
-    // Sidebar Accordion State
-    const [openSection, setOpenSection] = useState('shopByCategory'); // Default open
-    const [mobileSelectedMetal, setMobileSelectedMetal] = useState(null); // null, 'gold', 'silver'
+    }, [homepageSections]);
 
     const toggleSection = (section) => {
-        setOpenSection(openSection === section ? null : section);
+        setOpenSection(prev => prev === section ? null : section);
     };
 
-    const submitSearch = () => {
+    const submitSearch = useCallback(() => {
         const query = searchTerm.trim();
         if (!query) {
             navigate('/shop');
-            return;
+        } else {
+            navigate(`/shop?search=${encodeURIComponent(query)}`);
         }
-
-        navigate(`/shop?search=${encodeURIComponent(query)}`);
-        if (isMenuOpen) {
-            toggleMenu(false);
-        }
-    };
+        setIsMenuOpen(false);
+    }, [searchTerm, navigate]);
 
     const handleSearchKeyDown = (event) => {
         if (event.key === 'Enter') {
@@ -116,7 +116,7 @@ const Navbar = () => {
 
     return (
         <>
-            <nav className={`w-full transition-all duration-500 z-[100] ${isScrolled ? 'bg-white/80 backdrop-blur-lg py-1' : 'bg-white py-2 md:py-4 border-b border-gray-50'}`}>
+            <nav className={`w-full transition-all duration-500 z-[100] ${isScrolled ? 'bg-white/80 backdrop-blur-lg py-1 shadow-sm' : 'bg-white py-2 md:py-4 border-b border-gray-50'}`}>
                 <div className="container mx-auto px-4 md:px-6 flex items-center justify-between gap-6">
 
                     {/* Left: Logo */}
@@ -149,12 +149,7 @@ const Navbar = () => {
                         </div>
                     </div>
 
-
-                    <motion.div 
-                        initial={false}
-                        whileFocus={{ scale: 1.01 }}
-                        className="hidden md:flex flex-1 max-w-3xl mx-auto relative group"
-                    >
+                    <div className="hidden md:flex flex-1 max-w-3xl mx-auto relative group">
                         <div className="absolute left-5 top-1/2 -translate-y-1/2 text-[#9C5B61]">
                             <Search className="w-5 h-5 stroke-[2.5]" />
                         </div>
@@ -167,16 +162,16 @@ const Navbar = () => {
                             className="w-full bg-white border border-gray-400 rounded-full py-3 px-14 text-sm focus:outline-none focus:border-[#9C5B61] focus:ring-4 focus:ring-[#9C5B61]/10 transition-all text-black placeholder-gray-400 font-medium"
                         />
                         <div className="absolute right-5 top-1/2 -translate-y-1/2 flex items-center gap-4 text-[#9C5B61]">
-                            <button className="hover:scale-110 active:scale-95 transition-transform duration-200">
+                            <button className="hover:scale-110 active:scale-95 transition-transform duration-200" aria-label="Camera search">
                                 <Camera className="w-5 h-5" />
                             </button>
-                            <button className="hover:scale-110 active:scale-95 transition-transform duration-200">
+                            <button className="hover:scale-110 active:scale-95 transition-transform duration-200" aria-label="Voice search">
                                 <Mic className="w-5 h-5" />
                             </button>
                         </div>
-                    </motion.div>
+                    </div>
 
-                    {/* Icons Section - Matching Target UI Icons and Color */}
+                    {/* Icons Section */}
                     <div className="flex items-center space-x-5 md:space-x-8 flex-shrink-0 text-[#9C5B61]">
                         {/* Mobile Search Trigger */}
                         <motion.button 
@@ -192,21 +187,21 @@ const Navbar = () => {
 
                         {/* Diamond Icon */}
                         <motion.div whileHover={{ scale: 1.15, rotate: 15 }} whileTap={{ scale: 0.9 }}>
-                            <Link to="/shop?purity=diamond" className="hidden md:block">
+                            <Link to="/shop?purity=diamond" className="hidden md:block" aria-label="Diamond jewellery">
                                 <Diamond className="w-6 h-6" />
                             </Link>
                         </motion.div>
 
                         {/* Store/Branch Icon */}
                         <motion.div whileHover={{ scale: 1.15, y: -2 }} whileTap={{ scale: 0.9 }}>
-                            <Link to="/stores" className="hidden md:block">
+                            <Link to="/stores" className="hidden md:block" aria-label="Our stores">
                                 <Store className="w-6 h-6" />
                             </Link>
                         </motion.div>
 
                         {/* Wishlist Icon */}
                         <motion.div whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }} className="relative">
-                            <Link to="/wishlist">
+                            <Link to="/wishlist" aria-label="Wishlist">
                                 <Heart className="w-6 h-6" />
                                 {wishlist?.length > 0 && (
                                     <motion.span 
@@ -222,14 +217,14 @@ const Navbar = () => {
 
                         {/* User/Profile Icon */}
                         <motion.div whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}>
-                            <Link to={user ? "/profile" : "/login"} className="hidden md:block">
+                            <Link to={user ? "/profile" : "/login"} className="hidden md:block" aria-label="My account">
                                 <User className="w-6 h-6" />
                             </Link>
                         </motion.div>
 
                         {/* Cart/Bag Icon */}
                         <motion.div whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }} className="relative">
-                            <Link to="/cart">
+                            <Link to="/cart" aria-label="Shopping bag">
                                 <ShoppingBag className="w-6 h-6" />
                                 {cart?.length > 0 && (
                                     <motion.span 
@@ -246,7 +241,7 @@ const Navbar = () => {
                 </div>
             </nav>
 
-            {/* Sidebar / Drawer */}
+            {/* ─── Mobile Side Drawer ─────────────────────────────────────────── */}
             <AnimatePresence>
                 {isMenuOpen && (
                     <>
@@ -255,8 +250,8 @@ const Navbar = () => {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            onClick={() => toggleMenu(false)}
-                            className="fixed inset-0 bg-black/50 z-[60] backdrop-blur-sm"
+                            onClick={() => setIsMenuOpen(false)}
+                            className="fixed inset-0 bg-black/60 z-[110] backdrop-blur-sm"
                         />
 
                         {/* Drawer Panel */}
@@ -264,220 +259,249 @@ const Navbar = () => {
                             initial={{ x: '100%' }}
                             animate={{ x: 0 }}
                             exit={{ x: '100%' }}
-                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                            className="fixed top-0 right-0 h-full w-[300px] md:w-[350px] bg-white z-[70] overflow-y-auto shadow-2xl"
+                            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+                            className="fixed top-0 right-0 h-full w-[310px] md:w-[380px] bg-white z-[120] flex flex-col shadow-2xl overflow-hidden"
                         >
-                            <div className="p-6">
-                                {/* Header */}
-                                <div className="flex justify-between items-center mb-8">
-                                    <span className="font-display text-xl font-bold tracking-widest text-black">MENU</span>
-                                    <button onClick={() => { toggleMenu(false); setMobileSelectedMetal(null); }} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                                        <X className="w-6 h-6 text-black" />
-                                    </button>
-                                </div>
+                            {/* Drawer Header */}
+                            <div className="flex justify-between items-center px-6 py-5 border-b border-gray-100 shrink-0">
+                                <span className="font-display text-base font-black tracking-[0.2em] text-black">MENU</span>
+                                <button
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors active:scale-90"
+                                    aria-label="Close menu"
+                                >
+                                    <X className="w-5 h-5 text-black" />
+                                </button>
+                            </div>
 
-                                {/* Menu Items */}
-                                <div className="space-y-4">
+                            {/* Main Nav Items */}
+                            <div className="flex-1 overflow-y-auto px-4 py-3 custom-scrollbar">
 
-                                    {/* 0. All Jewellery */}
-                                <div className="border-b border-gray-100 pb-2">
-                                    <Link 
-                                        to="/collections" 
-                                        onClick={() => toggleMenu(false)}
-                                        className="w-full flex items-center justify-between py-2 text-left font-display font-semibold text-black hover:text-[#9C5B61] transition-colors uppercase"
+                                {/* 1. HOME */}
+                                <Link
+                                    to="/"
+                                    className="flex items-center gap-3 px-3 py-3.5 rounded-xl font-display font-bold text-[13px] text-gray-800 hover:text-[#9C5B61] hover:bg-[#9C5B61]/5 transition-all uppercase tracking-wider group border-b border-gray-50"
+                                >
+                                    <svg className="w-4 h-4 text-[#9C5B61]/70 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                                        <polyline points="9 22 9 12 15 12 15 22"/>
+                                    </svg>
+                                    Home
+                                    <ChevronRight className="w-3.5 h-3.5 ml-auto opacity-30 group-hover:opacity-70 group-hover:translate-x-0.5 transition-all" />
+                                </Link>
+
+                                {/* 2. ALL JEWELLERY */}
+                                <Link
+                                    to="/collections"
+                                    className="flex items-center gap-3 px-3 py-3.5 rounded-xl font-display font-bold text-[13px] text-gray-800 hover:text-[#9C5B61] hover:bg-[#9C5B61]/5 transition-all uppercase tracking-wider group border-b border-gray-50"
+                                >
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-[#9C5B61]/70 shrink-0">
+                                        <path d="M5 4c0 2 1 8 7 8s7-6 7-8"/>
+                                        <path d="M12 12v2"/>
+                                        <path d="M12 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/>
+                                        <path d="M10.5 17.5 9 19"/>
+                                        <path d="M13.5 17.5 15 19"/>
+                                        <path d="M12 18.5v2"/>
+                                    </svg>
+                                    All Jewellery
+                                    <ChevronRight className="w-3.5 h-3.5 ml-auto opacity-30 group-hover:opacity-70 group-hover:translate-x-0.5 transition-all" />
+                                </Link>
+
+                                {/* 3. SHOP FOR MEN */}
+                                <Link
+                                    to="/category/men"
+                                    className="flex items-center gap-3 px-3 py-3.5 rounded-xl font-display font-bold text-[13px] text-gray-800 hover:text-[#9C5B61] hover:bg-[#9C5B61]/5 transition-all uppercase tracking-wider group border-b border-gray-50"
+                                >
+                                    <svg className="w-4 h-4 text-[#9C5B61]/70 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <circle cx="12" cy="8" r="4"/>
+                                        <path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
+                                    </svg>
+                                    Shop for Men
+                                    <ChevronRight className="w-3.5 h-3.5 ml-auto opacity-30 group-hover:opacity-70 group-hover:translate-x-0.5 transition-all" />
+                                </Link>
+
+                                {/* 4. SHOP FOR WOMEN */}
+                                <Link
+                                    to="/category/women"
+                                    className="flex items-center gap-3 px-3 py-3.5 rounded-xl font-display font-bold text-[13px] text-gray-800 hover:text-[#9C5B61] hover:bg-[#9C5B61]/5 transition-all uppercase tracking-wider group border-b border-gray-50"
+                                >
+                                    <svg className="w-4 h-4 text-[#9C5B61]/70 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <circle cx="12" cy="8" r="4"/>
+                                        <path d="M12 12v9"/>
+                                        <path d="M8 17h8"/>
+                                    </svg>
+                                    Shop for Women
+                                    <ChevronRight className="w-3.5 h-3.5 ml-auto opacity-30 group-hover:opacity-70 group-hover:translate-x-0.5 transition-all" />
+                                </Link>
+
+                                {/* 5. SHOP FOR FAMILY */}
+                                <Link
+                                    to="/category/family"
+                                    className="flex items-center gap-3 px-3 py-3.5 rounded-xl font-display font-bold text-[13px] text-gray-800 hover:text-[#9C5B61] hover:bg-[#9C5B61]/5 transition-all uppercase tracking-wider group border-b border-gray-50"
+                                >
+                                    <svg className="w-4 h-4 text-[#9C5B61]/70 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                        <circle cx="9" cy="7" r="4"/>
+                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                    </svg>
+                                    Shop for Family
+                                    <ChevronRight className="w-3.5 h-3.5 ml-auto opacity-30 group-hover:opacity-70 group-hover:translate-x-0.5 transition-all" />
+                                </Link>
+
+                                {/* 6. GIFTS FOR — Accordion */}
+                                <div className="border-b border-gray-50">
+                                    <button
+                                        onClick={() => toggleSection('giftsFor')}
+                                        className={`w-full flex items-center gap-3 px-3 py-3.5 rounded-xl font-display font-bold text-[13px] uppercase tracking-wider transition-all ${openSection === 'giftsFor' ? 'text-[#9C5B61] bg-[#9C5B61]/5' : 'text-gray-800 hover:text-[#9C5B61] hover:bg-[#9C5B61]/5'}`}
                                     >
-                                        ALL JEWELLERY
-                                        <ChevronRight className="w-4 h-4" />
-                                    </Link>
+                                        <svg className="w-4 h-4 text-[#9C5B61]/70 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <rect x="3" y="8" width="18" height="14" rx="2"/>
+                                            <path d="M12 8V22"/>
+                                            <path d="M19 8a4 4 0 0 0-7-3.87A4 4 0 0 0 5 8"/>
+                                        </svg>
+                                        Gifts For
+                                        <ChevronDown className={`w-4 h-4 ml-auto opacity-40 transition-transform duration-300 ${openSection === 'giftsFor' ? 'rotate-180 opacity-70' : ''}`} />
+                                    </button>
+                                    <AnimatePresence>
+                                        {openSection === 'giftsFor' && (
+                                            <motion.div
+                                                initial={{ height: 0, opacity: 0 }}
+                                                animate={{ height: 'auto', opacity: 1 }}
+                                                exit={{ height: 0, opacity: 0 }}
+                                                transition={{ duration: 0.22, ease: 'easeInOut' }}
+                                                className="overflow-hidden"
+                                            >
+                                                <ul className="pl-10 pb-3 pt-1 space-y-0.5">
+                                                    {sidebarMenu.giftsFor.map((item, idx) => (
+                                                        <li key={idx}>
+                                                            <Link
+                                                                to={item.path}
+                                                                className="flex items-center gap-2.5 py-2.5 text-gray-500 text-sm font-semibold hover:text-[#9C5B61] transition-colors rounded-lg px-2 hover:bg-[#9C5B61]/5"
+                                                            >
+                                                                <span className="w-1.5 h-1.5 rounded-full bg-[#9C5B61]/50 shrink-0" />
+                                                                {item.name}
+                                                            </Link>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
                                 </div>
 
-                                {/* 1. Shop By Category */}
-                                    <div className="border-b border-gray-100 pb-2">
-                                        <button
-                                            onClick={() => toggleSection('shopByCategory')}
-                                            className="w-full flex items-center justify-between py-2 text-left font-display font-semibold text-black hover:text-[#9C5B61] transition-colors"
-                                        >
-                                            SHOP BY CATEGORY
-                                            <ChevronDown className={`w-4 h-4 transition-transform ${openSection === 'shopByCategory' ? 'rotate-180' : ''}`} />
-                                        </button>
-                                        <AnimatePresence>
-                                            {openSection === 'shopByCategory' && (
-                                                <motion.div
-                                                    initial={{ height: 0, opacity: 0 }}
-                                                    animate={{ height: 'auto', opacity: 1 }}
-                                                    exit={{ height: 0, opacity: 0 }}
-                                                    className="overflow-hidden"
-                                                >
-                                                    {!mobileSelectedMetal ? (
-                                                        <div className="grid grid-cols-2 gap-3 pl-4 py-3">
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => setMobileSelectedMetal('gold')}
-                                                                className="flex flex-col items-center justify-center p-4 bg-[#FDFBF7] border border-gray-100 rounded-2xl hover:bg-[#D4AF37]/5 transition-colors text-center"
+                                {/* 7. OCCASIONS — Accordion */}
+                                <div className="border-b border-gray-50">
+                                    <button
+                                        onClick={() => toggleSection('occasions')}
+                                        className={`w-full flex items-center gap-3 px-3 py-3.5 rounded-xl font-display font-bold text-[13px] uppercase tracking-wider transition-all ${openSection === 'occasions' ? 'text-[#9C5B61] bg-[#9C5B61]/5' : 'text-gray-800 hover:text-[#9C5B61] hover:bg-[#9C5B61]/5'}`}
+                                    >
+                                        <svg className="w-4 h-4 text-[#9C5B61]/70 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M12 3l1.88 5.76a1 1 0 0 0 .95.69h6.06l-4.91 3.56a1 1 0 0 0-.36 1.12L17.5 20l-4.91-3.56a1 1 0 0 0-1.18 0L6.5 20l1.88-5.87a1 1 0 0 0-.36-1.12L3.11 9.45h6.06a1 1 0 0 0 .95-.69L12 3Z"/>
+                                        </svg>
+                                        Occasions
+                                        <ChevronDown className={`w-4 h-4 ml-auto opacity-40 transition-transform duration-300 ${openSection === 'occasions' ? 'rotate-180 opacity-70' : ''}`} />
+                                    </button>
+                                    <AnimatePresence>
+                                        {openSection === 'occasions' && (
+                                            <motion.div
+                                                initial={{ height: 0, opacity: 0 }}
+                                                animate={{ height: 'auto', opacity: 1 }}
+                                                exit={{ height: 0, opacity: 0 }}
+                                                transition={{ duration: 0.22, ease: 'easeInOut' }}
+                                                className="overflow-hidden"
+                                            >
+                                                <ul className="pl-10 pb-3 pt-1 space-y-0.5">
+                                                    {sidebarMenu.occasions.map((item, idx) => (
+                                                        <li key={idx}>
+                                                            <Link
+                                                                to={item.path}
+                                                                className="flex items-center gap-2.5 py-2.5 text-gray-500 text-sm font-semibold hover:text-[#9C5B61] transition-colors rounded-lg px-2 hover:bg-[#9C5B61]/5"
                                                             >
-                                                                <div className="w-10 h-10 bg-[#D4AF37] rounded-full flex items-center justify-center mb-2 shadow-sm">
-                                                                    <span className="text-white font-black text-xs">Au</span>
-                                                                </div>
-                                                                <span className="text-[10px] font-black text-black uppercase">GOLD</span>
-                                                            </button>
-                                                            <button 
-                                                                onClick={() => setMobileSelectedMetal('silver')}
-                                                                className="flex flex-col items-center justify-center p-4 bg-[#FDFBF7] border border-gray-100 rounded-2xl hover:bg-gray-100 transition-colors"
-                                                            >
-                                                                <div className="w-10 h-10 bg-[#8D6E63] rounded-full flex items-center justify-center mb-2 shadow-sm">
-                                                                    <span className="text-white font-black text-xs">Ag</span>
-                                                                </div>
-                                                                <span className="text-[10px] font-black text-black uppercase">SILVER</span>
-                                                            </button>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="space-y-3">
-                                                            <div className="flex items-center justify-between pl-4 pr-2">
-                                                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                                                                    {mobileSelectedMetal === 'gold' ? 'Gold Items' : 'Silver Items'}
-                                                                </span>
-                                                                <button 
-                                                                    onClick={() => setMobileSelectedMetal(null)}
-                                                                    className="text-xs text-[#9C5B61]"
-                                                                >
-                                                                    Change
-                                                                </button>
-                                                            </div>
-                                                            {sidebarMenu.shopByCategory[mobileSelectedMetal]?.length > 0 ? (
-                                                                <ul className="pl-4 py-2 space-y-3">
-                                                                    {sidebarMenu.shopByCategory[mobileSelectedMetal].map((item, idx) => (
-                                                                        <li key={idx}>
-                                                                            <Link to={item.path} onClick={() => { toggleMenu(false); setMobileSelectedMetal(null); }} className="text-gray-600 text-sm hover:text-[#9C5B61] block">
-                                                                                {item.name}
-                                                                            </Link>
-                                                                        </li>
-                                                                    ))}
-                                                                </ul>
-                                                            ) : (
-                                                                <div className="pl-4 py-4 pr-2 space-y-2">
-                                                                    <p className="text-sm font-semibold text-black">Coming Soon</p>
-                                                                    <p className="text-xs text-gray-500">Gold categories will appear here as soon as they are added.</p>
-                                                                    <Link
-                                                                        to="/gold-collection"
-                                                                        onClick={() => { toggleMenu(false); setMobileSelectedMetal(null); }}
-                                                                        className="inline-flex text-xs font-bold uppercase tracking-wider text-[#9C5B61] hover:text-black transition-colors"
-                                                                    >
-                                                                        View Gold Update
-                                                                    </Link>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                </motion.div>
-                                            )}
-                                        </AnimatePresence>
-                                    </div>
-
-                                    {/* 2. Gifts For */}
-                                    <div className="border-b border-gray-100 pb-2">
-                                        <button
-                                            onClick={() => toggleSection('giftsFor')}
-                                            className="w-full flex items-center justify-between py-2 text-left font-display font-semibold text-black hover:text-[#9C5B61] transition-colors"
-                                        >
-                                            GIFTS FOR
-                                            <ChevronDown className={`w-4 h-4 transition-transform ${openSection === 'giftsFor' ? 'rotate-180' : ''}`} />
-                                        </button>
-                                        <AnimatePresence>
-                                            {openSection === 'giftsFor' && (
-                                                <motion.div
-                                                    initial={{ height: 0, opacity: 0 }}
-                                                    animate={{ height: 'auto', opacity: 1 }}
-                                                    exit={{ height: 0, opacity: 0 }}
-                                                    className="overflow-hidden"
-                                                >
-                                                    <ul className="pl-4 py-2 space-y-3">
-                                                        {sidebarMenu.giftsFor.map((item, idx) => (
-                                                            <li key={idx}>
-                                                                <Link to={item.path} onClick={() => toggleMenu(false)} className="text-gray-600 text-sm hover:text-[#9C5B61] block">
-                                                                    {item.name}
-                                                                </Link>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </motion.div>
-                                            )}
-                                        </AnimatePresence>
-                                    </div>
-
-                                    {/* 3. Occasions */}
-                                    <div className="border-b border-gray-100 pb-2">
-                                        <button
-                                            onClick={() => toggleSection('occasions')}
-                                            className="w-full flex items-center justify-between py-2 text-left font-display font-semibold text-black hover:text-[#9C5B61] transition-colors"
-                                        >
-                                            OCCASIONS
-                                            <ChevronDown className={`w-4 h-4 transition-transform ${openSection === 'occasions' ? 'rotate-180' : ''}`} />
-                                        </button>
-                                        <AnimatePresence>
-                                            {openSection === 'occasions' && (
-                                                <motion.div
-                                                    initial={{ height: 0, opacity: 0 }}
-                                                    animate={{ height: 'auto', opacity: 1 }}
-                                                    exit={{ height: 0, opacity: 0 }}
-                                                    className="overflow-hidden"
-                                                >
-                                                    <ul className="pl-4 py-2 space-y-3">
-                                                        {sidebarMenu.occasions.map((item, idx) => (
-                                                            <li key={idx}>
-                                                                <Link to={item.path} onClick={() => toggleMenu(false)} className="text-gray-600 text-sm hover:text-[#9C5B61] block">
-                                                                    {item.name}
-                                                                </Link>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </motion.div>
-                                            )}
-                                        </AnimatePresence>
-                                    </div>
-
-                                    {/* 4. Super 1,999 */}
-                                    <div className="py-2">
-                                        <Link to="/shop?price_max=1999" onClick={() => toggleMenu(false)} className="font-display font-semibold text-black hover:text-[#9C5B61] block tracking-wide">
-                                            SUPER 1,999
-                                        </Link>
-                                    </div>
-
-                                    {/* 5. Blogs */}
-                                    <div className="py-2">
-                                        <Link to="/blogs" onClick={() => toggleMenu(false)} className="font-display font-semibold text-black hover:text-[#9C5B61] block tracking-wide">
-                                            BLOGS
-                                        </Link>
-                                    </div>
-
-                                    {/* 6. About Us */}
-                                    <div className="py-2">
-                                        <Link to="/about" onClick={() => toggleMenu(false)} className="font-display font-semibold text-black hover:text-[#9C5B61] block tracking-wide">
-                                            ABOUT US
-                                        </Link>
-                                    </div>
-
+                                                                <span className="w-1.5 h-1.5 rounded-full bg-[#9C5B61]/50 shrink-0" />
+                                                                {item.name}
+                                                            </Link>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
                                 </div>
+
+                                {/* 8. BLOGS */}
+                                <Link
+                                    to="/blogs"
+                                    className="flex items-center gap-3 px-3 py-3.5 rounded-xl font-display font-bold text-[13px] text-gray-800 hover:text-[#9C5B61] hover:bg-[#9C5B61]/5 transition-all uppercase tracking-wider group border-b border-gray-50"
+                                >
+                                    <svg className="w-4 h-4 text-[#9C5B61]/70 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                                    </svg>
+                                    Blogs
+                                    <ChevronRight className="w-3.5 h-3.5 ml-auto opacity-30 group-hover:opacity-70 group-hover:translate-x-0.5 transition-all" />
+                                </Link>
+
+                                {/* 9. ABOUT US */}
+                                <Link
+                                    to="/about"
+                                    className="flex items-center gap-3 px-3 py-3.5 rounded-xl font-display font-bold text-[13px] text-gray-800 hover:text-[#9C5B61] hover:bg-[#9C5B61]/5 transition-all uppercase tracking-wider group"
+                                >
+                                    <svg className="w-4 h-4 text-[#9C5B61]/70 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <line x1="12" y1="8" x2="12" y2="12"/>
+                                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                                    </svg>
+                                    About Us
+                                    <ChevronRight className="w-3.5 h-3.5 ml-auto opacity-30 group-hover:opacity-70 group-hover:translate-x-0.5 transition-all" />
+                                </Link>
+
+                            </div>
+
+                            {/* Drawer Footer */}
+                            <div className="px-4 py-4 border-t border-gray-100 space-y-1 shrink-0 bg-gray-50/50 mt-auto">
+                                <Link
+                                    to="/help"
+                                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 text-xs font-bold uppercase tracking-widest hover:text-[#9C5B61] hover:bg-white transition-all"
+                                >
+                                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                    </svg>
+                                    Help Center
+                                </Link>
+                                <Link
+                                    to={user ? '/profile' : '/login'}
+                                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 text-xs font-bold uppercase tracking-widest hover:text-[#9C5B61] hover:bg-white transition-all"
+                                >
+                                    <User className="w-3.5 h-3.5" />
+                                    {user ? 'My Account' : 'Login / Sign Up'}
+                                </Link>
                             </div>
                         </motion.div>
                     </>
                 )}
             </AnimatePresence>
 
-            {/* Floating Bottom Navigation - Mobile Only */}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 px-6 py-3 flex items-center justify-between z-[100] shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+            {/* ─── Floating Bottom Navigation - Mobile Only ─────────────────── */}
+            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 px-6 py-3 flex items-center justify-between z-[105] shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
                 <Link to="/" className="flex flex-col items-center gap-1 text-gray-400 hover:text-[#9C5B61] group">
                     <Store className="w-5 h-5 md:w-6 md:h-6 group-active:scale-90 transition-transform" />
                     <span className="text-[10px] font-bold uppercase tracking-tighter">Home</span>
                 </Link>
-                {/* Mobile Menu Trigger Replacement (Replacing Shop) */}
-                <button onClick={() => toggleMenu(true)} className="flex flex-col items-center gap-1 text-gray-400 hover:text-[#9C5B61] group">
+                <button 
+                  onClick={() => setIsMenuOpen(true)} 
+                  className={`flex flex-col items-center gap-1 group transition-colors ${isMenuOpen ? 'text-[#9C5B61]' : 'text-gray-400 hover:text-[#9C5B61]'}`}
+                  aria-label="Open menu"
+                >
                     <Menu className="w-5 h-5 md:w-6 md:h-6 group-active:scale-90 transition-transform" />
                     <span className="text-[10px] font-bold uppercase tracking-tighter">Menu</span>
                 </button>
-                <Link to="/wishlist" className="flex flex-col items-center gap-1 text-gray-400 hover:text-[#9C5B61] group relative">
+                <Link to="/wishlist" className="flex flex-col items-center gap-1 text-gray-400 hover:text-[#9C5B61] group relative" aria-label="Mobile Wishlist">
                     <Heart className="w-5 h-5 md:w-6 md:h-6 group-active:scale-90 transition-transform" />
                     {wishlist?.length > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-[#9C5B61] text-white text-[8px] w-3.5 h-3.5 flex items-center justify-center rounded-full">{wishlist.length}</span>
+                        <span className="absolute -top-1 -right-1 bg-[#9C5B61] text-white text-[8px] w-3.5 h-3.5 flex items-center justify-center rounded-full border border-white">{wishlist.length}</span>
                     )}
                     <span className="text-[10px] font-bold uppercase tracking-tighter">Wishlist</span>
                 </Link>
