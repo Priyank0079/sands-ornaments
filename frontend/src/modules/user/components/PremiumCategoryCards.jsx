@@ -28,10 +28,10 @@ const PremiumCategoryCards = () => {
             delay: 0.2
         },
         {
-            title: 'All',
+            title: 'Family',
             subtitle: 'FOR EVERYONE',
             image: allImg,
-            path: '/shop',
+            path: '/category/family',
             bgColor: '#F3C4C9',
             delay: 0.3
         }

@@ -104,7 +104,7 @@ const AdminLayout = ({ children }) => {
             ]
         },
         { name: 'Blogs', icon: BookOpen, path: '/admin/blogs' },
-        { name: 'Sections', icon: LayoutDashboard, path: '/admin/sections' },
+        { name: 'Homepage Sections', icon: LayoutDashboard, path: '/admin/sections' },
         { name: 'Metal Pricing', icon: RefreshCcw, path: '/admin/metal-pricing' },
         { name: 'Tax Settings', icon: Percent, path: '/admin/tax-settings' },
         { name: 'Global Settings', icon: Settings, path: '/admin/settings' },
@@ -120,7 +120,7 @@ const AdminLayout = ({ children }) => {
         const checkNotifications = () => {
             const allNotifs = JSON.parse(localStorage.getItem('admin_notifications') || '[]');
             const unreadCount = allNotifs.filter(n => n.unread).length;
-            
+
             if (unreadCount > prevCountRef.current) {
                 // New notification arrived
                 const newest = allNotifs.find(n => n.unread);
@@ -164,7 +164,7 @@ const AdminLayout = ({ children }) => {
         if (item.subItems) {
             setExpandedMenu(expandedMenu === item.name ? null : item.name);
             if (!isSidebarOpen) setIsSidebarOpen(true);
-            
+
             // If the item itself has a path, navigate to it too
             if (item.path) navigate(item.path);
         } else {
@@ -282,11 +282,11 @@ const AdminLayout = ({ children }) => {
                                         </div>
                                     )}
                                 </div>
-                        );
-                    })}
-                </nav>
+                            );
+                        })}
+                    </nav>
 
-            </div>
+                </div>
 
                 {/* Logout Section - Fixed at Bottom */}
                 <div className="p-6 lg:p-4 border-t border-white/10 shrink-0 bg-[#3E2723]">
@@ -319,7 +319,7 @@ const AdminLayout = ({ children }) => {
 
                     <div className="flex items-center gap-4 lg:gap-6">
                         {/* Notification Icon */}
-                        <button 
+                        <button
                             onClick={() => navigate('/admin/notifications')}
                             className="relative p-2.5 hover:bg-gray-50 rounded-xl transition-all border border-gray-100 shadow-sm group"
                         >
@@ -358,7 +358,7 @@ const AdminLayout = ({ children }) => {
                                 <div className="flex-1 min-w-0">
                                     <h4 className="text-xs font-black text-gray-900 uppercase tracking-tight truncate">{latestNotif.title}</h4>
                                     <p className="text-[11px] text-gray-500 font-bold mt-1 line-clamp-2 leading-relaxed uppercase tracking-tight">{latestNotif.message}</p>
-                                    <button 
+                                    <button
                                         onClick={() => {
                                             navigate(latestNotif.link || '/admin/notifications');
                                             setShowPopup(false);
