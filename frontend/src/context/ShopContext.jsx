@@ -96,11 +96,11 @@ export const ShopProvider = ({ children }) => {
     }, [apiCoupons]);
 
     const [notification, setNotification] = useState(null);
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isPincodeModalOpen, setIsPincodeModalOpen] = useState(false);
     const [pincode, setPincode] = useState(() => {
         return localStorage.getItem('user_pincode') || '';
     });
+
 
     const updatePincode = (newPincode) => {
         setPincode(newPincode);
@@ -109,10 +109,6 @@ export const ShopProvider = ({ children }) => {
         } else {
             localStorage.removeItem('user_pincode');
         }
-    };
-
-    const toggleMenu = (state) => {
-        setIsMenuOpen(state !== undefined ? state : !isMenuOpen);
     };
 
     // Notification Preferences & List
@@ -874,7 +870,7 @@ export const ShopProvider = ({ children }) => {
             coupons, addCoupon, updateCoupon, deleteCoupon, toggleCoupon, getActiveCoupons, validateCoupon,
             appliedCoupon, couponDiscount, applyCoupon, clearAppliedCoupon,
             notificationsEnabled, userNotifications, toggleNotificationSettings, deleteUserNotification,
-            isMenuOpen, toggleMenu, isPincodeModalOpen, setIsPincodeModalOpen,
+            isPincodeModalOpen, setIsPincodeModalOpen,
             pincode, updatePincode,
 
             products, updateProduct, bulkUpdatePrices,
