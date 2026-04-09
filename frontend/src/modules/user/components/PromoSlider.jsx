@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useShop } from '../../../context/ShopContext';
 
 // Import Assets
 import diamondLuxury from '../../../assets/hero/diamond_luxury.png';
@@ -45,7 +46,31 @@ const SLIDES = [
 ];
 
 const PromoSlider = () => {
-    const extendedSlides = [SLIDES[SLIDES.length - 1], ...SLIDES, SLIDES[0]];
+    const { homepageSections } = useShop();
+    const heroSection = homepageSections['hero-banners'];
+    const dynamicSlides = Array.isArray(heroSection?.items)
+        ? heroSection.items
+            .filter((item) => item?.image && (item?.label || item?.name))
+            .map((item, index) => ({
+                id: item.id || `hero-slide-${index + 1}`,
+                image: item.image,
+                title: item.label || item.name || SLIDES[index]?.title || '',
+                subtitle: item.subtitle || SLIDES[index]?.subtitle || '',
+                tag: item.tag || item.name || SLIDES[index]?.tag || '',
+                link: item.path || SLIDES[index]?.link || '/shop',
+                ctaLabel: item.ctaLabel || 'Shop Collection'
+            }))
+        : [];
+    const slides = heroSection?.isActive !== false && dynamicSlides.length > 0
+        ? dynamicSlides.map((slide, index) => ({
+            ...SLIDES[index],
+            ...slide
+        }))
+        : SLIDES;
+    const autoplayMs = Number(heroSection?.settings?.autoplayMs) > 0
+        ? Number(heroSection.settings.autoplayMs)
+        : 3000;
+    const extendedSlides = [slides[slides.length - 1], ...slides, slides[0]];
     const [currentIndex, setCurrentIndex] = useState(1);
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [isSuspended, setIsSuspended] = useState(false);
@@ -54,8 +79,8 @@ const PromoSlider = () => {
     const handleTransitionEnd = () => {
         if (currentIndex === 0) {
             setIsTransitioning(false);
-            setCurrentIndex(SLIDES.length);
-        } else if (currentIndex === SLIDES.length + 1) {
+            setCurrentIndex(slides.length);
+        } else if (currentIndex === slides.length + 1) {
             setIsTransitioning(false);
             setCurrentIndex(1);
         } else {
@@ -77,10 +102,15 @@ const PromoSlider = () => {
 
     useEffect(() => {
         if (!isSuspended) {
-            autoPlayRef.current = setInterval(nextSlide, 3000); // 3s is better for legibility than 1s, but user asked for "every second", I'll use 1500ms for a balance or 1000ms if they literally meant 1s.
+            autoPlayRef.current = setInterval(nextSlide, autoplayMs);
         }
         return () => clearInterval(autoPlayRef.current);
-    }, [nextSlide, isSuspended]);
+    }, [nextSlide, isSuspended, autoplayMs]);
+
+    useEffect(() => {
+        setCurrentIndex(1);
+        setIsTransitioning(false);
+    }, [slides.length]);
 
     return (
         <section 
@@ -150,7 +180,7 @@ const PromoSlider = () => {
                                         to={slide.link}
                                         className="relative group inline-flex items-center justify-center bg-[#9C5B61] text-white hover:bg-white hover:text-[#9C5B61] font-bold text-[10px] md:text-sm uppercase tracking-[0.2em] px-8 py-3 md:px-12 md:py-4 transition-all duration-300 overflow-hidden shadow-xl"
                                     >
-                                        <span className="relative z-10">Shop Collection</span>
+                                        <span className="relative z-10">{slide.ctaLabel || 'Shop Collection'}</span>
                                     </Link>
                                 </motion.div>
                             </div>
@@ -160,8 +190,8 @@ const PromoSlider = () => {
 
                 {/* Tanishq-style Diamond Indicators */}
                 <div className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 z-30 flex gap-4">
-                    {SLIDES.map((_, i) => {
-                        const isActive = (currentIndex - 1 + SLIDES.length) % SLIDES.length === i;
+                    {slides.map((_, i) => {
+                        const isActive = (currentIndex - 1 + slides.length) % slides.length === i;
                         return (
                             <button
                                 key={i}

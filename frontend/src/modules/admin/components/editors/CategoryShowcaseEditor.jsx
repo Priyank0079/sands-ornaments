@@ -18,6 +18,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     const navigate = useNavigate();
     const sectionId = sectionData?.id || 'category-showcase';
     const isCategoryShowcase = sectionId === 'category-showcase';
+    const isPremiumCategoryCards = sectionId === 'premium-category-cards';
 
     // Default items to show if new
     const initialItemsFromProps = sectionData.items && sectionData.items.length > 0
@@ -162,7 +163,8 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                 categoryId: resolved._id,
                 name: resolved.name,
                 path: `/shop?category=${resolved._id}`,
-                image: item.image || resolved.image || item.image
+                image: item.image || resolved.image || item.image,
+                hoverImage: item.hoverImage || ''
             };
         }));
     }, [categories, isCategoryShowcase]);
@@ -422,6 +424,20 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
 
     const handleSave = (nextItems) => {
         if (!validateItems(nextItems)) return;
+        if (isPremiumCategoryCards) {
+            const normalizedItems = nextItems.map((item, index) => {
+                const fallbackItem = defaultItems[index] || {};
+                return {
+                    ...item,
+                    name: item.name || fallbackItem.name || '',
+                    label: item.label || item.name || fallbackItem.label || fallbackItem.name || '',
+                    tag: item.tag || fallbackItem.tag || '',
+                    path: item.path || fallbackItem.path || '/shop'
+                };
+            });
+            onSave({ items: normalizedItems });
+            return;
+        }
         if (isCategoryShowcase) {
             const missing = nextItems.filter(item => !getCategoryFromItem(item));
             if (missing.length > 0) {
@@ -662,14 +678,20 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
                 <div>
                     <h3 className="font-display text-sm md:text-base font-bold text-gray-800">Manage Items</h3>
-                    <p className="text-[10px] md:text-xs text-gray-400">Add, edit, or remove items in this section</p>
+                    <p className="text-[10px] md:text-xs text-gray-400">
+                        {isPremiumCategoryCards
+                            ? 'These three cards stay fixed. You can update only their images to keep navigation consistent.'
+                            : 'Add, edit, or remove items in this section'}
+                    </p>
                 </div>
-                <button
-                    onClick={addItem}
-                    className="flex items-center gap-2 bg-[#3E2723] text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-[#2b1b18] transition-colors"
-                >
-                    <Plus size={14} /> Add Item
-                </button>
+                {!isPremiumCategoryCards && (
+                    <button
+                        onClick={addItem}
+                        className="flex items-center gap-2 bg-[#3E2723] text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-[#2b1b18] transition-colors"
+                    >
+                        <Plus size={14} /> Add Item
+                    </button>
+                )}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {items.map((item, index) => {
@@ -684,7 +706,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                     Item #{index + 1}
                                 </span>
                                 <div className="flex gap-2">
-                                    {isEditing && (
+                                    {isEditing && !isPremiumCategoryCards && (
                                         <button
                                             onClick={() => removeItem(item.id)}
                                             className="p-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
@@ -734,8 +756,32 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                         </div>
                                     </div>
 
-                                    {/* Select Product Button (skip for category showcase + nav gifts/occasions + price range + perfect gift + new launch) */}
-                                    {!isCategoryShowcase && sectionId !== 'nav-gifts-for' && sectionId !== 'nav-occasions' && sectionId !== 'price-range-showcase' && sectionId !== 'perfect-gift' && sectionId !== 'new-launch' && sectionId !== 'latest-drop' && sectionId !== 'most-gifted' && sectionId !== 'proposal-rings' && sectionId !== 'curated-for-you' && sectionId !== 'style-it-your-way' && (
+                                    {isCategoryShowcase && (
+                                        <div className="aspect-square bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center overflow-hidden relative group/img">
+                                            {item.hoverImage ? (
+                                                <>
+                                                    <img src={item.hoverImage} alt="" className="w-full h-full object-cover" />
+                                                    <button onClick={() => handleItemChange(item.id, 'hoverImage', '')} className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity">
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <div className="text-center p-4">
+                                                    <ImageIcon className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                                                    <label className="cursor-pointer px-3 py-1.5 bg-[#3E2723] text-white text-xs font-bold rounded-lg block">
+                                                        Upload Hover
+                                                        <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(item.id, e.target.files[0], 'hoverImage')} />
+                                                    </label>
+                                                </div>
+                                            )}
+                                            <div className="absolute inset-x-0 bottom-0 bg-white/95 p-2 border-t border-gray-100">
+                                                <Input placeholder="Hover URL..." value={item.hoverImage || ''} onChange={(e) => handleItemChange(item.id, 'hoverImage', e.target.value)} className="text-xs h-8" />
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Select Product Button (skip for locked premium cards and structured sections) */}
+                                    {!isPremiumCategoryCards && !isCategoryShowcase && sectionId !== 'nav-gifts-for' && sectionId !== 'nav-occasions' && sectionId !== 'price-range-showcase' && sectionId !== 'perfect-gift' && sectionId !== 'new-launch' && sectionId !== 'latest-drop' && sectionId !== 'most-gifted' && sectionId !== 'proposal-rings' && sectionId !== 'curated-for-you' && sectionId !== 'style-it-your-way' && (
                                         <button
                                             onClick={() => handleRedirectToSelect(item.id)}
                                             className="w-full py-2 bg-gray-50 text-gray-600 text-[10px] font-bold rounded-lg border border-gray-200 hover:bg-gray-100 flex items-center justify-center gap-2 uppercase tracking-widest"
@@ -745,6 +791,13 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                     )}
 
                                     <div className="space-y-3">
+                                        {isPremiumCategoryCards && (
+                                            <div className="rounded-xl border border-[#EFE3DF] bg-[#FFFCFB] px-4 py-3">
+                                                <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#B28A8A]">Card Destination</p>
+                                                <p className="mt-2 text-sm font-semibold text-[#3E2723]">{item.name}</p>
+                                                <p className="mt-1 text-xs text-gray-500">{item.path}</p>
+                                            </div>
+                                        )}
                                         {isCategoryShowcase && (
                                             <div>
                                                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Category</label>
@@ -911,7 +964,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                 />
                                             </div>
                                         )}
-                                        {!isCategoryShowcase && sectionId !== 'price-range-showcase' && (
+                                        {!isPremiumCategoryCards && !isCategoryShowcase && sectionId !== 'price-range-showcase' && (
                                             <Input
                                                 label={sectionId === 'style-it-your-way' ? "Title" : "Name"}
                                                 value={item.name}
@@ -971,12 +1024,14 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                 </button>
                                             </div>
                                         )}
-                                        <Input
-                                            label={sectionId === 'style-it-your-way' ? "Subtitle" : "Badge"}
-                                            value={item.tag}
-                                            onChange={(e) => handleItemChange(item.id, 'tag', e.target.value)}
-                                            placeholder="..."
-                                        />
+                                        {!isPremiumCategoryCards && (
+                                            <Input
+                                                label={sectionId === 'style-it-your-way' ? "Subtitle" : "Badge"}
+                                                value={item.tag}
+                                                onChange={(e) => handleItemChange(item.id, 'tag', e.target.value)}
+                                                placeholder="..."
+                                            />
+                                        )}
 
                                         {sectionId === 'style-it-your-way' && (
                                             <div className="pt-2">

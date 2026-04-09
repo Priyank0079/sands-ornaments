@@ -1,13 +1,25 @@
 import React, { useState } from 'react';
 import { Send } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { useShop } from '../../../context/ShopContext';
+import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 import sandsLogo from '../assets/sands-logo.png';
 
 const ChitChatSection = () => {
+    const { homepageSections } = useShop();
     const [formData, setFormData] = useState({
         name: '',
         email: '',
         message: ''
     });
+    const sectionData = homepageSections?.['chit-chat'];
+    const settings = sectionData?.settings || {};
+    const logo = resolveLegacyCmsAsset(settings.logo, sandsLogo);
+    const title = settings.title || "We're Here for You";
+    const subtitle = settings.subtitle || "Questions or styling advice? We'd love to hear from you.";
+    const responseText = settings.responseText || 'Replies within 2 hours';
+    const submitLabel = settings.submitLabel || 'Send Message';
+    const successMessage = settings.successMessage || "Thanks for chatting with us! We'll get back to you shortly.";
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -15,9 +27,7 @@ const ChitChatSection = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Handle submission logic here
-        console.log("Form submitted:", formData);
-        alert("Thanks for chatting with us! We'll get back to you shortly.");
+        toast.success(successMessage);
         setFormData({ name: '', email: '', message: '' });
     };
 
@@ -35,16 +45,16 @@ const ChitChatSection = () => {
                         <div className="w-full md:w-5/12 p-6 md:p-10 bg-[#4A1015]/40 relative flex flex-col justify-center">
                             <div className="mb-4">
                                 <img 
-                                    src={sandsLogo} 
+                                    src={logo} 
                                     alt="Sands Jewels" 
                                     className="w-10 md:w-12 h-auto mb-4 opacity-80" 
                                     style={{ filter: 'brightness(0) invert(1)' }} 
                                 />
                                 <h2 className="font-serif text-2xl md:text-3xl text-white mb-2 leading-tight tracking-wide">
-                                    We're Here for You
+                                    {title}
                                 </h2>
                                 <p className="text-white/70 font-sans text-sm leading-relaxed md:max-w-[280px]">
-                                    Questions or styling advice? We'd love to hear from you.
+                                    {subtitle}
                                 </p>
                             </div>
                             
@@ -54,7 +64,7 @@ const ChitChatSection = () => {
                                   <span className="relative inline-flex rounded-full h-2 w-2 bg-[#34D399]"></span>
                                 </div>
                                 <span className="text-[11px] text-white/80 tracking-widest font-semibold uppercase">
-                                    Replies within 2 hours
+                                    {responseText}
                                 </span>
                             </div>
                         </div>
@@ -110,7 +120,7 @@ const ChitChatSection = () => {
                                     type="submit"
                                     className="w-full bg-[#4A1015] text-white font-semibold tracking-wider text-sm py-3 rounded-md hover:bg-[#340b0e] transition-all flex items-center justify-center gap-2 group mt-2"
                                 >
-                                    <span>Send Message</span>
+                                    <span>{submitLabel}</span>
                                     <Send className="w-3.5 h-3.5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                                 </button>
                             </form>

@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Plus, Minus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useShop } from '../../../context/ShopContext';
 
 const FAQSection = () => {
+    const { homepageSections } = useShop();
     const [activeFaq, setActiveFaq] = useState(null);
 
-    const faqs = [
+    const FALLBACK_FAQS = [
         {
             question: "Is your jewellery made of real silver?",
             answer: "Yes, all our jewellery is crafted from high-quality 925 Sterling Silver. Each piece comes with a hallmark stamp of authenticity so you can shop with confidence."
@@ -23,6 +25,16 @@ const FAQSection = () => {
             answer: "We offer a hassle-free 7-day return and exchange policy. If you are not completely satisfied with your purchase, you can return it in its original condition within 7 days."
         }
     ];
+    const sectionData = homepageSections?.faqs;
+    const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
+    const faqs = configuredItems.length > 0
+        ? configuredItems
+            .map((item, index) => ({
+                question: item.name || item.label || FALLBACK_FAQS[index]?.question || '',
+                answer: item.description || FALLBACK_FAQS[index]?.answer || ''
+            }))
+            .filter((item) => item.question && item.answer)
+        : FALLBACK_FAQS;
 
     const toggleFaq = (index) => {
         setActiveFaq(activeFaq === index ? null : index);
@@ -33,7 +45,7 @@ const FAQSection = () => {
             <div className="container mx-auto px-4 md:px-6 max-w-4xl relative z-10">
                 <div className="text-center mb-8 md:mb-16">
                     <span className="text-[#C9A24D] text-[10px] md:text-sm font-bold tracking-[0.2em] uppercase mb-2 block">Common Questions</span>
-                    <h2 className="font-display text-2xl md:text-5xl text-[#2F0A0F]">Frequently Asked Questions</h2>
+                    <h2 className="font-display text-2xl md:text-5xl text-[#2F0A0F]">{sectionData?.label || 'Frequently Asked Questions'}</h2>
                 </div>
 
                 <div className="space-y-3 md:space-y-4">

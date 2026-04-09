@@ -477,36 +477,36 @@ export const adminService = {
       return { success: false, message: err.response?.data?.message || "Failed to update tax settings" };
     }
   },
-  getSections: async () => {
+  getSections: async (pageKey = null) => {
     try {
-      const res = await api.get('admin/sections');
+      const res = await api.get('admin/sections', { params: pageKey ? { pageKey } : undefined });
       return res.data.data?.sections || res.data.sections || [];
     } catch (err) {
       console.error("Admin fetch sections failed:", err);
       return [];
     }
   },
-  getSectionById: async (id) => {
+  getSectionById: async (id, pageKey = null) => {
     try {
-      const res = await api.get(`admin/sections/${id}`);
+      const res = await api.get(`admin/sections/${id}`, { params: pageKey ? { pageKey } : undefined });
       return res.data.data?.section || res.data.section;
     } catch (err) {
       console.error("Admin fetch section failed:", err);
       throw err;
     }
   },
-  updateSection: async (id, payload) => {
+  updateSection: async (id, payload, pageKey = null) => {
     try {
-      const res = await api.put(`admin/sections/${id}`, payload);
+      const res = await api.put(`admin/sections/${id}`, payload, { params: pageKey ? { pageKey } : undefined });
       return res.data;
     } catch (err) {
       console.error("Admin update section failed:", err);
       return { success: false, message: err.response?.data?.message || "Failed to update section" };
     }
   },
-  bulkUpsertSections: async (sections) => {
+  bulkUpsertSections: async (sections, pageKey = null) => {
     try {
-      const res = await api.post('admin/sections/bulk', { sections });
+      const res = await api.post('admin/sections/bulk', { sections, pageKey });
       return res.data;
     } catch (err) {
       console.error("Admin bulk section upsert failed:", err);

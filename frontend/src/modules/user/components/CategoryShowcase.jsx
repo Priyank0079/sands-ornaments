@@ -82,6 +82,7 @@ const CategoryShowcase = () => {
             id: item.itemId || item.id || resolvedCategory?._id || index,
             name,
             image: resolveLegacyCmsAsset(item.image || resolvedCategory?.image, fb?.main),
+            hoverImage: resolveLegacyCmsAsset(item.hoverImage, fb?.angle2 || fb?.angle1 || fb?.main),
             path: item.path || (resolvedCategory ? `/shop?category=${resolvedCategory._id}` : '/shop'),
             tag: item.tag || '',
             fallback: fb
@@ -108,7 +109,7 @@ const CategoryShowcase = () => {
                         const isHovered = activeHoverId === cat.id;
 
                         // Use the high-end model shot (angle2) for a drama-filled hover state
-                        const hoverImageSrc = fallbacks?.angle2 || fallbacks?.angle1 || cat.image;
+                        const hoverImageSrc = cat.hoverImage || fallbacks?.angle2 || fallbacks?.angle1 || cat.image;
 
                         return (
                             <Link

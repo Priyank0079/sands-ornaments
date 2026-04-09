@@ -1,13 +1,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Star, Quote } from 'lucide-react';
+import { useShop } from '../../../context/ShopContext';
+import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 
 // Import local high-end customer portraits
 import customer1 from '../../../assets/testimonial_customer_1.png';
 import customer2 from '../../../assets/testimonial_customer_2.png';
 import customer3 from '../../../assets/testimonial_customer_3.png';
 
-const testimonials = [
+const TESTIMONIALS = [
     {
         id: 1,
         name: "Ananya Sharma",
@@ -38,6 +40,21 @@ const testimonials = [
 ];
 
 const Testimonials = () => {
+    const { homepageSections } = useShop();
+    const sectionData = homepageSections?.testimonials;
+    const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
+    const displayItems = configuredItems.length > 0
+        ? configuredItems.map((item, index) => ({
+            id: item.itemId || item._id || item.id || `testimonial-${index + 1}`,
+            name: item.name || TESTIMONIALS[index]?.name || 'Customer Story',
+            role: item.subtitle || TESTIMONIALS[index]?.role || 'Verified Buyer',
+            image: resolveLegacyCmsAsset(item.image, TESTIMONIALS[index]?.image || customer1),
+            rating: Number(item.rating) || TESTIMONIALS[index]?.rating || 5,
+            text: item.description || TESTIMONIALS[index]?.text || '',
+            location: item.location || TESTIMONIALS[index]?.location || ''
+        }))
+        : TESTIMONIALS;
+
     return (
         <section className="py-20 md:py-32 bg-[#F3E8EE] relative overflow-hidden">
             {/* Decorative Background Elements */}
@@ -47,12 +64,12 @@ const Testimonials = () => {
             <div className="container mx-auto px-4 md:px-6 relative z-10">
                 <div className="text-center mb-16 md:mb-24">
                     <span className="text-[#4A1015] text-[10px] md:text-sm font-bold tracking-[0.4em] uppercase mb-3 block">Kind Words</span>
-                    <h2 className="font-display text-3xl md:text-5xl text-[#4A1015] mb-4">Customer Stories</h2>
+                    <h2 className="font-display text-3xl md:text-5xl text-[#4A1015] mb-4">{sectionData?.label || 'Customer Stories'}</h2>
                     <div className="h-1 w-20 bg-[#D39A9F] mx-auto rounded-full"></div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 md:gap-8 max-w-7xl mx-auto">
-                    {testimonials.map((testimonial, index) => (
+                    {displayItems.map((testimonial, index) => (
                         <motion.div
                             key={testimonial.id}
                             initial={{ opacity: 0, y: 30 }}

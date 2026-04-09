@@ -35,6 +35,7 @@ import bannerDaily from '../assets/banner_daily.png';
 import bannerOffice from '../assets/banner_office.png';
 import bannerParty from '../assets/banner_party.png';
 import trendingHeritage from '../assets/trending_heritage.png';
+import sandsLogo from '../assets/sands-logo.png';
 import catPendant from '../assets/cat_pendant.png';
 import silverEarringsProduct from '../assets/silver_earrings_product.png';
 import silverBraceletProduct from '../assets/silver_bracelet_product.png';
@@ -88,6 +89,7 @@ const legacyAssetMap = {
   'banner_office.png': bannerOffice,
   'banner_party.png': bannerParty,
   'trending_heritage.png': trendingHeritage,
+  'sands-logo.png': sandsLogo,
   'cat_pendant.png': catPendant,
   'silver_earrings_product.png': silverEarringsProduct,
   'silver_bracelet_product.png': silverBraceletProduct,

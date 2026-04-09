@@ -1,6 +1,80 @@
 const HomepageSection = require("../../../models/HomepageSection");
 const { success, error } = require("../../../utils/apiResponse");
 
+const ALLOWED_PAGE_KEYS = new Set(["home", "shop-men", "shop-women", "shop-family"]);
+const ALLOWED_SECTION_TYPES = new Set([
+  "banner",
+  "category-grid",
+  "product-collection",
+  "product-carousel",
+  "promo-grid",
+  "faq",
+  "testimonial",
+  "nav-links",
+  "rich-content"
+]);
+
+const normalizePageKey = (value) => {
+  const candidate = String(value || "home").trim().toLowerCase();
+  return ALLOWED_PAGE_KEYS.has(candidate) ? candidate : "home";
+};
+
+const normalizeSectionType = (value) => {
+  const candidate = String(value || "rich-content").trim().toLowerCase();
+  return ALLOWED_SECTION_TYPES.has(candidate) ? candidate : "rich-content";
+};
+
+const buildSectionId = (pageKey, sectionKey) => (
+  pageKey === "home" ? sectionKey : `${pageKey}:${sectionKey}`
+);
+
+const normalizeSectionIdentity = (id, payload = {}, query = {}) => {
+  const payloadPageKey = payload.pageKey || query.pageKey;
+  const pageKey = normalizePageKey(payloadPageKey);
+
+  if (payload.sectionKey) {
+    const sectionKey = String(payload.sectionKey).trim();
+    return {
+      pageKey,
+      sectionKey,
+      sectionId: buildSectionId(pageKey, sectionKey)
+    };
+  }
+
+  const rawId = String(id || payload.sectionId || "").trim();
+  if (rawId.includes(":")) {
+    const [rawPageKey, ...sectionKeyParts] = rawId.split(":");
+    const parsedPageKey = normalizePageKey(rawPageKey);
+    const sectionKey = sectionKeyParts.join(":");
+    return {
+      pageKey: parsedPageKey,
+      sectionKey,
+      sectionId: buildSectionId(parsedPageKey, sectionKey)
+    };
+  }
+
+  const sectionKey = rawId;
+  return {
+    pageKey,
+    sectionKey,
+    sectionId: buildSectionId(pageKey, sectionKey)
+  };
+};
+
+const buildSectionLookup = ({ pageKey, sectionKey, sectionId }) => {
+  if (!sectionKey) {
+    return sectionId ? { $or: [{ sectionId }, { _id: sectionId }] } : null;
+  }
+
+  return {
+    $or: [
+      { pageKey, sectionKey },
+      { sectionId },
+      ...(pageKey === "home" ? [{ sectionId: sectionKey }] : [])
+    ]
+  };
+};
+
 const slugifyLabel = (value = "") => String(value || "")
   .trim()
   .toLowerCase()
@@ -58,11 +132,22 @@ const buildRandomizedProductsPath = (productIds, limit, currentPath) => {
   return currentPath || "/shop?limit=12&sort=random";
 };
 
-const sanitizeSectionPayload = (sectionId, payload = {}) => {
+const sanitizeSectionPayload = (identity, payload = {}) => {
+  const pageKey = normalizePageKey(identity?.pageKey || payload.pageKey);
+  const sectionKey = String(identity?.sectionKey || payload.sectionKey || identity?.sectionId || payload.sectionId || "").trim();
+  const sectionId = identity?.sectionId || buildSectionId(pageKey, sectionKey);
+
   const cleaned = {
+    pageKey,
+    sectionKey,
+    sectionId,
+    sectionType: normalizeSectionType(payload.sectionType),
     label: payload.label,
     isActive: payload.isActive !== undefined ? payload.isActive : true,
     sortOrder: payload.sortOrder ?? 0,
+    settings: payload.settings && typeof payload.settings === "object" && !Array.isArray(payload.settings)
+      ? payload.settings
+      : {},
     items: Array.isArray(payload.items) ? payload.items.map((item, idx) => ({
       itemId: item.itemId || item.id || item._id || `${Date.now()}_${idx}`,
       type: item.type || (item.productId ? "product" : "manual"),
@@ -72,17 +157,23 @@ const sanitizeSectionPayload = (sectionId, payload = {}) => {
       limit: item.limit ?? undefined,
       name: item.name,
       label: item.label,
+      subtitle: item.subtitle,
+      description: item.description,
       image: item.image,
+      hoverImage: item.hoverImage,
       path: item.path,
       tag: item.tag,
+      location: item.location,
+      rating: item.rating ?? undefined,
       price: item.price,
+      ctaLabel: item.ctaLabel,
       priceMax: item.priceMax ?? undefined,
       extraImages: Array.isArray(item.extraImages) ? item.extraImages : undefined,
       sortOrder: item.sortOrder ?? idx
     })) : []
   };
 
-  if (sectionId === "nav-gifts-for" || sectionId === "nav-occasions") {
+  if (sectionKey === "nav-gifts-for" || sectionKey === "nav-occasions") {
     cleaned.items = cleaned.items
       .map((item, idx) => {
         const label = item.name || item.label || '';
@@ -90,14 +181,14 @@ const sanitizeSectionPayload = (sectionId, payload = {}) => {
           ...item,
           name: label,
           label: label,
-          path: buildNavPath(sectionId, label, item.path),
+          path: buildNavPath(sectionKey, label, item.path),
           sortOrder: item.sortOrder ?? idx
         };
       })
       .filter((item) => Boolean(item.name));
   }
 
-  if (sectionId === "category-showcase") {
+  if (sectionKey === "category-showcase") {
     cleaned.items = cleaned.items
       .map((item, idx) => {
         const categoryId = item.categoryId || null;
@@ -116,6 +207,7 @@ const sanitizeSectionPayload = (sectionId, payload = {}) => {
           categoryId,
           name: label,
           label: label || item.label,
+          hoverImage: item.hoverImage,
           path: buildCategoryPath(categoryId, item.path),
           sortOrder: item.sortOrder ?? idx
         };
@@ -123,7 +215,7 @@ const sanitizeSectionPayload = (sectionId, payload = {}) => {
       .filter((item) => Boolean(item.categoryId));
   }
 
-  if (sectionId === "price-range-showcase") {
+  if (sectionKey === "price-range-showcase") {
     cleaned.items = cleaned.items
       .map((item, idx) => {
         const priceMax = parsePositiveNumber(item.priceMax ?? item.price ?? item.name);
@@ -151,8 +243,8 @@ const sanitizeSectionPayload = (sectionId, payload = {}) => {
       .filter((item) => Boolean(item.priceMax));
   }
 
-  if (sectionId === "latest-drop" || sectionId === "most-gifted" || sectionId === "proposal-rings") {
-    const sort = sectionId === "most-gifted" ? "most-sold" : "latest";
+  if (sectionKey === "latest-drop" || sectionKey === "most-gifted" || sectionKey === "proposal-rings") {
+    const sort = sectionKey === "most-gifted" ? "most-sold" : "latest";
     cleaned.items = cleaned.items
       .map((item, idx) => {
         const categoryId = item.categoryId || null;
@@ -180,7 +272,7 @@ const sanitizeSectionPayload = (sectionId, payload = {}) => {
       .filter((item) => Boolean(item.categoryId && item.limit));
   }
 
-  if (sectionId === "perfect-gift" || sectionId === "new-launch") {
+  if (sectionKey === "perfect-gift" || sectionKey === "new-launch") {
     cleaned.items = cleaned.items.map((item, idx) => {
       const productIds = normalizeObjectIdList(item.productIds);
       const label = item.name || item.label || "";
@@ -195,7 +287,7 @@ const sanitizeSectionPayload = (sectionId, payload = {}) => {
     });
   }
 
-  if (sectionId === "curated-for-you" || sectionId === "style-it-your-way") {
+  if (sectionKey === "curated-for-you" || sectionKey === "style-it-your-way") {
     cleaned.items = cleaned.items.map((item, idx) => {
       const productIds = normalizeObjectIdList(item.productIds);
       const limit = parsePositiveNumber(item.limit) || 12;
@@ -220,7 +312,9 @@ const sanitizeSectionPayload = (sectionId, payload = {}) => {
 
 exports.getSections = async (req, res) => {
   try {
-    const sections = await HomepageSection.find().sort({ sortOrder: 1, createdAt: 1 });
+    const pageKey = req.query.pageKey ? normalizePageKey(req.query.pageKey) : null;
+    const filter = pageKey ? { pageKey } : {};
+    const sections = await HomepageSection.find(filter).sort({ sortOrder: 1, createdAt: 1 });
     return success(res, { sections }, "Homepage sections retrieved");
   } catch (err) { return error(res, err.message); }
 };
@@ -228,7 +322,11 @@ exports.getSections = async (req, res) => {
 exports.getSectionDetail = async (req, res) => {
   try {
     const { id } = req.params;
-    const section = await HomepageSection.findOne({ sectionId: id }) || await HomepageSection.findById(id);
+    const identity = normalizeSectionIdentity(id, {}, req.query);
+    const lookup = buildSectionLookup(identity);
+    const section = lookup
+      ? await HomepageSection.findOne(lookup) || await HomepageSection.findById(id)
+      : null;
     if (!section) return error(res, "Section not found", 404);
     return success(res, { section }, "Homepage section retrieved");
   } catch (err) { return error(res, err.message); }
@@ -237,12 +335,14 @@ exports.getSectionDetail = async (req, res) => {
 exports.upsertSection = async (req, res) => {
   try {
     const { id } = req.params;
-    const payload = sanitizeSectionPayload(id, req.body);
+    const identity = normalizeSectionIdentity(id, req.body, req.query);
+    const payload = sanitizeSectionPayload(identity, req.body);
     if (!payload.label) return error(res, "Section label is required", 400);
 
+    const lookup = buildSectionLookup(identity);
     const section = await HomepageSection.findOneAndUpdate(
-      { sectionId: id },
-      { $set: payload, $setOnInsert: { sectionId: id } },
+      lookup,
+      { $set: payload },
       { new: true, upsert: true, setDefaultsOnInsert: true }
     );
 
@@ -254,21 +354,30 @@ exports.bulkUpsertSections = async (req, res) => {
   try {
     const sections = Array.isArray(req.body.sections) ? req.body.sections : [];
     if (sections.length === 0) return error(res, "No sections provided", 400);
+    const fallbackPageKey = normalizePageKey(req.body.pageKey);
 
     const ops = sections.map((section) => {
-      if (!section.sectionId) return null;
-      const payload = sanitizeSectionPayload(section.sectionId, section);
+      if (!section.sectionId && !section.sectionKey) return null;
+      const identity = normalizeSectionIdentity(section.sectionId || section.sectionKey, { ...section, pageKey: section.pageKey || fallbackPageKey });
+      const payload = sanitizeSectionPayload(identity, { ...section, pageKey: identity.pageKey });
       return HomepageSection.updateOne(
-        { sectionId: section.sectionId },
-        { $set: payload, $setOnInsert: { sectionId: section.sectionId } },
+        buildSectionLookup(identity),
+        { $set: payload },
         { upsert: true }
       );
     }).filter(Boolean);
 
     await Promise.all(ops);
 
-    const sectionIds = sections.map(s => s.sectionId);
-    const savedSections = await HomepageSection.find({ sectionId: { $in: sectionIds } })
+    const requestedPageKeys = [...new Set(sections.map((section) => normalizePageKey(section.pageKey || fallbackPageKey)))];
+    const requestedSectionKeys = sections
+      .map((section) => normalizeSectionIdentity(section.sectionId || section.sectionKey, { ...section, pageKey: section.pageKey || fallbackPageKey }).sectionKey)
+      .filter(Boolean);
+
+    const savedSections = await HomepageSection.find({
+      pageKey: { $in: requestedPageKeys },
+      sectionKey: { $in: requestedSectionKeys }
+    })
       .sort({ sortOrder: 1, createdAt: 1 });
 
     return success(res, { sections: savedSections }, "Homepage sections saved");

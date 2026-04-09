@@ -49,6 +49,7 @@ const AdminSidebar = () => {
     const [notificationsExpanded, setNotificationsExpanded] = useState(location.pathname.startsWith('/admin/notifications'));
     const [supportExpanded, setSupportExpanded] = useState(location.pathname.startsWith('/admin/support') || location.pathname.startsWith('/admin/contact'));
     const [inventoryExpanded, setInventoryExpanded] = useState(location.pathname.startsWith('/admin/inventory'));
+    const [sectionsExpanded, setSectionsExpanded] = useState(location.pathname.startsWith('/admin/sections'));
 
     const handleLogout = () => {
         logout();
@@ -93,6 +94,7 @@ const AdminSidebar = () => {
     const isNotificationsActive = location.pathname.startsWith('/admin/notifications');
     const isSupportActive = location.pathname.startsWith('/admin/support') || location.pathname.startsWith('/admin/contact');
     const isInventoryActive = location.pathname.startsWith('/admin/inventory');
+    const isSectionsActive = location.pathname.startsWith('/admin/sections');
 
     return (
         <div className="w-64 h-screen bg-footerBg text-white flex flex-col fixed left-0 top-0 z-50">
@@ -562,6 +564,49 @@ const AdminSidebar = () => {
                         <span className="font-bold text-sm">{item.label}</span>
                     </Link>
                 ))}
+
+                <div className="mt-1">
+                    <button
+                        onClick={() => setSectionsExpanded(!sectionsExpanded)}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isSectionsActive
+                            ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                            : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                            }`}
+                    >
+                        <Layers size={20} strokeWidth={isSectionsActive ? 2.5 : 2} />
+                        <span className="font-bold text-sm flex-1 text-left">Sections</span>
+                        <div className={`transition-transform duration-200 ${sectionsExpanded ? 'rotate-180' : ''}`}>
+                            <ChevronDown size={16} />
+                        </div>
+                    </button>
+
+                    {sectionsExpanded && (
+                        <div className="mt-1 ml-4 pl-4 border-l border-white/10 space-y-1 animate-in slide-in-from-top-1 duration-200">
+                            {[
+                                { label: 'Home Sections', pageKey: 'home' },
+                                { label: 'Shop for Men', pageKey: 'shop-men' },
+                                { label: 'Shop for Women', pageKey: 'shop-women' },
+                                { label: 'Shop for Family', pageKey: 'shop-family' }
+                            ].map((item) => {
+                                const href = `/admin/sections?pageKey=${item.pageKey}`;
+                                const isActiveItem = location.pathname.startsWith('/admin/sections') && location.search.includes(`pageKey=${item.pageKey}`);
+                                return (
+                                    <Link
+                                        key={item.pageKey}
+                                        to={href}
+                                        className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all text-sm ${isActiveItem
+                                            ? 'bg-primary/20 text-white shadow-sm'
+                                            : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                                            }`}
+                                    >
+                                        <List size={16} />
+                                        <span className="font-semibold">{item.label}</span>
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
             </nav>
 
             {/* Footer Actions */}

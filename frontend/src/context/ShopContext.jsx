@@ -769,7 +769,10 @@ export const ShopProvider = ({ children }) => {
                             label: section.label,
                             isActive: section.isActive !== false,
                             sortOrder: section.sortOrder || 0,
-                            items: section.items || []
+                            items: section.items || [],
+                            settings: section.settings || {},
+                            pageKey: section.pageKey || 'home',
+                            sectionType: section.sectionType || null
                         };
                         return acc;
                     }, {});

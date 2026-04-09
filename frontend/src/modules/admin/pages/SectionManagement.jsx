@@ -1,29 +1,33 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Edit2, Image as ImageIcon } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Edit2, Image as ImageIcon, LayoutTemplate } from 'lucide-react';
 import PageHeader from '../components/common/PageHeader';
 import { adminService } from '../services/adminService';
-import { sectionDefaults } from '../utils/sectionDefaults';
+import { getPageConfig, getSectionDefaultsForPage, PAGE_SECTIONS } from '../utils/sectionDefaults';
 import toast from 'react-hot-toast';
 
 const SectionManagement = () => {
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [sections, setSections] = useState([]);
     const [loading, setLoading] = useState(true);
+    const activePageKey = searchParams.get('pageKey') || 'home';
+    const activePage = useMemo(() => getPageConfig(activePageKey), [activePageKey]);
 
     const fetchSections = async () => {
         setLoading(true);
         try {
-            const data = await adminService.getSections();
+            const defaultsForPage = getSectionDefaultsForPage(activePageKey);
+            const data = await adminService.getSections(activePageKey);
             const filteredSections = (data || []).filter(section => section.sectionId !== 'nav-shop-by-category');
             setSections(filteredSections);
             const existingIds = new Set(filteredSections.map(section => section.sectionId));
-            const missingDefaults = sectionDefaults.filter(def => !existingIds.has(def.sectionId));
+            const missingDefaults = defaultsForPage.filter(def => !existingIds.has(def.sectionId) && !existingIds.has(def.sectionKey));
             if (!data || data.length === 0 || missingDefaults.length > 0) {
-                const seedPayload = missingDefaults.length > 0 ? missingDefaults : sectionDefaults;
-                const seedRes = await adminService.bulkUpsertSections(seedPayload);
+                const seedPayload = missingDefaults.length > 0 ? missingDefaults : defaultsForPage;
+                const seedRes = await adminService.bulkUpsertSections(seedPayload, activePageKey);
                 if (seedRes.success !== false) {
-                    const seeded = await adminService.getSections();
+                    const seeded = await adminService.getSections(activePageKey);
                     const filteredSeeded = (seeded || []).filter(section => section.sectionId !== 'nav-shop-by-category');
                     setSections(filteredSeeded);
                 }
@@ -37,16 +41,41 @@ const SectionManagement = () => {
 
     React.useEffect(() => {
         fetchSections();
-    }, []);
+    }, [activePageKey]);
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
             <div className="max-w-[1400px] mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 p-6 md:p-8">
                 <PageHeader
-                    title="Homepage Sections"
-                    subtitle="Manage content and layout of your homepage"
+                    title={activePage?.label || 'Sections'}
+                    subtitle={activePage?.description || 'Manage page sections and banners with consistent content blocks.'}
                     backPath="/admin"
                 />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+                    {PAGE_SECTIONS.map((page) => {
+                        const isActivePage = page.pageKey === activePageKey;
+                        return (
+                            <button
+                                key={page.pageKey}
+                                type="button"
+                                onClick={() => setSearchParams({ pageKey: page.pageKey })}
+                                className={`text-left rounded-2xl border p-5 transition-all ${isActivePage
+                                    ? 'border-[#3E2723] bg-[#3E2723] text-white shadow-lg'
+                                    : 'border-gray-200 bg-white text-gray-700 hover:border-[#3E2723]/30 hover:shadow-sm'
+                                    }`}
+                            >
+                                <div className={`h-10 w-10 rounded-full flex items-center justify-center mb-4 ${isActivePage ? 'bg-white/15 text-white' : 'bg-[#3E2723]/5 text-[#3E2723]'}`}>
+                                    <LayoutTemplate size={18} />
+                                </div>
+                                <h3 className="font-display text-lg font-bold mb-2">{page.label}</h3>
+                                <p className={`text-sm leading-relaxed ${isActivePage ? 'text-white/80' : 'text-gray-500'}`}>
+                                    {page.description}
+                                </p>
+                            </button>
+                        );
+                    })}
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {loading ? (
@@ -69,7 +98,7 @@ const SectionManagement = () => {
                             </p>
 
                             <button
-                                onClick={() => navigate(`/admin/sections/${section.sectionId}`)}
+                                onClick={() => navigate(`/admin/sections/${section.sectionKey || section.sectionId}?pageKey=${activePageKey}`)}
                                 className="w-full py-2.5 rounded-lg bg-gray-50 text-gray-700 font-bold text-xs hover:bg-[#3E2723] hover:text-white transition-all flex items-center justify-center gap-2"
                             >
                                 <Edit2 size={14} /> Edit Content

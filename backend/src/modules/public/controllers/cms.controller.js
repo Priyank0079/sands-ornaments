@@ -57,7 +57,14 @@ exports.getFAQs = async (req, res) => {
 exports.getHomepageData = async (req, res) => {
   try {
     const banners = await Banner.find(getActiveBannerQuery()).sort({ sortOrder: 1, createdAt: -1 });
-    const sections = await HomepageSection.find({ isActive: true })
+    const sections = await HomepageSection.find({
+      isActive: true,
+      $or: [
+        { pageKey: "home" },
+        { pageKey: { $exists: false } },
+        { pageKey: null }
+      ]
+    })
       .populate({
         path: "items.productId",
         select: "name slug productCode brand images variants rating tags status active weight weightUnit",
