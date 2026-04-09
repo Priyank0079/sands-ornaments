@@ -127,7 +127,12 @@ const buildProductsPath = (productIds, currentPath) => {
 
 const buildRandomizedProductsPath = (productIds, limit, currentPath) => {
   const ids = normalizeObjectIdList(productIds);
-  if (ids.length > 0) return `/shop?products=${encodeURIComponent(ids.join(","))}`;
+  if (ids.length > 0) {
+    const safeLimit = parsePositiveNumber(limit);
+    return safeLimit
+      ? `/shop?products=${encodeURIComponent(ids.join(","))}&limit=${safeLimit}&sort=random`
+      : `/shop?products=${encodeURIComponent(ids.join(","))}&sort=random`;
+  }
   if (limit) return `/shop?limit=${limit}&sort=random`;
   return currentPath || "/shop?limit=12&sort=random";
 };
@@ -243,7 +248,7 @@ const sanitizeSectionPayload = (identity, payload = {}) => {
       .filter((item) => Boolean(item.priceMax));
   }
 
-  if (sectionKey === "latest-drop" || sectionKey === "most-gifted" || sectionKey === "proposal-rings") {
+  if (sectionKey === "latest-drop" || sectionKey === "most-gifted") {
     const sort = sectionKey === "most-gifted" ? "most-sold" : "latest";
     cleaned.items = cleaned.items
       .map((item, idx) => {
@@ -306,6 +311,23 @@ const sanitizeSectionPayload = (identity, payload = {}) => {
         };
       })
       .filter((item) => item.type === "hero" || (sectionKey === "most-gifted" ? Boolean(item.categoryId) : Boolean(item.categoryId && item.limit)));
+  }
+
+  if (sectionKey === "proposal-rings") {
+    const sourceItem = cleaned.items.find((item) => Boolean(item.categoryId)) || cleaned.items[0];
+    cleaned.items = sourceItem
+      ? [
+          {
+            ...sourceItem,
+            categoryId: sourceItem.categoryId || null,
+            limit: undefined,
+            name: sourceItem.name || sourceItem.label || "Proposal Rings",
+            label: sourceItem.label || sourceItem.name || "Proposal Rings",
+            path: sourceItem.categoryId ? `/shop?category=${sourceItem.categoryId}` : (sourceItem.path || "/shop"),
+            sortOrder: 0
+          }
+        ].filter((item) => Boolean(item.categoryId))
+      : [];
   }
 
   if (sectionKey === "perfect-gift") {

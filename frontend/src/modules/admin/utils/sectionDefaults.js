@@ -245,7 +245,7 @@ const homeSections = [
     isActive: true,
     sortOrder: 7,
     items: [
-      { id: 'banner', name: 'Proposal Rings', image: proposalBannerImg, path: '/shop?sort=latest', tag: '', limit: 12, categoryId: null }
+      { id: 'banner', name: 'Proposal Rings', image: proposalBannerImg, path: '/shop', tag: '', categoryId: null }
     ]
   },
   {

@@ -242,16 +242,15 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         if (sectionId !== 'proposal-rings') return;
         setItems(prev => prev.map(item => {
             const category = getCategoryFromItem(item);
-            const existingLimit = getLimitFromItem(item);
-            const limit = category ? (existingLimit || 12) : (existingLimit || '');
-            const next = { ...item, limit };
+            const next = { ...item };
             if (category) {
                 next.categoryId = category._id;
-                next.path = `/shop?category=${category._id}&limit=${limit}&sort=latest`;
+                next.path = `/shop?category=${category._id}`;
                 if (!next.name) next.name = category.name;
             } else if (!next.path) {
                 next.path = '';
             }
+            delete next.limit;
             return next;
         }));
     }, [sectionId, categories]);
@@ -345,7 +344,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             ...(sectionId === 'price-range-showcase' ? { priceMax: '' } : {}),
             ...(sectionId === 'latest-drop' ? { limit: '', categoryId: '' } : {}),
             ...(sectionId === 'most-gifted' ? { categoryId: '' } : {}),
-            ...(sectionId === 'proposal-rings' ? { limit: '', categoryId: '' } : {}),
+            ...(sectionId === 'proposal-rings' ? { categoryId: '' } : {}),
             ...(sectionId === 'new-launch' ? { categoryId: '' } : {}),
             ...(sectionId === 'curated-for-you' ? { limit: 12, productIds: [] } : {}),
             ...(sectionId === 'style-it-your-way' ? { limit: 12, productIds: [] } : {})
@@ -353,7 +352,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         const nextItems = [...items, newItem];
         setItems(nextItems);
         setEditingId(newItem.id);
-        if (!isCategoryShowcase && sectionId !== 'price-range-showcase' && sectionId !== 'new-launch' && sectionId !== 'latest-drop' && sectionId !== 'most-gifted') {
+        if (!isCategoryShowcase && sectionId !== 'price-range-showcase' && sectionId !== 'new-launch' && sectionId !== 'latest-drop' && sectionId !== 'most-gifted' && sectionId !== 'proposal-rings') {
             handleSave(nextItems);
         }
     };
@@ -381,7 +380,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             const productIds = Array.from(existing);
             const limit = getLimitFromItem(item) || 12;
             const path = productIds.length > 0
-                ? `/shop?products=${encodeURIComponent(productIds.join(','))}`
+                ? `/shop?products=${encodeURIComponent(productIds.join(','))}&limit=${limit}&sort=random`
                 : `/shop?limit=${limit}&sort=random`;
             return { ...item, productIds, path };
         }));
@@ -619,30 +618,21 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             return;
         }
         if (sectionId === 'proposal-rings') {
-            const invalid = nextItems.filter(item => {
-                const hasCategory = Boolean(getCategoryFromItem(item));
-                const hasLimit = Boolean(getLimitFromItem(item));
-                return hasCategory !== hasLimit;
-            });
-            if (invalid.length > 0) {
-                const labels = invalid.map(item => item.name || item.id || 'Item').join(', ');
-                toast.error(`For each card, set both Category and Limit. Missing: ${labels}`);
+            const sourceItem = nextItems.find(item => Boolean(getCategoryFromItem(item))) || nextItems[0];
+            if (!sourceItem || !getCategoryFromItem(sourceItem)) {
+                toast.error('Select a category before saving.');
                 return;
             }
-            const normalizedItems = nextItems.map((item) => {
-                const category = getCategoryFromItem(item);
-                const limit = getLimitFromItem(item) || 12;
-                if (!category) return { ...item, limit: getLimitFromItem(item) || '' };
-                return {
-                    ...item,
-                    categoryId: category._id,
-                    name: item.name || category.name,
-                    label: item.label || item.name || category.name,
-                    limit,
-                    path: `/shop?category=${category._id}&limit=${limit}&sort=latest`
-                };
-            });
-            onSave({ items: normalizedItems });
+            const category = getCategoryFromItem(sourceItem);
+            const normalizedItem = {
+                ...sourceItem,
+                categoryId: category._id,
+                name: sourceItem.name || category.name || 'Proposal Rings',
+                label: sourceItem.label || sourceItem.name || 'Proposal Rings',
+                limit: undefined,
+                path: `/shop?category=${category._id}`
+            };
+            onSave({ items: [normalizedItem] });
             return;
         }
         if (sectionId === 'curated-for-you') {
@@ -656,7 +646,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                 const limit = getLimitFromItem(item) || 12;
                 const productIds = Array.isArray(item.productIds) ? item.productIds : [];
                 const path = productIds.length > 0
-                    ? `/shop?products=${encodeURIComponent(productIds.join(','))}`
+                    ? `/shop?products=${encodeURIComponent(productIds.join(','))}&limit=${limit}&sort=random`
                     : `/shop?limit=${limit}&sort=random`;
                 return {
                     ...item,
@@ -743,7 +733,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                             : 'Add, edit, or remove items in this section'}
                     </p>
                 </div>
-                {!isPremiumCategoryCards && (
+                {!isPremiumCategoryCards && sectionId !== 'proposal-rings' && (
                     <button
                         onClick={addItem}
                         className="flex items-center gap-2 bg-[#3E2723] text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-[#2b1b18] transition-colors"
@@ -766,7 +756,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                     {isMostGiftedHero ? 'Hero Card' : `Item #${index + 1}`}
                                 </span>
                                 <div className="flex gap-2">
-                                    {isEditing && !isPremiumCategoryCards && !isMostGiftedHero && (
+                                    {isEditing && !isPremiumCategoryCards && !isMostGiftedHero && sectionId !== 'proposal-rings' && (
                                         <button
                                             onClick={() => removeItem(item.id)}
                                             className="p-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
@@ -895,7 +885,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                     <select
                                                         value={getCategoryFromItem(item)?._id || ''}
                                                         onChange={(e) => {
-                                                            const sourceCategories = sectionId === 'proposal-rings' ? ringCategories : categories;
+                                                            const sourceCategories = categories;
                                                             const selected = sourceCategories.find(c => String(c._id) === String(e.target.value));
                                                             if (!selected) return;
                                                             const limit = getLimitFromItem(item) || 12;
@@ -907,9 +897,14 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                                     name: entry.name || selected.name,
                                                                     path: sectionId === 'most-gifted'
                                                                         ? `/shop?category=${selected._id}&sort=most-sold`
-                                                                        : `/shop?category=${selected._id}&limit=${limit}&sort=latest`
+                                                                        : sectionId === 'proposal-rings'
+                                                                            ? `/shop?category=${selected._id}`
+                                                                            : `/shop?category=${selected._id}&limit=${limit}&sort=latest`
                                                                 };
                                                                 if (sectionId === 'most-gifted') {
+                                                                    delete nextEntry.limit;
+                                                                }
+                                                                if (sectionId === 'proposal-rings') {
                                                                     delete nextEntry.limit;
                                                                 }
                                                                 return nextEntry;
@@ -918,14 +913,14 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                         className="w-full bg-white border border-gray-200 rounded-lg py-2 px-3 text-xs focus:outline-none focus:border-[#3E2723] focus:ring-1 focus:ring-[#3E2723]/20"
                                                     >
                                                         <option value="">Select Category</option>
-                                                        {(sectionId === 'proposal-rings' ? ringCategories : categories).map(cat => (
+                                                        {categories.map(cat => (
                                                             <option key={cat._id} value={cat._id}>
                                                                 {cat.name}{cat.isActive === false ? ' (Inactive)' : ''}
                                                             </option>
                                                         ))}
                                                     </select>
                                                 </div>
-                                                {sectionId !== 'most-gifted' && (
+                                                {sectionId !== 'most-gifted' && sectionId !== 'proposal-rings' && (
                                                     <Input
                                                         label="Number of Products"
                                                         type="number"
@@ -978,7 +973,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                             const productIds = Array.isArray(entry.productIds) ? entry.productIds : [];
                                                             const limit = numeric || 0;
                                                             const path = productIds.length > 0
-                                                                ? `/shop?products=${encodeURIComponent(productIds.join(','))}`
+                                                                ? `/shop?products=${encodeURIComponent(productIds.join(','))}&limit=${limit}&sort=random`
                                                                 : `/shop?limit=${limit}&sort=random`;
                                                             return {
                                                                 ...entry,
@@ -1017,7 +1012,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                             const productIds = Array.isArray(entry.productIds) ? entry.productIds : [];
                                                             const limit = numeric || 0;
                                                             const path = productIds.length > 0
-                                                                ? `/shop?products=${encodeURIComponent(productIds.join(','))}`
+                                                                ? `/shop?products=${encodeURIComponent(productIds.join(','))}&limit=${limit}&sort=random`
                                                                 : `/shop?limit=${limit}&sort=random`;
                                                             return {
                                                                 ...entry,

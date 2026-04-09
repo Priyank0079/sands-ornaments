@@ -14,15 +14,13 @@ const ProposalBanner = () => {
             const category = item.categoryId
                 ? categories.find(c => String(c._id || c.id) === String(item.categoryId))
                 : null;
-            const limit = Number(item.limit) || 0;
-            if (!category || limit <= 0) {
+            if (!category) {
                 if (!item.path) return null;
                 return {
                     ...item,
                     id: item.itemId || item._id || item.id || `legacy-${index}`,
                     name: item.name || item.label || 'Proposal Rings',
                     image: resolveLegacyCmsAsset(item.image, bannerImgDefault),
-                    limit: Number(item.limit) || 12,
                     path: item.path
                 };
             }
@@ -31,21 +29,19 @@ const ProposalBanner = () => {
                 id: item.itemId || item._id || item.id || `${category._id || category.id}-${index}`,
                 name: item.name || item.label || category.name || 'Proposal Rings',
                 image: resolveLegacyCmsAsset(item.image, bannerImgDefault),
-                limit,
-                path: `/shop?category=${category._id || category.id}&limit=${limit}&sort=latest`
+                path: `/shop?category=${category._id || category.id}`
             };
         })
         .filter(Boolean);
 
     const displayItems = normalizedConfiguredItems.length > 0
         ? normalizedConfiguredItems
-        : [{ id: 'proposal-fallback', name: 'Proposal Rings', image: bannerImgDefault, path: '/shop?sort=latest', limit: 12 }];
+        : [{ id: 'proposal-fallback', name: 'Proposal Rings', image: bannerImgDefault, path: '/shop' }];
 
     // Use first item for banner if available
     const bannerItem = displayItems[0];
-    const bannerLimit = Number(bannerItem?.limit) || 12;
     const bannerImage = bannerItem?.image || bannerImgDefault;
-    const bannerLink = bannerItem?.path || `/shop?limit=${bannerLimit}&sort=latest`;
+    const bannerLink = bannerItem?.path || '/shop';
 
     return (
         <section className="w-full bg-[#1B0305] relative overflow-hidden">
@@ -97,31 +93,6 @@ const ProposalBanner = () => {
                     </div>
                 </div>
 
-                {/* Additional Items Grid (Satisfies "item add karne ka") */}
-                {displayItems.length > 1 && (
-                    <div className="pb-16 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
-                        {displayItems.slice(1).map((item, index) => {
-                            const path = item.path || '/shop?sort=latest';
-                            return (
-                            <Link
-                                key={item.itemId || item._id || item.id || index}
-                                to={path}
-                                className="group relative rounded-2xl overflow-hidden aspect-square bg-[#2A0505] border border-[#4A1015]/50 shadow-xl"
-                            >
-                                <img
-                                    src={item.image || bannerImgDefault}
-                                    alt={item.name || 'Proposal Ring'}
-                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-80 group-hover:opacity-100"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                                <div className="absolute bottom-4 left-0 right-0 text-center">
-                                    <h4 className="text-white font-display text-lg tracking-wide uppercase">{item.name || 'Proposal Rings'}</h4>
-                                    <div className="w-8 h-[1px] bg-[#D4AF37] mx-auto mt-1 group-hover:w-16 transition-all duration-500"></div>
-                                </div>
-                            </Link>
-                        )})}
-                    </div>
-                )}
             </div>
         </section>
     );

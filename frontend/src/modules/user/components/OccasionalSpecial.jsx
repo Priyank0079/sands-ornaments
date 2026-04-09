@@ -26,10 +26,10 @@ const OccasionalSpecial = () => {
     const buildPath = (item, fallback) => {
         if (!item) return fallback.path;
         const productIds = Array.isArray(item.productIds) ? item.productIds : [];
-        if (productIds.length > 0) {
-            return `/shop?products=${encodeURIComponent(productIds.join(','))}`;
-        }
         const limit = item.limit ? Number(item.limit) : 12;
+        if (productIds.length > 0) {
+            return `/shop?products=${encodeURIComponent(productIds.join(','))}&limit=${limit}&sort=random`;
+        }
         return `/shop?limit=${limit}&sort=random`;
     };
 

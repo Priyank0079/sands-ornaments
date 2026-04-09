@@ -80,9 +80,11 @@ const StyleItYourWay = () => {
         const fallback = defaultCollections[index] || defaultCollections[0];
         const productIds = Array.isArray(item.productIds) ? item.productIds.filter(Boolean) : [];
         const limit = item.limit ? Number(item.limit) : 12;
-        const path = productIds.length > 0
-            ? `/shop?products=${encodeURIComponent(productIds.join(','))}`
-            : (item.path || `/shop?limit=${limit}&sort=random`);
+        const path = item.path || (
+            productIds.length > 0
+                ? `/shop?products=${encodeURIComponent(productIds.join(','))}&limit=${limit}&sort=random`
+                : `/shop?limit=${limit}&sort=random`
+        );
         const extraImages = Array.isArray(item.extraImages) ? item.extraImages.filter(Boolean) : [];
         return {
             id: item.itemId || item._id || item.id || `style-${index}`,
