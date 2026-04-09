@@ -247,8 +247,44 @@ const sanitizeSectionPayload = (identity, payload = {}) => {
     const sort = sectionKey === "most-gifted" ? "most-sold" : "latest";
     cleaned.items = cleaned.items
       .map((item, idx) => {
+        if (sectionKey === "most-gifted" && item.type === "hero") {
+          const label = item.label || item.name || "Most Gifted Items";
+          return {
+            ...item,
+            type: "hero",
+            name: item.name || label,
+            label,
+            tag: item.tag || "Collection Focus",
+            ctaLabel: item.ctaLabel || "Explore Collection",
+            path: item.path || "/shop?sort=most-sold",
+            sortOrder: item.sortOrder ?? idx
+          };
+        }
+
         const categoryId = item.categoryId || null;
         const limit = parsePositiveNumber(item.limit);
+        if (sectionKey === "most-gifted") {
+          const label = item.name || item.label || "";
+          if (!categoryId) {
+            return {
+              ...item,
+              name: label,
+              label,
+              sortOrder: item.sortOrder ?? idx
+            };
+          }
+
+          return {
+            ...item,
+            categoryId,
+            limit: undefined,
+            name: label,
+            label: item.label || label,
+            path: `/shop?category=${categoryId}&sort=most-sold`,
+            sortOrder: item.sortOrder ?? idx
+          };
+        }
+
         if (!categoryId || !limit) {
           return {
             ...item,
@@ -269,10 +305,10 @@ const sanitizeSectionPayload = (identity, payload = {}) => {
           sortOrder: item.sortOrder ?? idx
         };
       })
-      .filter((item) => Boolean(item.categoryId && item.limit));
+      .filter((item) => item.type === "hero" || (sectionKey === "most-gifted" ? Boolean(item.categoryId) : Boolean(item.categoryId && item.limit)));
   }
 
-  if (sectionKey === "perfect-gift" || sectionKey === "new-launch") {
+  if (sectionKey === "perfect-gift") {
     cleaned.items = cleaned.items.map((item, idx) => {
       const productIds = normalizeObjectIdList(item.productIds);
       const label = item.name || item.label || "";
@@ -285,6 +321,34 @@ const sanitizeSectionPayload = (identity, payload = {}) => {
         sortOrder: item.sortOrder ?? idx
       };
     });
+  }
+
+  if (sectionKey === "new-launch") {
+    cleaned.items = cleaned.items
+      .map((item, idx) => {
+        const categoryId = item.categoryId || null;
+        const label = item.name || item.label || "";
+
+        if (!categoryId) {
+          return {
+            ...item,
+            name: label,
+            label,
+            sortOrder: item.sortOrder ?? idx
+          };
+        }
+
+        return {
+          ...item,
+          categoryId,
+          productIds: undefined,
+          name: label,
+          label: item.label || label,
+          path: buildCategoryPath(categoryId, item.path),
+          sortOrder: item.sortOrder ?? idx
+        };
+      })
+      .filter((item) => Boolean(item.categoryId));
   }
 
   if (sectionKey === "curated-for-you" || sectionKey === "style-it-your-way") {

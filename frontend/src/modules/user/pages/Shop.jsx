@@ -115,9 +115,26 @@ const Shop = () => {
 
         const getProductPrice = (product) => {
             if (!product) return 0;
-            if (product.price !== undefined && product.price !== null) return Number(product.price) || 0;
+            const topLevelCandidates = [
+                product.finalPrice,
+                product.price,
+                product.originalPrice,
+                product.mrp
+            ]
+                .map((value) => Number(value))
+                .filter((value) => Number.isFinite(value) && value > 0);
+
+            if (topLevelCandidates.length > 0) {
+                return topLevelCandidates[0];
+            }
+
             const variantPrices = (product.variants || [])
-                .map(v => Number(v.price || v.mrp || 0))
+                .map((variant) => Number(
+                    variant.finalPrice ??
+                    variant.price ??
+                    variant.mrp ??
+                    0
+                ))
                 .filter(v => Number.isFinite(v) && v > 0);
             if (variantPrices.length > 0) return Math.min(...variantPrices);
             return 0;
@@ -351,7 +368,12 @@ const Shop = () => {
         } else if (sortBy === 'Best Selling') {
             result.sort((a, b) => b.rating - a.rating);
         } else if (sortBy === 'Newest') {
-            result.sort((a, b) => (b.isNew === a.isNew) ? 0 : b.isNew ? 1 : -1);
+            result.sort((a, b) => {
+                const dateDiff = getProductCreatedAt(b) - getProductCreatedAt(a);
+                if (dateDiff !== 0) return dateDiff;
+                if (Boolean(b.isNew) !== Boolean(a.isNew)) return b.isNew ? 1 : -1;
+                return 0;
+            });
         }
 
         const menDummyProducts = [

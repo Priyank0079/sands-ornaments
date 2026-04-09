@@ -230,10 +230,11 @@ const homeSections = [
     isActive: true,
     sortOrder: 6,
     items: [
-      { id: '1', name: 'Earrings', image: pinkEarrings, path: '/shop?sort=most-sold', tag: '', limit: 12, categoryId: null },
-      { id: '2', name: 'Bracelets', image: pinkBracelets, path: '/shop?sort=most-sold', tag: '', limit: 12, categoryId: null },
-      { id: '3', name: 'Chains', image: pinkChains, path: '/shop?sort=most-sold', tag: '', limit: 12, categoryId: null },
-      { id: '4', name: 'Anklets', image: pinkAnklets, path: '/shop?sort=most-sold', tag: '', limit: 12, categoryId: null }
+      { id: 'hero', type: 'hero', name: 'Most Gifted Items', label: 'Most Gifted Items', image: giftWife, path: '/shop?sort=most-sold', tag: 'Collection Focus', ctaLabel: 'Explore Collection' },
+      { id: '1', name: 'Earrings', image: pinkEarrings, path: '/shop?sort=most-sold', tag: '', categoryId: null },
+      { id: '2', name: 'Bracelets', image: pinkBracelets, path: '/shop?sort=most-sold', tag: '', categoryId: null },
+      { id: '3', name: 'Chains', image: pinkChains, path: '/shop?sort=most-sold', tag: '', categoryId: null },
+      { id: '4', name: 'Anklets', image: pinkAnklets, path: '/shop?sort=most-sold', tag: '', categoryId: null }
     ]
   },
   {

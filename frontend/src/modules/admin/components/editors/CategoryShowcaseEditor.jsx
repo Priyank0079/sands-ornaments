@@ -19,10 +19,22 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     const sectionId = sectionData?.id || 'category-showcase';
     const isCategoryShowcase = sectionId === 'category-showcase';
     const isPremiumCategoryCards = sectionId === 'premium-category-cards';
+    const defaultMostGiftedHero = defaultItems.find(item => item?.type === 'hero') || {
+        id: 'hero',
+        type: 'hero',
+        name: 'Most Gifted Items',
+        label: 'Most Gifted Items',
+        image: '',
+        path: '/shop?sort=most-sold',
+        tag: 'Collection Focus',
+        ctaLabel: 'Explore Collection'
+    };
 
     // Default items to show if new
     const initialItemsFromProps = sectionData.items && sectionData.items.length > 0
-        ? sectionData.items
+        ? (sectionId === 'most-gifted' && !sectionData.items.some(item => item?.type === 'hero')
+            ? [defaultMostGiftedHero, ...sectionData.items]
+            : sectionData.items)
         : (defaultItems.length > 0 ? defaultItems : [
             { id: '1', name: 'Pendants', path: '/category/pendants', image: catPendant, tag: '' },
             { id: '2', name: 'Rings', path: '/category/rings', image: catRing, tag: '' },
@@ -204,17 +216,24 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     useEffect(() => {
         if (sectionId !== 'most-gifted') return;
         setItems(prev => prev.map(item => {
+            if (item?.type === 'hero') {
+                return {
+                    ...defaultMostGiftedHero,
+                    ...item,
+                    type: 'hero',
+                    path: item.path || '/shop?sort=most-sold'
+                };
+            }
             const category = getCategoryFromItem(item);
-            const existingLimit = getLimitFromItem(item);
-            const limit = category ? (existingLimit || 12) : (existingLimit || '');
-            const next = { ...item, limit };
+            const next = { ...item };
             if (category) {
                 next.categoryId = category._id;
-                next.path = `/shop?category=${category._id}&limit=${limit}&sort=most-sold`;
+                next.path = `/shop?category=${category._id}&sort=most-sold`;
                 if (!next.name) next.name = category.name;
             } else if (!next.path) {
                 next.path = '';
             }
+            delete next.limit;
             return next;
         }));
     }, [sectionId, categories]);
@@ -298,6 +317,11 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     };
 
     const removeItem = (id) => {
+        const itemToRemove = items.find(item => item.id === id);
+        if (sectionId === 'most-gifted' && itemToRemove?.type === 'hero') {
+            toast.error('The hero card stays fixed for this section.');
+            return;
+        }
         const newItems = items.filter(item => item.id !== id);
         setItems(newItems);
         if (editingId === id) setEditingId(null);
@@ -320,15 +344,16 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             tag: '',
             ...(sectionId === 'price-range-showcase' ? { priceMax: '' } : {}),
             ...(sectionId === 'latest-drop' ? { limit: '', categoryId: '' } : {}),
-            ...(sectionId === 'most-gifted' ? { limit: '', categoryId: '' } : {}),
+            ...(sectionId === 'most-gifted' ? { categoryId: '' } : {}),
             ...(sectionId === 'proposal-rings' ? { limit: '', categoryId: '' } : {}),
+            ...(sectionId === 'new-launch' ? { categoryId: '' } : {}),
             ...(sectionId === 'curated-for-you' ? { limit: 12, productIds: [] } : {}),
             ...(sectionId === 'style-it-your-way' ? { limit: 12, productIds: [] } : {})
         };
         const nextItems = [...items, newItem];
         setItems(nextItems);
         setEditingId(newItem.id);
-        if (!isCategoryShowcase) {
+        if (!isCategoryShowcase && sectionId !== 'price-range-showcase' && sectionId !== 'new-launch' && sectionId !== 'latest-drop' && sectionId !== 'most-gifted') {
             handleSave(nextItems);
         }
     };
@@ -371,6 +396,11 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
 
+    const normalizeShowcaseCategoryHint = (value) => normalizeLabel(value)
+        .replace(/^(latest|fresh|new|most|gifted|proposal)-+/, '')
+        .replace(/-+(drop|drops|collection|collections|edit|edits|pick|picks)$/g, '')
+        .replace(/^-+|-+$/g, '');
+
     const isRingCategory = (cat) => {
         const name = normalizeLabel(cat?.name || '');
         const slug = normalizeLabel(cat?.slug || cat?.path || '');
@@ -403,7 +433,20 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             if (match) return match;
         }
         if (item.name) {
-            const byName = categories.find(c => normalizeLabel(c.name) === normalizeLabel(item.name));
+            const normalizedItemName = normalizeLabel(item.name);
+            const normalizedItemHint = normalizeShowcaseCategoryHint(item.name);
+            const byName = categories.find(c => {
+                const normalizedCategoryName = normalizeLabel(c.name);
+                const normalizedCategorySlug = normalizeLabel(c.slug || c.path || '');
+                return (
+                    normalizedCategoryName === normalizedItemName ||
+                    normalizedCategorySlug === normalizedItemName ||
+                    (normalizedItemHint && (
+                        normalizedCategoryName === normalizedItemHint ||
+                        normalizedCategorySlug === normalizedItemHint
+                    ))
+                );
+            });
             if (byName) return byName;
         }
         return getCategoryFromPath(item.path);
@@ -494,13 +537,21 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             return;
         }
         if (sectionId === 'new-launch') {
+            const missing = nextItems.filter(item => !getCategoryFromItem(item));
+            if (missing.length > 0) {
+                const labels = missing.map(item => item.name || item.id || 'Item').join(', ');
+                toast.error(`Select a category for each card before saving. Missing: ${labels}`);
+                return;
+            }
             const normalizedItems = nextItems.map((item) => ({
                 ...item,
-                productIds: Array.isArray(item.productIds) ? item.productIds : [],
-                label: item.label || item.name || '',
-                path: Array.isArray(item.productIds) && item.productIds.length > 0
-                    ? `/shop?products=${encodeURIComponent(item.productIds.join(','))}`
-                    : (item.path || '/shop?status=coming-soon')
+                categoryId: getCategoryFromItem(item)?._id || item.categoryId,
+                productIds: [],
+                name: item.name || getCategoryFromItem(item)?.name || '',
+                label: item.label || item.name || getCategoryFromItem(item)?.name || '',
+                path: getCategoryFromItem(item)
+                    ? `/shop?category=${getCategoryFromItem(item)._id}`
+                    : (item.path || '/shop')
             }));
             onSave({ items: normalizedItems });
             return;
@@ -533,30 +584,38 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             return;
         }
         if (sectionId === 'most-gifted') {
-            const invalid = nextItems.filter(item => {
-                const hasCategory = Boolean(getCategoryFromItem(item));
-                const hasLimit = Boolean(getLimitFromItem(item));
-                return hasCategory !== hasLimit;
-            });
+            const heroItems = nextItems.filter(item => item?.type === 'hero');
+            const contentItems = nextItems.filter(item => item?.type !== 'hero');
+            const invalid = contentItems.filter(item => !getCategoryFromItem(item));
             if (invalid.length > 0) {
                 const labels = invalid.map(item => item.name || item.id || 'Item').join(', ');
-                toast.error(`For each card, set both Category and Limit. Missing: ${labels}`);
+                toast.error(`Select a category for each card before saving. Missing: ${labels}`);
                 return;
             }
-            const normalizedItems = nextItems.map((item) => {
+            const normalizedHeroItems = heroItems.map((item, index) => ({
+                ...defaultMostGiftedHero,
+                ...item,
+                type: 'hero',
+                name: item.name || defaultMostGiftedHero.name,
+                label: item.label || item.name || defaultMostGiftedHero.label,
+                tag: item.tag || defaultMostGiftedHero.tag,
+                ctaLabel: item.ctaLabel || defaultMostGiftedHero.ctaLabel,
+                path: '/shop?sort=most-sold',
+                sortOrder: item.sortOrder ?? index
+            }));
+            const normalizedItems = contentItems.map((item) => {
                 const category = getCategoryFromItem(item);
-                const limit = getLimitFromItem(item) || 12;
-                if (!category) return { ...item, limit: getLimitFromItem(item) || '' };
+                if (!category) return { ...item };
                 return {
                     ...item,
                     categoryId: category._id,
                     name: item.name || category.name,
                     label: item.label || item.name || category.name,
-                    limit,
-                    path: `/shop?category=${category._id}&limit=${limit}&sort=most-sold`
+                    limit: undefined,
+                    path: `/shop?category=${category._id}&sort=most-sold`
                 };
             });
-            onSave({ items: normalizedItems });
+            onSave({ items: [...normalizedHeroItems, ...normalizedItems] });
             return;
         }
         if (sectionId === 'proposal-rings') {
@@ -663,7 +722,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
 
     return (
         <div className="max-w-4xl mx-auto space-y-6 pb-20">
-            {(sectionId === 'perfect-gift' || sectionId === 'new-launch' || sectionId === 'curated-for-you' || sectionId === 'style-it-your-way') && (
+            {(sectionId === 'perfect-gift' || sectionId === 'curated-for-you' || sectionId === 'style-it-your-way') && (
                 <ProductBrowserModal
                     isOpen={isProductPickerOpen}
                     onClose={() => {
@@ -696,6 +755,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {items.map((item, index) => {
                     const isEditing = editingId === item.id;
+                    const isMostGiftedHero = sectionId === 'most-gifted' && item?.type === 'hero';
 
                     return (
                         <div key={item.id} className={`bg-white border rounded-xl p-4 shadow-sm relative group animate-in zoom-in-95 duration-200 transition-all ${isEditing ? 'border-[#3E2723] ring-1 ring-[#3E2723]' : 'border-gray-200 hover:shadow-md'}`}>
@@ -703,10 +763,10 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                             {/* Header: Item # + Edit/Save Button */}
                             <div className="flex justify-between items-start mb-4">
                                 <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded ${isEditing ? 'bg-[#3E2723] text-white' : 'text-[#3E2723] bg-[#3E2723]/5'}`}>
-                                    Item #{index + 1}
+                                    {isMostGiftedHero ? 'Hero Card' : `Item #${index + 1}`}
                                 </span>
                                 <div className="flex gap-2">
-                                    {isEditing && !isPremiumCategoryCards && (
+                                    {isEditing && !isPremiumCategoryCards && !isMostGiftedHero && (
                                         <button
                                             onClick={() => removeItem(item.id)}
                                             className="p-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
@@ -828,7 +888,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                 </select>
                                             </div>
                                         )}
-                                        {(sectionId === 'latest-drop' || sectionId === 'most-gifted' || sectionId === 'proposal-rings') && (
+                                        {(sectionId === 'latest-drop' || sectionId === 'proposal-rings' || (sectionId === 'most-gifted' && !isMostGiftedHero)) && (
                                             <div className="space-y-3">
                                                 <div>
                                                     <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Category</label>
@@ -841,14 +901,18 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                             const limit = getLimitFromItem(item) || 12;
                                                             setItems(prev => prev.map(entry => {
                                                                 if (entry.id !== item.id) return entry;
-                                                                return {
+                                                                const nextEntry = {
                                                                     ...entry,
                                                                     categoryId: selected._id,
                                                                     name: entry.name || selected.name,
                                                                     path: sectionId === 'most-gifted'
-                                                                        ? `/shop?category=${selected._id}&limit=${limit}&sort=most-sold`
+                                                                        ? `/shop?category=${selected._id}&sort=most-sold`
                                                                         : `/shop?category=${selected._id}&limit=${limit}&sort=latest`
                                                                 };
+                                                                if (sectionId === 'most-gifted') {
+                                                                    delete nextEntry.limit;
+                                                                }
+                                                                return nextEntry;
                                                             }));
                                                         }}
                                                         className="w-full bg-white border border-gray-200 rounded-lg py-2 px-3 text-xs focus:outline-none focus:border-[#3E2723] focus:ring-1 focus:ring-[#3E2723]/20"
@@ -861,29 +925,31 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                         ))}
                                                     </select>
                                                 </div>
-                                                <Input
-                                                    label="Number of Products"
-                                                    type="number"
-                                                    min="1"
-                                                    value={item.limit ?? ''}
-                                                    onChange={(e) => {
-                                                        const raw = e.target.value;
-                                                        const numeric = raw === '' ? '' : Number(raw);
-                                                        setItems(prev => prev.map(entry => {
-                                                            if (entry.id !== item.id) return entry;
-                                                            const category = getCategoryFromItem(entry);
-                                                            const limit = numeric || 0;
-                                                            return {
-                                                                ...entry,
-                                                                limit: numeric,
-                                                                path: category
-                                                                    ? `/shop?category=${category._id}&limit=${limit}&sort=${sectionId === 'most-gifted' ? 'most-sold' : 'latest'}`
-                                                                    : entry.path
-                                                            };
-                                                        }));
-                                                    }}
-                                                    placeholder="12"
-                                                />
+                                                {sectionId !== 'most-gifted' && (
+                                                    <Input
+                                                        label="Number of Products"
+                                                        type="number"
+                                                        min="1"
+                                                        value={item.limit ?? ''}
+                                                        onChange={(e) => {
+                                                            const raw = e.target.value;
+                                                            const numeric = raw === '' ? '' : Number(raw);
+                                                            setItems(prev => prev.map(entry => {
+                                                                if (entry.id !== item.id) return entry;
+                                                                const category = getCategoryFromItem(entry);
+                                                                const limit = numeric || 0;
+                                                                return {
+                                                                    ...entry,
+                                                                    limit: numeric,
+                                                                    path: category
+                                                                        ? `/shop?category=${category._id}&limit=${limit}&sort=${sectionId === 'most-gifted' ? 'most-sold' : 'latest'}`
+                                                                        : entry.path
+                                                                };
+                                                            }));
+                                                        }}
+                                                        placeholder="12"
+                                                    />
+                                                )}
                                             </div>
                                         )}
                                         {sectionId === 'curated-for-you' && (
@@ -966,10 +1032,10 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                         )}
                                         {!isPremiumCategoryCards && !isCategoryShowcase && sectionId !== 'price-range-showcase' && (
                                             <Input
-                                                label={sectionId === 'style-it-your-way' ? "Title" : "Name"}
+                                                label={isMostGiftedHero ? "Hero Title" : sectionId === 'style-it-your-way' ? "Title" : "Name"}
                                                 value={item.name}
                                                 onChange={(e) => handleItemChange(item.id, 'name', e.target.value)}
-                                                placeholder="Name"
+                                                placeholder={isMostGiftedHero ? "Most Gifted Items" : "Name"}
                                             />
                                         )}
                                         {isCategoryShowcase && (
@@ -1011,7 +1077,36 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                 />
                                             </div>
                                         )}
-                                        {(sectionId === 'perfect-gift' || sectionId === 'new-launch') && (
+                                        {sectionId === 'new-launch' && (
+                                            <div>
+                                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Category</label>
+                                                <select
+                                                    value={getCategoryFromItem(item)?._id || ''}
+                                                    onChange={(e) => {
+                                                        const selected = categories.find(c => String(c._id) === String(e.target.value));
+                                                        if (!selected) return;
+                                                        setItems(prev => prev.map(entry => {
+                                                            if (entry.id !== item.id) return entry;
+                                                            return {
+                                                                ...entry,
+                                                                categoryId: selected._id,
+                                                                name: selected.name,
+                                                                path: `/shop?category=${selected._id}`
+                                                            };
+                                                        }));
+                                                    }}
+                                                    className="w-full bg-white border border-gray-200 rounded-lg py-2 px-3 text-xs focus:outline-none focus:border-[#3E2723] focus:ring-1 focus:ring-[#3E2723]/20"
+                                                >
+                                                    <option value="">Select Category</option>
+                                                    {categories.map(cat => (
+                                                        <option key={cat._id} value={cat._id}>
+                                                            {cat.name}{cat.isActive === false ? ' (Inactive)' : ''}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        )}
+                                        {sectionId === 'perfect-gift' && (
                                             <div className="space-y-2">
                                                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Selected Products</label>
                                                 <button
@@ -1026,11 +1121,26 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                         )}
                                         {!isPremiumCategoryCards && (
                                             <Input
-                                                label={sectionId === 'style-it-your-way' ? "Subtitle" : "Badge"}
+                                                label={isMostGiftedHero ? "Eyebrow" : sectionId === 'style-it-your-way' ? "Subtitle" : "Badge"}
                                                 value={item.tag}
                                                 onChange={(e) => handleItemChange(item.id, 'tag', e.target.value)}
-                                                placeholder="..."
+                                                placeholder={isMostGiftedHero ? "Collection Focus" : "..."}
                                             />
+                                        )}
+                                        {isMostGiftedHero && (
+                                            <Input
+                                                label="Button Label"
+                                                value={item.ctaLabel || ''}
+                                                onChange={(e) => handleItemChange(item.id, 'ctaLabel', e.target.value)}
+                                                placeholder="Explore Collection"
+                                            />
+                                        )}
+                                        {isMostGiftedHero && (
+                                            <div className="rounded-xl border border-[#EFE3DF] bg-[#FFFCFB] px-4 py-3">
+                                                <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#B28A8A]">Hero Destination</p>
+                                                <p className="mt-2 text-sm font-semibold text-[#3E2723]">All Most Gifted Products</p>
+                                                <p className="mt-1 text-xs text-gray-500">/shop?sort=most-sold</p>
+                                            </div>
                                         )}
 
                                         {sectionId === 'style-it-your-way' && (
