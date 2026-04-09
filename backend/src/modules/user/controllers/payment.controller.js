@@ -8,6 +8,10 @@ const { success, error } = require("../../../utils/apiResponse");
 // POST /api/user/payment/razorpay-order
 exports.createRazorpayOrder = async (req, res) => {
   try {
+    if (!razorpay) {
+      return error(res, "Payment service is not configured on the server.", 503);
+    }
+
     const { orderId } = req.body;
 
     // BUG-03 FIX: Ensure the order belongs to the requesting user
@@ -33,6 +37,10 @@ exports.createRazorpayOrder = async (req, res) => {
 // POST /api/user/payment/verify
 exports.verifyPayment = async (req, res) => {
   try {
+    if (!process.env.RAZORPAY_KEY_SECRET) {
+      return error(res, "Payment verification is not configured on the server.", 503);
+    }
+
     const { orderId, razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
 
     // BUG-03 FIX: Only the order owner can verify payment

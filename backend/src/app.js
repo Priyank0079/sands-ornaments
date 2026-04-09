@@ -12,20 +12,48 @@ const requireRole = require("./middlewares/requireRole");
 
 const app = express();
 
+const defaultAllowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "https://sands-ornaments-ten.vercel.app"
+];
+
+const configuredAllowedOrigins = process.env.CLIENT_URL
+  ? process.env.CLIENT_URL.split(",").map((origin) => origin.trim()).filter(Boolean)
+  : [];
+
+const allowedOrigins = [...new Set([...defaultAllowedOrigins, ...configuredAllowedOrigins])];
+
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
+  if (allowedOrigins.includes("*") || allowedOrigins.includes(origin)) return true;
+
+  try {
+    const { hostname } = new URL(origin);
+    return hostname.endsWith(".vercel.app");
+  } catch (error) {
+    return false;
+  }
+};
+
 // ── GLOBAL MIDDLEWARES ───────────────────────────────────────────────────────
 app.use(helmet()); // Security headers
-const allowedOrigins = process.env.CLIENT_URL ? process.env.CLIENT_URL.split(",").map(origin => origin.trim()) : ["*"];
-app.use(cors({
+const corsOptions = {
   origin: function (origin, callback) {
     // allow requests with no origin (like mobile apps or curl requests)
-    if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes("*")) {
+    if (isAllowedOrigin(origin)) {
       callback(null, true);
     } else {
-      callback(new Error("Not allowed by CORS"));
+      callback(new Error(`Not allowed by CORS: ${origin}`));
     }
   },
-  credentials: true
-}));   // Enable CORS
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(mongoSanitize()); // Prevent NoSQL injection

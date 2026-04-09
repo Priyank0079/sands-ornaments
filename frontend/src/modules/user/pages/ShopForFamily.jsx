@@ -1,8 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import FamilyHeroCarousel from '../components/family/FamilyHeroCarousel';
-import FamilyProductsListing from '../components/family/FamilyProductsListing';
+import FamilyRecipientCategories from '../components/family/FamilyRecipientCategories';
+import FamilyProductsCatalog from '../components/family/FamilyProductsCatalog';
 
 const ShopForFamily = () => {
+    const [selectedRecipient, setSelectedRecipient] = useState('all');
+
     useEffect(() => {
         document.title = "Gifts for Family | Sands Ornaments";
         window.scrollTo(0, 0);
@@ -13,8 +16,17 @@ const ShopForFamily = () => {
             {/* 1. Hero Section */}
             <FamilyHeroCarousel />
 
-            {/* 2. Product Listing Section */}
-            <FamilyProductsListing />
+            {/* 2. Category Section */}
+            <FamilyRecipientCategories
+                selectedRecipient={selectedRecipient}
+                onSelectRecipient={setSelectedRecipient}
+            />
+
+            {/* 3. Product Listing Section */}
+            <FamilyProductsCatalog
+                selectedRecipient={selectedRecipient}
+                onSelectRecipient={setSelectedRecipient}
+            />
         </div>
     );
 };

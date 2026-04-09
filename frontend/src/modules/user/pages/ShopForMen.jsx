@@ -5,6 +5,7 @@ import MenCuratedCollections from '../components/men/MenCuratedCollections';
 import MenProductsListing from '../components/men/MenProductsListing';
 import CelebrateMen from '../components/men/CelebrateMen';
 import ShopTheLook from '../components/men/ShopTheLook';
+import MenStyleTrends from '../components/men/MenStyleTrends';
 import MenInteractiveLook from '../components/men/MenInteractiveLook';
 import MenStyleGuide from '../components/men/MenStyleGuide';
 
@@ -23,6 +24,8 @@ const ShopForMen = () => {
             <MenStyleGuide />
             <MenInteractiveLook />
             <MenProductsListing />
+            <MenStyleTrends />
+            <ShopTheLook />
         </div>
     );
 };
