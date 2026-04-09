@@ -169,14 +169,14 @@ const MenProductsListing = () => {
                                 onMouseLeave={e => e.currentTarget.style.boxShadow = '0 4px 20px rgba(37,99,235,0.08)'}
                             >
                                 {/* Top Quick View Bar */}
-                                <div className="w-full py-2 text-center text-white font-bold text-[10px] tracking-[0.2em] uppercase" style={{ background: BLUE_DARK }}>
+                                <div className="hidden md:block w-full py-2 text-center text-white font-bold text-[10px] tracking-[0.2em] uppercase" style={{ background: BLUE_DARK }}>
                                     Quick View
                                 </div>
 
                                 {/* Badge */}
                                 {product.badge && (
                                     <div
-                                        className="absolute top-10 left-4 z-10 px-3 py-1 rounded-full text-white text-[10px] font-black uppercase tracking-wider shadow"
+                                        className="absolute top-2 md:top-10 left-2 md:left-4 z-10 px-2 md:px-3 py-0.5 md:py-1 rounded-full text-white text-[8px] md:text-[10px] font-black uppercase tracking-wider shadow"
                                         style={{ background: BLUE }}
                                     >
                                         {product.badge}
@@ -193,25 +193,25 @@ const MenProductsListing = () => {
                                         alt={product.name}
                                         className="w-full h-full object-cover transition-transform duration-[1.8s] group-hover:scale-110"
                                     />
-                                    <button className="absolute top-4 right-4 p-2 bg-white/90 rounded-full shadow hover:bg-blue-50 transition-colors">
-                                        <Heart className="w-3.5 h-3.5 text-gray-400 group-hover:text-blue-500 transition-colors" />
+                                    <button className="absolute top-2 md:top-4 right-2 md:right-4 p-1.5 md:p-2 bg-white/90 rounded-full shadow hover:bg-blue-50 transition-colors">
+                                        <Heart className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-gray-400 group-hover:text-blue-500 transition-colors" />
                                     </button>
                                     {/* Rating Badge */}
-                                    <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur px-2.5 py-1 flex items-center gap-1.5 rounded-lg text-[10px] font-bold text-gray-700 shadow">
-                                        {product.rating} <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                                    <div className="absolute bottom-2 md:bottom-4 left-2 md:left-4 bg-white/95 backdrop-blur px-1.5 md:px-2.5 py-0.5 md:py-1 flex items-center gap-1 md:gap-1.5 rounded-md md:rounded-lg text-[8px] md:text-[10px] font-bold text-gray-700 shadow">
+                                        {product.rating} <Star className="w-2.5 h-2.5 md:w-3 h-3 fill-amber-400 text-amber-400" />
                                         <span className="text-gray-300">|</span> {product.reviews}
                                     </div>
                                 </div>
 
                                 {/* Content */}
-                                <div className="p-5 flex flex-col flex-grow">
-                                    <div className="flex items-baseline gap-2 mb-2">
-                                        <span className="text-xl font-black text-zinc-900">₹{product.price}</span>
-                                        <span className="text-xs text-gray-400 line-through">₹{product.originalPrice}</span>
+                                <div className="p-3 md:p-5 flex flex-col flex-grow">
+                                    <div className="flex items-baseline gap-1.5 md:gap-2 mb-1 md:mb-2">
+                                        <span className="text-base md:text-xl font-black text-zinc-900">₹{product.price}</span>
+                                        <span className="text-[10px] md:text-xs text-gray-400 line-through">₹{product.originalPrice}</span>
                                     </div>
                                     <h3
-                                        className="text-sm font-bold text-gray-600 mb-4 line-clamp-2 leading-snug cursor-pointer transition-colors"
-                                        style={{ minHeight: '40px' }}
+                                        className="text-[11px] md:text-sm font-bold text-gray-600 mb-2 md:mb-4 line-clamp-2 leading-snug cursor-pointer transition-colors"
+                                        style={{ minHeight: '32px' }}
                                         onClick={() => navigate(`/product/${product.id}`)}
                                         onMouseEnter={e => e.currentTarget.style.color = BLUE}
                                         onMouseLeave={e => e.currentTarget.style.color = ''}
@@ -220,24 +220,24 @@ const MenProductsListing = () => {
                                     </h3>
 
                                     {/* Offer box */}
-                                    <div className="mt-auto rounded-xl p-3 mb-4 border" style={{ background: `${BLUE}0D`, borderColor: `${BLUE}22` }}>
-                                        <p className="text-[11px] font-bold uppercase tracking-wide mb-1" style={{ color: BLUE }}>Special Offer</p>
-                                        <p className="text-gray-600 text-[11px]">
-                                            Get it for <span className="font-bold text-zinc-900">₹{product.discountPrice}</span> with member coupons
+                                    <div className="mt-auto rounded-lg md:rounded-xl p-2 md:p-3 mb-2 md:mb-4 border" style={{ background: `${BLUE}0D`, borderColor: `${BLUE}22` }}>
+                                        <p className="text-[9px] md:text-[11px] font-extrabold uppercase tracking-wide mb-0.5 md:mb-1" style={{ color: BLUE }}>Special Offer</p>
+                                        <p className="text-gray-600 text-[9px] md:text-[11px]">
+                                            Get it for <span className="font-bold text-zinc-900">₹{product.discountPrice}</span>
                                         </p>
                                     </div>
                                 </div>
 
                                 {/* CTA */}
-                                <div className="px-5 pb-5">
+                                <div className="px-3 md:px-5 pb-3 md:pb-5">
                                     <button
                                         onClick={() => handleAddToCart(product)}
-                                        className="w-full py-3.5 font-bold text-xs tracking-[0.2em] uppercase rounded-xl flex items-center justify-center gap-2 text-white transition-all duration-300"
+                                        className="w-full py-2.5 md:py-3.5 font-bold text-[9px] md:text-xs tracking-[0.2em] uppercase rounded-lg md:rounded-xl flex items-center justify-center gap-2 text-white transition-all duration-300"
                                         style={{ background: BLUE_DARK }}
                                         onMouseEnter={e => e.currentTarget.style.background = BLUE}
                                         onMouseLeave={e => e.currentTarget.style.background = BLUE_DARK}
                                     >
-                                        <ShoppingBag className="w-4 h-4" />
+                                        <ShoppingBag className="w-3.5 h-3.5 md:w-4 h-4" />
                                         Add to Cart
                                     </button>
                                 </div>

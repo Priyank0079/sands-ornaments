@@ -18,21 +18,29 @@ const AllJewellery = () => {
     const displayProducts = useMemo(() => {
         const validProducts = [...products].filter((product) => product?.id && product?.name);
 
+        // If CMS has curated product IDs, attempt to use them
         if (curatedProductIds.length > 0) {
             const productMap = new Map(validProducts.map((product) => [product.id || product._id, product]));
-            return curatedProductIds
+            const curated = curatedProductIds
                 .map((id) => productMap.get(id))
                 .filter(Boolean)
                 .slice(0, productLimit);
+            // If curated list resolves to real products, use it; otherwise fall through to all products
+            if (curated.length > 0) return curated;
         }
 
+        // Always fall back to latest products from catalogue
         return validProducts
             .filter((product) => product?.id && product?.name)
             .sort((a, b) => new Date(b.createdAt || b.updatedAt || 0) - new Date(a.createdAt || a.updatedAt || 0))
             .slice(0, productLimit);
     }, [curatedProductIds, productLimit, products]);
 
-    if (sectionData?.isActive === false || displayProducts.length === 0) return null;
+    // Only hide if admin has explicitly deactivated this section
+    if (sectionData?.isActive === false) return null;
+
+    // Don't render until products have loaded
+    if (displayProducts.length === 0) return null;
 
     const eyebrow = settings.eyebrow?.trim() || 'Our Collection';
     const title = settings.title?.trim() || 'All Jewellery';

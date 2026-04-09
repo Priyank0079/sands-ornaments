@@ -8,6 +8,7 @@ import WomenPromoBanners from '../components/women/WomenPromoBanners';
 import WomenProductsListing from '../components/women/WomenProductsListing';
 import WomenProductCategories from '../components/women/WomenProductCategories';
 import WomenPersonalisedBanner from '../components/women/WomenPersonalisedBanner';
+import WomenPriceRange from '../components/women/WomenPriceRange';
 
 const ShopForWomen = () => {
     useEffect(() => {
@@ -17,10 +18,13 @@ const ShopForWomen = () => {
 
     return (
         <div className="bg-[#FDF5F6] min-h-screen text-black font-sans overflow-x-hidden">
-            {/* 1. Hero Section (Img 1) */}
+            {/* 1. Hero Section */}
             <WomenHeroCarousel />
 
-            {/* New Category Section (Based on Image) */}
+            {/* Price Range — Luxury within Reach */}
+            <WomenPriceRange />
+
+            {/* New Category Section */}
             <WomenProductCategories />
 
             {/* 2. Category Section (Img 2) */}

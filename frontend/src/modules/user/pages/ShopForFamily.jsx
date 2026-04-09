@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import FamilyHeroCarousel from '../components/family/FamilyHeroCarousel';
 import FamilyRecipientCategories from '../components/family/FamilyRecipientCategories';
+import FamilyCuratedCollections from '../components/family/FamilyCuratedCollections';
 import FamilyProductsCatalog from '../components/family/FamilyProductsCatalog';
 
 const ShopForFamily = () => {
@@ -15,6 +16,9 @@ const ShopForFamily = () => {
         <div className="bg-[#FDF5F6] min-h-screen text-black font-sans overflow-x-hidden">
             {/* 1. Hero Section */}
             <FamilyHeroCarousel />
+
+            {/* Curated Collections Showcase */}
+            <FamilyCuratedCollections />
 
             {/* 2. Category Section */}
             <FamilyRecipientCategories

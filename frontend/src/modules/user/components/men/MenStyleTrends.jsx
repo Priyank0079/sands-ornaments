@@ -40,7 +40,7 @@ const trends = [
 const MenStyleTrends = () => {
     return (
         <section
-            className="overflow-hidden relative"
+            className="relative"
             style={{ background: '#C9BAA8', paddingTop: '3rem', paddingBottom: '5rem' }}
         >
             {/* Decorative corner lines — top left */}
@@ -80,7 +80,7 @@ const MenStyleTrends = () => {
 
             <div className="container mx-auto px-4 md:px-10 max-w-[1300px]">
                 {/* Cards Row */}
-                <div className="flex gap-4 md:gap-6 justify-center items-stretch overflow-x-auto scrollbar-hide">
+                <div className="flex gap-4 md:gap-6 justify-center items-stretch overflow-x-auto scrollbar-hide pb-16">
                     {trends.map((trend, idx) => (
                         <motion.div
                             key={trend.id}
@@ -138,16 +138,18 @@ const MenStyleTrends = () => {
                                     </div>
                                 </div>
 
-                                {/* ── BIG NUMBER — below the card, bottom-left, no overlap ── */}
+                                {/* ── BIG NUMBER — bottom-left of card, overlapping bottom edge, inside section ── */}
                                 <div
-                                    className="absolute -bottom-10 md:-bottom-14 left-0 select-none pointer-events-none"
+                                    className="absolute left-0 select-none pointer-events-none"
                                     style={{
-                                        fontSize: 'clamp(72px, 10vw, 128px)',
+                                        bottom: '-0.35em',
+                                        fontSize: 'clamp(80px, 11vw, 140px)',
                                         fontWeight: 900,
                                         lineHeight: 1,
-                                        color: 'rgba(255,255,255,0.80)',
+                                        color: 'rgba(255,255,255,0.88)',
                                         fontFamily: "'Arial Black', 'Helvetica Neue', sans-serif",
                                         letterSpacing: '-0.05em',
+                                        zIndex: 20,
                                     }}
                                 >
                                     {trend.number}
