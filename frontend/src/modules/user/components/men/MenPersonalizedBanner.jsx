@@ -3,42 +3,42 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
 // Import image
-import personalizedImg from '../../../../assets/men/personalized_banner.png';
+import personalizedImg from '../../../../assets/men/personalized_full_banner.png';
 
 const MenPersonalizedBanner = () => {
     return (
-        <section className="py-12 px-4 md:px-12 bg-transparent">
-            <div className="max-w-7xl mx-auto">
-                <motion.div 
-                    initial={{ opacity: 0, scale: 0.98 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.8 }}
-                    className="relative w-full h-[300px] md:h-[450px] rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-2xl group"
-                >
-                    {/* Background Image */}
-                    <img 
-                        src={personalizedImg} 
-                        alt="Personalised Men's Jewellery" 
-                        className="w-full h-full object-cover transition-transform duration-[3s] group-hover:scale-105"
-                    />
+        <section className="w-full bg-white py-4 md:py-8 overflow-hidden">
+            <motion.div 
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 1 }}
+                className="relative w-full h-[320px] md:h-[480px] group cursor-pointer"
+            >
+                {/* Background Image - Full Width Edge to Edge */}
+                <img 
+                    src={personalizedImg} 
+                    alt="Personalised Men's Jewellery" 
+                    className="w-full h-full object-cover transition-transform duration-[5s] group-hover:scale-105"
+                />
 
-                    {/* Dark Overlay for Text Readability - Reversed for Left Text */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent md:from-black/70 md:via-black/20" />
+                {/* Dark Overlay for Text Readability */}
+                <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/30 to-transparent" />
 
-                    {/* Content Section - Left Aligned to match the new flagship UI style */}
-                    <div className="absolute inset-0 flex flex-col justify-center items-start text-left px-8 md:px-20 z-10">
+                {/* Content Section - Contained in the center but banner is full width */}
+                <div className="absolute inset-0 z-10">
+                    <div className="container mx-auto h-full px-8 md:px-16 flex flex-col justify-center items-start text-left">
                         <motion.div
-                            initial={{ opacity: 0, x: -30 }}
+                            initial={{ opacity: 0, x: -50 }}
                             whileInView={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.8, delay: 0.2 }}
                             viewport={{ once: true }}
-                            className="max-w-xl"
+                            className="max-w-2xl"
                         >
-                            <h2 className="text-4xl md:text-7xl font-display text-white leading-tight mb-4 md:mb-6" style={{ fontFamily: "'Cinzel', serif" }}>
+                            <h2 className="text-4xl md:text-8xl font-display text-white leading-none mb-4 md:mb-6" style={{ fontFamily: "'Cinzel', serif", fontWeight: 700 }}>
                                 Personalised
                             </h2>
-                            <p className="text-sm md:text-xl text-[#D9C4B1] font-light tracking-[0.1em] uppercase mb-8 md:mb-10">
+                            <p className="text-sm md:text-2xl text-[#D9C4B1] font-light tracking-[0.15em] uppercase mb-8 md:mb-12">
                                 Flawless Gifting, Tailored to You
                             </p>
                             
@@ -49,23 +49,24 @@ const MenPersonalizedBanner = () => {
                                 <motion.div
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
-                                    className="bg-gradient-to-r from-[#D9C4B1] to-[#C9A24D] text-[#3B2516] px-8 md:px-10 py-3 md:py-4 rounded-full font-bold text-sm md:text-base tracking-wider shadow-lg transition-all border border-white/20"
+                                    className="bg-gradient-to-r from-[#D9C4B1] to-[#C9A24D] text-[#3B2516] px-10 md:px-14 py-4 md:py-5 rounded-full font-bold text-xs md:text-lg tracking-[0.2em] uppercase shadow-2xl transition-all border border-white/30"
                                 >
                                     Customise Now
                                 </motion.div>
                             </Link>
                         </motion.div>
                     </div>
+                </div>
 
-                    {/* Decorative Elements */}
-                    <div className="absolute bottom-10 right-10 hidden md:block">
-                        <div className="flex gap-2">
-                            <div className="w-12 h-1 bg-white/30 rounded-full" />
-                            <div className="w-4 h-1 bg-white/60 rounded-full" />
-                        </div>
-                    </div>
-                </motion.div>
-            </div>
+                {/* Decorative Elements - Floating Accent Line */}
+                <div className="absolute bottom-12 right-12 hidden md:block">
+                    <motion.div 
+                        animate={{ width: [40, 120, 40] }}
+                        transition={{ duration: 4, repeat: Infinity }}
+                        className="h-[2px] bg-[#D9C4B1]/40 rounded-full"
+                    />
+                </div>
+            </motion.div>
         </section>
     );
 };
