@@ -29,27 +29,27 @@ const FamilyRecipientCategories = ({ selectedRecipient = 'all', onSelectRecipien
     };
 
     return (
-        <section className="py-20 px-4 md:px-12 bg-[#FFF8F1]">
+        <section className="py-12 md:py-16 px-4 md:px-12 bg-[#FFF8F1]">
             <div className="max-w-7xl mx-auto">
-                <div className="text-center mb-16 space-y-4">
+                <div className="text-center mb-10 space-y-4">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         className="flex flex-col items-center"
                     >
-                        <span className="text-xs font-black uppercase tracking-[0.4em] text-amber-500 mb-3">Family Edit</span>
-                        <h2 className="text-4xl md:text-6xl font-serif text-zinc-900 tracking-tight flex flex-col md:flex-row items-center gap-3">
+                        <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-amber-500 mb-2">Family Edit</span>
+                        <h2 className="text-3xl md:text-5xl font-serif text-zinc-900 tracking-tight flex flex-col md:flex-row items-center gap-3">
                             SHOP BY <span className="italic font-light text-amber-600">RELATION</span>
                         </h2>
-                        <p className="max-w-2xl text-sm md:text-base text-zinc-600">
+                        <p className="max-w-xl text-xs md:text-sm text-zinc-500">
                             Choose a family member and explore curated gifting jewellery designed for every bond.
                         </p>
-                        <div className="w-24 h-[1px] bg-amber-200 mt-6" />
+                        <div className="w-16 h-[1px] bg-amber-200 mt-4" />
                     </motion.div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-5 md:gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-4 md:gap-5">
                     {recipients.map((recipient, index) => {
                         const isActive = selectedRecipient === recipient.id;
 
@@ -62,10 +62,10 @@ const FamilyRecipientCategories = ({ selectedRecipient = 'all', onSelectRecipien
                                 transition={{ duration: 0.5, delay: index * 0.05 }}
                                 viewport={{ once: true }}
                                 onClick={() => handleClick(recipient.id)}
-                                className={`group relative block aspect-square rounded-[28px] overflow-hidden text-left transition-all duration-500 ${
+                                className={`group relative block aspect-square rounded-2xl overflow-hidden text-left transition-all duration-500 ${
                                     isActive
-                                        ? 'ring-2 ring-amber-500 shadow-[0_20px_45px_-20px_rgba(180,83,9,0.55)]'
-                                        : 'shadow-[0_18px_40px_-24px_rgba(0,0,0,0.22)] hover:-translate-y-2 hover:shadow-[0_22px_48px_-18px_rgba(0,0,0,0.28)]'
+                                        ? 'ring-2 ring-amber-500 shadow-lg'
+                                        : 'shadow-md hover:-translate-y-1 hover:shadow-xl'
                                 }`}
                             >
                                 <img
@@ -76,11 +76,11 @@ const FamilyRecipientCategories = ({ selectedRecipient = 'all', onSelectRecipien
 
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
 
-                                <div className="absolute inset-x-0 bottom-0 p-4 md:p-5">
-                                    <span className="block text-white text-sm md:text-base font-black tracking-[0.14em]">
+                                <div className="absolute inset-x-0 bottom-0 p-3 md:p-4">
+                                    <span className="block text-white text-xs md:text-sm font-black tracking-[0.12em]">
                                         {recipient.title}
                                     </span>
-                                    <span className="block mt-1 text-[11px] md:text-xs text-white/75 tracking-[0.08em] uppercase">
+                                    <span className="block mt-0.5 text-[9px] md:text-[10px] text-white/75 tracking-[0.08em] uppercase">
                                         {recipient.subtitle}
                                     </span>
                                 </div>

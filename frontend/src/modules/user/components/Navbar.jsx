@@ -116,7 +116,7 @@ const Navbar = () => {
 
     return (
         <>
-            <nav className={`w-full transition-all duration-500 z-[100] ${isScrolled ? 'bg-white/80 backdrop-blur-lg py-1 shadow-sm' : 'bg-white py-2 md:py-4 border-b border-gray-50'}`}>
+            <nav className={`w-full transition-all duration-500 z-[100] ${isScrolled ? 'bg-white/90 backdrop-blur-md py-1 shadow-sm' : 'bg-white py-1.5 md:py-2.5 border-b border-gray-50'}`}>
                 <div className="container mx-auto px-4 md:px-6 flex items-center justify-between gap-6">
 
                     {/* Left: Logo */}
@@ -125,7 +125,7 @@ const Navbar = () => {
                             <img
                                 src={logo}
                                 alt="Sands Jewels"
-                                className="h-[36px] md:h-[50px] lg:h-[60px] w-auto object-contain transition-transform duration-300 hover:scale-110 origin-left"
+                                className="h-[30px] md:h-[40px] lg:h-[48px] w-auto object-contain transition-transform duration-300 hover:scale-105 origin-left"
                             />
                         </Link>
                         
@@ -159,7 +159,7 @@ const Navbar = () => {
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             onKeyDown={handleSearchKeyDown}
-                            className="w-full bg-white border border-gray-400 rounded-full py-3 px-14 text-sm focus:outline-none focus:border-[#9C5B61] focus:ring-4 focus:ring-[#9C5B61]/10 transition-all text-black placeholder-gray-400 font-medium"
+                            className="w-full bg-white border border-gray-300 rounded-lg py-2 md:py-2.5 px-12 text-sm focus:outline-none focus:border-[#9C5B61] focus:ring-2 focus:ring-[#9C5B61]/10 transition-all text-black placeholder-gray-400 font-medium"
                         />
                         <div className="absolute right-5 top-1/2 -translate-y-1/2 flex items-center gap-4 text-[#9C5B61]">
                             <button className="hover:scale-110 active:scale-95 transition-transform duration-200" aria-label="Camera search">
@@ -172,42 +172,42 @@ const Navbar = () => {
                     </div>
 
                     {/* Icons Section */}
-                    <div className="flex items-center space-x-5 md:space-x-8 flex-shrink-0 text-[#9C5B61]">
+                    <div className="flex items-center space-x-4 md:space-x-6 flex-shrink-0 text-[#9C5B61]">
                         {/* Mobile Search Trigger */}
                         <motion.button 
-                            whileHover={{ scale: 1.15 }}
-                            whileTap={{ scale: 0.9 }}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
                             type="button" 
                             onClick={submitSearch} 
                             className="md:hidden" 
                             aria-label="Search products"
                         >
-                            <Search className="w-6 h-6" />
+                            <Search className="w-5 h-5" />
                         </motion.button>
 
                         {/* Diamond Icon */}
-                        <motion.div whileHover={{ scale: 1.15, rotate: 15 }} whileTap={{ scale: 0.9 }}>
+                        <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
                             <Link to="/shop?purity=diamond" className="hidden md:block" aria-label="Diamond jewellery">
-                                <Diamond className="w-6 h-6" />
+                                <Diamond className="w-5 h-5" />
                             </Link>
                         </motion.div>
 
                         {/* Store/Branch Icon */}
-                        <motion.div whileHover={{ scale: 1.15, y: -2 }} whileTap={{ scale: 0.9 }}>
+                        <motion.div whileHover={{ scale: 1.1, y: -1 }} whileTap={{ scale: 0.95 }}>
                             <Link to="/stores" className="hidden md:block" aria-label="Our stores">
-                                <Store className="w-6 h-6" />
+                                <Store className="w-5 h-5" />
                             </Link>
                         </motion.div>
 
                         {/* Wishlist Icon */}
-                        <motion.div whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }} className="relative">
+                        <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} className="relative">
                             <Link to="/wishlist" aria-label="Wishlist">
-                                <Heart className="w-6 h-6" />
+                                <Heart className="w-5 h-5" />
                                 {wishlist?.length > 0 && (
                                     <motion.span 
                                         initial={{ scale: 0 }}
                                         animate={{ scale: 1 }}
-                                        className="absolute -top-1.5 -right-1.5 bg-[#9C5B61] text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full border border-white"
+                                        className="absolute -top-1 -right-1 bg-[#9C5B61] text-white text-[8px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full border border-white"
                                     >
                                         {wishlist.length}
                                     </motion.span>
@@ -216,21 +216,21 @@ const Navbar = () => {
                         </motion.div>
 
                         {/* User/Profile Icon */}
-                        <motion.div whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}>
+                        <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
                             <Link to={user ? "/profile" : "/login"} className="hidden md:block" aria-label="My account">
-                                <User className="w-6 h-6" />
+                                <User className="w-5 h-5" />
                             </Link>
                         </motion.div>
 
                         {/* Cart/Bag Icon */}
-                        <motion.div whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }} className="relative">
+                        <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} className="relative">
                             <Link to="/cart" aria-label="Shopping bag">
-                                <ShoppingBag className="w-6 h-6" />
+                                <ShoppingBag className="w-5 h-5" />
                                 {cart?.length > 0 && (
                                     <motion.span 
                                         initial={{ scale: 0 }}
                                         animate={{ scale: 1 }}
-                                        className="absolute -top-1.5 -right-1.5 bg-[#9C5B61] text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full border border-white"
+                                        className="absolute -top-1 -right-1 bg-[#9C5B61] text-white text-[8px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full border border-white"
                                     >
                                         {cart.length}
                                     </motion.span>

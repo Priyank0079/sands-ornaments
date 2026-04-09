@@ -1,60 +1,81 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import PersonalisedImg from '../../../../assets/promos/PersonalisedBannerWide.png';
+import PersonalisedImg from '../../../../assets/promos/PersonalisedBannerWine.png';
 
 const WomenPersonalisedBanner = () => {
     const navigate = useNavigate();
 
     return (
-        <section className="bg-white w-full">
+        <section className="bg-white w-full py-6 md:py-10">
             <div 
-                className="w-full overflow-hidden relative h-[220px] sm:h-[280px] md:h-[380px] group cursor-pointer" 
+                className="max-w-7xl mx-auto overflow-hidden relative h-[250px] md:h-[350px] group cursor-pointer shadow-2xl rounded-none md:rounded-lg" 
                 onClick={() => navigate('/shop?personalised=true')}
+                style={{ background: 'linear-gradient(to right, #4A0E0E, #2D0505)' }}
             >
-                {/* Background Image */}
-                <img 
-                    src={PersonalisedImg} 
-                    alt="Personalised Jewellery"
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-[10s] group-hover:scale-105"
-                />
+                {/* Decorative Background Pattern (Subtle waves/blobs on the left) */}
+                <div className="absolute top-0 left-0 w-1/2 h-full opacity-20 pointer-events-none">
+                    <div className="absolute -top-1/4 -left-1/4 w-[150%] h-[150%] bg-[#5E1212] rounded-full mix-blend-screen blur-3xl opacity-40 animate-pulse" />
+                    <div className="absolute -bottom-1/4 -left-1/4 w-[120%] h-[120%] bg-[#3D0A0A] rounded-full mix-blend-screen blur-3xl opacity-30" />
+                </div>
+
+                {/* Main Product Image (Right half) */}
+                <div className="absolute right-0 top-0 w-full md:w-[60%] h-full">
+                    <img 
+                        src={PersonalisedImg} 
+                        alt="Personalised Jewellery Collection"
+                        className="w-full h-full object-cover transition-transform duration-[8s] group-hover:scale-105"
+                    />
+                    {/* Seamless Gradient from Wine to Image */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#4A0E0E] via-[#4A0E0E]/60 to-transparent block md:hidden" />
+                    <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#4A0E0E] to-transparent hidden md:block" />
+                </div>
                 
-                {/* Dark Overlay for Text Readability */}
-                <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-transparent flex items-center">
-                    <div className="px-5 sm:px-8 md:px-16 lg:px-24 w-full flex flex-col md:flex-row justify-between items-start md:items-center text-white gap-4 md:gap-0">
+                {/* Content Section (Left side focused) */}
+                <div className="relative h-full flex items-center z-10">
+                    <div className="px-8 sm:px-12 md:px-20 lg:px-24 w-full md:w-1/2 flex flex-col items-center md:items-start text-center md:text-left">
                         <motion.div
-                            initial={{ opacity: 0, x: -30 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.8 }}
-                            className="space-y-1.5 md:space-y-3"
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 1, ease: "easeOut" }}
+                            viewport={{ once: true }}
+                            className="space-y-4 md:space-y-6"
                         >
-                            <div className="flex items-center gap-2 text-rose-300">
-                                <Sparkles className="w-3.5 h-3.5 md:w-5 md:h-5" />
-                                <span className="text-[9px] md:text-xs font-bold uppercase tracking-[0.4em]">Handcrafted for you</span>
-                            </div>
-                            <h2 className="text-2xl sm:text-3xl md:text-6xl font-serif leading-tight">
+                            <h2 
+                                className="text-4xl sm:text-5xl md:text-7xl font-display text-white tracking-wide"
+                                style={{ fontFamily: "'Cinzel', serif", fontWeight: 400 }}
+                            >
                                 Personalised
                             </h2>
-                            <p className="text-xs sm:text-sm md:text-xl font-light italic text-rose-100/90 max-w-[200px] sm:max-w-xs md:max-w-sm">
-                                Silver that feels intimately yours. Make an unforgettable statement.
+                            <p 
+                                className="text-sm sm:text-lg md:text-xl font-light text-rose-100/90 tracking-[0.1em] uppercase"
+                                style={{ fontFamily: "'Lato', sans-serif" }}
+                            >
+                                Silver that feels like you
                             </p>
                         </motion.div>
                         
-                        <motion.button
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            whileInView={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.8, delay: 0.3 }}
-                            className="bg-white text-black px-5 py-2.5 md:px-8 md:py-4 rounded-none font-bold uppercase text-[10px] md:text-xs tracking-widest flex items-center gap-2 hover:bg-rose-50 transition-all shadow-xl"
-                        >
-                            Customise Now <ArrowRight className="w-3 h-3 md:w-4 md:h-4" />
-                        </motion.button>
+                        {/* Subtle Floating Animation for the text */}
+                        <motion.div
+                            animate={{ y: [0, -5, 0] }}
+                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                            className="mt-8 md:mt-12 w-12 h-px bg-white/40 hidden md:block"
+                        />
                     </div>
                 </div>
 
-                {/* Decorative Signature Line on Hover */}
-                <div className="absolute top-0 left-0 w-full h-1 bg-rose-300/0 transition-all duration-700 group-hover:bg-rose-300/80" />
+                {/* Hover Border Accent */}
+                <div className="absolute inset-0 border border-white/0 transition-all duration-700 group-hover:border-white/10 m-1 md:m-3 pointer-events-none" />
+                
+                {/* Custom Label Animation on Hover */}
+                <div className="absolute top-6 right-6 overflow-hidden hidden md:block">
+                    <motion.span 
+                        className="text-[10px] text-white/50 uppercase tracking-[0.3em] block origin-right -rotate-90 translate-y-24 group-hover:translate-y-0 transition-transform duration-700"
+                    >
+                        Exclusive Edit
+                    </motion.span>
+                </div>
             </div>
         </section>
     );

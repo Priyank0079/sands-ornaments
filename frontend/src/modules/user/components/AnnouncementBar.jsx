@@ -39,7 +39,7 @@ const AnnouncementBar = () => {
     }, []);
 
     return (
-        <div className="bg-[#9C5B61] text-[#F7F2EF] overflow-hidden py-2 relative z-[60]">
+        <div className="bg-[#9C5B61] text-[#F7F2EF] overflow-hidden py-1.5 relative z-[60]">
             <div className="flex animate-marquee whitespace-nowrap">
                 {[...Array(2)].map((_, i) => (
                     <div key={i} className="flex items-center gap-8 md:gap-16 px-4 md:px-6">

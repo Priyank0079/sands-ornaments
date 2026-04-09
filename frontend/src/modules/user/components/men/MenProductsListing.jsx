@@ -96,9 +96,10 @@ const dummyProducts = [
     }
 ];
 
-const BLUE = '#2563EB';
-const BLUE_DARK = '#0B1528';
-const BLUE_BG = '#F0F5FF';
+const ACCENT = '#7A2E3A'; // Wine
+const ACCENT_DARK = '#3B2516'; // Dark Brown
+const BG_COLOR = '#FDF5F6'; // Luxury Beige
+const GOLD = '#C9A24D';
 
 const MenProductsListing = () => {
     const navigate = useNavigate();
@@ -123,7 +124,7 @@ const MenProductsListing = () => {
     };
 
     return (
-        <section className="py-12 md:py-24" style={{ background: BLUE_BG }}>
+        <section className="py-12 md:py-24" style={{ background: BG_COLOR }}>
             <div className="container mx-auto px-4 md:px-8 max-w-[1500px]">
 
                 {/* Section Header */}
@@ -134,10 +135,10 @@ const MenProductsListing = () => {
                         viewport={{ once: true }}
                         transition={{ duration: 0.6 }}
                         className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
-                        style={{ background: `${BLUE}22`, border: `1px solid ${BLUE}44` }}
+                        style={{ background: `${ACCENT}22`, border: `1px solid ${ACCENT}44` }}
                     >
-                        <Zap className="w-3.5 h-3.5" style={{ color: BLUE }} />
-                        <span className="text-xs font-black uppercase tracking-widest" style={{ color: BLUE }}>For Him</span>
+                        <Zap className="w-3.5 h-3.5" style={{ color: ACCENT }} />
+                        <span className="text-xs font-black uppercase tracking-widest" style={{ color: ACCENT }}>For Him</span>
                     </motion.div>
                     <motion.h2
                         initial={{ opacity: 0, y: 20 }}
@@ -146,9 +147,9 @@ const MenProductsListing = () => {
                         transition={{ duration: 0.7, delay: 0.1 }}
                         className="text-3xl sm:text-4xl md:text-5xl font-serif text-zinc-900 tracking-tight mb-3"
                     >
-                        Men's <span className="italic" style={{ color: BLUE }}>Exclusives</span>
+                        Men's <span className="italic" style={{ color: ACCENT }}>Exclusives</span>
                     </motion.h2>
-                    <div className="w-20 h-1 mx-auto rounded-full" style={{ background: BLUE }} />
+                    <div className="w-20 h-1 mx-auto rounded-full" style={{ background: ACCENT }} />
                 </div>
 
                 {/* Product Grid */}
@@ -169,7 +170,7 @@ const MenProductsListing = () => {
                                 onMouseLeave={e => e.currentTarget.style.boxShadow = '0 4px 20px rgba(37,99,235,0.08)'}
                             >
                                 {/* Top Quick View Bar */}
-                                <div className="hidden md:block w-full py-2 text-center text-white font-bold text-[10px] tracking-[0.2em] uppercase" style={{ background: BLUE_DARK }}>
+                                <div className="hidden md:block w-full py-2 text-center text-white font-bold text-[10px] tracking-[0.2em] uppercase" style={{ background: ACCENT_DARK }}>
                                     Quick View
                                 </div>
 
@@ -177,7 +178,7 @@ const MenProductsListing = () => {
                                 {product.badge && (
                                     <div
                                         className="absolute top-2 md:top-10 left-2 md:left-4 z-10 px-2 md:px-3 py-0.5 md:py-1 rounded-full text-white text-[8px] md:text-[10px] font-black uppercase tracking-wider shadow"
-                                        style={{ background: BLUE }}
+                                        style={{ background: ACCENT }}
                                     >
                                         {product.badge}
                                     </div>
@@ -213,15 +214,15 @@ const MenProductsListing = () => {
                                         className="text-[11px] md:text-sm font-bold text-gray-600 mb-2 md:mb-4 line-clamp-2 leading-snug cursor-pointer transition-colors"
                                         style={{ minHeight: '32px' }}
                                         onClick={() => navigate(`/product/${product.id}`)}
-                                        onMouseEnter={e => e.currentTarget.style.color = BLUE}
+                                        onMouseEnter={e => e.currentTarget.style.color = ACCENT}
                                         onMouseLeave={e => e.currentTarget.style.color = ''}
                                     >
                                         {product.name}
                                     </h3>
 
                                     {/* Offer box */}
-                                    <div className="mt-auto rounded-lg md:rounded-xl p-2 md:p-3 mb-2 md:mb-4 border" style={{ background: `${BLUE}0D`, borderColor: `${BLUE}22` }}>
-                                        <p className="text-[9px] md:text-[11px] font-extrabold uppercase tracking-wide mb-0.5 md:mb-1" style={{ color: BLUE }}>Special Offer</p>
+                                    <div className="mt-auto rounded-lg md:rounded-xl p-2 md:p-3 mb-2 md:mb-4 border" style={{ background: `${ACCENT}0D`, borderColor: `${ACCENT}22` }}>
+                                        <p className="text-[9px] md:text-[11px] font-extrabold uppercase tracking-wide mb-0.5 md:mb-1" style={{ color: ACCENT }}>Special Offer</p>
                                         <p className="text-gray-600 text-[9px] md:text-[11px]">
                                             Get it for <span className="font-bold text-zinc-900">₹{product.discountPrice}</span>
                                         </p>
@@ -233,9 +234,9 @@ const MenProductsListing = () => {
                                     <button
                                         onClick={() => handleAddToCart(product)}
                                         className="w-full py-2.5 md:py-3.5 font-bold text-[9px] md:text-xs tracking-[0.2em] uppercase rounded-lg md:rounded-xl flex items-center justify-center gap-2 text-white transition-all duration-300"
-                                        style={{ background: BLUE_DARK }}
-                                        onMouseEnter={e => e.currentTarget.style.background = BLUE}
-                                        onMouseLeave={e => e.currentTarget.style.background = BLUE_DARK}
+                                        style={{ background: ACCENT_DARK }}
+                                        onMouseEnter={e => e.currentTarget.style.background = ACCENT}
+                                        onMouseLeave={e => e.currentTarget.style.background = ACCENT_DARK}
                                     >
                                         <ShoppingBag className="w-3.5 h-3.5 md:w-4 h-4" />
                                         Add to Cart
@@ -254,7 +255,7 @@ const MenProductsListing = () => {
                         viewport={{ once: true }}
                         onClick={() => navigate('/shop?category=men')}
                         className="px-12 py-4 rounded-full font-bold uppercase tracking-widest text-xs text-white transition-all shadow-lg hover:shadow-xl"
-                        style={{ background: BLUE }}
+                        style={{ background: ACCENT }}
                     >
                         Explore All Men's Jewellery →
                     </motion.button>

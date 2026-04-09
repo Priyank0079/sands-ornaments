@@ -170,9 +170,9 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
                 />
             )}
 
-            <Link to={`/product/${product.id}`} className="group relative w-full flex flex-col bg-white rounded-[2rem] overflow-hidden transition-all duration-700 hover:shadow-[0_30px_60px_rgba(0,0,0,0.08)]">
+            <Link to={`/product/${product.id}`} className="group relative w-full flex flex-col bg-white rounded-2xl overflow-hidden transition-all duration-700 hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)]">
                 {/* Image Container */}
-                <div className="relative aspect-[4/5] overflow-hidden bg-[#FBFBFB] rounded-[2rem]">
+                <div className="relative aspect-[4/5] overflow-hidden bg-[#FBFBFB] rounded-2xl">
                     {primaryImage ? (
                         <>
                             <img
@@ -204,14 +204,14 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
                 </div>
 
                 {/* Simplified Info Section */}
-                <div className="p-6 pb-8 text-center flex flex-col items-center">
-                    <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-400 font-bold mb-2">
+                <div className="p-4 pb-6 text-center flex flex-col items-center">
+                    <span className="text-[9px] uppercase tracking-[0.2em] text-zinc-400 font-bold mb-1.5">
                         {metalLabel} {categoryLabel}
                     </span>
-                    <h3 className="text-zinc-800 font-serif text-lg md:text-xl mb-2 line-clamp-1 group-hover:text-[#7A2E3A] transition-colors">
+                    <h3 className="text-zinc-800 font-serif text-base md:text-lg mb-1.5 line-clamp-1 group-hover:text-[#7A2E3A] transition-colors">
                         {product.name}
                     </h3>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                         <span className="text-zinc-900 font-bold text-sm">
                             {currencyText(effectivePrice)}
                         </span>
@@ -221,10 +221,10 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
                     </div>
                     
                     {/* Hover Reveal: Quick Add or View Link */}
-                    <div className="mt-4 overflow-hidden h-0 group-hover:h-8 transition-all duration-500">
+                    <div className="mt-2.5 overflow-hidden h-0 group-hover:h-6 transition-all duration-500">
                         <button 
                             onClick={handleAddToCart}
-                            className="text-[11px] font-bold uppercase tracking-widest text-[#7A2E3A] hover:underline"
+                            className="text-[10px] font-bold uppercase tracking-widest text-[#7A2E3A] hover:underline"
                         >
                             Quick Add to Bag
                         </button>
