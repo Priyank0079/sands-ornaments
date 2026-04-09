@@ -76,13 +76,6 @@ const WomenProductCategories = () => {
                 </div>
             </div>
         </section>
-
-
-
-
-
-            </div>
-        </section>
     );
 };
 

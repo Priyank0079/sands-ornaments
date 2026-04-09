@@ -328,7 +328,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         const nextItems = [...items, newItem];
         setItems(nextItems);
         setEditingId(newItem.id);
-        if (!isCategoryShowcase) {
+        if (!isCategoryShowcase && sectionId !== 'price-range-showcase') {
             handleSave(nextItems);
         }
     };
