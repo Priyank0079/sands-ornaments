@@ -170,114 +170,68 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
                 />
             )}
 
-            <Link to={`/product/${product.id}`} className="group relative w-full h-full flex flex-col bg-white rounded-2xl md:rounded-3xl overflow-hidden border border-gray-100 transition-all duration-700 hover:shadow-[0_20px_50px_rgba(74,16,21,0.06)]">
-                {/* Image Container - CLEAN IMAGE SWAP (No Zooming) */}
-                <div className="relative aspect-[4/5] overflow-hidden bg-[#F5F5F5] shrink-0">
-                    <div className="absolute inset-0">
-                        {primaryImage ? (
-                            <>
+            <Link to={`/product/${product.id}`} className="group relative w-full flex flex-col bg-white rounded-[2rem] overflow-hidden transition-all duration-700 hover:shadow-[0_30px_60px_rgba(0,0,0,0.08)]">
+                {/* Image Container */}
+                <div className="relative aspect-[4/5] overflow-hidden bg-[#FBFBFB] rounded-[2rem]">
+                    {primaryImage ? (
+                        <>
+                            <img
+                                src={primaryImage}
+                                alt={product.name}
+                                className="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-110"
+                            />
+                            {secondaryImage && (
                                 <img
-                                    src={primaryImage}
-                                    alt={product.name}
-                                    className="absolute inset-0 w-full h-full object-cover z-0"
+                                    src={secondaryImage}
+                                    alt={`${product.name} detail`}
+                                    className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-[1.2s] ease-in-out"
                                 />
-                                {secondaryImage && (
-                                    <img
-                                        src={secondaryImage}
-                                        alt={`${product.name} detail`}
-                                        className="absolute inset-0 w-full h-full object-cover z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-[1200ms] ease-in-out"
-                                    />
-                                )}
-                            </>
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-[#F7F2F3] text-[#B88B90] text-[clamp(8px,1.5vw,12px)] font-bold uppercase tracking-[0.25em]">
-                                No Image
-                            </div>
-                        )}
-                    </div>
+                            )}
+                        </>
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center text-zinc-300 text-xs font-medium uppercase tracking-widest">
+                            No Image
+                        </div>
+                    )}
 
-                    {/* Dynamic Badges */}
-                    {product.isNew ? (
-                        <span className="absolute top-[clamp(8px,1vw,12px)] right-0 bg-gradient-to-r from-[#D39A9F] to-[#4A1015] text-white text-[clamp(7px,1vw,9px)] font-bold px-[clamp(8px,1vw,12px)] py-[clamp(2px,0.5vw,4px)] shadow-sm tracking-widest z-20" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%, 8px 50%)' }}>
-                            NEW
-                        </span>
-                    ) : hasReviews && ratingValue >= 4.5 ? (
-                        <span className="absolute top-[clamp(8px,1vw,12px)] right-0 bg-gradient-to-r from-[#D39A9F] to-[#4A1015] text-white text-[clamp(7px,1vw,9px)] font-bold px-[clamp(8px,1vw,12px)] py-[clamp(2px,0.5vw,4px)] shadow-sm tracking-widest z-20" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%, 8px 50%)' }}>
-                            TRENDING
-                        </span>
-                    ) : null}
-
-                    {/* Collection Tag */}
-                    <div className="hidden md:block absolute top-3 left-2 bg-white/95 backdrop-blur-md px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider text-[#4A1015] rounded-sm shadow-md z-20 border border-[#4A1015]/10">
-                        {collectionLabel}
-                    </div>
-
-                    {/* Wishlist Heart */}
+                    {/* Minimal Heart Icon */}
                     <button
                         onClick={handleWishlist}
-                        className={`absolute bottom-2 right-2 z-20 p-1.5 bg-white/20 hover:bg-white rounded-full backdrop-blur-md border border-white/30 transition-all duration-300 hover:scale-110 shadow-sm ${isWishlisted ? 'text-red-500 fill-red-500' : 'text-white hover:text-red-500'}`}
-                        title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
+                        className={`absolute top-5 right-5 z-20 p-2.5 rounded-full backdrop-blur-md transition-all duration-300 ${isWishlisted ? 'bg-rose-500 text-white shadow-lg' : 'bg-white/80 text-zinc-400 hover:text-rose-500 shadow-sm'}`}
                     >
-                        <Heart className={`w-[clamp(14px,2vw,18px)] h-[clamp(14px,2vw,18px)] ${isWishlisted ? 'fill-current' : ''}`} strokeWidth={2} />
+                        <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
                     </button>
-
-                    {/* Rating Badge */}
-                    <div className="absolute bottom-2 left-2 bg-white/90 backdrop-blur-sm px-1 py-0.5 rounded flex items-center gap-0.5 md:gap-1 shadow-sm z-20 w-fit">
-                        <span className="text-[clamp(8px,1vw,10px)] font-bold text-black">{hasReviews ? ratingValue.toFixed(1) : 'New'}</span>
-                        <Star className="w-[clamp(6px,1vw,8px)] h-[clamp(6px,1vw,8px)] fill-yellow-400 text-yellow-400" />
-                        <span className="text-[clamp(8px,1vw,10px)] text-gray-500 border-l border-gray-300 pl-1 ml-0.5">{hasReviews ? reviewCount : '0'}</span>
-                    </div>
                 </div>
 
-                {/* Info Section */}
-                <div className="p-[clamp(8px,1.5vw,16px)] text-left flex flex-col flex-1">
-                    <div className="flex items-baseline gap-1.5 mb-0.5">
-                        <span className={`text-black font-bold text-[clamp(10px,1.5vw,14px)]`}>
-                            {variantCount > 1 ? `From ${currencyText(fromPrice)}` : currencyText(product.price || 0)}
-                        </span>
-                        {effectiveOriginalPrice > effectivePrice && (
-                            <span className="text-gray-400 line-through text-[clamp(8px,1.2vw,11px)]">{currencyText(effectiveOriginalPrice)}</span>
-                        )}
-                    </div>
-
-                    {variantCount > 1 && (
-                        <div className="text-[clamp(8px,1vw,10px)] uppercase tracking-[0.1em] text-[#D39A9F] font-bold mb-0.5">
-                            {variantCount} Variants
-                        </div>
-                    )}
-
-                    <h3 className={`text-black font-serif text-[clamp(10px,1.5vw,14px)] font-medium leading-tight mb-1 line-clamp-1`}>
+                {/* Simplified Info Section */}
+                <div className="p-6 pb-8 text-center flex flex-col items-center">
+                    <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-400 font-bold mb-2">
+                        {metalLabel} {categoryLabel}
+                    </span>
+                    <h3 className="text-zinc-800 font-serif text-lg md:text-xl mb-2 line-clamp-1 group-hover:text-[#7A2E3A] transition-colors">
                         {product.name}
                     </h3>
-
-                    {isWishlistPage ? (
-                        <div className="text-[clamp(8px,1vw,10px)] font-bold text-gray-400 uppercase tracking-widest mt-auto pb-1">
-                            Wishlist
-                        </div>
-                    ) : (
-                        <button
-                            type="button"
-                            className="text-[clamp(8px,1vw,10px)] font-bold text-[#D39A9F] uppercase tracking-widest hover:text-[#4A1015] transition-colors flex items-center gap-1 mt-auto pb-1"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                navigate(`/product/${product.id}#care`);
-                            }}
+                    <div className="flex items-center gap-3">
+                        <span className="text-zinc-900 font-bold text-sm">
+                            {currencyText(effectivePrice)}
+                        </span>
+                        {effectiveOriginalPrice > effectivePrice && (
+                            <span className="text-zinc-300 line-through text-xs">{currencyText(effectiveOriginalPrice)}</span>
+                        )}
+                    </div>
+                    
+                    {/* Hover Reveal: Quick Add or View Link */}
+                    <div className="mt-4 overflow-hidden h-0 group-hover:h-8 transition-all duration-500">
+                        <button 
+                            onClick={handleAddToCart}
+                            className="text-[11px] font-bold uppercase tracking-widest text-[#7A2E3A] hover:underline"
                         >
-                            <span>Caring Tips</span>
-                            <div className="w-1 h-1 rounded-full bg-[#D39A9F]" />
+                            Quick Add to Bag
                         </button>
-                    )}
+                    </div>
                 </div>
-
-                {/* Premium Add to Cart Button */}
-                <button
-                    onClick={handleAddToCart}
-                    className="w-full bg-gradient-to-r from-[#D39A9F] to-[#4A1015] text-white py-1.5 md:py-2 text-[8px] md:text-[10px] font-bold hover:brightness-110 active:scale-[0.98] transition-all uppercase tracking-[0.2em] mt-auto"
-                >
-                    Add to Cart
-                </button>
             </Link>
+
         </>
     );
 };
