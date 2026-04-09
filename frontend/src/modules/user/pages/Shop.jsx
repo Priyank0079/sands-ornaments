@@ -368,7 +368,12 @@ const Shop = () => {
         } else if (sortBy === 'Best Selling') {
             result.sort((a, b) => b.rating - a.rating);
         } else if (sortBy === 'Newest') {
-            result.sort((a, b) => (b.isNew === a.isNew) ? 0 : b.isNew ? 1 : -1);
+            result.sort((a, b) => {
+                const dateDiff = getProductCreatedAt(b) - getProductCreatedAt(a);
+                if (dateDiff !== 0) return dateDiff;
+                if (Boolean(b.isNew) !== Boolean(a.isNew)) return b.isNew ? 1 : -1;
+                return 0;
+            });
         }
 
         const menDummyProducts = [

@@ -12,17 +12,17 @@ import newAnklets from '../assets/new_launch_anklets.png';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 
 const newLaunches = [
-    { id: 'earrings', name: "Earrings", image: newEarrings, path: "/shop", productIds: [] },
-    { id: 'chains', name: "Chains", image: newChains, path: "/shop", productIds: [] },
-    { id: 'studs', name: "Studs", image: newStuds, path: "/shop", productIds: [] },
-    { id: 'bracelets', name: "Bracelets", image: newBracelets, path: "/shop", productIds: [] },
-    { id: 'anklets', name: "Anklets", image: newAnklets, path: "/shop", productIds: [] }
+    { id: 'earrings', name: "Earrings", image: newEarrings, path: "/shop" },
+    { id: 'chains', name: "Chains", image: newChains, path: "/shop" },
+    { id: 'studs', name: "Studs", image: newStuds, path: "/shop" },
+    { id: 'bracelets', name: "Bracelets", image: newBracelets, path: "/shop" },
+    { id: 'anklets', name: "Anklets", image: newAnklets, path: "/shop" }
 ];
 
 const resolveLaunchPath = (item, fallbackPath = '/shop') => {
-    const productIds = Array.isArray(item?.productIds) ? item.productIds.filter(Boolean) : [];
-    if (productIds.length > 0) {
-        return `/shop?products=${encodeURIComponent(productIds.join(','))}`;
+    const categoryId = item?.categoryId;
+    if (categoryId) {
+        return `/shop?category=${categoryId}`;
     }
     if (item?.path) return item.path;
     return fallbackPath;
@@ -40,7 +40,7 @@ const NewLaunchSection = () => {
             name: item.name || item.label || newLaunches[index]?.name || 'Limited Edition',
             image: resolveLegacyCmsAsset(item.image, newLaunches[index]?.image || newEarrings),
             path: resolveLaunchPath(item, newLaunches[index]?.path || '/shop'),
-            productIds: Array.isArray(item.productIds) ? item.productIds.filter(Boolean) : []
+            categoryId: item.categoryId || null
         };
     });
     const baseItems = normalizedConfiguredItems.length > 0 ? normalizedConfiguredItems : newLaunches;

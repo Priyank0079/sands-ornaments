@@ -19,25 +19,36 @@ const categories = [
     { id: 4, name: "Anklets", image: ankletImg, path: "/shop?sort=most-sold", limit: 12 },
 ];
 
+const defaultHeroItem = {
+    id: 'hero',
+    type: 'hero',
+    name: 'Most Gifted Items',
+    label: 'Most Gifted Items',
+    image: bannerModel,
+    path: '/shop?sort=most-sold',
+    tag: 'Collection Focus',
+    ctaLabel: 'Explore Collection'
+};
+
 const MostGifted = () => {
     const { homepageSections, categories: allCategories } = useShop();
 
     const sectionData = homepageSections?.['most-gifted'];
     const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
+    const configuredHeroItem = configuredItems.find(item => item?.type === 'hero');
     const normalizedConfiguredItems = configuredItems
+        .filter(item => item?.type !== 'hero')
         .map((item, index) => {
             const category = item.categoryId
                 ? allCategories.find(c => String(c._id || c.id) === String(item.categoryId))
                 : null;
-            const limit = Number(item.limit) || 0;
-            if (!category || limit <= 0) {
+            if (!category) {
                 if (!item.path) return null;
                 return {
                     ...item,
                     id: item.itemId || item._id || item.id || `legacy-${index}`,
                     name: item.name || item.label || 'Most Gifted',
                     image: resolveLegacyCmsAsset(item.image, earringsImg),
-                    limit: Number(item.limit) || 12,
                     path: item.path
                 };
             }
@@ -46,11 +57,22 @@ const MostGifted = () => {
                 id: item.itemId || item._id || item.id || `${category._id || category.id}-${index}`,
                 name: item.name || item.label || category.name,
                 image: resolveLegacyCmsAsset(item.image, earringsImg),
-                limit,
-                path: `/shop?category=${category._id || category.id}&limit=${limit}&sort=most-sold`
+                path: `/shop?category=${category._id || category.id}&sort=most-sold`
             };
         })
         .filter(Boolean);
+
+    const heroItem = configuredHeroItem
+        ? {
+            ...defaultHeroItem,
+            ...configuredHeroItem,
+            image: resolveLegacyCmsAsset(configuredHeroItem.image, bannerModel),
+            path: configuredHeroItem.path || '/shop?sort=most-sold',
+            tag: configuredHeroItem.tag || defaultHeroItem.tag,
+            label: configuredHeroItem.label || configuredHeroItem.name || sectionData?.label || defaultHeroItem.label,
+            ctaLabel: configuredHeroItem.ctaLabel || defaultHeroItem.ctaLabel
+        }
+        : defaultHeroItem;
 
     const displayItems = normalizedConfiguredItems.length > 0 ? normalizedConfiguredItems : categories;
 
@@ -103,8 +125,8 @@ const MostGifted = () => {
                                 repeat: Infinity, 
                                 ease: "linear" 
                             }}
-                            src={bannerModel}
-                            alt="Glow in Motion Collection"
+                            src={heroItem.image}
+                            alt={heroItem.label || heroItem.name || "Most Gifted Items"}
                             className="absolute inset-0 w-full h-full object-cover object-top"
                         />
 
@@ -125,17 +147,17 @@ const MostGifted = () => {
                                 animate={{ y: [0, -10, 0] }}
                                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                             >
-                                <span className="text-[#C9A24D] text-[10px] md:text-xs font-bold tracking-[0.4em] uppercase mb-3 block drop-shadow-md">Collection Focus</span>
+                                <span className="text-[#C9A24D] text-[10px] md:text-xs font-bold tracking-[0.4em] uppercase mb-3 block drop-shadow-md">{heroItem.tag || "Collection Focus"}</span>
                                 <h2 className="font-display text-2xl md:text-4xl font-medium text-white mb-4 leading-tight drop-shadow-xl uppercase tracking-wider">
-                                    {sectionData?.label || "Most Gifted Items"}
+                                    {heroItem.label || sectionData?.label || "Most Gifted Items"}
                                 </h2>
                             </motion.div>
 
                             <Link
-                                to="/shop?sort=most-sold"
+                                to={heroItem.path || "/shop?sort=most-sold"}
                                 className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-xl border border-white/20 text-white px-6 py-3 rounded-full hover:bg-white hover:text-[#722F37] transition-all duration-700 w-fit group/btn text-[10px] md:text-xs font-bold tracking-widest uppercase shadow-lg"
                             >
-                                Explore Collection
+                                {heroItem.ctaLabel || "Explore Collection"}
                                 <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-2 transition-transform duration-500" />
                             </Link>
                         </div>
