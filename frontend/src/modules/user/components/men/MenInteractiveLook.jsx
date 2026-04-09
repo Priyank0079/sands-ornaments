@@ -14,7 +14,7 @@ const hotspots = [
         x1: 63, y1: 31, // Man's left ear
         x2: 83, y2: 35, // Label position
         category: 'earrings',
-        direction: 'right'
+        direction: 'left'
     },
     {
         id: 'chains',
@@ -24,7 +24,7 @@ const hotspots = [
         x1: 42, y1: 57, // Top chain area
         x2: 17, y2: 45, // Label
         category: 'chains',
-        direction: 'left'
+        direction: 'right'
     },
     {
         id: 'pendants',
@@ -34,7 +34,7 @@ const hotspots = [
         x1: 52, y1: 63, // Bottom pendant
         x2: 17, y2: 62, // Label (Left side)
         category: 'pendants',
-        direction: 'left'
+        direction: 'right'
     },
     {
         id: 'bracelets',
@@ -44,7 +44,7 @@ const hotspots = [
         x1: 30, y1: 82, // Wrist area (bracelet visible)
         x2: 17, y2: 78, // Label
         category: 'bracelets',
-        direction: 'left'
+        direction: 'right'
     },
     {
         id: 'rings',
@@ -54,7 +54,7 @@ const hotspots = [
         x1: 49, y1: 72, // Main ring on finger
         x2: 83, y2: 85, // Label
         category: 'rings',
-        direction: 'right'
+        direction: 'left'
     }
 ];
 

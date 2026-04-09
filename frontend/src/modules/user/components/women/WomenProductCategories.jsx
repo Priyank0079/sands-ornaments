@@ -43,7 +43,7 @@ const WomenProductCategories = () => {
                     </motion.div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-10">
+                <div className="grid grid-cols-3 md:grid-cols-4 gap-4 md:gap-10">
                     {categories.map((category, index) => (
                         <motion.div
                             key={index}
@@ -51,10 +51,11 @@ const WomenProductCategories = () => {
                             whileInView={{ opacity: 1, scale: 1 }}
                             transition={{ duration: 0.6, delay: index * 0.05 }}
                             viewport={{ once: true }}
+                            className="flex flex-col items-center group"
                         >
                             <Link 
                                 to={category.path}
-                                className="group relative block aspect-square rounded-[35px] md:rounded-[45px] overflow-hidden bg-white shadow-[0_15px_40px_-15px_rgba(0,0,0,0.15)] transition-all duration-700 hover:-translate-y-3 hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)]"
+                                className="relative block w-full aspect-square rounded-full overflow-hidden bg-white shadow-[0_10px_30px_-15px_rgba(0,0,0,0.15)] transition-all duration-700 hover:-translate-y-2 hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.25)] ring-1 ring-black/5"
                             >
                                 {/* Category Image */}
                                 <img 
@@ -63,19 +64,16 @@ const WomenProductCategories = () => {
                                     className="w-full h-full object-cover transition-all duration-[2s] ease-out group-hover:scale-110"
                                 />
                                 
-                                {/* Bottom Accent Overlay */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-500" />
-                                
-                                {/* Category Label */}
-                                <div className="absolute inset-x-0 bottom-6 md:bottom-10 text-center px-4">
-                                    <span className="text-white text-sm md:text-xl font-black tracking-[0.1em] transition-all duration-500 group-hover:tracking-[0.2em]">
-                                        {category.title}
-                                    </span>
-                                </div>
-
                                 {/* Hover Glass Shine Effect */}
                                 <div className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-700 bg-gradient-to-br from-white via-transparent to-transparent" />
                             </Link>
+
+                            {/* Category Label - Now Below the Image */}
+                            <div className="mt-3 md:mt-5 text-center">
+                                <span className="text-zinc-600 group-hover:text-rose-400 text-[10px] md:text-sm font-black tracking-[0.15em] uppercase transition-all duration-500 block truncate w-full px-1">
+                                    {category.title}
+                                </span>
+                            </div>
                         </motion.div>
                     ))}
                 </div>

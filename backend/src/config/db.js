@@ -1,12 +1,25 @@
 const mongoose = require("mongoose");
 
-const connectDB = async () => {
+const connectDB = async (retryCount = 5) => {
+  const options = {
+    serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of default 30s
+    socketTimeoutMS: 45000,
+  };
+
   try {
-    const conn = await mongoose.connect(process.env.MONGO_URI);
+    const conn = await mongoose.connect(process.env.MONGO_URI, options);
     console.log(`\u2705  MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
-    console.error(`\u274c  MongoDB Error: ${error.message}`);
-    process.exit(1);
+    console.error(`\u274c  MongoDB Connection Error: ${error.message}`);
+    
+    if (retryCount > 0) {
+      console.log(`\ud83d\udd04  Retrying connection in 5 seconds... (${retryCount} attempts remaining)`);
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      return connectDB(retryCount - 1);
+    } else {
+      console.error("\ud83d\udea8  Maximum retry attempts reached. Please check your network or MongoDB Atlas IP Whitelist.");
+      process.exit(1);
+    }
   }
 };
 

@@ -190,7 +190,7 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
                                 )}
                             </>
                         ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-[#F7F2F3] text-[#B88B90] text-[10px] md:text-xs font-bold uppercase tracking-[0.25em]">
+                            <div className="w-full h-full flex items-center justify-center bg-[#F7F2F3] text-[#B88B90] text-[clamp(8px,1.5vw,12px)] font-bold uppercase tracking-[0.25em]">
                                 No Image
                             </div>
                         )}
@@ -198,11 +198,11 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
 
                     {/* Dynamic Badges */}
                     {product.isNew ? (
-                        <span className="absolute top-2 md:top-3 right-0 bg-gradient-to-r from-[#D39A9F] to-[#4A1015] text-white text-[7px] md:text-[9px] font-bold px-2 py-0.5 md:px-2.5 md:py-0.5 shadow-sm tracking-widest z-20" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%, 8px 50%)', paddingLeft: '10px' }}>
+                        <span className="absolute top-[clamp(8px,1vw,12px)] right-0 bg-gradient-to-r from-[#D39A9F] to-[#4A1015] text-white text-[clamp(7px,1vw,9px)] font-bold px-[clamp(8px,1vw,12px)] py-[clamp(2px,0.5vw,4px)] shadow-sm tracking-widest z-20" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%, 8px 50%)' }}>
                             NEW
                         </span>
                     ) : hasReviews && ratingValue >= 4.5 ? (
-                        <span className="absolute top-2 md:top-3 right-0 bg-gradient-to-r from-[#D39A9F] to-[#4A1015] text-white text-[7px] md:text-[9px] font-bold px-2 py-0.5 md:px-2.5 md:py-0.5 shadow-sm tracking-widest z-20" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%, 8px 50%)', paddingLeft: '10px' }}>
+                        <span className="absolute top-[clamp(8px,1vw,12px)] right-0 bg-gradient-to-r from-[#D39A9F] to-[#4A1015] text-white text-[clamp(7px,1vw,9px)] font-bold px-[clamp(8px,1vw,12px)] py-[clamp(2px,0.5vw,4px)] shadow-sm tracking-widest z-20" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%, 8px 50%)' }}>
                             TRENDING
                         </span>
                     ) : null}
@@ -218,46 +218,46 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
                         className={`absolute bottom-2 right-2 z-20 p-1.5 bg-white/20 hover:bg-white rounded-full backdrop-blur-md border border-white/30 transition-all duration-300 hover:scale-110 shadow-sm ${isWishlisted ? 'text-red-500 fill-red-500' : 'text-white hover:text-red-500'}`}
                         title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
                     >
-                        <Heart className={`w-3.5 h-3.5 ${isWishlisted ? 'fill-current' : ''}`} strokeWidth={2} />
+                        <Heart className={`w-[clamp(14px,2vw,18px)] h-[clamp(14px,2vw,18px)] ${isWishlisted ? 'fill-current' : ''}`} strokeWidth={2} />
                     </button>
 
                     {/* Rating Badge */}
-                    <div className="absolute bottom-2 left-2 bg-white/90 backdrop-blur-sm px-1 py-0.5 rounded flex items-center gap-1 shadow-sm z-20 w-fit">
-                        <span className="text-[9px] font-bold text-black">{hasReviews ? ratingValue.toFixed(1) : 'New'}</span>
-                        <Star className="w-2 h-2 fill-yellow-400 text-yellow-400" />
-                        <span className="text-[9px] text-gray-500 border-l border-gray-300 pl-1 ml-0.5">{hasReviews ? reviewCount : '0'}</span>
+                    <div className="absolute bottom-2 left-2 bg-white/90 backdrop-blur-sm px-1 py-0.5 rounded flex items-center gap-0.5 md:gap-1 shadow-sm z-20 w-fit">
+                        <span className="text-[clamp(8px,1vw,10px)] font-bold text-black">{hasReviews ? ratingValue.toFixed(1) : 'New'}</span>
+                        <Star className="w-[clamp(6px,1vw,8px)] h-[clamp(6px,1vw,8px)] fill-yellow-400 text-yellow-400" />
+                        <span className="text-[clamp(8px,1vw,10px)] text-gray-500 border-l border-gray-300 pl-1 ml-0.5">{hasReviews ? reviewCount : '0'}</span>
                     </div>
                 </div>
 
                 {/* Info Section */}
-                <div className={`${isWishlistPage ? 'p-1.5 md:p-2' : 'p-1.5 md:p-2'} text-left flex flex-col flex-1`}>
+                <div className="p-[clamp(8px,1.5vw,16px)] text-left flex flex-col flex-1">
                     <div className="flex items-baseline gap-1.5 mb-0.5">
-                        <span className={`text-black font-bold ${isWishlistPage ? 'text-[10px]' : 'text-xs md:text-sm'}`}>
+                        <span className={`text-black font-bold text-[clamp(10px,1.5vw,14px)]`}>
                             {variantCount > 1 ? `From ${currencyText(fromPrice)}` : currencyText(product.price || 0)}
                         </span>
                         {effectiveOriginalPrice > effectivePrice && (
-                            <span className="text-gray-400 line-through text-[9px] md:text-[10px]">{currencyText(effectiveOriginalPrice)}</span>
+                            <span className="text-gray-400 line-through text-[clamp(8px,1.2vw,11px)]">{currencyText(effectiveOriginalPrice)}</span>
                         )}
                     </div>
 
                     {variantCount > 1 && (
-                        <div className="text-[8px] md:text-[9px] uppercase tracking-[0.1em] text-[#D39A9F] font-bold mb-0.5">
+                        <div className="text-[clamp(8px,1vw,10px)] uppercase tracking-[0.1em] text-[#D39A9F] font-bold mb-0.5">
                             {variantCount} Variants
                         </div>
                     )}
 
-                    <h3 className={`text-black font-serif ${isWishlistPage ? 'text-[10px]' : 'text-xs md:text-sm'} font-medium leading-tight mb-1 line-clamp-1 h-4 md:h-5`}>
+                    <h3 className={`text-black font-serif text-[clamp(10px,1.5vw,14px)] font-medium leading-tight mb-1 line-clamp-1`}>
                         {product.name}
                     </h3>
 
                     {isWishlistPage ? (
-                        <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-auto pb-1">
+                        <div className="text-[clamp(8px,1vw,10px)] font-bold text-gray-400 uppercase tracking-widest mt-auto pb-1">
                             Wishlist
                         </div>
                     ) : (
                         <button
                             type="button"
-                            className="text-[9px] font-bold text-[#D39A9F] uppercase tracking-widest hover:text-[#4A1015] transition-colors flex items-center gap-1 mt-auto pb-1"
+                            className="text-[clamp(8px,1vw,10px)] font-bold text-[#D39A9F] uppercase tracking-widest hover:text-[#4A1015] transition-colors flex items-center gap-1 mt-auto pb-1"
                             onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();

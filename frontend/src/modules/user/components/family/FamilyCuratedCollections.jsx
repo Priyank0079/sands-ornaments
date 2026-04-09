@@ -46,7 +46,7 @@ const FamilyCuratedCollections = () => {
                 </div>
 
                 {/* Collections Grid - Horizontal Scroll on Mobile, Flex on Desktop */}
-                <div className="flex overflow-x-auto pb-4 md:pb-0 scrollbar-hide gap-4 md:grid md:grid-cols-4 md:gap-6">
+                <div className="flex overflow-x-auto pb-4 md:pb-0 scrollbar-hide gap-3 md:grid md:grid-cols-4 md:gap-6">
                     {collections.map((item, idx) => (
                         <motion.div
                             key={item.id}
@@ -54,7 +54,7 @@ const FamilyCuratedCollections = () => {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.6, delay: idx * 0.15 }}
-                            className="min-w-[280px] md:min-w-0 group relative aspect-[3/4] rounded-none overflow-hidden"
+                            className="min-w-[210px] md:min-w-0 group relative aspect-[3/4] rounded-none overflow-hidden"
                         >
                             <Link to={item.path} className="block w-full h-full relative">
                                 {/* Image */}

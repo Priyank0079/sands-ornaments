@@ -138,13 +138,29 @@ const CategoryNav = () => {
                                                         <p className="text-gray-400 text-[9px] uppercase tracking-widest mb-4">{item.introDesc}</p>
                                                         <Link to="/shop" onClick={resetMenu} className="text-[#9C5B61] text-[10px] font-bold uppercase tracking-[0.2em] hover:text-black transition-colors flex items-center gap-2">Explore <MoveRight className="w-3 h-3" /></Link>
                                                     </div>
-                                                    <div className="col-span-4 grid grid-cols-5 gap-6">
+                                                    <div className="col-span-4 grid grid-cols-5 gap-4">
                                                         {(item.subcategories || []).map((sub) => (
-                                                            <Link key={sub.id} to={sub.path?.startsWith('/') ? sub.path : `/shop?filter=${sub.path}`} onClick={resetMenu} className="group flex flex-col items-center">
-                                                                <div className="w-16 h-16 rounded-full overflow-hidden border border-gray-100 mb-2 group-hover:shadow-md transition-all">
-                                                                    <img src={sub.image} alt={sub.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                                            <Link 
+                                                                key={sub.id} 
+                                                                to={sub.path?.startsWith('/') ? sub.path : `/shop?filter=${sub.path}`} 
+                                                                onClick={resetMenu} 
+                                                                className="group flex flex-col items-center"
+                                                            >
+                                                                {/* Modern Square Card Design */}
+                                                                <div className="relative w-24 h-24 lg:w-32 lg:h-32 rounded-2xl md:rounded-[1.5rem] overflow-hidden border border-gray-100 mb-4 transition-all duration-500 group-hover:shadow-[0_15px_35px_rgba(0,0,0,0.1)] group-hover:-translate-y-2 group-hover:border-[#9C5B61]/30 bg-gray-50">
+                                                                    <img 
+                                                                        src={sub.image} 
+                                                                        alt={sub.name} 
+                                                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                                                                    />
+                                                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-500" />
                                                                 </div>
-                                                                <span className="text-[9px] font-bold uppercase tracking-widest text-black group-hover:text-[#9C5B61] transition-colors">{sub.name}</span>
+                                                                
+                                                                {/* Professional Serif Label */}
+                                                                <span className="text-[9px] lg:text-[11px] font-serif font-bold text-center uppercase tracking-widest text-gray-800 group-hover:text-[#9C5B61] transition-colors duration-300">
+                                                                    {sub.name}
+                                                                </span>
+                                                                <div className="h-px w-0 group-hover:w-full bg-[#9C5B61]/40 transition-all duration-500 mt-1" />
                                                             </Link>
                                                         ))}
                                                     </div>

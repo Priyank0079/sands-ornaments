@@ -49,7 +49,7 @@ const WomenCategoriesGrid = () => {
                     </h2>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 lg:gap-8">
                     {trendingCollections.map((item, index) => (
                         <motion.div
                             key={item.id}
@@ -62,7 +62,7 @@ const WomenCategoriesGrid = () => {
                             {/* Card Container */}
                             <Link 
                                 to={item.path}
-                                className="relative block aspect-[4/5] rounded-[24px] overflow-hidden bg-white border-[1px] border-black transition-all duration-700 group-hover:-translate-y-4 shadow-xl group-hover:shadow-2xl"
+                                className="relative block aspect-[3.5/5] rounded-[20px] md:rounded-[24px] overflow-hidden bg-white border-[0.5px] border-black/10 transition-all duration-700 group-hover:-translate-y-4 shadow-lg group-hover:shadow-2xl"
                             >
                                 <img
                                     src={item.image}
@@ -71,18 +71,18 @@ const WomenCategoriesGrid = () => {
                                 />
                                 
                                 {/* Bottom Shadow/Gradient for Text */}
-                                <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent" />
+                                <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                                 
-                                <div className="absolute inset-x-0 bottom-8 text-center px-4">
-                                    <h4 className="text-white text-xl md:text-2xl font-bold leading-tight px-6 drop-shadow-md">
+                                <div className="absolute inset-x-0 bottom-4 md:bottom-8 text-center px-2 md:px-4">
+                                    <h4 className="text-white text-[10px] sm:text-lg md:text-2xl font-bold leading-tight px-1 drop-shadow-md uppercase tracking-wider">
                                         {item.title}
                                     </h4>
                                 </div>
                             </Link>
 
                             {/* Large Background Number */}
-                            <div className="absolute -left-8 md:-left-12 bottom-4 md:bottom-8 pointer-events-none select-none z-10">
-                                <span className="text-[120px] md:text-[180px] font-black text-white/90 leading-none drop-shadow-[0_10px_10px_rgba(0,0,0,0.1)] transition-transform duration-700 group-hover:scale-110 group-hover:-translate-x-2">
+                            <div className="absolute -left-4 md:-left-12 bottom-2 md:bottom-8 pointer-events-none select-none z-10">
+                                <span className="text-[70px] sm:text-[120px] md:text-[180px] font-black text-white/90 leading-none drop-shadow-[0_10px_10px_rgba(0,0,0,0.1)] transition-transform duration-700 group-hover:scale-110 group-hover:-translate-x-2">
                                     {item.number}
                                 </span>
                             </div>

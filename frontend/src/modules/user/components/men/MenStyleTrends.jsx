@@ -89,7 +89,7 @@ const MenStyleTrends = () => {
                             viewport={{ once: true }}
                             transition={{ duration: 0.5, delay: idx * 0.1 }}
                             className="flex-shrink-0 group"
-                            style={{ width: 'clamp(140px, 20vw, 240px)' }}
+                            style={{ width: 'clamp(150px, 35vw, 240px)' }}
                         >
                             <Link to={trend.link} className="block relative">
 
@@ -142,11 +142,11 @@ const MenStyleTrends = () => {
                                 <div
                                     className="absolute left-0 select-none pointer-events-none"
                                     style={{
-                                        bottom: '-0.35em',
-                                        fontSize: 'clamp(80px, 11vw, 140px)',
+                                        bottom: '-0.38em',
+                                        fontSize: 'clamp(60px, 15vw, 140px)',
                                         fontWeight: 900,
                                         lineHeight: 1,
-                                        color: 'rgba(255,255,255,0.88)',
+                                        color: 'rgba(255,255,255,0.85)',
                                         fontFamily: "'Arial Black', 'Helvetica Neue', sans-serif",
                                         letterSpacing: '-0.05em',
                                         zIndex: 20,

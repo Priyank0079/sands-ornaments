@@ -51,8 +51,8 @@ const WomenPriceRange = () => {
                     <h2 className="text-xl md:text-3xl font-display text-gray-900 tracking-tight">Curated Price Points</h2>
                 </motion.div>
 
-                {/* Enhanced Price Cards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
+                {/* Responsive Price Cards Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-8">
                     {priceRanges.map((item, idx) => (
                         <motion.div
                             key={item.id}
@@ -60,6 +60,7 @@ const WomenPriceRange = () => {
                             whileInView={{ opacity: 1, scale: 1 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.6, delay: idx * 0.15, ease: [0.22, 1, 0.36, 1] }}
+                            className="w-full"
                         >
                             <Link
                                 to={item.path}
@@ -70,8 +71,8 @@ const WomenPriceRange = () => {
                                     className="relative flex flex-col items-center justify-center text-center overflow-hidden transition-all duration-700 ease-[0.22, 1, 0.36, 1] group-hover:shadow-[0_45px_100px_-20px_rgba(92,14,37,0.35)]"
                                     style={{
                                         background: 'linear-gradient(135deg, #4A0E1C 0%, #2A0610 50%, #150207 100%)',
-                                        borderRadius: '24px',
-                                        padding: 'clamp(32px, 6vw, 64px) 24px',
+                                        borderRadius: '20px',
+                                        padding: 'clamp(24px, 6vw, 64px) 24px',
                                         minHeight: 'clamp(140px, 20vw, 240px)',
                                         border: '1px solid rgba(255,255,255,0.05)',
                                     }}

@@ -61,10 +61,14 @@ const NewLaunchSection = () => {
 
     useEffect(() => {
         const updateDims = () => {
-            if (window.innerWidth < 640) {
-                setRadius(320);
-                setCardWidth(200);
-                setCardHeight(300);
+            if (window.innerWidth < 480) {
+                setRadius(280);
+                setCardWidth(170);
+                setCardHeight(260);
+            } else if (window.innerWidth < 768) {
+                setRadius(340);
+                setCardWidth(210);
+                setCardHeight(320);
             } else if (window.innerWidth < 1024) {
                 setRadius(450);
                 setCardWidth(280);
