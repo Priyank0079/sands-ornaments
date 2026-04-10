@@ -29,7 +29,7 @@ const FamilyRecipientCategories = ({ selectedRecipient = 'all', onSelectRecipien
     };
 
     return (
-        <section className="py-12 md:py-16 px-4 md:px-12 bg-[#FFF8F1]">
+        <section className="py-8 md:py-12 px-4 md:px-12 bg-[#FFF8F1]">
             <div className="max-w-7xl mx-auto">
                 <div className="text-center mb-10 space-y-4">
                     <motion.div

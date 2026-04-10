@@ -52,7 +52,7 @@ const PerfectGift = () => {
     const displayItems = normalizedConfiguredItems.length > 0 ? normalizedConfiguredItems : recipients;
 
     return (
-        <section className="py-16 md:py-24 bg-[#FAF3F0] text-black overflow-hidden relative">
+        <section className="py-10 md:py-16 bg-[#FAF3F0] text-black overflow-hidden relative">
             <div className="container mx-auto px-4 md:px-6 relative z-10">
                 {/* High-End Ornamental Header */}
                 <div className="text-center mb-16 relative">

@@ -3,11 +3,11 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
-// Import generated images from project assets
-import dailyPackImg from '../../../assets/daily_pack.png';
-import familyPackImg from '../../../assets/family_pack.png';
-import fitnessPackImg from '../../../assets/fitness_pack.png';
-import partyPackImg from '../../../assets/party_pack.png';
+// Import existing images from project assets
+import dailyPackImg from '../../../assets/banner_daily.png';
+import familyPackImg from '../../../assets/banner_office.png';
+import partyPackImg from '../../../assets/banner_party.png';
+import fitnessPackImg from '../../../assets/cat_all_premium.png';
 
 const packs = [
     {
@@ -41,14 +41,14 @@ const packs = [
     {
         title: 'Traditional Festival Packs',
         subtitle: 'Celebrate with authentic richness',
-        image: 'https://images.pexels.com/photos/5702927/pexels-photo-5702927.jpeg?auto=compress&cs=tinysrgb&w=800',
+        image: dailyPackImg,
         path: '/category/festival-packs',
         tag: 'SEASONAL'
     },
     {
         title: 'Executive Gifting',
         subtitle: 'Luxury hampers for special moments',
-        image: 'https://images.pexels.com/photos/264771/pexels-photo-264771.jpeg?auto=compress&cs=tinysrgb&w=800',
+        image: familyPackImg,
         path: '/category/gifting-packs',
         tag: 'LUXURY'
     }

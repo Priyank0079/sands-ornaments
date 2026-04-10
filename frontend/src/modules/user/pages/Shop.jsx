@@ -8,6 +8,15 @@ import {
     ArrowLeft, ArrowUpDown
 } from 'lucide-react';
 
+import menRing from '../assets/men_prod_ring.png';
+import menPendant from '../assets/men_prod_pendant.png';
+import menBracelet from '../assets/men_prod_bracelet.png';
+import menChain from '../assets/men_prod_chain.png';
+
+import womenEarrings from '../assets/cat_earrings.png';
+import womenPendant from '../assets/trending_modern.png';
+import womenRing from '../assets/prod_ring_main.png';
+
 const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
 
 const currencyText = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
@@ -383,7 +392,7 @@ const Shop = () => {
                 price: 2899,
                 originalPrice: 4699,
                 discountPrice: 1739,
-                image: "/images/men-categories/rings.png",
+                image: menRing,
                 rating: 4.6,
                 reviews: 107,
                 isNew: true,
@@ -398,7 +407,7 @@ const Shop = () => {
                 price: 3799,
                 originalPrice: 6199,
                 discountPrice: 2279,
-                image: "/images/men-categories/pendants.png",
+                image: menPendant,
                 rating: 4.6,
                 reviews: 100,
                 isNew: false,
@@ -413,7 +422,7 @@ const Shop = () => {
                 price: 4199,
                 originalPrice: 6999,
                 discountPrice: 2519,
-                image: "/images/men-categories/bracelets.png",
+                image: menBracelet,
                 rating: 4.9,
                 reviews: 215,
                 isNew: true,
@@ -428,7 +437,7 @@ const Shop = () => {
                 price: 6599,
                 originalPrice: 9999,
                 discountPrice: 3959,
-                image: "/images/men-categories/chains.png",
+                image: menChain,
                 rating: 4.8,
                 reviews: 84,
                 isNew: false,
@@ -446,7 +455,7 @@ const Shop = () => {
                 price: 1899,
                 originalPrice: 3299,
                 discountPrice: 1699,
-                image: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=2000",
+                image: womenEarrings,
                 rating: 4.8,
                 reviews: 245,
                 isNew: true,
@@ -461,7 +470,7 @@ const Shop = () => {
                 price: 2499,
                 originalPrice: 4199,
                 discountPrice: 2249,
-                image: "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?q=80&w=2000",
+                image: womenPendant,
                 rating: 4.9,
                 reviews: 180,
                 isNew: false,
@@ -476,7 +485,7 @@ const Shop = () => {
                 price: 1299,
                 originalPrice: 2499,
                 discountPrice: 1169,
-                image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=2000",
+                image: womenRing,
                 rating: 4.6,
                 reviews: 92,
                 isNew: true,

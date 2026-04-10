@@ -63,7 +63,7 @@ const PremiumCategoryCards = () => {
     return (
         <section
             ref={containerRef}
-            className="pt-16 md:pt-24 pb-16 md:pb-24 bg-[#FFF5F6] overflow-visible select-none relative"
+            className="pt-10 md:pt-16 pb-12 md:pb-20 bg-[#FFF5F6] overflow-visible select-none relative"
         >
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-20">
                 <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#EEB1B7] rounded-full blur-[100px]" />

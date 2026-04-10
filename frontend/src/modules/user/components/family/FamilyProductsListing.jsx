@@ -5,6 +5,15 @@ import { useNavigate } from 'react-router-dom';
 import { ShopContext } from '../../../../context/ShopContext';
 import toast from 'react-hot-toast';
 
+import fProd1 from '../../../../assets/nav_gift_kids.png';
+import fProd2 from '../../../../assets/nav_gift_women.png';
+import fProd3 from '../../../../assets/nav_gift_couple.png';
+import fProd4 from '../../../../assets/nav_gift_kids.png';
+import fProd5 from '../../../../assets/cat_anklets.png';
+import fProd6 from '../../../../assets/nav_gift_kids.png';
+import fProd7 from '../../../../assets/trending_heritage.png';
+import fProd8 from '../../../../assets/nav_gift_girls.png';
+
 const familyProducts = [
     {
         id: 'f1',
@@ -12,7 +21,7 @@ const familyProducts = [
         price: "1,299",
         originalPrice: "2,499",
         discountPrice: "1,039",
-        image: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=90&w=800&auto=format&fit=crop",
+        image: fProd1,
         rating: 4.7,
         reviews: 132,
         badge: "Kids' Fave",
@@ -23,7 +32,7 @@ const familyProducts = [
         price: "4,299",
         originalPrice: "7,500",
         discountPrice: "3,439",
-        image: "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?q=90&w=800&auto=format&fit=crop",
+        image: fProd2,
         rating: 4.9,
         reviews: 208,
         badge: "Limited Edition",
@@ -34,7 +43,7 @@ const familyProducts = [
         price: "8,999",
         originalPrice: "15,000",
         discountPrice: "7,199",
-        image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=90&w=800&auto=format&fit=crop",
+        image: fProd3,
         rating: 4.9,
         reviews: 341,
         badge: "Bestseller",
@@ -45,7 +54,7 @@ const familyProducts = [
         price: "1,899",
         originalPrice: "3,200",
         discountPrice: "1,519",
-        image: "https://images.unsplash.com/photo-1611591437281-460bfbe15201?q=90&w=800&auto=format&fit=crop",
+        image: fProd4,
         rating: 4.6,
         reviews: 79,
         badge: "Gift Ready",
@@ -56,7 +65,7 @@ const familyProducts = [
         price: "999",
         originalPrice: "1,800",
         discountPrice: "799",
-        image: "https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?q=90&w=800&auto=format&fit=crop",
+        image: fProd5,
         rating: 4.5,
         reviews: 55,
         badge: "Top Pick",
@@ -67,7 +76,7 @@ const familyProducts = [
         price: "2,499",
         originalPrice: "4,500",
         discountPrice: "1,999",
-        image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=90&w=800&auto=format&fit=crop",
+        image: fProd6,
         rating: 4.8,
         reviews: 91,
         badge: "Essentials",
@@ -78,7 +87,7 @@ const familyProducts = [
         price: "3,599",
         originalPrice: "5,800",
         discountPrice: "2,879",
-        image: "https://images.unsplash.com/photo-1576022162960-e498c9feab83?q=90&w=800&auto=format&fit=crop",
+        image: fProd7,
         rating: 4.7,
         reviews: 114,
         badge: "Heirloom",
@@ -89,7 +98,7 @@ const familyProducts = [
         price: "5,199",
         originalPrice: "9,200",
         discountPrice: "4,159",
-        image: "https://images.unsplash.com/photo-1584302416574-8d3c3f2d36b3?q=90&w=800&auto=format&fit=crop",
+        image: fProd8,
         rating: 4.8,
         reviews: 176,
         badge: "New Arrival",

@@ -205,16 +205,19 @@ export const products = [
     { id: 32, name: "Heart Charm Earrings", category: "Earrings", price: 1400, originalPrice: 2000, image: catEarrings, rating: 4.8, reviews: 190, isNew: true }
 ];
 
+import bannerElegant from './banner_elegant_silver.png';
+import bannerTimeless from './banner_timeless_rings.png';
+
 export const banners = [
     {
         id: 1,
-        image: "https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?auto=format&fit=crop&q=80&w=1600",
+        image: bannerElegant,
         title: "Elegant Silver Collection",
         subtitle: "Up to 40% Off on New Arrivals"
     },
     {
         id: 2,
-        image: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?auto=format&fit=crop&q=80&w=1600",
+        image: bannerTimeless,
         title: "Timeless Rings",
         subtitle: "Discover the perfect symbol of love"
     }

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ShoppingBag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import heroHeirlooms from '../../assets/family_hero_heirlooms.png';
 
 const slides = [
     {
@@ -9,7 +10,7 @@ const slides = [
         title: "Family ",
         titleItalic: "Heirlooms",
         subtitle: "Treasures to pass down through generations with love.",
-        image: "https://images.unsplash.com/photo-1511895426328-dc8714191300?q=90&w=1600&auto=format&fit=crop",
+        image: heroHeirlooms,
         cta: "Shop Family Sets",
         accent: "#D39A9F"
     }

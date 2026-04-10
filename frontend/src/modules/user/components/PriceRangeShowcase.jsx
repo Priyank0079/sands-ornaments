@@ -70,7 +70,7 @@ const PriceRangeShowcase = () => {
     const displayItems = normalizedConfiguredItems.length > 0 ? normalizedConfiguredItems : priceRanges;
 
     return (
-        <section className="py-20 bg-[#FAFAFA] overflow-hidden">
+        <section className="py-12 md:py-16 bg-[#FAFAFA] overflow-hidden">
             <div className="container mx-auto px-4 md:px-6">
                 
                 {/* Clean Professional Header */}

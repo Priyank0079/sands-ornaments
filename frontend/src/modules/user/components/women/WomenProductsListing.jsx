@@ -5,6 +5,15 @@ import { useNavigate } from 'react-router-dom';
 import { ShopContext } from '../../../../context/ShopContext';
 import toast from 'react-hot-toast';
 
+import prod1 from '../../../../assets/prod_ring_main.png';
+import prod2 from '../../../../assets/cat_earrings.png';
+import prod3 from '../../../../assets/cat_rings.png';
+import prod4 from '../../../../assets/cat_bracelets.png';
+import prod5 from '../../../../assets/new_launch_anklets.png';
+import prod6 from '../../../../assets/premium_ring_product.png';
+import prod7 from '../../../../assets/trending_modern.png';
+import prod8 from '../../../../assets/cat_chain_wine.png';
+
 const dummyProducts = [
     {
         id: 'w1',
@@ -12,7 +21,7 @@ const dummyProducts = [
         price: "1,899",
         originalPrice: "3,299",
         discountPrice: "1,699",
-        image: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=90&w=800&auto=format&fit=crop",
+        image: prod2,
         rating: 4.8,
         reviews: 245,
         badge: "Trending",
@@ -23,7 +32,7 @@ const dummyProducts = [
         price: "2,499",
         originalPrice: "4,199",
         discountPrice: "2,249",
-        image: "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?q=90&w=800&auto=format&fit=crop",
+        image: prod7,
         rating: 4.9,
         reviews: 180,
         badge: "Bestseller",
@@ -34,7 +43,7 @@ const dummyProducts = [
         price: "1,299",
         originalPrice: "2,499",
         discountPrice: "1,169",
-        image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=90&w=800&auto=format&fit=crop",
+        image: prod1,
         rating: 4.6,
         reviews: 92,
         badge: "New",
@@ -45,7 +54,7 @@ const dummyProducts = [
         price: "3,199",
         originalPrice: "5,800",
         discountPrice: "2,879",
-        image: "https://images.unsplash.com/photo-1611591437281-460bfbe15201?q=90&w=800&auto=format&fit=crop",
+        image: prod4,
         rating: 4.7,
         reviews: 156,
         badge: "Exclusive",
@@ -56,7 +65,7 @@ const dummyProducts = [
         price: "1,499",
         originalPrice: "2,699",
         discountPrice: "1,349",
-        image: "https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?q=90&w=800&auto=format&fit=crop",
+        image: prod5,
         rating: 4.5,
         reviews: 64,
         badge: "Trending",
@@ -67,7 +76,7 @@ const dummyProducts = [
         price: "4,599",
         originalPrice: "7,999",
         discountPrice: "4,139",
-        image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=90&w=800&auto=format&fit=crop",
+        image: prod6,
         rating: 5.0,
         reviews: 310,
         badge: "Eco-Lux",
@@ -78,7 +87,7 @@ const dummyProducts = [
         price: "2,799",
         originalPrice: "4,500",
         discountPrice: "2,519",
-        image: "https://images.unsplash.com/photo-1576022162960-e498c9feab83?q=90&w=800&auto=format&fit=crop",
+        image: prod7,
         rating: 4.4,
         reviews: 87,
         badge: "New",
@@ -89,7 +98,7 @@ const dummyProducts = [
         price: "2,199",
         originalPrice: "3,800",
         discountPrice: "1,979",
-        image: "https://images.unsplash.com/photo-1584302416574-8d3c3f2d36b3?q=90&w=800&auto=format&fit=crop",
+        image: prod8,
         rating: 4.7,
         reviews: 115,
         badge: "Luxury",

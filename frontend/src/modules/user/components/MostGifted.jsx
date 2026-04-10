@@ -77,7 +77,7 @@ const MostGifted = () => {
     const displayItems = normalizedConfiguredItems.length > 0 ? normalizedConfiguredItems : categories;
 
     return (
-        <section className="py-6 md:py-12 bg-white relative overflow-hidden">
+        <section className="py-4 md:py-8 bg-white relative overflow-hidden">
             {/* Live Floating Particles Background */}
             <div className="absolute inset-0 pointer-events-none z-0">
                 {[...Array(6)].map((_, i) => (

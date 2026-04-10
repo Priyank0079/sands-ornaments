@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
+import heroMenBold from '../../assets/men_hero_bold.png';
+import heroMenStyle from '../../assets/men_hero_style.png';
+import heroMenElite from '../../assets/men_hero_elite.png';
+
 const slides = [
     {
         id: 1,
@@ -11,8 +15,7 @@ const slides = [
         rightTitle: "Modern Silver for\nthe Bold Man",
         cta: "SHOP NOW",
         link: "/shop?category=men",
-        // Full-width dark jewelry model image
-        image: "https://images.unsplash.com/photo-1621112904887-419379ce6824?q=95&w=1800&auto=format&fit=crop",
+        image: heroMenBold,
     },
     {
         id: 2,
@@ -22,7 +25,7 @@ const slides = [
         rightTitle: "Classic Designs,\nContemporary Edge",
         cta: "DISCOVER",
         link: "/shop?category=men&sort=trending",
-        image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=95&w=1800&auto=format&fit=crop",
+        image: heroMenStyle,
     },
     {
         id: 3,
@@ -32,7 +35,7 @@ const slides = [
         rightTitle: "Signature Pieces for\nEvery Occasion",
         cta: "EXPLORE",
         link: "/shop?category=men",
-        image: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=95&w=1800&auto=format&fit=crop",
+        image: heroMenElite,
     }
 ];
 

@@ -54,7 +54,7 @@ const LatestDrop = () => {
     const displayItems = normalizedConfiguredItems.length > 0 ? normalizedConfiguredItems : latestItems;
 
     return (
-        <section className="py-16 md:py-24 bg-white">
+        <section className="py-10 md:py-16 bg-white">
             <div className="container mx-auto px-4 md:px-6">
 
                 {/* Elegant Professional Header */}

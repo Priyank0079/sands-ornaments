@@ -2,41 +2,48 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
+import catChoker from '../assets/cat_wedding_choker.png';
+import catHaram from '../assets/cat_wedding_haram.png';
+import catBangles from '../assets/cat_wedding_bangles.png';
+import catDiamond from '../assets/cat_wedding_diamond.png';
+import catMangalsutra from '../assets/cat_wedding_mangalsutra.png';
+import catPremiumAll from '../assets/cat_all_premium.png';
+
 const finalItems = [
     {
         id: 'wedding-choker',
         name: 'Wedding Choker',
-        image: 'https://images.unsplash.com/photo-1599643477877-530eb83abc8e?q=80&w=800&auto=format&fit=crop',
+        image: catChoker,
         path: '/shop?category=necklaces&style=choker',
     },
     {
         id: 'wedding-haram',
         name: 'Wedding Haram',
-        image: 'https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?q=80&w=800&auto=format&fit=crop',
+        image: catHaram,
         path: '/shop?category=necklaces&style=haram',
     },
     {
         id: 'wedding-bangles',
         name: 'Wedding Bangles',
-        image: 'https://images.unsplash.com/photo-1611591437281-460bfbe15201?q=80&w=800&auto=format&fit=crop',
+        image: catBangles,
         path: '/shop?category=bracelets',
     },
     {
         id: 'wedding-diamond',
         name: 'Wedding Diamond',
-        image: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=800&auto=format&fit=crop',
+        image: catDiamond,
         path: '/shop?filter=diamond',
     },
     {
         id: 'wedding-mangalsutra',
         name: 'Wedding Mangalsutra',
-        image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=800&auto=format&fit=crop',
+        image: catMangalsutra,
         path: '/shop?category=mangalsutra',
     },
     {
         id: 'accessories',
         name: 'Accessories',
-        image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=800&auto=format&fit=crop',
+        image: catPremiumAll,
         path: '/shop?category=accessories',
     }
 ];

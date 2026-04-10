@@ -197,7 +197,7 @@ const FamilyProductsCatalog = ({ selectedRecipient = 'all', onSelectRecipient })
     };
 
     return (
-        <section id="family-products" className="py-12 md:py-24" style={{ background: GOLD_BG }}>
+        <section id="family-products" className="py-8 md:py-16" style={{ background: GOLD_BG }}>
             <div className="container mx-auto px-4 md:px-8 max-w-[1500px]">
                 <div className="text-center mb-10 md:mb-16">
                     <motion.div

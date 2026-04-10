@@ -5,6 +5,8 @@ import { ChevronRight } from 'lucide-react';
 
 import classicsImg from '../../assets/family_curated_classics.png';
 import sistersImg from '../../assets/family_curated_sisters.png';
+import astraImg from '../../assets/family_astra.png';
+import bohoImg from '../../assets/family_boho.png';
 
 const collections = [
     {
@@ -16,13 +18,13 @@ const collections = [
     {
         id: 'astra',
         title: 'ASTRA COLLECTION',
-        image: 'https://images.unsplash.com/photo-1599643477877-530eb83abc8e?q=80&w=800&auto=format&fit=crop',
+        image: astraImg,
         path: '/shop?category=family&collection=astra'
     },
     {
         id: 'boho',
         title: 'SHOP BOHO ANKLETS',
-        image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=800&auto=format&fit=crop',
+        image: bohoImg,
         path: '/shop?category=family&category=anklets'
     },
     {

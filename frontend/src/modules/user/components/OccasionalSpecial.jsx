@@ -64,7 +64,7 @@ const OccasionalSpecial = () => {
     const [item1, item2, item3, item4, item5] = heroItems;
 
     return (
-        <section className="py-4 md:py-12 bg-white">
+        <section className="py-2 md:py-8 bg-white">
             <div className="container mx-auto px-4 md:px-6 relative z-10">
                 {/* Section Header */}
                 <div className="text-center mb-6">

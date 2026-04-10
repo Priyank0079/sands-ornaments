@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import CategoryShowcase from '../components/CategoryShowcase';
+
 import PriceRangeShowcase from '../components/PriceRangeShowcase';
 import PerfectGift from '../components/PerfectGift';
 import NewLaunchSection from '../components/NewLaunchSection';
@@ -44,7 +44,7 @@ const Home = () => {
             {/* PREMIUM CATEGORY CARDS SECTION */}
             <PremiumCategoryCards />
 
-            <CategoryShowcase />
+
             <PriceRangeShowcase />
             <PerfectGift />
             <NewLaunchSection />

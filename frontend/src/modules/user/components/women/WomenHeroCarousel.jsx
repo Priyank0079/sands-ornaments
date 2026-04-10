@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, ShoppingBag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import heroRadiance from '../../assets/women_hero_radiance.png';
 
 const slides = [
     {
@@ -9,7 +10,7 @@ const slides = [
         title: "Eternal ",
         titleItalic: "Radiance",
         subtitle: "Diamonds that capture the light and her heart.",
-        image: "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?q=90&w=2600&auto=format&fit=crop",
+        image: heroRadiance,
         cta: "Shop Diamonds",
         accent: "#FFFFFF"
     }

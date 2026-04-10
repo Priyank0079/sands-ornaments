@@ -86,7 +86,7 @@ const NewLaunchSection = () => {
 
     return (
         <section 
-            className="py-16 md:py-24 bg-[#FFF0F0] relative overflow-hidden"
+            className="py-8 md:py-12 bg-[#FFF0F0] relative overflow-hidden"
             style={{
                 '--radius': `${radius}px`,
                 '--cardW': `${cardWidth}px`,

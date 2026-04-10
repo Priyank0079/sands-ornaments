@@ -74,7 +74,7 @@ const WomenInteractiveLook = () => {
             id: `w-${item.id}`,
             name: item.productName,
             price: parseInt(item.price.replace(',', '')),
-            image: "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?q=90&w=1600&auto=format&fit=crop",
+            image: InteractiveLookImg,
             category: "Women's Collection",
             variants: [{ id: `w-${item.id}-v1`, price: parseInt(item.price.replace(',', '')) }]
         };

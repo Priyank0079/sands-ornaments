@@ -125,7 +125,7 @@ const Navbar = () => {
                             <img
                                 src={logo}
                                 alt="Sands Jewels"
-                                className="h-[30px] md:h-[40px] lg:h-[48px] w-auto object-contain transition-transform duration-300 hover:scale-105 origin-left"
+                                className="h-[42px] md:h-[56px] lg:h-[72px] w-auto object-contain transition-transform duration-300 hover:scale-105 origin-left"
                             />
                         </Link>
                         
