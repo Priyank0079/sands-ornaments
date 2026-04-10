@@ -84,7 +84,7 @@ const Footer = () => {
             <div className="absolute top-0 right-0 w-1/3 h-full bg-[#FDF8F8] -z-0 skew-x-[-15deg] translate-x-1/2"></div>
 
             <div className="container mx-auto px-4 md:px-6 relative z-10">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 mb-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 mb-6">
 
                     {/* Brand Identity Section */}
                     <div className="lg:col-span-4 space-y-3">
@@ -155,7 +155,7 @@ const Footer = () => {
                     </div>
 
                     {/* Contact & Newsletter */}
-                    <div className="lg:col-span-3 space-y-4 bg-white/50 backdrop-blur-md p-5 rounded-[2rem] border border-[#EBCDD0]/50 shadow-lg shadow-[#4A1015]/5">
+                    <div className="lg:col-span-3 space-y-3 bg-white/50 backdrop-blur-md p-4 rounded-2xl border border-[#EBCDD0]/50 shadow-md">
                         <div className="space-y-3">
                             <h4 className="font-display text-[#4A1015] font-bold uppercase tracking-[0.2em] text-[10px]">Connect Directly</h4>
                             <div className="space-y-2">

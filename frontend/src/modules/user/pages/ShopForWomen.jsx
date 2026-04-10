@@ -9,6 +9,7 @@ import WomenProductsListing from '../components/women/WomenProductsListing';
 import WomenProductCategories from '../components/women/WomenProductCategories';
 import WomenPersonalisedBanner from '../components/women/WomenPersonalisedBanner';
 import WomenPriceRange from '../components/women/WomenPriceRange';
+import WomenFeatureBanner from '../components/women/WomenFeatureBanner';
 
 const ShopForWomen = () => {
     useEffect(() => {
@@ -44,6 +45,9 @@ const ShopForWomen = () => {
 
             {/* 5. Promotional Banners (Img 14) */}
             <WomenPromoBanners />
+
+            {/* Feature Banner Section */}
+            <WomenFeatureBanner />
 
             {/* 6. Product Listing Section */}
             <WomenProductsListing />

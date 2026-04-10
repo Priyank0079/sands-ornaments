@@ -1,9 +1,7 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, ShoppingCart } from 'lucide-react';
-import { ShopContext } from '../../../../context/ShopContext';
-import toast from 'react-hot-toast';
+import { ChevronRight } from 'lucide-react';
 
 const hotspots = [
     {
@@ -11,8 +9,8 @@ const hotspots = [
         label: 'EARRINGS',
         desc: "925 Sterling Silver Studs",
         price: "1,299",
-        x1: 63, y1: 31, // Man's left ear
-        x2: 83, y2: 35, // Label position
+        x1: 63, y1: 31,
+        x2: 78, y2: 35, // Moved in from 83
         category: 'earrings',
         direction: 'left'
     },
@@ -21,8 +19,8 @@ const hotspots = [
         label: 'CHAINS',
         desc: "Classic Silver Link Chain",
         price: "3,499",
-        x1: 42, y1: 57, // Top chain area
-        x2: 17, y2: 45, // Label
+        x1: 42, y1: 57,
+        x2: 22, y2: 45, // Moved in from 17
         category: 'chains',
         direction: 'right'
     },
@@ -31,8 +29,8 @@ const hotspots = [
         label: 'PENDANTS',
         desc: "Silver Minimalist Pendant",
         price: "1,799",
-        x1: 52, y1: 63, // Bottom pendant
-        x2: 17, y2: 62, // Label (Left side)
+        x1: 52, y1: 63,
+        x2: 22, y2: 62, // Moved in from 17
         category: 'pendants',
         direction: 'right'
     },
@@ -41,8 +39,8 @@ const hotspots = [
         label: 'BRACELETS',
         desc: "Silver Solid Kada",
         price: "2,199",
-        x1: 30, y1: 82, // Wrist area (bracelet visible)
-        x2: 17, y2: 78, // Label
+        x1: 30, y1: 82,
+        x2: 22, y2: 78, // Moved in from 17
         category: 'bracelets',
         direction: 'right'
     },
@@ -51,8 +49,8 @@ const hotspots = [
         label: 'RINGS',
         desc: "Oxidized Statement Ring",
         price: "1,499",
-        x1: 49, y1: 72, // Main ring on finger
-        x2: 83, y2: 85, // Label
+        x1: 49, y1: 72,
+        x2: 78, y2: 82, // Moved in from 83, 85
         category: 'rings',
         direction: 'left'
     }
@@ -61,29 +59,6 @@ const hotspots = [
 const MenInteractiveLook = () => {
     const navigate = useNavigate();
     const [hoveredNode, setHoveredNode] = useState(null);
-    const { addToCart, products } = useContext(ShopContext);
-
-    const handleQuickAdd = (spot) => {
-        // Try to find matching real product
-        const realProduct = products.find(p => p.name.toLowerCase().includes(spot.desc.toLowerCase()));
-
-        if (realProduct) {
-            addToCart(realProduct);
-            toast.success(`${spot.label} added to cart!`);
-        } else {
-            // Mock data for immediate feedback
-            const mockProduct = {
-                id: spot.id + '-mock',
-                _id: spot.id + '-mock',
-                name: spot.desc,
-                price: parseFloat(spot.price.replace(',', '')),
-                image: '/men-interactive.png',
-                variants: [{ id: spot.id + '-v1', price: parseFloat(spot.price.replace(',', '')) }]
-            };
-            addToCart(mockProduct);
-            toast.success(`${spot.label} added to cart!`);
-        }
-    };
 
     return (
         <section className="py-10 md:py-14 bg-[#FCFBF8]">
@@ -114,7 +89,7 @@ const MenInteractiveLook = () => {
                     <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/20 pointer-events-none" />
 
                     {/* SVG Connector Lines & Arrows */}
-                    <svg className="absolute inset-0 w-full h-full pointer-events-none z-10" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ overflow: 'visible' }}>
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none z-10" viewBox="0 0 100 100" preserveAspectRatio="none">
                         <defs>
                             <marker
                                 id="arrowhead-blue"
@@ -222,11 +197,11 @@ const MenInteractiveLook = () => {
                                                     <p className="text-gray-900 text-[12px] font-bold mb-1 line-clamp-1">{spot.desc}</p>
                                                     <p className="text-[#3B82F6] text-lg font-black mb-3">₹{spot.price}</p>
                                                     <div
-                                                        onClick={() => handleQuickAdd(spot)}
+                                                        onClick={() => navigate(`/shop?category=${spot.category}`)}
                                                         className="w-full flex items-center justify-center gap-2 py-3 bg-[#0B1528] text-white text-[11px] font-bold uppercase rounded-xl cursor-pointer hover:bg-[#3B82F6] transition-all duration-300 shadow-lg shadow-blue-900/10"
                                                     >
-                                                        <ShoppingCart className="w-3.5 h-3.5" />
-                                                        Add to Cart
+                                                        <ChevronRight className="w-3.5 h-3.5" />
+                                                        View Product
                                                     </div>
                                                 </motion.div>
                                             )}

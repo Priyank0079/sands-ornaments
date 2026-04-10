@@ -8,6 +8,7 @@ import ShopTheLook from '../components/men/ShopTheLook';
 import MenStyleTrends from '../components/men/MenStyleTrends';
 import MenInteractiveLook from '../components/men/MenInteractiveLook';
 import MenStyleGuide from '../components/men/MenStyleGuide';
+import MenPersonalizedBanner from '../components/men/MenPersonalizedBanner';
 
 const ShopForMen = () => {
     useEffect(() => {
@@ -16,13 +17,14 @@ const ShopForMen = () => {
     }, []);
 
     return (
-        <div className="bg-[#F8FAFC] min-h-screen text-[#111827] font-sans overflow-x-hidden">
+        <div className="bg-[#FDF5F6] min-h-screen text-[#111827] font-sans overflow-x-hidden">
             <MenHeroCarousel />
             <MenCategoriesGrid />
             <MenCuratedCollections />
+            <MenPersonalizedBanner />
             <CelebrateMen />
-            <MenStyleGuide />
             <MenInteractiveLook />
+            <MenStyleGuide />
             <MenProductsListing />
             <MenStyleTrends />
             <ShopTheLook />

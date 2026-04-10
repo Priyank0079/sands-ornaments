@@ -103,7 +103,7 @@ const AppContent = () => {
             <Navbar />
             <PincodeModal />
           </div>
-          <div className="h-[84px] md:h-[104px] w-full"></div>
+          <div className="h-[78px] md:h-[96px] w-full"></div>
         </>
       )}
       {!isAdminPath && !isSellerPath && !isScannerPath && <CategoryNav />}
