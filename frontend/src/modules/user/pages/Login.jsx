@@ -90,7 +90,7 @@ const Login = () => {
                 <div
                     className="absolute inset-0 bg-cover bg-center animate-in fade-in duration-1000 grayscale-[20%]"
                     style={{
-                        backgroundImage: "url('https://images.unsplash.com/photo-1615655114865-4cc1bda5901e?q=80&w=2000&auto=format&fit=crop')", // Silver/White texture
+                        backgroundImage: `url(${loginHero})`, // Using existing local hero
                     }}
                 />
                 {/* Gradient Overlay */}

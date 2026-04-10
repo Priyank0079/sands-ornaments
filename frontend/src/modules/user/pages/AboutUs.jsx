@@ -3,6 +3,14 @@ import { Truck, ThumbsUp, Lock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import logoIcon from '../assets/SANDS JEWELS ICON PINK.png';
+import aboutHero1 from '../assets/cat_wedding_choker.png';
+import aboutHero2 from '../assets/cat_wedding_bangles.png';
+import aboutHero3 from '../assets/cat_wedding_diamond.png';
+
+import insta1 from '../assets/men_hero_style.png';
+import insta2 from '../assets/women_hero_radiance.png';
+import insta3 from '../assets/family_astra.png';
+import insta4 from '../assets/men_hero_bold.png';
 
 const AboutUs = () => {
     return (
@@ -43,17 +51,17 @@ const AboutUs = () => {
                     >
                         {/* Main Top Left Image - Landscape */}
                         <div className="absolute top-0 left-0 w-72 h-48 overflow-hidden shadow-lg z-10 border-4 border-white">
-                            <img src="https://images.unsplash.com/photo-1543294001-f7cd5d7fb516?auto=format&fit=crop&q=80&w=600" alt="Landscape Jewellery" className="w-full h-full object-cover" />
+                            <img src={aboutHero1} alt="Landscape Jewellery" className="w-full h-full object-cover" />
                         </div>
 
                         {/* Center Bottom Circle Image - Bracelet */}
                         <div className="absolute top-28 left-20 w-64 h-64 rounded-full overflow-hidden shadow-2xl z-30 border-8 border-white">
-                            <img src="https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&q=80&w=600" alt="Gold Bracelet" className="w-full h-full object-cover" />
+                            <img src={aboutHero2} alt="Gold Bracelet" className="w-full h-full object-cover" />
                         </div>
 
                         {/* Top Right Rounded Image - Wearing Necklace */}
                         <div className="absolute -top-10 right-0 w-60 h-60 rounded-tr-[3rem] rounded-bl-[3rem] overflow-hidden shadow-xl z-20 border-4 border-white">
-                            <img src="https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?auto=format&fit=crop&q=80&w=600" alt="Wearing Necklace" className="w-full h-full object-cover" />
+                            <img src={aboutHero3} alt="Wearing Necklace" className="w-full h-full object-cover" />
                         </div>
                     </motion.div>
                 </div>
@@ -123,16 +131,16 @@ const AboutUs = () => {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 opacity-50">
                     {/* Just placeholders to mimic the bottom peek */}
                     <div className="h-64 bg-gray-200">
-                        <img src="https://images.unsplash.com/photo-1600607686527-6fb886090705?auto=format&fit=crop&q=80&w=400" className="w-full h-full object-cover" alt="Insta 1" />
+                        <img src={insta1} className="w-full h-full object-cover" alt="Insta 1" />
                     </div>
                     <div className="h-64 bg-gray-200">
-                        <img src="https://images.unsplash.com/photo-1602173574767-37ac01994b2a?auto=format&fit=crop&q=80&w=400" className="w-full h-full object-cover" alt="Insta 2" />
+                        <img src={insta2} className="w-full h-full object-cover" alt="Insta 2" />
                     </div>
                     <div className="h-64 bg-gray-200">
-                        <img src="https://images.unsplash.com/photo-1535632787350-4e68ef0ac584?auto=format&fit=crop&q=80&w=400" className="w-full h-full object-cover" alt="Insta 3" />
+                        <img src={insta3} className="w-full h-full object-cover" alt="Insta 3" />
                     </div>
                     <div className="h-64 bg-gray-200">
-                        <img src="https://images.unsplash.com/photo-1615655114865-4cc1bda5901e?auto=format&fit=crop&q=80&w=400" className="w-full h-full object-cover" alt="Insta 4" />
+                        <img src={insta4} className="w-full h-full object-cover" alt="Insta 4" />
                     </div>
                 </div>
             </section>

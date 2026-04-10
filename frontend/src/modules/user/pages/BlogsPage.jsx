@@ -2,9 +2,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Calendar, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../../../services/api';
+import blogFallback from '../assets/trending_heritage.png';
 
 const stripHtml = (html = '') => html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-const blogFallbackImage = 'https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?auto=format&fit=crop&q=80&w=900';
+const blogFallbackImage = blogFallback;
 
 const BlogsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');

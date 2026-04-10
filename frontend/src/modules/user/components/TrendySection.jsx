@@ -1,5 +1,8 @@
+import { Link } from 'react-router-dom';
+import trendingHeritage from '../assets/trending_heritage.png';
+import trendingModern from '../assets/trending_modern.png';
 
-{/* Trendy Products / Editorial Split Section */ }
+{/* Trendy Products / Editorial Split Section */}
 <section className="py-24 bg-white overflow-hidden">
     <div className="container mx-auto px-4 md:px-6">
 
@@ -9,7 +12,7 @@
             <div className="w-full md:w-1/2 relative group">
                 <div className="absolute top-4 left-4 w-full h-full bg-[#EFEBE9] rounded-[2rem] -z-10 group-hover:rotate-2 transition-transform duration-500"></div>
                 <div className="relative rounded-[2rem] overflow-hidden shadow-2xl aspect-[4/5]">
-                    <img src="https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=2565&auto=format&fit=crop" alt="Trendy Necklace" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
+                    <img src={trendingHeritage} alt="Trendy Necklace" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
                 </div>
             </div>
             {/* Text Side */}
@@ -43,7 +46,7 @@
             <div className="w-full md:w-1/2 relative group">
                 <div className="absolute top-4 right-4 w-full h-full bg-[#D7CCC8] rounded-[2rem] -z-10 group-hover:-rotate-2 transition-transform duration-500"></div>
                 <div className="relative rounded-[2rem] overflow-hidden shadow-2xl aspect-[4/5]">
-                    <img src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=2565&auto=format&fit=crop" alt="Designer Earrings" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
+                    <img src={trendingModern} alt="Designer Earrings" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
                 </div>
             </div>
             {/* Text Side */}

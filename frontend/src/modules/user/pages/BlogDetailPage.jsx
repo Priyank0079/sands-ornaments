@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Calendar } from 'lucide-react';
 import api from '../../../services/api';
+import blogFallback from '../assets/trending_heritage.png';
 
-const blogFallbackImage = 'https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?auto=format&fit=crop&q=80&w=900';
+const blogFallbackImage = blogFallback;
 
 const BlogDetailPage = () => {
   const { slug } = useParams();
