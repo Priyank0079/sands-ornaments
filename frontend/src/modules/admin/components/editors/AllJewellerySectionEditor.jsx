@@ -11,7 +11,6 @@ const AllJewellerySectionEditor = ({ sectionData, onSave, defaultSection = {} })
             eyebrow: currentSettings.eyebrow || fallbackSettings.eyebrow || 'Our Collection',
             title: currentSettings.title || fallbackSettings.title || 'All Jewellery',
             ctaLabel: currentSettings.ctaLabel || fallbackSettings.ctaLabel || 'View Full Collection',
-            ctaLink: currentSettings.ctaLink || fallbackSettings.ctaLink || '/shop',
             productLimit: String(currentSettings.productLimit || fallbackSettings.productLimit || 16)
         };
     }, [defaultSection?.settings, sectionData?.settings]);
@@ -36,7 +35,6 @@ const AllJewellerySectionEditor = ({ sectionData, onSave, defaultSection = {} })
                 eyebrow: settings.eyebrow?.trim(),
                 title: settings.title?.trim(),
                 ctaLabel: settings.ctaLabel?.trim(),
-                ctaLink: settings.ctaLink?.trim() || '/shop',
                 productLimit: parsedLimit
             }
         });
@@ -76,12 +74,6 @@ const AllJewellerySectionEditor = ({ sectionData, onSave, defaultSection = {} })
                     value={settings.ctaLabel}
                     onChange={(event) => updateSetting('ctaLabel', event.target.value)}
                     placeholder="View Full Collection"
-                />
-                <Input
-                    label="CTA Link"
-                    value={settings.ctaLink}
-                    onChange={(event) => updateSetting('ctaLink', event.target.value)}
-                    placeholder="/shop"
                 />
                 <Input
                     label="Product Limit"

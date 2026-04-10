@@ -7,7 +7,12 @@ const ICON_OPTIONS = [
     { value: 'gem', label: 'Gem' },
     { value: 'rotate-ccw', label: 'Rotate / Return' },
     { value: 'truck', label: 'Truck / Delivery' },
-    { value: 'file-text', label: 'File / Terms' }
+    { value: 'file-text', label: 'File / Terms' },
+    { value: 'shield', label: 'Shield / Protection' },
+    { value: 'gift', label: 'Gift / Gifting' },
+    { value: 'sparkles', label: 'Sparkles / Premium' },
+    { value: 'lock', label: 'Lock / Secure' },
+    { value: 'credit-card', label: 'Card / Payments' }
 ];
 
 const createBlankPromise = () => ({

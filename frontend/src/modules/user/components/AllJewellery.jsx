@@ -45,7 +45,7 @@ const AllJewellery = () => {
     const eyebrow = settings.eyebrow?.trim() || 'Our Collection';
     const title = settings.title?.trim() || 'All Jewellery';
     const ctaLabel = settings.ctaLabel?.trim() || 'View Full Collection';
-    const ctaLink = settings.ctaLink?.trim() || '/shop';
+    const ctaLink = '/shop';
 
     return (
         <section className="py-6 md:py-16 bg-white">

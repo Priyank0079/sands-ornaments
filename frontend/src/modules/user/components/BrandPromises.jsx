@@ -1,13 +1,18 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Gem, RotateCcw, Truck, FileText } from 'lucide-react';
+import { Gem, RotateCcw, Truck, FileText, Shield, Gift, Sparkles, Lock, CreditCard } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
 
 const iconMap = {
     gem: Gem,
     'rotate-ccw': RotateCcw,
     truck: Truck,
-    'file-text': FileText
+    'file-text': FileText,
+    shield: Shield,
+    gift: Gift,
+    sparkles: Sparkles,
+    lock: Lock,
+    'credit-card': CreditCard
 };
 
 const FALLBACK_PROMISES = [
