@@ -2,9 +2,9 @@ import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
 import { useShop } from '../../../context/ShopContext';
-import menImg from '../assets/collections/cat_men_nobg-wmdPn1av.png';
-import womenImg from '../assets/collections/image.png';
-import allImg from '../assets/collections/image copy.png';
+import menImg from '../../../assets/collections/cat_men_nobg-wmdPn1av.png';
+import womenImg from '../../../assets/collections/image.png';
+import allImg from '../../../assets/collections/image copy.png';
 
 const FALLBACK_CATEGORIES = [
     {
