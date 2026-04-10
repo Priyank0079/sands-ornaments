@@ -9,5 +9,6 @@ router.use("/faqs",       require("./faq.routes"));
 router.use("/reviews",    require("./review.routes"));
 router.use("/cms",        require("./cms.routes"));
 router.use("/pages",      require("./page.routes"));
+router.use("/contact",    require("./contact.routes"));
 
 module.exports = router;

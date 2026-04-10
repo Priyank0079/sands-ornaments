@@ -5,7 +5,6 @@ import AllJewellerySectionEditor from '../components/editors/AllJewellerySection
 import CategoryShowcaseEditor from '../components/editors/CategoryShowcaseEditor';
 import BannerSectionEditor from '../components/editors/BannerSectionEditor';
 import BrandPromisesEditor from '../components/editors/BrandPromisesEditor';
-import ChitChatSectionEditor from '../components/editors/ChitChatSectionEditor';
 import FAQSectionEditor from '../components/editors/FAQSectionEditor';
 import TestimonialSectionEditor from '../components/editors/TestimonialSectionEditor';
 import { adminService } from '../services/adminService';
@@ -91,10 +90,6 @@ const SectionEditor = () => {
 
         if (sectionData.sectionType === 'faq') {
             return <FAQSectionEditor sectionData={sectionData} onSave={handleSave} defaultItems={defaultItems} />;
-        }
-
-        if ((sectionData.sectionKey || id) === 'chit-chat') {
-            return <ChitChatSectionEditor sectionData={sectionData} onSave={handleSave} defaultItems={defaultSection} />;
         }
 
         if ((sectionData.sectionKey || id) === 'brand-promises') {

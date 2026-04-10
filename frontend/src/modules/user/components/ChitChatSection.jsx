@@ -1,34 +1,49 @@
 import React, { useState } from 'react';
 import { Send } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useShop } from '../../../context/ShopContext';
-import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
+import api from '../../../services/api';
 import sandsLogo from '../assets/sands-logo.png';
 
 const ChitChatSection = () => {
-    const { homepageSections } = useShop();
     const [formData, setFormData] = useState({
         name: '',
         email: '',
         message: ''
     });
-    const sectionData = homepageSections?.['chit-chat'];
-    const settings = sectionData?.settings || {};
-    const logo = resolveLegacyCmsAsset(settings.logo, sandsLogo);
-    const title = settings.title || "We're Here for You";
-    const subtitle = settings.subtitle || "Questions or styling advice? We'd love to hear from you.";
-    const responseText = settings.responseText || 'Replies within 2 hours';
-    const submitLabel = settings.submitLabel || 'Send Message';
-    const successMessage = settings.successMessage || "Thanks for chatting with us! We'll get back to you shortly.";
+    const [submitting, setSubmitting] = useState(false);
+    const logo = sandsLogo;
+    const title = "We're Here for You";
+    const subtitle = "Questions or styling advice? We'd love to hear from you.";
+    const responseText = 'Replies within 2 hours';
+    const submitLabel = 'Send Message';
+    const successMessage = "Thanks for chatting with us! We'll get back to you shortly.";
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        toast.success(successMessage);
-        setFormData({ name: '', email: '', message: '' });
+        if (submitting) return;
+
+        setSubmitting(true);
+        try {
+            const res = await api.post('/public/contact', {
+                ...formData,
+                source: 'Homepage Chit Chat Form'
+            });
+
+            if (res.data?.success) {
+                toast.success(res.data.message || successMessage);
+                setFormData({ name: '', email: '', message: '' });
+            } else {
+                toast.error(res.data?.message || 'Failed to send message.');
+            }
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to send message.');
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     return (
@@ -118,9 +133,10 @@ const ChitChatSection = () => {
                                 
                                 <button
                                     type="submit"
-                                    className="w-full bg-[#4A1015] text-white font-semibold tracking-wider text-sm py-3 rounded-md hover:bg-[#340b0e] transition-all flex items-center justify-center gap-2 group mt-2"
+                                    disabled={submitting}
+                                    className="w-full bg-[#4A1015] text-white font-semibold tracking-wider text-sm py-3 rounded-md hover:bg-[#340b0e] transition-all flex items-center justify-center gap-2 group mt-2 disabled:opacity-70 disabled:cursor-not-allowed"
                                 >
-                                    <span>{submitLabel}</span>
+                                    <span>{submitting ? 'Sending...' : submitLabel}</span>
                                     <Send className="w-3.5 h-3.5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                                 </button>
                             </form>

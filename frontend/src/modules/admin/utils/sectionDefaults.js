@@ -31,7 +31,6 @@ import sangeetImg from '../../user/assets/sangeet.png';
 import receptionImg from '../../user/assets/reception.png';
 import bridalImg from '../../user/assets/bridal.png';
 import bridesmaidImg from '../../user/assets/hero_slide_3.png';
-import sandsLogoDefault from '../../user/assets/sands-logo.png';
 
 import bannerDaily from '../../user/assets/banner_daily.png';
 import bannerOffice from '../../user/assets/banner_office.png';
@@ -359,23 +358,6 @@ const homeSections = [
         description: 'We offer a hassle-free 7-day return and exchange policy. If you are not completely satisfied with your purchase, you can return it in its original condition within 7 days.'
       }
     ]
-  },
-  {
-    pageKey: 'home',
-    sectionKey: 'chit-chat',
-    sectionType: 'rich-content',
-    label: 'Chit Chat Section',
-    isActive: true,
-    sortOrder: 13,
-    settings: {
-      title: "We're Here for You",
-      subtitle: "Questions or styling advice? We'd love to hear from you.",
-      responseText: 'Replies within 2 hours',
-      submitLabel: 'Send Message',
-      successMessage: "Thanks for chatting with us! We'll get back to you shortly.",
-      logo: sandsLogoDefault
-    },
-    items: []
   },
   {
     pageKey: 'home',
