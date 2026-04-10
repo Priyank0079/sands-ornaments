@@ -1,9 +1,14 @@
 const mongoose = require("mongoose");
+const dns = require("node:dns");
+
+// Set custom DNS resolvers to Google's public DNS to bypass local SRV/DNS issues
+dns.setServers(['8.8.8.8', '8.8.4.4']);
 
 const connectDB = async (retryCount = 5) => {
   const options = {
-    serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of default 30s
+    serverSelectionTimeoutMS: 30000, // Increased to 30s
     socketTimeoutMS: 45000,
+    family: 4, // Force IPv4
   };
 
   try {
