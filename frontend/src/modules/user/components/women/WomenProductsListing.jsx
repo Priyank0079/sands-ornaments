@@ -5,14 +5,14 @@ import { useNavigate } from 'react-router-dom';
 import { ShopContext } from '../../../../context/ShopContext';
 import toast from 'react-hot-toast';
 
-import prod1 from '../../../../assets/prod_ring_main.png';
-import prod2 from '../../../../assets/cat_earrings.png';
-import prod3 from '../../../../assets/cat_rings.png';
-import prod4 from '../../../../assets/cat_bracelets.png';
-import prod5 from '../../../../assets/new_launch_anklets.png';
-import prod6 from '../../../../assets/premium_ring_product.png';
-import prod7 from '../../../../assets/trending_modern.png';
-import prod8 from '../../../../assets/cat_chain_wine.png';
+import prod1 from '../../assets/prod_ring_main.png';
+import prod2 from '../../assets/cat_earrings.png';
+import prod3 from '../../assets/cat_rings.png';
+import prod4 from '../../assets/cat_bracelets.png';
+import prod5 from '../../assets/new_launch_anklets.png';
+import prod6 from '../../assets/premium_ring_product.png';
+import prod7 from '../../assets/trending_modern.png';
+import prod8 from '../../assets/cat_chain_wine.png';
 
 const dummyProducts = [
     {
