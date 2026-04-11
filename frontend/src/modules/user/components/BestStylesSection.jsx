@@ -100,17 +100,24 @@ const BestStylesSection = () => {
     const { addToCart, toggleWishlist, wishlist, cart, products, activeMetal } = useShop();
     const [addedId, setAddedId] = useState(null);
 
-    // Filter dynamic products: Gold items that are trending or simply the first few gold items
+    // Filter dynamic products: Gold items prioritized, then any other products to fill the section
     const dynamicProducts = useMemo(() => {
-        // Start with dynamic products from API
-        let relevantProducts = products.filter(p => 
+        // 1. Get all Gold products
+        let goldProds = products.filter(p => 
             p.metal?.toLowerCase() === 'gold' || 
             p.material?.toLowerCase() === 'gold' ||
-            p.category?.toLowerCase().includes('gold')
+            p.category?.toLowerCase().includes('gold') ||
+            p.goldCategory
         );
 
-        // Normalize dynamic ones
-        let processed = relevantProducts.map(p => ({
+        // 2. Get other products to fill slots if needed
+        let otherProds = products.filter(p => !goldProds.some(gp => gp.id === p.id));
+        
+        // 3. Combine them
+        let combined = [...goldProds, ...otherProds];
+
+        // 4. Normalize
+        let processed = combined.map(p => ({
             id: p.id,
             name: p.name,
             price: p.price,
@@ -122,10 +129,15 @@ const BestStylesSection = () => {
             priceDrop: p.originalPrice > p.price
         }));
 
-        // Combine with static ones if we have fewer than 8 total
+        // 5. If still fewer than 8 (unlikely in real store, but possible in dev), add fallbacks
+        // but link fallbacks to the first real product's ID if available
         if (processed.length < 8) {
+            const firstRealId = combined[0]?.id || "coming-soon";
             const needed = 8 - processed.length;
-            const extra = PRODUCTS.slice(0, needed).filter(sp => !processed.some(p => p.name === sp.name));
+            const extra = PRODUCTS.slice(0, needed).map(sp => ({
+                ...sp,
+                id: firstRealId // Make it clickable to a real page
+            }));
             return [...processed, ...extra];
         }
 
@@ -227,42 +239,46 @@ const BestStylesSection = () => {
                                 </div>
                             </div>
         
-                            {/* Content Container */}
-                            <div className="flex flex-col gap-1">
-                                <div className="flex items-baseline gap-2">
+                            {/* Content Container - Fixed Height for alignment */}
+                            <div className="flex flex-col h-[115px]">
+                                <div className="flex items-baseline gap-2 mb-1">
                                     <span className="text-[15px] font-bold text-gray-900">₹{product.price}</span>
                                     <span className="text-[12px] text-gray-400 line-through font-medium">₹{product.originalPrice}</span>
                                 </div>
                                 
-                                <h3 className="text-[12px] text-gray-700 line-clamp-1 group-hover/card:text-black transition-colors uppercase tracking-tight font-medium">
+                                <h3 className="text-[12px] text-gray-700 line-clamp-1 h-[18px] group-hover/card:text-black transition-colors uppercase tracking-tight font-medium overflow-hidden mb-1">
                                     {product.name}
                                 </h3>
 
-                                {product.priceDrop && (
-                                    <p className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">
-                                        PRICE DROP!
-                                    </p>
-                                )}
-                                
-                                {/* Add to Cart Button */}
-                                <button 
-                                    onClick={(e) => handleAddToCart(e, product)}
-                                    disabled={addedId === product.id}
-                                    className={`w-full mt-2 py-2.5 rounded-none font-bold text-[11px] uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 ${
-                                        addedId === product.id 
-                                            ? 'bg-green-500 text-white' 
-                                            : 'bg-[#FFD9E0] text-[#8E2B45] hover:bg-[#ffc2cd]'
-                                    }`}
-                                >
-                                    {addedId === product.id ? (
-                                        <>
-                                            <CheckCircle2 className="w-3.5 h-3.5" />
-                                            Added
-                                        </>
-                                    ) : (
-                                        'Add to Cart'
+                                <div className="h-[15px] mb-2">
+                                    {product.priceDrop && (
+                                        <p className="text-[9px] font-bold text-blue-600 uppercase tracking-wider">
+                                            PRICE DROP!
+                                        </p>
                                     )}
-                                </button>
+                                </div>
+                                
+                                {/* Add to Cart Button - Pushed to bottom */}
+                                <div className="mt-auto">
+                                    <button 
+                                        onClick={(e) => handleAddToCart(e, product)}
+                                        disabled={addedId === product.id}
+                                        className={`w-full py-2.5 rounded-none font-bold text-[11px] uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 ${
+                                            addedId === product.id 
+                                                ? 'bg-green-500 text-white' 
+                                                : 'bg-[#FFD9E0] text-[#8E2B45] hover:bg-[#ffc2cd]'
+                                        }`}
+                                    >
+                                        {addedId === product.id ? (
+                                            <>
+                                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                                Added
+                                            </>
+                                        ) : (
+                                            'Add to Cart'
+                                        )}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     ))}
