@@ -20,12 +20,10 @@ import imgSterling from '../assets/silver_earrings_product.png';
 import imgSilver from '../assets/cat_anklets.png';
 
 const JewelleryCollectionsPage = () => {
-    const { products, categories } = useShop();
-    const [viewLevel, setViewLevel] = useState('METALS'); // 'METALS', 'CATEGORIES', 'PRODUCTS'
-    const [selectedMetal, setSelectedMetal] = useState(null); // 'gold', 'silver'
-    const [selectedCategory, setSelectedCategory] = useState(null); // category object
+    const { products, categories, activeMetal } = useShop();
+    const [viewLevel, setViewLevel] = useState('CATEGORIES');
+    const [selectedCategory, setSelectedCategory] = useState(null);
 
-    // Subcategories with unique images
     const goldSubCategories = [
         { id: '24k', name: '24K Gold', description: 'Pure 99.9% Gold', purity: '24k', image: img24k },
         { id: '22k', name: '22K Gold', description: 'Premium Hallmarked', purity: '22k', image: img22k },
@@ -38,12 +36,6 @@ const JewelleryCollectionsPage = () => {
         { id: 'silver', name: 'Fine Silver', description: 'Pure & Simple', purity: 'pure', image: imgSilver },
     ];
 
-    const handleMetalClick = (metal) => {
-        setSelectedMetal(metal);
-        setViewLevel('CATEGORIES');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
     const handleCategoryClick = (category) => {
         setSelectedCategory(category);
         setViewLevel('PRODUCTS');
@@ -54,16 +46,12 @@ const JewelleryCollectionsPage = () => {
         if (viewLevel === 'PRODUCTS') {
             setViewLevel('CATEGORIES');
             setSelectedCategory(null);
-        } else if (viewLevel === 'CATEGORIES') {
-            setViewLevel('METALS');
-            setSelectedMetal(null);
         }
     };
 
     const filteredProducts = useMemo(() => {
-        // Start with real products
         let list = products.filter(p => {
-            const metalMatch = String(p.metal || '').toLowerCase() === String(selectedMetal || '').toLowerCase();
+            const metalMatch = String(p.metal || '').toLowerCase() === String(activeMetal || '').toLowerCase();
             const purityMatch = String(p.purity || '').toLowerCase().includes(String(selectedCategory?.purity || '').toLowerCase());
             return metalMatch && (selectedCategory?.purity ? purityMatch : true);
         }).map(p => ({
@@ -73,7 +61,6 @@ const JewelleryCollectionsPage = () => {
             displayImage: p.images?.[0] || p.image || null
         }));
 
-        // Add mock products if this is a purity collection
         if (selectedCategory?.purity) {
             const mocks = COLLECTION_MOCK_PRODUCTS[selectedCategory.purity] || [];
             const processedMocks = mocks.map(m => ({
@@ -84,14 +71,11 @@ const JewelleryCollectionsPage = () => {
                 isMock: true
             }));
             
-            // Merge lists - prioritising mocks if we want the user to see the exact items from the menu
-            // Or just append them
             list = [...processedMocks, ...list];
         }
 
-        if (list.length === 0 && selectedMetal) {
-             // Fallback to any products of that metal
-             list = products.filter(p => String(p.metal || '').toLowerCase() === String(selectedMetal || '').toLowerCase()).map(p => ({
+        if (list.length === 0 && activeMetal) {
+             list = products.filter(p => String(p.metal || '').toLowerCase() === String(activeMetal || '').toLowerCase()).map(p => ({
                 ...p,
                 id: p._id || p.id,
                 displayPrice: p.salePrice || p.price || 0,
@@ -100,9 +84,8 @@ const JewelleryCollectionsPage = () => {
         }
         
         return list.slice(0, 12); 
-    }, [products, selectedCategory, selectedMetal]);
+    }, [products, selectedCategory, activeMetal]);
 
-    // Animations
     const containerVariants = {
         hidden: { opacity: 0 },
         visible: { 
@@ -120,9 +103,8 @@ const JewelleryCollectionsPage = () => {
         <div className="min-h-screen bg-[#FDF5F6] pt-6 pb-20 px-4 md:px-8 font-body">
             <div className="container mx-auto max-w-5xl">
                 
-                {/* Simplified Header */}
                 <div className="flex items-center gap-4 mb-8">
-                    {viewLevel !== 'METALS' && (
+                    {viewLevel !== 'CATEGORIES' && (
                         <button 
                             onClick={goBack}
                             className="p-2 bg-white rounded-full shadow-sm hover:shadow-md transition-all text-[#9C5B61]"
@@ -132,18 +114,17 @@ const JewelleryCollectionsPage = () => {
                     )}
                     <div>
                         <h1 className="text-xl md:text-2xl font-bold text-black uppercase tracking-wider">
-                            {viewLevel === 'METALS' && "All Jewellery"}
-                            {viewLevel === 'CATEGORIES' && `${selectedMetal} Collection`}
+                            {viewLevel === 'CATEGORIES' && `${activeMetal} Collection`}
                             {viewLevel === 'PRODUCTS' && `${selectedCategory.name}`}
                         </h1>
                         <nav className="flex items-center gap-2 mt-1 text-[10px] font-medium uppercase tracking-widest text-gray-500">
                             <span>Home</span>
                             <ChevronRight className="w-2.5 h-2.5" />
-                            <span className={`cursor-pointer ${viewLevel === 'METALS' ? 'text-[#9C5B61]' : ''}`} onClick={() => setViewLevel('METALS')}>All Jewellery</span>
-                            {selectedMetal && (
+                            <span className={`cursor-pointer ${viewLevel === 'CATEGORIES' ? 'text-[#9C5B61]' : ''}`} onClick={() => setViewLevel('CATEGORIES')}>All Jewellery</span>
+                            {activeMetal && (
                                 <>
                                     <ChevronRight className="w-2.5 h-2.5" />
-                                    <span className={viewLevel === 'CATEGORIES' ? 'text-[#9C5B61]' : ''}>{selectedMetal}</span>
+                                    <span className={viewLevel === 'CATEGORIES' ? 'text-[#9C5B61]' : ''}>{activeMetal}</span>
                                 </>
                             )}
                         </nav>
@@ -151,53 +132,6 @@ const JewelleryCollectionsPage = () => {
                 </div>
 
                 <AnimatePresence mode="wait">
-                    {/* LEVEL 1: METALS (Small Rectangle Rows) */}
-                    {viewLevel === 'METALS' && (
-                        <motion.div 
-                            key="metals"
-                            variants={containerVariants}
-                            initial="hidden"
-                            animate="visible"
-                            exit={{ opacity: 0, x: -10 }}
-                            className="flex flex-col gap-4"
-                        >
-                            {/* Gold row */}
-                            <motion.div 
-                                variants={itemVariants}
-                                onClick={() => handleMetalClick('gold')}
-                                className="group relative h-[100px] md:h-[160px] rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-md border border-gray-100 transition-all"
-                            >
-                                <img src={goldBanner} alt="Gold" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
-                                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors" />
-                                <div className="absolute inset-x-8 inset-y-0 flex flex-col justify-center text-white">
-                                    <h2 className="text-xl md:text-3xl font-bold uppercase tracking-widest">Gold Collection</h2>
-                                    <p className="text-[9px] md:text-xs font-medium uppercase tracking-[0.2em] text-[#D4AF37] mt-1">24K • 22K • 18K • 14K</p>
-                                </div>
-                                <div className="absolute right-8 top-1/2 -translate-y-1/2 text-white">
-                                    <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                                </div>
-                            </motion.div>
-
-                            {/* Silver row */}
-                            <motion.div 
-                                variants={itemVariants}
-                                onClick={() => handleMetalClick('silver')}
-                                className="group relative h-[100px] md:h-[160px] rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-md border border-gray-100 transition-all"
-                            >
-                                <img src={silverBanner} alt="Silver" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
-                                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors" />
-                                <div className="absolute inset-x-8 inset-y-0 flex flex-col justify-center text-white">
-                                    <h2 className="text-xl md:text-3xl font-bold uppercase tracking-widest">Silver Collection</h2>
-                                    <p className="text-[9px] md:text-xs font-medium uppercase tracking-[0.2em] text-gray-300 mt-1">925 Sterling • Fine Silver</p>
-                                </div>
-                                <div className="absolute right-8 top-1/2 -translate-y-1/2 text-white">
-                                    <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                                </div>
-                            </motion.div>
-                        </motion.div>
-                    )}
-
-                    {/* LEVEL 2: CATEGORIES (Small Square Cards) */}
                     {viewLevel === 'CATEGORIES' && (
                         <motion.div 
                             key="categories"
@@ -207,7 +141,7 @@ const JewelleryCollectionsPage = () => {
                             exit={{ opacity: 0, x: -10 }}
                             className="grid grid-cols-2 md:grid-cols-4 gap-4"
                         >
-                            {(selectedMetal === 'gold' ? goldSubCategories : silverSubCategories).map((cat) => (
+                            {(activeMetal === 'gold' ? goldSubCategories : silverSubCategories).map((cat) => (
                                 <motion.div
                                     key={cat.id}
                                     variants={itemVariants}
@@ -228,7 +162,6 @@ const JewelleryCollectionsPage = () => {
                         </motion.div>
                     )}
 
-                    {/* LEVEL 3: PRODUCTS (Smaller Circle Cards) */}
                     {viewLevel === 'PRODUCTS' && (
                         <motion.div 
                             key="products"

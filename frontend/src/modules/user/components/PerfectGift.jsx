@@ -113,7 +113,7 @@ const PerfectGift = () => {
                                         {/* Premium subtle inner shadow */}
                                         <div className="absolute inset-0 shadow-[inset_0_0_50px_rgba(0,0,0,0.05)] pointer-events-none" />
 
-                                        {/* Bottom White Dock - Giva Style but vastly superior */}
+                                        {/* Bottom White Dock - Sands Style but vastly superior */}
                                         <div className="absolute bottom-0 inset-x-0 bg-white/95 backdrop-blur-md z-20 h-14 md:h-16 flex flex-col items-center justify-center transition-all duration-500 overflow-hidden group-hover:bg-white shadow-[0_-5px_20px_rgba(0,0,0,0.03)] border-t border-white/50">
                                             
                                             <h3 className="font-sans text-[15px] md:text-[18px] font-semibold text-[#111111] tracking-wide transition-transform duration-500 transform group-hover:translate-y-[-4px]">

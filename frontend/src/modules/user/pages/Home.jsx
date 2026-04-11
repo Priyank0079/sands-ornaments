@@ -1,15 +1,13 @@
 import React, { useEffect } from 'react';
-
 import PriceRangeShowcase from '../components/PriceRangeShowcase';
 import PerfectGift from '../components/PerfectGift';
 import NewLaunchSection from '../components/NewLaunchSection';
 import LatestDrop from '../components/LatestDrop';
 import MostGifted from '../components/MostGifted';
 import PromoSlider from '../components/PromoSlider';
-import PremiumCategoryCards from '../components/PremiumCategoryCards';
-
-import OccasionalSpecial from '../components/OccasionalSpecial';
+import CategoryGrid from '../components/CategoryGrid';
 import ProposalBanner from '../components/ProposalBanner';
+import OccasionalSpecial from '../components/OccasionalSpecial';
 import StyleItYourWay from '../components/StyleItYourWay';
 import AllJewellery from '../components/AllJewellery';
 import Testimonials from '../components/Testimonials';
@@ -41,8 +39,8 @@ const Home = () => {
             {/* NEW PREMIUM HERO CAROUSEL */}
             <PromoSlider />
 
-            {/* PREMIUM CATEGORY CARDS SECTION */}
-            <PremiumCategoryCards />
+            {/* NEW CATEGORY GRID SECTION */}
+            <CategoryGrid />
 
 
             <PriceRangeShowcase />
