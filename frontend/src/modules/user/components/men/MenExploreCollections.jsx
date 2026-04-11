@@ -45,7 +45,7 @@ const MenExploreCollections = () => {
     const scroll = (direction) => {
         if (scrollRef.current) {
             const { current } = scrollRef;
-            const scrollAmount = window.innerWidth > 768 ? 600 : 300;
+            const scrollAmount = window.innerWidth > 768 ? 650 : 300;
             if (direction === 'left') {
                 current.scrollLeft -= scrollAmount;
             } else {
@@ -56,7 +56,7 @@ const MenExploreCollections = () => {
 
     return (
         <section className="py-6 md:py-10 bg-[#FDF6F2] select-none overflow-hidden">
-            <div className="container mx-auto px-4 max-w-[1450px]">
+            <div className="container mx-auto px-0 md:px-4 max-w-[1550px]">
                 
                 {/* Header */}
                 <div className="text-center mb-6">
@@ -65,7 +65,7 @@ const MenExploreCollections = () => {
                     </h2>
                 </div>
 
-                {/* Professional Peek Carousel */}
+                {/* Professional Dual-Banner Carousel */}
                 <div className="relative group/main">
                     
                     {/* Navigation Arrows - Sleeker style */}
@@ -84,10 +84,10 @@ const MenExploreCollections = () => {
 
                     <div 
                         ref={scrollRef}
-                        className="flex overflow-x-auto gap-4 md:gap-10 pb-16 hide-scrollbar scroll-smooth snap-x snap-mandatory px-8 md:px-[25%]"
+                        className="flex overflow-x-auto gap-5 md:gap-10 pb-16 hide-scrollbar scroll-smooth snap-x snap-mandatory px-6 md:px-12"
                     >
                         {exploreCollections.map((col, idx) => (
-                            <div key={col.id} className="flex-shrink-0 w-[80vw] md:w-[650px] snap-center relative">
+                            <div key={col.id} className="flex-shrink-0 w-[85vw] md:w-[650px] lg:w-[700px] snap-start relative">
                                 {/* Main Banner Card */}
                                 <motion.div 
                                     initial={{ opacity: 0, scale: 0.95 }}
@@ -124,34 +124,11 @@ const MenExploreCollections = () => {
                                     {col.items.map((img, i) => (
                                         <motion.div
                                             key={i}
-                                            initial={{ opacity: 0, y: 10 }}
+                                            initial={{ opacity: 0, y: 15 }}
                                             whileInView={{ opacity: 1, y: 0 }}
                                             viewport={{ once: true }}
-                                            transition={{ duration: 0.4, delay: 0.4 + (i * 0.1) }}
+                                            transition={{ duration: 0.4, delay: 0.5 + (i * 0.1) }}
                                             className="w-14 h-14 md:w-24 md:h-24 bg-white/95 backdrop-blur-sm rounded-[16px] md:rounded-[24px] shadow-xl border border-white/50 p-2 md:p-3 overflow-hidden flex items-center justify-center hover:-translate-y-2 transition-transform duration-300"
-                                        >
-                                            <img src={img} alt="item" className="w-full h-full object-contain" />
-                                        </motion.div>
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-                
-                <style>
-                    {`
-                    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap');
-                    `}
-                </style>
-                                    {col.items.map((img, i) => (
-                                        <motion.div
-                                            key={i}
-                                            initial={{ opacity: 0, scale: 0.8 }}
-                                            whileInView={{ opacity: 1, scale: 1 }}
-                                            viewport={{ once: true }}
-                                            transition={{ duration: 0.4, delay: 0.3 + (i * 0.1) }}
-                                            className="w-14 h-14 md:w-20 md:h-20 bg-white rounded-[12px] md:rounded-[16px] shadow-lg border border-gray-100 p-2 overflow-hidden flex items-center justify-center hover:-translate-y-1.5 transition-transform duration-300"
                                         >
                                             <img src={img} alt="item" className="w-full h-full object-contain" />
                                         </motion.div>
@@ -165,6 +142,7 @@ const MenExploreCollections = () => {
 
             <style>
                 {`
+                @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap');
                 .hide-scrollbar::-webkit-scrollbar {
                     display: none;
                 }
