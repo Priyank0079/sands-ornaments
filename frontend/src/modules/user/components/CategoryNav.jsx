@@ -1,180 +1,100 @@
-import React, { useMemo, useState, Suspense, lazy } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { MoveRight, Gift, Sparkles, BookOpen, Info, Users, UserCircle2, User, Home as HomeIcon } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
+import AllJewelleryMegaMenu from './AllJewelleryMegaMenu';
+import AllJewelleryMenu from './CategoryNavComponents/AllJewelleryMenu';
+import FamilyMegaMenu from './FamilyMegaMenu';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Lazy load the heavy jewellery menu to prevent preloading warnings
-const AllJewelleryMenu = lazy(() => import('./CategoryNavComponents/AllJewelleryMenu'));
-
-const NecklaceIcon = ({ className }) => (
-    <svg 
-        viewBox="0 0 24 24" 
-        fill="none" 
-        stroke="currentColor" 
-        strokeWidth="1.2" 
-        strokeLinecap="round" 
-        strokeLinejoin="round" 
-        className={className}
-    >
-        <path d="M5 4c0 2 1 8 7 8s7-6 7-8" />
-        <path d="M12 12v2" />
-        <path d="M12 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" />
-        <path d="M10.5 17.5 9 19" />
-        <path d="M13.5 17.5 15 19" />
-        <path d="M12 18.5v2" />
-    </svg>
-);
-
-import navGiftWomen from '../assets/nav_gift_women.png';
-import navGiftGirls from '../assets/nav_gift_girls.png';
-import navGiftMens from '../assets/nav_gift_mens.png';
-import navGiftCouple from '../assets/nav_gift_couple.png';
-import navGiftKids from '../assets/nav_gift_kids.png';
-import navOccasionBirthday from '../assets/nav_occasion_birthday.png';
-import navOccasionAnniversary from '../assets/nav_occasion_anniversary.png';
-import navOccasionWedding from '../assets/nav_occasion_wedding.png';
-import navOccasionMothers from '../assets/nav_occasion_mothers.png';
-import navOccasionValentine from '../assets/nav_occasion_valentine.png';
-
-const navGiftItems = [
-    { id: 'g1', name: 'FOR WOMEN', path: '/category/women', image: navGiftWomen },
-    { id: 'g2', name: 'FOR GIRLS', path: '/category/women', image: navGiftGirls },
-    { id: 'g3', name: 'FOR MEN', path: '/category/men', image: navGiftMens },
-    { id: 'g4', name: 'FOR COUPLES', path: 'couples', image: navGiftCouple },
-    { id: 'g5', name: 'FOR KIDS', path: 'kids', image: navGiftKids },
-];
-
-const navOccasionItems = [
-    { id: 'o1', name: 'BIRTHDAY', path: 'birthday', image: navOccasionBirthday },
-    { id: 'o2', name: 'ANNIVERSARY', path: 'anniversary', image: navOccasionAnniversary },
-    { id: 'o3', name: 'WEDDING', path: 'wedding', image: navOccasionWedding },
-    { id: 'o4', name: 'MOTHER\'S DAY', path: 'mothers-day', image: navOccasionMothers },
-    { id: 'o5', name: 'VALENTINE', path: 'valentine', image: navOccasionValentine },
-];
-
 const CategoryNav = () => {
-    const [hoveredCategory, setHoveredCategory] = useState(null);
-    const { useShop: _ignored } = useShop(); // Just to keep the hook call if needed, though we moved logic
     const navigate = useNavigate();
-
-    const [menuViewLevel, setMenuViewLevel] = useState('METALS'); 
-    const [menuSelectedMetal, setMenuSelectedMetal] = useState(null);
-    const [menuSelectedCategory, setMenuSelectedCategory] = useState(null);
-
-    const resetMenu = () => {
-        setHoveredCategory(null);
-        setMenuViewLevel('METALS');
-        setMenuSelectedMetal(null);
-        setMenuSelectedCategory(null);
-    };
-
-    const allJewelleryItem = {
-        id: 'shop-by-category',
-        name: 'ALL JEWELLERY',
-        icon: <NecklaceIcon className="w-5 h-5 opacity-80" />,
-        path: '/shop', 
-        type: 'mega-menu'
-    };
+    const { activeMetal, updateActiveMetal } = useShop();
+    const [hoveredItem, setHoveredItem] = useState(null);
 
     const navItems = [
-        { id: 'home', name: 'HOME', path: '/', type: 'link', icon: <HomeIcon className="w-5 h-5 opacity-80" /> },
-        allJewelleryItem,
-        { id: 'men', name: 'SHOP FOR MEN', path: '/category/men', type: 'link', icon: <User className="w-5 h-5 opacity-80" /> },
-        { id: 'women', name: 'SHOP FOR WOMEN', path: '/category/women', type: 'link', icon: <UserCircle2 className="w-5 h-5 opacity-80" /> },
-        { id: 'family', name: 'SHOP FOR FAMILY', path: '/category/family', type: 'link', icon: <Users className="w-5 h-5 opacity-80" /> },
-        { id: 'gifts', name: 'GIFTS FOR', path: '/shop', type: 'mega-menu', icon: <Gift className="w-5 h-5 opacity-80" />, subcategories: navGiftItems, introTitle: "Gifts of Love", introDesc: "Find the perfect token." },
-        { id: 'occasions', name: 'OCCASIONS', path: '/shop', type: 'mega-menu', icon: <Sparkles className="w-5 h-5 opacity-80" />, subcategories: navOccasionItems, introTitle: "Celebrate Moments", introDesc: "Timeless elegance." },
-        { id: 'blogs', name: 'BLOGS', path: '/blogs', type: 'link', icon: <BookOpen className="w-5 h-5 opacity-80" /> },
-        { id: 'about', name: 'ABOUT US', path: '/about', type: 'link', icon: <Info className="w-5 h-5 opacity-80" /> }
+        { id: 'cat', name: 'Shop by Category', path: '/collections', hasChevron: true },
+        { id: 'all', name: 'ALL TYPE', path: '/collections', hasChevron: true },
+        { id: 'him', name: 'Gifts for Him', path: '/category/men', hasChevron: false },
+        { id: 'her', name: 'Gifts for Her', path: '/category/women', hasChevron: false },
+        { id: 'family', name: 'Gifts for Family', path: '/category/family', hasChevron: false },
+        { id: 'card', name: 'SANDS Gift Card', path: '/shop?purity=card', hasChevron: false },
+        { id: 'store', name: 'Gift Store', path: '/shop?filter=gift', hasChevron: true },
+        { id: 'exclusive', name: 'Exclusive Collections', path: '/shop?filter=exclusive', hasChevron: true },
+        { id: 'more', name: 'More at SANDS', path: '/about', hasChevron: true },
     ];
 
-    return (
-        <div className="bg-white border-b border-gray-100 hidden md:block sticky top-[84px] md:top-[104px] z-40 font-body">
-            <div className="container mx-auto px-4 md:px-6">
-                <ul className="flex justify-center items-center h-14 gap-2 lg:gap-8 relative">
-                    {navItems.map((item) => (
-                        <li
-                            key={item.id}
-                            className="h-full flex items-center"
-                            onMouseEnter={() => setHoveredCategory(item.id)}
-                            onMouseLeave={resetMenu}
-                        >
-                            <Link
-                                to={item.path}
-                                onClick={resetMenu}
-                                className={`text-[11px] lg:text-[12px] tracking-wider font-bold flex items-center gap-2 transition-all duration-300 relative py-2 uppercase
-                                    ${hoveredCategory === item.id ? 'text-[#9C5B61]' : 'text-gray-700'}
-                                `}
-                            >
-                                {item.icon}
-                                {item.name}
-                                <span className={`absolute bottom-0 left-0 w-full h-[2px] bg-[#9C5B61] transform transition-transform duration-300 ${hoveredCategory === item.id ? 'scale-x-100' : 'scale-x-0'}`}></span>
-                            </Link>
+    const resetMenu = () => {
+        setHoveredItem(null);
+    };
 
-                            <AnimatePresence mode="wait">
-                                {hoveredCategory === item.id && item.type === 'mega-menu' && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 5 }} transition={{ duration: 0.2 }}
-                                        className="absolute left-0 top-full w-full bg-white shadow-2xl border-t border-gray-100 py-8 min-h-[350px] z-50 rounded-b-2xl overflow-hidden"
-                                    >
-                                        <div className="container mx-auto px-8 max-w-5xl">
-                                            {item.id === 'shop-by-category' ? (
-                                                <Suspense fallback={<div className="flex items-center justify-center h-[300px] text-[10px] uppercase tracking-widest text-gray-400">Loading Collections...</div>}>
-                                                    <AllJewelleryMenu 
-                                                        menuViewLevel={menuViewLevel}
-                                                        setMenuViewLevel={setMenuViewLevel}
-                                                        menuSelectedMetal={menuSelectedMetal}
-                                                        setMenuSelectedMetal={setMenuSelectedMetal}
-                                                        menuSelectedCategory={menuSelectedCategory}
-                                                        setMenuSelectedCategory={setMenuSelectedCategory}
-                                                        resetMenu={resetMenu}
-                                                    />
-                                                </Suspense>
-                                            ) : (
-                                                <div className="grid grid-cols-5 gap-8">
-                                                    <div className="col-span-1 pr-6 border-r border-gray-100">
-                                                        <h3 className="text-lg font-bold text-gray-900 uppercase tracking-widest mb-2">{item.introTitle}</h3>
-                                                        <p className="text-gray-400 text-[9px] uppercase tracking-widest mb-4">{item.introDesc}</p>
-                                                        <Link to="/shop" onClick={resetMenu} className="text-[#9C5B61] text-[10px] font-bold uppercase tracking-[0.2em] hover:text-black transition-colors flex items-center gap-2">Explore <MoveRight className="w-3 h-3" /></Link>
-                                                    </div>
-                                                    <div className="col-span-4 grid grid-cols-5 gap-4">
-                                                        {(item.subcategories || []).map((sub) => (
-                                                            <Link 
-                                                                key={sub.id} 
-                                                                to={sub.path?.startsWith('/') ? sub.path : `/shop?filter=${sub.path}`} 
-                                                                onClick={resetMenu} 
-                                                                className="group flex flex-col items-center"
-                                                            >
-                                                                {/* Modern Square Card Design */}
-                                                                <div className="relative w-24 h-24 lg:w-32 lg:h-32 rounded-2xl md:rounded-[1.5rem] overflow-hidden border border-gray-100 mb-4 transition-all duration-500 group-hover:shadow-[0_15px_35px_rgba(0,0,0,0.1)] group-hover:-translate-y-2 group-hover:border-[#9C5B61]/30 bg-gray-50">
-                                                                    <img 
-                                                                        src={sub.image} 
-                                                                        alt={sub.name} 
-                                                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-                                                                    />
-                                                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-500" />
-                                                                </div>
-                                                                
-                                                                {/* Professional Serif Label */}
-                                                                <span className="text-[9px] lg:text-[11px] font-serif font-bold text-center uppercase tracking-widest text-gray-800 group-hover:text-[#9C5B61] transition-colors duration-300">
-                                                                    {sub.name}
-                                                                </span>
-                                                                <div className="h-px w-0 group-hover:w-full bg-[#9C5B61]/40 transition-all duration-500 mt-1" />
-                                                            </Link>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            )}
+    return (
+        <div className="bg-white border-b border-gray-100 hidden md:block w-full">
+            <div className="container mx-auto px-4 md:px-12 relative" onMouseLeave={resetMenu}>
+                {/* Navigation Links - Centered and Spaced Out */}
+                <div className="flex justify-center items-center py-3">
+                    <ul className="flex items-center gap-12">
+                        {navItems.map((item) => (
+                            <li
+                                key={item.id}
+                                onMouseEnter={() => setHoveredItem(item.id)}
+                                onMouseLeave={() => setHoveredItem(null)}
+                                className="relative py-1"
+                            >
+                                <Link
+                                    to={item.path}
+                                    className="text-[15px] font-medium text-gray-900 hover:text-[#9C3D5E] flex items-center gap-1.5 transition-all duration-300 whitespace-nowrap"
+                                >
+                                    {item.name}
+                                    {item.hasChevron && <ChevronDown className="w-4 h-4 text-gray-600" />}
+                                </Link>
+
+                                {/* Dropdowns Mapping */}
+                                <AnimatePresence>
+                                    {hoveredItem === item.id && (
+                                        <div className="absolute top-full left-[-200%] pt-4 z-[110]">
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: 5 }}
+                                                className="bg-white shadow-2xl rounded-none border border-gray-100 overflow-hidden"
+                                            >
+                                                {item.id === 'cat' && <AllJewelleryMenu resetMenu={resetMenu} />}
+                                                {item.id === 'all' && <AllJewelleryMegaMenu resetMenu={resetMenu} />}
+                                                {item.id === 'family' && <FamilyMegaMenu resetMenu={resetMenu} />}
+                                            </motion.div>
                                         </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </li>
-                    ))}
-                </ul>
+                                    )}
+                                </AnimatePresence>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+
+                {/* Silver / Gold Toggle - Precise SANDS Polish with Navigation logic */}
+                <div className="flex justify-center pb-3 pt-0.5 relative">
+                    <div className="p-0.5 rounded-full border border-[#D4B390] flex items-center bg-white shadow-sm overflow-hidden" style={{ minWidth: '680px' }}>
+                        <button
+                            onClick={() => {
+                                updateActiveMetal('silver');
+                                navigate('/');
+                            }}
+                            className={`flex-1 py-1 px-12 rounded-full text-[17px] font-bold transition-all duration-500 transform ${activeMetal === 'silver' ? 'bg-[#9C3D5E] text-white' : 'text-gray-700 hover:bg-gray-50'}`}
+                        >
+                            Silver Jewellery
+                        </button>
+                        <button
+                            onClick={() => {
+                                updateActiveMetal('gold');
+                                navigate('/gold-collection');
+                            }}
+                            className={`flex-1 py-1 px-12 rounded-full text-[17px] font-bold transition-all duration-500 transform ${activeMetal === 'gold' ? 'bg-[#9C3D5E] text-white' : 'text-gray-700 hover:bg-gray-50'}`}
+                        >
+                            Gold Jewellery
+                        </button>
+                    </div>
+                </div>
             </div>
-            <style dangerouslySetInnerHTML={{ __html: `.font-body { font-family: 'Lato', sans-serif; }` }} />
         </div>
     );
 };

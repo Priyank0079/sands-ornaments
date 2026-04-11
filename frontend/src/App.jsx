@@ -29,7 +29,7 @@ import BlogsPage from './modules/user/pages/BlogsPage';
 import BlogDetailPage from './modules/user/pages/BlogDetailPage';
 import PincodeModal from './modules/user/components/PincodeModal';
 import DynamicPage from './modules/user/pages/DynamicPage';
-import GoldComingSoon from './modules/user/pages/GoldComingSoon';
+import GoldJewelleryPage from './modules/user/pages/GoldJewelleryPage';
 import UserReturnsPage from './modules/user/pages/ReturnsPage';
 import UserReturnDetailPage from './modules/user/pages/ReturnDetailPage';
 import UserReturnRequestPage from './modules/user/pages/ReturnRequestPage';
@@ -99,14 +99,13 @@ const AppContent = () => {
       {!isAdminPath && !isSellerPath && !isScannerPath && (
         <>
           <div className="fixed top-0 left-0 right-0 z-[100] w-full">
-            <AnnouncementBar />
             <Navbar />
+            <CategoryNav />
             <PincodeModal />
           </div>
-          <div className="h-[78px] md:h-[96px] w-full"></div>
+          <div className="h-[78px] md:h-[200px] w-full"></div>
         </>
       )}
-      {!isAdminPath && !isSellerPath && !isScannerPath && <CategoryNav />}
       <main className={`flex-grow ${!isAdminPath && !isSellerPath && !isScannerPath ? 'pb-16 md:pb-0' : ''}`}>
         <Routes>
           {/* User Routes */}
@@ -147,7 +146,7 @@ const AppContent = () => {
           <Route path="/category/women" element={<ShopForWomen />} />
           <Route path="/category/family" element={<ShopForFamily />} />
           <Route path="/category/:category" element={<Shop />} />
-          <Route path="/gold-collection" element={<GoldComingSoon />} />
+          <Route path="/gold-collection" element={<GoldJewelleryPage />} />
           <Route path="/collections" element={<JewelleryCollectionsPage />} />
           <Route path="/blogs" element={<BlogsPage />} />
           <Route path="/blogs/:slug" element={<BlogDetailPage />} />

@@ -100,7 +100,14 @@ export const ShopProvider = ({ children }) => {
     const [pincode, setPincode] = useState(() => {
         return localStorage.getItem('user_pincode') || '';
     });
+    const [activeMetal, setActiveMetal] = useState(() => {
+        return localStorage.getItem('user_active_metal') || 'silver';
+    });
 
+    const updateActiveMetal = (metal) => {
+        setActiveMetal(metal);
+        localStorage.setItem('user_active_metal', metal);
+    };
 
     const updatePincode = (newPincode) => {
         setPincode(newPincode);
@@ -875,6 +882,7 @@ export const ShopProvider = ({ children }) => {
             notificationsEnabled, userNotifications, toggleNotificationSettings, deleteUserNotification,
             isPincodeModalOpen, setIsPincodeModalOpen,
             pincode, updatePincode,
+            activeMetal, updateActiveMetal,
 
             products, updateProduct, bulkUpdatePrices,
             categories, banners, isLoading: isCatalogueLoading,

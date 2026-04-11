@@ -5,71 +5,50 @@ import { Link } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
 
 // Import Assets
-import diamondLuxury from '../../../assets/hero/diamond_luxury.png';
-import goldFusion from '../../../assets/hero/gold_fusion.png';
-import silverMinimalist from '../../../assets/hero/silver_minimalist.png';
-import bridalRoyal from '../../../assets/hero/bridal_royal.png';
+// Import Assets
+import heroRings from '../../../assets/hero/hero_rings.png';
+import heroBracelets from '../../../assets/hero/hero_bracelets.png';
+import heroPendants from '../../../assets/categories/pendants.png';
+import heroEarrings from '../../../assets/categories/earrings.png';
 
 const SLIDES = [
     {
         id: 1,
-        image: diamondLuxury,
-        title: "Eternal Diamond Brilliance",
-        subtitle: "Masterfully crafted for those who demand the extraordinary.",
-        tag: "Luxury Collection",
-        link: "/shop"
+        image: heroRings,
+        title: "Eternal Silver Rings",
+        subtitle: "Handcrafted perfection inspired by timeless traditions.",
+        tag: "Boutique Collection",
+        link: "/category/rings"
     },
     {
         id: 2,
-        image: goldFusion,
-        title: "Modern Gold Fusion",
-        subtitle: "Minimalist silhouettes elegantly refined in pure 18K gold.",
-        tag: "Contemporary Luxe",
-        link: "/shop"
+        image: heroBracelets,
+        title: "Graceful Silver Bracelets",
+        subtitle: "Minimalist elegance refined for the modern woman.",
+        tag: "Premium Silver",
+        link: "/category/bracelets"
     },
     {
         id: 3,
-        image: silverMinimalist,
-        title: "Sterling Silver Heritage",
-        subtitle: "Timeless craftsmanship meets modern architectural design.",
-        tag: "Handcrafted Silver",
-        link: "/shop"
+        image: heroPendants,
+        title: "Celestial Silver Pendants",
+        subtitle: "Shine brighter with our artisan-carved collections.",
+        tag: "Artisan Series",
+        link: "/category/necklaces"
     },
     {
         id: 4,
-        image: bridalRoyal,
-        title: "The Royal Bridal Legacy",
-        subtitle: "Sacred ornaments for your once-in-a-lifetime journey.",
-        tag: "Bridal Signature",
-        link: "/shop"
+        image: heroEarrings,
+        title: "Ethereal Silver Earrings",
+        subtitle: "Delicate designs that capture the essence of luxury.",
+        tag: "Limited Edition",
+        link: "/category/earrings"
     }
 ];
 
 const PromoSlider = () => {
-    const { homepageSections } = useShop();
-    const heroSection = homepageSections['hero-banners'];
-    const dynamicSlides = Array.isArray(heroSection?.items)
-        ? heroSection.items
-            .filter((item) => item?.image && (item?.label || item?.name))
-            .map((item, index) => ({
-                id: item.id || `hero-slide-${index + 1}`,
-                image: item.image,
-                title: item.label || item.name || SLIDES[index]?.title || '',
-                subtitle: item.subtitle || SLIDES[index]?.subtitle || '',
-                tag: item.tag || item.name || SLIDES[index]?.tag || '',
-                link: item.path || SLIDES[index]?.link || '/shop',
-                ctaLabel: item.ctaLabel || 'Shop Collection'
-            }))
-        : [];
-    const slides = heroSection?.isActive !== false && dynamicSlides.length > 0
-        ? dynamicSlides.map((slide, index) => ({
-            ...SLIDES[index],
-            ...slide
-        }))
-        : SLIDES;
-    const autoplayMs = Number(heroSection?.settings?.autoplayMs) > 0
-        ? Number(heroSection.settings.autoplayMs)
-        : 3000;
+    const slides = SLIDES;
+    const autoplayMs = 4000;
     const extendedSlides = [slides[slides.length - 1], ...slides, slides[0]];
     const [currentIndex, setCurrentIndex] = useState(1);
     const [isTransitioning, setIsTransitioning] = useState(false);
@@ -118,7 +97,7 @@ const PromoSlider = () => {
             onMouseEnter={() => setIsSuspended(true)}
             onMouseLeave={() => setIsSuspended(false)}
         >
-            <div className="relative w-full h-[240px] md:h-[400px]">
+            <div className="relative w-full h-[220px] md:h-[350px]">
                 <motion.div
                     className="flex h-full w-full gap-[1.5%]"
                     animate={{ 
@@ -168,11 +147,11 @@ const PromoSlider = () => {
                                         </span>
                                     </div>
                                     
-                                    <h2 className="font-serif text-2xl md:text-6xl font-bold leading-tight mb-2 md:mb-5 drop-shadow-lg max-w-[90%] md:max-w-xl">
+                                    <h2 className="font-serif text-2xl md:text-5xl font-bold leading-tight mb-1 md:mb-3 drop-shadow-lg max-w-[90%] md:max-w-xl">
                                         {slide.title}
                                     </h2>
 
-                                    <p className="text-white/80 text-[10px] md:text-lg font-light leading-relaxed mb-4 md:mb-8 max-w-md tracking-wide line-clamp-2 md:line-clamp-none">
+                                    <p className="text-white/80 text-[10px] md:text-base font-light leading-relaxed mb-3 md:mb-6 max-w-md tracking-wide line-clamp-2 md:line-clamp-none">
                                         {slide.subtitle}
                                     </p>
                                     
