@@ -31,7 +31,7 @@ const priceRanges = [
 
 const WomenPriceRange = () => {
     return (
-        <section className="py-12 md:py-20 bg-white overflow-hidden">
+        <section className="pt-0 pb-10 md:pb-14 bg-white overflow-hidden">
             <div className="container mx-auto px-4 md:px-8 max-w-[1300px]">
 
                 {/* Modern Editorial Header */}
@@ -40,19 +40,19 @@ const WomenPriceRange = () => {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                    className="flex flex-col items-center mb-10 md:mb-16"
+                    className="flex flex-col items-center mb-3 md:mb-5 -mt-5 md:-mt-8"
                 >
                     <span 
-                        className="text-[10px] md:text-xs font-bold tracking-[0.4em] uppercase mb-3 inline-block px-4 py-1.5 rounded-full bg-[#9B2245]/10"
+                        className="text-[10px] md:text-[11px] font-bold tracking-[0.34em] uppercase mb-1 inline-block px-3 py-1 rounded-full bg-[#9B2245]/10"
                         style={{ color: '#9B2245' }}
                     >
                         Luxury within Reach
                     </span>
-                    <h2 className="text-xl md:text-3xl font-display text-gray-900 tracking-tight">Curated Price Points</h2>
+                    <h2 className="text-lg md:text-[28px] font-display text-gray-900 tracking-tight">Curated Price Points</h2>
                 </motion.div>
 
                 {/* Responsive Price Cards Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-[0.84fr_1.16fr_0.84fr] gap-3 md:gap-4 items-end">
                     {priceRanges.map((item, idx) => (
                         <motion.div
                             key={item.id}
@@ -60,7 +60,7 @@ const WomenPriceRange = () => {
                             whileInView={{ opacity: 1, scale: 1 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.6, delay: idx * 0.15, ease: [0.22, 1, 0.36, 1] }}
-                            className="w-full"
+                            className={`w-full ${idx === 1 ? '' : 'md:pb-5'}`}
                         >
                             <Link
                                 to={item.path}
@@ -71,9 +71,9 @@ const WomenPriceRange = () => {
                                     className="relative flex flex-col items-center justify-center text-center overflow-hidden transition-all duration-700 ease-[0.22, 1, 0.36, 1] group-hover:shadow-[0_45px_100px_-20px_rgba(92,14,37,0.35)]"
                                     style={{
                                         background: 'linear-gradient(135deg, #4A0E1C 0%, #2A0610 50%, #150207 100%)',
-                                        borderRadius: '20px',
-                                        padding: 'clamp(24px, 6vw, 64px) 24px',
-                                        minHeight: 'clamp(140px, 20vw, 240px)',
+                                        borderRadius: '18px',
+                                        padding: idx === 1 ? 'clamp(20px, 4.2vw, 44px) 20px' : 'clamp(16px, 3.4vw, 34px) 16px',
+                                        minHeight: idx === 1 ? 'clamp(132px, 18vw, 214px)' : 'clamp(98px, 13.5vw, 156px)',
                                         border: '1px solid rgba(255,255,255,0.05)',
                                     }}
                                 >
@@ -98,8 +98,8 @@ const WomenPriceRange = () => {
                                     {/* Card Content - Improved Visibility */}
                                     <div className="relative z-10 transition-transform duration-500 group-hover:-translate-y-2">
                                         <p
-                                            className="text-white/60 font-semibold tracking-[0.25em] uppercase mb-2 md:mb-3"
-                                            style={{ fontSize: 'clamp(10px, 1.2vw, 13px)' }}
+                                            className="text-white/60 font-semibold tracking-[0.22em] uppercase mb-1.5 md:mb-2"
+                                            style={{ fontSize: idx === 1 ? 'clamp(9px, 1vw, 12px)' : 'clamp(8px, 0.85vw, 10px)' }}
                                         >
                                             {item.label}
                                         </p>
@@ -107,7 +107,7 @@ const WomenPriceRange = () => {
                                         <h3
                                             className="text-white font-bold leading-none"
                                             style={{
-                                                fontSize: 'clamp(32px, 5vw, 56px)',
+                                                fontSize: idx === 1 ? 'clamp(28px, 4.2vw, 48px)' : 'clamp(22px, 3.2vw, 36px)',
                                                 fontFamily: "'Playfair Display', serif",
                                                 fontWeight: 800,
                                                 letterSpacing: '-1px',
@@ -118,10 +118,10 @@ const WomenPriceRange = () => {
                                         </h3>
 
                                         {/* Dynamic Tagline Reveal */}
-                                        <div className="h-0 group-hover:h-8 overflow-hidden transition-all duration-500 opacity-0 group-hover:opacity-100 mt-3">
+                                        <div className="h-0 group-hover:h-7 overflow-hidden transition-all duration-500 opacity-0 group-hover:opacity-100 mt-2">
                                             <p
                                                 className="text-[#EBCDD0] font-bold tracking-[0.15em] whitespace-nowrap"
-                                                style={{ fontSize: 'clamp(9px, 1.1vw, 11px)' }}
+                                                style={{ fontSize: idx === 1 ? 'clamp(8px, 1vw, 10px)' : 'clamp(7px, 0.85vw, 9px)' }}
                                             >
                                                 {item.tagline}
                                             </p>
@@ -130,7 +130,7 @@ const WomenPriceRange = () => {
 
                                     {/* Premium Border Accent */}
                                     <div 
-                                        className="absolute inset-0 rounded-[24px] pointer-events-none border border-white/0 group-hover:border-white/10 transition-all duration-500"
+                                        className="absolute inset-0 rounded-[18px] pointer-events-none border border-white/0 group-hover:border-white/10 transition-all duration-500"
                                     />
                                     
                                     {/* Bottom Decorative Shimmer */}

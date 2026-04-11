@@ -24,21 +24,25 @@ const luxuryOffers = [
 
 const MenLuxurySection = () => {
     return (
-        <section className="py-10 md:py-16 bg-white">
-            <div className="container mx-auto px-4 max-w-[1000px]">
-                <h2 className="text-4xl md:text-5xl font-bold text-[#101828] text-center mb-10 tracking-tight font-serif">
+        <section className="pt-2 pb-10 md:pt-4 md:pb-16 bg-white">
+            <div className="container mx-auto px-4 max-w-[1100px]">
+                <h2 className="text-3xl md:text-5xl font-bold text-[#101828] text-center mb-6 md:mb-12 tracking-tight font-serif">
                     Luxury Within Reach
                 </h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 items-center">
                     {luxuryOffers.map((offer, idx) => (
                         <motion.div
                             key={idx}
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
+                            initial={{ opacity: 0, y: 30, scale: idx === 1 ? 1 : 0.9 }}
+                            whileInView={{ 
+                                opacity: 1, 
+                                y: 0, 
+                                scale: idx === 1 ? 1.1 : 0.92 
+                            }}
                             viewport={{ once: true }}
-                            transition={{ duration: 0.7, delay: idx * 0.15 }}
-                            className="relative group cursor-pointer overflow-hidden rounded-[40px] border-[1.5px] border-[#D4AF37]/30 aspect-[0.92/1] shadow-lg hover:shadow-2xl transition-all duration-500"
+                            transition={{ duration: 0.8, delay: idx * 0.1 }}
+                            className={`relative group cursor-pointer overflow-hidden rounded-[30px] md:rounded-[40px] border-[1.5px] border-[#D4AF37]/30 aspect-[0.92/1] shadow-lg hover:shadow-2xl transition-all duration-500 ${idx === 1 ? 'z-10 shadow-xl' : 'z-0'}`}
                         >
                             <img
                                 src={offer.image}

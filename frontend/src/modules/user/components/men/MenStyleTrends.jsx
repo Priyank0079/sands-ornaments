@@ -41,7 +41,7 @@ const MenStyleTrends = () => {
     return (
         <section
             className="relative"
-            style={{ background: '#C9BAA8', paddingTop: '3rem', paddingBottom: '5rem' }}
+            style={{ background: '#C9BAA8', paddingTop: '2.5rem', paddingBottom: '2rem' }}
         >
             {/* Decorative corner lines — top left */}
             <div className="absolute top-5 left-5 opacity-35" style={{ width: 56, height: 50 }}>
@@ -80,7 +80,7 @@ const MenStyleTrends = () => {
 
             <div className="container mx-auto px-4 md:px-10 max-w-[1300px]">
                 {/* Cards Row */}
-                <div className="flex gap-4 md:gap-6 justify-center items-stretch overflow-x-auto scrollbar-hide pb-16">
+                <div className="flex gap-4 md:gap-6 justify-center items-stretch overflow-x-auto scrollbar-hide pb-6 md:pb-8">
                     {trends.map((trend, idx) => (
                         <motion.div
                             key={trend.id}

@@ -37,45 +37,45 @@ const styles = [
 
 const MenStyleGuide = () => {
     return (
-        <section className="py-12 px-4 md:px-12 bg-[#F3EBE3]">
-            <div className="max-w-7xl mx-auto">
+        <section className="py-6 md:py-10 px-4 md:px-12 bg-[#F3EBE3]">
+            <div className="max-w-6xl mx-auto">
                 {/* Header */}
-                <div className="text-center mb-10">
+                <div className="text-center mb-6">
                     <motion.div
-                        initial={{ opacity: 0, y: 30 }}
+                        initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         className="flex flex-col items-center"
                     >
-                        <h2 className="text-4xl md:text-6xl font-display font-bold text-[#3B2516] tracking-tight mb-4">
+                        <h2 className="text-2xl md:text-3xl font-display font-bold text-[#3B2516] tracking-tight mb-1">
                             STYLE GUIDE
                         </h2>
-                        <p className="text-lg md:text-2xl text-[#6B4E3D] font-medium tracking-wide">
+                        <p className="text-sm md:text-base text-[#6B4E3D] font-medium tracking-wide">
                             Master the hottest trends
                         </p>
                     </motion.div>
                 </div>
 
                 {/* Cards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6">
                     {styles.map((style, index) => (
                         <motion.div
                             key={style.id}
-                            initial={{ opacity: 0, y: 40 }}
+                            initial={{ opacity: 0, y: 30 }}
                             whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.8, delay: index * 0.1 }}
+                            transition={{ duration: 0.6, delay: index * 0.1 }}
                             viewport={{ once: true }}
                             className="relative flex flex-col group h-full"
                         >
                             {/* Step Header */}
-                            <div className="bg-[#754E2D] py-4 px-6 text-center rounded-t-2xl z-20">
-                                <span className="text-white font-bold text-lg md:text-xl tracking-wider">
+                            <div className="bg-[#754E2D] py-3 px-5 text-center rounded-t-xl z-20">
+                                <span className="text-white font-bold text-base md:text-lg tracking-wider">
                                     {style.step}
                                 </span>
                             </div>
 
                             {/* Image Part */}
-                            <div className="relative flex-grow overflow-hidden bg-black rounded-b-2xl shadow-xl aspect-[3/4]">
+                            <div className="relative flex-grow overflow-hidden bg-black rounded-b-xl shadow-lg aspect-[0.85/1]">
                                 {/* Grayscale Base Image */}
                                 <img
                                     src={style.image}
@@ -84,29 +84,28 @@ const MenStyleGuide = () => {
                                 />
 
                                 {/* Overlay for UI components */}
-                                <div className="absolute inset-0 z-10 p-6 pointer-events-none">
-                                    {/* Focus Frame (White border in image) */}
-                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 border-2 border-white/60 rounded-md transition-all duration-500 group-hover:border-white group-hover:w-56 group-hover:h-56" />
+                                <div className="absolute inset-0 z-10 p-4 pointer-events-none">
+                                    {/* Focus Frame - REMOVED per user request */}
                                     
-                                    {/* Small Zoom-in Zoom Circle/Box */}
-                                    <div className="absolute top-[20%] right-[10%] w-28 h-28 border border-white/40 bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden opacity-0 group-hover:opacity-100 transition-all duration-500 translate-x-4 group-hover:translate-x-0">
+                                    {/* Small Zoom-in Zoom Circle/Box - COMPACTED and BORDER REMOVED */}
+                                    <div className="absolute top-[15%] right-[8%] w-24 h-24 bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden opacity-0 group-hover:opacity-100 transition-all duration-500 translate-x-2 group-hover:translate-x-0 overflow-hidden">
                                         <img src={style.image} alt="zoom" className="w-full h-full object-cover scale-[200%]" />
                                     </div>
                                     
-                                    {/* Small Corner Tag (like in image) */}
-                                    <div className="absolute bottom-[20%] left-[10%] px-2 py-0.5 bg-black/40 backdrop-blur-md border border-white/20 rounded text-[8px] text-white font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    {/* Small Corner Tag - BORDER REMOVED */}
+                                    <div className="absolute bottom-[20%] left-[10%] px-2 py-0.5 bg-black/40 backdrop-blur-md rounded text-[7px] text-white font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                         Sands Collection
                                     </div>
                                 </div>
 
-                                {/* Explore Button - Within the card flow like the image */}
-                                <div className="absolute bottom-6 right-6 z-20">
+                                {/* Explore Button - COMPACTED */}
+                                <div className="absolute bottom-4 right-4 z-20">
                                     <Link
                                         to={style.path}
-                                        className="flex items-center gap-2 bg-[#D9C4B1]/90 backdrop-blur-md hover:bg-[#C9A24D] text-[#3B2516] px-6 py-3 rounded-full font-bold text-xs uppercase tracking-[0.2em] shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-105 active:scale-95"
+                                        className="flex items-center gap-1.5 bg-[#D9C4B1]/90 backdrop-blur-md hover:bg-[#C9A24D] text-[#3B2516] px-5 py-2.5 rounded-full font-bold text-[10px] uppercase tracking-[0.15em] shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-105 active:scale-95"
                                     >
                                         {style.buttonText}
-                                        <ChevronRight className="w-4 h-4" />
+                                        <ChevronRight className="w-3.5 h-3.5" />
                                     </Link>
                                 </div>
                             </div>

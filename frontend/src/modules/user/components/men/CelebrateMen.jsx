@@ -19,20 +19,20 @@ const CelebrateMen = () => {
     const navigate = useNavigate();
 
     return (
-        <section className="py-10 md:py-14 bg-[#F2E8E1]">
+        <section className="py-6 md:py-9 bg-[#F2E8E1]">
             <div className="container mx-auto px-4 max-w-[1240px]">
                 
                 {/* Header Section */}
-                <div className="text-center mb-10">
-                    <h2 className="text-4xl md:text-5xl font-bold text-[#4A2D1F] mb-3 font-serif">
+                <div className="text-center mb-7 md:mb-8">
+                    <h2 className="text-3xl md:text-[42px] font-bold text-[#4A2D1F] mb-2 font-serif">
                         Celebrate Men
                     </h2>
-                    <p className="text-[#6B4F3F] text-sm md:text-lg font-medium tracking-widest uppercase opacity-80">
+                    <p className="text-[#6B4F3F] text-xs md:text-base font-medium tracking-[0.22em] uppercase opacity-80">
                         A Gifting Guide For Them
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-4 lg:gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-4 lg:gap-5">
                     {guides.map((guide, idx) => (
                         <motion.div
                             key={guide.id}
@@ -44,7 +44,7 @@ const CelebrateMen = () => {
                             className="group relative cursor-pointer"
                         >
                             {/* Card with Thick white border matching screenshot */}
-                            <div className="relative aspect-[0.9/1] rounded-[2.5rem] overflow-hidden border-[6px] md:border-[10px] border-white shadow-xl bg-white transition-all duration-500">
+                            <div className="relative aspect-[0.9/0.94] rounded-[2rem] overflow-hidden border-[5px] md:border-[8px] border-white shadow-[0_18px_40px_-20px_rgba(74,45,31,0.35)] bg-white transition-all duration-500">
                                 <img 
                                     src={guide.image} 
                                     alt={guide.title} 
@@ -53,9 +53,9 @@ const CelebrateMen = () => {
                             </div>
 
                             {/* Gold Gradient Label at bottom matching screenshot */}
-                            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-[85%] z-20">
-                                <div className="bg-gradient-to-b from-[#EFD78B] via-[#E6C673] to-[#D4AF37] py-2.5 md:py-3.5 rounded-2xl shadow-lg border border-white/40 text-center">
-                                    <span className="text-[#1A1A1A] font-bold tracking-[0.15em] uppercase text-[12px] md:text-[14px]">
+                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-[82%] z-20">
+                                <div className="bg-gradient-to-b from-[#EFD78B] via-[#E6C673] to-[#D4AF37] py-2 md:py-3 rounded-[18px] shadow-lg border border-white/40 text-center">
+                                    <span className="text-[#1A1A1A] font-bold tracking-[0.14em] uppercase text-[11px] md:text-[13px]">
                                         {guide.title}
                                     </span>
                                 </div>

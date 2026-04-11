@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import ringsImg from '../../../assets/categories/gold_rings_green.png';
-import pendantsImg from '../../../assets/categories/pendants.png';
+import pendantsImg from '../../../assets/categories/gold_pendants_green.png';
 import earringsImg from '../../../assets/categories/gold_earrings_green.png';
 
 const GoldNewLaunchBanner = () => {

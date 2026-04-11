@@ -17,7 +17,7 @@ const MenCategoriesGrid = () => {
     const navigate = useNavigate();
 
     return (
-        <section className="py-10 md:py-14 bg-white">
+        <section className="pt-10 pb-4 md:pt-14 md:pb-6 bg-white">
             <div className="container mx-auto px-4 max-w-[1200px]">
                 {/* Header matching Screenshot 1 */}
                 <div className="text-center mb-8 flex flex-col items-center">
