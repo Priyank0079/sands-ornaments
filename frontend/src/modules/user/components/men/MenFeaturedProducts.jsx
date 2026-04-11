@@ -123,16 +123,24 @@ const MenFeaturedProducts = () => {
     };
 
     return (
-        <section className="py-12 bg-white">
-            <div className="container mx-auto px-4 max-w-[1300px]">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-10 md:gap-x-8 md:gap-y-12">
+        <section className="py-10 md:py-16 bg-white overflow-hidden">
+            <div className="container mx-auto px-4 max-w-[1400px]">
+                
+                {/* Section Header Matching Screenshot */}
+                <div className="text-center mb-10 md:mb-14">
+                    <h2 className="text-2xl md:text-[32px] font-medium text-gray-900 tracking-tight" style={{ fontFamily: "'Inter', sans-serif" }}>
+                        Men's Exclusive
+                    </h2>
+                </div>
+
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-12 md:gap-x-10 md:gap-y-16">
                     {featuredProducts.map((product, idx) => (
                         <motion.div
                             key={product.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
+                            initial={{ opacity: 0, scale: 0.98 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
                             viewport={{ once: true }}
-                            transition={{ duration: 0.5, delay: idx * 0.05 }}
+                            transition={{ duration: 0.6, delay: idx * 0.05 }}
                             className="flex flex-col group"
                         >
                             {/* Product Image Container */}
@@ -156,21 +164,21 @@ const MenFeaturedProducts = () => {
 
                             {/* Product Details */}
                             <div className="flex flex-col flex-grow">
-                                <div className="flex items-baseline gap-2 mb-1">
-                                    <span className="text-base md:text-lg font-bold text-gray-900">₹{product.price}</span>
-                                    <span className="text-xs text-gray-400 line-through">₹{product.originalPrice}</span>
+                                <div className="flex items-center gap-2 mb-1.5">
+                                    <span className="text-base md:text-[19px] font-bold text-gray-900">₹{product.price}</span>
+                                    <span className="text-xs text-gray-400 line-through font-medium">₹{product.originalPrice}</span>
                                 </div>
-                                <h3 className="text-xs md:text-sm text-gray-500 font-medium mb-2 line-clamp-2 leading-snug hover:text-gray-800 transition-colors cursor-pointer" onClick={() => navigate(`/product/${product.id}`)}>
+                                <h3 className="text-xs md:text-[13px] text-gray-500 font-medium mb-2.5 line-clamp-2 leading-relaxed hover:text-gray-800 transition-colors cursor-pointer" onClick={() => navigate(`/product/${product.id}`)}>
                                     {product.name}
                                 </h3>
                                 
-                                <p className="text-[10px] md:text-[11px] font-bold text-blue-700 uppercase tracking-tight mb-4">
+                                <p className="text-[10px] md:text-[11px] font-bold text-[#003B95] uppercase tracking-tight mb-5">
                                     {product.discountText}
                                 </p>
 
-                                {/* Action Button */}
+                                {/* Action Button with requested Gradient and rounded style */}
                                 <button 
-                                    className="mt-auto w-full py-2.5 md:py-3 rounded-md bg-[#FFE1E6] hover:bg-[#FFD1D9] text-gray-800 font-bold text-xs md:text-sm transition-all duration-300"
+                                    className="mt-auto w-full py-3 md:py-3.5 rounded-full bg-gradient-to-r from-[#FFBFCB] to-[#FFE5EC] text-[#1C2C5B] font-bold text-[13px] md:text-[15px] transition-all duration-300 hover:shadow-lg hover:brightness-[1.02] active:scale-95"
                                     onClick={() => handleAddToCart(product)}
                                 >
                                     Add to Cart
