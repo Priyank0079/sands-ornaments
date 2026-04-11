@@ -37,10 +37,10 @@ const styles = [
 
 const MenStyleGuide = () => {
     return (
-        <section className="py-20 px-4 md:px-12 bg-[#F3EBE3]">
+        <section className="py-12 px-4 md:px-12 bg-[#F3EBE3]">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
-                <div className="text-center mb-16">
+                <div className="text-center mb-10">
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}

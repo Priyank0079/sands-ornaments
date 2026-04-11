@@ -34,11 +34,11 @@ const MenCuratedCollections = () => {
     };
 
     return (
-        <section className="py-8 md:py-14 bg-white select-none">
-            <div className="container mx-auto px-4 max-w-[1440px]">
+        <section className="py-6 md:py-10 bg-white select-none overflow-hidden">
+            <div className="w-full">
                 
                 {/* Header */}
-                <div className="text-center mb-8 md:mb-12">
+                <div className="text-center mb-6 md:mb-8 px-4">
                     <h2 className="text-2xl md:text-3xl font-medium text-black tracking-tight" style={{ fontFamily: "'Poppins', sans-serif" }}>
                         Curated Collections
                     </h2>
@@ -50,7 +50,7 @@ const MenCuratedCollections = () => {
                     {/* Left Scroll Arrow */}
                     <button 
                         onClick={() => scroll('left')}
-                        className="absolute left-[-15px] top-1/2 -translate-y-1/2 z-30 w-12 h-12 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-xl border border-gray-100 opacity-0 group-hover/main:opacity-100 transition-all duration-300 hover:bg-white hover:scale-110 active:scale-95"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-xl border border-gray-100 opacity-0 group-hover/main:opacity-100 transition-all duration-300 hover:bg-white hover:scale-110 active:scale-95"
                     >
                         <ChevronLeft className="w-6 h-6 text-black" />
                     </button>
@@ -58,14 +58,14 @@ const MenCuratedCollections = () => {
                     {/* Right Scroll Arrow */}
                     <button 
                         onClick={() => scroll('right')}
-                        className="absolute right-[-15px] top-1/2 -translate-y-1/2 z-30 w-12 h-12 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-xl border border-gray-100 opacity-0 group-hover/main:opacity-100 transition-all duration-300 hover:bg-white hover:scale-110 active:scale-95"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-xl border border-gray-100 opacity-0 group-hover/main:opacity-100 transition-all duration-300 hover:bg-white hover:scale-110 active:scale-95"
                     >
                         <ChevronRight className="w-6 h-6 text-black" />
                     </button>
 
                     <div 
                         ref={scrollRef}
-                        className="flex overflow-x-auto gap-3 md:gap-4 pb-8 hide-scrollbar scroll-smooth snap-x snap-mandatory"
+                        className="flex overflow-x-auto gap-4 md:gap-6 pb-8 hide-scrollbar scroll-smooth snap-x snap-mandatory px-4 md:px-10"
                     >
                         {collections.map((item, idx) => (
                             <motion.div 
@@ -75,7 +75,7 @@ const MenCuratedCollections = () => {
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.5, delay: idx * 0.05 }}
                                 onClick={() => navigate(item.link)}
-                                className="flex-shrink-0 w-[160px] sm:w-[220px] md:w-[240px] lg:w-[280px] h-[260px] sm:h-[320px] md:h-[400px] relative group cursor-pointer overflow-hidden bg-black snap-center first:ml-4 last:mr-4 lg:first:ml-0 lg:last:mr-0"
+                                className="flex-shrink-0 w-[160px] sm:w-[220px] md:w-[240px] lg:w-[280px] h-[260px] sm:h-[320px] md:h-[400px] relative group cursor-pointer overflow-hidden bg-black snap-center"
                             >
                                 {item.type === 'video' ? (
                                     <video 

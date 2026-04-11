@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 const categories = [
     { title: 'Rings', image: '/images/men-categories/rings.png', link: '/shop?category=rings' },
-    { title: 'Earrings', image: '/images/men-categories/cufflinks.png', link: '/shop?category=earrings' },
+    { title: 'Cufflinks', image: '/images/men-categories/cufflinks.png', link: '/shop?category=cufflinks' },
     { title: 'Chains', image: '/images/men-categories/chains.png', link: '/shop?category=chains' },
     { title: 'Spiritual Picks', image: '/images/men-categories/spiritual.png', link: '/shop?category=spiritual' },
     { title: 'Pendants', image: '/images/men-categories/pendants.png', link: '/shop?category=pendants' },
@@ -17,10 +17,10 @@ const MenCategoriesGrid = () => {
     const navigate = useNavigate();
 
     return (
-        <section className="py-16 md:py-20 bg-white">
+        <section className="py-10 md:py-14 bg-white">
             <div className="container mx-auto px-4 max-w-[1200px]">
                 {/* Header matching Screenshot 1 */}
-                <div className="text-center mb-12 flex flex-col items-center">
+                <div className="text-center mb-8 flex flex-col items-center">
                     <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-black mb-0">
                         Discover by
                     </h2>
