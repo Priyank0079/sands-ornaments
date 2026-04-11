@@ -74,7 +74,7 @@ const Navbar = () => {
                             <img
                                 src={logo}
                                 alt="Sands Jewels"
-                                className="h-11 w-auto object-contain"
+                                className="h-16 w-auto object-contain"
                             />
                         </Link>
 
@@ -162,7 +162,7 @@ const Navbar = () => {
                     <Menu className="w-7 h-7 text-gray-800" />
                 </button>
                 <Link to="/">
-                    <img src={logo} alt="Sands Jewels" className="h-9 w-auto" />
+                    <img src={logo} alt="Sands Jewels" className="h-12 w-auto" />
                 </Link>
                 <div className="flex items-center gap-5">
                     <Link to="/wishlist" className="relative">

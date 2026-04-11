@@ -7,13 +7,13 @@ import personalizedImg from '../../../../assets/men/personalized_full_banner.png
 
 const MenPersonalizedBanner = () => {
     return (
-        <section className="w-full bg-white pt-1 md:pt-2 pb-0 overflow-hidden">
+        <section className="relative w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] bg-[#FDF5F6] py-0 overflow-hidden">
             <motion.div 
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 1 }}
-                className="relative w-full h-[260px] md:h-[360px] group cursor-pointer"
+                className="relative w-full h-[220px] md:h-[400px] group cursor-pointer"
             >
                 {/* Background Image - Full Width Edge to Edge */}
                 <img 
