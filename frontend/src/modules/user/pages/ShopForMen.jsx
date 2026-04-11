@@ -1,14 +1,15 @@
 import React, { useEffect } from 'react';
 import MenHeroCarousel from '../components/men/MenHeroCarousel';
 import MenCategoriesGrid from '../components/men/MenCategoriesGrid';
+import MenLuxurySection from '../components/men/MenLuxurySection';
 import MenCuratedCollections from '../components/men/MenCuratedCollections';
-import MenProductsListing from '../components/men/MenProductsListing';
+import MenExploreCollections from '../components/men/MenExploreCollections';
 import CelebrateMen from '../components/men/CelebrateMen';
-import ShopTheLook from '../components/men/ShopTheLook';
-import MenStyleTrends from '../components/men/MenStyleTrends';
+import MenPersonalizedBanner from '../components/men/MenPersonalizedBanner';
 import MenInteractiveLook from '../components/men/MenInteractiveLook';
 import MenStyleGuide from '../components/men/MenStyleGuide';
-import MenPersonalizedBanner from '../components/men/MenPersonalizedBanner';
+import MenStyleTrends from '../components/men/MenStyleTrends';
+import MenFeaturedProducts from '../components/men/MenFeaturedProducts';
 
 const ShopForMen = () => {
     useEffect(() => {
@@ -17,17 +18,18 @@ const ShopForMen = () => {
     }, []);
 
     return (
-        <div className="bg-[#FDF5F6] min-h-screen text-[#111827] font-sans overflow-x-hidden">
+        <div className="mens-section bg-[#FDF5F6] min-h-screen text-[#111827] overflow-x-hidden">
             <MenHeroCarousel />
             <MenCategoriesGrid />
-            <MenCuratedCollections />
-            <MenPersonalizedBanner />
+            <MenLuxurySection />
             <CelebrateMen />
+            <MenCuratedCollections />
+            <MenExploreCollections />
+            <MenPersonalizedBanner />
             <MenInteractiveLook />
             <MenStyleGuide />
-            <MenProductsListing />
             <MenStyleTrends />
-            <ShopTheLook />
+            <MenFeaturedProducts />
         </div>
     );
 };

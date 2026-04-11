@@ -133,11 +133,11 @@ const MenProductsListing = () => {
     };
 
     return (
-        <section className="py-12 md:py-24" style={{ background: BG_COLOR }}>
-            <div className="container mx-auto px-4 md:px-8 max-w-[1500px]">
+        <section className="py-10 md:py-16" style={{ background: BG_COLOR }}>
+            <div className="container mx-auto px-4 md:px-8 max-w-[1200px]">
 
                 {/* Section Header */}
-                <div className="text-center mb-10 md:mb-16">
+                <div className="text-center mb-8 md:mb-10">
                     <motion.div
                         initial={{ opacity: 0, y: -20 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -162,7 +162,7 @@ const MenProductsListing = () => {
                 </div>
 
                 {/* Product Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-10">
                     {dummyProducts.map((product, idx) => (
                         <motion.div
                             key={product.id}
@@ -214,7 +214,7 @@ const MenProductsListing = () => {
                                 </div>
 
                                 {/* Content */}
-                                <div className="p-3 md:p-5 flex flex-col flex-grow">
+                                <div className="p-3 md:p-4 flex flex-col flex-grow">
                                     <div className="flex items-baseline gap-1.5 md:gap-2 mb-1 md:mb-2">
                                         <span className="text-base md:text-xl font-black text-zinc-900">₹{product.price}</span>
                                         <span className="text-[10px] md:text-xs text-gray-400 line-through">₹{product.originalPrice}</span>

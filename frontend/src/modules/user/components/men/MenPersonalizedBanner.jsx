@@ -7,13 +7,13 @@ import personalizedImg from '../../../../assets/men/personalized_full_banner.png
 
 const MenPersonalizedBanner = () => {
     return (
-        <section className="w-full bg-white py-4 md:py-8 overflow-hidden">
+        <section className="w-full bg-white pt-1 md:pt-2 pb-0 overflow-hidden">
             <motion.div 
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 1 }}
-                className="relative w-full h-[320px] md:h-[480px] group cursor-pointer"
+                className="relative w-full h-[260px] md:h-[360px] group cursor-pointer"
             >
                 {/* Background Image - Full Width Edge to Edge */}
                 <img 
@@ -35,10 +35,10 @@ const MenPersonalizedBanner = () => {
                             viewport={{ once: true }}
                             className="max-w-2xl"
                         >
-                            <h2 className="text-4xl md:text-8xl font-display text-white leading-none mb-4 md:mb-6" style={{ fontFamily: "'Cinzel', serif", fontWeight: 700 }}>
+                            <h2 className="text-3xl md:text-6xl font-display text-white leading-none mb-3 md:mb-4" style={{ fontFamily: "'Cinzel', serif", fontWeight: 700 }}>
                                 Personalised
                             </h2>
-                            <p className="text-sm md:text-2xl text-[#D9C4B1] font-light tracking-[0.15em] uppercase mb-8 md:mb-12">
+                            <p className="text-xs md:text-lg text-[#D9C4B1] font-light tracking-[0.15em] uppercase mb-5 md:mb-7">
                                 Flawless Gifting, Tailored to You
                             </p>
                             
@@ -49,7 +49,7 @@ const MenPersonalizedBanner = () => {
                                 <motion.div
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
-                                    className="bg-gradient-to-r from-[#D9C4B1] to-[#C9A24D] text-[#3B2516] px-10 md:px-14 py-4 md:py-5 rounded-full font-bold text-xs md:text-lg tracking-[0.2em] uppercase shadow-2xl transition-all border border-white/30"
+                                    className="bg-gradient-to-r from-[#D9C4B1] to-[#C9A24D] text-[#3B2516] px-8 md:px-11 py-3 md:py-4 rounded-full font-bold text-[11px] md:text-base tracking-[0.2em] uppercase shadow-2xl transition-all border border-white/30"
                                 >
                                     Customise Now
                                 </motion.div>
@@ -59,7 +59,7 @@ const MenPersonalizedBanner = () => {
                 </div>
 
                 {/* Decorative Elements - Floating Accent Line */}
-                <div className="absolute bottom-12 right-12 hidden md:block">
+                <div className="absolute bottom-8 right-10 hidden md:block">
                     <motion.div 
                         animate={{ width: [40, 120, 40] }}
                         transition={{ duration: 4, repeat: Infinity }}

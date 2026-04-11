@@ -3,17 +3,19 @@ import { motion } from 'framer-motion';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-// Import local gold assets for the display
+// Import local gold assets for the display - ALL GREEN THEMED
 import goldRings from '../../../assets/categories/gold_rings_green.png';
 import goldEarrings from '../../../assets/categories/gold_earrings_green.png';
-import pendants from '../../../assets/categories/pendants.png';
-import bangle from '../../../assets/categories/bangle.png';
-import mangalsutra from '../../../assets/categories/mangalsutra.png';
+import goldPendants from '../../../assets/categories/gold_pendants_green.png';
+import goldBangles from '../../../assets/categories/gold_bangles_green.png';
+import goldMangalsutra from '../../../assets/categories/gold_mangalsutra_green.png';
+import goldBracelets from '../../../assets/categories/gold_bracelets_green.png';
+import goldNewArrivals from '../../../assets/categories/gold_new_arrivals_green.png';
 
 const collections = [
     { 
         id: 1, 
-        title: "The Regal Gold Rings", 
+        title: "Regal Gold Rings", 
         image: goldRings, 
         link: "/shop?category=rings&metal=gold", 
         type: 'image' 
@@ -27,38 +29,45 @@ const collections = [
     },
     { 
         id: 3, 
-        title: "Eternal Gold Pendants", 
-        image: pendants, 
+        title: "Eternal Pendants", 
+        image: goldPendants, 
         link: "/shop?category=pendants&metal=gold", 
         type: 'image' 
     },
     { 
         id: 4, 
-        title: "Boutique Craftsmanship", 
+        title: "Boutique Craft", 
         video: "/Screen Recording 2026-04-11 150441.mp4", 
         link: "/shop?metal=gold", 
         type: 'video' 
     },
     { 
         id: 5, 
-        title: "Gold Bangles & Kada", 
-        image: bangle, 
+        title: "Bangles & Kada", 
+        image: goldBangles, 
         link: "/shop?category=bangles&metal=gold", 
         type: 'image' 
     },
     { 
         id: 6, 
-        title: "Traditional Mangalsutra", 
-        image: mangalsutra, 
+        title: "Pure Brilliance", 
+        video: "/Screen Recording 2026-04-11 150529.mp4", 
+        link: "/shop?metal=gold", 
+        type: 'video' 
+    },
+    { 
+        id: 7, 
+        title: "Royal Mangalsutra", 
+        image: goldMangalsutra, 
         link: "/shop?category=mangalsutra&metal=gold", 
         type: 'image' 
     },
     { 
-        id: 7, 
-        title: "Elite Earrings", 
-        image: goldEarrings, 
-        link: "/shop?category=earrings&metal=gold", 
-        type: 'image' 
+        id: 8, 
+        title: "Design Showcase", 
+        video: "/Screen Recording 2026-04-11 150441.mp4", 
+        link: "/shop?metal=gold", 
+        type: 'video' 
     }
 ];
 
@@ -69,7 +78,7 @@ const GoldCuratedCollections = () => {
     const scroll = (direction) => {
         if (scrollRef.current) {
             const { current } = scrollRef;
-            const scrollAmount = window.innerWidth > 768 ? 600 : 300;
+            const scrollAmount = window.innerWidth > 768 ? 400 : 250;
             if (direction === 'left') {
                 current.scrollLeft -= scrollAmount;
             } else {
@@ -79,12 +88,12 @@ const GoldCuratedCollections = () => {
     };
 
     return (
-        <section className="py-8 md:py-14 bg-white select-none">
-            <div className="container mx-auto px-4 max-w-[1440px]">
+        <section className="py-6 md:py-10 bg-white select-none overflow-hidden">
+            <div className="container mx-auto px-4 max-w-[1450px]">
                 
-                {/* Header - Matching Boutique Style */}
-                <div className="text-center mb-8 md:mb-12">
-                    <h2 className="text-2xl md:text-3xl font-medium text-[#2A4D35] tracking-tight font-serif italic">
+                {/* Header - Compact */}
+                <div className="text-center mb-6 md:mb-8">
+                    <h2 className="text-[18px] md:text-[24px] font-medium text-[#2A4D35] tracking-tight font-serif italic">
                         Gold Curated Collections
                     </h2>
                 </div>
@@ -92,25 +101,25 @@ const GoldCuratedCollections = () => {
                 {/* Horizontal Scroll Area with Arrows */}
                 <div className="relative group/main">
                     
-                    {/* Left Scroll Arrow */}
+                    {/* Left Scroll Arrow - Smaller */}
                     <button 
                         onClick={() => scroll('left')}
-                        className="absolute left-[-15px] top-1/2 -translate-y-1/2 z-30 w-12 h-12 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-xl border border-gray-100 opacity-0 group-hover/main:opacity-100 transition-all duration-300 hover:bg-[#D4AF37] hover:text-white hover:scale-110 active:scale-95"
+                        className="absolute left-[-10px] top-1/2 -translate-y-1/2 z-30 w-10 h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg border border-gray-100 opacity-0 group-hover/main:opacity-100 transition-all duration-300 hover:bg-[#D4AF37] hover:text-white hover:scale-110 active:scale-95"
                     >
-                        <ChevronLeft className="w-6 h-6" />
+                        <ChevronLeft className="w-5 h-5" />
                     </button>
 
-                    {/* Right Scroll Arrow */}
+                    {/* Right Scroll Arrow - Smaller */}
                     <button 
                         onClick={() => scroll('right')}
-                        className="absolute right-[-15px] top-1/2 -translate-y-1/2 z-30 w-12 h-12 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-xl border border-gray-100 opacity-0 group-hover/main:opacity-100 transition-all duration-300 hover:bg-[#D4AF37] hover:text-white hover:scale-110 active:scale-95"
+                        className="absolute right-[-10px] top-1/2 -translate-y-1/2 z-30 w-10 h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg border border-gray-100 opacity-0 group-hover/main:opacity-100 transition-all duration-300 hover:bg-[#D4AF37] hover:text-white hover:scale-110 active:scale-95"
                     >
-                        <ChevronRight className="w-6 h-6" />
+                        <ChevronRight className="w-5 h-5" />
                     </button>
 
                     <div 
                         ref={scrollRef}
-                        className="flex overflow-x-auto gap-3 md:gap-4 pb-8 hide-scrollbar scroll-smooth snap-x snap-mandatory"
+                        className="flex overflow-x-auto gap-2 md:gap-3 pb-6 hide-scrollbar scroll-smooth snap-x snap-mandatory"
                     >
                         {collections.map((item, idx) => (
                             <motion.div 
@@ -120,7 +129,7 @@ const GoldCuratedCollections = () => {
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.5, delay: idx * 0.05 }}
                                 onClick={() => navigate(item.link)}
-                                className="flex-shrink-0 w-[160px] sm:w-[220px] md:w-[240px] lg:w-[280px] h-[260px] sm:h-[320px] md:h-[400px] relative group cursor-pointer overflow-hidden bg-[#0D1C12] snap-center first:ml-4 last:mr-4 lg:first:ml-0 lg:last:mr-0 rounded-none shadow-lg"
+                                className="flex-shrink-0 w-[140px] sm:w-[180px] md:w-[220px] h-[180px] sm:h-[240px] md:h-[280px] relative group cursor-pointer overflow-hidden bg-[#0D1C12] snap-center first:ml-4 last:mr-4 lg:first:ml-0 lg:last:mr-0 rounded-none shadow-md"
                             >
                                 {item.type === 'video' ? (
                                     <video 
@@ -140,15 +149,15 @@ const GoldCuratedCollections = () => {
                                 )}
                                 
                                 {/* Bottom Gradient for Readability */}
-                                <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-70 group-hover:opacity-90 transition-opacity" />
+                                <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-70 group-hover:opacity-90 transition-opacity" />
 
-                                {/* Floating Label at Bottom Left */}
-                                <div className="absolute bottom-6 left-5 text-white z-10 transition-all duration-300 group-hover:translate-x-1">
+                                {/* Floating Label at Bottom Left - More Compact */}
+                                <div className="absolute bottom-4 left-4 text-white z-10 transition-all duration-300 group-hover:translate-x-1">
                                     <div className="flex items-center gap-1 group/btn">
-                                        <span className="text-[10px] md:text-sm font-bold tracking-tight uppercase whitespace-nowrap">
+                                        <span className="text-[9px] md:text-[12px] font-bold tracking-tight uppercase whitespace-nowrap">
                                             {item.title}
                                         </span>
-                                        <ChevronRight className="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-1" />
+                                        <ChevronRight className="w-3 h-3 transition-transform group-hover/btn:translate-x-1" />
                                     </div>
                                 </div>
                             </motion.div>

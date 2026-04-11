@@ -137,3 +137,8 @@ body {
 .animate-scan {
     animation: scan 2s linear infinite;
 }
+
+.mens-section,
+.mens-section :where(h1, h2, h3, h4, h5, h6, p, span, a, button, label, input, textarea, select, option, li) {
+    font-family: var(--font-serif) !important;
+}

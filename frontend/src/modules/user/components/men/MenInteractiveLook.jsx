@@ -61,22 +61,22 @@ const MenInteractiveLook = () => {
     const [hoveredNode, setHoveredNode] = useState(null);
 
     return (
-        <section className="py-10 md:py-14 bg-[#FCFBF8]">
+        <section className="pt-1 md:pt-2 pb-5 md:pb-8 bg-[#FCFBF8]">
             <div className="container mx-auto px-4 md:px-8">
 
                 {/* Compact Header Section */}
-                <div className="text-center mb-6 md:mb-10">
-                    <h2 className="text-2xl md:text-3xl font-black text-[#111] uppercase tracking-wide mb-1">
+                <div className="text-center mb-4 md:mb-6">
+                    <h2 className="text-xl md:text-2xl font-black text-[#111] uppercase tracking-wide mb-1">
                         Shop The Look
                     </h2>
-                    <div className="w-12 h-1 bg-[#3B82F6] mx-auto rounded-full mb-3"></div>
-                    <p className="text-gray-500 text-[10px] md:text-xs tracking-[0.2em] uppercase opacity-80">
+                    <div className="w-10 h-1 bg-[#3B82F6] mx-auto rounded-full mb-2"></div>
+                    <p className="text-gray-500 text-[9px] md:text-[11px] tracking-[0.18em] uppercase opacity-80">
                         Complete Your Signature Style
                     </p>
                 </div>
 
                 {/* Ultra-Compact Sharp Square Interactive Container */}
-                <div className="max-w-[750px] mx-auto relative shadow-2xl overflow-hidden bg-[#0A0B0D] h-[400px] md:h-[750px]">
+                <div className="max-w-[620px] mx-auto relative shadow-[0_24px_60px_-28px_rgba(0,0,0,0.55)] overflow-hidden bg-[#0A0B0D] h-[320px] md:h-[580px]">
 
                     {/* Model Image */}
                     <img
@@ -158,13 +158,13 @@ const MenInteractiveLook = () => {
                                 onMouseEnter={() => setHoveredNode(spot.id)}
                                 onMouseLeave={() => setHoveredNode(null)}
                             >
-                                <div className="relative flex items-center justify-center w-12 h-12 cursor-pointer group z-20">
+                                <div className="relative flex items-center justify-center w-9 h-9 md:w-10 md:h-10 cursor-pointer group z-20">
                                     <motion.div
                                         className="absolute w-full h-full rounded-full border border-white/20"
                                         animate={{ scale: [1, 1.5], opacity: [0.3, 0] }}
                                         transition={{ duration: 2, repeat: Infinity }}
                                     />
-                                    <div className={`w-3 h-3 rounded-full transition-all duration-300 shadow-[0_0_10px_rgba(255,255,255,0.5)] ${hoveredNode === spot.id ? 'bg-[#3B82F6] scale-150 shadow-blue-500/50' : 'bg-white/40 group-hover:bg-white/80'}`} />
+                                    <div className={`w-2.5 h-2.5 md:w-3 md:h-3 rounded-full transition-all duration-300 shadow-[0_0_10px_rgba(255,255,255,0.5)] ${hoveredNode === spot.id ? 'bg-[#3B82F6] scale-150 shadow-blue-500/50' : 'bg-white/40 group-hover:bg-white/80'}`} />
                                 </div>
                             </div>
 
@@ -180,11 +180,11 @@ const MenInteractiveLook = () => {
                                     whileInView={{ opacity: 1, scale: 1 }}
                                     transition={{ duration: 0.5, delay: 0.2 }}
                                 >
-                                    <div className={`px-4 py-2 bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-xl transition-all duration-300 border border-transparent ${hoveredNode === spot.id ? 'scale-110 shadow-blue-500/20 border-blue-400 z-50' : 'hover:-translate-y-1'}`}>
-                                        <span className="text-[#111] font-bold text-[10px] md:text-sm uppercase tracking-wide">
+                                    <div className={`px-3 py-1.5 md:px-4 md:py-2 bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-xl transition-all duration-300 border border-transparent ${hoveredNode === spot.id ? 'scale-110 shadow-blue-500/20 border-blue-400 z-50' : 'hover:-translate-y-1'}`}>
+                                        <span className="text-[#111] font-bold text-[9px] md:text-xs uppercase tracking-wide">
                                             {spot.label}
                                         </span>
-                                        <ChevronRight className={`w-3 h-3 md:w-4 md:h-4 ml-1 transition-colors ${hoveredNode === spot.id ? 'text-[#3B82F6]' : 'text-gray-400'}`} />
+                                        <ChevronRight className={`w-3 h-3 md:w-3.5 md:h-3.5 ml-1 transition-colors ${hoveredNode === spot.id ? 'text-[#3B82F6]' : 'text-gray-400'}`} />
 
                                         <AnimatePresence>
                                             {hoveredNode === spot.id && (

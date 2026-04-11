@@ -37,7 +37,11 @@ const CategoryNav = () => {
                         {navItems.map((item) => (
                             <li
                                 key={item.id}
-                                onMouseEnter={() => setHoveredItem(item.id)}
+                                onMouseEnter={() => {
+                                    if (item.id !== 'family') {
+                                        setHoveredItem(item.id);
+                                    }
+                                }}
                                 onMouseLeave={() => setHoveredItem(null)}
                                 className="relative py-1"
                             >
