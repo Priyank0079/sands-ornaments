@@ -170,71 +170,86 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
                 />
             )}
 
-            <Link to={`/product/${product.id}`} className="group relative w-full flex flex-col bg-white rounded-2xl overflow-hidden transition-all duration-700 hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)]">
-                {/* Image Container */}
-                <div className="relative aspect-[4/5] overflow-hidden bg-[#FBFBFB] rounded-2xl">
+            <div className="group/card relative w-full flex flex-col bg-white overflow-hidden cursor-pointer" onClick={() => navigate(`/product/${product.id}`)}>
+                {/* Image Container - Square & Sharp */}
+                <div className="relative aspect-square overflow-hidden bg-gray-50 rounded-none mb-3">
                     {primaryImage ? (
                         <>
                             <img
                                 src={primaryImage}
                                 alt={product.name}
-                                className="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-110"
+                                className="w-full h-full object-cover transition-transform duration-[1.5s] group-hover/card:scale-105"
                             />
                             {secondaryImage && (
                                 <img
                                     src={secondaryImage}
                                     alt={`${product.name} detail`}
-                                    className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-[1.2s] ease-in-out"
+                                    className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover/card:opacity-100 transition-opacity duration-[1.2s] ease-in-out"
                                 />
                             )}
                         </>
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center text-zinc-300 text-xs font-medium uppercase tracking-widest">
-                            No Image
+                        <div className="w-full h-full flex items-center justify-center text-zinc-300 text-[10px] uppercase tracking-widest font-bold">
+                            Sands Ornament
+                        </div>
+                    )}
+
+                    {/* Bestseller Badge */}
+                    {(product.isTrending || product.tags?.isTrending) && (
+                        <div className="absolute top-0 left-0 bg-[#E89BA8] text-white text-[9px] font-bold px-2 py-1 z-10 uppercase tracking-widest">
+                            Bestseller
                         </div>
                     )}
 
                     {/* Minimal Heart Icon */}
                     <button
                         onClick={handleWishlist}
-                        className={`absolute top-3 right-3 z-20 p-2 rounded-full backdrop-blur-md transition-all duration-300 ${isWishlisted ? 'bg-rose-500 text-white shadow-lg' : 'bg-white/80 text-zinc-400 hover:text-rose-500 shadow-sm'}`}
+                        className={`absolute top-2 right-2 z-20 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm transition-all transform hover:scale-110 ${isWishlisted ? 'text-[#8E2B45]' : 'text-gray-400 hover:text-rose-500'}`}
                     >
-                        <Heart className={`w-3.5 h-3.5 ${isWishlisted ? 'fill-current' : ''}`} />
+                        <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
                     </button>
-                {/* Content Container - Matching Best Styles layout - Compacted */}
-                <div className="pt-3 pb-1 px-1">
-                    <Link to={`/product/${product.id}`}>
-                        <div className="flex items-baseline gap-1.5 mb-0.5">
-                            <span className="text-base font-bold text-black">{currencyText(effectivePrice)}</span>
-                            {effectiveOriginalPrice > effectivePrice && (
-                                <span className="text-[11px] text-gray-400 line-through">{currencyText(effectiveOriginalPrice)}</span>
-                            )}
-                        </div>
-                        
-                        <h3 className="text-[12px] text-gray-600 line-clamp-1 mb-1 hover:text-gray-900 transition-colors uppercase tracking-tight font-medium leading-tight">
-                            {product.name}
-                        </h3>
 
-                        {product.priceDrop ? (
-                            <p className="text-[9px] font-bold text-blue-600 uppercase tracking-wider mb-2">
+                    {/* Rating Badge Overlay */}
+                    <div className="absolute bottom-2 left-2 z-10 bg-white/95 px-1.5 py-0.5 rounded-sm flex items-center gap-1 shadow-sm border border-gray-100">
+                        <span className="text-[10px] font-bold text-gray-800">{product.rating || 4.5}</span>
+                        <Star className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
+                        <div className="w-px h-2.5 bg-gray-300 mx-0.5" />
+                        <span className="text-[10px] text-gray-500">{reviewCount || 0}</span>
+                    </div>
+                </div>
+
+                {/* Content Container - Fixed Height for alignment */}
+                <div className="flex flex-col h-[115px] px-0">
+                    <div className="flex items-baseline gap-2 mb-1">
+                        <span className="text-[15px] font-bold text-gray-900">{currencyText(effectivePrice)}</span>
+                        {effectiveOriginalPrice > effectivePrice && (
+                            <span className="text-[12px] text-gray-400 line-through font-medium">{currencyText(effectiveOriginalPrice)}</span>
+                        )}
+                    </div>
+                    
+                    <h3 className="text-[12px] text-gray-700 line-clamp-1 h-[18px] group-hover/card:text-black transition-colors uppercase tracking-tight font-medium overflow-hidden mb-1">
+                        {product.name}
+                    </h3>
+
+                    <div className="h-[15px] mb-2">
+                        {(product.priceDrop || (effectiveOriginalPrice > effectivePrice)) && (
+                            <p className="text-[9px] font-bold text-blue-600 uppercase tracking-wider">
                                 PRICE DROP!
                             </p>
-                        ) : (
-                            <div className="h-[12px] mb-2" />
                         )}
-                    </Link>
-
-                    {/* Add to Cart Button - Boutique Style - Compacted */}
-                    <button 
-                        onClick={handleAddToCart}
-                        className="w-full bg-[#FFD9E0] text-[#8E2B45] font-bold text-[11px] py-2 rounded-none hover:bg-[#ffc2cd] transition-all duration-300 uppercase tracking-widest"
-                    >
-                        Add to Cart
-                    </button>
+                    </div>
+                    
+                    {/* Add to Cart Button - Boutique Style */}
+                    <div className="mt-auto">
+                        <button 
+                            onClick={handleAddToCart}
+                            className="w-full bg-[#FFD9E0] text-[#8E2B45] font-bold text-[11px] py-2.5 rounded-none hover:bg-[#ffc2cd] transition-all duration-300 uppercase tracking-widest"
+                        >
+                            Add to Cart
+                        </button>
+                    </div>
                 </div>
-                </div>
-            </Link>
-
+            </div>
         </>
     );
 };
