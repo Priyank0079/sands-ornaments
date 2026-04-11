@@ -16,15 +16,19 @@ import newlaunchImg from '../../../assets/categories/newlaunch.png';
 // Newly generated green assets
 import goldRingsGreen from '../../../assets/categories/gold_rings_green.png';
 import goldEarringsGreen from '../../../assets/categories/gold_earrings_green.png';
+import goldMangalsutra from '../../../assets/categories/gold_mangalsutra.png';
+import goldBangle from '../../../assets/categories/gold_bangle.png';
+import goldBracelet from '../../../assets/categories/gold_bracelet.png';
+import goldPendants from '../../../assets/categories/gold_pendants.png';
 
 const GOLD_CATEGORIES = [
-    { id: 1, name: 'Gold Rings', image: goldRingsGreen, path: '/shop?metal=gold&category=rings', isCustom: true },
-    { id: 2, name: 'Gold Earrings', image: goldEarringsGreen, path: '/shop?metal=gold&category=earrings', isCustom: true },
-    { id: 3, name: 'Gold Pendants', image: pendantsImg, path: '/shop?metal=gold&category=necklaces' },
-    { id: 4, name: 'Gold Bracelets', image: braceletsImg, path: '/shop?metal=gold&category=bracelets' },
+    { id: 1, name: 'Gold Rings', image: goldRingsGreen, path: '/shop?metal=gold&category=rings' },
+    { id: 2, name: 'Gold Earrings', image: goldEarringsGreen, path: '/shop?metal=gold&category=earrings' },
+    { id: 3, name: 'Gold Pendants', image: goldPendants, path: '/shop?metal=gold&category=necklaces' },
+    { id: 4, name: 'Gold Bracelets', image: goldBracelet, path: '/shop?metal=gold&category=bracelets' },
     { id: 5, name: 'Gold Nose Pins', image: nosepinImg, path: '/shop?metal=gold&category=nose-pins' },
-    { id: 6, name: 'Gold Mangalsutra', image: mangalsutraImg, path: '/shop?metal=gold&category=mangalsutras' },
-    { id: 7, name: 'Gold Bangles', image: bangleImg, path: '/shop?metal=gold&category=bangles' },
+    { id: 6, name: 'Gold Mangalsutra', image: goldMangalsutra, path: '/shop?metal=gold&category=mangalsutras' },
+    { id: 7, name: 'Gold Bangles', image: goldBangle, path: '/shop?metal=gold&category=bangles' },
     { id: 8, name: 'Gold Sets', image: setsImg, path: '/shop?metal=gold&category=sets' },
     { id: 9, name: 'New Arrivals', image: newlaunchImg, path: '/shop?metal=gold&filter=new', badge: 'New' },
 ];
