@@ -3,7 +3,10 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShieldCheck, RefreshCw, RotateCcw, Star, ArrowRight } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
+import BestStylesSection from '../components/BestStylesSection';
 import GoldCategoryGrid from '../components/GoldCategoryGrid';
+import GoldCuratedCollections from '../components/GoldCuratedCollections';
+import AutoBannerSection from '../components/AutoBannerSection';
 import GoldNewLaunchBanner from '../components/GoldNewLaunchBanner';
 import GoldRingCarousel from '../components/GoldRingCarousel';
 
@@ -144,6 +147,12 @@ const GoldJewelleryPage = () => {
             {/* SECTION 2: SHOP BY CATEGORY                                   */}
             {/* ============================================================ */}
             <GoldCategoryGrid />
+
+            {/* CURATED COLLECTIONS WITH VIDEO (Matching Mens Section) */}
+            <GoldCuratedCollections />
+
+            {/* BEST STYLES SECTION - NOW FULLY FUNCTIONAL */}
+            <BestStylesSection />
 
             {/* ============================================================ */}
             {/* SECTION 3: TRUST BADGES (MATCHING SCREENSHOT)                 */}

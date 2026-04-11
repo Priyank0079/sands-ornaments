@@ -52,37 +52,37 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
     const resolvePrimaryImage = () => {
         // 1. If DB has an image, use it
         if (allUniqueImages[0]) return allUniqueImages[0];
-        
+
         // 2. If missing, use same keyword logic to find a signature product shot
         const categoryData = product.category;
         const categoryName = (typeof categoryData === 'object' ? categoryData?.name : categoryData) || '';
         const searchStr = String(categoryName + ' ' + (product.name || '')).toLowerCase();
-        
+
         if (searchStr.includes('ring')) return fallbackProductMap.ring;
         if (searchStr.includes('pendant') || searchStr.includes('necklace') || searchStr.includes('chain')) return fallbackProductMap.pendant;
         if (searchStr.includes('bracelet')) return fallbackProductMap.bracelet;
-        
+
         return null;
     };
 
     const primaryImage = resolvePrimaryImage();
-    
+
     const resolveSecondaryImage = () => {
         // 1. If DB has a second UNIQUE image, use it
         const nextActualImage = allUniqueImages.find(img => img !== primaryImage);
         if (nextActualImage) return nextActualImage;
-        
+
         // 2. Otherwise, match category/name keywords for model shot
         const categoryData = product.category;
         const categoryName = (typeof categoryData === 'object' ? categoryData?.name : categoryData) || '';
         const searchStr = String(categoryName + ' ' + (product.name || '')).toLowerCase();
-        
+
         if (searchStr.includes('ring')) return fallbackModelMap.ring;
         if (searchStr.includes('pendant') || searchStr.includes('necklace') || searchStr.includes('chain')) return fallbackModelMap.pendant;
         if (searchStr.includes('earring')) return fallbackModelMap.earring;
         if (searchStr.includes('bracelet')) return fallbackModelMap.bracelet;
         if (searchStr.includes('anklet')) return fallbackModelMap.anklet;
-        
+
         return null;
     };
     const secondaryImage = resolveSecondaryImage();
@@ -99,7 +99,7 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
 
     const effectivePrice = variantCount > 1 ? fromPrice : Number(product.price || 0);
     const effectiveOriginalPrice = variantCount > 1 ? fromOriginalPrice : Number(product.originalPrice || 0);
-    
+
     // UI Label logic
     const categoryData = product.category;
     const categoryLabel = typeof categoryData === 'object' ? categoryData?.name : categoryData || '';
@@ -197,38 +197,41 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
                     {/* Minimal Heart Icon */}
                     <button
                         onClick={handleWishlist}
-                        className={`absolute top-5 right-5 z-20 p-2.5 rounded-full backdrop-blur-md transition-all duration-300 ${isWishlisted ? 'bg-rose-500 text-white shadow-lg' : 'bg-white/80 text-zinc-400 hover:text-rose-500 shadow-sm'}`}
+                        className={`absolute top-3 right-3 z-20 p-2 rounded-full backdrop-blur-md transition-all duration-300 ${isWishlisted ? 'bg-rose-500 text-white shadow-lg' : 'bg-white/80 text-zinc-400 hover:text-rose-500 shadow-sm'}`}
                     >
-                        <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
+                        <Heart className={`w-3.5 h-3.5 ${isWishlisted ? 'fill-current' : ''}`} />
+                    </button>
+                {/* Content Container - Matching Best Styles layout - Compacted */}
+                <div className="pt-3 pb-1 px-1">
+                    <Link to={`/product/${product.id}`}>
+                        <div className="flex items-baseline gap-1.5 mb-0.5">
+                            <span className="text-base font-bold text-black">{currencyText(effectivePrice)}</span>
+                            {effectiveOriginalPrice > effectivePrice && (
+                                <span className="text-[11px] text-gray-400 line-through">{currencyText(effectiveOriginalPrice)}</span>
+                            )}
+                        </div>
+                        
+                        <h3 className="text-[12px] text-gray-600 line-clamp-1 mb-1 hover:text-gray-900 transition-colors uppercase tracking-tight font-medium leading-tight">
+                            {product.name}
+                        </h3>
+
+                        {product.priceDrop ? (
+                            <p className="text-[9px] font-bold text-blue-600 uppercase tracking-wider mb-2">
+                                PRICE DROP!
+                            </p>
+                        ) : (
+                            <div className="h-[12px] mb-2" />
+                        )}
+                    </Link>
+
+                    {/* Add to Cart Button - Boutique Style - Compacted */}
+                    <button 
+                        onClick={handleAddToCart}
+                        className="w-full bg-[#FFD9E0] text-[#8E2B45] font-bold text-[11px] py-2 rounded-none hover:bg-[#ffc2cd] transition-all duration-300 uppercase tracking-widest"
+                    >
+                        Add to Cart
                     </button>
                 </div>
-
-                {/* Simplified Info Section */}
-                <div className="p-4 pb-6 text-center flex flex-col items-center">
-                    <span className="text-[9px] uppercase tracking-[0.2em] text-zinc-400 font-bold mb-1.5">
-                        {metalLabel} {categoryLabel}
-                    </span>
-                    <h3 className="text-zinc-800 font-serif text-base md:text-lg mb-1.5 line-clamp-1 group-hover:text-[#7A2E3A] transition-colors">
-                        {product.name}
-                    </h3>
-                    <div className="flex items-center gap-2">
-                        <span className="text-zinc-900 font-bold text-sm">
-                            {currencyText(effectivePrice)}
-                        </span>
-                        {effectiveOriginalPrice > effectivePrice && (
-                            <span className="text-zinc-300 line-through text-xs">{currencyText(effectiveOriginalPrice)}</span>
-                        )}
-                    </div>
-                    
-                    {/* Hover Reveal: Quick Add or View Link */}
-                    <div className="mt-2.5 overflow-hidden h-0 group-hover:h-6 transition-all duration-500">
-                        <button 
-                            onClick={handleAddToCart}
-                            className="text-[10px] font-bold uppercase tracking-widest text-[#7A2E3A] hover:underline"
-                        >
-                            Quick Add to Bag
-                        </button>
-                    </div>
                 </div>
             </Link>
 

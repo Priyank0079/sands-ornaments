@@ -6,6 +6,11 @@ import LatestDrop from '../components/LatestDrop';
 import MostGifted from '../components/MostGifted';
 import PromoSlider from '../components/PromoSlider';
 import CategoryGrid from '../components/CategoryGrid';
+import ShopByPrice from '../components/ShopByPrice';
+import PremiumCategoryCards from '../components/PremiumCategoryCards';
+import BestStylesSection from '../components/BestStylesSection';
+import AutoBannerSection from '../components/AutoBannerSection';
+import ShopByColour from '../components/ShopByColour';
 import ProposalBanner from '../components/ProposalBanner';
 import OccasionalSpecial from '../components/OccasionalSpecial';
 import StyleItYourWay from '../components/StyleItYourWay';
@@ -41,6 +46,21 @@ const Home = () => {
 
             {/* NEW CATEGORY GRID SECTION */}
             <CategoryGrid />
+
+            {/* SHOP BY PRICE SECTION (Luxury within Reach) */}
+            <ShopByPrice />
+
+            {/* GENDER / COLLECTION CARDS */}
+            <PremiumCategoryCards />
+
+            {/* BEST STYLES SECTION (Horizontal Scroll) */}
+            <BestStylesSection />
+
+            {/* AUTO SCROLLING BANNERS */}
+            <AutoBannerSection />
+
+            {/* SHOP BY COLOUR SECTION */}
+            <ShopByColour />
 
 
             <PriceRangeShowcase />

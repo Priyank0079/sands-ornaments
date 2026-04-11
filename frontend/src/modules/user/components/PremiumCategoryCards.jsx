@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
+import { ChevronRight } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
 import menImg from '../../../assets/collections/cat_men_nobg.png';
 import womenImg from '../../../assets/collections/cat_women_nobg.png';
@@ -37,149 +38,85 @@ const PremiumCategoryCards = () => {
     const navigate = useNavigate();
     const containerRef = useRef(null);
     const isInView = useInView(containerRef, { once: true, margin: '-100px' });
-    const { homepageSections } = useShop();
 
-    const premiumSection = homepageSections['premium-category-cards'];
-    const dynamicCategories = Array.isArray(premiumSection?.items)
-        ? premiumSection.items
-            .filter((item) => item?.image && item?.name)
-            .map((item, index) => ({
-                title: item.name,
-                subtitle: item.tag || FALLBACK_CATEGORIES[index]?.subtitle || '',
-                image: item.image,
-                path: item.path || FALLBACK_CATEGORIES[index]?.path || '/shop',
-                bgColor: FALLBACK_CATEGORIES[index]?.bgColor || '#F3C4C9',
-                delay: FALLBACK_CATEGORIES[index]?.delay || (0.1 * (index + 1))
-            }))
-        : [];
-
-    const categories = premiumSection?.isActive !== false && dynamicCategories.length > 0
-        ? dynamicCategories.map((card, index) => ({
-            ...FALLBACK_CATEGORIES[index],
-            ...card
-        }))
-        : FALLBACK_CATEGORIES;
+    const RECIPIENTS = [
+        {
+            id: 'him',
+            title: 'Him',
+            image: menImg,
+            path: '/category/men',
+            layout: 'left',
+        },
+        {
+            id: 'her',
+            title: 'Her',
+            image: womenImg,
+            path: '/category/women',
+            layout: 'right',
+        }
+    ];
 
     return (
         <section
             ref={containerRef}
-            className="pt-10 md:pt-16 pb-12 md:pb-20 bg-[#FFF5F6] overflow-visible select-none relative"
+            className="pt-4 pb-12 md:pt-6 md:pb-16 bg-white"
         >
-            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-20">
-                <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#EEB1B7] rounded-full blur-[100px]" />
-                <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-[#EEB1B7] rounded-full blur-[100px]" />
-            </div>
+            <div className="container mx-auto px-4 max-w-[1240px]">
+                {/* Header */}
+                <div className="text-center mb-4 md:mb-6">
+                    <h2 className="text-xl md:text-2xl font-sans font-medium text-gray-800 tracking-tight">
+                        Shop by Recipient
+                    </h2>
+                </div>
 
-            <div className="container mx-auto px-4 md:px-6">
-                <motion.div
-                    className="text-center flex flex-col items-center justify-center mb-16 md:mb-20"
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={isInView ? { opacity: 1, y: 0 } : {}}
-                    transition={{ duration: 0.8, ease: 'easeOut' }}
-                >
-                    <div className="relative inline-block pb-4 mb-4">
-                        <motion.h2
-                            className="text-4xl md:text-5xl lg:text-6xl font-serif tracking-wider"
-                            style={{
-                                backgroundImage: 'linear-gradient(to right, #5E2B2F, #C58C92, #5E2B2F)',
-                                WebkitBackgroundClip: 'text',
-                                WebkitTextFillColor: 'transparent',
-                                backgroundSize: '200% auto'
-                            }}
-                            animate={{ backgroundPosition: ['0% center', '200% center'] }}
-                            transition={{ repeat: Infinity, duration: 8, ease: 'linear' }}
+                {/* Cards Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-16">
+                    {RECIPIENTS.map((item, idx) => (
+                        <motion.div
+                            key={item.id}
+                            initial={{ opacity: 0, scale: 0.98 }}
+                            animate={isInView ? { opacity: 1, scale: 1 } : {}}
+                            transition={{ duration: 0.6, delay: idx * 0.2 }}
+                            onClick={() => navigate(item.path)}
+                            className="relative h-[160px] md:h-[190px] bg-[#FFF0F1] rounded-[40px] cursor-pointer group shadow-sm flex items-center overflow-visible"
+                            style={{ overflow: 'visible' }}
                         >
-                            Embrace Your Essence
-                        </motion.h2>
-                        <motion.div
-                            className="absolute bottom-0 left-1/2 h-[2px] bg-gradient-to-r from-transparent via-[#8E4B4F] to-transparent"
-                            initial={{ width: 0, x: '-50%' }}
-                            animate={isInView ? { width: '100%', x: '-50%' } : { width: 0, x: '-50%' }}
-                            transition={{ duration: 1.5, delay: 0.2, ease: 'easeInOut' }}
-                        />
-                        <motion.div
-                            className="absolute -bottom-[3px] left-[48.5%] w-2 h-2 rotate-45 bg-gradient-to-br from-[#EEB1B7] to-[#5E2B2F]"
-                            initial={{ scale: 0, x: '-50%' }}
-                            animate={isInView ? { scale: 1, x: '-50%' } : { scale: 0, x: '-50%' }}
-                            transition={{ duration: 0.6, delay: 1.2, type: 'spring', stiffness: 200 }}
-                        />
-                    </div>
+                            {/* Maroon Inset Box - Compact Height */}
+                            <div 
+                                className={`absolute top-[5%] bottom-[5%] w-[68%] bg-gradient-to-br from-[#AC3B61] to-[#7A1C3C] rounded-[32px] flex flex-col justify-end p-4 md:p-6 z-10 transition-all duration-300 group-hover:brightness-105 
+                                ${item.layout === 'left' ? 'left-[2%]' : 'right-[2%]'}`}
+                                style={{ overflow: 'visible' }}
+                            >
+                                {/* Shop Now Button inside maroon box */}
+                                <div className={`flex items-center gap-2 text-white/90 font-bold group-hover:translate-x-1 transition-transform mb-1 ${item.layout === 'right' ? 'flex-row-reverse' : ''}`}>
+                                    <span className="text-[10px] md:text-[12px] tracking-[0.2em] uppercase font-black">Shop Now</span>
+                                    <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center text-[#AC3B61]">
+                                        <ChevronRight className="w-3.5 h-3.5" />
+                                    </div>
+                                </div>
+                            </div>
 
-                    <motion.p
-                        className="text-[#8E4B4F] text-xs md:text-sm tracking-[0.3em] uppercase max-w-xl mx-auto"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={isInView ? { opacity: 1, y: 0 } : {}}
-                        transition={{ duration: 0.8, delay: 0.6 }}
-                    >
-                        Handcrafted jewels designed to elevate every moment
-                    </motion.p>
-                </motion.div>
+                            {/* Label Pill - Precise Architectural Rounding */}
+                            <div className={`absolute top-[40%] -translate-y-1/2 z-20 w-[60%] md:w-[65%] ${item.layout === 'left' ? 'left-[4%]' : 'right-[4%]'}`}>
+                                <div className={`bg-[#F7E7CE] py-3.5 md:py-4.5 px-6 shadow-[0_8px_25px_rgba(0,0,0,0.15)] text-center flex items-center justify-center border border-white/20 transform -rotate-0.2 group-hover:rotate-0 transition-all duration-300
+                                    ${item.layout === 'left' ? 'rounded-l-[32px] rounded-r-none' : 'rounded-r-[32px] rounded-l-none'}`}>
+                                    <span className="text-[#8E2B45] text-4xl md:text-6xl font-serif italic font-bold tracking-tighter">
+                                        {item.title}
+                                    </span>
+                                </div>
+                            </div>
 
-                <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={isInView ? { opacity: 1, y: 0 } : {}}
-                    transition={{ duration: 0.8, ease: 'easeOut', staggerChildren: 0.2 }}
-                    className="flex flex-wrap justify-center gap-x-6 md:gap-x-12 lg:gap-x-20 gap-y-24"
-                >
-                    {categories.map((cat, idx) => (
-                        <motion.div
-                            key={`${cat.title}-${idx}`}
-                            initial={{ opacity: 0, y: 60 }}
-                            animate={isInView ? { opacity: 1, y: 0 } : {}}
-                            whileHover={{ y: -15, scale: 1.02 }}
-                            transition={{ duration: 0.6, delay: cat.delay, ease: 'easeOut' }}
-                            className="group relative cursor-pointer flex flex-col items-center"
-                            onClick={() => navigate(cat.path)}
-                        >
-                            <div className="relative w-full aspect-[4/5] w-[260px] md:w-[320px] max-w-[340px] flex flex-col items-center justify-end overflow-visible">
-                                <motion.div
-                                    className="absolute inset-x-0 bottom-0 top-[30%] rounded-[40px] transition-all duration-700 shadow-[0_10px_30px_rgba(238,177,183,0.2)] group-hover:shadow-[0_25px_60px_rgba(238,177,183,0.45)]"
-                                    style={{
-                                        background: `linear-gradient(135deg, ${cat.bgColor} 0%, #EEB1B7 100%)`
-                                    }}
-                                    layoutId={`bg-${idx}`}
+                            {/* Model Image - POPPING OUT (overflow-visible) */}
+                            <div className={`absolute bottom-0 h-[140%] md:h-[165%] z-30 pointer-events-none transition-transform duration-700 group-hover:scale-105 ${item.layout === 'left' ? 'right-0' : 'left-0'}`}>
+                                <img
+                                    src={item.image}
+                                    alt={item.title}
+                                    className={`h-full w-auto object-contain drop-shadow-[20px_20px_40px_rgba(0,0,0,0.3)] ${item.layout === 'left' ? 'scale-x-[1] translate-x-[5%]' : 'scale-x-[-1] -translate-x-[5%]'}`}
                                 />
-
-                                <div className="relative z-10 w-full h-full flex items-end justify-center overflow-visible px-4 pb-0">
-                                    <motion.img
-                                        src={cat.image}
-                                        alt={cat.title}
-                                        className="h-[210%] w-auto object-contain transition-all duration-700 cursor-pointer drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] brightness-[1.1] contrast-[1.05] translate-y-[158px]"
-                                        style={{ transformOrigin: 'bottom center' }}
-                                        whileHover={{ scale: 1.05 }}
-                                    />
-
-                                    <div className="absolute bottom-0 w-[60%] h-4 bg-black/5 blur-xl rounded-full scale-x-150 opacity-50 group-hover:opacity-70 transition-opacity duration-700" />
-                                </div>
-
-                                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 w-full px-8 text-center">
-                                    <p className="text-[10px] font-bold text-[#5E2B2F] uppercase tracking-[0.2em] mb-2 whitespace-nowrap bg-white/40 backdrop-blur-sm py-1 px-3 rounded-full inline-block">
-                                        {cat.subtitle} - {cat.title}
-                                    </p>
-
-                                    <motion.div
-                                        className="flex items-center justify-center gap-2 bg-[#5E2B2F] text-white px-5 py-2.5 rounded-full text-[9px] font-bold tracking-[0.2em] shadow-md transition-all duration-300 hover:bg-[#8E4B4F] hover:shadow-lg hover:shadow-[#5E2B2F]/20 group/btn overflow-hidden relative"
-                                        whileTap={{ scale: 0.98 }}
-                                    >
-                                        <span className="relative z-10">SHOP NOW</span>
-                                        <motion.span
-                                            className="text-xs relative z-10"
-                                            animate={{ x: [0, 4, 0] }}
-                                            transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
-                                        >
-                                            {'>'}
-                                        </motion.span>
-
-                                        <motion.div
-                                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700"
-                                            style={{ skewX: -20 }}
-                                        />
-                                    </motion.div>
-                                </div>
                             </div>
                         </motion.div>
                     ))}
-                </motion.div>
+                </div>
             </div>
         </section>
     );
