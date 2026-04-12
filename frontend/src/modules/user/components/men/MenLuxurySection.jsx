@@ -24,7 +24,7 @@ const luxuryOffers = [
 
 const MenLuxurySection = () => {
     return (
-        <section className="pt-0 pb-8 md:pt-2 md:pb-12 bg-white">
+        <section className="pt-0 pb-4 md:pt-1 md:pb-6 bg-white">
             <div className="container mx-auto px-4 max-w-[950px]">
                 <h2 className="text-2xl md:text-4xl font-bold text-[#101828] text-center mb-5 md:mb-10 tracking-tight font-serif">
                     Luxury Within Reach

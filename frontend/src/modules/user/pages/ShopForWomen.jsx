@@ -43,6 +43,7 @@ const ShopForWomen = () => {
             {/* 4.5 Discover Your Hue (Img 4.5) */}
             <WomenDiscoverHue />
 
+
             {/* 5. Promotional Banners (Img 14) */}
             <WomenPromoBanners />
 

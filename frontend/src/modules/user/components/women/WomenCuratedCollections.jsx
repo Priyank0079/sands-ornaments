@@ -92,10 +92,10 @@ const WomenCuratedCollections = () => {
     }, [isHovered]);
 
     return (
-        <section className="py-12 md:py-20 bg-white">
+        <section className="py-6 md:py-10 bg-white">
             <div className="max-w-[1400px] mx-auto px-3 sm:px-6">
                 {/* Header matching ref 2 */}
-                <div className="text-center mb-12">
+                <div className="text-center mb-8">
                     <motion.h2 
                         initial={{ opacity: 0, y: -20 }}
                         whileInView={{ opacity: 1, y: 0 }}

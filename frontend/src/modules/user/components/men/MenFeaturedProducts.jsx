@@ -133,55 +133,64 @@ const MenFeaturedProducts = () => {
                     </h2>
                 </div>
 
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-12 md:gap-x-10 md:gap-y-16">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
                     {featuredProducts.map((product, idx) => (
                         <motion.div
                             key={product.id}
                             initial={{ opacity: 0, scale: 0.98 }}
                             whileInView={{ opacity: 1, scale: 1 }}
                             viewport={{ once: true }}
-                            transition={{ duration: 0.6, delay: idx * 0.05 }}
-                            className="flex flex-col group"
+                            transition={{ duration: 0.5, delay: idx * 0.05 }}
+                            className="bg-white group cursor-pointer"
                         >
-                            {/* Product Image Container */}
-                            <div className="relative aspect-square bg-[#F8F8F8] overflow-hidden rounded-sm mb-4 cursor-pointer" onClick={() => navigate(`/product/${product.id}`)}>
-                                <img 
-                                    src={product.image} 
-                                    alt={product.name} 
-                                    className="w-full h-full object-contain p-6 md:p-8 transition-transform duration-500 group-hover:scale-105"
+                            {/* Image Container */}
+                            <div className="relative aspect-square bg-[#FBFBFB] overflow-hidden mb-3" onClick={() => navigate(`/product/${product.id}`)}>
+                                <img
+                                    src={product.image}
+                                    alt={product.name}
+                                    className="w-full h-full object-contain p-4 transition-transform duration-700 group-hover:scale-105"
                                 />
-                                {/* Wishlist Heart */}
-                                <button className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-white/80 transition-all">
-                                    <Heart className="w-5 h-5 text-gray-400 group-hover:text-red-400 transition-colors" />
+                                
+                                {/* Wishlist */}
+                                <button className="absolute top-3 right-3 z-10 p-1.5 rounded-full hover:bg-white/80 transition-all">
+                                    <Heart className="w-5 h-5 text-gray-400 group-hover:text-red-500 transition-colors" />
                                 </button>
+
                                 {/* Rating Badge */}
-                                <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded flex items-center gap-1 text-[10px] md:text-xs font-medium text-gray-600 shadow-sm">
+                                <div className="absolute bottom-3 left-3 bg-[#F3F4F6]/90 backdrop-blur-sm px-2 py-0.5 rounded flex items-center gap-1 text-[10px] md:text-xs font-medium text-gray-700 shadow-sm">
                                     {product.rating} <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
                                     <span className="text-gray-300 mx-0.5">|</span>
                                     {product.reviews}
                                 </div>
                             </div>
 
-                            {/* Product Details */}
-                            <div className="flex flex-col flex-grow">
-                                <div className="flex items-center gap-2 mb-1.5">
-                                    <span className="text-base md:text-[19px] font-bold text-gray-900">₹{product.price}</span>
-                                    <span className="text-xs text-gray-400 line-through font-medium">₹{product.originalPrice}</span>
+                            {/* Product Info */}
+                            <div className="flex flex-col px-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-base md:text-lg font-bold text-gray-900">₹{product.price}</span>
+                                    <span className="text-[10px] md:text-xs text-gray-400 line-through">₹{product.originalPrice}</span>
                                 </div>
-                                <h3 className="text-xs md:text-[13px] text-gray-500 font-medium mb-2.5 line-clamp-2 leading-relaxed hover:text-gray-800 transition-colors cursor-pointer" onClick={() => navigate(`/product/${product.id}`)}>
+                                <h3 className="text-[12px] md:text-[14px] text-gray-600 font-medium mb-1.5 line-clamp-1 leading-tight hover:text-gray-900" onClick={() => navigate(`/product/${product.id}`)}>
                                     {product.name}
                                 </h3>
-                                
-                                <p className="text-[10px] md:text-[11px] font-bold text-[#003B95] uppercase tracking-tight mb-5">
+
+                                {/* Promo Text */}
+                                <p className="text-[10px] md:text-[11px] font-bold text-[#2B6CB0] mb-3 uppercase tracking-tight">
                                     {product.discountText}
                                 </p>
 
-                                {/* Action Button with requested Gradient and rounded style */}
-                                <button 
-                                    className="mt-auto w-full py-3 md:py-3.5 rounded-full bg-gradient-to-r from-[#FFBFCB] to-[#FFE5EC] text-[#1C2C5B] font-bold text-[13px] md:text-[15px] transition-all duration-300 hover:shadow-lg hover:brightness-[1.02] active:scale-95"
-                                    onClick={() => handleAddToCart(product)}
+                                {/* CTA Button */}
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleAddToCart(product);
+                                    }}
+                                    className="w-full py-3 rounded-md font-bold text-[12px] md:text-[14px] text-gray-700 transition-all duration-300 transform active:scale-95"
+                                    style={{ background: '#FFE1E6' }}
+                                    onMouseEnter={e => e.currentTarget.style.background = '#FFD1D9'}
+                                    onMouseLeave={e => e.currentTarget.style.background = '#FFE1E6'}
                                 >
-                                    Add to Cart
+                                    {idx === 1 ? 'Choose options' : 'Add to Cart'}
                                 </button>
                             </div>
                         </motion.div>

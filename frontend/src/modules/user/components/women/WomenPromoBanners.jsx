@@ -29,7 +29,7 @@ const WomenPromoBanners = () => {
     const navigate = useNavigate();
 
     return (
-        <section className="py-10 md:py-16 bg-white px-4 sm:px-6">
+        <section className="pt-0 pb-6 md:pb-10 bg-white px-4 sm:px-6">
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-10">
                 {banners.map((banner, index) => (
                     <motion.div

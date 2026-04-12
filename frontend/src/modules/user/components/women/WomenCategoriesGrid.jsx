@@ -41,9 +41,9 @@ const trendingCollections = [
 
 const WomenCategoriesGrid = () => {
     return (
-        <section className="py-20 px-4 md:px-8 bg-[#D3B7BD]">
+        <section className="py-8 md:py-12 px-4 md:px-8 bg-[#D3B7BD]">
             <div className="max-w-7xl mx-auto">
-                <div className="text-center mb-16">
+                <div className="text-center mb-8">
                     <h2 className="text-3xl md:text-4xl font-serif font-medium text-[#4A3B3F] tracking-tight">
                         Trending Near You
                     </h2>

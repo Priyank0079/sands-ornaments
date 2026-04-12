@@ -1,42 +1,13 @@
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { ShopProvider } from './context/ShopContext';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './modules/user/components/Navbar';
 import Footer from './modules/user/components/Footer';
 import ScrollToTop from './ScrollToTop';
-import Home from './modules/user/pages/Home';
-import Shop from './modules/user/pages/Shop';
-import Cart from './modules/user/pages/Cart';
-import ProductDetails from './modules/user/pages/ProductDetails';
-import Login from './modules/user/pages/Login';
-import Wishlist from './modules/user/pages/Wishlist';
-import Profile from './modules/user/pages/Profile';
-import ShopForMen from './modules/user/pages/ShopForMen';
-import ShopForWomen from './modules/user/pages/ShopForWomen';
-import ShopForFamily from './modules/user/pages/ShopForFamily';
-import AdminDashboard from './modules/admin/pages/Dashboard';
-import AboutUs from './modules/user/pages/AboutUs';
 import CategoryNav from './modules/user/components/CategoryNav';
-import Checkout from './modules/user/pages/Checkout';
-import OrderSuccess from './modules/user/pages/OrderSuccess';
-import OrderTracking from './modules/user/pages/OrderTracking';
-import HelpCenter from './modules/user/pages/HelpCenter';
-import TermsAndConditions from './modules/user/pages/TermsAndConditions';
-import PrivacyPolicy from './modules/user/pages/PrivacyPolicy';
-import Notifications from './modules/user/pages/Notifications';
 import AnnouncementBar from './modules/user/components/AnnouncementBar';
-import BlogsPage from './modules/user/pages/BlogsPage';
-import BlogDetailPage from './modules/user/pages/BlogDetailPage';
 import PincodeModal from './modules/user/components/PincodeModal';
-import DynamicPage from './modules/user/pages/DynamicPage';
-import GoldJewelleryPage from './modules/user/pages/GoldJewelleryPage';
-import UserReturnsPage from './modules/user/pages/ReturnsPage';
-import UserReturnDetailPage from './modules/user/pages/ReturnDetailPage';
-import UserReturnRequestPage from './modules/user/pages/ReturnRequestPage';
-import UserReplacementsPage from './modules/user/pages/ReplacementsPage';
-import UserReplacementDetailPage from './modules/user/pages/ReplacementDetailPage';
-import UserReplacementRequestPage from './modules/user/pages/ReplacementRequestPage';
-import JewelleryCollectionsPage from './modules/user/pages/JewelleryCollectionsPage';
 
 // Admin Imports
 import AdminLogin from './modules/admin/pages/Login';
@@ -88,6 +59,42 @@ import TaxSettings from './modules/admin/pages/TaxSettings';
 // Seller Imports
 import SellerRoutes from './modules/seller/routes/sellerRoutes';
 
+// Lazy Loaded Pages
+const Home = lazy(() => import('./modules/user/pages/Home'));
+const Shop = lazy(() => import('./modules/user/pages/Shop'));
+const Cart = lazy(() => import('./modules/user/pages/Cart'));
+const ProductDetails = lazy(() => import('./modules/user/pages/ProductDetails'));
+const Login = lazy(() => import('./modules/user/pages/Login'));
+const Wishlist = lazy(() => import('./modules/user/pages/Wishlist'));
+const Profile = lazy(() => import('./modules/user/pages/Profile'));
+const ShopForMen = lazy(() => import('./modules/user/pages/ShopForMen'));
+const ShopForWomen = lazy(() => import('./modules/user/pages/ShopForWomen'));
+const ShopForFamily = lazy(() => import('./modules/user/pages/ShopForFamily'));
+const AboutUs = lazy(() => import('./modules/user/pages/AboutUs'));
+const Checkout = lazy(() => import('./modules/user/pages/Checkout'));
+const OrderSuccess = lazy(() => import('./modules/user/pages/OrderSuccess'));
+const OrderTracking = lazy(() => import('./modules/user/pages/OrderTracking'));
+const HelpCenter = lazy(() => import('./modules/user/pages/HelpCenter'));
+const Notifications = lazy(() => import('./modules/user/pages/Notifications'));
+const BlogsPage = lazy(() => import('./modules/user/pages/BlogsPage'));
+const BlogDetailPage = lazy(() => import('./modules/user/pages/BlogDetailPage'));
+const DynamicPage = lazy(() => import('./modules/user/pages/DynamicPage'));
+const GoldJewelleryPage = lazy(() => import('./modules/user/pages/GoldJewelleryPage'));
+const UserReturnsPage = lazy(() => import('./modules/user/pages/ReturnsPage'));
+const UserReturnDetailPage = lazy(() => import('./modules/user/pages/ReturnDetailPage'));
+const UserReturnRequestPage = lazy(() => import('./modules/user/pages/ReturnRequestPage'));
+const UserReplacementsPage = lazy(() => import('./modules/user/pages/ReplacementsPage'));
+const UserReplacementDetailPage = lazy(() => import('./modules/user/pages/ReplacementDetailPage'));
+const UserReplacementRequestPage = lazy(() => import('./modules/user/pages/ReplacementRequestPage'));
+const JewelleryCollectionsPage = lazy(() => import('./modules/user/pages/JewelleryCollectionsPage'));
+const AdminDashboard = lazy(() => import('./modules/admin/pages/Dashboard'));
+
+const LoadingFallback = () => (
+  <div className="min-h-[60vh] flex items-center justify-center">
+    <div className="w-8 h-8 border-4 border-[#7A2E3A] border-t-transparent rounded-full animate-spin"></div>
+  </div>
+);
+
 const AppContent = () => {
   const location = useLocation();
   const isAdminPath = location.pathname.startsWith('/admin');
@@ -107,7 +114,8 @@ const AppContent = () => {
         </>
       )}
       <main className={`flex-grow ${!isAdminPath && !isSellerPath && !isScannerPath ? 'pb-16 md:pb-0' : ''}`}>
-        <Routes>
+        <Suspense fallback={<LoadingFallback />}>
+          <Routes>
           {/* User Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/scanner" element={<QrScannerPage />} />
@@ -212,6 +220,7 @@ const AppContent = () => {
 
           <Route path="*" element={<Home />} />
         </Routes>
+      </Suspense>
       </main>
       {!isAdminPath && !isSellerPath && !isScannerPath && <Footer />}
     </div>

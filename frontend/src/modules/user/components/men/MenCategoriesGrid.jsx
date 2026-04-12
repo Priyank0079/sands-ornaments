@@ -17,10 +17,10 @@ const MenCategoriesGrid = () => {
     const navigate = useNavigate();
 
     return (
-        <section className="pt-10 pb-4 md:pt-14 md:pb-6 bg-white">
+        <section className="pt-6 pb-2 md:pt-8 md:pb-4 bg-white">
             <div className="container mx-auto px-4 max-w-[1200px]">
                 {/* Header matching Screenshot 1 */}
-                <div className="text-center mb-8 flex flex-col items-center">
+                <div className="text-center mb-6 md:mb-8 flex flex-col items-center">
                     <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-black mb-0">
                         Discover by
                     </h2>

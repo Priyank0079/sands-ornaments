@@ -38,9 +38,9 @@ const WomenDiscoverHue = () => {
     const navigate = useNavigate();
 
     return (
-        <section className="py-12 md:py-24 bg-[#FFF9FA] overflow-hidden">
+        <section className="pt-8 pb-4 md:pt-12 md:pb-6 bg-[#FFF9FA] overflow-hidden">
             <div className="max-w-[1200px] mx-auto px-6">
-                <div className="text-center mb-10 md:mb-16 space-y-3 md:space-y-4">
+                <div className="text-center mb-6 md:mb-8 space-y-3 md:space-y-4">
                     <motion.h2 
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}

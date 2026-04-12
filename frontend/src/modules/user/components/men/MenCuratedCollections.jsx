@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import curatedVideo from '../../assets/Screen Recording 2026-04-07 115349.mp4';
+import curatedVideo from '../../assets/curated_video.mp4';
 
 const collections = [
     { id: 1, title: "Shop Silver for Him", image: "/men_silver_1.png", link: "/shop?category=silver", type: 'image' },
@@ -90,6 +90,7 @@ const MenCuratedCollections = () => {
                                         muted
                                         loop
                                         playsInline
+                                        preload="metadata"
                                         className="absolute inset-0 w-full h-full object-cover grayscale-[0.2] opacity-80 transition-transform duration-1000 group-hover:scale-110 group-hover:grayscale-0 group-hover:opacity-100"
                                     />
                                 ) : (

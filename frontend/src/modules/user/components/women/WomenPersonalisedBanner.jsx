@@ -8,9 +8,9 @@ const WomenPersonalisedBanner = () => {
     const navigate = useNavigate();
 
     return (
-        <section className="bg-white w-full py-6 md:py-10">
+        <section className="bg-white w-full py-0">
             <div 
-                className="max-w-7xl mx-auto overflow-hidden relative h-[250px] md:h-[350px] group cursor-pointer shadow-2xl rounded-none md:rounded-lg" 
+                className="w-full overflow-hidden relative h-[250px] md:h-[350px] group cursor-pointer shadow-none rounded-none" 
                 onClick={() => navigate('/shop?personalised=true')}
                 style={{ background: 'linear-gradient(to right, #4A0E0E, #2D0505)' }}
             >

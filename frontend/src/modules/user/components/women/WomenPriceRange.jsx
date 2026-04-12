@@ -31,7 +31,7 @@ const priceRanges = [
 
 const WomenPriceRange = () => {
     return (
-        <section className="pt-0 pb-10 md:pb-14 bg-white overflow-hidden">
+        <section className="pt-8 pb-6 md:pt-12 md:pb-8 bg-white overflow-hidden">
             <div className="container mx-auto px-4 md:px-8 max-w-[1300px]">
 
                 {/* Modern Editorial Header */}
@@ -40,7 +40,7 @@ const WomenPriceRange = () => {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                    className="flex flex-col items-center mb-3 md:mb-5 -mt-5 md:-mt-8"
+                    className="flex flex-col items-center mb-3 md:mb-5"
                 >
                     <span 
                         className="text-[10px] md:text-[11px] font-bold tracking-[0.34em] uppercase mb-1 inline-block px-3 py-1 rounded-full bg-[#9B2245]/10"

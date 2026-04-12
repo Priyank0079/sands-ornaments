@@ -162,95 +162,65 @@ const MenProductsListing = () => {
                 </div>
 
                 {/* Product Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-10">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
                     {dummyProducts.map((product, idx) => (
                         <motion.div
                             key={product.id}
-                            initial={{ opacity: 0, y: 40 }}
-                            whileInView={{ opacity: 1, y: 0 }}
+                            initial={{ opacity: 0, scale: 0.98 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
                             viewport={{ once: true }}
-                            transition={{ duration: 0.55, delay: (idx % 4) * 0.1 }}
-                            className="group relative"
+                            transition={{ duration: 0.5, delay: idx * 0.05 }}
+                            className="bg-white group cursor-pointer"
                         >
-                            <div
-                                className="bg-white rounded-2xl overflow-hidden transition-all duration-500 flex flex-col h-full border border-blue-50"
-                                style={{ boxShadow: '0 4px 20px rgba(37,99,235,0.08)', }}
-                                onMouseEnter={e => e.currentTarget.style.boxShadow = '0 16px 40px rgba(37,99,235,0.18)'}
-                                onMouseLeave={e => e.currentTarget.style.boxShadow = '0 4px 20px rgba(37,99,235,0.08)'}
-                            >
-                                {/* Top Quick View Bar */}
-                                <div className="hidden md:block w-full py-2 text-center text-white font-bold text-[10px] tracking-[0.2em] uppercase" style={{ background: ACCENT_DARK }}>
-                                    Quick View
+                            {/* Image Container */}
+                            <div className="relative aspect-square bg-[#FBFBFB] overflow-hidden mb-3" onClick={() => navigate(`/product/${product.id}`)}>
+                                <img
+                                    src={product.image}
+                                    alt={product.name}
+                                    className="w-full h-full object-contain p-4 transition-transform duration-700 group-hover:scale-105"
+                                />
+                                
+                                {/* Wishlist */}
+                                <button className="absolute top-3 right-3 z-10 p-1.5 rounded-full hover:bg-white/80 transition-all">
+                                    <Heart className="w-5 h-5 text-gray-400 group-hover:text-red-500 transition-colors" />
+                                </button>
+
+                                {/* Rating Badge */}
+                                <div className="absolute bottom-3 left-3 bg-[#F3F4F6]/90 backdrop-blur-sm px-2 py-0.5 rounded flex items-center gap-1 text-[10px] md:text-xs font-medium text-gray-700 shadow-sm">
+                                    {product.rating} <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                                    <span className="text-gray-300 mx-0.5">|</span>
+                                    {product.reviews}
                                 </div>
+                            </div>
 
-                                {/* Badge */}
-                                {product.badge && (
-                                    <div
-                                        className="absolute top-2 md:top-10 left-2 md:left-4 z-10 px-2 md:px-3 py-0.5 md:py-1 rounded-full text-white text-[8px] md:text-[10px] font-black uppercase tracking-wider shadow"
-                                        style={{ background: ACCENT }}
-                                    >
-                                        {product.badge}
-                                    </div>
-                                )}
+                            {/* Product Info */}
+                            <div className="flex flex-col px-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-base md:text-lg font-bold text-gray-900">₹{product.price}</span>
+                                    <span className="text-[10px] md:text-xs text-gray-400 line-through">₹{product.originalPrice}</span>
+                                </div>
+                                <h3 className="text-[12px] md:text-[14px] text-gray-600 font-medium mb-1.5 line-clamp-1 leading-tight hover:text-gray-900" onClick={() => navigate(`/product/${product.id}`)}>
+                                    {product.name}
+                                </h3>
 
-                                {/* Image */}
-                                <div
-                                    className="relative aspect-[4/5] overflow-hidden bg-blue-50 cursor-pointer"
-                                    onClick={() => navigate(`/product/${product.id}`)}
+                                {/* Promo Text */}
+                                <p className="text-[10px] md:text-[11px] font-bold text-[#2B6CB0] mb-3">
+                                    {idx % 2 === 0 ? `EXTRA 20% OFF with coupon` : `Get it for ₹${product.discountPrice} with coupon`}
+                                </p>
+
+                                {/* CTA Button */}
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleAddToCart(product);
+                                    }}
+                                    className="w-full py-2.5 rounded-md font-bold text-[11px] md:text-[13px] text-gray-700 transition-all duration-300 transform active:scale-95"
+                                    style={{ background: '#FFE1E6' }}
+                                    onMouseEnter={e => e.currentTarget.style.background = '#FFD1D9'}
+                                    onMouseLeave={e => e.currentTarget.style.background = '#FFE1E6'}
                                 >
-                                    <img
-                                        src={product.image}
-                                        alt={product.name}
-                                        className="w-full h-full object-cover transition-transform duration-[1.8s] group-hover:scale-110"
-                                    />
-                                    <button className="absolute top-2 md:top-4 right-2 md:right-4 p-1.5 md:p-2 bg-white/90 rounded-full shadow hover:bg-blue-50 transition-colors">
-                                        <Heart className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-gray-400 group-hover:text-blue-500 transition-colors" />
-                                    </button>
-                                    {/* Rating Badge */}
-                                    <div className="absolute bottom-2 md:bottom-4 left-2 md:left-4 bg-white/95 backdrop-blur px-1.5 md:px-2.5 py-0.5 md:py-1 flex items-center gap-1 md:gap-1.5 rounded-md md:rounded-lg text-[8px] md:text-[10px] font-bold text-gray-700 shadow">
-                                        {product.rating} <Star className="w-2.5 h-2.5 md:w-3 h-3 fill-amber-400 text-amber-400" />
-                                        <span className="text-gray-300">|</span> {product.reviews}
-                                    </div>
-                                </div>
-
-                                {/* Content */}
-                                <div className="p-3 md:p-4 flex flex-col flex-grow">
-                                    <div className="flex items-baseline gap-1.5 md:gap-2 mb-1 md:mb-2">
-                                        <span className="text-base md:text-xl font-black text-zinc-900">₹{product.price}</span>
-                                        <span className="text-[10px] md:text-xs text-gray-400 line-through">₹{product.originalPrice}</span>
-                                    </div>
-                                    <h3
-                                        className="text-[11px] md:text-sm font-bold text-gray-600 mb-2 md:mb-4 line-clamp-2 leading-snug cursor-pointer transition-colors"
-                                        style={{ minHeight: '32px' }}
-                                        onClick={() => navigate(`/product/${product.id}`)}
-                                        onMouseEnter={e => e.currentTarget.style.color = ACCENT}
-                                        onMouseLeave={e => e.currentTarget.style.color = ''}
-                                    >
-                                        {product.name}
-                                    </h3>
-
-                                    {/* Offer box */}
-                                    <div className="mt-auto rounded-lg md:rounded-xl p-2 md:p-3 mb-2 md:mb-4 border" style={{ background: `${ACCENT}0D`, borderColor: `${ACCENT}22` }}>
-                                        <p className="text-[9px] md:text-[11px] font-extrabold uppercase tracking-wide mb-0.5 md:mb-1" style={{ color: ACCENT }}>Special Offer</p>
-                                        <p className="text-gray-600 text-[9px] md:text-[11px]">
-                                            Get it for <span className="font-bold text-zinc-900">₹{product.discountPrice}</span>
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* CTA */}
-                                <div className="px-3 md:px-5 pb-3 md:pb-5">
-                                    <button
-                                        onClick={() => handleAddToCart(product)}
-                                        className="w-full py-2.5 md:py-3.5 font-bold text-[9px] md:text-xs tracking-[0.2em] uppercase rounded-lg md:rounded-xl flex items-center justify-center gap-2 text-white transition-all duration-300"
-                                        style={{ background: ACCENT_DARK }}
-                                        onMouseEnter={e => e.currentTarget.style.background = ACCENT}
-                                        onMouseLeave={e => e.currentTarget.style.background = ACCENT_DARK}
-                                    >
-                                        <ShoppingBag className="w-3.5 h-3.5 md:w-4 h-4" />
-                                        Add to Cart
-                                    </button>
-                                </div>
+                                    {idx === 1 ? 'Choose options' : 'Add to Cart'}
+                                </button>
                             </div>
                         </motion.div>
                     ))}
