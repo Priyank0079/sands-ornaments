@@ -8,18 +8,22 @@ import { useShop } from '../../../context/ShopContext';
 import giftMother from '../assets/gift_mother_silver.png';
 import giftFriends from '../assets/gift_friends_silver.png';
 import giftSister from '../assets/gift_sister_silver.png';
-import giftHusband from '../assets/gift_husband_silver.png'; // Using as placeholder for Father
-import giftWife from '../assets/gift_wife_silver.png'; // Re-use or use a general fallback
+import giftHusband from '../assets/gift_husband_silver.png';
+import giftWife from '../assets/gift_wife_silver.png';
 import giftBrother from '../assets/gift_brother_silver.png';
+import giftBaby from '../assets/gift_baby_silver.png';
+import giftGF from '../assets/gift_gf_silver.png';
+import giftGrandmother from '../assets/gift_grandmother_silver.png';
 import dividerImg from '../assets/ornament-divider.png';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 
 const recipients = [
     { id: 'wife', name: "Wife", image: giftWife, path: "/shop", price: "€49.90" },
     { id: 'mother', name: "Mother", image: giftMother, path: "/shop", price: "€69.50" },
+    { id: 'girlfriend', name: "Girlfriend", image: giftGF, path: "/shop", price: "€59.90" },
     { id: 'sister', name: "Sister", image: giftSister, path: "/shop", price: "€39.00" },
-    { id: 'father', name: "Father", image: giftHusband, path: "/shop", price: "€55.00" },
-    { id: 'husband', name: "Husband", image: giftHusband, path: "/shop", price: "€55.00" },
+    { id: 'grandmother', name: "Grandmother", image: giftGrandmother, path: "/shop", price: "€75.00" },
+    { id: 'baby', name: "Baby & Child", image: giftBaby, path: "/shop", price: "€29.90" },
     { id: 'friends', name: "Friends", image: giftFriends, path: "/shop", price: "€34.90" }
 ];
 
@@ -83,8 +87,8 @@ const PerfectGift = () => {
                 </div>
 
                 {/* Seamless Card Grid matching reference but elevated */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-6 max-w-[1500px] mx-auto px-2 md:px-4">
-                    {displayItems.slice(0, 6).map((item, index) => {
+                <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3 md:gap-6 max-w-[1700px] mx-auto px-2 md:px-4">
+                    {displayItems.map((item, index) => {
                         const itemLabel = item.name || item.label;
                         const itemPath = item.path || '/shop';
 

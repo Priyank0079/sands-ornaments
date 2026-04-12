@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
-import bannerImgDefault from '../assets/proposal_banner.png';
+import bannerImgDefault from '../assets/proposal_banner_premium.png';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 
 const ProposalBanner = () => {
@@ -49,18 +49,18 @@ const ProposalBanner = () => {
             <div className="absolute inset-0 bg-gradient-to-r from-[#2A0505] via-[#4A1015] to-[#2A0505] opacity-90"></div>
 
             <div className="container mx-auto px-4 md:px-6 relative z-10">
-                <div className="flex flex-col md:flex-row items-center justify-between py-8 md:py-12 gap-8">
+                <div className="flex flex-col md:flex-row items-center justify-between py-8 md:py-16 gap-8">
 
                     {/* Visual Section - Left Side */}
                     <div className="w-full md:w-1/2 relative group md:pt-10">
-                        <div className="relative rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-[#4A1015]/30">
+                        <div className="relative rounded-2xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.6)] border border-[#D4AF37]/20">
                             <img
                                 src={bannerImage}
                                 alt="Proposal Ring"
-                                className="w-full h-[220px] md:h-[400px] object-cover hover:scale-105 transition-transform duration-700"
+                                className="w-full h-[250px] md:h-[450px] object-cover hover:scale-105 transition-transform duration-1000"
                             />
                             {/* Inner Glow */}
-                            <div className="absolute inset-0 bg-gradient-to-tr from-[#3B181C]/60 to-transparent pointer-events-none"></div>
+                            <div className="absolute inset-0 bg-gradient-to-tr from-[#3B181C]/40 to-transparent pointer-events-none"></div>
                         </div>
                         {/* Decorative Circle */}
                         <div className="absolute -z-10 top-0 -left-12 w-64 h-64 bg-[#722F37] opacity-20 blur-[100px] rounded-full"></div>
@@ -68,17 +68,17 @@ const ProposalBanner = () => {
 
                     {/* Content Section - Right Side */}
                     <div className="w-full md:w-1/2 text-center md:text-left space-y-6">
-                        <div className="inline-block px-4 py-1.5 bg-[#722F37]/20 border border-[#722F37]/50 rounded-full mb-2 backdrop-blur-sm">
-                            <span className="text-[#D4AF37] text-xs md:text-sm font-serif tracking-[0.2em] uppercase">The Forever Collection</span>
+                        <div className="inline-block px-4 py-1.5 bg-[#722F37]/20 border border-[#D4AF37]/30 rounded-full mb-2 backdrop-blur-sm">
+                            <span className="text-[#D4AF37] text-xs md:text-sm font-serif tracking-[0.3em] uppercase">The Diamond Story</span>
                         </div>
 
-                        <h2 className="font-display text-4xl md:text-6xl text-white leading-[1.1]">
-                            {sectionData?.label || "Proposal Rings"}
-                            <span className="block italic font-serif font-light text-[#EBCDD0] text-3xl md:text-5xl mt-1">For Her</span>
+                        <h2 className="font-display text-4xl md:text-7xl text-white leading-[1.1] tracking-tight">
+                            {sectionData?.label || "Discover Your Unique Story in Diamonds"}
+                            <span className="block italic font-serif font-light text-[#EBCDD0] text-3xl md:text-5xl mt-2">Timeless Elegance</span>
                         </h2>
 
-                        <p className="text-gray-300 font-serif text-lg md:text-xl max-w-lg mx-auto md:mx-0 leading-relaxed">
-                            Every love story deserves a perfect beginning. Discover our exquisite collection of silver proposal rings, crafted to shine as bright as your promise.
+                        <p className="text-gray-300 font-serif text-lg md:text-xl max-w-lg mx-auto md:mx-0 leading-relaxed italic">
+                            Timeless pieces for your most memorable moments. Every love story deserves a perfect beginning.
                         </p>
 
                         <div className="pt-4">

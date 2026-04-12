@@ -5,91 +5,72 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
 
 // Assets
-import goldEarrings from '../../../assets/categories/earrings.png'; 
-import goldRings from '../../../assets/categories/rings.png'; 
-import silverEarrings from '../../../assets/products/silver_earrings.png';
-import silverBangles from '../../../assets/products/silver_bangles.png';
-import silverBracelet from '../../../assets/products/silver_bracelet.png';
+import bestStylePot1 from '../assets/best_style_pot_1.png';
+import bestStylePot2 from '../assets/best_style_pot_2.png';
+import silverChainDark from '../assets/silver_chain_dark.png';
+import silverBraceletDark from '../assets/silver_bracelet_dark.png';
+import silverEarringsDark from '../assets/silver_earrings_dark.png';
+import silverAnkletDark from '../assets/silver_anklet_dark.png';
 
 const PRODUCTS = [
     {
         id: "best-1",
-        name: "Premium Drop Earrings",
-        price: 2999,
-        originalPrice: 5499,
-        rating: 4.8,
-        reviews: 929,
-        image: silverEarrings,
+        name: "Classic Silver Cuban Chain",
+        price: 2499,
+        originalPrice: 4999,
+        rating: 4.9,
+        reviews: 1240,
+        image: bestStylePot1,
         bestseller: true,
     },
     {
         id: "best-2",
-        name: "Adjustable Silver Bracelet",
-        price: 3499,
-        originalPrice: 6199,
+        name: "Elegant Silver Drop Earrings",
+        price: 1899,
+        originalPrice: 3599,
         rating: 4.8,
-        reviews: 698,
-        image: silverBracelet,
+        reviews: 856,
+        image: bestStylePot2,
         bestseller: true,
     },
     {
         id: "best-3",
-        name: "Geometric Silver Bangle",
-        price: 2999,
-        originalPrice: 5499,
-        rating: 4.8,
-        reviews: 579,
-        image: silverBangles,
+        name: "Rustic Silver Signature Ring",
+        price: 1599,
+        originalPrice: 2899,
+        rating: 4.7,
+        reviews: 642,
+        image: silverChainDark, // Moody fallback
         priceDrop: true,
     },
     {
         id: "best-4",
-        name: "Gold Lotus Earrings",
-        price: 3199,
-        originalPrice: 5799,
+        name: "Vintage Silver Filigree Band",
+        price: 2199,
+        originalPrice: 4299,
         rating: 4.8,
-        reviews: 439,
-        image: goldEarrings,
+        reviews: 312,
+        image: silverBraceletDark, // Moody fallback
         priceDrop: true,
     },
     {
         id: "best-5",
-        name: "Floral Zircon Gold Ring",
-        price: 1999,
-        originalPrice: 3599,
-        rating: 4.6,
-        reviews: 772,
-        image: goldRings,
-        priceDrop: true,
-    },
-    {
-        id: "best-6",
-        name: "Ornate Gold Necklace",
-        price: 12999,
-        originalPrice: 18499,
+        name: "Premium Silver Link Bracelet",
+        price: 3299,
+        originalPrice: 6499,
         rating: 4.9,
-        reviews: 215,
-        image: goldEarrings,
+        reviews: 1105,
+        image: silverEarringsDark, // Moody fallback
         bestseller: true,
     },
     {
-        id: "best-7",
-        name: "Elegant Gold Anklet",
+        id: "best-6",
+        name: "Minimalist Silver Choker",
         price: 4599,
-        originalPrice: 7299,
+        originalPrice: 8999,
         rating: 4.7,
-        reviews: 128,
-        image: goldRings,
-        priceDrop: true,
-    },
-    {
-        id: "best-8",
-        name: "Royal Gold Nose Pin",
-        price: 1599,
-        originalPrice: 2899,
-        rating: 4.5,
-        reviews: 342,
-        image: goldEarrings,
+        reviews: 432,
+        image: silverAnkletDark, // Moody fallback
         priceDrop: true,
     }
 ];
@@ -129,19 +110,9 @@ const BestStylesSection = () => {
             priceDrop: p.originalPrice > p.price
         }));
 
-        // 5. If still fewer than 8 (unlikely in real store, but possible in dev), add fallbacks
-        // but link fallbacks to the first real product's ID if available
-        if (processed.length < 8) {
-            const firstRealId = combined[0]?.id || "coming-soon";
-            const needed = 8 - processed.length;
-            const extra = PRODUCTS.slice(0, needed).map(sp => ({
-                ...sp,
-                id: firstRealId // Make it clickable to a real page
-            }));
-            return [...processed, ...extra];
-        }
-
-        return processed.slice(0, 12);
+        // 5. Prepend the curated PRODUCTS (new images) and then add unique dynamic products
+        const uniqueProcessed = processed.filter(p => !PRODUCTS.some(sp => sp.name === p.name));
+        return [...PRODUCTS, ...uniqueProcessed].slice(0, 12);
     }, [products, activeMetal]);
 
     const isInWishlist = (id) => wishlist?.some(item => item.id === id);

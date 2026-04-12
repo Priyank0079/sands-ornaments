@@ -10,8 +10,17 @@ import heroRings from '../../../assets/hero/hero_rings.png';
 import heroBracelets from '../../../assets/hero/hero_bracelets.png';
 import heroPendants from '../../../assets/categories/pendants.png';
 import heroEarrings from '../../../assets/categories/earrings.png';
+import heroMasterpiece from '../../../assets/hero/hero_masterpiece.png';
 
 const SLIDES = [
+    {
+        id: 5,
+        image: heroMasterpiece,
+        title: "The Masterpiece Collection",
+        subtitle: "Exquisite craftsmanship meets timeless luxury.",
+        tag: "Exclusive Launch",
+        link: "/category/necklaces"
+    },
     {
         id: 1,
         image: heroRings,

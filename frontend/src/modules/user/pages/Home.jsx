@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import PriceRangeShowcase from '../components/PriceRangeShowcase';
 import PerfectGift from '../components/PerfectGift';
 import NewLaunchSection from '../components/NewLaunchSection';
-import LatestDrop from '../components/LatestDrop';
 import MostGifted from '../components/MostGifted';
 import PromoSlider from '../components/PromoSlider';
 import CategoryGrid from '../components/CategoryGrid';
@@ -66,7 +65,6 @@ const Home = () => {
             <PriceRangeShowcase />
             <PerfectGift />
             <NewLaunchSection />
-            <LatestDrop />
             <MostGifted />
             <ProposalBanner />
             <OccasionalSpecial />

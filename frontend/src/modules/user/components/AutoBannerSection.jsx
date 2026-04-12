@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+import bannerMasterpiece from '../../../assets/hero/hero_masterpiece.png';
+import bannerBridal from '../../../assets/hero/bridal_royal.png';
+
 const banners = [
     {
         id: 1,
-        image: '/silver page banner.png', // From public folder
-        title: 'Exquisite Silver Collection',
-        subtitle: 'Crafted for Elegance'
+        image: bannerMasterpiece,
+        title: 'Discover Your Unique Story in Diamonds',
+        subtitle: 'Timeless pieces for your most memorable moments.'
     },
     {
         id: 2,
-        image: '/silver page banner.png', // Using same as requested
-        title: 'Timeless Boutique Designs',
-        subtitle: 'Luxury Within Reach'
+        image: bannerBridal,
+        title: 'Exquisite Bridal Collection',
+        subtitle: 'Crafted for Elegance and Eternal Love'
     }
 ];
 
@@ -46,8 +49,29 @@ const AutoBannerSection = () => {
                                 className="w-full h-full object-cover rounded-none"
                             />
                             
+                            {/* Premium Content Overlay */}
+                            <div className="absolute inset-0 bg-black/30 flex flex-col justify-center items-center text-center px-4">
+                                <motion.h2 
+                                    key={`title-${currentIndex}`}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="text-white text-2xl md:text-5xl font-serif font-bold mb-2 drop-shadow-lg"
+                                >
+                                    {banners[currentIndex].title}
+                                </motion.h2>
+                                <motion.p 
+                                    key={`subtitle-${currentIndex}`}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.2 }}
+                                    className="text-white/90 text-sm md:text-xl font-light italic drop-shadow-md"
+                                >
+                                    {banners[currentIndex].subtitle}
+                                </motion.p>
+                            </div>
+                            
                             {/* Optional Overlay for readability if wanted, but user asked for simple banner */}
-                            <div className="absolute inset-0 bg-black/10 transition-colors group-hover:bg-black/5" />
+                            <div className="absolute inset-0 bg-black/5 transition-colors group-hover:bg-black/0" />
                             
                             {/* Progress Indicators */}
                             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-3 z-10">
