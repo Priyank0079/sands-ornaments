@@ -2,15 +2,14 @@ import React, { useEffect } from 'react';
 import PriceRangeShowcase from '../components/PriceRangeShowcase';
 import PerfectGift from '../components/PerfectGift';
 import NewLaunchSection from '../components/NewLaunchSection';
-import MostGifted from '../components/MostGifted';
 import PromoSlider from '../components/PromoSlider';
 import CategoryGrid from '../components/CategoryGrid';
+import TrustMarkers from '../components/TrustMarkers';
 import ShopByPrice from '../components/ShopByPrice';
 import PremiumCategoryCards from '../components/PremiumCategoryCards';
 import BestStylesSection from '../components/BestStylesSection';
 import AutoBannerSection from '../components/AutoBannerSection';
 import ShopByColour from '../components/ShopByColour';
-import ProposalBanner from '../components/ProposalBanner';
 import OccasionalSpecial from '../components/OccasionalSpecial';
 import StyleItYourWay from '../components/StyleItYourWay';
 import AllJewellery from '../components/AllJewellery';
@@ -46,6 +45,9 @@ const Home = () => {
             {/* NEW CATEGORY GRID SECTION */}
             <CategoryGrid />
 
+            {/* BRAND TRUST MARKERS */}
+            <TrustMarkers />
+
             {/* SHOP BY PRICE SECTION (Luxury within Reach) */}
             <ShopByPrice />
 
@@ -65,8 +67,6 @@ const Home = () => {
             <PriceRangeShowcase />
             <PerfectGift />
             <NewLaunchSection />
-            <MostGifted />
-            <ProposalBanner />
             <OccasionalSpecial />
             <StyleItYourWay />
             <AllJewellery />
