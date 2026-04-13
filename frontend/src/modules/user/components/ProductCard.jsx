@@ -45,12 +45,18 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
     // Dynamic Image Resolution - Support DB images or Fallback Model Shots (Unique Only)
     const allUniqueImages = Array.from(new Set([
         product.image,
+        product.img,
         ...(product.images || []),
         ...(product.variants || []).flatMap(v => v.variantImages || [])
     ].filter(Boolean)));
 
     const resolvePrimaryImage = () => {
-        // 1. PRIORITIZE: Use high-end signature product shots for the "Boutique" look
+        // 1. For Mock/Lead products with specific high-fidelity URLs, use them directly
+        if (product.id && (String(product.id).startsWith('mock') || String(product.id).startsWith('lp'))) {
+            if (allUniqueImages[0]) return allUniqueImages[0];
+        }
+
+        // 2. Otherwise, use high-end signature product shots for the "Boutique" look if it's a generic DB item
         const categoryData = product.category;
         const categoryName = (typeof categoryData === 'object' ? categoryData?.name : categoryData) || '';
         const searchStr = String(categoryName + ' ' + (product.name || '')).toLowerCase();
@@ -60,7 +66,7 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
         if (searchStr.includes('pendant') || searchStr.includes('chain')) return fallbackProductMap.pendant;
         if (searchStr.includes('bracelet')) return fallbackProductMap.bracelet;
 
-        // 2. FALLBACK: If no boutique shot matches, use DB image
+        // 3. FALLBACK: If no boutique shot matches, use DB image
         if (allUniqueImages[0]) return allUniqueImages[0];
 
         return null;

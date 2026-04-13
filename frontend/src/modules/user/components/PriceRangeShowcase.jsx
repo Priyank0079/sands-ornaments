@@ -70,18 +70,18 @@ const PriceRangeShowcase = () => {
     const displayItems = normalizedConfiguredItems.length > 0 ? normalizedConfiguredItems : priceRanges;
 
     return (
-        <section className="py-12 md:py-16 bg-[#FAFAFA] overflow-hidden">
+        <section className="py-8 md:py-10 bg-[#FAFAFA] overflow-hidden">
             <div className="container mx-auto px-4 md:px-6">
                 
                 {/* Clean Professional Header */}
-                <div className="text-center mb-12 md:mb-16">
-                    <h2 className="font-sans text-3xl md:text-4xl text-[#111111] font-semibold mb-4 tracking-wide uppercase">
+                <div className="text-center mb-8 md:mb-10">
+                    <h2 className="font-sans text-2xl md:text-3xl text-[#111111] font-semibold mb-3 tracking-wide uppercase">
                         {sectionData?.label || "Curated Selection"}
                     </h2>
-                    <div className="w-16 h-1 bg-[#FFD6DB] mx-auto rounded-full"></div>
+                    <div className="w-12 h-1 bg-[#FFD6DB] mx-auto rounded-full"></div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8 max-w-[1400px] mx-auto">
+                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 max-w-[1400px] mx-auto">
                     {displayItems.map((item, index) => {
                         const priceMax = getPriceMaxFromItem(item);
                         const itemLabel = priceMax ? `UNDER INR ${priceMax}` : (item.name || item.label || '');
@@ -99,10 +99,10 @@ const PriceRangeShowcase = () => {
                             >
                                 <Link
                                     to={itemPath || '/shop'}
-                                    className="group flex flex-col h-full bg-white rounded-md border border-gray-100/80 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden"
+                                    className="group flex flex-col h-full bg-white rounded-md border border-gray-100/80 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden"
                                 >
-                                    {/* Image Section - Match 2nd image proportion */}
-                                    <div className="relative w-full aspect-[4/5] bg-[#F5F5F5] overflow-hidden">
+                                    {/* Image Section - Compacted Aspect Ratio */}
+                                    <div className="relative w-full aspect-square bg-[#F5F5F5] overflow-hidden">
                                         <img
                                             src={resolveLegacyCmsAsset(item.image, price999)}
                                             alt={itemLabel}
@@ -111,19 +111,19 @@ const PriceRangeShowcase = () => {
                                     </div>
 
                                     {/* Clean Text Content matching the screenshot layout */}
-                                    <div className="p-4 md:p-5 flex flex-col flex-grow justify-between bg-white text-left">
+                                    <div className="p-3 md:p-4 flex flex-col flex-grow justify-between bg-white text-left">
                                         
-                                        <div className="mb-4">
-                                            <h3 className="text-[#1A1A1A] font-sans font-bold text-lg md:text-xl tracking-wide">
+                                        <div className="mb-3">
+                                            <h3 className="text-[#1A1A1A] font-sans font-bold text-base md:text-lg tracking-wide uppercase">
                                                 {itemLabel}
                                             </h3>
-                                            <p className="text-[#6D6D6D] text-xs md:text-sm mt-1 font-medium">
-                                                Discover the collection
+                                            <p className="text-[#6D6D6D] text-[10px] md:text-xs mt-0.5 font-medium uppercase tracking-tight">
+                                                Discover collection
                                             </p>
                                         </div>
 
                                         {/* Pink Action Button at the absolute bottom */}
-                                        <div className="mt-auto w-full bg-[#FFD6DB] text-[#222222] font-semibold text-sm md:text-base text-center py-3 rounded-sm group-hover:bg-[#FFC2C9] transition-colors duration-300">
+                                        <div className="mt-auto w-full bg-[#FFD6DB] text-[#222222] font-bold text-xs md:text-sm text-center py-2.5 rounded-sm group-hover:bg-[#FFC2C9] transition-colors duration-300 uppercase tracking-wider">
                                             Shop Now
                                         </div>
                                     </div>

@@ -1,141 +1,93 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowUpRight } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { useShop } from '../../../context/ShopContext';
+import ProductCard from './ProductCard';
 
-// Import images
-import giftMother from '../assets/gift_mother_silver.png';
-import giftFriends from '../assets/gift_friends_silver.png';
-import giftSister from '../assets/gift_sister_silver.png';
-import giftHusband from '../assets/gift_husband_silver.png';
-import giftWife from '../assets/gift_wife_silver.png';
-import giftBrother from '../assets/gift_brother_silver.png';
-import giftBaby from '../assets/gift_baby_silver.png';
-import giftGF from '../assets/gift_gf_silver.png';
-import giftGrandmother from '../assets/gift_grandmother_silver.png';
-import dividerImg from '../assets/ornament-divider.png';
-import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
+// Import bond category images
+import bondWife from '../../../assets/bond_wife.png';
+import bondHusband from '../../../assets/bond_husband.png';
+import bondMother from '../../../assets/bond_mother.png';
+import bondBrothers from '../../../assets/bond_brothers.png';
+import bondSister from '../../../assets/bond_sister.png';
+import bondFriends from '../../../assets/bond_friends.png';
 
 const recipients = [
-    { id: 'wife', name: "Wife", image: giftWife, path: "/shop", price: "€49.90" },
-    { id: 'mother', name: "Mother", image: giftMother, path: "/shop", price: "€69.50" },
-    { id: 'girlfriend', name: "Girlfriend", image: giftGF, path: "/shop", price: "€59.90" },
-    { id: 'sister', name: "Sister", image: giftSister, path: "/shop", price: "€39.00" },
-    { id: 'grandmother', name: "Grandmother", image: giftGrandmother, path: "/shop", price: "€75.00" },
-    { id: 'baby', name: "Baby & Child", image: giftBaby, path: "/shop", price: "€29.90" },
-    { id: 'friends', name: "Friends", image: giftFriends, path: "/shop", price: "€34.90" }
+    { id: 'wife', name: "Wife", image: bondWife, path: "/collection/bond/wife" },
+    { id: 'husband', name: "Husband", image: bondHusband, path: "/collection/bond/husband" },
+    { id: 'mother', name: "Mother", image: bondMother, path: "/collection/bond/mother" },
+    { id: 'brothers', name: "Brothers", image: bondBrothers, path: "/collection/bond/brothers" },
+    { id: 'sister', name: "Sister", image: bondSister, path: "/collection/bond/sister" },
+    { id: 'friends', name: "Friends", image: bondFriends, path: "/collection/bond/friends" }
 ];
 
-const resolveGiftPath = (item, fallbackPath = '/shop') => {
-    const productIds = Array.isArray(item?.productIds) ? item.productIds.filter(Boolean) : [];
-    if (productIds.length > 0) {
-        return `/shop?products=${encodeURIComponent(productIds.join(','))}`;
-    }
-
-    if (item?.path) return item.path;
-    return fallbackPath;
-};
+const LEAD_PRODUCTS = [
+    { id: 'lp1', name: "Soulmate Silver Band", price: 3499, originalPrice: 4899, image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&q=80&w=800", rating: 4.5, reviewCount: 12 },
+    { id: 'lp2', name: "Amara Delicate Necklace", price: 4200, originalPrice: 5880, image: "https://images.unsplash.com/photo-1515562141207-7a18b5ce7142?auto=format&fit=crop&q=80&w=800", rating: 4.8, reviewCount: 8 },
+    { id: 'lp3', name: "Zaya Crystal Earrings", price: 2800, originalPrice: 3920, image: "https://images.unsplash.com/photo-1635767798638-3e25273a8256?auto=format&fit=crop&q=80&w=800", rating: 4.2, reviewCount: 15 },
+    { id: 'lp4', name: "Mens Curb Bracelet", price: 5999, originalPrice: 8399, image: "https://images.unsplash.com/photo-1611085583191-a3b1a6a939db?auto=format&fit=crop&q=80&w=800", rating: 4.7, reviewCount: 22 },
+];
 
 const PerfectGift = () => {
-    const { homepageSections } = useShop();
-
-    const sectionData = homepageSections?.['perfect-gift'];
-    const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
-    const normalizedConfiguredItems = configuredItems.map((item, index) => {
-        return {
-            ...item,
-            id: item.itemId || item._id || item.id || `gift-${index}`,
-            name: item.name || item.label || recipients[index]?.name || 'Gift',
-            image: resolveLegacyCmsAsset(item.image, recipients[index]?.image || giftMother),
-            path: resolveGiftPath(item, recipients[index]?.path || '/shop'),
-            price: item.price || recipients[index]?.price || "€49.90",
-            productIds: Array.isArray(item.productIds) ? item.productIds.filter(Boolean) : []
-        };
-    });
-    const displayItems = normalizedConfiguredItems.length > 0 ? normalizedConfiguredItems : recipients;
+    const { products } = useShop();
+    const displayLead = (products && products.length > 0) ? products.slice(0, 4) : LEAD_PRODUCTS;
 
     return (
-        <section className="py-10 md:py-16 bg-[#FAF3F0] text-black overflow-hidden relative">
-            <div className="container mx-auto px-4 md:px-6 relative z-10">
-                {/* High-End Ornamental Header */}
-                <div className="text-center mb-16 relative">
-                    <motion.span 
-                        initial={{ opacity: 0, y: 10 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        className="text-[#C9A24D] text-[10px] md:text-xs font-black uppercase tracking-[0.4em] mb-4 block italic"
-                    >
-                        Curated Selection
-                    </motion.span>
-                    <motion.h2
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-                        className="text-4xl md:text-7xl font-serif text-[#4A1015] mb-6 tracking-tight"
-                    >
-                        {sectionData?.label || "Find the Perfect Gift"}
-                    </motion.h2>
-                    
-                    {/* Artistic Line Divider */}
-                    <div className="flex items-center justify-center gap-4">
-                        <div className="h-[1px] w-8 md:w-16 bg-gradient-to-r from-transparent to-[#C9A24D] opacity-60" />
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#C9A24D] shadow-[0_0_8px_#C9A24D]" />
-                        <div className="h-[1px] w-8 md:w-16 bg-gradient-to-l from-transparent to-[#C9A24D] opacity-60" />
+        <section className="py-8 md:py-20 bg-white text-black overflow-hidden font-sans border-b border-gray-100">
+            <div className="container mx-auto px-4">
+                
+                {/* Section Title */}
+                <div className="text-center mb-10 md:mb-16">
+                    <h2 className="text-2xl md:text-5xl font-black text-black tracking-tighter mb-4">
+                        Shop by Bond
+                    </h2>
+                    <p className="text-gray-400 text-[10px] md:text-sm uppercase tracking-[0.4em] font-bold">
+                        Curated for your loved ones
+                    </p>
+                </div>
+                
+                {/* Bonds Category Grid */}
+                <div className="flex overflow-x-auto scrollbar-hide gap-4 md:gap-6 pb-12 px-2 max-w-[1500px] mx-auto justify-start md:justify-center">
+                    {recipients.map((item) => (
+                        <Link 
+                            key={item.id} 
+                            to={item.path} 
+                            className="flex flex-col items-center shrink-0 w-[130px] md:w-[210px] group"
+                        >
+                            <div className="bg-[#E8E8E8] p-1.5 md:p-2 rounded-2xl md:rounded-3xl w-full flex flex-col items-center transition-all duration-500 group-hover:bg-[#D3D3D3] group-hover:translate-y-[-6px]">
+                                <div className="w-full aspect-[4/5] overflow-hidden rounded-xl md:rounded-2xl mb-3">
+                                    <img
+                                        src={item.image}
+                                        alt={item.name}
+                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                    />
+                                </div>
+                                <h3 className="text-[14px] md:text-[18px] font-black text-black tracking-tight pb-3 px-2 text-center leading-none">
+                                    {item.name}
+                                </h3>
+                            </div>
+                        </Link>
+                    ))}
+                </div>
+
+                {/* Featured Products Sub-section */}
+                <div className="mt-10 md:mt-20 pt-16 border-t border-gray-100">
+                    <div className="flex items-center justify-between mb-12">
+                        <div>
+                            <h3 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">Featured Gifts</h3>
+                            <p className="text-gray-400 text-[10px] md:text-xs uppercase tracking-widest mt-1">Handpicked for the perfect moment</p>
+                        </div>
+                        <Link to="/shop" className="text-[11px] font-black uppercase tracking-[0.2em] text-[#9C5B61] hover:text-black transition-all border-b-2 border-transparent hover:border-black">
+                            View All Collection
+                        </Link>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-10">
+                        {displayLead.map((p) => (
+                            <ProductCard key={p.id} product={p} />
+                        ))}
                     </div>
                 </div>
 
-                {/* Seamless Card Grid matching reference but elevated */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3 md:gap-6 max-w-[1700px] mx-auto px-2 md:px-4">
-                    {displayItems.map((item, index) => {
-                        const itemLabel = item.name || item.label;
-                        const itemPath = item.path || '/shop';
-
-                        return (
-                            <motion.div
-                                key={item.id}
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true, margin: "-50px" }}
-                                transition={{ 
-                                    duration: 0.8, 
-                                    delay: index * 0.1,
-                                    ease: [0.16, 1, 0.3, 1]
-                                }}
-                            >
-                                <Link to={itemPath} className="group relative block w-full h-full">
-                                    <div className="relative aspect-[4/5] overflow-hidden rounded-2xl md:rounded-[24px] bg-white shadow-[0_4px_15px_rgba(0,0,0,0.02)] group-hover:shadow-[0_15px_40px_rgba(74,16,21,0.12)] transition-all duration-700 border border-black/5">
-                                        
-                                        {/* Image */}
-                                        <img
-                                            src={item.image}
-                                            alt={itemLabel}
-                                            className="w-full h-full object-cover transition-transform duration-[1500ms] ease-out group-hover:scale-105"
-                                        />
-
-                                        {/* Premium subtle inner shadow */}
-                                        <div className="absolute inset-0 shadow-[inset_0_0_50px_rgba(0,0,0,0.05)] pointer-events-none" />
-
-                                        {/* Bottom White Dock - Sands Style but vastly superior */}
-                                        <div className="absolute bottom-0 inset-x-0 bg-white/95 backdrop-blur-md z-20 h-14 md:h-16 flex flex-col items-center justify-center transition-all duration-500 overflow-hidden group-hover:bg-white shadow-[0_-5px_20px_rgba(0,0,0,0.03)] border-t border-white/50">
-                                            
-                                            <h3 className="font-sans text-[15px] md:text-[18px] font-semibold text-[#111111] tracking-wide transition-transform duration-500 transform group-hover:translate-y-[-4px]">
-                                                {itemLabel}
-                                            </h3>
-                                            
-                                            {/* Golden accent bar that expands on hover */}
-                                            <div className="absolute bottom-3 md:bottom-[14px]">
-                                                <div className="h-[2px] w-0 bg-[#C9A24D] opacity-0 group-hover:w-8 group-hover:opacity-100 transition-all duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)]" />
-                                            </div>
-
-                                        </div>
-                                    </div>
-                                </Link>
-                            </motion.div>
-                        );
-                    })}
-                </div>
             </div>
         </section>
     );

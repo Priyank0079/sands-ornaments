@@ -62,21 +62,21 @@ const NewLaunchSection = () => {
     useEffect(() => {
         const updateDims = () => {
             if (window.innerWidth < 480) {
-                setRadius(280);
-                setCardWidth(170);
-                setCardHeight(260);
+                setRadius(240);
+                setCardWidth(140);
+                setCardHeight(200);
             } else if (window.innerWidth < 768) {
-                setRadius(340);
-                setCardWidth(210);
-                setCardHeight(320);
+                setRadius(300);
+                setCardWidth(180);
+                setCardHeight(260);
             } else if (window.innerWidth < 1024) {
-                setRadius(450);
-                setCardWidth(280);
-                setCardHeight(400);
+                setRadius(400);
+                setCardWidth(250);
+                setCardHeight(350);
             } else {
-                setRadius(550);
-                setCardWidth(340);
-                setCardHeight(480);
+                setRadius(500);
+                setCardWidth(300);
+                setCardHeight(420);
             }
         };
         updateDims();
@@ -86,7 +86,7 @@ const NewLaunchSection = () => {
 
     return (
         <section 
-            className="py-8 md:py-12 bg-[#FFF0F0] relative overflow-hidden"
+            className="py-6 md:py-10 bg-[#FFF0F0] relative overflow-hidden"
             style={{
                 '--radius': `${radius}px`,
                 '--cardW': `${cardWidth}px`,
@@ -107,7 +107,7 @@ const NewLaunchSection = () => {
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    margin-top: 3rem;
+                    margin-top: 1.5rem;
                 }
                 .rotator {
                     width: var(--cardW);
@@ -139,7 +139,7 @@ const NewLaunchSection = () => {
                     initial={{ opacity: 0, y: -20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    className="relative flex flex-col items-center justify-center mb-6 md:mb-10 text-center"
+                    className="relative flex flex-col items-center justify-center mb-4 md:mb-6 text-center"
                 >
                     <div className="inline-block bg-[#722F37] text-white px-5 py-1.5 font-display tracking-widest text-xs uppercase rounded-full shadow-md mb-4">
                         New Launch
