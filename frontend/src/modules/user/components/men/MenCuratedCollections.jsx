@@ -2,19 +2,20 @@ import React, { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import curatedVideo from '../../assets/curated_video.mp4';
+
+// Import existing assets from global and local folders
+import men1 from '../../../../assets/luxury_ring_men.png';
+import men2 from '../../../../assets/luxury_pendant_men.png';
+import men3 from '../../../../assets/luxury_gifts_men.png';
+import men4 from '../../../../assets/men/style_bracelets.png';
 
 const collections = [
-    { id: 1, title: "Shop Silver for Him", image: "/men_silver_1.png", link: "/shop?category=silver", type: 'image' },
-    { id: 2, title: "Astra Collection", video: curatedVideo, link: "/shop?category=astra", type: 'video' },
-    { id: 3, title: "Shop Gifts for Him", image: "/men_silver_2.png", link: "/shop?category=gifts", type: 'image' },
-    { id: 4, title: "The Classics for Him", video: curatedVideo, link: "/shop?category=classics", type: 'video' },
-    { id: 5, title: "Pendants for Him", image: "/men_silver_3.png", link: "/shop?category=pendants", type: 'image' },
-    { id: 6, title: "925 Silver Shop", video: curatedVideo, link: "/shop?category=silver-925", type: 'video' },
-    { id: 7, title: "Modern Chains", image: "/men_silver_1.png", link: "/shop?category=chains", type: 'image' },
-    { id: 8, title: "Signature Rings", video: curatedVideo, link: "/shop?category=rings", type: 'video' },
-    { id: 9, title: "Crafted Bracelets", image: "/men_silver_2.png", link: "/shop?category=bracelets", type: 'image' },
-    { id: 10, title: "Elite Pendants", video: curatedVideo, link: "/shop?category=pendants-elite", type: 'video' }
+    { id: 1, title: "SHOP SILVER FOR HIM", image: men1, link: "/shop?category=silver", type: 'image' },
+    { id: 2, title: "ASTRA COLLECTION", image: men2, link: "/shop?category=astra", type: 'image' },
+    { id: 3, title: "SHOP GIFTS FOR HIM", image: men3, link: "/shop?category=gifts", type: 'image' },
+    { id: 4, title: "THE CLASSICS FOR HIM", image: men1, link: "/shop?category=classics", type: 'image' }, 
+    { id: 5, title: "PENDANTS FOR HIM", image: men2, link: "/shop?category=pendants", type: 'image' },
+    { id: 6, title: "925 SILVER SHOP", image: men4, link: "/shop?category=silver-925", type: 'image' }
 ];
 
 const MenCuratedCollections = () => {
@@ -71,46 +72,34 @@ const MenCuratedCollections = () => {
 
                     <div 
                         ref={scrollRef}
-                        className="flex overflow-x-auto gap-3 md:gap-5 pb-4 md:pb-6 hide-scrollbar scroll-smooth snap-x snap-mandatory px-0 md:px-0"
+                        className="flex overflow-x-auto gap-4 pb-10 hide-scrollbar scroll-smooth snap-x snap-mandatory px-4"
                     >
                         {collections.map((item, idx) => (
                             <motion.div 
                                 key={item.id}
-                                initial={{ opacity: 0, scale: 0.98 }}
-                                whileInView={{ opacity: 1, scale: 1 }}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
-                                transition={{ duration: 0.5, delay: idx * 0.05 }}
+                                transition={{ duration: 0.6, delay: idx * 0.1 }}
                                 onClick={() => navigate(item.link)}
-                                className="flex-shrink-0 w-[150px] sm:w-[190px] md:w-[220px] lg:w-[250px] h-[220px] sm:h-[270px] md:h-[330px] relative group cursor-pointer overflow-hidden rounded-none bg-black snap-start shadow-[0_18px_45px_-24px_rgba(0,0,0,0.45)]"
+                                className="flex-shrink-0 w-[240px] md:w-[280px] lg:w-[320px] aspect-square relative group cursor-pointer overflow-hidden rounded-none bg-[#F5F5F5] snap-start shadow-[0_15px_35px_rgba(0,0,0,0.12)]"
                             >
-                                {item.type === 'video' ? (
-                                    <video 
-                                        src={item.video}
-                                        autoPlay
-                                        muted
-                                        loop
-                                        playsInline
-                                        preload="metadata"
-                                        className="absolute inset-0 w-full h-full object-cover grayscale-[0.2] opacity-80 transition-transform duration-1000 group-hover:scale-110 group-hover:grayscale-0 group-hover:opacity-100"
-                                    />
-                                ) : (
-                                    <img 
-                                        src={item.image} 
-                                        alt={item.title}
-                                        className="absolute inset-0 w-full h-full object-cover grayscale-[0.2] transition-transform duration-1000 group-hover:scale-110 group-hover:grayscale-0"
-                                    />
-                                )}
+                                <img 
+                                    src={item.image} 
+                                    alt={item.title}
+                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                                />
                                 
-                                {/* Bottom Gradient */}
-                                <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-70 group-hover:opacity-90 transition-opacity" />
+                                {/* Bottom Gradient - Fixed and subtle */}
+                                <div className="absolute inset-x-0 bottom-0 h-[80px] bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
-                                {/* Floating Label at Bottom Left */}
-                                <div className="absolute bottom-4 left-4 md:bottom-5 md:left-5 text-white z-10 transition-all duration-300 group-hover:translate-x-1">
-                                    <div className="flex items-center gap-1 group/btn">
-                                        <span className="text-[10px] md:text-xs font-bold tracking-[0.08em] uppercase whitespace-nowrap">
+                                {/* Label at Bottom Center/Left as per screenshot */}
+                                <div className="absolute bottom-6 left-4 right-4 text-white z-10">
+                                    <div className="flex items-center gap-1.5 translate-y-0 group-hover:translate-x-1 transition-transform duration-300">
+                                        <span className="text-[11px] md:text-[13px] font-bold tracking-[0.1em] uppercase whitespace-nowrap drop-shadow-md">
                                             {item.title}
                                         </span>
-                                        <ChevronRight className="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-1" />
+                                        <ChevronRight className="w-4 h-4 text-white/90" />
                                     </div>
                                 </div>
                             </motion.div>

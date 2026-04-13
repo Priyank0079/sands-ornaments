@@ -29,7 +29,7 @@ const GOLD_CATEGORIES = [
     { id: 2, name: 'Gold Earrings', image: goldEarringsGreen, path: '/shop?metal=gold&category=earrings', isCustom: true },
     { id: 3, name: 'Gold Pendants', image: goldPendantsGreen, path: '/shop?metal=gold&category=necklaces' },
     { id: 4, name: 'Gold Bracelets', image: goldBraceletsGreen, path: '/shop?metal=gold&category=bracelets' },
-    { id: 5, name: 'Gold Nose Pins', image: goldNosepinsGreen, path: '/shop?metal=gold?category=nose-pins' },
+    { id: 5, name: 'Gold Nose Pins', image: goldNosepinsGreen, path: '/shop?metal=gold&category=nose-pins' },
     { id: 6, name: 'Gold Mangalsutra', image: goldMangalsutraGreen, path: '/shop?metal=gold&category=mangalsutras' },
     { id: 7, name: 'Gold Bangles', image: goldBanglesGreen, path: '/shop?metal=gold&category=bangles' },
     { id: 8, name: 'Gold Sets', image: goldSetsGreen, path: '/shop?metal=gold&category=sets' },

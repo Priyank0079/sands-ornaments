@@ -9,6 +9,7 @@ import GoldCategoryGrid from '../components/GoldCategoryGrid';
 import AutoBannerSection from '../components/AutoBannerSection';
 import GoldNewLaunchBanner from '../components/GoldNewLaunchBanner';
 import GoldRingCarousel from '../components/GoldRingCarousel';
+import GoldCuratedShowcase from '../components/GoldCuratedShowcase';
 
 // Hero assets
 import heroGold from '../../../assets/hero/bridal_royal.png';
@@ -201,7 +202,7 @@ const GoldJewelleryPage = () => {
             {/* SECTION 5: GET THE RIGHT RING                                 */}
             {/* ============================================================ */}
             <GoldRingCarousel />
-
+            <GoldCuratedShowcase />
         </div>
     );
 };
