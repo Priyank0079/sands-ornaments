@@ -69,7 +69,7 @@ const FamilyTrendingNearYou = () => {
 
     return (
         <section 
-            className="py-12 md:py-16 bg-[#D3B7BD] relative overflow-hidden"
+            className="py-12 md:py-16 bg-white relative overflow-hidden"
             style={{
                 '--radius': `${radius}px`,
                 '--cardW': `${cardWidth}px`,
@@ -140,7 +140,7 @@ const FamilyTrendingNearYou = () => {
                                 >
                                     <Link to={item.path} className="block w-full h-full relative isolate rounded-[1.2rem] overflow-hidden cursor-pointer bg-white">
                                         {/* Image */}
-                                        <div className="absolute inset-0 bg-[#FFD9E0]/10">
+                                        <div className="absolute inset-0 bg-transparent">
                                             <img
                                                 src={item.image}
                                                 alt={item.title}

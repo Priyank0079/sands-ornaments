@@ -21,11 +21,11 @@ const ShopForFamily = () => {
             {/* 1. Hero Section */}
             <FamilyHeroCarousel />
 
-            {/* Price Points Quick Access */}
-            <FamilyPricePoints />
-
             {/* Curated Collections Showcase */}
             <FamilyCuratedCollections />
+
+            {/* Price Points Quick Access */}
+            <FamilyPricePoints />
 
             {/* 2. Category Section */}
             <FamilyRecipientCategories

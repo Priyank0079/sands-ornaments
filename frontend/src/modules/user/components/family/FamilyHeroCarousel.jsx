@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ShoppingBag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import familyHeroBanner from '../../assets/family_hero_banner.jpg';
+import familyHeroBanner from '../../assets/family_hero_banner_4k.jpg';
 
 const PINK = '#FFD9E0';
 const MAROON = '#8E2B45';

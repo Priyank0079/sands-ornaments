@@ -70,7 +70,7 @@ const PriceRangeShowcase = () => {
     const displayItems = normalizedConfiguredItems.length > 0 ? normalizedConfiguredItems : priceRanges;
 
     return (
-        <section className="py-8 md:py-10 bg-[#FAFAFA] overflow-hidden">
+        <section className="py-8 md:py-10 bg-white overflow-hidden">
             <div className="container mx-auto px-4 md:px-6">
                 
                 {/* Clean Professional Header */}
@@ -102,7 +102,7 @@ const PriceRangeShowcase = () => {
                                     className="group flex flex-col h-full bg-white rounded-md border border-gray-100/80 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden"
                                 >
                                     {/* Image Section - Compacted Aspect Ratio */}
-                                    <div className="relative w-full aspect-square bg-[#F5F5F5] overflow-hidden">
+                                    <div className="relative w-full aspect-square bg-white overflow-hidden">
                                         <img
                                             src={resolveLegacyCmsAsset(item.image, price999)}
                                             alt={itemLabel}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import familyWideBanner from '../../assets/family_wide_banner.png';
+import familyWideBanner from '../../assets/family_wide_banner_4k.png';
 
 const FamilyPromoBanner = () => {
     return (
