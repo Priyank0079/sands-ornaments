@@ -87,6 +87,8 @@ const UserReplacementsPage = lazy(() => import('./modules/user/pages/Replacement
 const UserReplacementDetailPage = lazy(() => import('./modules/user/pages/ReplacementDetailPage'));
 const UserReplacementRequestPage = lazy(() => import('./modules/user/pages/ReplacementRequestPage'));
 const JewelleryCollectionsPage = lazy(() => import('./modules/user/pages/JewelleryCollectionsPage'));
+const BondCollectionPage = lazy(() => import('./modules/user/pages/BondCollectionPage'));
+const BestStylesPage = lazy(() => import('./modules/user/pages/BestStylesPage'));
 const AdminDashboard = lazy(() => import('./modules/admin/pages/Dashboard'));
 
 const LoadingFallback = () => (
@@ -155,6 +157,8 @@ const AppContent = () => {
           <Route path="/category/family" element={<ShopForFamily />} />
           <Route path="/category/:category" element={<Shop />} />
           <Route path="/gold-collection" element={<GoldJewelleryPage />} />
+          <Route path="/collection/bond/:bondId" element={<BondCollectionPage />} />
+          <Route path="/collection/best-styles" element={<BestStylesPage />} />
           <Route path="/collections" element={<JewelleryCollectionsPage />} />
           <Route path="/blogs" element={<BlogsPage />} />
           <Route path="/blogs/:slug" element={<BlogDetailPage />} />

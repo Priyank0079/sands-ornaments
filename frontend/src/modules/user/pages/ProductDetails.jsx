@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import ProductCard from '../components/ProductCard';
 import WhyChooseUs from '../components/WhyChooseUs';
 import { Heart, ShoppingBag, Star, Share2, Plus, Minus, Truck, ShieldCheck, Smile, Gift, ChevronDown, SlidersHorizontal, X, Camera, Check, ArrowLeft, ArrowRight, Droplets, Sparkles, Play } from 'lucide-react';
-import { COLLECTION_MOCK_PRODUCTS } from '../data/mockCollectionData.js';
+import { COLLECTION_MOCK_PRODUCTS } from '../data/mockCollectionData';
 import BrandVideo from '../assets/Screen Recording 2026-04-03 142555.mp4';
 
 // Import model shots (angle 2) for maximum hover impact
@@ -129,7 +129,7 @@ const ProductDetails = () => {
             };
         }
 
-        if (!id.startsWith('m')) return null;
+        if (!id.startsWith('m') && !id.startsWith('lp') && !id.startsWith('mock') && !id.startsWith('best')) return null;
         for (const cat in COLLECTION_MOCK_PRODUCTS) {
             const found = COLLECTION_MOCK_PRODUCTS[cat].find(p => p.id === id);
             if (found) {
@@ -155,14 +155,14 @@ const ProductDetails = () => {
 
     // Prioritize mock product for IDs starting with 'm', otherwise use API or catalogue data
     const product = useMemo(() => {
-        if (id && String(id).startsWith('m')) return mockProduct;
+        if (id && (String(id).startsWith('m') || String(id).startsWith('lp') || String(id).startsWith('mock') || String(id).startsWith('best'))) return mockProduct;
         return detailProduct || catalogueProduct || null;
     }, [id, mockProduct, detailProduct, catalogueProduct]);
 
     useEffect(() => {
         let ignore = false;
         const loadDetail = async () => {
-            if (!id || id.startsWith('m')) return; // Don't fetch for mock products
+            if (!id || id.startsWith('m') || id.startsWith('lp') || id.startsWith('mock') || id.startsWith('best')) return; // Don't fetch for mock products
             setDetailLoading(true);
             try {
                 const res = await api.get(`public/products/${id}`);

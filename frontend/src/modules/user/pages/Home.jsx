@@ -10,13 +10,13 @@ import PremiumCategoryCards from '../components/PremiumCategoryCards';
 import BestStylesSection from '../components/BestStylesSection';
 import AutoBannerSection from '../components/AutoBannerSection';
 import ShopByColour from '../components/ShopByColour';
-import OccasionalSpecial from '../components/OccasionalSpecial';
 import StyleItYourWay from '../components/StyleItYourWay';
 import AllJewellery from '../components/AllJewellery';
 import Testimonials from '../components/Testimonials';
 import BrandPromises from '../components/BrandPromises';
 import FAQSection from '../components/FAQSection';
 import ChitChatSection from '../components/ChitChatSection';
+import SilverNewLaunchGrid from '../components/SilverNewLaunchGrid';
 import { useShop } from '../../../context/ShopContext';
 
 const Home = () => {
@@ -60,6 +60,9 @@ const Home = () => {
             {/* AUTO SCROLLING BANNERS */}
             <AutoBannerSection />
 
+            {/* NEW LAUNCH SPECIAL GRID */}
+            <SilverNewLaunchGrid />
+
             {/* SHOP BY COLOUR SECTION */}
             <ShopByColour />
 
@@ -67,7 +70,6 @@ const Home = () => {
             <PriceRangeShowcase />
             <PerfectGift />
             <NewLaunchSection />
-            <OccasionalSpecial />
             <StyleItYourWay />
             <AllJewellery />
             <Testimonials />
