@@ -50,17 +50,18 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
     ].filter(Boolean)));
 
     const resolvePrimaryImage = () => {
-        // 1. If DB has an image, use it
-        if (allUniqueImages[0]) return allUniqueImages[0];
-
-        // 2. If missing, use same keyword logic to find a signature product shot
+        // 1. PRIORITIZE: Use high-end signature product shots for the "Boutique" look
         const categoryData = product.category;
         const categoryName = (typeof categoryData === 'object' ? categoryData?.name : categoryData) || '';
         const searchStr = String(categoryName + ' ' + (product.name || '')).toLowerCase();
 
         if (searchStr.includes('ring')) return fallbackProductMap.ring;
-        if (searchStr.includes('pendant') || searchStr.includes('necklace') || searchStr.includes('chain')) return fallbackProductMap.pendant;
+        if (searchStr.includes('necklace') || searchStr.includes('choker') || searchStr.includes('set')) return fallbackProductMap.necklace;
+        if (searchStr.includes('pendant') || searchStr.includes('chain')) return fallbackProductMap.pendant;
         if (searchStr.includes('bracelet')) return fallbackProductMap.bracelet;
+
+        // 2. FALLBACK: If no boutique shot matches, use DB image
+        if (allUniqueImages[0]) return allUniqueImages[0];
 
         return null;
     };
@@ -68,22 +69,24 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
     const primaryImage = resolvePrimaryImage();
 
     const resolveSecondaryImage = () => {
-        // 1. If DB has a second UNIQUE image, use it
-        const nextActualImage = allUniqueImages.find(img => img !== primaryImage);
-        if (nextActualImage) return nextActualImage;
+        // 1. PRIORITIZE: Use DB image (or secondary DB image) for the hover effect (model shot)
+        const dbImage = allUniqueImages.find(img => img !== primaryImage) || allUniqueImages[0];
+        if (dbImage && dbImage !== primaryImage) return dbImage;
 
-        // 2. Otherwise, match category/name keywords for model shot
+        // 2. Otherwise, use a themed model shot fallback
         const categoryData = product.category;
         const categoryName = (typeof categoryData === 'object' ? categoryData?.name : categoryData) || '';
         const searchStr = String(categoryName + ' ' + (product.name || '')).toLowerCase();
 
         if (searchStr.includes('ring')) return fallbackModelMap.ring;
-        if (searchStr.includes('pendant') || searchStr.includes('necklace') || searchStr.includes('chain')) return fallbackModelMap.pendant;
+        if (searchStr.includes('necklace') || searchStr.includes('choker') || searchStr.includes('set')) return fallbackModelMap.pendant; // Necklaces usually use pendant/necklace model shots
+        if (searchStr.includes('pendant') || searchStr.includes('chain')) return fallbackModelMap.pendant;
         if (searchStr.includes('earring')) return fallbackModelMap.earring;
         if (searchStr.includes('bracelet')) return fallbackModelMap.bracelet;
         if (searchStr.includes('anklet')) return fallbackModelMap.anklet;
 
-        return null;
+        // 3. Last resort: use primary image again if nothing else
+        return dbImage || null;
     };
     const secondaryImage = resolveSecondaryImage();
 
