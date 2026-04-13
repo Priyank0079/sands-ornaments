@@ -29,23 +29,23 @@ const FamilyRecipientCategories = ({ selectedRecipient = 'all', onSelectRecipien
     };
 
     return (
-        <section className="py-8 md:py-12 px-4 md:px-12 bg-[#FFF8F1]">
+        <section className="py-6 md:py-8 px-4 md:px-12 bg-white">
             <div className="max-w-7xl mx-auto">
-                <div className="text-center mb-10 space-y-4">
+                <div className="text-center mb-6 space-y-2">
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 15 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         className="flex flex-col items-center"
                     >
-                        <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-amber-500 mb-2">Family Edit</span>
-                        <h2 className="text-3xl md:text-5xl font-serif text-zinc-900 tracking-tight flex flex-col md:flex-row items-center gap-3">
-                            SHOP BY <span className="italic font-light text-amber-600">RELATION</span>
+                        <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-[#8E2B45] mb-2 bg-[#FFD9E0] px-3 py-1">Family Edit</span>
+                        <h2 className="text-2xl md:text-4xl font-serif text-[#2D060F] tracking-tight flex flex-col md:flex-row items-center gap-2">
+                            SHOP BY <span className="italic font-light text-[#8E2B45]">RELATION</span>
                         </h2>
-                        <p className="max-w-xl text-xs md:text-sm text-zinc-500">
-                            Choose a family member and explore curated gifting jewellery designed for every bond.
+                        <p className="max-w-xl text-[10px] md:text-xs text-zinc-400 mt-2">
+                            Explore curated gifting jewellery designed for every bond.
                         </p>
-                        <div className="w-16 h-[1px] bg-amber-200 mt-4" />
+                        <div className="w-10 h-[1px] bg-[#FFD9E0] mt-4" />
                     </motion.div>
                 </div>
 
@@ -64,7 +64,7 @@ const FamilyRecipientCategories = ({ selectedRecipient = 'all', onSelectRecipien
                                 onClick={() => handleClick(recipient.id)}
                                 className={`group relative block aspect-square rounded-2xl overflow-hidden text-left transition-all duration-500 ${
                                     isActive
-                                        ? 'ring-2 ring-amber-500 shadow-lg'
+                                        ? 'ring-2 ring-[#8E2B45] shadow-lg'
                                         : 'shadow-md hover:-translate-y-1 hover:shadow-xl'
                                 }`}
                             >

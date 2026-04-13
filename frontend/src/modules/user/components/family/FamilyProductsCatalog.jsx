@@ -168,9 +168,8 @@ const recipientLabels = {
     wife: 'Wife Collections'
 };
 
-const GOLD = '#D97706';
-const GOLD_LIGHT = '#FEF3C7';
-const GOLD_BG = '#FFFBEB';
+const PINK_LIGHT = '#FFD9E0';
+const MAROON = '#8E2B45';
 
 const FamilyProductsCatalog = ({ selectedRecipient = 'all', onSelectRecipient }) => {
     const navigate = useNavigate();
@@ -191,42 +190,42 @@ const FamilyProductsCatalog = ({ selectedRecipient = 'all', onSelectRecipient })
 
         addToCart(mockProduct);
         toast.success(`${product.name} added to your bag!`, {
-            style: { background: GOLD, color: '#fff', fontSize: '12px' }
+            style: { background: MAROON, color: '#fff', fontSize: '12px' }
         });
         setTimeout(() => navigate('/cart'), 800);
     };
 
     return (
-        <section id="family-products" className="py-8 md:py-16" style={{ background: GOLD_BG }}>
-            <div className="container mx-auto px-4 md:px-8 max-w-[1500px]">
-                <div className="text-center mb-10 md:mb-16">
+        <section id="family-products" className="py-6 md:py-10 bg-white">
+            <div className="container mx-auto px-4 md:px-12 max-w-[1500px]">
+                <div className="text-center mb-6 md:mb-10">
                     <motion.div
-                        initial={{ opacity: 0, y: -20 }}
+                        initial={{ opacity: 0, y: -15 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.6 }}
-                        className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
-                        style={{ background: `${GOLD}22`, border: `1px solid ${GOLD}44` }}
+                        className="inline-flex items-center gap-2 px-4 py-1.5 rounded-none mb-4"
+                        style={{ background: PINK_LIGHT, border: `1px solid ${MAROON}22` }}
                     >
-                        <Gift className="w-3.5 h-3.5" style={{ color: GOLD }} />
-                        <span className="text-xs font-black uppercase tracking-widest" style={{ color: GOLD }}>For Family</span>
+                        <Gift className="w-3.5 h-3.5" style={{ color: MAROON }} />
+                        <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: MAROON }}>For Family</span>
                     </motion.div>
                     <motion.h2
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.7, delay: 0.1 }}
-                        className="text-3xl sm:text-4xl md:text-5xl font-serif text-zinc-900 tracking-tight mb-3"
+                        className="text-2xl sm:text-3xl md:text-4xl font-serif text-[#2D060F] tracking-tight mb-2"
                     >
-                        {recipientLabels[selectedRecipient] || 'Family Collections'} <span className="italic" style={{ color: GOLD }}>Edit</span>
+                        {recipientLabels[selectedRecipient] || 'Family Collections'} <span className="italic" style={{ color: MAROON }}>Edit</span>
                     </motion.h2>
-                    <p className="text-sm md:text-base text-zinc-600 max-w-2xl mx-auto">
-                        Curated silver jewellery picks for every family member, all using local collection assets.
+                    <p className="text-[10px] md:text-xs text-zinc-500 max-w-xl mx-auto italic">
+                        "Curated boutique jewellery picks for every family member."
                     </p>
-                    <div className="w-20 h-1 mx-auto rounded-full mt-5" style={{ background: GOLD }} />
+                    <div className="w-12 h-[1px] mx-auto mt-5" style={{ background: PINK_LIGHT }} />
                 </div>
 
-                <div className="flex flex-wrap justify-center gap-3 mb-8 md:mb-12">
+                <div className="flex flex-wrap justify-center gap-2 md:gap-3 mb-8 md:mb-10">
                     {Object.entries(recipientLabels).map(([recipientId, label]) => {
                         const isActive = recipientId === selectedRecipient;
 
@@ -235,11 +234,11 @@ const FamilyProductsCatalog = ({ selectedRecipient = 'all', onSelectRecipient })
                                 key={recipientId}
                                 type="button"
                                 onClick={() => onSelectRecipient?.(recipientId)}
-                                className="px-5 py-2.5 rounded-full text-[11px] md:text-xs font-black uppercase tracking-[0.18em] transition-all border"
+                                className="px-4 py-2 rounded-none text-[9px] md:text-[10px] font-black uppercase tracking-[0.15em] transition-all border"
                                 style={{
-                                    background: isActive ? GOLD : '#fff',
-                                    color: isActive ? '#fff' : '#7c5a14',
-                                    borderColor: isActive ? GOLD : '#f0d8a8'
+                                    background: isActive ? PINK_LIGHT : '#fff',
+                                    color: isActive ? MAROON : '#444',
+                                    borderColor: isActive ? PINK_LIGHT : '#eee'
                                 }}
                             >
                                 {label}
@@ -259,93 +258,100 @@ const FamilyProductsCatalog = ({ selectedRecipient = 'all', onSelectRecipient })
                             className="group relative"
                         >
                             <div
-                                className="bg-white rounded-2xl overflow-hidden transition-all duration-500 flex flex-col h-full border border-amber-50"
+                                className="bg-white rounded-none overflow-hidden transition-all duration-500 flex flex-col h-full border border-amber-50"
                                 style={{ boxShadow: '0 4px 20px rgba(217,119,6,0.08)' }}
                                 onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 16px 40px rgba(217,119,6,0.2)'; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.boxShadow = '0 4px 20px rgba(217,119,6,0.08)'; }}
                             >
                                 {product.badge && (
-                                    <div
-                                        className="absolute top-4 left-4 z-10 px-3 py-1 rounded-full text-white text-[10px] font-black uppercase tracking-wider shadow"
-                                        style={{ background: GOLD }}
-                                    >
-                                        {product.badge}
-                                    </div>
-                                )}
+                                     <div
+                                         className="absolute top-4 left-4 z-10 px-3 py-1 rounded-none text-[#8E2B45] text-[9px] font-black uppercase tracking-wider shadow-sm"
+                                         style={{ background: PINK_LIGHT }}
+                                     >
+                                         {product.badge}
+                                     </div>
+                                 )}
 
-                                <div
-                                    className="relative aspect-[4/5] overflow-hidden cursor-pointer"
-                                    style={{ background: GOLD_LIGHT }}
-                                    onClick={() => navigate(`/product/${product.id}`)}
-                                >
-                                    <img
-                                        src={product.image}
-                                        alt={product.name}
-                                        className="w-full h-full object-cover transition-transform duration-[1.8s] group-hover:scale-110"
-                                    />
-                                    <button type="button" className="absolute top-4 right-4 p-2 bg-white/90 rounded-full shadow hover:bg-amber-50 transition-colors">
-                                        <Heart className="w-3.5 h-3.5 text-gray-400 group-hover:text-amber-500 transition-colors" />
-                                    </button>
-                                </div>
+                                 <div
+                                     className="relative aspect-[4/5] overflow-hidden cursor-pointer"
+                                     style={{ background: '#F9F6F3' }}
+                                     onClick={() => navigate(`/product/${product.id}`)}
+                                 >
+                                     <img
+                                         src={product.image}
+                                         alt={product.name}
+                                         className="w-full h-full object-cover transition-transform duration-[1.8s] group-hover:scale-110"
+                                     />
+                                     <button type="button" className="absolute top-4 right-4 p-2 bg-white/90 rounded-none shadow-sm hover:bg-pink-50 transition-colors">
+                                         <Heart className="w-3.5 h-3.5 text-gray-400 group-hover:text-[#8E2B45] transition-colors" />
+                                     </button>
+                                 </div>
 
-                                <div className="p-5 flex flex-col flex-grow">
-                                    <div className="flex items-center gap-1 mb-2">
-                                        {[...Array(5)].map((_, i) => (
-                                            <Star
-                                                key={i}
-                                                className={`w-3 h-3 ${i < Math.floor(product.rating) ? 'fill-amber-400 text-amber-400' : 'text-gray-200'}`}
-                                            />
-                                        ))}
-                                        <span className="text-[10px] text-gray-400 ml-1">({product.reviews})</span>
-                                    </div>
+                                 <div className="p-5 flex flex-col flex-grow">
+                                     <div className="flex items-center gap-1 mb-2">
+                                         {[...Array(5)].map((_, i) => (
+                                             <Star
+                                                 key={i}
+                                                 className={`w-2.5 h-2.5 ${i < Math.floor(product.rating) ? 'fill-[#C9A24D] text-[#C9A24D]' : 'text-gray-200'}`}
+                                             />
+                                         ))}
+                                         <span className="text-[9px] text-gray-400 ml-1">({product.reviews}) reviews</span>
+                                     </div>
 
-                                    <h3
-                                        className="text-sm font-bold text-gray-800 mb-3 line-clamp-2 leading-snug cursor-pointer hover:text-amber-600 transition-colors"
-                                        onClick={() => navigate(`/product/${product.id}`)}
-                                    >
-                                        {product.name}
-                                    </h3>
+                                     <h3
+                                         className="text-[12px] font-bold text-gray-800 mb-2 line-clamp-2 leading-snug cursor-pointer hover:text-[#8E2B45] transition-colors uppercase tracking-tight"
+                                         onClick={() => navigate(`/product/${product.id}`)}
+                                     >
+                                         {product.name}
+                                     </h3>
 
-                                    <div className="flex items-baseline gap-2 mb-4">
-                                        <span className="text-xl font-black text-zinc-900">INR {product.price}</span>
-                                        <span className="text-xs text-gray-400 line-through">INR {product.originalPrice}</span>
-                                    </div>
+                                     <div className="flex items-baseline gap-2 mb-3">
+                                         <span className="text-lg font-black text-zinc-900 font-serif">₹{product.price}</span>
+                                         <span className="text-[10px] text-gray-400 line-through">₹{product.originalPrice}</span>
+                                     </div>
 
-                                    <p className="text-xs text-gray-400 mb-4">Explore premium silver gifting ideas for your loved ones.</p>
+                                     <p className="text-[10px] text-gray-400 mb-4 italic">"A timeless heirloom piece for your collection."</p>
 
-                                    <button
-                                        type="button"
-                                        onClick={() => handleAddToCart(product)}
-                                        className="mt-auto w-full py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 text-white"
-                                        style={{ background: GOLD }}
-                                        onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.88'; }}
-                                        onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
-                                    >
-                                        <ShoppingBag className="w-3.5 h-3.5" />
-                                        Shop Now
-                                    </button>
-                                </div>
-                            </div>
+                                     <button
+                                         type="button"
+                                         onClick={() => handleAddToCart(product)}
+                                         className="mt-auto w-full py-2.5 rounded-none font-bold text-[10px] uppercase tracking-[0.2em] transition-all duration-300 flex items-center justify-center gap-2"
+                                         style={{ 
+                                             background: PINK_LIGHT,
+                                             color: MAROON
+                                         }}
+                                         onMouseEnter={(e) => { 
+                                             e.currentTarget.style.background = '#ffd0d9';
+                                         }}
+                                         onMouseLeave={(e) => { 
+                                             e.currentTarget.style.background = PINK_LIGHT;
+                                         }}
+                                     >
+                                         <ShoppingBag className="w-3.5 h-3.5" />
+                                         Shop Collection
+                                     </button>
+                                 </div>
+                             </div>
                         </motion.div>
                     ))}
                 </div>
 
-                <div className="mt-10 md:mt-16 text-center">
-                    <motion.button
-                        type="button"
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        onClick={() => {
-                            onSelectRecipient?.('all');
-                            navigate('/category/family');
-                        }}
-                        className="px-12 py-4 rounded-full font-bold uppercase tracking-widest text-xs text-white transition-all shadow-lg hover:shadow-xl"
-                        style={{ background: GOLD }}
-                    >
-                        Explore All Family Collections
-                    </motion.button>
-                </div>
+                <div className="mt-8 md:mt-12 text-center">
+                     <motion.button
+                         type="button"
+                         initial={{ opacity: 0, y: 20 }}
+                         whileInView={{ opacity: 1, y: 0 }}
+                         viewport={{ once: true }}
+                         onClick={() => {
+                             onSelectRecipient?.('all');
+                             navigate('/category/family');
+                         }}
+                         className="px-10 py-3.5 rounded-none font-bold uppercase tracking-widest text-[10px] transition-all shadow-md hover:shadow-lg"
+                         style={{ background: PINK_LIGHT, color: MAROON }}
+                     >
+                         View All Collections →
+                     </motion.button>
+                 </div>
             </div>
         </section>
     );
