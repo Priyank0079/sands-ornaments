@@ -45,36 +45,36 @@ const NewLaunchSection = () => {
     });
     const baseItems = normalizedConfiguredItems.length > 0 ? normalizedConfiguredItems : newLaunches;
 
-    // We want exactly 10 items for a smooth curved cylinder 3D carousel
+    // We want exactly 20 items for a smooth curved 3D arc with large radius
     const cylinderItems = useMemo(() => {
         const items = [];
-        while(items.length < 10) {
+        while(items.length < 20) {
             items.push(...baseItems);
         }
-        return items.slice(0, 10);
+        return items.slice(0, 20);
     }, [baseItems]);
 
-    // Responsive measurements for the 3D cylinder
-    const [radius, setRadius] = useState(550);
-    const [cardWidth, setCardWidth] = useState(340);
-    const [cardHeight, setCardHeight] = useState(480);
+    // Responsive measurements for the wide shallow curve
+    const [radius, setRadius] = useState(1200);
+    const [cardWidth, setCardWidth] = useState(300);
+    const [cardHeight, setCardHeight] = useState(420);
 
     useEffect(() => {
         const updateDims = () => {
             if (window.innerWidth < 480) {
-                setRadius(240);
+                setRadius(400);
                 setCardWidth(140);
                 setCardHeight(200);
             } else if (window.innerWidth < 768) {
-                setRadius(300);
+                setRadius(600);
                 setCardWidth(180);
                 setCardHeight(260);
             } else if (window.innerWidth < 1024) {
-                setRadius(400);
-                setCardWidth(250);
-                setCardHeight(350);
+                setRadius(900);
+                setCardWidth(240);
+                setCardHeight(340);
             } else {
-                setRadius(500);
+                setRadius(1200);
                 setCardWidth(300);
                 setCardHeight(420);
             }
@@ -86,22 +86,22 @@ const NewLaunchSection = () => {
 
     return (
         <section 
-            className="py-6 md:py-10 bg-[#FFF0F0] relative overflow-hidden"
+            className="py-10 md:py-16 bg-[#FEF6F7] relative overflow-hidden"
             style={{
                 '--radius': `${radius}px`,
                 '--cardW': `${cardWidth}px`,
                 '--cardH': `${cardHeight}px`
             }}
         >
-            {/* Inline styles for the 3D Cylinder Animation */}
+            {/* Inline styles for the SHALLOW 3D Curve Animation */}
             <style>
                 {`
-                @keyframes spinCylinder {
+                @keyframes spinShallowCylinder {
                     0% { transform: translateZ(calc(var(--radius) * -1)) rotateY(0deg); }
                     100% { transform: translateZ(calc(var(--radius) * -1)) rotateY(-360deg); }
                 }
                 .scene {
-                    perspective: 1400px; /* Reduced extreme fish-eye */
+                    perspective: 4000px; /* Massive perspective for a flatter, natural look */
                     width: 100%;
                     height: var(--cardH);
                     display: flex;
@@ -114,8 +114,8 @@ const NewLaunchSection = () => {
                     height: var(--cardH);
                     position: relative;
                     transform-style: preserve-3d;
-                    /* Super smooth continuous scrolling */
-                    animation: spinCylinder 35s infinite linear;
+                    /* Super smooth slow continuous horizontal scroll */
+                    animation: spinShallowCylinder 80s infinite linear;
                 }
                 .rotator:hover {
                     animation-play-state: paused;
@@ -139,12 +139,12 @@ const NewLaunchSection = () => {
                     initial={{ opacity: 0, y: -20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    className="relative flex flex-col items-center justify-center mb-4 md:mb-6 text-center"
+                    className="relative flex flex-col items-center justify-center mb-0 md:mb-2 text-center"
                 >
-                    <div className="inline-block bg-[#722F37] text-white px-5 py-1.5 font-display tracking-widest text-xs uppercase rounded-full shadow-md mb-4">
+                    <div className="inline-block bg-[#722F37] text-white px-5 py-1 font-serif tracking-[0.2em] text-[10px] uppercase rounded-full shadow-sm mb-4">
                         New Launch
                     </div>
-                    <h3 className="font-display text-[#1F1F1F] text-4xl md:text-5xl font-medium tracking-wide uppercase">
+                    <h3 className="font-serif text-[#1F1F1F] text-4xl md:text-6xl font-light tracking-tight uppercase">
                         {sectionData?.label || "Limited Edition"}
                     </h3>
                 </motion.div>
@@ -155,12 +155,12 @@ const NewLaunchSection = () => {
                         {cylinderItems.map((item, index) => {
                             const itemLabel = item.name || item.label;
                             const itemPath = item.path || '/shop';
-                            // Calculate proper angle for 10 items (360 / 10 = 36)
-                            const angle = index * 36;
+                            // Calculate proper angle for 20 items (360 / 20 = 18)
+                            const angle = index * 18;
 
                             return (
                                 <div
-                                    key={`cyl-${Math.random()}-${index}`}
+                                    key={`cyl-${index}`}
                                     className="cylinder-card shadow-2xl group"
                                     style={{
                                         transform: `rotateY(${angle}deg) translateZ(var(--radius))`,
@@ -172,31 +172,31 @@ const NewLaunchSection = () => {
                                             <img
                                                 src={item.image}
                                                 alt={itemLabel}
-                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                             />
                                         </div>
 
                                         {/* Classic Gradient Overlay */}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-[#2A0505]/90 via-[#2A0505]/30 to-transparent"></div>
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent transition-opacity duration-500 group-hover:opacity-80"></div>
 
                                         {/* Text Section overlay at bottom */}
-                                        <div className="absolute bottom-0 left-0 right-0 p-8 flex flex-col items-center justify-end text-center z-10">
-                                            <h4 className="font-display font-medium text-2xl lg:text-3xl text-white tracking-widest mb-3 transform transition-transform duration-300 group-hover:-translate-y-2 drop-shadow-md">
+                                        <div className="absolute bottom-0 left-0 right-0 p-8 flex flex-col items-center justify-end text-center z-10 transition-transform duration-500 group-hover:-translate-y-2">
+                                            <h4 className="font-serif font-medium text-2xl lg:text-[1.75rem] text-white tracking-[0.1em] mb-4 drop-shadow-lg uppercase">
                                                 {itemLabel}
                                             </h4>
                                             
                                             {/* Discover/Animated Arrow */}
-                                            <div className="flex items-center gap-3 text-[#C9A24D] opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 delay-75">
-                                                <div className="h-[1px] w-6 bg-[#C9A24D]"></div>
-                                                <span className="text-sm font-bold uppercase tracking-[0.25em]">
-                                                    Explore
+                                            <div className="flex items-center gap-3 text-[#FFD9E0] transition-all duration-500">
+                                                <div className="h-[1px] w-5 bg-[#FFD9E0]/40 group-hover:w-8 transition-all"></div>
+                                                <span className="text-[10px] font-black uppercase tracking-[0.4em] drop-shadow-md">
+                                                    EXPLORE
                                                 </span>
-                                                <div className="h-[1px] w-6 bg-[#C9A24D]"></div>
+                                                <div className="h-[1px] w-5 bg-[#FFD9E0]/40 group-hover:w-8 transition-all"></div>
                                             </div>
                                         </div>
 
                                         {/* Border Glow on Hover */}
-                                        <div className="absolute inset-0 border-2 border-transparent group-hover:border-[#C9A24D]/50 rounded-3xl transition-colors duration-500 pointer-events-none"></div>
+                                        <div className="absolute inset-0 border-2 border-transparent group-hover:border-[#FFD9E0]/20 rounded-3xl transition-colors duration-500 pointer-events-none"></div>
                                     </Link>
                                 </div>
                             );

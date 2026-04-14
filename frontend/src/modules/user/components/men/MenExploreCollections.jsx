@@ -55,7 +55,7 @@ const MenExploreCollections = () => {
     };
 
     return (
-        <section className="py-6 md:py-10 bg-[#FDF6F2] select-none overflow-hidden">
+        <section className="py-2 md:py-10 bg-[#FDF6F2] select-none overflow-hidden">
             <div className="container mx-auto px-0 md:px-4 max-w-[1550px]">
                 
                 {/* Header */}

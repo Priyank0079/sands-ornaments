@@ -123,17 +123,17 @@ const MenFeaturedProducts = () => {
     };
 
     return (
-        <section className="py-10 md:py-16 bg-white overflow-hidden">
+        <section className="py-4 md:py-16 bg-white overflow-hidden">
             <div className="container mx-auto px-4 max-w-[1400px]">
                 
                 {/* Section Header Matching Screenshot */}
-                <div className="text-center mb-10 md:mb-14">
+                <div className="text-center mb-5 md:mb-14">
                     <h2 className="text-2xl md:text-[32px] font-medium text-gray-900 tracking-tight" style={{ fontFamily: "'Inter', sans-serif" }}>
                         Men's Exclusive
                     </h2>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-8">
                     {featuredProducts.map((product, idx) => (
                         <motion.div
                             key={product.id}
@@ -144,11 +144,11 @@ const MenFeaturedProducts = () => {
                             className="bg-white group cursor-pointer"
                         >
                             {/* Image Container */}
-                            <div className="relative aspect-square bg-[#FBFBFB] overflow-hidden mb-3" onClick={() => navigate(`/product/${product.id}`)}>
+                            <div className="relative aspect-square bg-[#FBFBFB] overflow-hidden mb-1.5 md:mb-3" onClick={() => navigate(`/product/${product.id}`)}>
                                 <img
                                     src={product.image}
                                     alt={product.name}
-                                    className="w-full h-full object-contain p-4 transition-transform duration-700 group-hover:scale-105"
+                                    className="w-full h-full object-contain p-2 md:p-4 transition-transform duration-700 group-hover:scale-105"
                                 />
                                 
                                 {/* Wishlist */}
@@ -157,8 +157,8 @@ const MenFeaturedProducts = () => {
                                 </button>
 
                                 {/* Rating Badge */}
-                                <div className="absolute bottom-3 left-3 bg-[#F3F4F6]/90 backdrop-blur-sm px-2 py-0.5 rounded flex items-center gap-1 text-[10px] md:text-xs font-medium text-gray-700 shadow-sm">
-                                    {product.rating} <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                                <div className="absolute bottom-2 left-2 md:bottom-3 md:left-3 bg-[#F3F4F6]/90 backdrop-blur-sm px-1.5 py-0.5 md:px-2 md:py-0.5 rounded flex items-center gap-0.5 md:gap-1 text-[8px] md:text-xs font-medium text-gray-700 shadow-sm">
+                                    {product.rating} <Star className="w-2 h-2 md:w-3 md:h-3 fill-amber-400 text-amber-400" />
                                     <span className="text-gray-300 mx-0.5">|</span>
                                     {product.reviews}
                                 </div>
@@ -166,16 +166,16 @@ const MenFeaturedProducts = () => {
 
                             {/* Product Info */}
                             <div className="flex flex-col px-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-base md:text-lg font-bold text-gray-900">₹{product.price}</span>
-                                    <span className="text-[10px] md:text-xs text-gray-400 line-through">₹{product.originalPrice}</span>
+                                <div className="flex items-center gap-1.5 md:gap-2 mb-0.5 md:mb-1">
+                                    <span className="text-[13px] md:text-lg font-bold text-gray-900 leading-tight">₹{product.price}</span>
+                                    <span className="text-[9px] md:text-xs text-gray-400 line-through">₹{product.originalPrice}</span>
                                 </div>
-                                <h3 className="text-[12px] md:text-[14px] text-gray-600 font-medium mb-1.5 line-clamp-1 leading-tight hover:text-gray-900" onClick={() => navigate(`/product/${product.id}`)}>
+                                <h3 className="text-[10px] md:text-[14px] text-gray-600 font-medium mb-1 md:mb-1.5 line-clamp-1 leading-tight hover:text-gray-900" onClick={() => navigate(`/product/${product.id}`)}>
                                     {product.name}
                                 </h3>
 
                                 {/* Promo Text */}
-                                <p className="text-[10px] md:text-[11px] font-bold text-[#2B6CB0] mb-3 uppercase tracking-tight">
+                                <p className="text-[8px] md:text-[11px] font-bold text-[#2B6CB0] mb-1.5 md:mb-3 uppercase tracking-tight leading-tight">
                                     {product.discountText}
                                 </p>
 
@@ -185,7 +185,7 @@ const MenFeaturedProducts = () => {
                                         e.stopPropagation();
                                         handleAddToCart(product);
                                     }}
-                                    className="w-full py-3 rounded-md font-bold text-[12px] md:text-[14px] text-gray-700 transition-all duration-300 transform active:scale-95"
+                                    className="w-full py-1.5 md:py-3 rounded-md font-bold text-[9px] md:text-[14px] text-gray-700 transition-all duration-300 transform active:scale-95"
                                     style={{ background: '#FFE1E6' }}
                                     onMouseEnter={e => e.currentTarget.style.background = '#FFD1D9'}
                                     onMouseLeave={e => e.currentTarget.style.background = '#FFE1E6'}

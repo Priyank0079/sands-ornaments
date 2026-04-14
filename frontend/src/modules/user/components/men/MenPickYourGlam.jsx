@@ -45,7 +45,7 @@ const MenPickYourGlam = () => {
     };
 
     return (
-        <section className="py-4 md:py-8 bg-[#F9FAFB] overflow-hidden select-none">
+        <section className="py-2 md:py-8 bg-[#F9FAFB] overflow-hidden select-none">
             <div className="container mx-auto px-4 max-w-[1200px]">
                 {/* Header */}
                 <div className="text-center mb-4 md:mb-6">

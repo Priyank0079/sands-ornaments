@@ -21,7 +21,7 @@ const WomenHeroCarousel = () => {
     const navigate = useNavigate();
 
     return (
-        <section className="relative w-full h-[320px] md:h-[400px] overflow-hidden select-none">
+        <section className="relative w-full h-[200px] md:h-[400px] overflow-hidden select-none">
             <div className="absolute inset-0 w-full h-full">
                 {/* Full Background Image */}
                 <div
@@ -41,18 +41,18 @@ const WomenHeroCarousel = () => {
                         transition={{ duration: 0.8, delay: 0.3 }}
                         className="max-w-xl"
                     >
-                        <span className="inline-block text-[10px] md:text-xs text-white/50 tracking-[0.5em] uppercase mb-4 font-bold border-r-2 border-white/30 pr-4">
+                        <span className="inline-block text-[8px] md:text-xs text-white/50 tracking-[0.3em] md:tracking-[0.5em] uppercase mb-2 md:mb-4 font-bold border-r-2 border-white/30 pr-2 md:pr-4">
                             Sands Ornaments Exclusive
                         </span>
 
-                        <h1 className="text-5xl md:text-8xl font-serif text-white tracking-tight font-light leading-[1] transition-all">
+                        <h1 className="text-4xl md:text-8xl font-serif text-white tracking-tight font-light leading-[1] transition-all">
                             {slides[0].title}
                             <span className="italic" style={{ color: slides[0].accent }}>
                                 {slides[0].titleItalic}
                             </span>
                         </h1>
 
-                        <p className="text-base md:text-lg text-white/80 font-light mt-4 mb-8 tracking-wide italic">
+                        <p className="text-xs md:text-lg text-white/80 font-light mt-2 mb-4 md:mt-4 md:mb-8 tracking-wide italic">
                             {slides[0].subtitle}
                         </p>
 
@@ -61,7 +61,7 @@ const WomenHeroCarousel = () => {
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => navigate('/shop?category=women')}
-                                className="px-8 py-4 bg-white text-black text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] rounded-none hover:bg-black hover:text-white transition-all shadow-2xl flex items-center gap-3 group"
+                                className="px-5 py-2 md:px-8 md:py-4 bg-white text-black text-[8px] md:text-xs font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] rounded-none hover:bg-black hover:text-white transition-all shadow-2xl flex items-center gap-2 md:gap-3 group"
                             >
                                 <ShoppingBag className="w-4 h-4" />
                                 {slides[0].cta}

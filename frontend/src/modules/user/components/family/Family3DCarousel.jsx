@@ -57,7 +57,7 @@ const Family3DCarousel = () => {
                  setCardWidth(200);
                  setCardHeight(280);
              } else {
-                 setRadius(950);
+                 setRadius(1200);
                  setCardWidth(240);
                  setCardHeight(340);
              }
@@ -69,7 +69,7 @@ const Family3DCarousel = () => {
 
     return (
         <section 
-            className="py-10 md:py-12 bg-[#FDFBFB] relative overflow-hidden"
+            className="pt-2 pb-4 md:py-12 bg-[#FDFBFB] relative overflow-hidden"
             style={{
                 '--radius': `${radius}px`,
                 '--cardW': `${cardWidth}px`,
@@ -84,13 +84,13 @@ const Family3DCarousel = () => {
                     100% { transform: translateZ(calc(var(--radius) * -1)) rotateY(-360deg); }
                 }
                 .scene-family {
-                    perspective: 2000px; /* High perspective for flatter curve */
+                    perspective: 4000px; /* High perspective for flatter curve */
                     width: 100%;
                     height: var(--cardH);
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    margin-top: 2rem;
+                    margin-top: 0;
                 }
                 .rotator-family {
                     width: var(--cardW);
@@ -122,7 +122,7 @@ const Family3DCarousel = () => {
                     initial={{ opacity: 0, y: -20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    className="relative flex flex-col items-center justify-center mb-4 md:mb-8 text-center"
+                    className="relative hidden md:flex flex-col items-center justify-center mb-2 md:mb-8 text-center"
                 >
                     <div className="inline-block bg-[#8E2B45] text-white px-4 py-1 font-sans font-black tracking-[0.2em] text-[9px] uppercase rounded-none shadow-sm mb-3">
                         Curated Picks
@@ -133,7 +133,7 @@ const Family3DCarousel = () => {
                 </motion.div>
 
                 {/* 3D Curved Carousel Area */}
-                <div className="scene-family">
+                <div className="scene-family mt-2 md:mt-8">
                     <div className="rotator-family">
                         {cylinderItems.map((item, index) => {
                             // Calculate proper angle for 20 items (360 / 20 = 18)

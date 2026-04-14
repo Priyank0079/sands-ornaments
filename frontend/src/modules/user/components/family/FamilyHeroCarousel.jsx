@@ -11,7 +11,7 @@ const FamilyHeroCarousel = () => {
     const navigate = useNavigate();
 
     return (
-        <section className="relative w-full h-[320px] md:h-[450px] overflow-hidden select-none bg-[#111]">
+        <section className="relative w-full h-[220px] md:h-[450px] overflow-hidden select-none bg-[#111]">
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -41,18 +41,18 @@ const FamilyHeroCarousel = () => {
                         transition={{ duration: 0.8, delay: 0.3 }}
                         className="max-w-xl"
                     >
-                        <span className="inline-block text-[9px] md:text-[10px] text-[#FFD9E0] tracking-[0.4em] uppercase mb-4 font-black border-l-2 border-[#FFD9E0]/50 pl-3">
+                        <span className="inline-block text-[7px] md:text-[10px] text-[#FFD9E0] tracking-[0.3em] md:tracking-[0.4em] uppercase mb-2 md:mb-4 font-black border-l-2 border-[#FFD9E0]/50 pl-2 md:pl-3">
                             The Sands Family Boutique
                         </span>
 
-                        <h1 className="text-4xl md:text-6xl font-serif text-white tracking-tight font-light leading-[1.1] mb-2 drop-shadow-lg">
+                        <h1 className="text-3xl md:text-6xl font-serif text-white tracking-tight font-light leading-[1.1] mb-1 md:mb-2 drop-shadow-lg">
                             Masterpiece <br />
                             <span className="italic text-[#FFD9E0]">
                                 Gifting
                             </span>
                         </h1>
 
-                        <p className="text-xs md:text-sm text-white/80 font-light mt-4 mb-8 tracking-wider max-w-sm leading-relaxed italic drop-shadow-md">
+                        <p className="text-[10px] md:text-sm text-white/80 font-light mt-2 mb-4 md:mt-4 md:mb-8 tracking-wider max-w-sm leading-relaxed italic drop-shadow-md">
                             "Exquisite delicate treasures designed for those who matter most in your life."
                         </p>
 
@@ -61,9 +61,9 @@ const FamilyHeroCarousel = () => {
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => navigate('/shop?filter=family')}
-                                className="px-8 py-3 bg-[#FFD9E0] text-[#8E2B45] text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] rounded-none hover:bg-white transition-all shadow-2xl flex items-center gap-3 backdrop-blur-sm"
+                                className="px-5 py-2 md:px-8 md:py-3 bg-[#FFD9E0] text-[#8E2B45] text-[7px] md:text-[10px] font-black uppercase tracking-[0.15em] md:tracking-[0.2em] rounded-none hover:bg-white transition-all shadow-2xl flex items-center gap-2 md:gap-3 backdrop-blur-sm"
                             >
-                                <ShoppingBag className="w-3.5 h-3.5" />
+                                <ShoppingBag className="w-3 h-3 md:w-3.5 md:h-3.5" />
                                 Explore Catalog
                             </motion.button>
                         </div>

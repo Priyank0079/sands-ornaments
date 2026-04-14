@@ -40,8 +40,8 @@ const trends = [
 const MenStyleTrends = () => {
     return (
         <section
-            className="relative"
-            style={{ background: '#C9BAA8', paddingTop: '2.5rem', paddingBottom: '2rem' }}
+            className="relative py-4 md:py-10"
+            style={{ background: '#C9BAA8' }}
         >
             {/* Decorative corner lines — top left */}
             <div className="absolute top-5 left-5 opacity-35" style={{ width: 56, height: 50 }}>
@@ -80,7 +80,7 @@ const MenStyleTrends = () => {
 
             <div className="container mx-auto px-4 md:px-10 max-w-[1300px]">
                 {/* Cards Row */}
-                <div className="flex gap-4 md:gap-6 justify-center items-stretch overflow-x-auto scrollbar-hide pb-6 md:pb-8">
+                <div className="flex gap-2 md:gap-6 justify-start md:justify-center items-stretch overflow-x-auto scrollbar-hide pb-6 md:pb-8 px-4 md:px-0">
                     {trends.map((trend, idx) => (
                         <motion.div
                             key={trend.id}
@@ -89,7 +89,7 @@ const MenStyleTrends = () => {
                             viewport={{ once: true }}
                             transition={{ duration: 0.5, delay: idx * 0.1 }}
                             className="flex-shrink-0 group"
-                            style={{ width: 'clamp(150px, 35vw, 240px)' }}
+                            style={{ width: 'clamp(110px, 28vw, 240px)' }}
                         >
                             <Link to={trend.link} className="block relative">
 
@@ -97,7 +97,7 @@ const MenStyleTrends = () => {
                                 <div
                                     className="relative overflow-hidden rounded-2xl md:rounded-3xl shadow-xl w-full"
                                     style={{
-                                        height: 'clamp(210px, 30vw, 380px)',
+                                        height: 'clamp(140px, 38vw, 380px)',
                                         background: '#8B7D6B',
                                     }}
                                 >
@@ -123,7 +123,7 @@ const MenStyleTrends = () => {
                                         <p
                                             style={{
                                                 fontFamily: "'Georgia', 'Times New Roman', serif",
-                                                fontSize: 'clamp(12px, 1.5vw, 17px)',
+                                                fontSize: 'clamp(9px, 1.5vw, 17px)',
                                                 fontWeight: 600,
                                                 color: '#fff',
                                                 lineHeight: 1.3,
@@ -143,7 +143,7 @@ const MenStyleTrends = () => {
                                     className="absolute left-0 select-none pointer-events-none"
                                     style={{
                                         bottom: '-0.38em',
-                                        fontSize: 'clamp(60px, 15vw, 140px)',
+                                        fontSize: 'clamp(36px, 15vw, 140px)',
                                         fontWeight: 900,
                                         lineHeight: 1,
                                         color: 'rgba(255,255,255,0.85)',

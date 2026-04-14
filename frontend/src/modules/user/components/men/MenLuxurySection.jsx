@@ -24,13 +24,13 @@ const luxuryOffers = [
 
 const MenLuxurySection = () => {
     return (
-        <section className="pt-0 pb-4 md:pt-1 md:pb-6 bg-white">
+        <section className="pt-0 pb-2 md:pt-1 md:pb-6 bg-white">
             <div className="container mx-auto px-4 max-w-[950px]">
                 <h2 className="text-2xl md:text-4xl font-bold text-[#101828] text-center mb-5 md:mb-10 tracking-tight font-serif">
                     Luxury Within Reach
                 </h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 items-center">
+                <div className="flex justify-between md:grid md:grid-cols-3 gap-2 md:gap-8 items-center">
                     {luxuryOffers.map((offer, idx) => (
                         <motion.div
                             key={idx}
@@ -38,11 +38,11 @@ const MenLuxurySection = () => {
                             whileInView={{ 
                                 opacity: 1, 
                                 y: 0, 
-                                scale: idx === 1 ? 1.1 : 0.92 
+                                scale: idx === 1 ? 1.05 : 0.95 
                             }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.8, delay: idx * 0.1 }}
-                            className={`relative group cursor-pointer overflow-hidden rounded-[30px] md:rounded-[40px] border-[1.5px] border-[#D4AF37]/30 aspect-[0.92/1] shadow-lg hover:shadow-2xl transition-all duration-500 ${idx === 1 ? 'z-10 shadow-xl' : 'z-0'}`}
+                            className={`relative group flex-1 cursor-pointer overflow-hidden rounded-2xl md:rounded-[40px] border border-[#D4AF37]/30 md:border-[1.5px] aspect-[0.92/1] shadow-lg hover:shadow-2xl transition-all duration-500 ${idx === 1 ? 'z-10 shadow-xl' : 'z-0'}`}
                         >
                             <img
                                 src={offer.image}
@@ -51,20 +51,20 @@ const MenLuxurySection = () => {
                             />
 
                             {/* Black semi-transparent overlay at bottom matching screenshot */}
-                            <div className="absolute bottom-0 left-0 w-full h-[20%] md:h-[24%] bg-black/80 flex items-center justify-center px-4">
-                                <h3 className="text-white flex items-baseline gap-1 font-display">
+                            <div className="absolute bottom-0 left-0 w-full h-[30%] md:h-[24%] bg-black/80 flex flex-col md:flex-row items-center justify-center px-1 md:px-4">
+                                <div className="text-white flex flex-col md:flex-row items-center md:items-baseline justify-center gap-0 md:gap-1 font-display">
                                     {offer.title.includes('₹') ? (
                                         <>
-                                            <span className="font-light uppercase text-[10px] md:text-xs tracking-[0.2em] opacity-80">Under</span>
-                                            <span className="text-2xl md:text-3xl font-bold tracking-tight">₹{offer.title.split('₹')[1]}</span>
+                                            <span className="font-light uppercase text-[7px] md:text-xs tracking-[0.1em] md:tracking-[0.2em] opacity-80 mt-1 md:mt-0">Under</span>
+                                            <span className="text-[11px] md:text-3xl font-bold tracking-tight">₹{offer.title.split('₹')[1]}</span>
                                         </>
                                     ) : (
                                         <>
-                                            <span className="font-light uppercase text-[10px] md:text-xs tracking-[0.2em] opacity-80">Premium</span>
-                                            <span className="text-2xl md:text-3xl font-bold uppercase tracking-widest">GIFTS</span>
+                                            <span className="font-light uppercase text-[7px] md:text-xs tracking-[0.1em] md:tracking-[0.2em] opacity-80 mt-1 md:mt-0">Premium</span>
+                                            <span className="text-[11px] md:text-3xl font-bold uppercase tracking-widest">GIFTS</span>
                                         </>
                                     )}
-                                </h3>
+                                </div>
                             </div>
                         </motion.div>
                     ))}

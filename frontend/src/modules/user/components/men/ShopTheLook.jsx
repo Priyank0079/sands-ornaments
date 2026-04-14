@@ -101,11 +101,11 @@ const ShopTheLook = () => {
     const loopedCollections = [...collections, ...collections];
 
     return (
-        <section className="py-10 md:py-16 bg-[#FDF7F4] overflow-hidden">
+        <section className="py-4 md:py-16 bg-[#FDF7F4] overflow-hidden">
             <div className="max-w-[1500px] mx-auto px-4 md:px-8">
 
                 {/* Header */}
-                <div className="text-center mb-8 md:mb-10">
+                <div className="text-center mb-4 md:mb-10">
                     <h2 className="text-2xl md:text-4xl font-bold text-[#111] uppercase tracking-wide">
                         Explore Collections
                     </h2>

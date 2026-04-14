@@ -35,7 +35,7 @@ const MenCuratedCollections = () => {
     };
 
     return (
-        <section className="py-4 md:py-8 bg-white select-none overflow-hidden">
+        <section className="py-2 md:py-8 bg-white select-none overflow-hidden">
             <div className="w-full">
                 
                 {/* Header */}
@@ -57,22 +57,22 @@ const MenCuratedCollections = () => {
                     {/* Left Scroll Arrow */}
                     <button 
                         onClick={() => scroll('left')}
-                        className="absolute left-2 md:left-3 top-1/2 -translate-y-1/2 z-30 w-10 h-10 md:w-11 md:h-11 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg border border-gray-100 opacity-0 group-hover/main:opacity-100 transition-all duration-300 hover:bg-white hover:scale-105 active:scale-95"
+                        className="absolute left-2 md:left-3 top-1/2 -translate-y-1/2 z-30 w-8 h-8 md:w-11 md:h-11 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg border border-gray-100 opacity-0 group-hover/main:opacity-100 transition-all duration-300 hover:bg-white hover:scale-105 active:scale-95"
                     >
-                        <ChevronLeft className="w-5 h-5 text-black" />
+                        <ChevronLeft className="w-4 h-4 md:w-5 md:h-5 text-black" />
                     </button>
 
                     {/* Right Scroll Arrow */}
                     <button 
                         onClick={() => scroll('right')}
-                        className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 z-30 w-10 h-10 md:w-11 md:h-11 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg border border-gray-100 opacity-0 group-hover/main:opacity-100 transition-all duration-300 hover:bg-white hover:scale-105 active:scale-95"
+                        className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 z-30 w-8 h-8 md:w-11 md:h-11 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg border border-gray-100 opacity-0 group-hover/main:opacity-100 transition-all duration-300 hover:bg-white hover:scale-105 active:scale-95"
                     >
-                        <ChevronRight className="w-5 h-5 text-black" />
+                        <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-black" />
                     </button>
 
                     <div 
                         ref={scrollRef}
-                        className="flex overflow-x-auto gap-4 pb-10 hide-scrollbar scroll-smooth snap-x snap-mandatory px-4"
+                        className="flex overflow-x-auto gap-2 md:gap-4 pb-4 md:pb-10 hide-scrollbar scroll-smooth snap-x snap-mandatory px-4"
                     >
                         {collections.map((item, idx) => (
                             <motion.div 
@@ -82,7 +82,7 @@ const MenCuratedCollections = () => {
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.6, delay: idx * 0.1 }}
                                 onClick={() => navigate(item.link)}
-                                className="flex-shrink-0 w-[240px] md:w-[280px] lg:w-[320px] aspect-square relative group cursor-pointer overflow-hidden rounded-none bg-[#F5F5F5] snap-start shadow-[0_15px_35px_rgba(0,0,0,0.12)]"
+                                className="flex-shrink-0 w-[150px] md:w-[280px] lg:w-[320px] aspect-square relative group cursor-pointer overflow-hidden rounded-none bg-[#F5F5F5] snap-start shadow-[0_10px_25px_rgba(0,0,0,0.08)] md:shadow-[0_15px_35px_rgba(0,0,0,0.12)]"
                             >
                                 <img 
                                     src={item.image} 
@@ -91,15 +91,15 @@ const MenCuratedCollections = () => {
                                 />
                                 
                                 {/* Bottom Gradient - Fixed and subtle */}
-                                <div className="absolute inset-x-0 bottom-0 h-[80px] bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                                <div className="absolute inset-x-0 bottom-0 h-[60px] md:h-[80px] bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
                                 {/* Label at Bottom Center/Left as per screenshot */}
-                                <div className="absolute bottom-6 left-4 right-4 text-white z-10">
-                                    <div className="flex items-center gap-1.5 translate-y-0 group-hover:translate-x-1 transition-transform duration-300">
-                                        <span className="text-[11px] md:text-[13px] font-bold tracking-[0.1em] uppercase whitespace-nowrap drop-shadow-md">
+                                <div className="absolute bottom-3 md:bottom-6 left-2 md:left-4 right-2 md:right-4 text-white z-10">
+                                    <div className="flex items-center gap-1 md:gap-1.5 translate-y-0 group-hover:translate-x-1 transition-transform duration-300">
+                                        <span className="text-[8px] md:text-[13px] font-bold tracking-[0.08em] md:tracking-[0.1em] uppercase whitespace-nowrap drop-shadow-md">
                                             {item.title}
                                         </span>
-                                        <ChevronRight className="w-4 h-4 text-white/90" />
+                                        <ChevronRight className="w-3 h-3 md:w-4 md:h-4 text-white/90" />
                                     </div>
                                 </div>
                             </motion.div>

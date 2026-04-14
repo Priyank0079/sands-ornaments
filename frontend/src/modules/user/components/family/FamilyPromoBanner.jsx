@@ -1,38 +1,48 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import familyWideBanner from '../../assets/family_wide_banner_4k.png';
+import familyLuxuryBanner from '../../assets/family_luxury_banner_new.png';
 
 const FamilyPromoBanner = () => {
     return (
-        <section className="w-full bg-white">
+        <section className="w-full bg-white py-0 md:py-2">
             <div 
-                className="w-full overflow-hidden relative bg-cover bg-center h-[280px] sm:h-[350px] md:h-[450px] flex items-center justify-center md:justify-end shadow-md" 
-                style={{ backgroundImage: `url(${familyWideBanner})` }}
+                className="w-full overflow-hidden relative bg-cover bg-center h-[200px] sm:h-[300px] md:h-[500px] flex items-center justify-center md:justify-center shadow-lg group" 
+                style={{ backgroundImage: `url(${familyLuxuryBanner})` }}
             >
-                {/* Strong overlay to ensure text readability against the intricate jewelry background */}
-                <div className="absolute inset-x-0 bottom-0 top-1/2 md:top-0 md:inset-y-0 md:left-1/2 right-0 bg-gradient-to-t md:bg-gradient-to-l from-[#4a0d1d]/90 via-[#8E2B45]/70 to-transparent pointer-events-none" />
+                {/* Elegant Glassmorphism Overlay */}
+                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-700" />
+                
+                {/* Sophisticated Radial Gradient */}
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_rgba(0,0,0,0.4)_100%)] pointer-events-none" />
 
-                {/* Text Information explicitly positioned to blend beautifully */}
-                <div className="w-full md:w-[45%] flex flex-col justify-end md:justify-center items-center text-center pb-12 md:pb-0 relative z-20">
-                    <motion.h2 
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.2 }}
+                {/* Main Content */}
+                <div className="relative z-20 flex flex-col items-center text-center px-4 max-w-4xl">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.8, ease: "easeOut" }}
                         viewport={{ once: true }}
-                        className="text-white font-serif text-4xl sm:text-5xl md:text-[4rem] leading-tight mb-2 md:mb-5 tracking-wide drop-shadow-xl"
+                        className="flex flex-col items-center"
                     >
-                        Gifts for family
-                    </motion.h2>
-                    <motion.p 
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.3 }}
-                        viewport={{ once: true }}
-                        className="text-white/95 text-base sm:text-lg md:text-2xl font-light tracking-[0.05em] drop-shadow-lg italic"
-                    >
-                        "The surprise they'll adore"
-                    </motion.p>
+                        <span className="text-[#FFD9E0] text-[10px] md:text-sm font-bold tracking-[0.4em] uppercase mb-2 md:mb-4 drop-shadow-md">
+                            Exclusive Collection
+                        </span>
+                        
+                        <h2 className="text-white font-serif text-3xl sm:text-5xl md:text-7xl leading-tight mb-3 md:mb-6 tracking-tight drop-shadow-2xl">
+                            Gifts for <span className="italic font-light">Family</span>
+                        </h2>
+
+                        <div className="w-12 md:w-20 h-[1px] bg-[#FFD9E0]/60 mb-3 md:mb-6" />
+
+                        <p className="text-white/90 text-xs sm:text-lg md:text-xl font-light tracking-[0.05em] drop-shadow-lg italic max-w-lg leading-relaxed">
+                            "Cherish the bonds that last a lifetime with our curated masterpiece collection."
+                        </p>
+                    </motion.div>
                 </div>
+
+                {/* Decorative Elements */}
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#FFD9E0]/30 to-transparent" />
+                <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#FFD9E0]/30 to-transparent" />
             </div>
         </section>
     );
