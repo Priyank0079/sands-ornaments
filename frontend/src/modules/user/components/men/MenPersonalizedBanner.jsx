@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { buildMenShopPath } from '../../utils/menNavigation';
 
 // Import image
 import personalizedImg from '../../../../assets/men/personalized_full_banner.png';
@@ -43,7 +44,7 @@ const MenPersonalizedBanner = () => {
                             </p>
                             
                             <Link 
-                                to="/shop?category=Personalised"
+                                to={buildMenShopPath({ category: 'personalised' })}
                                 className="inline-block"
                             >
                                 <motion.div

@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { buildWomenShopPath } from '../../utils/womenNavigation';
 
 import SilverImg from '../../../../assets/hues/silver_woman.png';
 import GoldImg from '../../../../assets/hues/gold_woman.png';
@@ -12,25 +13,25 @@ const hues = [
         id: 1,
         title: "Pure 925 Silver",
         image: SilverImg,
-        path: "/shop?metal=silver"
+        path: buildWomenShopPath({ metal: 'silver' })
     },
     {
         id: 2,
         title: "Gold Plated",
         image: GoldImg,
-        path: "/shop?metal=gold"
+        path: buildWomenShopPath({ metal: 'gold' })
     },
     {
         id: 3,
         title: "Rose Gold Plated",
         image: RoseGoldImg,
-        path: "/shop?metal=rose-gold"
+        path: buildWomenShopPath({ metal: 'rose-gold' })
     },
     {
         id: 4,
         title: "Oxidised Silver",
         image: OxidisedImg,
-        path: "/shop?metal=oxidised-silver"
+        path: buildWomenShopPath({ metal: 'oxidised-silver' })
     }
 ];
 

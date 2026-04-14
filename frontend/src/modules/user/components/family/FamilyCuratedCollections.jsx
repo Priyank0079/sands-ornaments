@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
+import { buildFamilyCollectionPath } from '../../utils/familyNavigation';
 
 import classicsImg from '../../assets/family_curated_classics.png';
 import sistersImg from '../../assets/family_curated_sisters.png';
@@ -15,37 +16,37 @@ const collections = [
         id: 'classics',
         title: '925 SILVER CLASSICS',
         image: classicsImg, 
-        path: '/shop?category=family&style=classics'
+        path: buildFamilyCollectionPath('classics')
     },
     {
         id: 'astra',
         title: 'ASTRA EDITION',
         image: astraImg,
-        path: '/shop?category=family&collection=astra'
+        path: buildFamilyCollectionPath('astra')
     },
     {
         id: 'signature',
         title: 'SIGNATURE SETS',
         image: signatureImg,
-        path: '/shop?category=family&filter=sets'
+        path: buildFamilyCollectionPath('signature')
     },
     {
         id: 'boho',
         title: 'BOHO ANKLETS',
         image: bohoImg,
-        path: '/shop?category=family&category=anklets'
+        path: buildFamilyCollectionPath('boho')
     },
     {
         id: 'bridal',
         title: 'BRIDAL EDIT',
         image: bridalImg,
-        path: '/shop?category=family&filter=bridal'
+        path: buildFamilyCollectionPath('bridal')
     },
     {
         id: 'gifts',
         title: 'GIFTS FOR HER',
         image: sistersImg,
-        path: '/shop?category=family&filter=gifts'
+        path: buildFamilyCollectionPath('gifts')
     }
 ];
 

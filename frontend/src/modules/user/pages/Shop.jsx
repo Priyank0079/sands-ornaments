@@ -42,6 +42,8 @@ const Shop = () => {
     const queryParams = new URLSearchParams(location.search);
     const isComingSoonQuery = queryParams.get('status') === 'coming-soon';
     const filterQuery = queryParams.get('filter');
+    const giftsQuery = queryParams.get('gifts');
+    const sourceQuery = queryParams.get('source');
     const occasionQuery = queryParams.get('occasion');
     const priceMaxQuery = queryParams.get('price_max');
     const productsQuery = queryParams.get('products');
@@ -50,6 +52,9 @@ const Shop = () => {
     const searchQuery = queryParams.get('search');
     const karatQuery = queryParams.get('karat');
     const silverTypeQuery = queryParams.get('silver_type');
+    const effectiveFilterQuery = filterQuery || giftsQuery;
+    const isMenFlow = sourceQuery === 'men';
+    const isWomenFlow = sourceQuery === 'women';
 
     useEffect(() => {
         const categoryQuery = queryParams.get('category');
@@ -249,8 +254,8 @@ const Shop = () => {
             const currentCat = categories.find(c => c.path === category || c.slug === category);
             title = currentCat ? currentCat.name : category.charAt(0).toUpperCase() + category.slice(1);
             baseProducts = products.filter(p => matchesCategory(p, category, currentCat));
-        } else if (filterQuery) {
-            title = `Gifts for ${filterQuery.charAt(0).toUpperCase() + filterQuery.slice(1)}`;
+        } else if (effectiveFilterQuery) {
+            title = `Gifts for ${effectiveFilterQuery.charAt(0).toUpperCase() + effectiveFilterQuery.slice(1)}`;
         } else if (occasionQuery) {
             title = `${occasionQuery.charAt(0).toUpperCase() + occasionQuery.slice(1)} Picks`;
         }
@@ -310,7 +315,7 @@ const Shop = () => {
         }
 
         // 2.1 Apply Audience/Occasion Text Filters (if present)
-        const filterTerm = filterQuery || occasionQuery;
+        const filterTerm = effectiveFilterQuery || occasionQuery;
         if (filterTerm) {
             const normalize = (value) => String(value || '')
                 .trim()
@@ -322,7 +327,7 @@ const Shop = () => {
             const matchesNavTags = (product) => {
                 const giftTags = (product.navGiftsFor || []).map(t => normalize(t));
                 const occasionTags = (product.navOccasions || []).map(t => normalize(t));
-                if (filterQuery) return giftTags.includes(term);
+                if (effectiveFilterQuery) return giftTags.includes(term);
                 if (occasionQuery) return occasionTags.includes(term);
                 return false;
             };
@@ -507,12 +512,14 @@ const Shop = () => {
         // 6. Inject Dummy Products for Men/Women Categories if empty
         const isMenCategory = category?.toLowerCase() === 'men' || 
                              selectedCategory?.toLowerCase() === 'men' ||
+                             sourceQuery === 'men' ||
                              location.pathname.includes('/men') ||
                              menDummyProducts.some(p => p.categorySlug === category || p.categorySlug === selectedCategory?.toLowerCase());
 
         const isWomenCategory = category?.toLowerCase() === 'women' || 
                                category?.toLowerCase() === 'womens' ||
                                selectedCategory?.toLowerCase() === 'women' ||
+                               sourceQuery === 'women' ||
                                location.pathname.includes('/women') ||
                                womenDummyProducts.some(p => p.categorySlug === category || p.categorySlug === selectedCategory?.toLowerCase());
 
@@ -696,7 +703,12 @@ const Shop = () => {
                         return (
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8 gap-y-8 md:gap-y-12">
                                 {filteredProducts.map((product) => (
-                                    <ProductCard key={product.id} product={product} />
+                                    <ProductCard
+                                        key={product.id}
+                                        product={product}
+                                        requireLogin={isMenFlow || isWomenFlow}
+                                        loginSource={isWomenFlow ? 'women' : 'men'}
+                                    />
                                 ))}
                             </div>
                         );
@@ -736,7 +748,7 @@ const Shop = () => {
                         <Filter className="w-3 h-3" /> Filter
                     </span>
                     <span className="text-[10px] text-gray-600 font-medium mt-0.5">
-                        {(selectedCategory !== 'All' || filterNewArrivals || filterTrending || priceRange < 50000 || !!searchQuery || !!filterQuery || !!occasionQuery) ? 'Filters applied' : 'No filter applied'}
+                        {(selectedCategory !== 'All' || filterNewArrivals || filterTrending || priceRange < 50000 || !!searchQuery || !!effectiveFilterQuery || !!occasionQuery) ? 'Filters applied' : 'No filter applied'}
                     </span>
                 </button>
             </div>

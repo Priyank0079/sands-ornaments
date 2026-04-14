@@ -5,11 +5,15 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Crown, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { useShop } from '../../../context/ShopContext';
+import { readMenPendingCartItem, clearMenPendingCartItem } from '../utils/menNavigation';
+import { readWomenPendingCartItem, clearWomenPendingCartItem } from '../utils/womenNavigation';
 
 import logo from '../assets/SANDS JEWELS PINK (1).png';
 
 const Login = () => {
     const { sendOtp, verifyOtp } = useAuth();
+    const { addToCart } = useShop();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -64,6 +68,22 @@ const Login = () => {
                     : {}
             );
             if (res.success) {
+                const pendingWomenCartItem = readWomenPendingCartItem();
+                if (pendingWomenCartItem) {
+                    addToCart(pendingWomenCartItem);
+                    clearWomenPendingCartItem();
+                    navigate('/cart', { replace: true });
+                    return;
+                }
+
+                const pendingCartItem = readMenPendingCartItem();
+                if (pendingCartItem) {
+                    addToCart(pendingCartItem);
+                    clearMenPendingCartItem();
+                    navigate('/cart', { replace: true });
+                    return;
+                }
+
                 navigate(redirectTarget, { replace: true });
             } else {
                 toast.error(res.message);

@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { buildMenShopPath } from '../../utils/menNavigation';
 
 // Asset imports
 import edgeBanner from '../../../../assets/explore/edge_banner.png';
@@ -17,7 +18,7 @@ const exploreCollections = [
         title: "EDGE",
         description: "Sleek, silver, and made to turn heads",
         image: edgeBanner,
-        link: "/shop?collection=edge",
+        link: buildMenShopPath({ search: 'edge' }),
         items: [thumbRing, thumbChain, thumbRing]
     },
     {
@@ -25,7 +26,7 @@ const exploreCollections = [
         title: "THE CLASSICS",
         description: "Because classics never go out of style",
         image: classicsBanner,
-        link: "/shop?collection=classics",
+        link: buildMenShopPath({ search: 'classic' }),
         items: [thumbPendant, thumbChain, thumbChain]
     },
     {
@@ -33,7 +34,7 @@ const exploreCollections = [
         title: "IYKYK",
         description: "Street style that speaks for itself",
         image: iykykBanner,
-        link: "/shop?collection=iykyk",
+        link: buildMenShopPath({ search: 'street' }),
         items: [thumbPendant, thumbRing, thumbChain]
     }
 ];

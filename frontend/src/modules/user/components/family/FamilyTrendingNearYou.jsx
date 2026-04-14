@@ -1,6 +1,7 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { buildFamilyCollectionPath } from '../../utils/familyNavigation';
 
 // Import all 10 curated images
 import img1 from '../../assets/family_trend_1.png';
@@ -15,16 +16,16 @@ import img9 from '../../assets/family_trend_9.png';
 import img10 from '../../assets/family_trend_10.png';
 
 const trendingCollections = [
-    { id: 1, title: "Matching Sets", image: img1, path: "/shop?filter=family&tag=matching" },
-    { id: 2, title: "Heirloom Pieces", image: img2, path: "/shop?filter=family&tag=heirloom" },
-    { id: 3, title: "Mom & Me", image: img3, path: "/shop?filter=family&tag=mom-me" },
-    { id: 4, title: "Generations", image: img4, path: "/shop?filter=family&tag=generations" },
-    { id: 5, title: "Everyday Wear", image: img5, path: "/shop?filter=family&tag=everyday" },
-    { id: 6, title: "Festive Joy", image: img6, path: "/shop?filter=family&tag=festive" },
-    { id: 7, title: "Minimalist Luxe", image: img7, path: "/shop?filter=family&tag=minimalist" },
-    { id: 8, title: "Statement Picks", image: img8, path: "/shop?filter=family&tag=statement" },
-    { id: 9, title: "Traditional", image: img9, path: "/shop?filter=family&tag=traditional" },
-    { id: 10, title: "Modern Staples", image: img10, path: "/shop?filter=family&tag=modern" }
+    { id: 1, title: "Matching Sets", image: img1, path: buildFamilyCollectionPath('matching-sets') },
+    { id: 2, title: "Heirloom Pieces", image: img2, path: buildFamilyCollectionPath('heirloom-pieces') },
+    { id: 3, title: "Mom & Me", image: img3, path: buildFamilyCollectionPath('mom-and-me') },
+    { id: 4, title: "Generations", image: img4, path: buildFamilyCollectionPath('generations') },
+    { id: 5, title: "Everyday Wear", image: img5, path: buildFamilyCollectionPath('everyday-wear') },
+    { id: 6, title: "Festive Joy", image: img6, path: buildFamilyCollectionPath('festive-joy') },
+    { id: 7, title: "Minimalist Luxe", image: img7, path: buildFamilyCollectionPath('minimalist-luxe') },
+    { id: 8, title: "Statement Picks", image: img8, path: buildFamilyCollectionPath('statement-picks') },
+    { id: 9, title: "Traditional", image: img9, path: buildFamilyCollectionPath('traditional') },
+    { id: 10, title: "Modern Staples", image: img10, path: buildFamilyCollectionPath('modern-staples') }
 ];
 
 const FamilyTrendingNearYou = () => {

@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { buildWomenShopPath } from '../../utils/womenNavigation';
 
 // Import local images
 import TempleDateImg from '../../../../assets/occasions/TempleDate.png';
@@ -15,21 +16,21 @@ const occasions = [
         id: 1,
         title: "Temple Date",
         image: TempleDateImg,
-        path: "/shop?occasion=temple-date",
+        path: buildWomenShopPath({ occasion: 'temple-date' }),
         height: "h-[350px] md:h-[450px]"
     },
     {
         id: 2,
         title: "Girl Outing",
         image: GirlOutingImg,
-        path: "/shop?occasion=girl-outing",
+        path: buildWomenShopPath({ occasion: 'girl-outing' }),
         height: "h-[400px] md:h-[500px]"
     },
     {
         id: 3,
         title: "Date Night",
         image: DateNightImg,
-        path: "/shop?occasion=date-night",
+        path: buildWomenShopPath({ occasion: 'date-night' }),
         height: "h-[450px] md:h-[550px]",
         featured: true
     },
@@ -37,14 +38,14 @@ const occasions = [
         id: 4,
         title: "Party Glam",
         image: PartyGlamImg,
-        path: "/shop?occasion=party-glam",
+        path: buildWomenShopPath({ occasion: 'party-glam' }),
         height: "h-[400px] md:h-[500px]"
     },
     {
         id: 5,
         title: "Got Hitched",
         image: GotHitchedImg,
-        path: "/shop?occasion=wedding",
+        path: buildWomenShopPath({ occasion: 'wedding' }),
         height: "h-[350px] md:h-[450px]"
     }
 ];

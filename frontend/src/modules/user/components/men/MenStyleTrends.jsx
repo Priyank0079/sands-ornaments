@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { buildMenShopPath } from '../../utils/menNavigation';
 
 const trends = [
     {
@@ -9,7 +10,7 @@ const trends = [
         line1: 'Rings',
         line2: 'Stacking',
         image: '/men_style_1.png',
-        link: '/shop?category=men&style=rings-stacking',
+        link: buildMenShopPath({ category: 'rings' }),
     },
     {
         id: 2,
@@ -17,7 +18,7 @@ const trends = [
         line1: 'Curated',
         line2: 'Combos',
         image: '/men_style_2.png',
-        link: '/shop?category=men&style=curated-combos',
+        link: buildMenShopPath({ category: 'sets' }),
     },
     {
         id: 3,
@@ -25,7 +26,7 @@ const trends = [
         line1: 'Chain',
         line2: 'Layering',
         image: '/men_style_3.png',
-        link: '/shop?category=men&style=chain-layering',
+        link: buildMenShopPath({ category: 'chains' }),
     },
     {
         id: 4,
@@ -33,7 +34,7 @@ const trends = [
         line1: 'Spiritual',
         line2: 'Picks',
         image: '/men_style_4.png',
-        link: '/shop?category=men&style=spiritual-picks',
+        link: buildMenShopPath({ search: 'spiritual' }),
     },
 ];
 

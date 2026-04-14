@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { buildWomenShopPath } from '../../utils/womenNavigation';
 
 import SilverImg from '../../../../assets/collections/SilverClassics.png';
 import RingsImg from '../../../../assets/collections/DazzlingRings.png';
@@ -16,37 +18,37 @@ const collections = [
         id: 1,
         title: "925 Silver Classics",
         image: SilverImg,
-        link: "/shop?category=silver"
+        link: buildWomenShopPath({ metal: 'silver' })
     },
     {
         id: 2,
         title: "Astra Collection",
         image: RingsImg,
-        link: "/shop?category=rings"
+        link: buildWomenShopPath({ category: 'rings' })
     },
     {
         id: 3,
         title: "Boho Anklets",
         image: BohoImg,
-        link: "/shop?category=anklets"
+        link: buildWomenShopPath({ category: 'anklets' })
     },
     {
         id: 4,
         title: "Gifts for Her",
         image: GiftsImg,
-        link: "/shop?category=women-gifts"
+        link: buildWomenShopPath({ products: 'w1,w2,w3', limit: 3, sort: 'random' })
     },
     {
         id: 5,
         title: "Bridal Bliss",
         image: BridalImg,
-        link: "/shop?category=bridal"
+        link: buildWomenShopPath({ search: 'bridal' })
     },
     {
         id: 6,
         title: "Office Chic",
         image: OfficeImg,
-        link: "/shop?category=office"
+        link: buildWomenShopPath({ search: 'office' })
     }
 ];
 
@@ -157,6 +159,12 @@ const WomenCuratedCollections = () => {
                                 whileHover={{ y: -5 }}
                                 className="flex-shrink-0 w-[160px] sm:w-[220px] md:w-[320px] aspect-[3/4] relative overflow-hidden cursor-pointer group snap-start"
                             >
+                                <Link
+                                    to={item.link}
+                                    aria-label={`Shop ${item.title}`}
+                                    className="absolute inset-0 z-20"
+                                />
+
                                 {/* Media Content */}
                                 <div className="absolute inset-0 w-full h-full">
                                     {item.video ? (
@@ -181,7 +189,7 @@ const WomenCuratedCollections = () => {
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
 
                                 {/* Label matching ref 2 */}
-                                <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between text-white border-b border-white/20 pb-2">
+                                <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between text-white border-b border-white/20 pb-2 z-10 pointer-events-none">
                                     <span className="text-xs md:text-sm font-bold tracking-widest uppercase">
                                         {item.title.includes('Collection') ? item.title : `Shop ${item.title}`}
                                     </span>
@@ -197,4 +205,3 @@ const WomenCuratedCollections = () => {
 };
 
 export default WomenCuratedCollections;
-

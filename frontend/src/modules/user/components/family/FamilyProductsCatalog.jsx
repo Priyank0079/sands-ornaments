@@ -4,6 +4,7 @@ import { Heart, Star, ShoppingBag, Gift } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ShopContext } from '../../../../context/ShopContext';
 import toast from 'react-hot-toast';
+import { buildFamilyShopPath, normalizeFamilyRecipient } from '../../utils/familyNavigation';
 import giftMother from '../../assets/gift_mother_silver.png';
 import giftFather from '../../assets/gift_husband_silver.png';
 import giftBrother from '../../assets/gift_brother_silver.png';
@@ -171,13 +172,34 @@ const recipientLabels = {
 const PINK_LIGHT = '#FFD9E0';
 const MAROON = '#8E2B45';
 
-const FamilyProductsCatalog = ({ selectedRecipient = 'all', onSelectRecipient }) => {
+const FamilyProductsCatalog = ({
+    selectedRecipient = 'all',
+    onSelectRecipient,
+    allowedProductIds = null,
+    minPrice = null,
+    maxPrice = null,
+    titleOverride = null,
+    eyebrowOverride = null,
+    subtitleOverride = null,
+    hideRecipientFilters = false
+}) => {
     const navigate = useNavigate();
     const { addToCart } = useContext(ShopContext);
 
-    const visibleProducts = selectedRecipient === 'all'
-        ? familyProducts
-        : familyProducts.filter((product) => product.recipient === selectedRecipient);
+    const visibleProducts = familyProducts.filter((product) => {
+        const price = parseFloat(product.price.replace(/,/g, ''));
+        const matchesRecipient = selectedRecipient === 'all' || product.recipient === selectedRecipient;
+        const matchesAllowedIds = !Array.isArray(allowedProductIds) || allowedProductIds.length === 0 || allowedProductIds.includes(product.id);
+        const matchesMin = minPrice === null || Number.isNaN(minPrice) || price >= minPrice;
+        const matchesMax = maxPrice === null || Number.isNaN(maxPrice) || price <= maxPrice;
+        return matchesRecipient && matchesAllowedIds && matchesMin && matchesMax;
+    });
+
+    const handleSelectRecipient = (recipientId) => {
+        const normalizedRecipient = normalizeFamilyRecipient(recipientId);
+        onSelectRecipient?.(normalizedRecipient);
+        navigate(buildFamilyShopPath({ recipient: normalizedRecipient }));
+    };
 
     const handleAddToCart = (product) => {
         const parsedPrice = parseFloat(product.price.replace(/,/g, ''));
@@ -217,35 +239,37 @@ const FamilyProductsCatalog = ({ selectedRecipient = 'all', onSelectRecipient })
                         transition={{ duration: 0.7, delay: 0.1 }}
                         className="text-2xl sm:text-3xl md:text-4xl font-serif text-[#2D060F] tracking-tight mb-2"
                     >
-                        {recipientLabels[selectedRecipient] || 'Family Collections'} <span className="italic" style={{ color: MAROON }}>Edit</span>
+                        {(titleOverride || recipientLabels[selectedRecipient] || 'Family Collections')} <span className="italic" style={{ color: MAROON }}>{eyebrowOverride || 'Edit'}</span>
                     </motion.h2>
                     <p className="text-[10px] md:text-xs text-zinc-500 max-w-xl mx-auto italic">
-                        "Curated boutique jewellery picks for every family member."
+                        {subtitleOverride || '"Curated boutique jewellery picks for every family member."'}
                     </p>
                     <div className="w-12 h-[1px] mx-auto mt-5" style={{ background: PINK_LIGHT }} />
                 </div>
 
-                <div className="flex flex-wrap justify-center gap-2 md:gap-3 mb-8 md:mb-10">
-                    {Object.entries(recipientLabels).map(([recipientId, label]) => {
-                        const isActive = recipientId === selectedRecipient;
+                {!hideRecipientFilters && (
+                    <div className="flex flex-wrap justify-center gap-2 md:gap-3 mb-8 md:mb-10">
+                        {Object.entries(recipientLabels).map(([recipientId, label]) => {
+                            const isActive = recipientId === selectedRecipient;
 
-                        return (
-                            <button
-                                key={recipientId}
-                                type="button"
-                                onClick={() => onSelectRecipient?.(recipientId)}
-                                className="px-4 py-2 rounded-none text-[9px] md:text-[10px] font-black uppercase tracking-[0.15em] transition-all border"
-                                style={{
-                                    background: isActive ? PINK_LIGHT : '#fff',
-                                    color: isActive ? MAROON : '#444',
-                                    borderColor: isActive ? PINK_LIGHT : '#eee'
-                                }}
-                            >
-                                {label}
-                            </button>
-                        );
-                    })}
-                </div>
+                            return (
+                                <button
+                                    key={recipientId}
+                                    type="button"
+                                    onClick={() => handleSelectRecipient(recipientId)}
+                                    className="px-4 py-2 rounded-none text-[9px] md:text-[10px] font-black uppercase tracking-[0.15em] transition-all border"
+                                    style={{
+                                        background: isActive ? PINK_LIGHT : '#fff',
+                                        color: isActive ? MAROON : '#444',
+                                        borderColor: isActive ? PINK_LIGHT : '#eee'
+                                    }}
+                                >
+                                    {label}
+                                </button>
+                            );
+                        })}
+                    </div>
+                )}
 
                 <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                     {visibleProducts.map((product, idx) => (
@@ -342,10 +366,7 @@ const FamilyProductsCatalog = ({ selectedRecipient = 'all', onSelectRecipient })
                          initial={{ opacity: 0, y: 20 }}
                          whileInView={{ opacity: 1, y: 0 }}
                          viewport={{ once: true }}
-                         onClick={() => {
-                             onSelectRecipient?.('all');
-                             navigate('/category/family');
-                         }}
+                         onClick={() => handleSelectRecipient('all')}
                          className="px-10 py-3.5 rounded-none font-bold uppercase tracking-widest text-[10px] transition-all shadow-md hover:shadow-lg"
                          style={{ background: PINK_LIGHT, color: MAROON }}
                      >

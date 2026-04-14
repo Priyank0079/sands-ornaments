@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { Heart, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ShopContext } from '../../../../context/ShopContext';
+import { useAuth } from '../../../../context/AuthContext';
+import { getMenLoginRedirect, storeMenPendingCartItem } from '../../utils/menNavigation';
 import toast from 'react-hot-toast';
 
 // Reusing existing assets that fit the white-background minimalist theme
@@ -99,10 +101,41 @@ const featuredProducts = [
 const MenFeaturedProducts = () => {
     const navigate = useNavigate();
     const { addToCart, products } = useContext(ShopContext);
+    const { user } = useAuth();
+
+    const redirectToLogin = () => {
+        toast.error('Please login to continue');
+        navigate(getMenLoginRedirect());
+    };
+
+    const resolveRealProduct = (product) => (
+        products?.find((item) => item.id === product.id || item.name === product.name) || null
+    );
+
+    const handleProductOpen = (product) => {
+        if (!user) {
+            redirectToLogin();
+            return;
+        }
+
+        const realProduct = resolveRealProduct(product);
+        navigate(`/product/${realProduct?.id || product.id}`);
+    };
 
     const handleAddToCart = (product) => {
+        if (!user) {
+            const realProduct = resolveRealProduct(product) || {
+                ...product,
+                _id: product.id,
+                id: product.id
+            };
+            storeMenPendingCartItem(realProduct);
+            redirectToLogin();
+            return;
+        }
+
         // Try to find if product exists in real products list, otherwise create a simplified object
-        const realProduct = products?.find(p => p.id === product.id || p.name === product.name);
+        const realProduct = resolveRealProduct(product);
         
         if (realProduct) {
             addToCart(realProduct);
@@ -144,7 +177,7 @@ const MenFeaturedProducts = () => {
                             className="bg-white group cursor-pointer"
                         >
                             {/* Image Container */}
-                            <div className="relative aspect-square bg-[#FBFBFB] overflow-hidden mb-1.5 md:mb-3" onClick={() => navigate(`/product/${product.id}`)}>
+                            <div className="relative aspect-square bg-[#FBFBFB] overflow-hidden mb-1.5 md:mb-3" onClick={() => handleProductOpen(product)}>
                                 <img
                                     src={product.image}
                                     alt={product.name}
@@ -170,7 +203,7 @@ const MenFeaturedProducts = () => {
                                     <span className="text-[13px] md:text-lg font-bold text-gray-900 leading-tight">₹{product.price}</span>
                                     <span className="text-[9px] md:text-xs text-gray-400 line-through">₹{product.originalPrice}</span>
                                 </div>
-                                <h3 className="text-[10px] md:text-[14px] text-gray-600 font-medium mb-1 md:mb-1.5 line-clamp-1 leading-tight hover:text-gray-900" onClick={() => navigate(`/product/${product.id}`)}>
+                                <h3 className="text-[10px] md:text-[14px] text-gray-600 font-medium mb-1 md:mb-1.5 line-clamp-1 leading-tight hover:text-gray-900" onClick={() => handleProductOpen(product)}>
                                     {product.name}
                                 </h3>
 

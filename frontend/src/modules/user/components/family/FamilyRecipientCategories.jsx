@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 import giftMother from '../../assets/gift_mother_silver.png';
 import giftFather from '../../assets/gift_husband_silver.png';
@@ -7,6 +8,7 @@ import giftBrother from '../../assets/gift_brother_silver.png';
 import giftSister from '../../assets/gift_sister_silver.png';
 import giftHusband from '../../assets/gift_husband_silver.png';
 import giftWife from '../../assets/gift_wife_silver.png';
+import { buildFamilyShopPath, normalizeFamilyRecipient } from '../../utils/familyNavigation';
 
 const recipients = [
     { id: 'all', title: 'ALL', image: giftMother, subtitle: 'Every loved one' },
@@ -19,13 +21,12 @@ const recipients = [
 ];
 
 const FamilyRecipientCategories = ({ selectedRecipient = 'all', onSelectRecipient }) => {
-    const handleClick = (recipientId) => {
-        onSelectRecipient?.(recipientId);
+    const navigate = useNavigate();
 
-        const productsSection = document.getElementById('family-products');
-        if (productsSection) {
-            productsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+    const handleClick = (recipientId) => {
+        const normalizedRecipient = normalizeFamilyRecipient(recipientId);
+        onSelectRecipient?.(normalizedRecipient);
+        navigate(buildFamilyShopPath({ recipient: normalizedRecipient }));
     };
 
     return (

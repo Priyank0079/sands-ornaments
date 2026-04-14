@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { buildWomenShopPath } from '../../utils/womenNavigation';
 
 import PersonalisedImg from '../../../../assets/promos/PersonalisedBannerWine.png';
 
@@ -11,7 +12,7 @@ const WomenPersonalisedBanner = () => {
         <section className="bg-white w-full py-0">
             <div 
                 className="w-full overflow-hidden relative h-[250px] md:h-[350px] group cursor-pointer shadow-none rounded-none" 
-                onClick={() => navigate('/shop?personalised=true')}
+                onClick={() => navigate(buildWomenShopPath({ category: 'personalised' }))}
                 style={{ background: 'linear-gradient(to right, #4A0E0E, #2D0505)' }}
             >
                 {/* Decorative Background Pattern (Subtle waves/blobs on the left) */}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { buildWomenShopPath } from '../../utils/womenNavigation';
 
 // Import images
 import RingsStackingImg from '../../../../assets/trending/RingsStacking.png';
@@ -14,28 +15,28 @@ const trendingCollections = [
         number: "1",
         title: "Rings Stacking",
         image: RingsStackingImg,
-        path: "/shop?tag=stacking"
+        path: buildWomenShopPath({ category: 'rings' })
     },
     {
         id: 2,
         number: "2",
         title: "Curated Combos",
         image: CuratedCombosImg,
-        path: "/shop?tag=combos"
+        path: buildWomenShopPath({ category: 'sets' })
     },
     {
         id: 3,
         number: "3",
         title: "Chain Layering",
         image: ChainLayeringImg,
-        path: "/shop?tag=layering"
+        path: buildWomenShopPath({ category: 'chains' })
     },
     {
         id: 4,
         number: "4",
         title: "Spiritual Picks",
         image: SpiritualPicksImg,
-        path: "/shop?tag=spiritual"
+        path: buildWomenShopPath({ category: 'pendants' })
     }
 ];
 

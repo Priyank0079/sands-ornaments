@@ -1,15 +1,16 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Users, Heart, Star, Smile, Shield } from 'lucide-react';
+import { buildFamilyShopPath } from '../utils/familyNavigation';
 
 const FamilyMegaMenu = ({ resetMenu }) => {
     const familyLinks = [
-        { name: "FOR MOTHER", icon: <Heart className="w-5 h-5 text-pink-400" />, path: "/category/family?recipient=mother", desc: "Elegant & Graceful" },
-        { name: "FOR FATHER", icon: <Shield className="w-5 h-5 text-blue-400" />, path: "/category/family?recipient=father", desc: "Classic & Timeless" },
-        { name: "FOR SISTER", icon: <Star className="w-5 h-5 text-purple-400" />, path: "/category/family?recipient=sister", desc: "Trendy & Sparkly" },
-        { name: "FOR BROTHER", icon: <Users className="w-5 h-5 text-green-400" />, path: "/category/family?recipient=brother", desc: "Bold & Minimal" },
-        { name: "FOR HUSBAND", icon: <Smile className="w-5 h-5 text-amber-500" />, path: "/category/family?recipient=husband", desc: "Sophisticated" },
-        { name: "FOR WIFE", icon: <Heart className="w-5 h-5 text-red-400" />, path: "/category/family?recipient=wife", desc: "Romantic & Precious" },
+        { name: "FOR MOTHER", icon: <Heart className="w-5 h-5 text-pink-400" />, path: buildFamilyShopPath({ recipient: 'mother' }), desc: "Elegant & Graceful" },
+        { name: "FOR FATHER", icon: <Shield className="w-5 h-5 text-blue-400" />, path: buildFamilyShopPath({ recipient: 'father' }), desc: "Classic & Timeless" },
+        { name: "FOR SISTER", icon: <Star className="w-5 h-5 text-purple-400" />, path: buildFamilyShopPath({ recipient: 'sister' }), desc: "Trendy & Sparkly" },
+        { name: "FOR BROTHER", icon: <Users className="w-5 h-5 text-green-400" />, path: buildFamilyShopPath({ recipient: 'brother' }), desc: "Bold & Minimal" },
+        { name: "FOR HUSBAND", icon: <Smile className="w-5 h-5 text-amber-500" />, path: buildFamilyShopPath({ recipient: 'husband' }), desc: "Sophisticated" },
+        { name: "FOR WIFE", icon: <Heart className="w-5 h-5 text-red-400" />, path: buildFamilyShopPath({ recipient: 'wife' }), desc: "Romantic & Precious" },
     ];
 
     return (
@@ -43,7 +44,7 @@ const FamilyMegaMenu = ({ resetMenu }) => {
 
             <div className="md:col-span-2 mt-4 pt-4 border-t border-gray-50 text-center">
                 <Link 
-                    to="/category/family" 
+                    to={buildFamilyShopPath()}
                     onClick={resetMenu}
                     className="inline-block text-[#9C3D5E] font-black text-[11px] uppercase tracking-widest hover:underline"
                 >

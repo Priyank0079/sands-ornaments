@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
+import { buildWomenShopPath } from '../../utils/womenNavigation';
 
 import CoupleRingsImg from '../../../../assets/promos/DarkCoupleRings.png';
 import PremiumGiftsImg from '../../../../assets/promos/DarkPremiumGifts.png';
@@ -12,7 +13,7 @@ const banners = [
         title: "Couple Rings",
         subtitle: "Eternal Bonds in Silver",
         image: CoupleRingsImg,
-        link: "/shop?category=rings",
+        link: buildWomenShopPath({ category: 'rings' }),
         color: "rose"
     },
     {
@@ -20,7 +21,7 @@ const banners = [
         title: "Premium Gifts",
         subtitle: "Luxury for your Loved Ones",
         image: PremiumGiftsImg,
-        link: "/shop?category=gifts",
+        link: buildWomenShopPath({ products: 'w1,w2,w3', limit: 3, sort: 'random' }),
         color: "amber"
     }
 ];

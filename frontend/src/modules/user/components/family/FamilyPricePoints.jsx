@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { buildFamilyCollectionPath } from '../../utils/familyNavigation';
 
 import card2999 from '../../assets/family_price_2999_clean.jpg';
 import cardPremium from '../../assets/family_price_premium_clean.jpg';
@@ -12,7 +13,7 @@ const pricePoints = [
         title: 'Under Rs 2999',
         caption: 'Keepsake rings and petite gifting picks.',
         image: card2999,
-        link: '/shop?filter=family&maxPrice=2999',
+        link: buildFamilyCollectionPath('under-2999'),
         accent: 'Rose Pick',
         delay: 0.05
     },
@@ -21,7 +22,7 @@ const pricePoints = [
         title: 'Premium Gifts',
         caption: 'Layered necklaces and heirloom-style favourites.',
         image: cardPremium,
-        link: '/shop?filter=family&sort=featured',
+        link: buildFamilyCollectionPath('premium-gifts'),
         accent: 'Most Loved',
         featured: true,
         delay: 0.15
@@ -31,7 +32,7 @@ const pricePoints = [
         title: 'Under Rs 4999',
         caption: 'Statement bracelets for elegant family moments.',
         image: card4999,
-        link: '/shop?filter=family&maxPrice=4999',
+        link: buildFamilyCollectionPath('under-4999'),
         accent: 'Easy Upgrade',
         delay: 0.25
     }

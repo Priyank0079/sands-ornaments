@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { buildMenShopPath } from '../../utils/menNavigation';
 
 // Correct path to assets (4 levels up from src/modules/user/components/men/)
 import giftBrothers from '../../../../assets/gift_brothers.png';
@@ -9,10 +10,10 @@ import giftCouples from '../../../../assets/gift_couples.png';
 import giftBoyfriends from '../../../../assets/gift_boyfriends.png';
 
 const guides = [
-    { id: 1, title: 'Brothers', image: giftBrothers, link: '/shop?gifts=brothers' },
-    { id: 2, title: 'Husbands', image: giftHusbands, link: '/shop?gifts=husbands' },
-    { id: 3, title: 'Couple Gifts', image: giftCouples, link: '/shop?gifts=couples' },
-    { id: 4, title: 'Boyfriends', image: giftBoyfriends, link: '/shop?gifts=boyfriends' }
+    { id: 1, title: 'Brothers', image: giftBrothers, link: buildMenShopPath({ filter: 'brothers' }) },
+    { id: 2, title: 'Husbands', image: giftHusbands, link: buildMenShopPath({ filter: 'husbands' }) },
+    { id: 3, title: 'Couple Gifts', image: giftCouples, link: buildMenShopPath({ filter: 'couples' }) },
+    { id: 4, title: 'Boyfriends', image: giftBoyfriends, link: buildMenShopPath({ filter: 'boyfriends' }) }
 ];
 
 const CelebrateMen = () => {

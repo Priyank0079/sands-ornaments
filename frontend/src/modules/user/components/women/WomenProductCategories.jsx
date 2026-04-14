@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { buildWomenShopPath } from '../../utils/womenNavigation';
 
 // Import images from assets
 import RingsImg from '../../../../assets/women-categories/Rings.png';
@@ -13,14 +14,14 @@ import SetsImg from '../../../../assets/women-categories/Sets.png';
 import PersonalisedImg from '../../../../assets/women-categories/Personalised.png';
 
 const categories = [
-    { title: "RINGS", image: RingsImg, path: "/shop?category=Rings" },
-    { title: "EARRINGS", image: EarringsImg, path: "/shop?category=Earrings" },
-    { title: "BRACELETS", image: BraceletsImg, path: "/shop?category=Bracelets" },
-    { title: "PENDANTS", image: PendantsImg, path: "/shop?category=Pendants" },
-    { title: "CHAINS", image: ChainsImg, path: "/shop?category=Chains" },
-    { title: "BANGLES", image: BanglesImg, path: "/shop?category=Bangles" },
-    { title: "SETS", image: SetsImg, path: "/shop?category=Sets" },
-    { title: "PERSONALISED", image: PersonalisedImg, path: "/shop?category=Personalised" }
+    { title: "RINGS", image: RingsImg, path: buildWomenShopPath({ category: 'rings' }) },
+    { title: "EARRINGS", image: EarringsImg, path: buildWomenShopPath({ category: 'earrings' }) },
+    { title: "BRACELETS", image: BraceletsImg, path: buildWomenShopPath({ category: 'bracelets' }) },
+    { title: "PENDANTS", image: PendantsImg, path: buildWomenShopPath({ category: 'pendants' }) },
+    { title: "CHAINS", image: ChainsImg, path: buildWomenShopPath({ category: 'chains' }) },
+    { title: "BANGLES", image: BanglesImg, path: buildWomenShopPath({ category: 'bangles' }) },
+    { title: "SETS", image: SetsImg, path: buildWomenShopPath({ category: 'sets' }) },
+    { title: "PERSONALISED", image: PersonalisedImg, path: buildWomenShopPath({ category: 'personalised' }) }
 ];
 
 const WomenProductCategories = () => {

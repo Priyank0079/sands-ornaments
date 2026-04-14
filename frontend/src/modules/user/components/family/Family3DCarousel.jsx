@@ -1,6 +1,7 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { buildFamilyCollectionPath } from '../../utils/familyNavigation';
 
 // Import images
 import motherImg from '../../assets/family_3d_mother.png';
@@ -15,16 +16,16 @@ import gfImg from '../../assets/family_3d_grandfather.png';
 import coupleImg from '../../assets/family_3d_couple.png';
 
 const familyPicks = [
-    { id: '1', name: "For Mother", image: motherImg, path: "/shop?filter=family&tag=mother" },
-    { id: '2', name: "For Father", image: fatherImg, path: "/shop?filter=family&tag=father" },
-    { id: '3', name: "For Sister", image: sisterImg, path: "/shop?filter=family&tag=sister" },
-    { id: '4', name: "For Brother", image: brotherImg, path: "/shop?filter=family&tag=brother" },
-    { id: '5', name: "For Spouse", image: spouseImg, path: "/shop?filter=family&tag=spouse" },
-    { id: '6', name: "For Daughter", image: daughterImg, path: "/shop?filter=family&tag=daughter" },
-    { id: '7', name: "For Baby", image: babyImg, path: "/shop?filter=family&tag=baby" },
-    { id: '8', name: "Grandmother", image: gmImg, path: "/shop?filter=family&tag=grandmother" },
-    { id: '9', name: "Grandfather", image: gfImg, path: "/shop?filter=family&tag=grandfather" },
-    { id: '10', name: "For Couple", image: coupleImg, path: "/shop?filter=family&tag=couple" }
+    { id: '1', name: "For Mother", image: motherImg, path: buildFamilyCollectionPath('mother-picks') },
+    { id: '2', name: "For Father", image: fatherImg, path: buildFamilyCollectionPath('father-picks') },
+    { id: '3', name: "For Sister", image: sisterImg, path: buildFamilyCollectionPath('sister-picks') },
+    { id: '4', name: "For Brother", image: brotherImg, path: buildFamilyCollectionPath('brother-picks') },
+    { id: '5', name: "For Spouse", image: spouseImg, path: buildFamilyCollectionPath('spouse-picks') },
+    { id: '6', name: "For Daughter", image: daughterImg, path: buildFamilyCollectionPath('daughter-picks') },
+    { id: '7', name: "For Baby", image: babyImg, path: buildFamilyCollectionPath('baby-picks') },
+    { id: '8', name: "Grandmother", image: gmImg, path: buildFamilyCollectionPath('grandmother-picks') },
+    { id: '9', name: "Grandfather", image: gfImg, path: buildFamilyCollectionPath('grandfather-picks') },
+    { id: '10', name: "For Couple", image: coupleImg, path: buildFamilyCollectionPath('couple-picks') }
 ];
 
 const Family3DCarousel = () => {

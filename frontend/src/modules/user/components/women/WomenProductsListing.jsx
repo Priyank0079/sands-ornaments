@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { Heart, Star, ShoppingBag, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ShopContext } from '../../../../context/ShopContext';
+import { useAuth } from '../../../../context/AuthContext';
+import { getWomenLoginRedirect, storeWomenPendingCartItem } from '../../utils/womenNavigation';
 import toast from 'react-hot-toast';
 
 import prod1 from '../../assets/prod_ring_main.png';
@@ -111,8 +113,39 @@ const PINK_BG = '#FFF0F4';
 const WomenProductsListing = () => {
     const navigate = useNavigate();
     const { addToCart, products } = useContext(ShopContext);
+    const { user } = useAuth();
+
+    const redirectToLogin = () => {
+        toast.error('Please login to continue');
+        navigate(getWomenLoginRedirect());
+    };
+
+    const resolveRealProduct = (product) => (
+        products?.find((item) => item.id === product.id || item.name === product.name) || null
+    );
+
+    const handleProductOpen = (product) => {
+        if (!user) {
+            redirectToLogin();
+            return;
+        }
+
+        const realProduct = resolveRealProduct(product);
+        navigate(`/product/${realProduct?.id || product.id}`);
+    };
 
     const handleAddToCart = (product) => {
+        if (!user) {
+            const realProduct = resolveRealProduct(product) || {
+                ...product,
+                _id: product.id,
+                id: product.id
+            };
+            storeWomenPendingCartItem(realProduct);
+            redirectToLogin();
+            return;
+        }
+
         const realProduct = products.find(p => p.id === product.id || p.name === product.name);
         if (realProduct) {
             addToCart(realProduct);
@@ -175,7 +208,7 @@ const WomenProductsListing = () => {
                             className="bg-white group cursor-pointer"
                         >
                             {/* Image Container */}
-                            <div className="relative aspect-square bg-[#F9F9F9] overflow-hidden mb-3" onClick={() => navigate(`/product/${product.id}`)}>
+                            <div className="relative aspect-square bg-[#F9F9F9] overflow-hidden mb-3" onClick={() => handleProductOpen(product)}>
                                 {/* Ribbon */}
                                 {idx < 3 && (
                                     <div className="absolute top-0 left-0 z-20">
@@ -212,7 +245,7 @@ const WomenProductsListing = () => {
                                     <span className="text-base md:text-lg font-bold text-gray-900">₹{product.price}</span>
                                     <span className="text-[10px] md:text-xs text-gray-400 line-through">₹{product.originalPrice}</span>
                                 </div>
-                                <h3 className="text-[12px] md:text-[14px] text-gray-600 font-medium mb-1.5 line-clamp-1 leading-tight hover:text-gray-900" onClick={() => navigate(`/product/${product.id}`)}>
+                                <h3 className="text-[12px] md:text-[14px] text-gray-600 font-medium mb-1.5 line-clamp-1 leading-tight hover:text-gray-900" onClick={() => handleProductOpen(product)}>
                                     {product.name}
                                 </h3>
 
@@ -245,7 +278,7 @@ const WomenProductsListing = () => {
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        onClick={() => navigate('/shop?category=women')}
+                        onClick={() => navigate('/shop?source=women&category=women')}
                         className="px-12 py-4 rounded-full font-bold uppercase tracking-widest text-xs transition-all shadow-lg hover:shadow-xl text-white"
                         style={{ background: PINK }}
                     >

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, ShoppingBag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { buildWomenShopPath } from '../../utils/womenNavigation';
 import heroRadiance from '../../assets/women_hero_radiance.png';
 
 const slides = [
@@ -60,7 +61,7 @@ const WomenHeroCarousel = () => {
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
-                                onClick={() => navigate('/shop?category=women')}
+                                onClick={() => navigate(buildWomenShopPath({ category: 'women' }))}
                                 className="px-5 py-2 md:px-8 md:py-4 bg-white text-black text-[8px] md:text-xs font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] rounded-none hover:bg-black hover:text-white transition-all shadow-2xl flex items-center gap-2 md:gap-3 group"
                             >
                                 <ShoppingBag className="w-4 h-4" />

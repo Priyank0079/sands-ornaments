@@ -4,6 +4,7 @@ import { Heart, Star, ShoppingBag, Gift } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ShopContext } from '../../../../context/ShopContext';
 import toast from 'react-hot-toast';
+import { buildFamilyShopPath } from '../../utils/familyNavigation';
 
 import fProd1 from '../../assets/nav_gift_kids.png';
 import fProd2 from '../../assets/nav_gift_women.png';
@@ -250,7 +251,7 @@ const FamilyProductsListing = () => {
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        onClick={() => navigate('/shop?category=family')}
+                        onClick={() => navigate(buildFamilyShopPath({ recipient: 'all' }))}
                         className="px-12 py-4 rounded-full font-bold uppercase tracking-widest text-xs text-white transition-all shadow-lg hover:shadow-xl"
                         style={{ background: GOLD }}
                     >

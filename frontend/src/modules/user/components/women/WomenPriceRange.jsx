@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { buildWomenShopPath } from '../../utils/womenNavigation';
 
 const priceRanges = [
     {
@@ -8,7 +9,7 @@ const priceRanges = [
         label: 'Under',
         price: '₹1299',
         priceMax: 1299,
-        path: '/shop?category=women&price_max=1299',
+        path: buildWomenShopPath({ category: 'women', priceMax: 1299 }),
         tagline: 'EVERYDAY ESSENTIALS',
     },
     {
@@ -16,7 +17,7 @@ const priceRanges = [
         label: 'Under',
         price: '₹1499',
         priceMax: 1499,
-        path: '/shop?category=women&price_max=1499',
+        path: buildWomenShopPath({ category: 'women', priceMax: 1499 }),
         tagline: 'ELEGANT CHARMS',
     },
     {
@@ -24,7 +25,7 @@ const priceRanges = [
         label: 'Under',
         price: '₹1999',
         priceMax: 1999,
-        path: '/shop?category=women&price_max=1999',
+        path: buildWomenShopPath({ category: 'women', priceMax: 1999 }),
         tagline: 'LUXURY STATEMENTS',
     },
 ];

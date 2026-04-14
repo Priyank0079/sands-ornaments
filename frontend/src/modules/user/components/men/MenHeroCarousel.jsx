@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { buildMenShopPath } from '../../utils/menNavigation';
 
 import heroMenBold from '../../assets/men_hero_bold.png';
 import heroMenStyle from '../../assets/men_hero_style.png';
@@ -14,7 +15,7 @@ const slides = [
         scriptTitle: "Silver",
         rightTitle: "Modern Silver for\nthe Bold Man",
         cta: "SHOP NOW",
-        link: "/shop?category=men",
+        link: buildMenShopPath(),
         image: heroMenBold,
     },
     {
@@ -24,7 +25,7 @@ const slides = [
         scriptTitle: "Style",
         rightTitle: "Classic Designs,\nContemporary Edge",
         cta: "DISCOVER",
-        link: "/shop?category=men&sort=trending",
+        link: buildMenShopPath({ sort: 'most-sold' }),
         image: heroMenStyle,
     },
     {
@@ -34,7 +35,7 @@ const slides = [
         scriptTitle: "Look",
         rightTitle: "Signature Pieces for\nEvery Occasion",
         cta: "EXPLORE",
-        link: "/shop?category=men",
+        link: buildMenShopPath(),
         image: heroMenElite,
     }
 ];

@@ -2,37 +2,8 @@ import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
-import { useShop } from '../../../context/ShopContext';
 import menImg from '../../../assets/collections/cat_men_nobg.png';
 import womenImg from '../../../assets/collections/cat_women_nobg.png';
-import allImg from '../../../assets/collections/cat_family_nobg.png';
-
-const FALLBACK_CATEGORIES = [
-    {
-        title: 'Men',
-        subtitle: 'FOR HIM',
-        image: menImg,
-        path: '/category/men',
-        bgColor: '#F3C4C9',
-        delay: 0.1
-    },
-    {
-        title: 'Women',
-        subtitle: 'FOR HER',
-        image: womenImg,
-        path: '/category/women',
-        bgColor: '#F3C4C9',
-        delay: 0.2
-    },
-    {
-        title: 'Family',
-        subtitle: 'FOR EVERYONE',
-        image: allImg,
-        path: '/category/family',
-        bgColor: '#F3C4C9',
-        delay: 0.3
-    }
-];
 
 const PremiumCategoryCards = () => {
     const navigate = useNavigate();
@@ -42,14 +13,14 @@ const PremiumCategoryCards = () => {
     const RECIPIENTS = [
         {
             id: 'him',
-            title: 'Him',
+            title: 'For Him',
             image: menImg,
             path: '/category/men',
             layout: 'left',
         },
         {
             id: 'her',
-            title: 'Her',
+            title: 'For Her',
             image: womenImg,
             path: '/category/women',
             layout: 'right',
@@ -88,8 +59,10 @@ const PremiumCategoryCards = () => {
                                 ${item.layout === 'left' ? 'left-[2%]' : 'right-[2%]'}`}
                             >
                                 {/* Shop Now Button inside maroon box */}
-                                <div className={`flex items-center gap-2 text-[#FFD9E0] font-black group-hover:translate-x-1 transition-transform mb-1 ${item.layout === 'right' ? 'flex-row-reverse' : ''}`}>
-                                    <span className="text-[8px] md:text-[10px] tracking-[0.25em] uppercase">Browse Edit</span>
+                                <div className={`flex items-center gap-2 text-[#FFD9E0] group-hover:translate-x-1 transition-transform mb-1 ${item.layout === 'right' ? 'flex-row-reverse' : ''}`}>
+                                    <span className="font-display text-[15px] md:text-[23px] font-semibold tracking-[0.12em] uppercase leading-none drop-shadow-[0_2px_10px_rgba(0,0,0,0.2)]">
+                                        {item.title}
+                                    </span>
                                     <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-[#FFD9E0] flex items-center justify-center text-[#8E2B45] shadow-sm">
                                         <ChevronRight className="w-3 h-3 md:w-3.5 md:h-3.5 stroke-[2.5]" />
                                     </div>

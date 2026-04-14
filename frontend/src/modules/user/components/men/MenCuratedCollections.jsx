@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { buildMenShopPath } from '../../utils/menNavigation';
 
 // Import existing assets from global and local folders
 import men1 from '../../../../assets/luxury_ring_men.png';
@@ -10,12 +11,12 @@ import men3 from '../../../../assets/luxury_gifts_men.png';
 import men4 from '../../../../assets/men/style_bracelets.png';
 
 const collections = [
-    { id: 1, title: "SHOP SILVER FOR HIM", image: men1, link: "/shop?category=silver", type: 'image' },
-    { id: 2, title: "ASTRA COLLECTION", image: men2, link: "/shop?category=astra", type: 'image' },
-    { id: 3, title: "SHOP GIFTS FOR HIM", image: men3, link: "/shop?category=gifts", type: 'image' },
-    { id: 4, title: "THE CLASSICS FOR HIM", image: men1, link: "/shop?category=classics", type: 'image' }, 
-    { id: 5, title: "PENDANTS FOR HIM", image: men2, link: "/shop?category=pendants", type: 'image' },
-    { id: 6, title: "925 SILVER SHOP", image: men4, link: "/shop?category=silver-925", type: 'image' }
+    { id: 1, title: "SHOP SILVER FOR HIM", image: men1, link: buildMenShopPath({ metal: 'silver' }), type: 'image' },
+    { id: 2, title: "ASTRA COLLECTION", image: men2, link: buildMenShopPath({ search: 'astra' }), type: 'image' },
+    { id: 3, title: "SHOP GIFTS FOR HIM", image: men3, link: buildMenShopPath(), type: 'image' },
+    { id: 4, title: "THE CLASSICS FOR HIM", image: men1, link: buildMenShopPath({ sort: 'most-sold' }), type: 'image' }, 
+    { id: 5, title: "PENDANTS FOR HIM", image: men2, link: buildMenShopPath({ category: 'pendants' }), type: 'image' },
+    { id: 6, title: "925 SILVER SHOP", image: men4, link: buildMenShopPath({ metal: 'silver', silverType: '925 sterling silver' }), type: 'image' }
 ];
 
 const MenCuratedCollections = () => {

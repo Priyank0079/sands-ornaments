@@ -1,5 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { buildMenShopPath } from '../../utils/menNavigation';
 import luxuryRing from '../../../../assets/luxury_ring_men.png';
 import luxuryGifts from '../../../../assets/luxury_gifts_men.png';
 import luxuryPendant from '../../../../assets/luxury_pendant_men.png';
@@ -8,21 +10,23 @@ const luxuryOffers = [
     {
         title: 'Under ₹2999',
         image: luxuryRing,
-        link: '/shop?price_max=2999'
+        link: buildMenShopPath({ priceMax: 2999 })
     },
     {
         title: 'Premium GIFTS',
         image: luxuryGifts,
-        link: '/shop?type=gift'
+        link: buildMenShopPath()
     },
     {
         title: 'Under ₹4999',
         image: luxuryPendant,
-        link: '/shop?price_max=4999'
+        link: buildMenShopPath({ priceMax: 4999 })
     }
 ];
 
 const MenLuxurySection = () => {
+    const navigate = useNavigate();
+
     return (
         <section className="pt-0 pb-2 md:pt-1 md:pb-6 bg-white">
             <div className="container mx-auto px-4 max-w-[950px]">
@@ -42,6 +46,7 @@ const MenLuxurySection = () => {
                             }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.8, delay: idx * 0.1 }}
+                            onClick={() => navigate(offer.link)}
                             className={`relative group flex-1 cursor-pointer overflow-hidden rounded-2xl md:rounded-[40px] border border-[#D4AF37]/30 md:border-[1.5px] aspect-[0.92/1] shadow-lg hover:shadow-2xl transition-all duration-500 ${idx === 1 ? 'z-10 shadow-xl' : 'z-0'}`}
                         >
                             <img

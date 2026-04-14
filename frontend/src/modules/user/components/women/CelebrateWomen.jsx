@@ -1,12 +1,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { buildWomenShopPath } from '../../utils/womenNavigation';
 
 const guides = [
-    { id: 1, title: 'Sisters', image: '/images/celebrate/women_gift_1.jpg', link: '/shop?gifts=sisters' },
-    { id: 2, title: 'Mothers', image: '/images/celebrate/women_gift_2.jpg', link: '/shop?gifts=mothers' },
-    { id: 3, title: 'Wives', image: '/images/celebrate/women_gift_3.jpg', link: '/shop?gifts=wives' },
-    { id: 4, title: 'Besties', image: '/images/celebrate/women_gift_4.jpg', link: '/shop?gifts=friends' }
+    { id: 1, title: 'Sisters', image: '/images/celebrate/women_gift_1.jpg', link: buildWomenShopPath({ gifts: 'sisters' }) },
+    { id: 2, title: 'Mothers', image: '/images/celebrate/women_gift_2.jpg', link: buildWomenShopPath({ gifts: 'mothers' }) },
+    { id: 3, title: 'Wives', image: '/images/celebrate/women_gift_3.jpg', link: buildWomenShopPath({ gifts: 'wives' }) },
+    { id: 4, title: 'Besties', image: '/images/celebrate/women_gift_4.jpg', link: buildWomenShopPath({ gifts: 'friends' }) }
 ];
 
 const CelebrateWomen = () => {

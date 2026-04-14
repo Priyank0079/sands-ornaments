@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ShoppingBag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import familyHeroBanner from '../../assets/family_hero_banner_4k.jpg';
+import { buildFamilyShopPath } from '../../utils/familyNavigation';
 
 const PINK = '#FFD9E0';
 const MAROON = '#8E2B45';
@@ -60,7 +61,7 @@ const FamilyHeroCarousel = () => {
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
-                                onClick={() => navigate('/shop?filter=family')}
+                                onClick={() => navigate(buildFamilyShopPath())}
                                 className="px-5 py-2 md:px-8 md:py-3 bg-[#FFD9E0] text-[#8E2B45] text-[7px] md:text-[10px] font-black uppercase tracking-[0.15em] md:tracking-[0.2em] rounded-none hover:bg-white transition-all shadow-2xl flex items-center gap-2 md:gap-3 backdrop-blur-sm"
                             >
                                 <ShoppingBag className="w-3 h-3 md:w-3.5 md:h-3.5" />

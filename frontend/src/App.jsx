@@ -70,6 +70,8 @@ const Profile = lazy(() => import('./modules/user/pages/Profile'));
 const ShopForMen = lazy(() => import('./modules/user/pages/ShopForMen'));
 const ShopForWomen = lazy(() => import('./modules/user/pages/ShopForWomen'));
 const ShopForFamily = lazy(() => import('./modules/user/pages/ShopForFamily'));
+const FamilyRecipientProductsPage = lazy(() => import('./modules/user/pages/FamilyRecipientProductsPage'));
+const FamilyCollectionProductsPage = lazy(() => import('./modules/user/pages/FamilyCollectionProductsPage'));
 const AboutUs = lazy(() => import('./modules/user/pages/AboutUs'));
 const Checkout = lazy(() => import('./modules/user/pages/Checkout'));
 const OrderSuccess = lazy(() => import('./modules/user/pages/OrderSuccess'));
@@ -155,6 +157,8 @@ const AppContent = () => {
           <Route path="/category/men" element={<ShopForMen />} />
           <Route path="/category/women" element={<ShopForWomen />} />
           <Route path="/category/family" element={<ShopForFamily />} />
+          <Route path="/category/family/:recipient" element={<FamilyRecipientProductsPage />} />
+          <Route path="/category/family/collection/:collectionId" element={<FamilyCollectionProductsPage />} />
           <Route path="/category/:category" element={<Shop />} />
           <Route path="/gold-collection" element={<GoldJewelleryPage />} />
           <Route path="/collection/bond/:bondId" element={<BondCollectionPage />} />

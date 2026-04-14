@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { Heart, ShoppingBag, Star } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
+import { useAuth } from '../../../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { getMenLoginRedirect, storeMenPendingCartItem } from '../utils/menNavigation';
+import { getWomenLoginRedirect, storeWomenPendingCartItem } from '../utils/womenNavigation';
 
 import latestRing from '../assets/latest_drop_ring.png';
 import latestBracelet from '../assets/latest_drop_bracelet.png';
@@ -32,8 +36,9 @@ const fallbackModelMap = {
 
 const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
 
-const ProductCard = ({ product, isWishlistPage = false }) => {
+const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, loginSource = 'men' }) => {
     const { addToCart, addToWishlist, removeFromWishlist, wishlist } = useShop();
+    const { user } = useAuth();
     const navigate = useNavigate();
     const [flying, setFlying] = useState(false);
     const [flyingType, setFlyingType] = useState('cart'); // 'cart' or 'heart'
@@ -121,9 +126,32 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
     const reviewCount = Number(product.reviewCount ?? product.reviews ?? 0);
     const hasReviews = reviewCount > 0 && ratingValue > 0;
 
+    const redirectToLogin = () => {
+        toast.error('Please login to continue');
+        navigate(loginSource === 'women' ? getWomenLoginRedirect() : getMenLoginRedirect());
+    };
+
+    const handleProductOpen = () => {
+        if (requireLogin && !user) {
+            redirectToLogin();
+            return;
+        }
+
+        navigate(`/product/${product.id || product._id}`);
+    };
+
     const handleAddToCart = (e) => {
         e.preventDefault();
         e.stopPropagation();
+        if (requireLogin && !user) {
+            if (loginSource === 'women') {
+                storeWomenPendingCartItem(product);
+            } else {
+                storeMenPendingCartItem(product);
+            }
+            redirectToLogin();
+            return;
+        }
         setFlyingType('cart');
         setFlying(true);
         addToCart(product);
@@ -136,6 +164,10 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
     const handleWishlist = (e) => {
         e.preventDefault();
         e.stopPropagation();
+        if (requireLogin && !user) {
+            redirectToLogin();
+            return;
+        }
         if (!isWishlisted) {
             setFlyingType('heart');
             setFlying(true);
@@ -179,7 +211,7 @@ const ProductCard = ({ product, isWishlistPage = false }) => {
                 />
             )}
 
-            <div className="group/card relative w-full flex flex-col bg-white overflow-hidden cursor-pointer" onClick={() => navigate(`/product/${product.id}`)}>
+            <div className="group/card relative w-full flex flex-col bg-white overflow-hidden cursor-pointer" onClick={handleProductOpen}>
                 {/* Image Container - Square & Sharp */}
                 <div className="relative aspect-square overflow-hidden bg-gray-50 rounded-none mb-3">
                     {primaryImage ? (

@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { buildMenShopPath } from '../../utils/menNavigation';
 
 // Import images from assets
 import styleChains from '../../../../assets/men/style_chains.png';
@@ -14,7 +15,7 @@ const styles = [
         step: "1. Chain Layering",
         title: "Chain Layering",
         image: styleChains,
-        path: "/shop?category=Chains",
+        path: buildMenShopPath({ category: 'chains' }),
         buttonText: "Explore Chains"
     },
     {
@@ -22,7 +23,7 @@ const styles = [
         step: "2. One Piece, Big Impact",
         title: "One Piece, Big Impact",
         image: styleRings,
-        path: "/shop?category=Rings",
+        path: buildMenShopPath({ category: 'rings' }),
         buttonText: "Explore Rings"
     },
     {
@@ -30,7 +31,7 @@ const styles = [
         step: "3. Wrist Stacking",
         title: "Wrist Stacking",
         image: styleBracelets,
-        path: "/shop?category=Bracelets",
+        path: buildMenShopPath({ category: 'bracelets' }),
         buttonText: "Explore Bracelets"
     }
 ];

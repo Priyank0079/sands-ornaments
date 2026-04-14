@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
+import { buildMenShopPath } from '../../utils/menNavigation';
 
 const hotspots = [
     {
@@ -197,7 +198,7 @@ const MenInteractiveLook = () => {
                                                     <p className="text-gray-900 text-[12px] font-bold mb-1 line-clamp-1">{spot.desc}</p>
                                                     <p className="text-[#3B82F6] text-lg font-black mb-3">₹{spot.price}</p>
                                                     <div
-                                                        onClick={() => navigate(`/shop?category=${spot.category}`)}
+                                                        onClick={() => navigate(buildMenShopPath({ category: spot.category }))}
                                                         className="w-full flex items-center justify-center gap-2 py-3 bg-[#0B1528] text-white text-[11px] font-bold uppercase rounded-xl cursor-pointer hover:bg-[#3B82F6] transition-all duration-300 shadow-lg shadow-blue-900/10"
                                                     >
                                                         <ChevronRight className="w-3.5 h-3.5" />

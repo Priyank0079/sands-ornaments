@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, Sparkles, ChevronRight } from 'lucide-react';
 import { useShop } from '../../../../context/ShopContext';
+import { useAuth } from '../../../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { getWomenLoginRedirect, storeWomenPendingCartItem } from '../../utils/womenNavigation';
 import toast from 'react-hot-toast';
 
 // Import local image
@@ -68,6 +71,13 @@ const hotspots = [
 const WomenInteractiveLook = () => {
     const [activeId, setActiveId] = useState(hotspots[0].id);
     const { addToCart } = useShop();
+    const { user } = useAuth();
+    const navigate = useNavigate();
+
+    const redirectToLogin = () => {
+        toast.error('Please login to continue');
+        navigate(getWomenLoginRedirect());
+    };
 
     const handleQuickAdd = (item) => {
         const product = {
@@ -78,11 +88,17 @@ const WomenInteractiveLook = () => {
             category: "Women's Collection",
             variants: [{ id: `w-${item.id}-v1`, price: parseInt(item.price.replace(',', '')) }]
         };
+        if (!user) {
+            storeWomenPendingCartItem(product);
+            redirectToLogin();
+            return;
+        }
         addToCart(product);
         toast.success(`${item.productName} added to bag!`, {
             style: { background: '#4A1015', color: '#fff', fontSize: '12px', fontWeight: 'bold' },
             icon: '💖'
         });
+        setTimeout(() => navigate('/cart'), 800);
     };
 
     return (

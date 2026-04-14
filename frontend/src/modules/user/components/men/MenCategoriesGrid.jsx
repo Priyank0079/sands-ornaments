@@ -1,16 +1,17 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { buildMenShopPath } from '../../utils/menNavigation';
 
 const categories = [
-    { title: 'Rings', image: '/images/men-categories/rings.png', link: '/shop?category=rings' },
-    { title: 'Cufflinks', image: '/images/men-categories/cufflinks.png', link: '/shop?category=cufflinks' },
-    { title: 'Chains', image: '/images/men-categories/chains.png', link: '/shop?category=chains' },
-    { title: 'Spiritual Picks', image: '/images/men-categories/spiritual.png', link: '/shop?category=spiritual' },
-    { title: 'Pendants', image: '/images/men-categories/pendants.png', link: '/shop?category=pendants' },
-    { title: 'Bracelets', image: '/images/men-categories/bracelets.png', link: '/shop?category=bracelets' },
-    { title: 'Sets', image: '/images/men-categories/sets.png', link: '/shop?category=sets' },
-    { title: 'Personalised', image: '/images/men-categories/custom.png', link: '/shop?category=custom' }
+    { title: 'Rings', image: '/images/men-categories/rings.png', link: buildMenShopPath({ category: 'rings' }) },
+    { title: 'Cufflinks', image: '/images/men-categories/cufflinks.png', link: buildMenShopPath({ category: 'cufflinks' }) },
+    { title: 'Chains', image: '/images/men-categories/chains.png', link: buildMenShopPath({ category: 'chains' }) },
+    { title: 'Spiritual Picks', image: '/images/men-categories/spiritual.png', link: buildMenShopPath({ search: 'spiritual' }) },
+    { title: 'Pendants', image: '/images/men-categories/pendants.png', link: buildMenShopPath({ category: 'pendants' }) },
+    { title: 'Bracelets', image: '/images/men-categories/bracelets.png', link: buildMenShopPath({ category: 'bracelets' }) },
+    { title: 'Sets', image: '/images/men-categories/sets.png', link: buildMenShopPath({ category: 'sets' }) },
+    { title: 'Personalised', image: '/images/men-categories/custom.png', link: buildMenShopPath({ category: 'personalised' }) }
 ];
 
 const MenCategoriesGrid = () => {
