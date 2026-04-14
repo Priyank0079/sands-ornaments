@@ -59,59 +59,49 @@ const PremiumCategoryCards = () => {
     return (
         <section
             ref={containerRef}
-            className="pt-4 pb-12 md:pt-6 md:pb-16 bg-white"
+            className="pt-6 pb-10 md:pt-10 md:pb-16 bg-white overflow-visible"
         >
-            <div className="container mx-auto px-4 max-w-[1240px]">
+            <div className="container mx-auto px-4 max-w-[1100px]">
                 {/* Header */}
-                <div className="text-center mb-4 md:mb-6">
-                    <h2 className="text-xl md:text-2xl font-sans font-medium text-gray-800 tracking-tight">
-                        Shop by Recipient
+                <div className="flex flex-col items-center mb-6 md:mb-12">
+                    <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-[#C9A24D] mb-1.5 md:mb-3">Gift the Excellence</span>
+                    <h2 className="text-2xl md:text-4xl font-serif text-gray-950 tracking-tight leading-none text-center">
+                        Shop by <span className="italic font-light text-[#8E2B45]">Recipient</span>
                     </h2>
+                    <div className="w-8 h-[1px] md:w-10 md:h-[2px] bg-[#C9A24D]/60 mt-3 md:mt-5" />
                 </div>
 
                 {/* Cards Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-16">
+                <div className="flex flex-col gap-6 md:grid md:grid-cols-2 md:gap-16 relative">
                     {RECIPIENTS.map((item, idx) => (
                         <motion.div
                             key={item.id}
-                            initial={{ opacity: 0, scale: 0.98 }}
-                            animate={isInView ? { opacity: 1, scale: 1 } : {}}
-                            transition={{ duration: 0.6, delay: idx * 0.2 }}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={isInView ? { opacity: 1, y: 0 } : {}}
+                            transition={{ duration: 0.8, delay: idx * 0.2 }}
                             onClick={() => navigate(item.path)}
-                            className="relative h-[160px] md:h-[190px] bg-[#FFF0F1] rounded-[40px] cursor-pointer group shadow-sm flex items-center overflow-visible"
-                            style={{ overflow: 'visible' }}
+                            className="relative h-[130px] md:h-[180px] bg-[#FDF8F8] rounded-[32px] md:rounded-[48px] cursor-pointer group shadow-sm flex items-center border border-[#F3E0E2]/50"
                         >
-                            {/* Maroon Inset Box - Compact Height */}
+                            {/* Maroon Inset Box - More Compact */}
                             <div 
-                                className={`absolute top-[5%] bottom-[5%] w-[68%] bg-gradient-to-br from-[#AC3B61] to-[#7A1C3C] rounded-[32px] flex flex-col justify-end p-4 md:p-6 z-10 transition-all duration-300 group-hover:brightness-105 
+                                className={`absolute top-[4%] bottom-[4%] w-[75%] bg-gradient-to-br from-[#8E2B45] via-[#5C1625] to-[#2D060F] rounded-[28px] md:rounded-[44px] flex flex-col justify-end p-4 md:p-8 z-10 transition-all duration-500 group-hover:shadow-[0_15px_30px_rgba(74,16,21,0.2)] 
                                 ${item.layout === 'left' ? 'left-[2%]' : 'right-[2%]'}`}
-                                style={{ overflow: 'visible' }}
                             >
                                 {/* Shop Now Button inside maroon box */}
-                                <div className={`flex items-center gap-2 text-white/90 font-bold group-hover:translate-x-1 transition-transform mb-1 ${item.layout === 'right' ? 'flex-row-reverse' : ''}`}>
-                                    <span className="text-[10px] md:text-[12px] tracking-[0.2em] uppercase font-black">Shop Now</span>
-                                    <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center text-[#AC3B61]">
-                                        <ChevronRight className="w-3.5 h-3.5" />
+                                <div className={`flex items-center gap-2 text-[#FFD9E0] font-black group-hover:translate-x-1 transition-transform mb-1 ${item.layout === 'right' ? 'flex-row-reverse' : ''}`}>
+                                    <span className="text-[8px] md:text-[10px] tracking-[0.25em] uppercase">Browse Edit</span>
+                                    <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-[#FFD9E0] flex items-center justify-center text-[#8E2B45] shadow-sm">
+                                        <ChevronRight className="w-3 h-3 md:w-3.5 md:h-3.5 stroke-[2.5]" />
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Label Pill - Precise Architectural Rounding */}
-                            <div className={`absolute top-[40%] -translate-y-1/2 z-20 w-[60%] md:w-[65%] ${item.layout === 'left' ? 'left-[4%]' : 'right-[4%]'}`}>
-                                <div className={`bg-[#F7E7CE] py-3.5 md:py-4.5 px-6 shadow-[0_8px_25px_rgba(0,0,0,0.15)] text-center flex items-center justify-center border border-white/20 transform -rotate-0.2 group-hover:rotate-0 transition-all duration-300
-                                    ${item.layout === 'left' ? 'rounded-l-[32px] rounded-r-none' : 'rounded-r-[32px] rounded-l-none'}`}>
-                                    <span className="text-[#8E2B45] text-4xl md:text-6xl font-serif italic font-bold tracking-tighter">
-                                        {item.title}
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* Model Image - POPPING OUT (overflow-visible) */}
-                            <div className={`absolute bottom-0 h-[140%] md:h-[165%] z-30 pointer-events-none transition-transform duration-700 group-hover:scale-105 ${item.layout === 'left' ? 'right-0' : 'left-0'}`}>
+                            {/* Model Image - Scaled for Compactness */}
+                            <div className={`absolute bottom-0 h-[135%] md:h-[165%] z-30 pointer-events-none transition-all duration-1000 group-hover:scale-[1.03] ${item.layout === 'left' ? 'right-0' : 'left-0'}`}>
                                 <img
                                     src={item.image}
                                     alt={item.title}
-                                    className={`h-full w-auto object-contain drop-shadow-[20px_20px_40px_rgba(0,0,0,0.3)] ${item.layout === 'left' ? 'scale-x-[1] translate-x-[5%]' : 'scale-x-[-1] -translate-x-[5%]'}`}
+                                    className={`h-full w-auto object-contain drop-shadow-[10px_15px_30px_rgba(0,0,0,0.2)] transition-all duration-700 ${item.layout === 'left' ? 'translate-x-[5%] group-hover:translate-x-[8%]' : 'scale-x-[-1] -translate-x-[5%] group-hover:-translate-x-[8%]'}`}
                                 />
                             </div>
                         </motion.div>
