@@ -6,7 +6,7 @@ const MenCTABanner = () => {
     const navigate = useNavigate();
 
     return (
-        <section className="py-20 md:py-24 bg-gradient-to-r from-[#0A1F44] via-[#0F2A5F] to-[#1C3D8F] relative overflow-hidden">
+        <section className="py-10 md:py-24 bg-gradient-to-r from-[#0A1F44] via-[#0F2A5F] to-[#1C3D8F] relative overflow-hidden">
             {/* Background design elements */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none mix-blend-overlay opacity-30">
                 <div className="absolute top-1/2 left-1/4 w-[600px] h-[600px] bg-[#3B82F6] rounded-full blur-[150px] -translate-y-1/2" />

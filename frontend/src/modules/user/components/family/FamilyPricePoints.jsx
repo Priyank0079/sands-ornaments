@@ -73,7 +73,7 @@ const FamilyPricePoints = () => {
                                         <img
                                             src={point.image}
                                             alt={point.title}
-                                            className="w-full rounded-[18px] object-cover transition-transform duration-500 group-hover:scale-[1.02] aspect-[0.86]"
+                                            className="w-full rounded-[18px] object-cover object-top transition-transform duration-500 group-hover:scale-[1.02] aspect-[1.15]"
                                         />
                                     </div>
 

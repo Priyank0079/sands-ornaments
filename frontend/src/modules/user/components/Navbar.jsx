@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, Heart, ShoppingCart, User, Store, Menu, X, ChevronDown } from 'lucide-react';
+import { Search, Heart, ShoppingCart, User, Menu, X, ChevronDown } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
 import logo from '../../user/assets/SANDS JEWELS PINK (1).png';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,7 +11,9 @@ const Navbar = () => {
         wishlist,
         user,
         pincode,
-        setIsPincodeModalOpen
+        setIsPincodeModalOpen,
+        activeMetal,
+        updateActiveMetal
     } = useShop();
 
     const location = useLocation();
@@ -123,11 +125,6 @@ const Navbar = () => {
 
                     {/* Right Section: Icons with precise SANDS labels */}
                     <div className="flex items-center gap-10 flex-shrink-0">
-                        <Link to="/stores" className="flex flex-col items-center gap-1.5 group">
-                            <Store className="w-7 h-7 text-gray-950" strokeWidth={1.5} />
-                            <span className="text-[11px] font-bold text-black tracking-wider">STORES</span>
-                        </Link>
-
                         <Link to={user ? "/profile" : "/login"} className="flex flex-col items-center gap-1.5 group">
                             <User className="w-7 h-7 text-gray-950" strokeWidth={1.5} />
                             <span className="text-[11px] font-bold text-black tracking-wider">ACCOUNT</span>
@@ -194,13 +191,64 @@ const Navbar = () => {
                                     <X className="w-7 h-7 text-gray-500" />
                                 </button>
                             </div>
-                            <nav className="flex flex-col gap-6 overflow-y-auto">
-                                <Link to="/" className="text-gray-900 font-bold text-lg hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Home</Link>
-                                <Link to="/shop" className="text-gray-900 font-bold text-lg hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Shop All</Link>
-                                <Link to="/category/men" className="text-gray-900 font-bold text-lg hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Men's Collection</Link>
-                                <Link to="/category/women" className="text-gray-900 font-bold text-lg hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Women's Collection</Link>
-                                <Link to="/about" className="text-gray-900 font-bold text-lg hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>About Us</Link>
-                                <Link to="/stores" className="text-gray-900 font-bold text-lg hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Our Stores</Link>
+                            <div className="flex bg-gray-50 p-1 rounded-full border border-[#D4B390] mb-6">
+                                <button
+                                    onClick={() => {
+                                        updateActiveMetal('silver');
+                                        navigate('/');
+                                        setIsMenuOpen(false);
+                                    }}
+                                    className={`flex-1 py-1.5 px-4 rounded-full text-sm font-bold transition-all duration-500 ${activeMetal === 'silver' ? 'bg-[#9C3D5E] text-white shadow-md' : 'text-gray-700'}`}
+                                >
+                                    Silver
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        updateActiveMetal('gold');
+                                        navigate('/gold-collection');
+                                        setIsMenuOpen(false);
+                                    }}
+                                    className={`flex-1 py-1.5 px-4 rounded-full text-sm font-bold transition-all duration-500 ${activeMetal === 'gold' ? 'bg-[#9C3D5E] text-white shadow-md' : 'text-gray-700'}`}
+                                >
+                                    Gold
+                                </button>
+                            </div>
+
+                            <nav className="flex flex-col gap-5 overflow-y-auto pb-8 no-scrollbar">
+                                <div className="flex flex-col gap-3">
+                                    <Link to="/" className="text-gray-900 font-bold text-[17px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Home</Link>
+                                    <Link to="/shop" className="text-gray-900 font-bold text-[17px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Shop All</Link>
+                                </div>
+
+                                <hr className="border-gray-100" />
+                                
+                                <div className="flex flex-col gap-3">
+                                    <span className="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">Shop by Category</span>
+                                    <Link to="/category/rings" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Rings</Link>
+                                    <Link to="/category/necklaces" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Necklaces & Pendants</Link>
+                                    <Link to="/category/bracelets" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Bracelets</Link>
+                                    <Link to="/category/earrings" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Earrings</Link>
+                                    <Link to="/category/anklets" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Anklets</Link>
+                                </div>
+
+                                <hr className="border-gray-100" />
+                                
+                                <div className="flex flex-col gap-3">
+                                    <span className="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">Collections & Gifts</span>
+                                    <Link to="/category/men" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Gifts for Him</Link>
+                                    <Link to="/category/women" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Gifts for Her</Link>
+                                    <Link to="/category/family" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Gifts for Family</Link>
+                                    <Link to="/shop?filter=exclusive" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Exclusive Collections</Link>
+                                </div>
+
+                                <hr className="border-gray-100" />
+                                
+                                <div className="flex flex-col gap-3">
+                                    <span className="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">More at Sands</span>
+                                    <Link to="/shop?purity=card" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>SANDS Gift Card</Link>
+                                    <Link to="/shop?filter=gift" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Gift Store</Link>
+                                    <Link to="/about" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>About Us</Link>
+                                </div>
                             </nav>
                         </motion.div>
                     </>

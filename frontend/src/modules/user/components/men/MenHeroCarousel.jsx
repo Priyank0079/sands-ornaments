@@ -50,7 +50,7 @@ const MenHeroCarousel = () => {
     }, []);
 
     return (
-        <section className="relative w-full h-[50vh] md:h-[65vh] overflow-hidden bg-[#111111]">
+        <section className="relative w-full h-[260px] md:h-[65vh] overflow-hidden bg-[#111111]">
             <AnimatePresence mode="wait">
                 <motion.div
                     key={current}
@@ -75,7 +75,7 @@ const MenHeroCarousel = () => {
 
             {/* Text Content */}
             <div className="absolute inset-0 z-10 flex items-center">
-                <div className="w-full max-w-[1400px] mx-auto px-6 sm:px-10 md:px-16 grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                <div className="w-full max-w-[1400px] mx-auto px-6 sm:px-10 md:px-16 grid grid-cols-1 md:grid-cols-3 gap-0 md:gap-4 items-center">
 
                     {/* Left: Brand & Main Title */}
                     <div className="text-white flex flex-col justify-center">
@@ -84,7 +84,7 @@ const MenHeroCarousel = () => {
                             initial={{ opacity: 0, x: -30 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.3, duration: 0.6 }}
-                            className="text-[9px] md:text-[11px] font-medium tracking-[0.4em] uppercase mb-3 md:mb-4 opacity-70"
+                            className="text-[8px] md:text-[11px] font-medium tracking-[0.4em] uppercase mb-1 md:mb-4 opacity-70"
                         >
                             {slides[current].brandTitle}
                         </motion.p>
@@ -95,17 +95,17 @@ const MenHeroCarousel = () => {
                                 initial={{ opacity: 0, x: -30 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.5, duration: 0.6 }}
-                                className="text-6xl sm:text-7xl md:text-9xl font-black tracking-tighter"
+                                className="text-5xl sm:text-7xl md:text-9xl font-black tracking-tighter"
                             >
                                 {slides[current].mainTitle}
                             </motion.h1>
-                            <div className="flex items-center gap-2 md:gap-3 -mt-2 md:-mt-4">
+                            <div className="flex items-center gap-1.5 md:gap-3 -mt-1 md:-mt-4">
                                 <motion.span
                                     key={`in-${current}`}
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     transition={{ delay: 0.7 }}
-                                    className="text-sm md:text-xl font-light uppercase tracking-widest"
+                                    className="text-xs md:text-xl font-light uppercase tracking-widest"
                                 >
                                     IN
                                 </motion.span>
@@ -114,7 +114,7 @@ const MenHeroCarousel = () => {
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.8, type: "spring" }}
-                                    className="text-4xl sm:text-5xl md:text-7xl italic font-serif"
+                                    className="text-3xl sm:text-5xl md:text-7xl italic font-serif"
                                     style={{ fontFamily: "'Dancing Script', 'Playball', cursive" }}
                                 >
                                     {slides[current].scriptTitle}
@@ -127,13 +127,13 @@ const MenHeroCarousel = () => {
                     <div className="hidden md:block" />
 
                     {/* Right: Quote & CTA */}
-                    <div className="text-white flex flex-col items-start md:items-end md:text-right justify-center">
+                    <div className="text-white flex flex-col items-start md:items-end md:text-right justify-center mt-3 md:mt-0">
                         <motion.h2
                             key={`right-${current}`}
                             initial={{ opacity: 0, x: 30 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.6, duration: 0.6 }}
-                            className="text-lg sm:text-2xl md:text-4xl font-medium mb-5 md:mb-8 leading-[1.3] max-w-[260px] md:max-w-[300px] whitespace-pre-line"
+                            className="text-sm sm:text-2xl md:text-4xl font-medium mb-3 md:mb-8 leading-[1.3] max-w-[260px] md:max-w-[300px] whitespace-pre-line"
                         >
                             {slides[current].rightTitle}
                         </motion.h2>
@@ -146,7 +146,7 @@ const MenHeroCarousel = () => {
                         >
                             <Link
                                 to={slides[current].link}
-                                className="px-7 py-2.5 md:px-12 md:py-3 bg-white text-black text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] hover:bg-gray-100 transition-colors inline-block"
+                                className="px-5 py-2 md:px-12 md:py-3 bg-white text-black text-[9px] md:text-xs font-bold uppercase tracking-[0.2em] hover:bg-gray-100 transition-colors inline-block"
                             >
                                 {slides[current].cta}
                             </Link>
@@ -157,15 +157,15 @@ const MenHeroCarousel = () => {
             </div>
 
             {/* Navigation Dots */}
-            <div className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 flex gap-3 z-30">
+            <div className="absolute bottom-4 md:bottom-10 left-1/2 -translate-x-1/2 flex gap-2 md:gap-3 z-30">
                 {slides.map((_, idx) => (
                     <button
                         key={idx}
                         onClick={() => setCurrent(idx)}
                         className={`transition-all duration-500 rounded-full ${
                             current === idx
-                                ? 'w-10 h-1 bg-white'
-                                : 'w-4 h-1 bg-white/30 hover:bg-white/60'
+                                ? 'w-8 md:w-10 h-1 bg-white'
+                                : 'w-3 md:w-4 h-1 bg-white/30 hover:bg-white/60'
                         }`}
                         aria-label={`Go to slide ${idx + 1}`}
                     />

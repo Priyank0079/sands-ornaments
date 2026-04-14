@@ -55,16 +55,16 @@ const FamilyCuratedCollections = () => {
             <div className="container mx-auto px-4 md:px-12">
                 
                 {/* Section Header */}
-                <div className="text-center mb-6 md:mb-8 flex flex-col items-center">
-                    <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.5em] text-[#C9A24D] mb-2 font-sans">Handpicked Selections</span>
-                    <h2 className="text-2xl md:text-4xl font-serif text-[#2D060F] tracking-tight">
+                <div className="text-center mb-5 md:mb-8 flex flex-col items-center">
+                    <span className="text-[9px] md:text-xs font-black uppercase tracking-[0.4em] md:tracking-[0.5em] text-[#C9A24D] mb-1 md:mb-2 font-sans">Handpicked Selections</span>
+                    <h2 className="text-xl md:text-4xl font-serif text-[#2D060F] tracking-tight">
                         Curated <span className="italic font-light">Collections</span>
                     </h2>
-                    <div className="w-8 h-[1px] bg-[#C9A24D]/40 mt-4" />
+                    <div className="w-8 h-[1px] bg-[#C9A24D]/40 mt-2 md:mt-4" />
                 </div>
 
                 {/* Collections Grid - EXACTLY matching Product Card Layout */}
-                <div className="flex overflow-x-auto pb-4 md:pb-0 scrollbar-hide gap-4 md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 md:gap-4 lg:gap-6">
+                <div className="flex overflow-x-auto pb-4 md:pb-0 scrollbar-hide gap-3 md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 md:gap-4 lg:gap-6 snap-x snap-mandatory pr-4 md:pr-0">
                     {collections.map((item, idx) => (
                         <motion.div
                             key={item.id}
@@ -72,7 +72,7 @@ const FamilyCuratedCollections = () => {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.6, delay: idx * 0.1 }}
-                            className="min-w-[240px] md:min-w-0 flex flex-col group cursor-pointer"
+                            className="min-w-[150px] max-w-[150px] md:min-w-0 md:max-w-full flex flex-col group cursor-pointer snap-start"
                         >
                             <Link to={item.path} className="flex flex-col h-full">
                                 {/* Image Container - Aspect Square */}
@@ -91,21 +91,21 @@ const FamilyCuratedCollections = () => {
 
                                 {/* Content Below - Matching Product Card Exactly */}
                                 <div className="flex flex-col flex-1 px-0">
-                                    <div className="h-[40px] mb-2">
-                                        <h3 className="text-[12px] text-gray-700 line-clamp-2 h-[34px] group-hover:text-black transition-colors uppercase tracking-tight font-medium overflow-hidden">
+                                    <div className="h-[30px] md:h-[40px] mb-1 md:mb-2">
+                                        <h3 className="text-[10px] md:text-[12px] text-gray-700 line-clamp-2 h-auto md:h-[34px] group-hover:text-black transition-colors uppercase tracking-tight font-medium overflow-hidden">
                                             {item.title}
                                         </h3>
                                     </div>
 
-                                    <div className="h-[15px] mb-2">
-                                        <p className="text-[9px] font-bold text-blue-600 uppercase tracking-wider">
+                                    <div className="h-[12px] md:h-[15px] mb-1 md:mb-2">
+                                        <p className="text-[7px] md:text-[9px] font-bold text-blue-600 uppercase tracking-wider">
                                             NEW ARRIVAL
                                         </p>
                                     </div>
                                     
                                     {/* Call to Action - Pink Button */}
                                     <div className="mt-auto">
-                                        <div className="w-full bg-[#FFD9E0] text-[#8E2B45] font-bold text-[11px] py-2.5 rounded-none hover:bg-[#ffc2cd] transition-all duration-300 uppercase tracking-widest text-center">
+                                        <div className="w-full bg-[#FFD9E0] text-[#8E2B45] font-bold text-[8px] md:text-[11px] py-1.5 md:py-2.5 rounded-none hover:bg-[#ffc2cd] transition-all duration-300 uppercase tracking-widest text-center">
                                             Browse Collection
                                         </div>
                                     </div>

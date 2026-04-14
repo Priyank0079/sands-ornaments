@@ -45,36 +45,36 @@ const NewLaunchSection = () => {
     });
     const baseItems = normalizedConfiguredItems.length > 0 ? normalizedConfiguredItems : newLaunches;
 
-    // We want exactly 10 items for a smooth curved cylinder 3D carousel
+    // We want exactly 20 items for a smooth curved 3D arc with large radius
     const cylinderItems = useMemo(() => {
         const items = [];
-        while(items.length < 10) {
+        while(items.length < 20) {
             items.push(...baseItems);
         }
-        return items.slice(0, 10);
+        return items.slice(0, 20);
     }, [baseItems]);
 
-    // Responsive measurements for the 3D cylinder
-    const [radius, setRadius] = useState(550);
-    const [cardWidth, setCardWidth] = useState(340);
-    const [cardHeight, setCardHeight] = useState(480);
+    // Responsive measurements for the wide shallow curve
+    const [radius, setRadius] = useState(1200);
+    const [cardWidth, setCardWidth] = useState(300);
+    const [cardHeight, setCardHeight] = useState(420);
 
     useEffect(() => {
         const updateDims = () => {
             if (window.innerWidth < 480) {
-                setRadius(240);
+                setRadius(400);
                 setCardWidth(140);
                 setCardHeight(200);
             } else if (window.innerWidth < 768) {
-                setRadius(300);
+                setRadius(600);
                 setCardWidth(180);
                 setCardHeight(260);
             } else if (window.innerWidth < 1024) {
-                setRadius(400);
-                setCardWidth(250);
-                setCardHeight(350);
+                setRadius(900);
+                setCardWidth(240);
+                setCardHeight(340);
             } else {
-                setRadius(500);
+                setRadius(1200);
                 setCardWidth(300);
                 setCardHeight(420);
             }
@@ -86,36 +86,36 @@ const NewLaunchSection = () => {
 
     return (
         <section 
-            className="py-6 md:py-10 bg-[#FFF0F0] relative overflow-hidden"
+            className="py-10 md:py-16 bg-[#FFF2F4] relative overflow-hidden"
             style={{
                 '--radius': `${radius}px`,
                 '--cardW': `${cardWidth}px`,
                 '--cardH': `${cardHeight}px`
             }}
         >
-            {/* Inline styles for the 3D Cylinder Animation */}
+            {/* Inline styles for the SHALLOW 3D Curve Animation */}
             <style>
                 {`
-                @keyframes spinCylinder {
+                @keyframes spinShallowCylinder {
                     0% { transform: translateZ(calc(var(--radius) * -1)) rotateY(0deg); }
                     100% { transform: translateZ(calc(var(--radius) * -1)) rotateY(-360deg); }
                 }
                 .scene {
-                    perspective: 1400px; /* Reduced extreme fish-eye */
+                    perspective: 4000px; /* Massive perspective for a flatter, natural look */
                     width: 100%;
                     height: var(--cardH);
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    margin-top: 1.5rem;
+                    margin-top: 3rem;
                 }
                 .rotator {
                     width: var(--cardW);
                     height: var(--cardH);
                     position: relative;
                     transform-style: preserve-3d;
-                    /* Super smooth continuous scrolling */
-                    animation: spinCylinder 35s infinite linear;
+                    /* Super smooth slow continuous horizontal scroll */
+                    animation: spinShallowCylinder 80s infinite linear;
                 }
                 .rotator:hover {
                     animation-play-state: paused;

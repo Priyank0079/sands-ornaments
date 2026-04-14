@@ -69,7 +69,7 @@ const FamilyTrendingNearYou = () => {
 
     return (
         <section 
-            className="py-12 md:py-16 bg-white relative overflow-hidden"
+            className="pt-4 pb-2 md:py-16 bg-white relative overflow-hidden"
             style={{
                 '--radius': `${radius}px`,
                 '--cardW': `${cardWidth}px`,
@@ -90,7 +90,7 @@ const FamilyTrendingNearYou = () => {
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    margin-top: 2rem;
+                    margin-top: 0;
                 }
                 .rotator-trending {
                     width: var(--cardW);
@@ -118,14 +118,14 @@ const FamilyTrendingNearYou = () => {
             <div className="container mx-auto px-4 relative z-10 overflow-visible">
 
                 {/* Header Area */}
-                <div className="text-center mb-8">
+                <div className="text-center mb-2 md:mb-8">
                     <h2 className="text-3xl md:text-5xl font-serif font-medium text-[#4A3B3F] tracking-tight">
                         Trending Near You
                     </h2>
                 </div>
 
                 {/* 3D Curved Carousel Area */}
-                <div className="scene-trending">
+                <div className="scene-trending mt-2 md:mt-8">
                     <div className="rotator-trending">
                         {cylinderItems.map((item, index) => {
                             const angle = index * 18;

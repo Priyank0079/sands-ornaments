@@ -37,7 +37,7 @@ const styles = [
 
 const MenStyleGuide = () => {
     return (
-        <section className="py-6 md:py-10 px-4 md:px-12 bg-[#F3EBE3]">
+        <section className="py-3 md:py-10 px-4 md:px-12 bg-[#F3EBE3]">
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-6">

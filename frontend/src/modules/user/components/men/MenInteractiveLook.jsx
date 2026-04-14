@@ -61,7 +61,7 @@ const MenInteractiveLook = () => {
     const [hoveredNode, setHoveredNode] = useState(null);
 
     return (
-        <section className="pt-1 md:pt-2 pb-5 md:pb-8 bg-[#FCFBF8]">
+        <section className="pt-1 md:pt-2 pb-2 md:pb-8 bg-[#FCFBF8]">
             <div className="container mx-auto px-4 md:px-8">
 
                 {/* Compact Header Section */}

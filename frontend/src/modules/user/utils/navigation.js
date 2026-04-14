@@ -35,7 +35,6 @@ const PREFIX_ALLOWED_ROUTES = [
 const ROUTE_ALIASES = {
   '/returns': '/return-policy',
   '/contact': '/help',
-  '/stores': '/about',
 };
 
 export const normalizeStoreLink = (link) => {

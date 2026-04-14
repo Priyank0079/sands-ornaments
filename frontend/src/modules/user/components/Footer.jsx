@@ -35,7 +35,6 @@ const Footer = () => {
         footerWorldLinks: [
             { name: "About Us", path: "/about" },
             { name: "Jewellery Care Guide", path: "/care-guide" },
-            { name: "Store Locator", path: "/stores" },
             { name: "Our Craft", path: "/craft" },
         ],
         socialLinks: {

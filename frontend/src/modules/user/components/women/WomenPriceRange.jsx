@@ -31,7 +31,7 @@ const priceRanges = [
 
 const WomenPriceRange = () => {
     return (
-        <section className="pt-8 pb-6 md:pt-12 md:pb-8 bg-white overflow-hidden">
+        <section className="pt-4 pb-2 md:pt-12 md:pb-8 bg-white overflow-hidden">
             <div className="container mx-auto px-4 md:px-8 max-w-[1300px]">
 
                 {/* Modern Editorial Header */}
@@ -48,11 +48,11 @@ const WomenPriceRange = () => {
                     >
                         Luxury within Reach
                     </span>
-                    <h2 className="text-lg md:text-[28px] font-display text-gray-900 tracking-tight">Curated Price Points</h2>
+                    <h2 className="text-base md:text-[28px] font-display text-gray-900 tracking-tight">Curated Price Points</h2>
                 </motion.div>
 
                 {/* Responsive Price Cards Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-[0.84fr_1.16fr_0.84fr] gap-3 md:gap-4 items-end">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-[0.84fr_1.16fr_0.84fr] gap-2 md:gap-4 items-end">
                     {priceRanges.map((item, idx) => (
                         <motion.div
                             key={item.id}
@@ -72,8 +72,8 @@ const WomenPriceRange = () => {
                                     style={{
                                         background: 'linear-gradient(135deg, #4A0E1C 0%, #2A0610 50%, #150207 100%)',
                                         borderRadius: '18px',
-                                        padding: idx === 1 ? 'clamp(20px, 4.2vw, 44px) 20px' : 'clamp(16px, 3.4vw, 34px) 16px',
-                                        minHeight: idx === 1 ? 'clamp(132px, 18vw, 214px)' : 'clamp(98px, 13.5vw, 156px)',
+                                        padding: idx === 1 ? 'clamp(14px, 4.2vw, 44px) 20px' : 'clamp(10px, 3.4vw, 34px) 16px',
+                                        minHeight: idx === 1 ? 'clamp(80px, 18vw, 214px)' : 'clamp(65px, 13.5vw, 156px)',
                                         border: '1px solid rgba(255,255,255,0.05)',
                                     }}
                                 >
@@ -107,7 +107,7 @@ const WomenPriceRange = () => {
                                         <h3
                                             className="text-white font-bold leading-none"
                                             style={{
-                                                fontSize: idx === 1 ? 'clamp(28px, 4.2vw, 48px)' : 'clamp(22px, 3.2vw, 36px)',
+                                                fontSize: idx === 1 ? 'clamp(24px, 4.2vw, 48px)' : 'clamp(20px, 3.2vw, 36px)',
                                                 fontFamily: "'Playfair Display', serif",
                                                 fontWeight: 800,
                                                 letterSpacing: '-1px',
