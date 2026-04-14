@@ -223,17 +223,6 @@ const Navbar = () => {
                                 <hr className="border-gray-100" />
                                 
                                 <div className="flex flex-col gap-3">
-                                    <span className="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">Shop by Category</span>
-                                    <Link to="/category/rings" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Rings</Link>
-                                    <Link to="/category/necklaces" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Necklaces & Pendants</Link>
-                                    <Link to="/category/bracelets" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Bracelets</Link>
-                                    <Link to="/category/earrings" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Earrings</Link>
-                                    <Link to="/category/anklets" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Anklets</Link>
-                                </div>
-
-                                <hr className="border-gray-100" />
-                                
-                                <div className="flex flex-col gap-3">
                                     <span className="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">Collections & Gifts</span>
                                     <Link to="/category/men" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Gifts for Him</Link>
                                     <Link to="/category/women" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Gifts for Her</Link>
@@ -245,7 +234,6 @@ const Navbar = () => {
                                 
                                 <div className="flex flex-col gap-3">
                                     <span className="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">More at Sands</span>
-                                    <Link to="/shop?purity=card" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>SANDS Gift Card</Link>
                                     <Link to="/shop?filter=gift" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Gift Store</Link>
                                     <Link to="/about" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>About Us</Link>
                                 </div>
