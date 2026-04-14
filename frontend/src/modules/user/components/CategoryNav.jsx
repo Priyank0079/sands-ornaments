@@ -38,7 +38,8 @@ const CategoryNav = () => {
                             <li
                                 key={item.id}
                                 onMouseEnter={() => {
-                                    if (item.id !== 'family') {
+                                    // Only 'Shop by Category' and 'ALL TYPE' show dropdowns on hover
+                                    if (item.id === 'cat' || item.id === 'all') {
                                         setHoveredItem(item.id);
                                     }
                                 }}
@@ -53,15 +54,15 @@ const CategoryNav = () => {
                                     {item.hasChevron && <ChevronDown className="w-4 h-4 text-gray-600" />}
                                 </Link>
 
-                                {/* Dropdowns Mapping */}
+                                {/* Dropdowns Mapping — Positioned to show "Pura Box" (Full width) */}
                                 <AnimatePresence>
                                     {hoveredItem === item.id && (
-                                        <div className="absolute top-full left-[-200%] pt-4 z-[110]">
+                                        <div className="absolute top-full left-[-40px] pt-4 z-[110]">
                                             <motion.div
-                                                initial={{ opacity: 0, y: 10 }}
+                                                initial={{ opacity: 0, y: 15 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 exit={{ opacity: 0, y: 5 }}
-                                                className="bg-white shadow-2xl rounded-none border border-gray-100 overflow-hidden"
+                                                className="bg-white shadow-[0_30px_60px_rgba(0,0,0,0.15)] border border-gray-100 overflow-hidden"
                                             >
                                                 {item.id === 'cat' && <AllJewelleryMenu resetMenu={resetMenu} />}
                                                 {item.id === 'all' && <AllJewelleryMegaMenu resetMenu={resetMenu} />}

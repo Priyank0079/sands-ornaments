@@ -102,9 +102,9 @@ const SilverCollectionSection = () => {
     return (
         <section className="w-full bg-[#FFF5F7] pt-12 pb-20 overflow-hidden font-sans">
             <div className="max-w-[1450px] mx-auto px-4">
-                
+
                 {/* Hero Banner Area — Restored original size */}
-                <motion.div 
+                <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
@@ -112,16 +112,16 @@ const SilverCollectionSection = () => {
                 >
                     <div className="flex h-full w-full">
                         <div className="relative w-[50%] md:w-[60%] h-full overflow-hidden">
-                            <img 
-                                src={bannerImg} 
-                                alt="Silver Collection Banner" 
+                            <img
+                                src={bannerImg}
+                                alt="Silver Collection Banner"
                                 className="w-full h-full object-cover transition-transform duration-[4s] group-hover:scale-105"
                             />
                             <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-[#EC7798] to-transparent pointer-events-none" />
                         </div>
 
                         <div className="w-[50%] md:w-[40%] h-full flex flex-col items-center justify-center p-4 md:p-12 relative"
-                             style={{ background: 'linear-gradient(135deg, #EC7798 0%, #FA89A9 100%)' }}>
+                            style={{ background: 'linear-gradient(135deg, #EC7798 0%, #FA89A9 100%)' }}>
                             <div className="text-center relative z-10">
                                 <span className="font-serif italic text-white text-2xl md:text-5xl block mb-2 drop-shadow-md">
                                     All yours
@@ -143,22 +143,22 @@ const SilverCollectionSection = () => {
 
                 {/* Categories Area — Single Row Horizontal Scroll */}
                 <div className="relative group/scroll px-2">
-                    
+
                     {/* Navigation Arrows — Restored */}
-                    <button 
+                    <button
                         onClick={() => scroll('left')}
                         className="absolute -left-2 top-1/2 -translate-y-24 z-20 w-10 h-10 bg-white/95 rounded-full flex items-center justify-center shadow-lg border border-pink-100 opacity-0 group-hover/scroll:opacity-100 transition-opacity hidden md:flex"
                     >
                         <ChevronLeft className="w-6 h-6 text-[#EC7798]" />
                     </button>
-                    <button 
+                    <button
                         onClick={() => scroll('right')}
                         className="absolute -right-2 top-1/2 -translate-y-24 z-20 w-10 h-10 bg-white/95 rounded-full flex items-center justify-center shadow-lg border border-pink-100 opacity-0 group-hover/scroll:opacity-100 transition-opacity hidden md:flex"
                     >
                         <ChevronRight className="w-6 h-6 text-[#EC7798]" />
                     </button>
 
-                    <div 
+                    <div
                         ref={scrollRef}
                         className="flex flex-nowrap overflow-x-auto scrollbar-hide gap-6 md:gap-12 pb-10 px-2 snap-x snap-mandatory"
                     >
@@ -174,9 +174,9 @@ const SilverCollectionSection = () => {
                             >
                                 {/* Premium Card — Original Size restored */}
                                 <div className="relative w-[130px] h-[130px] md:w-[185px] md:h-[185px] mb-5 overflow-hidden rounded-[40px] md:rounded-[55px] shadow-[0_15px_35px_rgba(180,30,80,0.18)] border-2 border-white transition-all duration-500 group-hover/item:-translate-y-3 group-hover/item:shadow-[0_25px_50px_rgba(180,30,80,0.25)]">
-                                    <img 
-                                        src={cat.image} 
-                                        alt={cat.name} 
+                                    <img
+                                        src={cat.image}
+                                        alt={cat.name}
                                         className="w-full h-full object-cover transition-transform duration-700 group-hover/item:scale-110"
                                     />
                                     <div className="absolute top-2 right-2 md:top-3 md:right-3 w-8 h-8 md:w-11 md:h-11 bg-[#FADADD]/85 backdrop-blur-sm rounded-full flex items-center justify-center text-[#B44C63] shadow-inner z-10 border border-white/40">
@@ -196,7 +196,8 @@ const SilverCollectionSection = () => {
 
             </div>
 
-            <style dangerouslySetInnerHTML={{ __html: `
+            <style dangerouslySetInnerHTML={{
+                __html: `
                 .scrollbar-hide::-webkit-scrollbar {
                     display: none;
                 }

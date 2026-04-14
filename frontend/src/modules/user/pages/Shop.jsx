@@ -45,7 +45,8 @@ const Shop = () => {
     const giftsQuery = queryParams.get('gifts');
     const sourceQuery = queryParams.get('source');
     const occasionQuery = queryParams.get('occasion');
-    const priceMaxQuery = queryParams.get('price_max');
+    const priceMaxQuery = queryParams.get('price_max');   // upper bound — e.g. price_max=3000
+    const priceMinQuery = queryParams.get('price_min');   // lower bound — e.g. price_min=1500
     const productsQuery = queryParams.get('products');
     const limitQuery = queryParams.get('limit');
     const sortQuery = queryParams.get('sort');
@@ -268,9 +269,16 @@ const Shop = () => {
             baseProducts = baseProducts.filter(p => matchesCategory(p, categoryQuery, categoryQueryObj));
         }
 
-        if (priceMaxQuery) {
+        if (priceMaxQuery && priceMinQuery) {
+            const parsedMin = Number(String(priceMinQuery).replace(/[^0-9]/g, ''));
+            const parsedMax = Number(String(priceMaxQuery).replace(/[^0-9]/g, ''));
+            title = `₹${parsedMin.toLocaleString('en-IN')} – ₹${parsedMax.toLocaleString('en-IN')}`;
+        } else if (priceMaxQuery) {
             const parsedPrice = Number(String(priceMaxQuery).replace(/[^0-9]/g, ''));
-            title = `Under INR ${parsedPrice}`;
+            title = `Under ₹${parsedPrice.toLocaleString('en-IN')}`;
+        } else if (priceMinQuery) {
+            const parsedMin = Number(String(priceMinQuery).replace(/[^0-9]/g, ''));
+            title = `Above ₹${parsedMin.toLocaleString('en-IN')}`;
         }
         if (productsQuery) {
             const ids = String(productsQuery)
@@ -366,7 +374,19 @@ const Shop = () => {
         }
 
         // 3. Apply Price Filter
-        result = result.filter(p => getProductPrice(p) <= priceRange);
+        // URL-driven range filters (price_min / price_max) take priority over slider
+        const urlPriceMax = priceMaxQuery ? Number(String(priceMaxQuery).replace(/[^0-9]/g, '')) : null;
+        const urlPriceMin = priceMinQuery ? Number(String(priceMinQuery).replace(/[^0-9]/g, '')) : null;
+
+        if (urlPriceMax && Number.isFinite(urlPriceMax) && urlPriceMax > 0) {
+            result = result.filter(p => getProductPrice(p) <= urlPriceMax);
+        } else {
+            // Fall back to local slider state
+            result = result.filter(p => getProductPrice(p) <= priceRange);
+        }
+        if (urlPriceMin && Number.isFinite(urlPriceMin) && urlPriceMin > 0) {
+            result = result.filter(p => getProductPrice(p) >= urlPriceMin);
+        }
 
         // 4. Apply Sorting
         if (sortQuery === 'latest') {
