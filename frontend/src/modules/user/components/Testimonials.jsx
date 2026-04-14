@@ -56,76 +56,67 @@ const Testimonials = () => {
         : TESTIMONIALS;
 
     return (
-        <section className="py-20 md:py-32 bg-[#F3E8EE] relative overflow-hidden">
-            {/* Decorative Background Elements */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-[#D39A9F]/10 rounded-full blur-[100px] -mr-48 -mt-48"></div>
-            <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#4A1015]/5 rounded-full blur-[100px] -ml-48 -mb-48"></div>
-
-            <div className="container mx-auto px-4 md:px-6 relative z-10">
-                <div className="text-center mb-16 md:mb-24">
-                    <span className="text-[#4A1015] text-[10px] md:text-sm font-bold tracking-[0.4em] uppercase mb-3 block">Kind Words</span>
-                    <h2 className="font-display text-3xl md:text-5xl text-[#4A1015] mb-4">{sectionData?.label || 'Customer Stories'}</h2>
-                    <div className="h-1 w-20 bg-[#D39A9F] mx-auto rounded-full"></div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 md:gap-8 max-w-7xl mx-auto">
-                    {displayItems.map((testimonial, index) => (
-                        <motion.div
-                            key={testimonial.id}
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.6, delay: index * 0.2 }}
-                            className="relative"
-                        >
-                            {/* The Card Structure Inspired by Reference */}
-                            <div className="bg-white rounded-3xl shadow-[0_20px_50px_rgba(74,16,21,0.08)] overflow-visible pt-16 pb-8 px-8 mt-12 relative min-h-[300px] flex flex-col items-center text-center">
-
-                                {/* Top Header Block - Deep Wine */}
-                                <div className="absolute top-0 left-0 right-0 h-24 bg-[#4A1015] rounded-t-3xl rounded-br-[100px] z-0 flex flex-col justify-end p-6 pl-8">
-                                    <h4 className="text-white font-bold text-sm md:text-base uppercase tracking-widest leading-none mb-1">
-                                        {testimonial.name}
-                                    </h4>
-                                    <span className="text-white/60 text-[10px] md:text-xs uppercase tracking-wider">
-                                        {testimonial.role}
-                                    </span>
-                                </div>
-
-                                {/* Star Rating over the Wine Block - Moved to left to avoid overlap */}
-                                <div className="absolute bottom-[calc(100%-88px)] left-8 z-10 flex gap-0.5">
-                                    {[...Array(testimonial.rating)].map((_, i) => (
-                                        <Star key={i} className="w-3 md:w-4 h-3 md:h-4 fill-[#C9A24D] text-[#C9A24D]" />
-                                    ))}
-                                </div>
-
-                                {/* Profile Image - Floating Top Right */}
-                                <div className="absolute -top-12 -right-2 md:-right-6 w-24 h-24 md:w-32 md:h-32 rounded-full border-[6px] border-[#F3E8EE] shadow-xl overflow-hidden z-20">
-                                    <img
-                                        src={testimonial.image}
-                                        alt={testimonial.name}
-                                        className="w-full h-full object-cover"
-                                    />
-                                </div>
-
-                                {/* Body Content */}
-                                <div className="mt-8 relative z-10">
-                                    <Quote className="w-10 h-10 text-[#D39A9F]/20 absolute -top-4 -left-6 z-0" />
-                                    <p className="text-gray-600 font-serif italic text-sm md:text-base leading-relaxed mb-6 relative z-10">
-                                        "{testimonial.text}"
-                                    </p>
-
-                                    <div className="flex flex-col items-center">
-                                        <div className="h-[1px] w-12 bg-[#D39A9F]/30 mb-3" />
-                                        <span className="text-[#D39A9F] text-[10px] md:text-xs font-bold uppercase tracking-[0.2em]">
-                                            {testimonial.location}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </motion.div>
-                    ))}
-                </div>
+        <section 
+            className="w-full pt-10 md:pt-14 pb-0 overflow-hidden select-none"
+            style={{ background: 'linear-gradient(135deg, #FDF4F6 0%, #FAEAF0 100%)' }}
+        >
+            {/* Heading Section */}
+            <div className="container mx-auto px-4 mb-8 md:mb-10 text-center">
+                <span className="text-[#A57A82] text-[10px] md:text-sm font-bold tracking-[0.4em] uppercase mb-2 block">Kind Words</span>
+                <h2 className="text-[28px] md:text-[42px] font-serif text-[#4A1015] font-light leading-tight">
+                    {sectionData?.label || 'Customer Stories'}
+                </h2>
             </div>
+
+            {/* Horizontal Scroll Containers - Matching Gold UI */}
+            <div className="flex overflow-x-auto gap-8 px-6 md:px-12 pb-8 scrollbar-hide snap-x snap-mandatory">
+                {displayItems.map((testimonial, index) => (
+                    <motion.div
+                        key={testimonial.id}
+                        initial={{ opacity: 0, x: 50 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.6, delay: index * 0.1 }}
+                        className="flex-shrink-0 w-[240px] md:w-[280px] snap-center flex flex-col"
+                    >
+                        {/* White Card */}
+                        <div className="bg-white rounded-[24px] p-6 md:p-8 flex flex-col items-center justify-center text-center shadow-sm min-h-[220px] md:min-h-[260px] relative">
+                            <p className="text-[#4A1015]/80 font-serif italic text-xs md:text-[14px] leading-relaxed">
+                                "{testimonial.text}"
+                            </p>
+                            
+                            {/* Portrait Photo - Absolute positioned at the bottom center, overlapping outside */}
+                            <div className="absolute bottom-0 translate-y-1/2 left-1/2 -translate-x-1/2 w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-4 border-[#FAEAF0] shadow-md z-10 font-bold">
+                                <img 
+                                    src={testimonial.image} 
+                                    alt={testimonial.name} 
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Name - Below current and portrait */}
+                        <div className="mt-14 md:mt-16 text-center">
+                            <p className="text-[#4A1015] font-serif font-bold text-sm md:text-lg">
+                                {testimonial.name}
+                            </p>
+                            <span className="text-[#A57A82] text-[10px] md:text-xs uppercase tracking-widest mt-1 block">
+                                {testimonial.location}
+                            </span>
+                        </div>
+                    </motion.div>
+                ))}
+            </div>
+
+            <style dangerouslySetInnerHTML={{
+                __html: `
+                .scrollbar-hide::-webkit-scrollbar {
+                    display: none;
+                }
+                .scrollbar-hide {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                }
+            `}} />
         </section>
     );
 };

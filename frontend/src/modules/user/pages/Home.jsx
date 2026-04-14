@@ -18,6 +18,7 @@ import FAQSection from '../components/FAQSection';
 import ChitChatSection from '../components/ChitChatSection';
 import SilverNewLaunchGrid from '../components/SilverNewLaunchGrid';
 import SilverCollectionSection from '../components/SilverCollectionSection';
+import SilverCuratedShowcase from '../components/SilverCuratedShowcase';
 import { useShop } from '../../../context/ShopContext';
 
 const Home = () => {
@@ -74,6 +75,7 @@ const Home = () => {
             <StyleItYourWay />
             <AllJewellery />
             <SilverCollectionSection />
+            <SilverCuratedShowcase />
             <Testimonials />
             <BrandPromises />
             <ChitChatSection />

@@ -4,54 +4,57 @@ import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 // Assets
-import ringGreen from '../../../assets/categories/gold_rings_green.png';
+import silverChains from '../../../assets/categories/silverchains.png';
+import menSilver from '../../../assets/categories/mensilver.png';
+import rings from '../../../assets/categories/rings.png';
+import earrings from '../../../assets/categories/earrings.png';
 
 const collections = [
     {
         id: 1,
-        title: "The Gold Standards",
-        video: "/Screen Recording 2026-04-11 150441.mp4",
-        link: "/shop?category=Rings",
+        title: "Pure Silver Essentials",
+        video: "/20260414-1037-04.7611184.mp4",
+        link: "/shop?metal=silver",
         type: 'video'
     },
     {
         id: 2,
-        title: "Pure Green Favourites",
-        image: ringGreen,
-        link: "/shop?category=Rings&search=promise",
+        title: "Elegant Silver Rings",
+        image: rings,
+        link: "/shop?category=Rings&metal=silver",
         type: 'image'
     },
     {
         id: 3,
-        title: "Shubh Akshaya Tritiya",
-        video: "/Screen Recording 2026-04-11 150529.mp4",
-        link: "/shop?metal=gold",
-        type: 'video'
+        title: "Silver Chains Collection",
+        image: silverChains,
+        link: "/shop?category=Chains&metal=silver",
+        type: 'image'
     },
     {
         id: 4,
-        title: "Sands Ornaments",
-        image: ringGreen,
-        link: "/shop?category=Rings&search=vanki",
+        title: "Men's Silver Boutique",
+        image: menSilver,
+        link: "/shop?search=men&metal=silver",
         type: 'image'
     },
     {
         id: 5,
-        title: "Crafted in Pure Gold",
-        video: "/Screen Recording 2026-04-11 150441.mp4",
-        link: "/shop?category=Rings&search=solitaire",
-        type: 'video'
+        title: "Dazzling Silver Earrings",
+        image: earrings,
+        link: "/shop?category=Earrings&metal=silver",
+        type: 'image'
     },
     {
         id: 6,
-        title: "Luxury Ring Sets",
-        video: "/Screen Recording 2026-04-11 150529.mp4",
-        link: "/shop?category=Rings&search=classic",
+        title: "Sterling Style Highlights",
+        video: "/20260414-1037-04.7611184.mp4",
+        link: "/shop?metal=silver&sort=latest",
         type: 'video'
     }
 ];
 
-const GoldCuratedShowcase = () => {
+const SilverCuratedShowcase = () => {
     const navigate = useNavigate();
     const scrollRef = useRef(null);
 
@@ -73,11 +76,11 @@ const GoldCuratedShowcase = () => {
 
                 {/* Compact Header */}
                 <div className="text-center mb-8 md:mb-12 px-4">
-                    <span className="inline-flex items-center rounded-none border border-[#D4B390]/30 bg-[#FAF9F0] px-4 py-2.5 text-[10px] md:text-[11px] font-black uppercase tracking-[0.4em] text-[#2A4D35]">
+                    <span className="inline-flex items-center rounded-none border border-pink-200/30 bg-[#FFF5F7] px-4 py-2.5 text-[10px] md:text-[11px] font-black uppercase tracking-[0.4em] text-[#EC7798]">
                         Curated Highlights
                     </span>
-                    <h2 className="mt-4 text-[26px] md:text-[36px] font-serif italic font-medium text-[#2A4D35] tracking-tight">
-                        Premium Gold Collections
+                    <h2 className="mt-4 text-[26px] md:text-[36px] font-serif italic font-medium text-[#4A1015] tracking-tight">
+                        Premium Silver Collections
                     </h2>
                 </div>
 
@@ -87,17 +90,17 @@ const GoldCuratedShowcase = () => {
                     {/* Left Scroll Arrow */}
                     <button
                         onClick={() => scroll('left')}
-                        className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 md:w-12 md:h-12 bg-white/95 backdrop-blur-md rounded-none flex items-center justify-center shadow-lg border border-gray-100 opacity-0 group-hover/main:opacity-100 transition-all duration-300 hover:bg-[#FAF9F0] active:scale-95"
+                        className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 md:w-12 md:h-12 bg-white/95 backdrop-blur-md rounded-none flex items-center justify-center shadow-lg border border-gray-100 opacity-0 group-hover/main:opacity-100 transition-all duration-300 hover:bg-[#FFF5F7] active:scale-95"
                     >
-                        <ChevronLeft className="w-5 h-5 text-[#2A4D35]" />
+                        <ChevronLeft className="w-5 h-5 text-[#EC7798]" />
                     </button>
 
                     {/* Right Scroll Arrow */}
                     <button
                         onClick={() => scroll('right')}
-                        className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 md:w-12 md:h-12 bg-white/95 backdrop-blur-md rounded-none flex items-center justify-center shadow-lg border border-gray-100 opacity-0 group-hover/main:opacity-100 transition-all duration-300 hover:bg-[#FAF9F0] active:scale-95"
+                        className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 md:w-12 md:h-12 bg-white/95 backdrop-blur-md rounded-none flex items-center justify-center shadow-lg border border-gray-100 opacity-0 group-hover/main:opacity-100 transition-all duration-300 hover:bg-[#FFF5F7] active:scale-95"
                     >
-                        <ChevronRight className="w-5 h-5 text-[#2A4D35]" />
+                        <ChevronRight className="w-5 h-5 text-[#EC7798]" />
                     </button>
 
                     <div
@@ -112,7 +115,7 @@ const GoldCuratedShowcase = () => {
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.8, delay: idx * 0.1 }}
                                 onClick={() => navigate(item.link)}
-                                className="flex-shrink-0 w-[160px] sm:w-[200px] md:w-[240px] aspect-[4/5] relative group cursor-pointer overflow-hidden rounded-none bg-[#0D1C12] snap-start shadow-md border border-gray-200"
+                                className="flex-shrink-0 w-[160px] sm:w-[200px] md:w-[240px] aspect-[4/5] relative group cursor-pointer overflow-hidden rounded-none bg-[#FDF4F6] snap-start shadow-md border border-gray-200"
                             >
                                 {item.type === 'video' ? (
                                     <video
@@ -122,18 +125,18 @@ const GoldCuratedShowcase = () => {
                                         loop
                                         playsInline
                                         preload="metadata"
-                                        className="absolute inset-0 w-full h-full object-cover opacity-80 transition-transform duration-1000 group-hover:scale-110"
+                                        className="absolute inset-0 w-full h-full object-cover opacity-90 transition-transform duration-1000 group-hover:scale-110"
                                     />
                                 ) : (
                                     <img
                                         src={item.image}
                                         alt={item.title}
-                                        className="absolute inset-0 w-full h-full object-cover opacity-90 transition-transform duration-1000 group-hover:scale-110"
+                                        className="absolute inset-0 w-full h-full object-cover opacity-95 transition-transform duration-1000 group-hover:scale-110"
                                     />
                                 )}
 
                                 {/* Bottom Gradient */}
-                                <div className="absolute inset-x-0 bottom-0 h-[50%] bg-gradient-to-t from-black/90 via-black/30 to-transparent transition-opacity" />
+                                <div className="absolute inset-x-0 bottom-0 h-[50%] bg-gradient-to-t from-black/80 via-black/20 to-transparent transition-opacity" />
 
                                 {/* Label at Bottom - Square Style */}
                                 <div className="absolute bottom-6 left-6 right-6 text-white z-10 transition-all duration-300">
@@ -165,4 +168,4 @@ const GoldCuratedShowcase = () => {
     );
 };
 
-export default GoldCuratedShowcase;
+export default SilverCuratedShowcase;
