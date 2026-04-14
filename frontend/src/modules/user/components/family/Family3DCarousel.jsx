@@ -57,7 +57,7 @@ const Family3DCarousel = () => {
                  setCardWidth(200);
                  setCardHeight(280);
              } else {
-                 setRadius(950);
+                 setRadius(1200);
                  setCardWidth(240);
                  setCardHeight(340);
              }
@@ -84,7 +84,7 @@ const Family3DCarousel = () => {
                     100% { transform: translateZ(calc(var(--radius) * -1)) rotateY(-360deg); }
                 }
                 .scene-family {
-                    perspective: 2000px; /* High perspective for flatter curve */
+                    perspective: 4000px; /* High perspective for flatter curve */
                     width: 100%;
                     height: var(--cardH);
                     display: flex;

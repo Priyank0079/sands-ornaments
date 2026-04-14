@@ -57,7 +57,7 @@ const FamilyTrendingNearYou = () => {
                  setCardWidth(200);
                  setCardHeight(280);
              } else {
-                 setRadius(950);
+                 setRadius(1200);
                  setCardWidth(240);
                  setCardHeight(340);
              }
@@ -84,7 +84,7 @@ const FamilyTrendingNearYou = () => {
                     100% { transform: translateZ(calc(var(--radius) * -1)) rotateY(360deg); } /* Positive 360deg moves Left-to-Right */
                 }
                 .scene-trending {
-                    perspective: 2000px;
+                    perspective: 4000px;
                     width: 100%;
                     height: var(--cardH);
                     display: flex;
