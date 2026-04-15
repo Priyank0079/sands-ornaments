@@ -1,10 +1,9 @@
-import React, { useContext } from 'react';
+﻿import React from 'react';
 import { motion } from 'framer-motion';
-import { Heart, Star, ShoppingBag, Gift } from 'lucide-react';
+import { Gift } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { ShopContext } from '../../../../context/ShopContext';
-import toast from 'react-hot-toast';
 import { buildFamilyShopPath, normalizeFamilyRecipient } from '../../utils/familyNavigation';
+import ProductCard from '../ProductCard';
 import giftMother from '../../assets/gift_mother_silver.png';
 import giftFather from '../../assets/gift_husband_silver.png';
 import giftBrother from '../../assets/gift_brother_silver.png';
@@ -184,10 +183,11 @@ const FamilyProductsCatalog = ({
     hideRecipientFilters = false
 }) => {
     const navigate = useNavigate();
-    const { addToCart } = useContext(ShopContext);
+
+    const parseMoney = (value) => Number(String(value || '').replace(/[^0-9.]/g, '')) || 0;
 
     const visibleProducts = familyProducts.filter((product) => {
-        const price = parseFloat(product.price.replace(/,/g, ''));
+        const price = parseMoney(product.price);
         const matchesRecipient = selectedRecipient === 'all' || product.recipient === selectedRecipient;
         const matchesAllowedIds = !Array.isArray(allowedProductIds) || allowedProductIds.length === 0 || allowedProductIds.includes(product.id);
         const matchesMin = minPrice === null || Number.isNaN(minPrice) || price >= minPrice;
@@ -201,63 +201,75 @@ const FamilyProductsCatalog = ({
         navigate(buildFamilyShopPath({ recipient: normalizedRecipient }));
     };
 
-    const handleAddToCart = (product) => {
-        const parsedPrice = parseFloat(product.price.replace(/,/g, ''));
-        const mockProduct = {
-            ...product,
-            _id: product.id,
-            price: parsedPrice,
-            variants: [{ id: `${product.id}-v1`, price: parsedPrice }]
-        };
+    const toCardProduct = (product) => {
+        const price = parseMoney(product.price);
+        const originalPrice = parseMoney(product.originalPrice);
+        const isBestseller = String(product.badge || '').toLowerCase().includes('bestseller');
 
-        addToCart(mockProduct);
-        toast.success(`${product.name} added to your bag!`, {
-            style: { background: MAROON, color: '#fff', fontSize: '12px' }
-        });
-        setTimeout(() => navigate('/cart'), 800);
+        return {
+            id: product.id,
+            _id: product.id,
+            name: product.name,
+            image: product.image,
+            price,
+            originalPrice,
+            rating: product.rating,
+            reviews: product.reviews,
+            isTrending: isBestseller,
+            priceDrop: originalPrice > price,
+            variants: [{ id: `${product.id}-v1`, price, mrp: originalPrice }]
+        };
     };
 
     return (
-        <section id="family-products" className="py-6 md:py-10 bg-white">
+        <section id="family-products" className="py-3 md:py-10 bg-white">
             <div className="container mx-auto px-4 md:px-12 max-w-[1500px]">
-                <div className="text-center mb-6 md:mb-10">
+                <div className="text-center mb-4 md:mb-10">
                     <motion.div
                         initial={{ opacity: 0, y: -15 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.6 }}
-                        className="inline-flex items-center gap-2 px-4 py-1.5 rounded-none mb-4"
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-none mb-2"
                         style={{ background: PINK_LIGHT, border: `1px solid ${MAROON}22` }}
                     >
                         <Gift className="w-3.5 h-3.5" style={{ color: MAROON }} />
-                        <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: MAROON }}>For Family</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: MAROON }}>
+                            For Family
+                        </span>
                     </motion.div>
+
                     <motion.h2
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.7, delay: 0.1 }}
-                        className="text-2xl sm:text-3xl md:text-4xl font-serif text-[#2D060F] tracking-tight mb-2"
+                        className="text-xl sm:text-3xl md:text-4xl font-serif text-[#2D060F] tracking-tight mb-1"
                     >
-                        {(titleOverride || recipientLabels[selectedRecipient] || 'Family Collections')} <span className="italic" style={{ color: MAROON }}>{eyebrowOverride || 'Edit'}</span>
+                        {(titleOverride || recipientLabels[selectedRecipient] || 'Family Collections')}{' '}
+                        <span className="italic" style={{ color: MAROON }}>
+                            {eyebrowOverride || 'Edit'}
+                        </span>
                     </motion.h2>
+
                     <p className="text-[10px] md:text-xs text-zinc-500 max-w-xl mx-auto italic">
                         {subtitleOverride || '"Curated boutique jewellery picks for every family member."'}
                     </p>
-                    <div className="w-12 h-[1px] mx-auto mt-5" style={{ background: PINK_LIGHT }} />
+                    <div className="w-10 h-[1px] mx-auto mt-2.5 md:mt-5" style={{ background: PINK_LIGHT }} />
                 </div>
 
                 {!hideRecipientFilters && (
-                    <div className="flex flex-wrap justify-center gap-2 md:gap-3 mb-8 md:mb-10">
-                        {Object.entries(recipientLabels).map(([recipientId, label]) => {
+                    <div className="grid grid-cols-2 gap-2 max-w-[560px] mx-auto md:flex md:flex-wrap md:justify-center md:gap-3 mb-4 md:mb-10">
+                        {Object.entries(recipientLabels).map(([recipientId, label], index, entries) => {
                             const isActive = recipientId === selectedRecipient;
+                            const isLastOdd = entries.length % 2 === 1 && index === entries.length - 1;
 
                             return (
                                 <button
                                     key={recipientId}
                                     type="button"
                                     onClick={() => handleSelectRecipient(recipientId)}
-                                    className="px-4 py-2 rounded-none text-[9px] md:text-[10px] font-black uppercase tracking-[0.15em] transition-all border"
+                                    className={`w-full md:w-auto px-3 py-1.5 md:px-4 md:py-2 rounded-none text-[8px] md:text-[10px] font-black uppercase tracking-[0.15em] transition-all border leading-none ${isLastOdd ? 'col-span-2' : ''}`}
                                     style={{
                                         background: isActive ? PINK_LIGHT : '#fff',
                                         color: isActive ? MAROON : '#444',
@@ -271,7 +283,7 @@ const FamilyProductsCatalog = ({
                     </div>
                 )}
 
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
                     {visibleProducts.map((product, idx) => (
                         <motion.div
                             key={product.id}
@@ -281,98 +293,24 @@ const FamilyProductsCatalog = ({
                             transition={{ duration: 0.55, delay: (idx % 4) * 0.1 }}
                             className="group relative"
                         >
-                            <div
-                                className="bg-white rounded-none overflow-hidden transition-all duration-500 flex flex-col h-full border border-amber-50"
-                                style={{ boxShadow: '0 4px 20px rgba(217,119,6,0.08)' }}
-                                onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 16px 40px rgba(217,119,6,0.2)'; }}
-                                onMouseLeave={(e) => { e.currentTarget.style.boxShadow = '0 4px 20px rgba(217,119,6,0.08)'; }}
-                            >
-                                {product.badge && (
-                                     <div
-                                         className="absolute top-4 left-4 z-10 px-3 py-1 rounded-none text-[#8E2B45] text-[9px] font-black uppercase tracking-wider shadow-sm"
-                                         style={{ background: PINK_LIGHT }}
-                                     >
-                                         {product.badge}
-                                     </div>
-                                 )}
-
-                                 <div
-                                     className="relative aspect-[4/5] overflow-hidden cursor-pointer"
-                                     style={{ background: '#F9F6F3' }}
-                                     onClick={() => navigate(`/product/${product.id}`)}
-                                 >
-                                     <img
-                                         src={product.image}
-                                         alt={product.name}
-                                         className="w-full h-full object-cover transition-transform duration-[1.8s] group-hover:scale-110"
-                                     />
-                                     <button type="button" className="absolute top-4 right-4 p-2 bg-white/90 rounded-none shadow-sm hover:bg-pink-50 transition-colors">
-                                         <Heart className="w-3.5 h-3.5 text-gray-400 group-hover:text-[#8E2B45] transition-colors" />
-                                     </button>
-                                 </div>
-
-                                 <div className="p-5 flex flex-col flex-grow">
-                                     <div className="flex items-center gap-1 mb-2">
-                                         {[...Array(5)].map((_, i) => (
-                                             <Star
-                                                 key={i}
-                                                 className={`w-2.5 h-2.5 ${i < Math.floor(product.rating) ? 'fill-[#C9A24D] text-[#C9A24D]' : 'text-gray-200'}`}
-                                             />
-                                         ))}
-                                         <span className="text-[9px] text-gray-400 ml-1">({product.reviews}) reviews</span>
-                                     </div>
-
-                                     <h3
-                                         className="text-[12px] font-bold text-gray-800 mb-2 line-clamp-2 leading-snug cursor-pointer hover:text-[#8E2B45] transition-colors uppercase tracking-tight"
-                                         onClick={() => navigate(`/product/${product.id}`)}
-                                     >
-                                         {product.name}
-                                     </h3>
-
-                                     <div className="flex items-baseline gap-2 mb-3">
-                                         <span className="text-lg font-black text-zinc-900 font-serif">₹{product.price}</span>
-                                         <span className="text-[10px] text-gray-400 line-through">₹{product.originalPrice}</span>
-                                     </div>
-
-                                     <p className="text-[10px] text-gray-400 mb-4 italic">"A timeless heirloom piece for your collection."</p>
-
-                                     <button
-                                         type="button"
-                                         onClick={() => handleAddToCart(product)}
-                                         className="mt-auto w-full py-2.5 rounded-none font-bold text-[10px] uppercase tracking-[0.2em] transition-all duration-300 flex items-center justify-center gap-2"
-                                         style={{ 
-                                             background: PINK_LIGHT,
-                                             color: MAROON
-                                         }}
-                                         onMouseEnter={(e) => { 
-                                             e.currentTarget.style.background = '#ffd0d9';
-                                         }}
-                                         onMouseLeave={(e) => { 
-                                             e.currentTarget.style.background = PINK_LIGHT;
-                                         }}
-                                     >
-                                         <ShoppingBag className="w-3.5 h-3.5" />
-                                         Shop Collection
-                                     </button>
-                                 </div>
-                             </div>
+                            <ProductCard product={toCardProduct(product)} />
                         </motion.div>
                     ))}
                 </div>
 
-                <div className="mt-8 md:mt-12 text-center">
-                     <motion.button
-                         type="button"
-                         initial={{ opacity: 0, y: 20 }}
-                         whileInView={{ opacity: 1, y: 0 }}
-                         viewport={{ once: true }}
-                         onClick={() => handleSelectRecipient('all')}
-                         className="px-10 py-3.5 rounded-none font-bold uppercase tracking-widest text-[10px] transition-all shadow-md hover:shadow-lg"
-                         style={{ background: PINK_LIGHT, color: MAROON }}
-                     >
-                         View All Collections →
-                     </motion.button>
-                 </div>
+                <div className="mt-6 md:mt-12 text-center">
+                    <motion.button
+                        type="button"
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        onClick={() => handleSelectRecipient('all')}
+                        className="px-8 py-3 md:px-10 md:py-3.5 rounded-none font-bold uppercase tracking-widest text-[10px] transition-all shadow-md hover:shadow-lg"
+                        style={{ background: PINK_LIGHT, color: MAROON }}
+                    >
+                        View All Collections →
+                    </motion.button>
+                </div>
             </div>
         </section>
     );

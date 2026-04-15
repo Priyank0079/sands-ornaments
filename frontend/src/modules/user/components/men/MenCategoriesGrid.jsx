@@ -18,19 +18,19 @@ const MenCategoriesGrid = () => {
     const navigate = useNavigate();
 
     return (
-        <section className="pt-3 pb-1 md:pt-8 md:pb-4 bg-white">
+        <section className="pt-2 pb-2 md:pt-8 md:pb-4 bg-white">
             <div className="container mx-auto px-4 max-w-[1200px]">
                 {/* Header matching Screenshot 1 */}
-                <div className="text-center mb-4 md:mb-8 flex flex-col items-center">
-                    <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-black mb-0">
+                <div className="text-center mb-3 md:mb-8 flex flex-col items-center">
+                    <h2 className="text-xl md:text-3xl font-bold tracking-tight text-black mb-0">
                         Discover by
                     </h2>
-                    <h1 className="text-4xl md:text-6xl font-black uppercase tracking-wider text-black mt-[-4px]">
+                    <h1 className="text-3xl md:text-6xl font-black uppercase tracking-wider text-black mt-[-2px]">
                         Category
                     </h1>
                 </div>
 
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4">
                     {categories.map((cat, idx) => (
                         <motion.div
                             key={cat.title}
@@ -38,7 +38,7 @@ const MenCategoriesGrid = () => {
                             whileInView={{ opacity: 1, scale: 1 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.5, delay: idx * 0.05 }}
-                            className="group relative cursor-pointer overflow-hidden rounded-[15px] md:rounded-[20px] aspect-[0.9/1] shadow-md hover:shadow-xl transition-all"
+                            className="group relative cursor-pointer overflow-hidden rounded-[14px] md:rounded-[20px] aspect-[1/1.05] md:aspect-[0.9/1] shadow-md hover:shadow-xl transition-all"
                             onClick={() => navigate(cat.link)}
                         >
                             <img
@@ -52,8 +52,8 @@ const MenCategoriesGrid = () => {
                             <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-90 transition-opacity duration-500 group-hover:opacity-100" />
 
                             {/* Text label at bottom center */}
-                            <div className="absolute bottom-4 left-0 w-full text-center px-2">
-                                <h3 className="text-white font-bold tracking-widest uppercase text-[10px] md:text-[13px]">
+                            <div className="absolute bottom-3 md:bottom-4 left-0 w-full text-center px-2">
+                                <h3 className="text-white font-bold tracking-[0.22em] uppercase text-[9px] md:text-[13px]">
                                     {cat.title}
                                 </h3>
                             </div>

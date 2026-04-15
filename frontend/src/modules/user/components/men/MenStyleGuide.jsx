@@ -38,27 +38,27 @@ const styles = [
 
 const MenStyleGuide = () => {
     return (
-        <section className="py-3 md:py-10 px-4 md:px-12 bg-[#F3EBE3]">
+        <section className="py-2 md:py-10 px-4 md:px-12 bg-[#F3EBE3]">
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
-                <div className="text-center mb-6">
+                <div className="text-center mb-4 md:mb-6">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         className="flex flex-col items-center"
                     >
-                        <h2 className="text-2xl md:text-3xl font-display font-bold text-[#3B2516] tracking-tight mb-1">
+                        <h2 className="text-xl md:text-3xl font-display font-bold text-[#3B2516] tracking-tight mb-1">
                             STYLE GUIDE
                         </h2>
-                        <p className="text-sm md:text-base text-[#6B4E3D] font-medium tracking-wide">
+                        <p className="text-[12px] md:text-base text-[#6B4E3D] font-medium tracking-wide">
                             Master the hottest trends
                         </p>
                     </motion.div>
                 </div>
 
                 {/* Cards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
                     {styles.map((style, index) => (
                         <motion.div
                             key={style.id}
@@ -69,14 +69,14 @@ const MenStyleGuide = () => {
                             className="relative flex flex-col group h-full"
                         >
                             {/* Step Header */}
-                            <div className="bg-[#754E2D] py-3 px-5 text-center rounded-t-xl z-20">
-                                <span className="text-white font-bold text-base md:text-lg tracking-wider">
+                            <div className="bg-[#754E2D] py-2.5 px-4 text-center rounded-t-xl z-20">
+                                <span className="text-white font-bold text-sm md:text-lg tracking-wider">
                                     {style.step}
                                 </span>
                             </div>
 
                             {/* Image Part */}
-                            <div className="relative flex-grow overflow-hidden bg-black rounded-b-xl shadow-lg aspect-[0.85/1]">
+                            <div className="relative flex-grow overflow-hidden bg-black rounded-b-xl shadow-lg aspect-[1/1.02] md:aspect-[0.85/1]">
                                 {/* Grayscale Base Image */}
                                 <img
                                     src={style.image}
@@ -100,10 +100,10 @@ const MenStyleGuide = () => {
                                 </div>
 
                                 {/* Explore Button - COMPACTED */}
-                                <div className="absolute bottom-4 right-4 z-20">
+                                <div className="absolute bottom-3 right-3 z-20">
                                     <Link
                                         to={style.path}
-                                        className="flex items-center gap-1.5 bg-[#D9C4B1]/90 backdrop-blur-md hover:bg-[#C9A24D] text-[#3B2516] px-5 py-2.5 rounded-full font-bold text-[10px] uppercase tracking-[0.15em] shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-105 active:scale-95"
+                                        className="flex items-center gap-1.5 bg-[#D9C4B1]/90 backdrop-blur-md hover:bg-[#C9A24D] text-[#3B2516] px-4 py-2 rounded-full font-bold text-[9px] uppercase tracking-[0.15em] shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-105 active:scale-95"
                                     >
                                         {style.buttonText}
                                         <ChevronRight className="w-3.5 h-3.5" />
