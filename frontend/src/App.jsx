@@ -104,17 +104,19 @@ const AppContent = () => {
   const isAdminPath = location.pathname.startsWith('/admin');
   const isSellerPath = location.pathname.startsWith('/seller');
   const isScannerPath = location.pathname === '/scanner';
+  const showMetalToggle = location.pathname === '/' || location.pathname === '/gold-collection';
 
   return (
     <div className="min-h-screen flex flex-col font-sans text-gray-900 bg-[#FDF5F6]">
       {!isAdminPath && !isSellerPath && !isScannerPath && (
         <>
           <div className="fixed top-0 left-0 right-0 z-[100] w-full">
+            <AnnouncementBar />
             <Navbar />
-            <CategoryNav />
+            <CategoryNav showMetalToggle={showMetalToggle} />
             <PincodeModal />
           </div>
-          <div className="h-[78px] md:h-[200px] w-full"></div>
+          <div className={`h-[104px] ${showMetalToggle ? 'md:h-[226px]' : 'md:h-[166px]'} w-full`}></div>
         </>
       )}
       <main className={`flex-grow ${!isAdminPath && !isSellerPath && !isScannerPath ? 'pb-16 md:pb-0' : ''}`}>

@@ -16,10 +16,10 @@ const iconMap = {
 
 const AnnouncementBar = () => {
     const [announcements, setAnnouncements] = useState([
-        { icon: 'Truck', text: "Free Shipping" },
-        { icon: 'Shield', text: "Secure Payments" },
         { icon: 'RefreshCw', text: "Easy Returns & Refunds" },
-        { icon: 'Headset', text: "Dedicated Support Team" }
+        { icon: 'Headset', text: "Dedicated Support Team" },
+        { icon: 'Truck', text: "Free Shipping" },
+        { icon: 'Shield', text: "Secure Payments" }
     ]);
 
     useEffect(() => {

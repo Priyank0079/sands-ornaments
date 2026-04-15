@@ -1,11 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
-import haldiImgDefault from '../assets/haldi.png';
-import sangeetImgDefault from '../assets/sangeet.png';
-import receptionImgDefault from '../assets/reception.png';
-import bridalImgDefault from '../assets/bridal.png';
-import bridesmaidImgDefault from '../assets/hero_slide_3.png';
+import haldiImgDefault from '../assets/home_occasions/home_haldi.png';
+import sangeetImgDefault from '../assets/home_occasions/home_sangeet.png';
+import receptionImgDefault from '../assets/home_occasions/home_reception.png';
+import bridalImgDefault from '../assets/home_occasions/home_gift_for_bride.png';
+import bridesmaidImgDefault from '../assets/home_occasions/home_gift_for_bridesmaid.png';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 
 const OccasionalSpecial = () => {
@@ -14,23 +14,24 @@ const OccasionalSpecial = () => {
 
     // Default categories if none managed
     const defaultCategories = [
-        { id: 'haldi', name: 'Haldi', image: haldiImgDefault, path: '/category/haldi' },
-        { id: 'sangeet', name: 'Sangeet', image: sangeetImgDefault, path: '/category/sangeet' },
-        { id: 'reception', name: 'Reception', image: receptionImgDefault, path: '/category/reception' },
-        { id: 'bridal', name: 'Gift for Bride', image: bridalImgDefault, path: '/category/bridal' },
-        { id: 'bridesmaids', name: 'Gift for Bridesmaid', image: bridesmaidImgDefault, path: '/category/bridesmaids' },
+        { id: 'haldi', name: 'Haldi', image: haldiImgDefault, path: '/shop?occasion=haldi' },
+        { id: 'sangeet', name: 'Sangeet', image: sangeetImgDefault, path: '/shop?occasion=sangeet' },
+        { id: 'reception', name: 'Reception', image: receptionImgDefault, path: '/shop?occasion=reception' },
+        { id: 'bridal', name: 'Gift for Bride', image: bridalImgDefault, path: '/shop?occasion=gift%20for%20bride' },
+        { id: 'bridesmaids', name: 'Gift for Bridesmaid', image: bridesmaidImgDefault, path: '/shop?occasion=gift%20for%20bridesmaid' },
     ];
 
     const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
 
     const buildPath = (item, fallback) => {
-        if (!item) return fallback.path;
+        if (!item) return fallback?.path || '/shop';
+        if (typeof item.path === 'string' && item.path.trim()) return item.path;
         const productIds = Array.isArray(item.productIds) ? item.productIds : [];
         const limit = item.limit ? Number(item.limit) : 12;
         if (productIds.length > 0) {
             return `/shop?products=${encodeURIComponent(productIds.join(','))}&limit=${limit}&sort=random`;
         }
-        return `/shop?limit=${limit}&sort=random`;
+        return fallback?.path || `/shop?limit=${limit}&sort=random`;
     };
 
     const normalizedConfiguredItems = configuredItems.map((item, index) => {
@@ -64,15 +65,15 @@ const OccasionalSpecial = () => {
     const [item1, item2, item3, item4, item5] = heroItems;
 
     return (
-        <section className="py-2 md:py-8 bg-white">
+        <section className="py-6 md:py-8 bg-white">
             <div className="container mx-auto px-4 md:px-6 relative z-10">
                 {/* Section Header */}
-                <div className="text-center mb-6">
-                    <h2 className="font-display text-2xl md:text-5xl text-[#2F0A0F] mb-1 md:mb-4">
+                <div className="text-center mb-5 md:mb-6">
+                    <h2 className="font-display text-2xl md:text-4xl text-[#2F0A0F] mb-1 md:mb-3">
                         {sectionData?.label || "Curated For You"}
                     </h2>
-                    <div className="h-1 w-16 md:w-24 bg-[#C9A24D] mx-auto rounded-full mb-4"></div>
-                    <p className="font-serif italic text-gray-600 text-lg md:text-xl">Occasional Specials</p>
+                    <div className="h-1 w-14 md:w-20 bg-[#C9A24D] mx-auto rounded-full mb-3 md:mb-4"></div>
+                    <p className="font-serif italic text-gray-600 text-base md:text-lg">Occasional Specials</p>
                 </div>
 
                 {/* Mobile View: 2-Column Grid */}
@@ -98,9 +99,9 @@ const OccasionalSpecial = () => {
 
                 {/* Desktop View: Grid Layout (Existing) */}
                 {heroItems.length >= 5 && (
-                    <div className="hidden md:grid grid-cols-3 gap-6 auto-rows-[250px]">
+                    <div className="hidden md:grid grid-cols-3 gap-4 auto-rows-[210px]">
                         {/* Column 1 - Stacked */}
-                        <div className="flex flex-col gap-6 h-full md:row-span-2">
+                        <div className="flex flex-col gap-4 h-full md:row-span-2">
                             <Link to={item1.path} className="relative group overflow-hidden rounded-2xl flex-1 cursor-pointer shadow-md hover:shadow-xl transition-all duration-300">
                                 <img src={item1.image} alt={item1.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                                 <div className="absolute inset-0 bg-gradient-to-t from-[#2F0A0F]/80 via-transparent to-transparent"></div>
@@ -117,11 +118,11 @@ const OccasionalSpecial = () => {
                         <Link to={item3.path} className="relative group overflow-hidden rounded-2xl md:row-span-2 shadow-lg hover:shadow-2xl transition-all duration-300">
                             <img src={item3.image} alt={item3.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                             <div className="absolute inset-0 bg-gradient-to-t from-[#2F0A0F]/80 via-transparent to-transparent"></div>
-                            <span className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white font-display text-4xl tracking-wide w-full text-center drop-shadow-md">{item3.name}</span>
+                            <span className="absolute bottom-7 left-1/2 -translate-x-1/2 text-white font-display text-3xl tracking-wide w-full text-center drop-shadow-md">{item3.name}</span>
                         </Link>
 
                         {/* Column 3 - Stacked */}
-                        <div className="flex flex-col gap-6 h-full md:row-span-2">
+                        <div className="flex flex-col gap-4 h-full md:row-span-2">
                             <Link to={item4.path} className="relative group overflow-hidden rounded-2xl flex-[1.3] cursor-pointer shadow-md hover:shadow-xl transition-all duration-300">
                                 <img src={item4.image} alt={item4.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                                 <div className="absolute inset-0 bg-gradient-to-t from-[#2F0A0F]/80 via-transparent to-transparent"></div>

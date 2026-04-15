@@ -7,7 +7,7 @@ import AllJewelleryMenu from './CategoryNavComponents/AllJewelleryMenu';
 import FamilyMegaMenu from './FamilyMegaMenu';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const CategoryNav = () => {
+const CategoryNav = ({ showMetalToggle = true }) => {
     const navigate = useNavigate();
     const { activeMetal, updateActiveMetal } = useShop();
     const [hoveredItem, setHoveredItem] = useState(null);
@@ -19,9 +19,9 @@ const CategoryNav = () => {
         { id: 'her', name: 'Gifts for Her', path: '/category/women', hasChevron: false },
         { id: 'family', name: 'Gifts for Family', path: '/category/family', hasChevron: false },
         { id: 'card', name: 'SANDS Gift Card', path: '/shop?purity=card', hasChevron: false },
-        { id: 'store', name: 'Gift Store', path: '/shop?filter=gift', hasChevron: true },
-        { id: 'exclusive', name: 'Exclusive Collections', path: '/shop?filter=exclusive', hasChevron: true },
-        { id: 'more', name: 'More at SANDS', path: '/about', hasChevron: true },
+        { id: 'store', name: 'Gift Store', path: '/shop?filter=gift', hasChevron: false },
+        { id: 'exclusive', name: 'Exclusive Collections', path: '/shop?filter=exclusive', hasChevron: false },
+        { id: 'more', name: 'More at SANDS', path: '/about', hasChevron: false },
     ];
 
     const resetMenu = () => {
@@ -77,28 +77,30 @@ const CategoryNav = () => {
                 </div>
 
                 {/* Silver / Gold Toggle - Precise SANDS Polish with Navigation logic */}
-                <div className="flex justify-center pb-3 pt-0.5 relative">
-                    <div className="p-0.5 rounded-full border border-[#D4B390] flex items-center bg-white shadow-sm overflow-hidden" style={{ minWidth: '680px' }}>
-                        <button
-                            onClick={() => {
-                                updateActiveMetal('silver');
-                                navigate('/');
-                            }}
-                            className={`flex-1 py-1 px-12 rounded-full text-[17px] font-bold transition-all duration-500 transform ${activeMetal === 'silver' ? 'bg-[#9C3D5E] text-white' : 'text-gray-700 hover:bg-gray-50'}`}
-                        >
-                            Silver Jewellery
-                        </button>
-                        <button
-                            onClick={() => {
-                                updateActiveMetal('gold');
-                                navigate('/gold-collection');
-                            }}
-                            className={`flex-1 py-1 px-12 rounded-full text-[17px] font-bold transition-all duration-500 transform ${activeMetal === 'gold' ? 'bg-[#9C3D5E] text-white' : 'text-gray-700 hover:bg-gray-50'}`}
-                        >
-                            Gold Jewellery
-                        </button>
+                {showMetalToggle && (
+                    <div className="flex justify-center pb-3 pt-0.5 relative">
+                        <div className="p-0.5 rounded-full border border-[#D4B390] flex items-center bg-white shadow-sm overflow-hidden" style={{ minWidth: '680px' }}>
+                            <button
+                                onClick={() => {
+                                    updateActiveMetal('silver');
+                                    navigate('/');
+                                }}
+                                className={`flex-1 py-1 px-12 rounded-full text-[17px] font-bold transition-all duration-500 transform ${activeMetal === 'silver' ? 'bg-[#9C3D5E] text-white' : 'text-gray-700 hover:bg-gray-50'}`}
+                            >
+                                Silver Jewellery
+                            </button>
+                            <button
+                                onClick={() => {
+                                    updateActiveMetal('gold');
+                                    navigate('/gold-collection');
+                                }}
+                                className={`flex-1 py-1 px-12 rounded-full text-[17px] font-bold transition-all duration-500 transform ${activeMetal === 'gold' ? 'bg-[#9C3D5E] text-white' : 'text-gray-700 hover:bg-gray-50'}`}
+                            >
+                                Gold Jewellery
+                            </button>
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
         </div>
     );
