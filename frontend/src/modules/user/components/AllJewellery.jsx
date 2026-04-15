@@ -48,7 +48,7 @@ const AllJewellery = () => {
     const ctaLink = '/shop';
 
     return (
-        <section className="py-4 md:py-12 bg-white">
+        <section className="pt-4 pb-2 md:py-12 bg-white">
             <div className="container mx-auto px-4 md:px-6">
                 <div className="flex flex-col md:flex-row md:justify-between items-center md:items-end text-center md:text-left mb-10 md:mb-16 gap-6">
                     <div className="flex flex-col items-center md:items-start">
@@ -64,7 +64,7 @@ const AllJewellery = () => {
                     ))}
                 </div>
 
-                <div className="mt-8 md:mt-16 flex justify-center">
+                <div className="mt-5 md:mt-16 flex justify-center">
                     <Link
                         to={ctaLink}
                         className="group flex items-center gap-3 text-sm font-medium text-[#722F37] transition-all"

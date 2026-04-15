@@ -55,12 +55,12 @@ const PremiumCategoryCards = () => {
                         >
                             {/* Maroon Inset Box - More Compact */}
                             <div 
-                                className={`absolute top-[4%] bottom-[4%] w-[75%] bg-gradient-to-br from-[#8E2B45] via-[#5C1625] to-[#2D060F] rounded-[28px] md:rounded-[44px] flex flex-col justify-end p-4 md:p-8 z-10 transition-all duration-500 group-hover:shadow-[0_15px_30px_rgba(74,16,21,0.2)] 
+                                className={`absolute top-[4%] bottom-[4%] w-[75%] bg-gradient-to-br from-[#8E2B45] via-[#5C1625] to-[#2D060F] rounded-[28px] md:rounded-[44px] flex items-center justify-center p-4 md:p-8 z-10 transition-all duration-500 group-hover:shadow-[0_15px_30px_rgba(74,16,21,0.2)] 
                                 ${item.layout === 'left' ? 'left-[2%]' : 'right-[2%]'}`}
                             >
                                 {/* Shop Now Button inside maroon box */}
-                                <div className={`flex items-center gap-2 text-[#FFD9E0] group-hover:translate-x-1 transition-transform mb-1 ${item.layout === 'right' ? 'flex-row-reverse' : ''}`}>
-                                    <span className="font-display text-[15px] md:text-[23px] font-semibold tracking-[0.12em] uppercase leading-none drop-shadow-[0_2px_10px_rgba(0,0,0,0.2)]">
+                                <div className={`flex items-center justify-center w-full gap-2 text-[#FFD9E0] group-hover:translate-x-1 transition-transform ${item.layout === 'right' ? 'flex-row-reverse' : ''}`}>
+                                    <span className="font-display text-[16px] md:text-[24px] font-extrabold tracking-[0.18em] uppercase leading-none drop-shadow-[0_2px_10px_rgba(0,0,0,0.25)] text-center">
                                         {item.title}
                                     </span>
                                     <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-[#FFD9E0] flex items-center justify-center text-[#8E2B45] shadow-sm">

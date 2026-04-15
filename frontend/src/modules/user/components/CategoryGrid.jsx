@@ -47,7 +47,7 @@ const CategoryGrid = () => {
     };
 
     return (
-        <div className="w-full bg-white py-10 relative group">
+        <div className="w-full bg-white py-5 md:py-10 relative group">
             <div className="container mx-auto px-4 relative">
                 {/* Scroll Buttons */}
                 <button 
@@ -59,28 +59,28 @@ const CategoryGrid = () => {
 
                 <div 
                     ref={scrollRef}
-                    className="flex overflow-x-auto scrollbar-hide gap-5 md:gap-7 pb-4 px-2"
+                    className="flex overflow-x-auto scrollbar-hide gap-4 md:gap-7 pb-2 md:pb-4 px-1 md:px-2 snap-x snap-mandatory"
                 >
                     {CATEGORIES.map((cat) => (
                         <Link 
                             key={cat.id} 
                             to={cat.path} 
-                            className="flex flex-col items-center group/item cursor-pointer shrink-0"
+                            className="flex flex-col items-center group/item cursor-pointer shrink-0 snap-start"
                         >
-                            <div className="relative w-[110px] h-[110px] md:w-[155px] md:h-[155px] mb-3 overflow-hidden rounded-[40px] border border-[#fce7e8] group-hover/item:border-[#9C5B61] transition-all duration-300 shadow-sm">
+                            <div className="relative w-[86px] h-[86px] md:w-[155px] md:h-[155px] mb-2 md:mb-3 overflow-hidden rounded-[28px] md:rounded-[40px] border border-[#fce7e8] group-hover/item:border-[#9C5B61] transition-all duration-300 shadow-sm">
                                 <img 
                                     src={cat.image} 
                                     alt={cat.name} 
                                     className="w-full h-full object-cover group-hover/item:scale-105 transition-transform duration-500"
                                 />
                                 {cat.badge && (
-                                    <div className="absolute top-2 right-2 bg-[#9C5B61] text-white text-[7px] md:text-[9px] px-2 py-0.5 rounded-full flex items-center gap-1 shadow-md uppercase font-bold tracking-wider">
+                                    <div className="absolute top-1.5 right-1.5 md:top-2 md:right-2 bg-[#9C5B61] text-white text-[6px] md:text-[9px] px-1.5 md:px-2 py-0.5 rounded-full flex items-center gap-1 shadow-md uppercase font-bold tracking-wider">
                                         <span className="text-[10px]">✨</span>
                                         {cat.badge}
                                     </div>
                                 )}
                             </div>
-                            <span className="text-[13px] md:text-[15px] font-medium text-gray-800 group-hover/item:text-[#9C5B61] transition-colors text-center tracking-tight leading-tight">
+                            <span className="text-[12px] md:text-[15px] font-medium text-gray-800 group-hover/item:text-[#9C5B61] transition-colors text-center tracking-tight leading-tight">
                                 {cat.name}
                             </span>
                         </Link>

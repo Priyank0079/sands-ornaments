@@ -100,7 +100,7 @@ const SilverCollectionSection = () => {
     };
 
     return (
-        <section className="w-full bg-[#FFF5F7] pt-12 pb-20 overflow-hidden font-sans">
+        <section className="w-full bg-[#FFF5F7] pt-6 pb-12 md:pt-12 md:pb-20 overflow-hidden font-sans">
             <div className="max-w-[1450px] mx-auto px-4">
 
                 {/* Hero Banner Area — Restored original size */}
@@ -108,7 +108,7 @@ const SilverCollectionSection = () => {
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    className="relative w-full h-[180px] md:h-[320px] rounded-[40px] overflow-hidden mb-12 shadow-2xl group border border-white/20"
+                    className="relative w-full h-[170px] md:h-[320px] rounded-[32px] md:rounded-[40px] overflow-hidden mb-6 md:mb-12 shadow-2xl group border border-white/20"
                 >
                     <div className="flex h-full w-full">
                         <div className="relative w-[50%] md:w-[60%] h-full overflow-hidden">
@@ -160,7 +160,7 @@ const SilverCollectionSection = () => {
 
                     <div
                         ref={scrollRef}
-                        className="flex flex-nowrap overflow-x-auto scrollbar-hide gap-6 md:gap-12 pb-10 px-2 snap-x snap-mandatory"
+                        className="flex flex-nowrap overflow-x-auto scrollbar-hide gap-6 md:gap-12 pb-6 md:pb-10 px-2 snap-x snap-mandatory"
                     >
                         {SILVER_STYLE_CATEGORIES.map((cat, idx) => (
                             <motion.div
