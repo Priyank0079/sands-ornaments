@@ -1,5 +1,5 @@
 import React from 'react';
-import featureImg from '../../../../assets/hero/image.png';
+import featureImg from '@assets/hero/image.png';
 
 const WomenFeatureBanner = () => {
     return (
@@ -16,3 +16,4 @@ const WomenFeatureBanner = () => {
 };
 
 export default WomenFeatureBanner;
+

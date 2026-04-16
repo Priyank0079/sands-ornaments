@@ -8,14 +8,14 @@ import {
     ArrowLeft, ArrowUpDown
 } from 'lucide-react';
 
-import menRing from '../assets/men_prod_ring.png';
-import menPendant from '../assets/men_prod_pendant.png';
-import menBracelet from '../assets/men_prod_bracelet.png';
-import menChain from '../assets/men_prod_chain.png';
+import menRing from '@assets/men_prod_ring.png';
+import menPendant from '@assets/men_prod_pendant.png';
+import menBracelet from '@assets/men_prod_bracelet.png';
+import menChain from '@assets/men_prod_chain.png';
 
-import womenEarrings from '../assets/cat_earrings.png';
-import womenPendant from '../assets/trending_modern.png';
-import womenRing from '../assets/prod_ring_main.png';
+import womenEarrings from '@assets/cat_earrings.png';
+import womenPendant from '@assets/trending_modern.png';
+import womenRing from '@assets/prod_ring_main.png';
 
 const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
 
@@ -931,3 +931,4 @@ const Shop = () => {
 };
 
 export default Shop;
+

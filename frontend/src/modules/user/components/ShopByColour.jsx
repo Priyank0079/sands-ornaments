@@ -2,10 +2,10 @@ import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
 
-import silverHeartImg from '../../../assets/categories/gold_pendants.png';
-import goldRingImg from '../../../assets/categories/rings.png';
-import roseGoldBraceletImg from '../../../assets/categories/gold_bracelet.png';
-import oxidisedRingsImg from '../../../assets/categories/earrings.png';
+import silverHeartImg from '@assets/categories/gold_pendants.png';
+import goldRingImg from '@assets/categories/rings.png';
+import roseGoldBraceletImg from '@assets/categories/gold_bracelet.png';
+import oxidisedRingsImg from '@assets/categories/earrings.png';
 
 const METAL_STYLES = {
     silver: {
@@ -147,3 +147,4 @@ const ShopByColour = () => {
 };
 
 export default ShopByColour;
+

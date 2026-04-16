@@ -8,7 +8,7 @@ import { getWomenLoginRedirect, storeWomenPendingCartItem } from '../../utils/wo
 import toast from 'react-hot-toast';
 
 // Import local image
-import InteractiveLookImg from '../../../../assets/InteractiveLook.png';
+import InteractiveLookImg from '@assets/InteractiveLook.png';
 
 const hotspots = [
     {
@@ -222,3 +222,4 @@ const WomenInteractiveLook = () => {
 };
 
 export default WomenInteractiveLook;
+

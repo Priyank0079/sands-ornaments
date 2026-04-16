@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { buildMenShopPath } from '../../utils/menNavigation';
 
 // Import image
-import personalizedImg from '../../../../assets/men/personalized_full_banner.png';
+import personalizedImg from '@assets/men/personalized_full_banner.png';
 
 const MenPersonalizedBanner = () => {
     return (
@@ -73,3 +73,4 @@ const MenPersonalizedBanner = () => {
 };
 
 export default MenPersonalizedBanner;
+

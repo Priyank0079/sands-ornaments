@@ -2,12 +2,12 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
 import ProductCard from './ProductCard';
-import bondWife from '../../../assets/bond_wife.png';
-import bondHusband from '../../../assets/bond_husband.png';
-import bondMother from '../../../assets/bond_mother.png';
-import bondBrothers from '../../../assets/bond_brothers.png';
-import bondSister from '../../../assets/bond_sister.png';
-import bondFriends from '../../../assets/bond_friends.png';
+import bondWife from '@assets/bond_wife.png';
+import bondHusband from '@assets/bond_husband.png';
+import bondMother from '@assets/bond_mother.png';
+import bondBrothers from '@assets/bond_brothers.png';
+import bondSister from '@assets/bond_sister.png';
+import bondFriends from '@assets/bond_friends.png';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 import { ensureSilverHomePath } from '../utils/silverHomePaths';
 
@@ -150,3 +150,4 @@ const PerfectGift = () => {
 };
 
 export default PerfectGift;
+

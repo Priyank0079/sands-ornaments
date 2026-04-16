@@ -2,8 +2,8 @@ import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
-import menImg from '../../../assets/collections/cat_men_nobg.png';
-import womenImg from '../../../assets/collections/cat_women_nobg.png';
+import menImg from '@assets/collections/cat_men_nobg.png';
+import womenImg from '@assets/collections/cat_women_nobg.png';
 
 const PremiumCategoryCards = () => {
     const navigate = useNavigate();
@@ -86,3 +86,4 @@ const PremiumCategoryCards = () => {
 };
 
 export default PremiumCategoryCards;
+

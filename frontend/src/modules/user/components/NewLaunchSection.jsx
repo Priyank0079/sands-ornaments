@@ -4,11 +4,11 @@ import { motion } from 'framer-motion';
 import { useShop } from '../../../context/ShopContext';
 
 // Import images
-import newEarrings from '../assets/new_launch_earrings.png';
-import newChains from '../assets/new_launch_chains.png';
-import newStuds from '../assets/new_launch_studs.png';
-import newBracelets from '../assets/new_launch_bracelets.png';
-import newAnklets from '../assets/new_launch_anklets.png';
+import newEarrings from '@assets/new_launch_earrings.png';
+import newChains from '@assets/new_launch_chains.png';
+import newStuds from '@assets/new_launch_studs.png';
+import newBracelets from '@assets/new_launch_bracelets.png';
+import newAnklets from '@assets/new_launch_anklets.png';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 import { ensureSilverHomePath } from '../utils/silverHomePaths';
 
@@ -211,3 +211,4 @@ const NewLaunchSection = () => {
 };
 
 export default NewLaunchSection;
+

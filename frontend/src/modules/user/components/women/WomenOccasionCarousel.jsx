@@ -5,11 +5,11 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { buildWomenShopPath } from '../../utils/womenNavigation';
 
 // Import local images
-import TempleDateImg from '../../../../assets/occasions/TempleDate.png';
-import GirlOutingImg from '../../../../assets/occasions/GirlOuting.png';
-import DateNightImg from '../../../../assets/occasions/DateNight.png';
-import PartyGlamImg from '../../../../assets/occasions/PartyGlam.png';
-import GotHitchedImg from '../../../../assets/occasions/GotHitched.png';
+import TempleDateImg from '@assets/occasions/TempleDate.png';
+import GirlOutingImg from '@assets/occasions/GirlOuting.png';
+import DateNightImg from '@assets/occasions/DateNight.png';
+import PartyGlamImg from '@assets/occasions/PartyGlam.png';
+import GotHitchedImg from '@assets/occasions/GotHitched.png';
 
 const occasions = [
     {
@@ -143,3 +143,4 @@ const WomenOccasionCarousel = () => {
 };
 
 export default WomenOccasionCarousel;
+

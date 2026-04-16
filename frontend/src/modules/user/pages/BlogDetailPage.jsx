@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Calendar } from 'lucide-react';
 import api from '../../../services/api';
-import blogFallback from '../assets/trending_heritage.png';
+import blogFallback from '@assets/trending_heritage.png';
 
 const blogFallbackImage = blogFallback;
 
@@ -111,3 +111,4 @@ const BlogDetailPage = () => {
 };
 
 export default BlogDetailPage;
+

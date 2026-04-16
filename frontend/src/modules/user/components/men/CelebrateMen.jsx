@@ -4,10 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { buildMenShopPath } from '../../utils/menNavigation';
 
 // Correct path to assets (4 levels up from src/modules/user/components/men/)
-import giftBrothers from '../../../../assets/gift_brothers.png';
-import giftHusbands from '../../../../assets/gift_husbands.png';
-import giftCouples from '../../../../assets/gift_couples.png';
-import giftBoyfriends from '../../../../assets/gift_boyfriends.png';
+import giftBrothers from '@assets/gift_brothers.png';
+import giftHusbands from '@assets/gift_husbands.png';
+import giftCouples from '@assets/gift_couples.png';
+import giftBoyfriends from '@assets/gift_boyfriends.png';
 
 const guides = [
     { id: 1, title: 'Brothers', image: giftBrothers, link: buildMenShopPath({ filter: 'brothers' }) },
@@ -70,3 +70,4 @@ const CelebrateMen = () => {
 };
 
 export default CelebrateMen;
+

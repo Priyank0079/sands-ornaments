@@ -5,10 +5,10 @@ import { useNavigate } from 'react-router-dom';
 import { buildMenShopPath } from '../../utils/menNavigation';
 
 // Import existing assets from global and local folders
-import men1 from '../../../../assets/luxury_ring_men.png';
-import men2 from '../../../../assets/luxury_pendant_men.png';
-import men3 from '../../../../assets/luxury_gifts_men.png';
-import men4 from '../../../../assets/men/style_bracelets.png';
+import men1 from '@assets/luxury_ring_men.png';
+import men2 from '@assets/luxury_pendant_men.png';
+import men3 from '@assets/luxury_gifts_men.png';
+import men4 from '@assets/men/style_bracelets.png';
 
 const collections = [
     { id: 1, title: "SHOP SILVER FOR HIM", image: men1, link: buildMenShopPath({ metal: 'silver' }), type: 'image' },
@@ -125,3 +125,4 @@ const MenCuratedCollections = () => {
 };
 
 export default MenCuratedCollections;
+

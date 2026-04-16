@@ -1,14 +1,14 @@
-import navGiftWomen from '../assets/nav_gift_women.png';
-import navGiftGirls from '../assets/nav_gift_girls.png';
-import navGiftMens from '../assets/nav_gift_mens.png';
-import navGiftCouple from '../assets/nav_gift_couple.png';
-import navGiftKids from '../assets/nav_gift_kids.png';
+import navGiftWomen from '@assets/nav_gift_women.png';
+import navGiftGirls from '@assets/nav_gift_girls.png';
+import navGiftMens from '@assets/nav_gift_mens.png';
+import navGiftCouple from '@assets/nav_gift_couple.png';
+import navGiftKids from '@assets/nav_gift_kids.png';
 
-import navOccasionBirthday from '../assets/nav_occasion_birthday.png';
-import navOccasionAnniversary from '../assets/nav_occasion_anniversary.png';
-import navOccasionWedding from '../assets/nav_occasion_wedding.png';
-import navOccasionMothers from '../assets/nav_occasion_mothers.png';
-import navOccasionValentine from '../assets/nav_occasion_valentine.png';
+import navOccasionBirthday from '@assets/nav_occasion_birthday.png';
+import navOccasionAnniversary from '@assets/nav_occasion_anniversary.png';
+import navOccasionWedding from '@assets/nav_occasion_wedding.png';
+import navOccasionMothers from '@assets/nav_occasion_mothers.png';
+import navOccasionValentine from '@assets/nav_occasion_valentine.png';
 import { resolveLegacyCmsAsset } from './legacyCmsAssets';
 
 export const buildSectionSlug = (value = '') => String(value || '')
@@ -67,3 +67,4 @@ export const normalizeHomepageNavItems = (items = [], queryKey, imageResolver) =
       };
     })
     .filter(Boolean);
+

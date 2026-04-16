@@ -4,22 +4,22 @@ import { Link } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
 
 // Importing assets for Banners (using available hero/trending assets)
-import bannerDaily from '../assets/banner_daily.png';
-import bannerOffice from '../assets/banner_office.png';
-import bannerParty from '../assets/banner_party.png';
-import bannerCasual from '../assets/trending_heritage.png';
+import bannerDaily from '@assets/banner_daily.png';
+import bannerOffice from '@assets/banner_office.png';
+import bannerParty from '@assets/banner_party.png';
+import bannerCasual from '@assets/trending_heritage.png';
 
 // Importing assets for Thumbnails (using available product assets)
-import prodChain from '../assets/silver_chain_product.png';
-import prodBracelet from '../assets/silver_bracelet_product.png';
-import prodEarring from '../assets/silver_earrings_product.png';
-import prodPendant from '../assets/cat_pendant.png';
-import prodRing from '../assets/cat_ring_wine.png';
-import prodAnklet from '../assets/cat_anklets.png'; // Premium Asset
-import prodGift from '../assets/gift_friends_silver.png';
-import prodSis from '../assets/gift_sister_silver.png';
-import prodWineEar from '../assets/cat_earrings_wine.png';
-import prodWineRing from '../assets/cat_ring_wine.png';
+import prodChain from '@assets/silver_chain_product.png';
+import prodBracelet from '@assets/silver_bracelet_product.png';
+import prodEarring from '@assets/silver_earrings_product.png';
+import prodPendant from '@assets/cat_pendant.png';
+import prodRing from '@assets/cat_ring_wine.png';
+import prodAnklet from '@assets/cat_anklets.png'; // Premium Asset
+import prodGift from '@assets/gift_friends_silver.png';
+import prodSis from '@assets/gift_sister_silver.png';
+import prodWineEar from '@assets/cat_earrings_wine.png';
+import prodWineRing from '@assets/cat_ring_wine.png';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 import { ensureSilverHomePath } from '../utils/silverHomePaths';
 
@@ -208,3 +208,4 @@ const StyleItYourWay = () => {
 };
 
 export default StyleItYourWay;
+

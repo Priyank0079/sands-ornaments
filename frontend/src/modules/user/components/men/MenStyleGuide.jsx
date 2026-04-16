@@ -5,9 +5,9 @@ import { Link } from 'react-router-dom';
 import { buildMenShopPath } from '../../utils/menNavigation';
 
 // Import images from assets
-import styleChains from '../../../../assets/men/style_chains.png';
-import styleRings from '../../../../assets/men/style_rings.png';
-import styleBracelets from '../../../../assets/men/style_bracelets.png';
+import styleChains from '@assets/men/style_chains.png';
+import styleRings from '@assets/men/style_rings.png';
+import styleBracelets from '@assets/men/style_bracelets.png';
 
 const styles = [
     {
@@ -119,3 +119,4 @@ const MenStyleGuide = () => {
 };
 
 export default MenStyleGuide;
+

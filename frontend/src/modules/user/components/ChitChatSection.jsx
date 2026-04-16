@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Send } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../../services/api';
-import sandsLogo from '../assets/sands-logo.png';
+import sandsLogo from '@assets/sands-logo.png';
 
 const ChitChatSection = () => {
     const [formData, setFormData] = useState({
@@ -150,3 +150,4 @@ const ChitChatSection = () => {
 };
 
 export default ChitChatSection;
+

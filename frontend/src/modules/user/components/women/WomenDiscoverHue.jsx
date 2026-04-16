@@ -3,10 +3,10 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { buildWomenShopPath } from '../../utils/womenNavigation';
 
-import SilverImg from '../../../../assets/hues/silver_woman.png';
-import GoldImg from '../../../../assets/hues/gold_woman.png';
-import RoseGoldImg from '../../../../assets/hues/rosegold_woman.png';
-import OxidisedImg from '../../../../assets/hues/oxidised_woman.png';
+import SilverImg from '@assets/hues/silver_woman.png';
+import GoldImg from '@assets/hues/gold_woman.png';
+import RoseGoldImg from '@assets/hues/rosegold_woman.png';
+import OxidisedImg from '@assets/hues/oxidised_woman.png';
 
 const hues = [
     {
@@ -90,3 +90,4 @@ const WomenDiscoverHue = () => {
 };
 
 export default WomenDiscoverHue;
+

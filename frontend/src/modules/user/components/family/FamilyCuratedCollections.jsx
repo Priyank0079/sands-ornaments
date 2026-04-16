@@ -4,12 +4,12 @@ import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { buildFamilyCollectionPath } from '../../utils/familyNavigation';
 
-import classicsImg from '../../assets/family_curated_classics.png';
-import sistersImg from '../../assets/family_curated_sisters.png';
-import astraImg from '../../assets/family_astra.png';
-import bohoImg from '../../assets/family_boho.png';
-import signatureImg from '../../assets/premium_necklace_product.png'; // Reusing premium asset for new card
-import bridalImg from '../../assets/latest_drop_earrings.png'; // Reusing premium asset for new card
+import classicsImg from '@assets/family_curated_classics.png';
+import sistersImg from '@assets/family_curated_sisters.png';
+import astraImg from '@assets/family_astra.png';
+import bohoImg from '@assets/family_boho.png';
+import signatureImg from '@assets/premium_necklace_product.png'; // Reusing premium asset for new card
+import bridalImg from '@assets/latest_drop_earrings.png'; // Reusing premium asset for new card
 
 const collections = [
     {
@@ -121,3 +121,4 @@ const FamilyCuratedCollections = () => {
 };
 
 export default FamilyCuratedCollections;
+

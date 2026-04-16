@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
-import proposalRingsImg from '../assets/home_banners/home_proposal_rings.png';
+import proposalRingsImg from '@assets/home_banners/home_proposal_rings.png';
 
 const DiamondStoryBanner = () => {
     const to = '/shop?category=rings&sort=latest';
@@ -76,4 +76,5 @@ const DiamondStoryBanner = () => {
 };
 
 export default DiamondStoryBanner;
+
 

@@ -3,9 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { buildMenShopPath } from '../../utils/menNavigation';
 
-import heroMenBold from '../../assets/men_hero_bold.png';
-import heroMenStyle from '../../assets/men_hero_style.png';
-import heroMenElite from '../../assets/men_hero_elite.png';
+import heroMenBold from '@assets/men_hero_bold.png';
+import heroMenStyle from '@assets/men_hero_style.png';
+import heroMenElite from '@assets/men_hero_elite.png';
 
 const slides = [
     {
@@ -181,3 +181,4 @@ const MenHeroCarousel = () => {
 };
 
 export default MenHeroCarousel;
+

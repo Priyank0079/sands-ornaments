@@ -6,16 +6,17 @@ import { useShop } from '../../../context/ShopContext';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 
 // Assets
-import silverChains from '../../../assets/categories/silverchains.png';
-import menSilver from '../../../assets/categories/mensilver.png';
-import rings from '../../../assets/categories/rings.png';
-import earrings from '../../../assets/categories/earrings.png';
+import silverChains from '@assets/categories/silverchains.png';
+import menSilver from '@assets/categories/mensilver.png';
+import rings from '@assets/categories/rings.png';
+import earrings from '@assets/categories/earrings.png';
+import brandVideo from '@assets/20260414-1037-04.7611184.mp4';
 
 const collections = [
     {
         id: 1,
         title: "Pure Silver Essentials",
-        video: "/20260414-1037-04.7611184.mp4",
+        video: brandVideo,
         link: "/shop?metal=silver",
         type: 'video'
     },
@@ -50,7 +51,7 @@ const collections = [
     {
         id: 6,
         title: "Sterling Style Highlights",
-        video: "/20260414-1037-04.7611184.mp4",
+        video: brandVideo,
         link: "/shop?metal=silver&sort=latest",
         type: 'video'
     }
@@ -186,3 +187,4 @@ const SilverCuratedShowcase = () => {
 };
 
 export default SilverCuratedShowcase;
+

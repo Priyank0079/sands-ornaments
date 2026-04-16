@@ -7,17 +7,17 @@ import toast from 'react-hot-toast';
 import { getMenLoginRedirect, storeMenPendingCartItem } from '../utils/menNavigation';
 import { getWomenLoginRedirect, storeWomenPendingCartItem } from '../utils/womenNavigation';
 
-import latestRing from '../assets/latest_drop_ring.png';
-import latestBracelet from '../assets/latest_drop_bracelet.png';
-import latestNecklace from '../assets/latest_drop_necklace.png';
-import latestEarrings from '../assets/latest_drop_earrings.png';
-import newAnklets from '../assets/new_launch_anklets.png';
+import latestRing from '@assets/latest_drop_ring.png';
+import latestBracelet from '@assets/latest_drop_bracelet.png';
+import latestNecklace from '@assets/latest_drop_necklace.png';
+import latestEarrings from '@assets/latest_drop_earrings.png';
+import newAnklets from '@assets/new_launch_anklets.png';
 
 // Import high-end generated product shots for missing DB images
-import premiumRingProduct from '../assets/premium_ring_product.png';
-import premiumBraceletProduct from '../assets/premium_bracelet_product.png';
-import premiumPendantProduct from '../assets/premium_pendant_product.png';
-import premiumNecklaceProduct from '../assets/premium_necklace_product.png';
+import premiumRingProduct from '@assets/premium_ring_product.png';
+import premiumBraceletProduct from '@assets/premium_bracelet_product.png';
+import premiumPendantProduct from '@assets/premium_pendant_product.png';
+import premiumNecklaceProduct from '@assets/premium_necklace_product.png';
 
 const fallbackProductMap = {
     ring: premiumRingProduct,
@@ -296,3 +296,4 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
 };
 
 export default ProductCard;
+

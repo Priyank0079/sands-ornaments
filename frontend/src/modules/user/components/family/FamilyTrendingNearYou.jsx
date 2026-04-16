@@ -4,16 +4,16 @@ import { motion } from 'framer-motion';
 import { buildFamilyCollectionPath } from '../../utils/familyNavigation';
 
 // Import all 10 curated images
-import img1 from '../../assets/family_trend_1.png';
-import img2 from '../../assets/family_trend_2.png';
-import img3 from '../../assets/family_trend_3.png';
-import img4 from '../../assets/family_trend_4.png';
-import img5 from '../../assets/family_trend_5.png';
-import img6 from '../../assets/family_trend_6.png';
-import img7 from '../../assets/family_trend_7.png';
-import img8 from '../../assets/family_trend_8.png';
-import img9 from '../../assets/family_trend_9.png';
-import img10 from '../../assets/family_trend_10.png';
+import img1 from '@assets/family_trend_1.png';
+import img2 from '@assets/family_trend_2.png';
+import img3 from '@assets/family_trend_3.png';
+import img4 from '@assets/family_trend_4.png';
+import img5 from '@assets/family_trend_5.png';
+import img6 from '@assets/family_trend_6.png';
+import img7 from '@assets/family_trend_7.png';
+import img8 from '@assets/family_trend_8.png';
+import img9 from '@assets/family_trend_9.png';
+import img10 from '@assets/family_trend_10.png';
 
 const trendingCollections = [
     { id: 1, title: "Matching Sets", image: img1, path: buildFamilyCollectionPath('matching-sets') },
@@ -174,3 +174,4 @@ const FamilyTrendingNearYou = () => {
 };
 
 export default FamilyTrendingNearYou;
+

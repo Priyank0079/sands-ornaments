@@ -5,14 +5,14 @@ import { ChevronRight } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 
-import ringsImg from '../../../assets/categories/rings.png';
-import braceletsImg from '../../../assets/categories/bracelets.png';
-import personalisedImg from '../../../assets/categories/personalised.png';
-import pendantsImg from '../../../assets/categories/pendants.png';
-import earringsImg from '../../../assets/categories/earrings.png';
-import mensilverImg from '../../../assets/categories/mensilver.png';
-import setsImg from '../../../assets/categories/sets.png';
-import ankletsImg from '../../../assets/categories/anklets.png';
+import ringsImg from '@assets/categories/rings.png';
+import braceletsImg from '@assets/categories/bracelets.png';
+import personalisedImg from '@assets/categories/personalised.png';
+import pendantsImg from '@assets/categories/pendants.png';
+import earringsImg from '@assets/categories/earrings.png';
+import mensilverImg from '@assets/categories/mensilver.png';
+import setsImg from '@assets/categories/sets.png';
+import ankletsImg from '@assets/categories/anklets.png';
 
 const LAUNCH_CATEGORIES = [
     { id: 1, name: 'Rings', image: ringsImg, path: '/category/rings', tag: 'New' },
@@ -122,3 +122,4 @@ const SilverNewLaunchGrid = () => {
 };
 
 export default SilverNewLaunchGrid;
+

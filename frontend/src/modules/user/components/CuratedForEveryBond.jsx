@@ -3,10 +3,10 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
 // Import assets from silver category icons/gifts
-import giftWife from '../assets/gift_wife_silver.png';
-import giftGF from '../assets/gift_gf_silver.png';
-import giftMother from '../assets/gift_mother_silver.png';
-import giftSister from '../assets/gift_sister_silver.png';
+import giftWife from '@assets/gift_wife_silver.png';
+import giftGF from '@assets/gift_gf_silver.png';
+import giftMother from '@assets/gift_mother_silver.png';
+import giftSister from '@assets/gift_sister_silver.png';
 
 const BONDS = [
     {
@@ -85,3 +85,4 @@ const CuratedForEveryBond = () => {
 };
 
 export default CuratedForEveryBond;
+

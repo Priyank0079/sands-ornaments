@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import loginHero from '../assets/login_hero_silver.png';
+import loginHero from '@assets/login_hero_silver.png';
 import { useAuth } from '../../../context/AuthContext';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Crown, ArrowLeft } from 'lucide-react';
@@ -9,7 +9,7 @@ import { useShop } from '../../../context/ShopContext';
 import { readMenPendingCartItem, clearMenPendingCartItem } from '../utils/menNavigation';
 import { readWomenPendingCartItem, clearWomenPendingCartItem } from '../utils/womenNavigation';
 
-import logo from '../assets/SANDS JEWELS PINK (1).png';
+import logo from '@assets/SANDS JEWELS PINK (1).png';
 
 const Login = () => {
     const { sendOtp, verifyOtp } = useAuth();
@@ -386,3 +386,4 @@ const Login = () => {
 };
 
 export default Login;
+

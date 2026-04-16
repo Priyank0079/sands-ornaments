@@ -3,26 +3,26 @@ import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 // Reuse existing category assets (dark stone/lotus theme)
-import ringsImg from '../../../assets/categories/rings.png';
-import earringsImg from '../../../assets/categories/earrings.png';
-import pendantsImg from '../../../assets/categories/pendants.png';
-import braceletsImg from '../../../assets/categories/bracelets.png';
-import nosepinImg from '../../../assets/categories/nosepin.png';
-import mangalsutraImg from '../../../assets/categories/mangalsutra.png';
-import setsImg from '../../../assets/categories/sets.png';
-import bangleImg from '../../../assets/categories/bangle.png';
-import newlaunchImg from '../../../assets/categories/newlaunch.png';
+import ringsImg from '@assets/categories/rings.png';
+import earringsImg from '@assets/categories/earrings.png';
+import pendantsImg from '@assets/categories/pendants.png';
+import braceletsImg from '@assets/categories/bracelets.png';
+import nosepinImg from '@assets/categories/nosepin.png';
+import mangalsutraImg from '@assets/categories/mangalsutra.png';
+import setsImg from '@assets/categories/sets.png';
+import bangleImg from '@assets/categories/bangle.png';
+import newlaunchImg from '@assets/categories/newlaunch.png';
 
 // Newly generated green assets
-import goldRingsGreen from '../../../assets/categories/gold_rings_green.png';
-import goldEarringsGreen from '../../../assets/categories/gold_earrings_green.png';
-import goldPendantsGreen from '../../../assets/categories/gold_pendants_green.png';
-import goldBraceletsGreen from '../../../assets/categories/gold_bracelets_green.png';
-import goldNosepinsGreen from '../../../assets/categories/gold_nosepins_green.png';
-import goldMangalsutraGreen from '../../../assets/categories/gold_mangalsutra_green.png';
-import goldBanglesGreen from '../../../assets/categories/gold_bangles_green.png';
-import goldSetsGreen from '../../../assets/categories/gold_sets_green.png';
-import goldNewArrivalsGreen from '../../../assets/categories/gold_new_arrivals_green.png';
+import goldRingsGreen from '@assets/categories/gold_rings_green.png';
+import goldEarringsGreen from '@assets/categories/gold_earrings_green.png';
+import goldPendantsGreen from '@assets/categories/gold_pendants_green.png';
+import goldBraceletsGreen from '@assets/categories/gold_bracelets_green.png';
+import goldNosepinsGreen from '@assets/categories/gold_nosepins_green.png';
+import goldMangalsutraGreen from '@assets/categories/gold_mangalsutra_green.png';
+import goldBanglesGreen from '@assets/categories/gold_bangles_green.png';
+import goldSetsGreen from '@assets/categories/gold_sets_green.png';
+import goldNewArrivalsGreen from '@assets/categories/gold_new_arrivals_green.png';
 
 const GOLD_CATEGORIES = [
     { id: 1, name: 'Gold Rings', image: goldRingsGreen, path: '/shop?metal=gold&category=rings', isCustom: true },
@@ -115,3 +115,4 @@ const GoldCategoryGrid = () => {
 };
 
 export default GoldCategoryGrid;
+

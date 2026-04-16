@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { buildWomenShopPath } from '../../utils/womenNavigation';
 
-import PersonalisedImg from '../../../../assets/promos/PersonalisedBannerWine.png';
+import PersonalisedImg from '@assets/promos/PersonalisedBannerWine.png';
 
 const WomenPersonalisedBanner = () => {
     const navigate = useNavigate();
@@ -83,3 +83,4 @@ const WomenPersonalisedBanner = () => {
 };
 
 export default WomenPersonalisedBanner;
+

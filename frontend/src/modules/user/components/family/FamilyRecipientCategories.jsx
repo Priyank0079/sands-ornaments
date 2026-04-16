@@ -2,12 +2,12 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
-import giftMother from '../../assets/gift_mother_silver.png';
-import giftFather from '../../assets/gift_husband_silver.png';
-import giftBrother from '../../assets/gift_brother_silver.png';
-import giftSister from '../../assets/gift_sister_silver.png';
-import giftHusband from '../../assets/gift_husband_silver.png';
-import giftWife from '../../assets/gift_wife_silver.png';
+import giftMother from '@assets/gift_mother_silver.png';
+import giftFather from '@assets/gift_husband_silver.png';
+import giftBrother from '@assets/gift_brother_silver.png';
+import giftSister from '@assets/gift_sister_silver.png';
+import giftHusband from '@assets/gift_husband_silver.png';
+import giftWife from '@assets/gift_wife_silver.png';
 import { buildFamilyShopPath, normalizeFamilyRecipient } from '../../utils/familyNavigation';
 
 const recipients = [
@@ -95,3 +95,4 @@ const FamilyRecipientCategories = ({ selectedRecipient = 'all', onSelectRecipien
 };
 
 export default FamilyRecipientCategories;
+

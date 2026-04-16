@@ -1,15 +1,15 @@
-﻿import React from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Gift } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { buildFamilyShopPath, normalizeFamilyRecipient } from '../../utils/familyNavigation';
 import ProductCard from '../ProductCard';
-import giftMother from '../../assets/gift_mother_silver.png';
-import giftFather from '../../assets/gift_husband_silver.png';
-import giftBrother from '../../assets/gift_brother_silver.png';
-import giftSister from '../../assets/gift_sister_silver.png';
-import giftHusband from '../../assets/gift_husband_silver.png';
-import giftWife from '../../assets/gift_wife_silver.png';
+import giftMother from '@assets/gift_mother_silver.png';
+import giftFather from '@assets/gift_husband_silver.png';
+import giftBrother from '@assets/gift_brother_silver.png';
+import giftSister from '@assets/gift_sister_silver.png';
+import giftHusband from '@assets/gift_husband_silver.png';
+import giftWife from '@assets/gift_wife_silver.png';
 
 const familyProducts = [
     {
@@ -308,7 +308,7 @@ const FamilyProductsCatalog = ({
                         className="px-8 py-3 md:px-10 md:py-3.5 rounded-none font-bold uppercase tracking-widest text-[10px] transition-all shadow-md hover:shadow-lg"
                         style={{ background: PINK_LIGHT, color: MAROON }}
                     >
-                        View All Collections →
+                        View All Collections ?
                     </motion.button>
                 </div>
             </div>
@@ -317,3 +317,4 @@ const FamilyProductsCatalog = ({
 };
 
 export default FamilyProductsCatalog;
+

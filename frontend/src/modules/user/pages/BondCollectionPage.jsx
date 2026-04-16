@@ -7,12 +7,12 @@ import { COLLECTION_MOCK_PRODUCTS } from '../data/mockCollectionData';
 import ProductCard from '../components/ProductCard';
 
 // Import Banners
-import bannerWife from '../../../assets/banner_bond_wife.png';
-import bannerHusband from '../../../assets/banner_bond_husband.png';
-import bannerMother from '../../../assets/banner_bond_mother.png';
-import bannerBrothers from '../../../assets/banner_bond_brothers.png';
-import bannerSister from '../../../assets/banner_bond_sister.png';
-import bannerFriends from '../../../assets/banner_bond_friends.png';
+import bannerWife from '@assets/banner_bond_wife.png';
+import bannerHusband from '@assets/banner_bond_husband.png';
+import bannerMother from '@assets/banner_bond_mother.png';
+import bannerBrothers from '@assets/banner_bond_brothers.png';
+import bannerSister from '@assets/banner_bond_sister.png';
+import bannerFriends from '@assets/banner_bond_friends.png';
 
 const BONDS_CONFIG = {
     wife: {
@@ -182,3 +182,4 @@ const BondCollectionPage = () => {
 };
 
 export default BondCollectionPage;
+

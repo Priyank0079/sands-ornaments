@@ -8,14 +8,20 @@ import ProductCard from '../components/ProductCard';
 import WhyChooseUs from '../components/WhyChooseUs';
 import { Heart, ShoppingBag, Star, Share2, Plus, Minus, Truck, ShieldCheck, Smile, Gift, ChevronDown, SlidersHorizontal, X, Camera, Check, ArrowLeft, ArrowRight, Droplets, Sparkles, Play } from 'lucide-react';
 import { COLLECTION_MOCK_PRODUCTS } from '../data/mockCollectionData';
-import BrandVideo from '../assets/Screen Recording 2026-04-03 142555.mp4';
+import BrandVideo from '@assets/Screen Recording 2026-04-03 142555.mp4';
 
 // Import model shots (angle 2) for maximum hover impact
-import latestRing from '../assets/latest_drop_ring.png';
-import latestBracelet from '../assets/latest_drop_bracelet.png';
-import latestNecklace from '../assets/latest_drop_necklace.png';
-import latestEarrings from '../assets/latest_drop_earrings.png';
-import newAnklets from '../assets/new_launch_anklets.png';
+import latestRing from '@assets/latest_drop_ring.png';
+import latestBracelet from '@assets/latest_drop_bracelet.png';
+import latestNecklace from '@assets/latest_drop_necklace.png';
+import latestEarrings from '@assets/latest_drop_earrings.png';
+import newAnklets from '@assets/new_launch_anklets.png';
+
+// Import Men Category Images
+import menRings from '@assets/images/men-categories/rings.png';
+import menPendants from '@assets/images/men-categories/pendants.png';
+import menBracelets from '@assets/images/men-categories/bracelets.png';
+import menChains from '@assets/images/men-categories/chains.png';
 
 const fallbackModelMap = {
     ring: latestRing,
@@ -70,7 +76,7 @@ const ProductDetails = () => {
                 name: "Silver Fibonacci Flow Ring For Him",
                 price: 2899,
                 originalPrice: 4699,
-                image: "/images/men-categories/rings.png",
+                image: menRings,
                 category: "Rings",
                 metal: "925 Sterling Silver",
                 purity: "Pure Silver",
@@ -83,7 +89,7 @@ const ProductDetails = () => {
                 name: "Silver Anjaneya Pendant With Box Chain",
                 price: 3799,
                 originalPrice: 6199,
-                image: "/images/men-categories/pendants.png",
+                image: menPendants,
                 category: "Pendants",
                 metal: "925 Sterling Silver",
                 purity: "Pure Silver",
@@ -96,7 +102,7 @@ const ProductDetails = () => {
                 name: "Silver Trooper Bracelet For Him",
                 price: 4199,
                 originalPrice: 6999,
-                image: "/images/men-categories/bracelets.png",
+                image: menBracelets,
                 category: "Bracelets",
                 metal: "925 Sterling Silver",
                 purity: "Pure Silver",
@@ -109,7 +115,7 @@ const ProductDetails = () => {
                 name: "Silver Statement Link Chain",
                 price: 6599,
                 originalPrice: 9999,
-                image: "/images/men-categories/chains.png",
+                image: menChains,
                 category: "Chains",
                 metal: "925 Sterling Silver",
                 purity: "Pure Silver",
@@ -1269,4 +1275,5 @@ const ProductDetails = () => {
 };
 
 export default ProductDetails;
+
 

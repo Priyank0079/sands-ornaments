@@ -3,15 +3,24 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { buildMenShopPath } from '../../utils/menNavigation';
 
+import ringsImg from '@assets/images/men-categories/rings.png';
+import cufflinksImg from '@assets/images/men-categories/cufflinks.png';
+import chainsImg from '@assets/images/men-categories/chains.png';
+import spiritualImg from '@assets/images/men-categories/spiritual.png';
+import pendantsImg from '@assets/images/men-categories/pendants.png';
+import braceletsImg from '@assets/images/men-categories/bracelets.png';
+import setsImg from '@assets/images/men-categories/sets.png';
+import customImg from '@assets/images/men-categories/custom.png';
+
 const categories = [
-    { title: 'Rings', image: '/images/men-categories/rings.png', link: buildMenShopPath({ category: 'rings' }) },
-    { title: 'Cufflinks', image: '/images/men-categories/cufflinks.png', link: buildMenShopPath({ category: 'cufflinks' }) },
-    { title: 'Chains', image: '/images/men-categories/chains.png', link: buildMenShopPath({ category: 'chains' }) },
-    { title: 'Spiritual Picks', image: '/images/men-categories/spiritual.png', link: buildMenShopPath({ search: 'spiritual' }) },
-    { title: 'Pendants', image: '/images/men-categories/pendants.png', link: buildMenShopPath({ category: 'pendants' }) },
-    { title: 'Bracelets', image: '/images/men-categories/bracelets.png', link: buildMenShopPath({ category: 'bracelets' }) },
-    { title: 'Sets', image: '/images/men-categories/sets.png', link: buildMenShopPath({ category: 'sets' }) },
-    { title: 'Personalised', image: '/images/men-categories/custom.png', link: buildMenShopPath({ category: 'personalised' }) }
+    { title: 'Rings', image: ringsImg, link: buildMenShopPath({ category: 'rings' }) },
+    { title: 'Cufflinks', image: cufflinksImg, link: buildMenShopPath({ category: 'cufflinks' }) },
+    { title: 'Chains', image: chainsImg, link: buildMenShopPath({ category: 'chains' }) },
+    { title: 'Spiritual Picks', image: spiritualImg, link: buildMenShopPath({ search: 'spiritual' }) },
+    { title: 'Pendants', image: pendantsImg, link: buildMenShopPath({ category: 'pendants' }) },
+    { title: 'Bracelets', image: braceletsImg, link: buildMenShopPath({ category: 'bracelets' }) },
+    { title: 'Sets', image: setsImg, link: buildMenShopPath({ category: 'sets' }) },
+    { title: 'Personalised', image: customImg, link: buildMenShopPath({ category: 'personalised' }) }
 ];
 
 const MenCategoriesGrid = () => {

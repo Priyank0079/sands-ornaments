@@ -1,114 +1,115 @@
-import price999 from '../../user/assets/price_under_999.png';
-import price1999 from '../../user/assets/price_under_1999.png';
-import price2999 from '../../user/assets/price_under_2999.png';
-import price3999 from '../../user/assets/price_under_3999.png';
+import price999 from '@assets/price_under_999.png';
+import price1999 from '@assets/price_under_1999.png';
+import price2999 from '@assets/price_under_2999.png';
+import price3999 from '@assets/price_under_3999.png';
 
-import giftMother from '../../user/assets/gift_mother_silver.png';
-import giftFriends from '../../user/assets/gift_friends_silver.png';
-import giftWife from '../../user/assets/gift_wife_silver.png';
-import giftSister from '../../user/assets/gift_sister_silver.png';
+import giftMother from '@assets/gift_mother_silver.png';
+import giftFriends from '@assets/gift_friends_silver.png';
+import giftWife from '@assets/gift_wife_silver.png';
+import giftSister from '@assets/gift_sister_silver.png';
 
-import newEarrings from '../../user/assets/new_launch_earrings.png';
-import newChains from '../../user/assets/new_launch_chains.png';
-import newStuds from '../../user/assets/new_launch_studs.png';
-import newBracelets from '../../user/assets/new_launch_bracelets.png';
-import newAnklets from '../../user/assets/new_launch_anklets.png';
+import newEarrings from '@assets/new_launch_earrings.png';
+import newChains from '@assets/new_launch_chains.png';
+import newStuds from '@assets/new_launch_studs.png';
+import newBracelets from '@assets/new_launch_bracelets.png';
+import newAnklets from '@assets/new_launch_anklets.png';
 
-import latestRing from '../../user/assets/latest_drop_ring.png';
-import latestNecklace from '../../user/assets/latest_drop_necklace.png';
-import latestEarrings from '../../user/assets/latest_drop_earrings.png';
-import latestBracelet from '../../user/assets/latest_drop_bracelet.png';
+import latestRing from '@assets/latest_drop_ring.png';
+import latestNecklace from '@assets/latest_drop_necklace.png';
+import latestEarrings from '@assets/latest_drop_earrings.png';
+import latestBracelet from '@assets/latest_drop_bracelet.png';
 
-import pinkBracelets from '../../user/assets/pink_bracelets_1767775488371.png';
-import pinkEarrings from '../../user/assets/pink_earrings_1767775466166.png';
-import pinkChains from '../../user/assets/pink_chains_1767775516641.png';
-import pinkAnklets from '../../user/assets/pink_anklets_1767775536388.png';
+import pinkBracelets from '@assets/pink_bracelets_1767775488371.png';
+import pinkEarrings from '@assets/pink_earrings_1767775466166.png';
+import pinkChains from '@assets/pink_chains_1767775516641.png';
+import pinkAnklets from '@assets/pink_anklets_1767775536388.png';
 
-import proposalBannerImg from '../../user/assets/proposal_banner.png';
+import proposalBannerImg from '@assets/proposal_banner.png';
 
-import haldiImg from '../../user/assets/haldi.png';
-import sangeetImg from '../../user/assets/sangeet.png';
-import receptionImg from '../../user/assets/reception.png';
-import bridalImg from '../../user/assets/bridal.png';
-import bridesmaidImg from '../../user/assets/hero_slide_3.png';
+import haldiImg from '@assets/haldi.png';
+import sangeetImg from '@assets/sangeet.png';
+import receptionImg from '@assets/reception.png';
+import bridalImg from '@assets/bridal.png';
+import bridesmaidImg from '@assets/hero_slide_3.png';
 
-import bannerDaily from '../../user/assets/banner_daily.png';
-import bannerOffice from '../../user/assets/banner_office.png';
-import bannerParty from '../../user/assets/banner_party.png';
-import bannerCasual from '../../user/assets/trending_heritage.png';
-import prodAnklet from '../../user/assets/cat_anklets.png';
-import prodWineEar from '../../user/assets/cat_earrings_wine.png';
-import prodWineRing from '../../user/assets/cat_ring_wine.png';
-import prodRing from '../../user/assets/cat_ring_wine.png';
-import prodPendant from '../../user/assets/cat_pendant.png';
-import prodEarring from '../../user/assets/silver_earrings_product.png';
-import prodBracelet from '../../user/assets/silver_bracelet_product.png';
-import prodSis from '../../user/assets/gift_sister_silver.png';
+import bannerDaily from '@assets/banner_daily.png';
+import bannerOffice from '@assets/banner_office.png';
+import bannerParty from '@assets/banner_party.png';
+import bannerCasual from '@assets/trending_heritage.png';
+import prodAnklet from '@assets/cat_anklets.png';
+import prodWineEar from '@assets/cat_earrings_wine.png';
+import prodWineRing from '@assets/cat_ring_wine.png';
+import prodRing from '@assets/cat_ring_wine.png';
+import prodPendant from '@assets/cat_pendant.png';
+import prodEarring from '@assets/silver_earrings_product.png';
+import prodBracelet from '@assets/silver_bracelet_product.png';
+import prodSis from '@assets/gift_sister_silver.png';
 
-import catPendant from '../../user/assets/cat_pendant.png';
-import catRing from '../../user/assets/cat_rings.png';
-import catEarrings from '../../user/assets/cat_earrings.png';
-import catBracelet from '../../user/assets/cat_bracelets.png';
-import catAnklet from '../../user/assets/cat_anklets.png';
-import catChain from '../../user/assets/cat_chain_wine.png';
+import catPendant from '@assets/cat_pendant.png';
+import catRing from '@assets/cat_rings.png';
+import catEarrings from '@assets/cat_earrings.png';
+import catBracelet from '@assets/cat_bracelets.png';
+import catAnklet from '@assets/cat_anklets.png';
+import catChain from '@assets/cat_chain_wine.png';
 
-import navGiftWomen from '../../user/assets/nav_gift_women.png';
-import navGiftGirls from '../../user/assets/nav_gift_girls.png';
-import navGiftMens from '../../user/assets/nav_gift_mens.png';
-import navGiftCouple from '../../user/assets/nav_gift_couple.png';
-import navGiftKids from '../../user/assets/nav_gift_kids.png';
+import navGiftWomen from '@assets/nav_gift_women.png';
+import navGiftGirls from '@assets/nav_gift_girls.png';
+import navGiftMens from '@assets/nav_gift_mens.png';
+import navGiftCouple from '@assets/nav_gift_couple.png';
+import navGiftKids from '@assets/nav_gift_kids.png';
 
-import navOccasionBirthday from '../../user/assets/nav_occasion_birthday.png';
-import navOccasionAnniversary from '../../user/assets/nav_occasion_anniversary.png';
-import navOccasionWedding from '../../user/assets/nav_occasion_wedding.png';
-import navOccasionMothers from '../../user/assets/nav_occasion_mothers.png';
-import navOccasionValentine from '../../user/assets/nav_occasion_valentine.png';
-import bondWife from '../../../assets/bond_wife.png';
-import bondHusband from '../../../assets/bond_husband.png';
-import bondMother from '../../../assets/bond_mother.png';
-import bondBrothers from '../../../assets/bond_brothers.png';
-import bondSister from '../../../assets/bond_sister.png';
-import bondFriends from '../../../assets/bond_friends.png';
+import navOccasionBirthday from '@assets/nav_occasion_birthday.png';
+import navOccasionAnniversary from '@assets/nav_occasion_anniversary.png';
+import navOccasionWedding from '@assets/nav_occasion_wedding.png';
+import navOccasionMothers from '@assets/nav_occasion_mothers.png';
+import navOccasionValentine from '@assets/nav_occasion_valentine.png';
+import bondWife from '@assets/bond_wife.png';
+import bondHusband from '@assets/bond_husband.png';
+import bondMother from '@assets/bond_mother.png';
+import bondBrothers from '@assets/bond_brothers.png';
+import bondSister from '@assets/bond_sister.png';
+import bondFriends from '@assets/bond_friends.png';
 // Removing unused premium imports
-// import premiumMenDefault from '../../user/assets/cat_men_nobg.png';
-// import premiumWomenDefault from '../../user/assets/cat_women_premium_nobg.png';
-// import premiumFamilyDefault from '../../user/assets/cat_all_nobg.png';
-import testimonialCustomer1 from '../../../assets/testimonial_customer_1.png';
-import testimonialCustomer2 from '../../../assets/testimonial_customer_2.png';
-import testimonialCustomer3 from '../../../assets/testimonial_customer_3.png';
+// import premiumMenDefault from '@assets/cat_men_nobg.png';
+// import premiumWomenDefault from '@assets/cat_women_premium_nobg.png';
+// import premiumFamilyDefault from '@assets/cat_all_nobg.png';
+import testimonialCustomer1 from '@assets/testimonial_customer_1.png';
+import testimonialCustomer2 from '@assets/testimonial_customer_2.png';
+import testimonialCustomer3 from '@assets/testimonial_customer_3.png';
 import { homeCategoryGridDefaults } from '../../user/utils/homeCategoryGridDefaults';
 
-import menHeroDefault from '../../../assets/hero/gold_fusion.png';
-import womenHeroDefault from '../../../assets/hero/diamond_luxury.png';
-import silverHeroDefault from '../../../assets/hero/silver_minimalist.png';
-import familyHeroDefault from '../../../assets/hero/bridal_royal.png';
-import heroMasterpieceDefault from '../../../assets/hero/hero_masterpiece.png';
-import categoryPersonalised from '../../../assets/categories/personalised.png';
-import categoryMensilver from '../../../assets/categories/mensilver.png';
-import categorySets from '../../../assets/categories/sets.png';
-import categoryGoldPendant from '../../../assets/categories/gold_pendants.png';
-import categoryGoldBracelet from '../../../assets/categories/gold_bracelet.png';
-import menCategoryDefault from '../../../assets/collections/DazzlingRings.png';
-import womenCategoryDefault from '../../../assets/women-categories/Rings.png';
-import familyCategoryDefault from '../../user/assets/cat_all_premium.png';
-import promoPremiumGift from '../../../assets/promos/PremiumGifts.png';
-import promoCoupleRings from '../../../assets/promos/CoupleRings.png';
-import trendingCuratedCombos from '../../../assets/trending/CuratedCombos.png';
-import trendingChainLayering from '../../../assets/trending/ChainLayering.png';
+import menHeroDefault from '@assets/hero/gold_fusion.png';
+import womenHeroDefault from '@assets/hero/diamond_luxury.png';
+import silverHeroDefault from '@assets/hero/silver_minimalist.png';
+import familyHeroDefault from '@assets/hero/bridal_royal.png';
+import heroMasterpieceDefault from '@assets/hero/hero_masterpiece.png';
+import categoryPersonalised from '@assets/categories/personalised.png';
+import categoryMensilver from '@assets/categories/mensilver.png';
+import categorySets from '@assets/categories/sets.png';
+import categoryGoldPendant from '@assets/categories/gold_pendants.png';
+import categoryGoldBracelet from '@assets/categories/gold_bracelet.png';
+import menCategoryDefault from '@assets/collections/DazzlingRings.png';
+import womenCategoryDefault from '@assets/women-categories/Rings.png';
+import familyCategoryDefault from '@assets/cat_all_premium.png';
+import promoPremiumGift from '@assets/promos/PremiumGifts.png';
+import promoCoupleRings from '@assets/promos/CoupleRings.png';
+import trendingCuratedCombos from '@assets/trending/CuratedCombos.png';
+import trendingChainLayering from '@assets/trending/ChainLayering.png';
 
 // Silver Collection & Curated Showcases
-import bannerSilverCollection from '../../user/assets/banner_elegant_silver.png';
-import themeInfinity from '../../user/assets/theme_infinity.png';
-import themeKnots from '../../user/assets/theme_knots.png';
-import themeDrops from '../../user/assets/theme_drops.png';
-import themeLeaves from '../../user/assets/theme_leaves.png';
-import themeBubbles from '../../user/assets/theme_bubbles.png';
-import themeMoon from '../../user/assets/theme_moon.png';
+import bannerSilverCollection from '@assets/banner_elegant_silver.png';
+import themeInfinity from '@assets/theme_infinity.png';
+import themeKnots from '@assets/theme_knots.png';
+import themeDrops from '@assets/theme_drops.png';
+import themeLeaves from '@assets/theme_leaves.png';
+import themeBubbles from '@assets/theme_bubbles.png';
+import themeMoon from '@assets/theme_moon.png';
 
-import silverChains from '../../../assets/categories/silverchains.png';
-import menSilver from '../../../assets/categories/mensilver.png';
-import rings from '../../../assets/categories/rings.png';
-import earrings from '../../../assets/categories/earrings.png';
+import silverChains from '@assets/categories/silverchains.png';
+import menSilver from '@assets/categories/mensilver.png';
+import rings from '@assets/categories/rings.png';
+import earrings from '@assets/categories/earrings.png';
+import brandVideo from '@assets/20260414-1037-04.7611184.mp4';
 
 export const PAGE_SECTIONS = [
   { pageKey: 'home', label: 'Home Sections', description: 'Manage the homepage narrative, hero banners, and product storytelling.' },
@@ -348,12 +349,12 @@ const homeSections = [
       subtitle: 'Premium Silver Collections'
     },
     items: [
-      { id: '1', name: 'Pure Silver Essentials', image: '/20260414-1037-04.7611184.mp4', type: 'video', path: '/shop?metal=silver' },
+      { id: '1', name: 'Pure Silver Essentials', image: brandVideo, type: 'video', path: '/shop?metal=silver' },
       { id: '2', name: 'Elegant Silver Rings', image: rings, path: '/shop?category=Rings&metal=silver' },
       { id: '3', name: 'Silver Chains Collection', image: silverChains, path: '/shop?category=Chains&metal=silver' },
       { id: '4', name: "Men's Silver Boutique", image: menSilver, path: '/shop?search=men&metal=silver' },
       { id: '5', name: 'Dazzling Silver Earrings', image: earrings, path: '/shop?category=Earrings&metal=silver' },
-      { id: '6', name: 'Sterling Style Highlights', image: '/20260414-1037-04.7611184.mp4', type: 'video', path: '/shop?metal=silver&sort=latest' }
+      { id: '6', name: 'Sterling Style Highlights', image: brandVideo, type: 'video', path: '/shop?metal=silver&sort=latest' }
     ]
   },
   {
@@ -749,3 +750,5 @@ export const sectionDefaults = Object.values(sectionDefaultsByPage).flat();
 export const getSectionDefaultsForPage = (pageKey) => sectionDefaultsByPage[pageKey] || [];
 
 export const getPageConfig = (pageKey) => PAGE_SECTIONS.find((page) => page.pageKey === pageKey) || PAGE_SECTIONS[0];
+
+

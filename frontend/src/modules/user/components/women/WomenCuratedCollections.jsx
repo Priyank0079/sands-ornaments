@@ -4,14 +4,14 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { buildWomenShopPath } from '../../utils/womenNavigation';
 
-import SilverImg from '../../../../assets/collections/SilverClassics.png';
-import RingsImg from '../../../../assets/collections/DazzlingRings.png';
+import SilverImg from '@assets/collections/SilverClassics.png';
+import RingsImg from '@assets/collections/DazzlingRings.png';
 
-// Assets from public folder
-const GiftsImg = '/images/collections/GiftsForHer.png';
-const BridalImg = '/images/collections/BridalBliss.png';
-const OfficeImg = '/images/collections/OfficeChic.png';
-const BohoImg = '/images/collections/BohoAnklets.png';
+// Assets from @assets folder
+import GiftsImg from '@assets/images/collections/GiftsForHer.png';
+import BridalImg from '@assets/images/collections/BridalBliss.png';
+import OfficeImg from '@assets/images/collections/OfficeChic.png';
+import BohoImg from '@assets/images/collections/BohoAnklets.png';
 
 const collections = [
     {
@@ -205,3 +205,4 @@ const WomenCuratedCollections = () => {
 };
 
 export default WomenCuratedCollections;
+

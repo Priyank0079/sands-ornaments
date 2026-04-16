@@ -14,7 +14,7 @@ import CuratedForEveryBond from '../components/CuratedForEveryBond';
 import GoldCuratedShowcase from '../components/GoldCuratedShowcase';
 
 // Hero assets
-import heroGold from '../../../assets/hero/bridal_royal.png';
+import heroGold from '@assets/hero/bridal_royal.png';
 
 const TRUST_BADGES = [
     {
@@ -212,3 +212,4 @@ const GoldJewelleryPage = () => {
 };
 
 export default GoldJewelleryPage;
+

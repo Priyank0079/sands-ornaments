@@ -5,13 +5,13 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 // Import images from assets
-import cashewImg from '../../../assets/cashew.png';
-import pistaImg from '../../../assets/pista.png';
-import walnutImg from '../../../assets/walnut.png';
-import datesImg from '../../../assets/dates.png';
-import almondImg from '../../../assets/baadaam.png';
-import anjeerImg from '../../../assets/anjeer.png';
-import raisinImg from '../../../assets/raisin.png';
+import cashewImg from '@assets/cashew.png';
+import pistaImg from '@assets/pista.png';
+import walnutImg from '@assets/walnut.png';
+import datesImg from '@assets/dates.png';
+import almondImg from '@assets/baadaam.png';
+import anjeerImg from '@assets/anjeer.png';
+import raisinImg from '@assets/raisin.png';
 
 
 const categories = [
@@ -184,3 +184,4 @@ const CategoryStrip = () => {
 };
 
 export default CategoryStrip;
+

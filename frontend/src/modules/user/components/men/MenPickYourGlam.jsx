@@ -3,11 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 // Asset imports
-import partySparkImg from '../../../../assets/glam/party_spark.png';
-import weddingJewelsImg from '../../../../assets/glam/wedding_jewels.png';
-import ritualRangeImg from '../../../../assets/glam/ritual_range.png';
-import dailyWearImg from '../../../../assets/glam/daily_wear.png';
-import officeWearImg from '../../../../assets/glam/office_wear.png';
+import partySparkImg from '@assets/glam/party_spark.png';
+import weddingJewelsImg from '@assets/glam/wedding_jewels.png';
+import ritualRangeImg from '@assets/glam/ritual_range.png';
+import dailyWearImg from '@assets/glam/daily_wear.png';
+import officeWearImg from '@assets/glam/office_wear.png';
 
 const glamItems = [
     { id: 1, title: 'Party Spark', image: partySparkImg },
@@ -130,3 +130,4 @@ const MenPickYourGlam = () => {
 };
 
 export default MenPickYourGlam;
+

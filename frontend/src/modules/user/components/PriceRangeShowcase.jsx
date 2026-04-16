@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useShop } from '../../../context/ShopContext';
 
-import price999 from '../assets/price_under_999.png';
-import price1999 from '../assets/price_under_1999.png';
-import price2999 from '../assets/price_under_2999.png';
-import price3999 from '../assets/price_under_3999.png';
+import price999 from '@assets/price_under_999.png';
+import price1999 from '@assets/price_under_1999.png';
+import price2999 from '@assets/price_under_2999.png';
+import price3999 from '@assets/price_under_3999.png';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 
 const priceRanges = [
@@ -131,3 +131,4 @@ const PriceRangeShowcase = () => {
 };
 
 export default PriceRangeShowcase;
+

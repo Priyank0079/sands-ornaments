@@ -4,14 +4,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ArrowLeft } from 'lucide-react';
 
 // Import assets for banners and purities
-import goldBanner from '../../../assets/hero/bridal_royal.png';
-import silverBanner from '../../../assets/hero/spring_silver_campaign.png';
-import purity24k from '../../../assets/categories/sets.png';
-import purity22k from '../../../assets/categories/bangle.png';
-import purity18k from '../../../assets/categories/rings.png';
-import purity14k from '../../../assets/categories/earrings.png';
-import puritySterling from '../../../assets/categories/pendants.png';
-import purityFine from '../../../assets/categories/anklets.png';
+import goldBanner from '@assets/hero/bridal_royal.png';
+import silverBanner from '@assets/hero/spring_silver_campaign.png';
+import purity24k from '@assets/categories/sets.png';
+import purity22k from '@assets/categories/bangle.png';
+import purity18k from '@assets/categories/rings.png';
+import purity14k from '@assets/categories/earrings.png';
+import puritySterling from '@assets/categories/pendants.png';
+import purityFine from '@assets/categories/anklets.png';
 
 const AllJewelleryMegaMenu = ({ resetMenu, initialView = 'main' }) => {
     const [view, setView] = useState(initialView); // 'main', 'gold', 'silver'
@@ -158,3 +158,4 @@ const AllJewelleryMegaMenu = ({ resetMenu, initialView = 'main' }) => {
 };
 
 export default AllJewelleryMegaMenu;
+

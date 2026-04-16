@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, LogIn, AlertCircle, ArrowRight, ShieldCheck, Phone } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
-import loginBg from '../assets/admin-login-bg.png';
+import loginBg from '@assets/admin-login-bg.png';
 
 const SellerLogin = () => {
     const navigate = useNavigate();
@@ -154,3 +154,4 @@ const SellerLogin = () => {
 };
 
 export default SellerLogin;
+

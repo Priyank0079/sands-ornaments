@@ -3,14 +3,14 @@ import { Link } from 'react-router-dom';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 
 // Local assets — no broken Unsplash URLs
-import edgeBanner from '../../assets/men_edge_banner.png';
-import classicsBanner from '../../assets/men_classics_banner.png';
-import boldBanner from '../../assets/men_bold_look_banner.png';
-import prodRing from '../../assets/men_prod_ring.png';
-import prodChain from '../../assets/men_prod_chain.png';
-import prodBracelet from '../../assets/men_prod_bracelet.png';
-import prodPendant from '../../assets/men_prod_pendant.png';
-import prodStud from '../../assets/men_prod_stud.png';
+import edgeBanner from '@assets/men_edge_banner.png';
+import classicsBanner from '@assets/men_classics_banner.png';
+import boldBanner from '@assets/men_bold_look_banner.png';
+import prodRing from '@assets/men_prod_ring.png';
+import prodChain from '@assets/men_prod_chain.png';
+import prodBracelet from '@assets/men_prod_bracelet.png';
+import prodPendant from '@assets/men_prod_pendant.png';
+import prodStud from '@assets/men_prod_stud.png';
 
 const collections = [
     {
@@ -222,3 +222,4 @@ const ShopTheLook = () => {
 };
 
 export default ShopTheLook;
+

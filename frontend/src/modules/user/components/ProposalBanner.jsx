@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
-import bannerImgDefault from '../assets/proposal_banner_premium.png';
+import bannerImgDefault from '@assets/proposal_banner_premium.png';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 import { ensureSilverHomePath } from '../utils/silverHomePaths';
 
@@ -100,3 +100,4 @@ const ProposalBanner = () => {
 };
 
 export default ProposalBanner;
+

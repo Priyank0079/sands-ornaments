@@ -6,11 +6,11 @@ import { useShop } from '../../../context/ShopContext';
 
 // Import Assets
 // Import Assets
-import heroRings from '../../../assets/hero/hero_rings.png';
-import heroBracelets from '../../../assets/hero/hero_bracelets.png';
-import heroPendants from '../../../assets/categories/pendants.png';
-import heroEarrings from '../../../assets/categories/earrings.png';
-import heroMasterpiece from '../../../assets/hero/hero_masterpiece.png';
+import heroRings from '@assets/hero/hero_rings.png';
+import heroBracelets from '@assets/hero/hero_bracelets.png';
+import heroPendants from '@assets/categories/pendants.png';
+import heroEarrings from '@assets/categories/earrings.png';
+import heroMasterpiece from '@assets/hero/hero_masterpiece.png';
 
 const SLIDES = [
     {
@@ -211,3 +211,4 @@ const PromoSlider = () => {
 };
 
 export default PromoSlider;
+

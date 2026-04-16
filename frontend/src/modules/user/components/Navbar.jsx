@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, Heart, ShoppingCart, User, Menu, X, ChevronDown } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
-import logo from '../../user/assets/SANDS JEWELS PINK (1).png';
+import logo from '@assets/SANDS JEWELS PINK (1).png';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Navbar = () => {
@@ -247,3 +247,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
