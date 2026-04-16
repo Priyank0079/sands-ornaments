@@ -52,7 +52,10 @@ const collections = [
     }
 ];
 
-const WomenCuratedCollections = () => {
+const WomenCuratedCollections = ({ data }) => {
+    const activeCollections = data?.items?.length > 0 ? data.items : collections;
+    const settings = data?.settings || {};
+
     const scrollRef = useRef(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(true);
@@ -105,7 +108,7 @@ const WomenCuratedCollections = () => {
                         transition={{ duration: 0.6 }}
                         className="text-2xl sm:text-3xl md:text-4xl font-normal text-zinc-900 tracking-tight"
                     >
-                        Curated Collections
+                        {settings.title || "Curated Collections"}
                     </motion.h2>
                 </div>
 
@@ -149,7 +152,7 @@ const WomenCuratedCollections = () => {
                         onScroll={checkScroll}
                         className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-4"
                     >
-                        {collections.map((item, index) => (
+                        {activeCollections.map((item, index) => (
                             <motion.div
                                 key={item.id}
                                 initial={{ opacity: 0, x: 100 }}
@@ -160,16 +163,16 @@ const WomenCuratedCollections = () => {
                                 className="flex-shrink-0 w-[160px] sm:w-[220px] md:w-[320px] aspect-[3/4] relative overflow-hidden cursor-pointer group snap-start"
                             >
                                 <Link
-                                    to={item.link}
-                                    aria-label={`Shop ${item.title}`}
+                                    to={item.path || item.link}
+                                    aria-label={`Shop ${item.name || item.title}`}
                                     className="absolute inset-0 z-20"
                                 />
 
                                 {/* Media Content */}
                                 <div className="absolute inset-0 w-full h-full">
-                                    {item.video ? (
+                                    {item.type === 'video' ? (
                                         <video 
-                                            src={item.video}
+                                            src={item.image}
                                             autoPlay
                                             loop
                                             muted
@@ -179,7 +182,7 @@ const WomenCuratedCollections = () => {
                                     ) : (
                                         <img 
                                             src={item.image} 
-                                            alt={item.title}
+                                            alt={item.name || item.title}
                                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                         />
                                     )}
@@ -191,7 +194,7 @@ const WomenCuratedCollections = () => {
                                 {/* Label matching ref 2 */}
                                 <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between text-white border-b border-white/20 pb-2 z-10 pointer-events-none">
                                     <span className="text-xs md:text-sm font-bold tracking-widest uppercase">
-                                        {item.title.includes('Collection') ? item.title : `Shop ${item.title}`}
+                                        {(item.name || item.title).includes('Collection') ? (item.name || item.title) : `Shop ${item.name || item.title}`}
                                     </span>
                                     <ChevronRight className="w-4 h-4" />
                                 </div>

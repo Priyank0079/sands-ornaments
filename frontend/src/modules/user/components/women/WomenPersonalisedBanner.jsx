@@ -5,14 +5,21 @@ import { buildWomenShopPath } from '../../utils/womenNavigation';
 
 import PersonalisedImg from '../../../../assets/promos/PersonalisedBannerWine.png';
 
-const WomenPersonalisedBanner = () => {
+const WomenPersonalisedBanner = ({ data }) => {
     const navigate = useNavigate();
+    const item = data?.items?.[0] || {
+        name: "Personalised",
+        subtitle: "Silver that feels like you",
+        image: PersonalisedImg,
+        path: buildWomenShopPath({ category: 'personalised' }),
+        tag: "Exclusive Edit"
+    };
 
     return (
         <section className="bg-white w-full py-0">
             <div 
                 className="w-full overflow-hidden relative h-[250px] md:h-[350px] group cursor-pointer shadow-none rounded-none" 
-                onClick={() => navigate(buildWomenShopPath({ category: 'personalised' }))}
+                onClick={() => navigate(item.path || '/shop')}
                 style={{ background: 'linear-gradient(to right, #4A0E0E, #2D0505)' }}
             >
                 {/* Decorative Background Pattern (Subtle waves/blobs on the left) */}
@@ -24,8 +31,8 @@ const WomenPersonalisedBanner = () => {
                 {/* Main Product Image (Right half) */}
                 <div className="absolute right-0 top-0 w-full md:w-[60%] h-full">
                     <img 
-                        src={PersonalisedImg} 
-                        alt="Personalised Jewellery Collection"
+                        src={item.image} 
+                        alt={item.name}
                         className="w-full h-full object-cover transition-transform duration-[8s] group-hover:scale-105"
                     />
                     {/* Seamless Gradient from Wine to Image */}
@@ -47,13 +54,13 @@ const WomenPersonalisedBanner = () => {
                                 className="text-4xl sm:text-5xl md:text-7xl font-display text-white tracking-wide"
                                 style={{ fontFamily: "'Cinzel', serif", fontWeight: 400 }}
                             >
-                                Personalised
+                                {item.name || "Personalised"}
                             </h2>
                             <p 
                                 className="text-sm sm:text-lg md:text-xl font-light text-rose-100/90 tracking-[0.1em] uppercase"
                                 style={{ fontFamily: "'Lato', sans-serif" }}
                             >
-                                Silver that feels like you
+                                {item.subtitle || "Silver that feels like you"}
                             </p>
                         </motion.div>
                         
@@ -74,7 +81,7 @@ const WomenPersonalisedBanner = () => {
                     <motion.span 
                         className="text-[10px] text-white/50 uppercase tracking-[0.3em] block origin-right -rotate-90 translate-y-24 group-hover:translate-y-0 transition-transform duration-700"
                     >
-                        Exclusive Edit
+                        {item.tag || "Exclusive Edit"}
                     </motion.span>
                 </div>
             </div>

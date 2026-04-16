@@ -79,15 +79,6 @@ export const useCatalogue = () => {
         staleTime: 5 * 60 * 1000,
     });
 
-    // Fetch Banners
-    const bannersQuery = useQuery({
-        queryKey: ['banners'],
-        queryFn: async () => {
-            const res = await api.get('public/banners');
-            return res.data.data.banners || [];
-        },
-        staleTime: 10 * 60 * 1000,
-    });
 
     // Fetch Coupons
     const couponsQuery = useQuery({
@@ -102,14 +93,12 @@ export const useCatalogue = () => {
     return {
         categories: categoriesQuery.data || [],
         products: productsQuery.data || [],
-        banners: bannersQuery.data || [],
         coupons: couponsQuery.data || [],
-        isLoading: categoriesQuery.isLoading || productsQuery.isLoading || bannersQuery.isLoading || couponsQuery.isLoading,
-        isError: categoriesQuery.isError || productsQuery.isError || bannersQuery.isError || couponsQuery.isError,
+        isLoading: categoriesQuery.isLoading || productsQuery.isLoading || couponsQuery.isLoading,
+        isError: categoriesQuery.isError || productsQuery.isError || couponsQuery.isError,
         refetch: () => {
             categoriesQuery.refetch();
             productsQuery.refetch();
-            bannersQuery.refetch();
             couponsQuery.refetch();
         }
     };

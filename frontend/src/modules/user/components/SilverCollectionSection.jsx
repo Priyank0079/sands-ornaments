@@ -1,7 +1,9 @@
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
+import { useShop } from '../../../context/ShopContext';
+import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 
 // Import thematic assets
 import bannerImg from '../assets/banner_elegant_silver.png';
@@ -90,6 +92,32 @@ const SILVER_STYLE_CATEGORIES = [
 const SilverCollectionSection = () => {
     const navigate = useNavigate();
     const scrollRef = useRef(null);
+    const { homepageSections } = useShop();
+    const sectionData = homepageSections?.['silver-collection'];
+
+    const bannerData = {
+        image: resolveLegacyCmsAsset(sectionData?.settings?.bannerImage, bannerImg),
+        title: sectionData?.settings?.title || 'All yours',
+        subtitle: sectionData?.settings?.subtitle || 'Collection',
+        footerText: sectionData?.settings?.footerText || 'Emotion, made real'
+    };
+
+    const items = useMemo(() => {
+        const configured = Array.isArray(sectionData?.items) ? sectionData.items : [];
+        if (configured.length > 0) {
+            return configured.map(item => {
+                const defaultMatch = SILVER_STYLE_CATEGORIES.find(d => d.name === item.name || d.id === item.itemId);
+                return {
+                    id: item.itemId || item.id,
+                    name: item.name || item.label || defaultMatch?.name,
+                    image: resolveLegacyCmsAsset(item.image, defaultMatch?.image),
+                    path: item.path || defaultMatch?.path || '/shop',
+                    badgeIcon: defaultMatch?.badgeIcon
+                };
+            });
+        }
+        return SILVER_STYLE_CATEGORIES;
+    }, [sectionData?.items]);
 
     const scroll = (direction) => {
         if (scrollRef.current) {
@@ -103,7 +131,6 @@ const SilverCollectionSection = () => {
         <section className="w-full bg-[#FFF5F7] pt-6 pb-12 md:pt-12 md:pb-20 overflow-hidden font-sans">
             <div className="max-w-[1450px] mx-auto px-4">
 
-                {/* Hero Banner Area — Restored original size */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -113,7 +140,7 @@ const SilverCollectionSection = () => {
                     <div className="flex h-full w-full">
                         <div className="relative w-[50%] md:w-[60%] h-full overflow-hidden">
                             <img
-                                src={bannerImg}
+                                src={bannerData.image}
                                 alt="Silver Collection Banner"
                                 className="w-full h-full object-cover transition-transform duration-[4s] group-hover:scale-105"
                             />
@@ -124,27 +151,25 @@ const SilverCollectionSection = () => {
                             style={{ background: 'linear-gradient(135deg, #EC7798 0%, #FA89A9 100%)' }}>
                             <div className="text-center relative z-10">
                                 <span className="font-serif italic text-white text-2xl md:text-5xl block mb-2 drop-shadow-md">
-                                    All yours
+                                    {bannerData.title}
                                 </span>
                                 <div className="flex items-center justify-center gap-4 mb-4">
                                     <div className="h-[1.5px] w-8 md:w-16 bg-white/60" />
                                     <h2 className="text-white font-bold text-xs md:text-2xl uppercase tracking-[0.3em] whitespace-nowrap">
-                                        Collection
+                                        {bannerData.subtitle}
                                     </h2>
                                     <div className="h-[1.5px] w-8 md:w-16 bg-white/60" />
                                 </div>
                                 <p className="text-white/95 font-black text-[11px] md:text-2xl tracking-wide uppercase mt-4">
-                                    Emotion, made real
+                                    {bannerData.footerText}
                                 </p>
                             </div>
                         </div>
                     </div>
                 </motion.div>
 
-                {/* Categories Area — Single Row Horizontal Scroll */}
                 <div className="relative group/scroll px-2">
 
-                    {/* Navigation Arrows — Restored */}
                     <button
                         onClick={() => scroll('left')}
                         className="absolute -left-2 top-1/2 -translate-y-24 z-20 w-10 h-10 bg-white/95 rounded-full flex items-center justify-center shadow-lg border border-pink-100 opacity-0 group-hover/scroll:opacity-100 transition-opacity hidden md:flex"
@@ -162,7 +187,7 @@ const SilverCollectionSection = () => {
                         ref={scrollRef}
                         className="flex flex-nowrap overflow-x-auto scrollbar-hide gap-6 md:gap-12 pb-6 md:pb-10 px-2 snap-x snap-mandatory"
                     >
-                        {SILVER_STYLE_CATEGORIES.map((cat, idx) => (
+                        {items.map((cat, idx) => (
                             <motion.div
                                 key={cat.id}
                                 initial={{ opacity: 0, scale: 0.9 }}
@@ -172,20 +197,20 @@ const SilverCollectionSection = () => {
                                 className="flex flex-col items-center group/item cursor-pointer shrink-0 snap-center"
                                 onClick={() => navigate(cat.path)}
                             >
-                                {/* Premium Card — Original Size restored */}
                                 <div className="relative w-[130px] h-[130px] md:w-[185px] md:h-[185px] mb-5 overflow-hidden rounded-[40px] md:rounded-[55px] shadow-[0_15px_35px_rgba(180,30,80,0.18)] border-2 border-white transition-all duration-500 group-hover/item:-translate-y-3 group-hover/item:shadow-[0_25px_50px_rgba(180,30,80,0.25)]">
                                     <img
                                         src={cat.image}
                                         alt={cat.name}
                                         className="w-full h-full object-cover transition-transform duration-700 group-hover/item:scale-110"
                                     />
-                                    <div className="absolute top-2 right-2 md:top-3 md:right-3 w-8 h-8 md:w-11 md:h-11 bg-[#FADADD]/85 backdrop-blur-sm rounded-full flex items-center justify-center text-[#B44C63] shadow-inner z-10 border border-white/40">
-                                        {cat.badgeIcon}
-                                    </div>
+                                    {cat.badgeIcon && (
+                                        <div className="absolute top-2 right-2 md:top-3 md:right-3 w-8 h-8 md:w-11 md:h-11 bg-[#FADADD]/85 backdrop-blur-sm rounded-full flex items-center justify-center text-[#B44C63] shadow-inner z-10 border border-white/40">
+                                            {cat.badgeIcon}
+                                        </div>
+                                    )}
                                     <div className="absolute inset-0 bg-gradient-to-tr from-black/10 to-transparent pointer-events-none" />
                                 </div>
 
-                                {/* Label */}
                                 <span className="text-[15px] md:text-[19px] font-bold text-gray-800 tracking-tight group-hover/item:text-[#EC7798] transition-colors">
                                     {cat.name}
                                 </span>

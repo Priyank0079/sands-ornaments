@@ -65,7 +65,6 @@ export const ShopProvider = ({ children }) => {
     const {
         products,
         categories,
-        banners,
         coupons: apiCoupons,
         isLoading: isCatalogueLoading
     } = useCatalogue();
@@ -773,6 +772,7 @@ export const ShopProvider = ({ children }) => {
                     const mapped = sections.reduce((acc, section) => {
                         acc[section.sectionId] = {
                             id: section.sectionId,
+                            sectionKey: section.sectionKey || section.sectionId,
                             label: section.label,
                             isActive: section.isActive !== false,
                             sortOrder: section.sortOrder || 0,
@@ -885,7 +885,7 @@ export const ShopProvider = ({ children }) => {
             activeMetal, updateActiveMetal,
 
             products, updateProduct, bulkUpdatePrices,
-            categories, banners, isLoading: isCatalogueLoading,
+            categories, isLoading: isCatalogueLoading,
 
             // Homepage Sections Management
             homepageSections,

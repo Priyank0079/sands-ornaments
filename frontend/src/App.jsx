@@ -36,7 +36,6 @@ import UserView from './modules/admin/pages/UserView';
 import ReviewModeration from './modules/admin/pages/ReviewModeration';
 import SupportManagement from './modules/admin/pages/SupportManagement';
 import ContactInquiries from './modules/admin/pages/ContactInquiries';
-import BannerManagement from './modules/admin/pages/BannerManagement';
 import GlobalNotificationManager from './modules/admin/pages/GlobalNotificationManager';
 import AddNotification from './modules/admin/pages/AddNotification';
 import FAQManagement from './modules/admin/pages/FAQManagement';
@@ -203,7 +202,6 @@ const AppContent = () => {
                   <Route path="/reviews" element={<ReviewModeration />} />
                   <Route path="/support" element={<SupportManagement />} />
                   <Route path="/support/inquiries" element={<ContactInquiries />} />
-                  <Route path="/banners" element={<BannerManagement />} />
                   <Route path="/notifications" element={<AdminNotifications />} />
                   <Route path="/broadcasts" element={<GlobalNotificationManager />} />
                   <Route path="/notifications/add" element={<AddNotification />} />

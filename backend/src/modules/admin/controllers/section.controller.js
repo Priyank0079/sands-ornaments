@@ -472,7 +472,23 @@ exports.bulkUpsertSections = async (req, res) => {
 
 exports.uploadSectionImage = async (req, res) => {
   try {
-    if (!req.file) return error(res, "Image file is required", 400);
-    return success(res, { url: req.file.path }, "Image uploaded");
-  } catch (err) { return error(res, err.message); }
+    if (!req.file) {
+      console.error("❌ CMS Upload: No file received in req.file");
+      return error(res, "Image file is required", 400);
+    }
+
+    console.log("✅ CMS Upload success:", req.file.originalname, "->", req.file.path || req.file.url);
+    
+    // Support different multer-cloudinary property naming
+    const url = req.file.path || req.file.url || req.file.secure_url;
+    if (!url) {
+      console.error("❌ CMS Upload: Cloudinary did not return a URL", req.file);
+      return error(res, "Could not generate image URL", 500);
+    }
+
+    return success(res, { url }, "Image uploaded");
+  } catch (err) { 
+    console.error("❌ CMS Upload Error:", err);
+    return error(res, err.message || "Internal Server Error during upload"); 
+  }
 };

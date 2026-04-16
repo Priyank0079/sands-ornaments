@@ -60,7 +60,7 @@ exports.getHomepageData = async (req, res) => {
     const sections = await HomepageSection.find({
       isActive: true,
       $or: [
-        { pageKey: "home" },
+        { pageKey: { $in: ["home", "shop-men", "shop-women", "shop-family"] } },
         { pageKey: { $exists: false } },
         { pageKey: null }
       ]

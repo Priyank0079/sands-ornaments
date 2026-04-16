@@ -104,7 +104,7 @@ const SectionEditor = () => {
             return <AllJewellerySectionEditor sectionData={sectionData} onSave={handleSave} defaultSection={defaultSection} />;
         }
 
-        if ((sectionData.sectionKey || id) === 'best-styles') {
+        if ((sectionData.sectionKey || id) === 'best-styles' || (sectionData.sectionKey || id) === 'featured-gifts') {
             return <BestStylesSectionEditor sectionData={sectionData} onSave={handleSave} defaultSection={defaultSection} />;
         }
 
@@ -121,6 +121,8 @@ const SectionEditor = () => {
         }
 
         const supportedSections = [
+            'silver-collection',
+            'silver-curated',
             'luxury-within-reach',
             'category-grid',
             'premium-category-cards',

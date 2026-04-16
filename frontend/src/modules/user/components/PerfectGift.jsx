@@ -29,9 +29,49 @@ const FALLBACK_RECIPIENTS = [
 
 const PerfectGift = () => {
     const { products, homepageSections } = useShop();
-    const displayLead = (products && products.length > 0) ? products.slice(0, 4) : LEAD_PRODUCTS;
-    const bondSection = homepageSections['shop-by-bond'];
+    
+    // Config for Top categories
+    const bondSection = homepageSections?.['shop-by-bond'];
     const bondSettings = bondSection?.settings || {};
+
+    // Config for Bottom product strip
+    const giftSection = homepageSections?.['featured-gifts'];
+    const giftSettings = giftSection?.settings || {};
+    const giftProductLimit = Math.max(1, Number(giftSettings.productLimit) || 4);
+
+    const featuredGifts = React.useMemo(() => {
+        if (!products || products.length === 0) return LEAD_PRODUCTS.slice(0, giftProductLimit);
+
+        // Filter valid products
+        const validProducts = products.filter(p => 
+            (p.id || p._id) && p.name && (p.stockStatus !== 'out_of_stock')
+        );
+
+        // Sorting rule:
+        // 1. Gift/Set keyword in Name
+        // 2. Trending
+        // 3. Newest
+        const sorted = [...validProducts].sort((a, b) => {
+            const aName = (a.name || '').toLowerCase();
+            const bName = (b.name || '').toLowerCase();
+            const aIsGift = aName.includes('gift') || aName.includes('set') || aName.includes('combo');
+            const bIsGift = bName.includes('gift') || bName.includes('set') || bName.includes('combo');
+            
+            if (aIsGift !== bIsGift) return bIsGift ? 1 : -1;
+
+            const aIsTrending = a.isTrending || a.tags?.isTrending;
+            const bIsTrending = b.isTrending || b.tags?.isTrending;
+            if (aIsTrending !== bIsTrending) return bIsTrending ? 1 : -1;
+
+            const aDate = new Date(a.createdAt || 0);
+            const bDate = new Date(b.createdAt || 0);
+            return bDate - aDate;
+        });
+
+        const sliced = sorted.slice(0, giftProductLimit);
+        return sliced.length > 0 ? sliced : LEAD_PRODUCTS.slice(0, giftProductLimit);
+    }, [products, giftProductLimit]);
+
     const recipients = (bondSection?.items?.length ? bondSection.items : FALLBACK_RECIPIENTS).map((item, index) => {
         if (!bondSection?.items?.length) return item;
         const bondKey = String(item.bondKey || item.id || '').trim().toLowerCase() || `bond-${index + 1}`;
@@ -85,17 +125,21 @@ const PerfectGift = () => {
                 <div className="mt-6 md:mt-20 pt-6 md:pt-16 border-t border-gray-100">
                     <div className="flex items-center justify-between mb-6 md:mb-12">
                         <div>
-                            <h3 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">Featured Gifts</h3>
-                            <p className="text-gray-400 text-[10px] md:text-xs uppercase tracking-widest mt-1">Handpicked for the perfect moment</p>
+                            <h3 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">
+                                {giftSettings.title || 'Featured Gifts'}
+                            </h3>
+                            <p className="text-gray-400 text-[10px] md:text-xs uppercase tracking-widest mt-1">
+                                {giftSettings.subtitle || 'Handpicked for the perfect moment'}
+                            </p>
                         </div>
                         <Link to="/shop" className="text-[11px] font-black uppercase tracking-[0.2em] text-[#9C5B61] hover:text-black transition-all border-b-2 border-transparent hover:border-black">
-                            View All Collection
+                            {giftSettings.ctaLabel || 'View All Collection'}
                         </Link>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-10">
-                        {displayLead.map((p) => (
-                            <ProductCard key={p.id} product={p} />
+                        {featuredGifts.map((p) => (
+                            <ProductCard key={p.id || p._id} product={p} />
                         ))}
                     </div>
                 </div>

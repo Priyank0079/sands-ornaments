@@ -6,6 +6,8 @@ import { adminService } from '../services/adminService';
 import { getPageConfig, getSectionDefaultsForPage, PAGE_SECTIONS } from '../utils/sectionDefaults';
 import toast from 'react-hot-toast';
 
+const BLACKLIST = ['nav-shop-by-category', 'chit-chat', 'perfect-gift', 'new-launch-grid', 'premium-category-cards', 'auto-banners', 'silver-new-launch'];
+
 const SectionManagement = () => {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -19,7 +21,18 @@ const SectionManagement = () => {
         try {
             const defaultsForPage = getSectionDefaultsForPage(activePageKey);
             const data = await adminService.getSections(activePageKey);
-            const filteredSections = (data || []).filter(section => !['nav-shop-by-category', 'chit-chat', 'premium-category-cards', 'silver-curated', 'silver-collection', 'auto-banners', 'silver-new-launch'].includes(section.sectionId || section.sectionKey));
+            const filteredSections = (data || [])
+                .filter(section => !BLACKLIST.includes(section.sectionId || section.sectionKey))
+                .map(section => {
+                    const defaultSection = defaultsForPage.find(def => 
+                        def.sectionKey === (section.sectionId || section.sectionKey)
+                    );
+                    return {
+                        ...section,
+                        sortOrder: section.sortOrder || defaultSection?.sortOrder || 99
+                    };
+                })
+                .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
             setSections(filteredSections);
             const existingIds = new Set(filteredSections.map(section => section.sectionId));
             const missingDefaults = defaultsForPage.filter(def => !existingIds.has(def.sectionId) && !existingIds.has(def.sectionKey));
@@ -28,7 +41,18 @@ const SectionManagement = () => {
                 const seedRes = await adminService.bulkUpsertSections(seedPayload, activePageKey);
                 if (seedRes.success !== false) {
                     const seeded = await adminService.getSections(activePageKey);
-                    const filteredSeeded = (seeded || []).filter(section => !['nav-shop-by-category', 'chit-chat', 'premium-category-cards', 'silver-curated', 'silver-collection', 'auto-banners', 'silver-new-launch'].includes(section.sectionId || section.sectionKey));
+                    const filteredSeeded = (seeded || [])
+                        .filter(section => !BLACKLIST.includes(section.sectionId || section.sectionKey))
+                        .map(section => {
+                            const defaultSection = defaultsForPage.find(def => 
+                                def.sectionKey === (section.sectionId || section.sectionKey)
+                            );
+                            return {
+                                ...section,
+                                sortOrder: section.sortOrder || defaultSection?.sortOrder || 99
+                            };
+                        })
+                        .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
                     setSections(filteredSeeded);
                 }
             }

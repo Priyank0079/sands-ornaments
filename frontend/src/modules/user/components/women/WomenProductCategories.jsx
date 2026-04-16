@@ -24,7 +24,9 @@ const categories = [
     { title: "PERSONALISED", image: PersonalisedImg, path: buildWomenShopPath({ category: 'personalised' }) }
 ];
 
-const WomenProductCategories = () => {
+const WomenProductCategories = ({ data }) => {
+    const activeCategories = data?.items?.length > 0 ? data.items : categories;
+
     return (
         <section className="py-6 md:py-8 px-4 md:px-12 bg-white">
             <div className="max-w-6xl mx-auto">
@@ -37,16 +39,16 @@ const WomenProductCategories = () => {
                         className="flex flex-col items-center space-y-2"
                     >
                         <h2 className="text-2xl md:text-3xl font-serif text-[#7A2E3A] tracking-tight">
-                            Shop by Category
+                            {data?.settings?.title || "Shop by Category"}
                         </h2>
                         <p className="text-zinc-500 font-light text-xs md:text-sm max-w-xl mx-auto px-4 leading-relaxed">
-                            Handcrafted silver masterpieces, each piece telling a unique story of elegance.
+                            {data?.settings?.subtitle || "Handcrafted silver masterpieces, each piece telling a unique story of elegance."}
                         </p>
                     </motion.div>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-6">
-                    {categories.map((category, index) => (
+                    {activeCategories.map((category, index) => (
                         <motion.div
                             key={index}
                             initial={{ opacity: 0, scale: 0.95 }}
@@ -61,14 +63,14 @@ const WomenProductCategories = () => {
                             >
                                 <img 
                                     src={category.image} 
-                                    alt={category.title}
+                                    alt={category.name || category.title}
                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                 />
                             </Link>
 
                             <div className="mt-2 text-center">
-                                <h3 className="text-[#333333] font-serif text-sm md:text-base transition-colors duration-300 group-hover:text-[#7A2E3A]">
-                                    {category.title.charAt(0) + category.title.slice(1).toLowerCase()}
+                                <h3 className="text-[#333333] font-serif text-sm md:text-base transition-colors duration-300 group-hover:text-[#7A2E3A] uppercase tracking-wide">
+                                    {category.name || category.title}
                                 </h3>
                             </div>
                         </motion.div>

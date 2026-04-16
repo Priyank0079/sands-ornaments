@@ -16,9 +16,9 @@ import catChain from '../../../user/assets/cat_chain_wine.png';
 
 const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     const navigate = useNavigate();
-    const sectionId = sectionData?.id || 'category-showcase';
-    const isCategoryShowcase = sectionId === 'category-showcase';
-    const isCategoryGrid = sectionId === 'category-grid';
+    const sectionId = sectionData?.sectionKey || sectionData?.id || 'category-showcase';
+    const isCategoryShowcase = sectionId === 'category-showcase' || sectionData?.sectionType === 'category-showcase';
+    const isCategoryGrid = sectionId === 'category-grid' || sectionData?.sectionType === 'category-grid';
     const isLuxuryWithinReach = sectionId === 'luxury-within-reach';
     const isCategoryDrivenSection = isCategoryShowcase || isCategoryGrid;
     const isPremiumCategoryCards = sectionId === 'premium-category-cards';
@@ -48,10 +48,30 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         ]);
 
     const [items, setItems] = useState(initialItemsFromProps);
+    const [settings, setSettings] = useState(sectionData.settings || {});
+
+    const handleSettingChange = (field, value) => {
+        setSettings(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleSettingsImageUpload = async (file, field = 'bannerImage') => {
+        if (!file) return;
+        const uploadedUrl = await adminService.uploadSectionImage(file);
+        if (uploadedUrl) {
+            handleSettingChange(field, uploadedUrl);
+            return;
+        }
+        toast.error("Process failed. Please try again.");
+    };
     const [editingId, setEditingId] = useState(null);
     const [categories, setCategories] = useState([]);
     const [isProductPickerOpen, setIsProductPickerOpen] = useState(false);
     const [productPickerTarget, setProductPickerTarget] = useState(null);
+
+
+    useEffect(() => {
+        setSettings(sectionData.settings || {});
+    }, [sectionData.settings]);
 
     const parsePriceValue = (value) => {
         if (value === undefined || value === null) return null;
@@ -780,11 +800,83 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             }
             return item;
         });
-        onSave({ items: normalizedItems });
+        onSave({ items: normalizedItems, settings });
     };
 
     return (
         <div className="max-w-4xl mx-auto space-y-6 pb-20">
+            {/* Section Settings Block */}
+            {(sectionId === 'silver-collection' || sectionId === 'silver-curated') && (
+                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm space-y-6">
+                    <div className="flex items-center justify-between border-b border-gray-50 pb-4">
+                        <h3 className="font-display text-base font-bold text-gray-800">Section Settings</h3>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-[#B44C63] bg-[#FDF4F6] px-2 py-1 rounded">Visual Config</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                            <Input
+                                label="Section Title"
+                                value={settings.title || ''}
+                                onChange={(e) => handleSettingChange('title', e.target.value)}
+                                placeholder="e.g., Curated Highlights"
+                            />
+                            <Input
+                                label="Section Subtitle"
+                                value={settings.subtitle || ''}
+                                onChange={(e) => handleSettingChange('subtitle', e.target.value)}
+                                placeholder="e.g., Premium Silver Collections"
+                            />
+                            {sectionId === 'silver-collection' && (
+                                <Input
+                                    label="Footer Extra Text"
+                                    value={settings.footerText || ''}
+                                    onChange={(e) => handleSettingChange('footerText', e.target.value)}
+                                    placeholder="e.g., Emotion, made real"
+                                />
+                            )}
+                        </div>
+
+                        {sectionId === 'silver-collection' && (
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Thematic Banner</label>
+                                <div className="aspect-[21/9] bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center overflow-hidden relative group/banner">
+                                    {settings.bannerImage ? (
+                                        <>
+                                            <img src={settings.bannerImage} alt="Banner" className="w-full h-full object-cover" />
+                                            <button 
+                                                onClick={() => handleSettingChange('bannerImage', '')}
+                                                className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover/banner:opacity-100 transition-opacity"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <div className="text-center p-4">
+                                            <ImageIcon className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                                            <label className="cursor-pointer px-3 py-1.5 bg-[#3E2723] text-white text-xs font-bold rounded-lg block">
+                                                Upload Banner
+                                                <input 
+                                                    type="file" 
+                                                    accept="image/*" 
+                                                    className="hidden" 
+                                                    onChange={(e) => handleSettingsImageUpload(e.target.files[0], 'bannerImage')} 
+                                                />
+                                            </label>
+                                        </div>
+                                    )}
+                                </div>
+                                <Input 
+                                    placeholder="Banner URL..." 
+                                    value={settings.bannerImage || ''} 
+                                    onChange={(e) => handleSettingChange('bannerImage', e.target.value)} 
+                                    className="text-xs h-8" 
+                                />
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
             {(sectionId === 'perfect-gift' || sectionId === 'curated-for-you' || sectionId === 'style-it-your-way') && (
                 <ProductBrowserModal
                     isOpen={isProductPickerOpen}

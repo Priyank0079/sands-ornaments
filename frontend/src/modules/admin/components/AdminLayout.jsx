@@ -65,7 +65,6 @@ const AdminLayout = ({ children }) => {
         { name: 'Sellers', icon: Store, path: '/admin/sellers' },
         { name: 'Users', icon: Users, path: '/admin/users' },
         { name: 'Reviews', icon: Star, path: '/admin/reviews' },
-        { name: 'Banners', icon: ImageIcon, path: '/admin/banners' },
         {
             name: 'Notifications',
             icon: Bell,

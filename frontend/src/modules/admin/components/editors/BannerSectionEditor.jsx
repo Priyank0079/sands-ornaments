@@ -65,12 +65,13 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
 
     const handleImageUpload = async (id, file) => {
         if (!file) return;
-        const uploadedUrl = await adminService.uploadSectionImage(file);
-        if (!uploadedUrl) {
-            toast.error('Image upload failed. Please try again.');
-            return;
+        try {
+            const uploadedUrl = await adminService.uploadSectionImage(file);
+            if (!uploadedUrl) throw new Error('Could not get image URL');
+            updateItem(id, 'image', uploadedUrl);
+        } catch (err) {
+            toast.error(err.message || 'Image upload failed. Please try again.');
         }
-        updateItem(id, 'image', uploadedUrl);
     };
 
     const addBanner = () => {

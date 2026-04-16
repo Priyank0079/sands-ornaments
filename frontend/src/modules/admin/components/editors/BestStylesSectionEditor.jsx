@@ -8,7 +8,8 @@ const BestStylesSectionEditor = ({ sectionData, onSave, defaultSection = {} }) =
         const currentSettings = sectionData?.settings || {};
 
         return {
-            title: currentSettings.title || fallbackSettings.title || 'Best styles, now for less!',
+            title: currentSettings.title || fallbackSettings.title || '',
+            subtitle: currentSettings.subtitle || fallbackSettings.subtitle || '',
             ctaLabel: currentSettings.ctaLabel || fallbackSettings.ctaLabel || 'View All Collection',
             productLimit: String(currentSettings.productLimit || fallbackSettings.productLimit || 6)
         };
@@ -31,7 +32,8 @@ const BestStylesSectionEditor = ({ sectionData, onSave, defaultSection = {} }) =
         onSave({
             items: sectionData?.items || [],
             settings: {
-                title: settings.title?.trim() || 'Best styles, now for less!',
+                title: settings.title?.trim() || '',
+                subtitle: settings.subtitle?.trim() || '',
                 ctaLabel: settings.ctaLabel?.trim() || 'View All Collection',
                 productLimit: parsedLimit
             }
@@ -42,10 +44,10 @@ const BestStylesSectionEditor = ({ sectionData, onSave, defaultSection = {} }) =
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="px-6 md:px-8 py-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                    <h3 className="text-xl md:text-2xl font-bold text-[#3E2723]">Best Styles Section</h3>
+                    <h3 className="text-xl md:text-2xl font-bold text-[#3E2723]">{sectionData?.label || 'Rule-Based Section'}</h3>
                     <p className="text-sm text-gray-500 mt-1">
-                        Manage the title, CTA text, and product count. Products are pulled automatically from discounted items,
-                        so admin does not have to curate them one by one.
+                        Manage the content settings. Products are pulled automatically based on collection rules,
+                        so you don't have to curate them manually.
                     </p>
                 </div>
                 <button
@@ -62,7 +64,13 @@ const BestStylesSectionEditor = ({ sectionData, onSave, defaultSection = {} }) =
                     label="Title"
                     value={settings.title}
                     onChange={(event) => updateSetting('title', event.target.value)}
-                    placeholder="Best styles, now for less!"
+                    placeholder="Enter section title..."
+                />
+                <Input
+                    label="Subtitle / Description"
+                    value={settings.subtitle}
+                    onChange={(event) => updateSetting('subtitle', event.target.value)}
+                    placeholder="Enter subtitle..."
                 />
                 <Input
                     label="CTA Label"
