@@ -121,7 +121,7 @@ const PromoSlider = () => {
             onMouseEnter={() => setIsSuspended(true)}
             onMouseLeave={() => setIsSuspended(false)}
         >
-            <div className="relative w-full h-[220px] md:h-[350px]">
+            <div className="relative w-full h-[200px] sm:h-[220px] md:h-[350px]">
                 <motion.div
                     className="flex h-full w-full gap-[1.5%]"
                     animate={{ 
@@ -150,14 +150,14 @@ const PromoSlider = () => {
                             />
                             
                             {/* Subtle Brand Watermark */}
-                            <div className="absolute top-4 left-6 md:top-8 md:left-12 z-20">
+                            <div className="absolute top-3 left-4 md:top-8 md:left-12 z-20">
                                 <span className="bg-white/10 backdrop-blur-md border border-white/20 text-white text-[8px] md:text-[10px] font-bold uppercase tracking-[0.3em] px-3 py-1.5 rounded-sm">
                                     A SANDS PRODUCT
                                 </span>
                             </div>
 
                             {/* Refined Content Overlay - Left-aligned for high-end professional look */}
-                            <div className="absolute inset-y-0 left-0 w-full md:w-[65%] flex flex-col justify-center px-8 md:px-20 z-10">
+                            <div className="absolute inset-y-0 left-0 w-full md:w-[65%] flex flex-col justify-center px-5 md:px-20 z-10">
                                 <motion.div
                                     initial={{ opacity: 0, x: -30 }}
                                     animate={currentIndex === idx ? { opacity: 1, x: 0 } : { opacity: 0, x: -30 }}
@@ -181,7 +181,7 @@ const PromoSlider = () => {
                                     
                                     <Link
                                         to={slide.link}
-                                        className="relative group inline-flex items-center justify-center bg-[#9C5B61] text-white hover:bg-white hover:text-[#9C5B61] font-bold text-[10px] md:text-sm uppercase tracking-[0.2em] px-8 py-3 md:px-12 md:py-4 transition-all duration-300 overflow-hidden shadow-xl"
+                                        className="relative group inline-flex items-center justify-center bg-[#9C5B61] text-white hover:bg-white hover:text-[#9C5B61] font-bold text-[10px] md:text-sm uppercase tracking-[0.2em] px-6 py-2.5 md:px-12 md:py-4 transition-all duration-300 overflow-hidden shadow-xl"
                                     >
                                         <span className="relative z-10">{slide.ctaLabel || 'Shop Collection'}</span>
                                     </Link>
@@ -192,7 +192,7 @@ const PromoSlider = () => {
                 </motion.div>
 
                 {/* Tanishq-style Diamond Indicators */}
-                <div className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 z-30 flex gap-4">
+                <div className="absolute bottom-3 md:bottom-10 left-1/2 -translate-x-1/2 z-30 flex gap-4">
                     {slides.map((_, i) => {
                         const isActive = (currentIndex - 1 + slides.length) % slides.length === i;
                         return (

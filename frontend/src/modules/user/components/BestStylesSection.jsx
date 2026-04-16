@@ -111,9 +111,9 @@ const BestStylesSection = () => {
     };
 
     return (
-        <section className="py-12 bg-white overflow-hidden">
+        <section className="py-6 md:py-12 bg-white overflow-hidden">
             <div className="container mx-auto px-4 max-w-[1450px]">
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center justify-between mb-5 md:mb-8">
                     <div className="flex flex-col md:flex-row md:items-baseline gap-2 md:gap-4">
                         <h2 className="text-[20px] md:text-[24px] font-sans font-medium text-gray-900 tracking-tight">
                             {sectionTitle}
@@ -132,7 +132,7 @@ const BestStylesSection = () => {
                     </div>
                 </div>
 
-                <div ref={scrollRef} className="flex gap-6 overflow-x-auto no-scrollbar pb-8 snap-x snap-mandatory px-1">
+                <div ref={scrollRef} className="flex gap-4 md:gap-6 overflow-x-auto no-scrollbar pb-4 md:pb-8 snap-x snap-mandatory px-1">
                     {dynamicProducts.map((product) => (
                         <div key={product.id} className="min-w-[180px] md:min-w-[280px] w-[180px] md:w-[280px] snap-start">
                             <ProductCard product={product} />

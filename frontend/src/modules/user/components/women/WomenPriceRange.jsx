@@ -32,7 +32,7 @@ const priceRanges = [
 
 const WomenPriceRange = () => {
     return (
-        <section className="pt-4 pb-2 md:pt-12 md:pb-8 bg-white overflow-hidden">
+        <section className="pt-2 pb-2 md:pt-12 md:pb-8 bg-white overflow-hidden">
             <div className="container mx-auto px-4 md:px-8 max-w-[1300px]">
 
                 {/* Modern Editorial Header */}
@@ -41,15 +41,15 @@ const WomenPriceRange = () => {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                    className="flex flex-col items-center mb-3 md:mb-5"
+                    className="flex flex-col items-center mb-2.5 md:mb-5"
                 >
                     <span 
-                        className="text-[10px] md:text-[11px] font-bold tracking-[0.34em] uppercase mb-1 inline-block px-3 py-1 rounded-full bg-[#9B2245]/10"
+                        className="text-[9px] md:text-[11px] font-bold tracking-[0.32em] uppercase mb-1 inline-block px-3 py-0.5 md:py-1 rounded-full bg-[#9B2245]/10"
                         style={{ color: '#9B2245' }}
                     >
                         Luxury within Reach
                     </span>
-                    <h2 className="text-base md:text-[28px] font-display text-gray-900 tracking-tight">Curated Price Points</h2>
+                    <h2 className="text-[13px] md:text-[28px] font-display text-gray-900 tracking-tight">Curated Price Points</h2>
                 </motion.div>
 
                 {/* Responsive Price Cards Grid */}
@@ -72,9 +72,9 @@ const WomenPriceRange = () => {
                                     className="relative flex flex-col items-center justify-center text-center overflow-hidden transition-all duration-700 ease-[0.22, 1, 0.36, 1] group-hover:shadow-[0_45px_100px_-20px_rgba(92,14,37,0.35)]"
                                     style={{
                                         background: 'linear-gradient(135deg, #4A0E1C 0%, #2A0610 50%, #150207 100%)',
-                                        borderRadius: '18px',
-                                        padding: idx === 1 ? 'clamp(14px, 4.2vw, 44px) 20px' : 'clamp(10px, 3.4vw, 34px) 16px',
-                                        minHeight: idx === 1 ? 'clamp(80px, 18vw, 214px)' : 'clamp(65px, 13.5vw, 156px)',
+                                        borderRadius: '16px',
+                                        padding: idx === 1 ? 'clamp(12px, 3.8vw, 40px) 18px' : 'clamp(10px, 3.1vw, 30px) 14px',
+                                        minHeight: idx === 1 ? 'clamp(72px, 16vw, 170px)' : 'clamp(60px, 12.5vw, 132px)',
                                         border: '1px solid rgba(255,255,255,0.05)',
                                     }}
                                 >
@@ -90,7 +90,7 @@ const WomenPriceRange = () => {
 
                                     {/* Subtle Radial Glow on Hover */}
                                     <div 
-                                        className="absolute inset-x-0 top-0 h-40 opacity-0 group-hover:opacity-30 transition-opacity duration-700 pointer-events-none"
+                                        className="absolute inset-x-0 top-0 h-28 md:h-40 opacity-0 group-hover:opacity-30 transition-opacity duration-700 pointer-events-none"
                                         style={{
                                             background: 'radial-gradient(circle at 50% 0%, #9B2245 0%, transparent 70%)',
                                         }}
@@ -119,7 +119,7 @@ const WomenPriceRange = () => {
                                         </h3>
 
                                         {/* Dynamic Tagline Reveal */}
-                                        <div className="h-0 group-hover:h-7 overflow-hidden transition-all duration-500 opacity-0 group-hover:opacity-100 mt-2">
+                                        <div className="h-0 group-hover:h-6 overflow-hidden transition-all duration-500 opacity-0 group-hover:opacity-100 mt-1.5 md:mt-2">
                                             <p
                                                 className="text-[#EBCDD0] font-bold tracking-[0.15em] whitespace-nowrap"
                                                 style={{ fontSize: idx === 1 ? 'clamp(8px, 1vw, 10px)' : 'clamp(7px, 0.85vw, 9px)' }}
@@ -131,7 +131,7 @@ const WomenPriceRange = () => {
 
                                     {/* Premium Border Accent */}
                                     <div 
-                                        className="absolute inset-0 rounded-[18px] pointer-events-none border border-white/0 group-hover:border-white/10 transition-all duration-500"
+                                        className="absolute inset-0 rounded-[16px] pointer-events-none border border-white/0 group-hover:border-white/10 transition-all duration-500"
                                     />
                                     
                                     {/* Bottom Decorative Shimmer */}

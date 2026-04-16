@@ -154,12 +154,12 @@ const Navbar = () => {
             </div>
 
             {/* Mobile Header - Same refinement */}
-            <div className="lg:hidden flex items-center justify-between px-4 py-4 border-b border-gray-100">
+            <div className="lg:hidden flex items-center justify-between px-4 py-3 sm:py-4 border-b border-gray-100">
                 <button onClick={() => setIsMenuOpen(true)} className="p-1">
                     <Menu className="w-7 h-7 text-gray-800" />
                 </button>
                 <Link to="/">
-                    <img src={logo} alt="Sands Jewels" className="h-12 w-auto" />
+                    <img src={logo} alt="Sands Jewels" className="h-14 sm:h-12 w-auto" />
                 </Link>
                 <div className="flex items-center gap-5">
                     <Link to="/wishlist" className="relative">

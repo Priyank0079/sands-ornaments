@@ -40,7 +40,7 @@ const CategoryGrid = () => {
     }
 
     return (
-        <div className="w-full bg-white py-10 relative group">
+        <div className="w-full bg-white py-5 md:py-10 relative group">
             <div className="container mx-auto px-4 relative">
                 <button
                     onClick={() => scroll('left')}
@@ -51,13 +51,13 @@ const CategoryGrid = () => {
 
                 <div
                     ref={scrollRef}
-                    className="flex overflow-x-auto scrollbar-hide gap-5 md:gap-7 pb-4 px-2"
+                    className="flex overflow-x-auto scrollbar-hide gap-4 md:gap-7 pb-2 md:pb-4 px-1 md:px-2 snap-x snap-mandatory"
                 >
                     {categories.map((category) => (
                         <Link
                             key={category.id}
                             to={category.path}
-                            className="flex flex-col items-center group/item cursor-pointer shrink-0"
+                            className="flex flex-col items-center group/item cursor-pointer shrink-0 snap-start"
                         >
                             <div className="relative w-[110px] h-[110px] md:w-[155px] md:h-[155px] mb-3 overflow-hidden rounded-[40px] border border-[#fce7e8] group-hover/item:border-[#9C5B61] transition-all duration-300 shadow-sm">
                                 <img

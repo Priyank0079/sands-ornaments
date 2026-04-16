@@ -48,17 +48,17 @@ const GoldCategoryGrid = () => {
     };
 
     return (
-        <div className="w-full bg-white py-10 relative group">
+        <div className="w-full bg-white py-4 md:py-10 relative group">
             <div className="max-w-[1450px] mx-auto px-4 relative">
                 {/* Section Title */}
-                <div className="flex items-center justify-center gap-4 mb-8">
+                <div className="flex items-center justify-center gap-2.5 md:gap-4 mb-3 md:mb-8">
                     <span className="text-[#C9A84C] text-xl">❧</span>
                     <div className="flex items-center gap-3">
-                        <div className="h-px w-16 bg-gradient-to-r from-transparent to-[#C9A84C]" />
-                        <h2 className="text-[22px] md:text-[26px] font-semibold text-gray-900 tracking-tight">
+                        <div className="h-px w-10 md:w-16 bg-gradient-to-r from-transparent to-[#C9A84C]" />
+                        <h2 className="text-[18px] md:text-[26px] font-semibold text-gray-900 tracking-tight">
                             Shop by Category
                         </h2>
-                        <div className="h-px w-16 bg-gradient-to-l from-transparent to-[#C9A84C]" />
+                        <div className="h-px w-10 md:w-16 bg-gradient-to-l from-transparent to-[#C9A84C]" />
                     </div>
                     <span className="text-[#C9A84C] text-xl">❧</span>
                 </div>
@@ -74,15 +74,15 @@ const GoldCategoryGrid = () => {
                 {/* Category Cards */}
                 <div
                     ref={scrollRef}
-                    className="flex overflow-x-auto scrollbar-hide gap-4 md:gap-5 pb-4 px-2"
+                    className="flex overflow-x-auto scrollbar-hide gap-3 md:gap-5 pb-2 md:pb-4 px-1 md:px-2 snap-x snap-mandatory"
                 >
                     {GOLD_CATEGORIES.map((cat) => (
                         <Link
                             key={cat.id}
                             to={cat.path}
-                            className="flex flex-col items-center group/item cursor-pointer shrink-0"
+                            className="flex flex-col items-center group/item cursor-pointer shrink-0 snap-start"
                         >
-                            <div className="relative w-[120px] h-[140px] md:w-[175px] md:h-[195px] mb-3 overflow-hidden rounded-[14px] border border-[#e8d5a3] group-hover/item:border-[#C9A84C] transition-all duration-300 shadow-sm">
+                            <div className="relative w-[98px] h-[112px] md:w-[175px] md:h-[195px] mb-2 md:mb-3 overflow-hidden rounded-[12px] md:rounded-[14px] border border-[#e8d5a3] group-hover/item:border-[#C9A84C] transition-all duration-300 shadow-sm">
                                 <img
                                     src={cat.image}
                                     alt={cat.name}
@@ -95,7 +95,7 @@ const GoldCategoryGrid = () => {
                                     </div>
                                 )}
                             </div>
-                            <span className="text-[14px] md:text-[16px] font-bold text-gray-800 group-hover/item:text-[#A8862A] transition-colors text-center tracking-tight leading-tight">
+                            <span className="text-[12px] md:text-[16px] font-bold text-gray-800 group-hover/item:text-[#A8862A] transition-colors text-center tracking-tight leading-tight">
                                 {cat.name}
                             </span>
                         </Link>

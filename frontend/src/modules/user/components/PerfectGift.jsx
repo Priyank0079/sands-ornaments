@@ -44,11 +44,11 @@ const PerfectGift = () => {
     });
 
     return (
-        <section className="py-8 md:py-20 bg-white text-black overflow-hidden font-sans border-b border-gray-100">
+        <section className="py-6 md:py-20 bg-white text-black overflow-hidden font-sans border-b border-gray-100">
             <div className="container mx-auto px-4">
                 
                 {/* Section Title */}
-                <div className="text-center mb-10 md:mb-16">
+                <div className="text-center mb-6 md:mb-16">
                     <h2 className="text-2xl md:text-5xl font-black text-black tracking-tighter mb-4">
                         {bondSettings.title || 'Shop by Bond'}
                     </h2>
@@ -58,7 +58,7 @@ const PerfectGift = () => {
                 </div>
                 
                 {/* Bonds Category Grid */}
-                <div className="flex overflow-x-auto scrollbar-hide gap-4 md:gap-6 pb-12 px-2 max-w-[1500px] mx-auto justify-start md:justify-center">
+                <div className="flex overflow-x-auto scrollbar-hide gap-4 md:gap-6 pb-6 md:pb-12 px-1 md:px-2 max-w-[1500px] mx-auto justify-start md:justify-center">
                     {recipients.map((item) => (
                         <Link 
                             key={item.id} 
@@ -82,8 +82,8 @@ const PerfectGift = () => {
                 </div>
 
                 {/* Featured Products Sub-section */}
-                <div className="mt-10 md:mt-20 pt-16 border-t border-gray-100">
-                    <div className="flex items-center justify-between mb-12">
+                <div className="mt-6 md:mt-20 pt-6 md:pt-16 border-t border-gray-100">
+                    <div className="flex items-center justify-between mb-6 md:mb-12">
                         <div>
                             <h3 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">Featured Gifts</h3>
                             <p className="text-gray-400 text-[10px] md:text-xs uppercase tracking-widest mt-1">Handpicked for the perfect moment</p>
@@ -93,7 +93,7 @@ const PerfectGift = () => {
                         </Link>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-10">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-10">
                         {displayLead.map((p) => (
                             <ProductCard key={p.id} product={p} />
                         ))}
