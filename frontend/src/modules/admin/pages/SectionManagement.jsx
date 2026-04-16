@@ -19,7 +19,7 @@ const SectionManagement = () => {
         try {
             const defaultsForPage = getSectionDefaultsForPage(activePageKey);
             const data = await adminService.getSections(activePageKey);
-            const filteredSections = (data || []).filter(section => !['nav-shop-by-category', 'chit-chat'].includes(section.sectionId || section.sectionKey));
+            const filteredSections = (data || []).filter(section => !['nav-shop-by-category', 'chit-chat', 'premium-category-cards', 'silver-curated', 'silver-collection', 'auto-banners', 'silver-new-launch'].includes(section.sectionId || section.sectionKey));
             setSections(filteredSections);
             const existingIds = new Set(filteredSections.map(section => section.sectionId));
             const missingDefaults = defaultsForPage.filter(def => !existingIds.has(def.sectionId) && !existingIds.has(def.sectionKey));
@@ -28,7 +28,7 @@ const SectionManagement = () => {
                 const seedRes = await adminService.bulkUpsertSections(seedPayload, activePageKey);
                 if (seedRes.success !== false) {
                     const seeded = await adminService.getSections(activePageKey);
-                    const filteredSeeded = (seeded || []).filter(section => !['nav-shop-by-category', 'chit-chat'].includes(section.sectionId || section.sectionKey));
+                    const filteredSeeded = (seeded || []).filter(section => !['nav-shop-by-category', 'chit-chat', 'premium-category-cards', 'silver-curated', 'silver-collection', 'auto-banners', 'silver-new-launch'].includes(section.sectionId || section.sectionKey));
                     setSections(filteredSeeded);
                 }
             }

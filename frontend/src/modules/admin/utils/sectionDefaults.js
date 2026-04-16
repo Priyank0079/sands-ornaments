@@ -69,9 +69,10 @@ import bondMother from '../../../assets/bond_mother.png';
 import bondBrothers from '../../../assets/bond_brothers.png';
 import bondSister from '../../../assets/bond_sister.png';
 import bondFriends from '../../../assets/bond_friends.png';
-import premiumMenDefault from '../../user/assets/cat_men_nobg.png';
-import premiumWomenDefault from '../../user/assets/cat_women_premium_nobg.png';
-import premiumFamilyDefault from '../../user/assets/cat_all_nobg.png';
+// Removing unused premium imports
+// import premiumMenDefault from '../../user/assets/cat_men_nobg.png';
+// import premiumWomenDefault from '../../user/assets/cat_women_premium_nobg.png';
+// import premiumFamilyDefault from '../../user/assets/cat_all_nobg.png';
 import testimonialCustomer1 from '../../../assets/testimonial_customer_1.png';
 import testimonialCustomer2 from '../../../assets/testimonial_customer_2.png';
 import testimonialCustomer3 from '../../../assets/testimonial_customer_3.png';
@@ -146,19 +147,6 @@ const homeSections = [
       { id: 'hero-2', name: 'Contemporary Luxe', label: 'Modern Gold Fusion', subtitle: 'Minimalist silhouettes elegantly refined in pure 18K gold.', image: menHeroDefault, path: '/shop', tag: 'Contemporary Luxe', ctaLabel: 'Shop Collection' },
       { id: 'hero-3', name: 'Handcrafted Silver', label: 'Sterling Silver Heritage', subtitle: 'Timeless craftsmanship meets modern architectural design.', image: silverHeroDefault, path: '/shop', tag: 'Handcrafted Silver', ctaLabel: 'Shop Collection' },
       { id: 'hero-4', name: 'Bridal Signature', label: 'The Royal Bridal Legacy', subtitle: 'Sacred ornaments for your once-in-a-lifetime journey.', image: familyHeroDefault, path: '/shop', tag: 'Bridal Signature', ctaLabel: 'Shop Collection' }
-    ]
-  },
-  {
-    pageKey: 'home',
-    sectionKey: 'premium-category-cards',
-    sectionType: 'category-grid',
-    label: 'Premium Category Cards',
-    isActive: true,
-    sortOrder: 0.5,
-    items: [
-      { id: 'premium-men', name: 'Men', image: premiumMenDefault, path: '/category/men', tag: 'FOR HIM' },
-      { id: 'premium-women', name: 'Women', image: premiumWomenDefault, path: '/category/women', tag: 'FOR HER' },
-      { id: 'premium-family', name: 'Family', image: premiumFamilyDefault, path: '/category/family', tag: 'FOR EVERYONE' }
     ]
   },
   {
