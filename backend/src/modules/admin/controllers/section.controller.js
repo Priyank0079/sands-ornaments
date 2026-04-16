@@ -220,7 +220,7 @@ const sanitizeSectionPayload = (identity, payload = {}) => {
       .filter((item) => Boolean(item.categoryId));
   }
 
-  if (sectionKey === "price-range-showcase") {
+  if (sectionKey === "price-range-showcase" || sectionKey === "luxury-within-reach") {
     cleaned.items = cleaned.items
       .map((item, idx) => {
         const priceMax = parsePositiveNumber(item.priceMax ?? item.price ?? item.name);

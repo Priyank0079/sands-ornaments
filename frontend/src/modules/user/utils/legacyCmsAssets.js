@@ -50,6 +50,28 @@ import navOccasionAnniversary from '../assets/nav_occasion_anniversary.png';
 import navOccasionWedding from '../assets/nav_occasion_wedding.png';
 import navOccasionMothers from '../assets/nav_occasion_mothers.png';
 import navOccasionValentine from '../assets/nav_occasion_valentine.png';
+import bondWife from '../../../assets/bond_wife.png';
+import bondHusband from '../../../assets/bond_husband.png';
+import bondMother from '../../../assets/bond_mother.png';
+import bondBrothers from '../../../assets/bond_brothers.png';
+import bondSister from '../../../assets/bond_sister.png';
+import bondFriends from '../../../assets/bond_friends.png';
+import categoryMangalsutra from '../../../assets/categories/mangalsutra.png';
+import categoryNosepin from '../../../assets/categories/nosepin.png';
+import categoryPersonalised from '../../../assets/categories/personalised.png';
+import categoryBangle from '../../../assets/categories/bangle.png';
+import categoryToerings from '../../../assets/categories/toerings.png';
+import categoryNewlaunch from '../../../assets/categories/newlaunch.png';
+import categoryRings from '../../../assets/categories/rings.png';
+import categoryBracelets from '../../../assets/categories/bracelets.png';
+import categoryPendants from '../../../assets/categories/pendants.png';
+import categoryEarrings from '../../../assets/categories/earrings.png';
+import categoryMensilver from '../../../assets/categories/mensilver.png';
+import categorySets from '../../../assets/categories/sets.png';
+import categoryAnklets from '../../../assets/categories/anklets.png';
+import categorySilverchains from '../../../assets/categories/silverchains.png';
+import heroMasterpiece from '../../../assets/hero/hero_masterpiece.png';
+import bridalRoyal from '../../../assets/hero/bridal_royal.png';
 
 const legacyAssetMap = {
   'cat_pendant_wine.png': catPendantWine,
@@ -103,7 +125,29 @@ const legacyAssetMap = {
   'nav_occasion_anniversary.png': navOccasionAnniversary,
   'nav_occasion_wedding.png': navOccasionWedding,
   'nav_occasion_mothers.png': navOccasionMothers,
-  'nav_occasion_valentine.png': navOccasionValentine
+  'nav_occasion_valentine.png': navOccasionValentine,
+  'bond_wife.png': bondWife,
+  'bond_husband.png': bondHusband,
+  'bond_mother.png': bondMother,
+  'bond_brothers.png': bondBrothers,
+  'bond_sister.png': bondSister,
+  'bond_friends.png': bondFriends,
+  'mangalsutra.png': categoryMangalsutra,
+  'nosepin.png': categoryNosepin,
+  'personalised.png': categoryPersonalised,
+  'bangle.png': categoryBangle,
+  'toerings.png': categoryToerings,
+  'newlaunch.png': categoryNewlaunch,
+  'rings.png': categoryRings,
+  'bracelets.png': categoryBracelets,
+  'pendants.png': categoryPendants,
+  'earrings.png': categoryEarrings,
+  'mensilver.png': categoryMensilver,
+  'sets.png': categorySets,
+  'anklets.png': categoryAnklets,
+  'silverchains.png': categorySilverchains,
+  'hero_masterpiece.png': heroMasterpiece,
+  'bridal_royal.png': bridalRoyal
 };
 
 export const resolveLegacyCmsAsset = (value, fallback = '') => {

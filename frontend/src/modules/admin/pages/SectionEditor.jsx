@@ -2,6 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import PageHeader from '../components/common/PageHeader';
 import AllJewellerySectionEditor from '../components/editors/AllJewellerySectionEditor';
+import BestStylesSectionEditor from '../components/editors/BestStylesSectionEditor';
+import ShopByBondEditor from '../components/editors/ShopByBondEditor';
+import ShopByColourEditor from '../components/editors/ShopByColourEditor';
+import SilverNewLaunchGridEditor from '../components/editors/SilverNewLaunchGridEditor';
 import CategoryShowcaseEditor from '../components/editors/CategoryShowcaseEditor';
 import BannerSectionEditor from '../components/editors/BannerSectionEditor';
 import BrandPromisesEditor from '../components/editors/BrandPromisesEditor';
@@ -100,7 +104,25 @@ const SectionEditor = () => {
             return <AllJewellerySectionEditor sectionData={sectionData} onSave={handleSave} defaultSection={defaultSection} />;
         }
 
+        if ((sectionData.sectionKey || id) === 'best-styles') {
+            return <BestStylesSectionEditor sectionData={sectionData} onSave={handleSave} defaultSection={defaultSection} />;
+        }
+
+        if ((sectionData.sectionKey || id) === 'shop-by-colour') {
+            return <ShopByColourEditor sectionData={sectionData} onSave={handleSave} defaultSection={defaultSection} />;
+        }
+
+        if ((sectionData.sectionKey || id) === 'shop-by-bond') {
+            return <ShopByBondEditor sectionData={sectionData} onSave={handleSave} defaultSection={defaultSection} />;
+        }
+
+        if ((sectionData.sectionKey || id) === 'silver-new-launch-grid') {
+            return <SilverNewLaunchGridEditor sectionData={sectionData} onSave={handleSave} defaultSection={defaultSection} />;
+        }
+
         const supportedSections = [
+            'luxury-within-reach',
+            'category-grid',
             'premium-category-cards',
             'category-showcase',
             'price-range-showcase',

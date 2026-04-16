@@ -63,17 +63,30 @@ import navOccasionAnniversary from '../../user/assets/nav_occasion_anniversary.p
 import navOccasionWedding from '../../user/assets/nav_occasion_wedding.png';
 import navOccasionMothers from '../../user/assets/nav_occasion_mothers.png';
 import navOccasionValentine from '../../user/assets/nav_occasion_valentine.png';
+import bondWife from '../../../assets/bond_wife.png';
+import bondHusband from '../../../assets/bond_husband.png';
+import bondMother from '../../../assets/bond_mother.png';
+import bondBrothers from '../../../assets/bond_brothers.png';
+import bondSister from '../../../assets/bond_sister.png';
+import bondFriends from '../../../assets/bond_friends.png';
 import premiumMenDefault from '../../user/assets/cat_men_nobg.png';
 import premiumWomenDefault from '../../user/assets/cat_women_premium_nobg.png';
 import premiumFamilyDefault from '../../user/assets/cat_all_nobg.png';
 import testimonialCustomer1 from '../../../assets/testimonial_customer_1.png';
 import testimonialCustomer2 from '../../../assets/testimonial_customer_2.png';
 import testimonialCustomer3 from '../../../assets/testimonial_customer_3.png';
+import { homeCategoryGridDefaults } from '../../user/utils/homeCategoryGridDefaults';
 
 import menHeroDefault from '../../../assets/hero/gold_fusion.png';
 import womenHeroDefault from '../../../assets/hero/diamond_luxury.png';
 import silverHeroDefault from '../../../assets/hero/silver_minimalist.png';
 import familyHeroDefault from '../../../assets/hero/bridal_royal.png';
+import heroMasterpieceDefault from '../../../assets/hero/hero_masterpiece.png';
+import categoryPersonalised from '../../../assets/categories/personalised.png';
+import categoryMensilver from '../../../assets/categories/mensilver.png';
+import categorySets from '../../../assets/categories/sets.png';
+import categoryGoldPendant from '../../../assets/categories/gold_pendants.png';
+import categoryGoldBracelet from '../../../assets/categories/gold_bracelet.png';
 import menCategoryDefault from '../../../assets/collections/DazzlingRings.png';
 import womenCategoryDefault from '../../../assets/women-categories/Rings.png';
 import familyCategoryDefault from '../../user/assets/cat_all_premium.png';
@@ -150,6 +163,15 @@ const homeSections = [
   },
   {
     pageKey: 'home',
+    sectionKey: 'category-grid',
+    sectionType: 'category-grid',
+    label: 'Category Grid',
+    isActive: true,
+    sortOrder: 0.75,
+    items: homeCategoryGridDefaults
+  },
+  {
+    pageKey: 'home',
     sectionKey: 'category-showcase',
     sectionType: 'category-grid',
     label: 'Category Showcase',
@@ -162,6 +184,18 @@ const homeSections = [
       { id: 'bracelets', name: 'Bracelets', image: catBracelet, hoverImage: latestBracelet, path: '/category/bracelets', tag: '' },
       { id: 'anklets', name: 'Anklets', image: catAnklet, hoverImage: newAnklets, path: '/category/anklets', tag: '' },
       { id: 'chains', name: 'Chains', image: catChain, hoverImage: catChain, path: '/category/chains', tag: '' }
+    ]
+  },
+  {
+    pageKey: 'home',
+    sectionKey: 'luxury-within-reach',
+    sectionType: 'promo-grid',
+    label: 'Luxury within Reach',
+    isActive: true,
+    sortOrder: 1.5,
+    items: [
+      { id: 'under-1499', name: 'Under INR 1499', priceMax: 1499, path: '/shop?price_max=1499', tag: '' },
+      { id: 'under-1999', name: 'Under INR 1999', priceMax: 1999, path: '/shop?price_max=1999', tag: '' }
     ]
   },
   {
@@ -291,6 +325,136 @@ const homeSections = [
       productLimit: 16
     },
     items: []
+  },
+  {
+    pageKey: 'home',
+    sectionKey: 'best-styles',
+    sectionType: 'product-rule-strip',
+    label: 'Best Styles',
+    isActive: true,
+    sortOrder: 10.5,
+    settings: {
+      title: 'Best styles, now for less!',
+      ctaLabel: 'View All Collection',
+      productLimit: 6
+    },
+    items: []
+  },
+  {
+    pageKey: 'home',
+    sectionKey: 'auto-banner-section',
+    sectionType: 'banner',
+    label: 'Diamond Story Banners',
+    isActive: true,
+    sortOrder: 10.75,
+    settings: { autoplayMs: 5000 },
+    items: [
+      {
+        id: 'diamond-story',
+        name: 'Diamond Story',
+        label: 'Discover Your Unique Story in Diamonds',
+        subtitle: 'Timeless pieces for your most memorable moments.',
+        image: heroMasterpieceDefault,
+        path: '/shop',
+        tag: '',
+        ctaLabel: 'Explore Collection'
+      },
+      {
+        id: 'bridal-story',
+        name: 'Bridal Story',
+        label: 'Exquisite Bridal Collection',
+        subtitle: 'Crafted for Elegance and Eternal Love',
+        image: familyHeroDefault,
+        path: '/shop',
+        tag: '',
+        ctaLabel: 'Explore Collection'
+      }
+    ]
+  },
+  {
+    pageKey: 'home',
+    sectionKey: 'silver-new-launch-grid',
+    sectionType: 'category-grid',
+    label: 'Silver New Launch Grid',
+    isActive: true,
+    sortOrder: 10.85,
+    settings: {
+      ribbonLabel: 'NEW LAUNCH',
+      offerText: 'Upto 15% Off',
+      ctaLabel: 'Explore'
+    },
+    items: [
+      { id: 'silver-launch-rings', name: 'Rings', image: catRing, path: '/category/rings', tag: 'New', categoryId: null },
+      { id: 'silver-launch-bracelets', name: 'Bracelets', image: catBracelet, path: '/category/bracelets', tag: 'New', categoryId: null },
+      { id: 'silver-launch-personalised', name: 'Personalised', image: categoryPersonalised, path: '/category/personalised', tag: 'New', categoryId: null },
+      { id: 'silver-launch-earrings', name: 'Earrings', image: catEarrings, path: '/category/earrings', tag: 'New', categoryId: null },
+      { id: 'silver-launch-pendants', name: 'Pendants', image: catPendant, path: '/category/pendants', tag: 'New', categoryId: null },
+      { id: 'silver-launch-mens', name: 'Mens', image: categoryMensilver, path: '/category/men', tag: 'New', categoryId: null },
+      { id: 'silver-launch-perfumes', name: 'Perfumes', image: categorySets, path: '/category/perfumes', tag: 'New', categoryId: null },
+      { id: 'silver-launch-sets', name: 'Sets', image: categorySets, path: '/category/sets', tag: 'New', categoryId: null },
+      { id: 'silver-launch-anklets', name: 'Anklets', image: catAnklet, path: '/category/anklets', tag: 'New', categoryId: null }
+    ]
+  },
+  {
+    pageKey: 'home',
+    sectionKey: 'shop-by-colour',
+    sectionType: 'promo-grid',
+    label: 'Shop by Colour',
+    isActive: true,
+    sortOrder: 10.9,
+    settings: {
+      title: 'Shop by Colour'
+    },
+    items: [
+      {
+        id: 'colour-silver',
+        name: 'Pure 925 Silver',
+        image: categoryGoldPendant,
+        tag: 'Pure 925 Silver',
+        metalKey: 'silver'
+      },
+      {
+        id: 'colour-gold',
+        name: 'Gold Plated',
+        image: catRing,
+        tag: '18KT Gold Plated',
+        metalKey: 'gold'
+      },
+      {
+        id: 'colour-rose-gold',
+        name: 'Rose Gold Plated',
+        image: categoryGoldBracelet,
+        tag: '18KT Rose Gold Plated',
+        metalKey: 'rose-gold'
+      },
+      {
+        id: 'colour-oxidised',
+        name: 'Oxidised Silver',
+        image: catEarrings,
+        tag: 'Pure 925 Silver',
+        metalKey: 'oxidised'
+      }
+    ]
+  },
+  {
+    pageKey: 'home',
+    sectionKey: 'shop-by-bond',
+    sectionType: 'category-grid',
+    label: 'Shop by Bond',
+    isActive: true,
+    sortOrder: 10.95,
+    settings: {
+      title: 'Shop by Bond',
+      subtitle: 'Curated for your loved ones'
+    },
+    items: [
+      { id: 'bond-wife', name: 'Wife', image: bondWife, bondKey: 'wife' },
+      { id: 'bond-husband', name: 'Husband', image: bondHusband, bondKey: 'husband' },
+      { id: 'bond-mother', name: 'Mother', image: bondMother, bondKey: 'mother' },
+      { id: 'bond-brothers', name: 'Brothers', image: bondBrothers, bondKey: 'brothers' },
+      { id: 'bond-sister', name: 'Sister', image: bondSister, bondKey: 'sister' },
+      { id: 'bond-friends', name: 'Friends', image: bondFriends, bondKey: 'friends' }
+    ]
   },
   {
     pageKey: 'home',

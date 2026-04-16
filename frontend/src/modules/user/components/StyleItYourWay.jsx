@@ -21,6 +21,7 @@ import prodSis from '../assets/gift_sister_silver.png';
 import prodWineEar from '../assets/cat_earrings_wine.png';
 import prodWineRing from '../assets/cat_ring_wine.png';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
+import { ensureSilverHomePath } from '../utils/silverHomePaths';
 
 const StyleItYourWay = () => {
     const { homepageSections } = useShop();
@@ -92,7 +93,7 @@ const StyleItYourWay = () => {
             subtitle: item.tag || fallback.subtitle,
             image: resolveLegacyCmsAsset(item.image, fallback.image),
             thumbnails: (extraImages.length > 0 ? extraImages : fallback.thumbnails).map((thumb) => resolveLegacyCmsAsset(thumb, thumb)),
-            path
+            path: ensureSilverHomePath(path)
         };
     });
 

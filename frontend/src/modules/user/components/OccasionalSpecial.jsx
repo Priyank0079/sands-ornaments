@@ -7,6 +7,7 @@ import receptionImgDefault from '../assets/home_occasions/home_reception.png';
 import bridalImgDefault from '../assets/home_occasions/home_gift_for_bride.png';
 import bridesmaidImgDefault from '../assets/home_occasions/home_gift_for_bridesmaid.png';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
+import { ensureSilverHomePath } from '../utils/silverHomePaths';
 
 const OccasionalSpecial = () => {
     const { homepageSections } = useShop();
@@ -25,13 +26,13 @@ const OccasionalSpecial = () => {
 
     const buildPath = (item, fallback) => {
         if (!item) return fallback?.path || '/shop';
-        if (typeof item.path === 'string' && item.path.trim()) return item.path;
+        if (typeof item.path === 'string' && item.path.trim()) return ensureSilverHomePath(item.path);
         const productIds = Array.isArray(item.productIds) ? item.productIds : [];
         const limit = item.limit ? Number(item.limit) : 12;
         if (productIds.length > 0) {
-            return `/shop?products=${encodeURIComponent(productIds.join(','))}&limit=${limit}&sort=random`;
+            return ensureSilverHomePath(`/shop?products=${encodeURIComponent(productIds.join(','))}&limit=${limit}&sort=random`);
         }
-        return fallback?.path || `/shop?limit=${limit}&sort=random`;
+        return ensureSilverHomePath(fallback?.path || `/shop?limit=${limit}&sort=random`);
     };
 
     const normalizedConfiguredItems = configuredItems.map((item, index) => {

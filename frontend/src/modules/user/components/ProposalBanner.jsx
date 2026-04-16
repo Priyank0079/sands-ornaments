@@ -4,6 +4,7 @@ import { ArrowRight } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
 import bannerImgDefault from '../assets/proposal_banner_premium.png';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
+import { ensureSilverHomePath } from '../utils/silverHomePaths';
 
 const ProposalBanner = () => {
     const { homepageSections, categories } = useShop();
@@ -21,7 +22,7 @@ const ProposalBanner = () => {
                     id: item.itemId || item._id || item.id || `legacy-${index}`,
                     name: item.name || item.label || 'Proposal Rings',
                     image: resolveLegacyCmsAsset(item.image, bannerImgDefault),
-                    path: item.path
+                    path: ensureSilverHomePath(item.path)
                 };
             }
             return {
@@ -29,14 +30,14 @@ const ProposalBanner = () => {
                 id: item.itemId || item._id || item.id || `${category._id || category.id}-${index}`,
                 name: item.name || item.label || category.name || 'Proposal Rings',
                 image: resolveLegacyCmsAsset(item.image, bannerImgDefault),
-                path: `/shop?category=${category._id || category.id}`
+                path: ensureSilverHomePath(`/shop?category=${category._id || category.id}`)
             };
         })
         .filter(Boolean);
 
     const displayItems = normalizedConfiguredItems.length > 0
         ? normalizedConfiguredItems
-        : [{ id: 'proposal-fallback', name: 'Proposal Rings', image: bannerImgDefault, path: '/shop' }];
+        : [{ id: 'proposal-fallback', name: 'Proposal Rings', image: bannerImgDefault, path: ensureSilverHomePath('/shop') }];
 
     // Use first item for banner if available
     const bannerItem = displayItems[0];

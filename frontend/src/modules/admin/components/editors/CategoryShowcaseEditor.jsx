@@ -18,6 +18,9 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     const navigate = useNavigate();
     const sectionId = sectionData?.id || 'category-showcase';
     const isCategoryShowcase = sectionId === 'category-showcase';
+    const isCategoryGrid = sectionId === 'category-grid';
+    const isLuxuryWithinReach = sectionId === 'luxury-within-reach';
+    const isCategoryDrivenSection = isCategoryShowcase || isCategoryGrid;
     const isPremiumCategoryCards = sectionId === 'premium-category-cards';
     const defaultMostGiftedHero = defaultItems.find(item => item?.type === 'hero') || {
         id: 'hero',
@@ -165,7 +168,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     }, [initialItemsFromProps, sectionId]);
 
     useEffect(() => {
-        if (!isCategoryShowcase || categories.length === 0) return;
+        if (!isCategoryDrivenSection || categories.length === 0) return;
         setItems(prev => prev.map(item => {
             if (item.categoryId) return item;
             const resolved = getCategoryFromItem(item);
@@ -174,15 +177,17 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                 ...item,
                 categoryId: resolved._id,
                 name: resolved.name,
-                path: `/shop?category=${resolved._id}`,
+                path: isCategoryGrid
+                    ? `/category/${resolved.slug || normalizeLabel(resolved.name)}`
+                    : `/shop?category=${resolved._id}`,
                 image: item.image || resolved.image || item.image,
                 hoverImage: item.hoverImage || ''
             };
         }));
-    }, [categories, isCategoryShowcase]);
+    }, [categories, isCategoryDrivenSection, isCategoryGrid]);
 
     useEffect(() => {
-        if (sectionId !== 'price-range-showcase') return;
+        if (sectionId !== 'price-range-showcase' && !isLuxuryWithinReach) return;
         setItems(prev => prev.map(item => {
             const priceMax = getPriceMaxFromItem(item);
             if (!priceMax) return item;
@@ -193,7 +198,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                 path: `/shop?price_max=${priceMax}`
             };
         }));
-    }, [sectionId]);
+    }, [sectionId, isLuxuryWithinReach]);
 
     useEffect(() => {
         if (sectionId !== 'latest-drop') return;
@@ -328,20 +333,17 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     };
 
     const saveCurrentItems = () => {
-        setItems(prev => {
-            handleSave(prev);
-            return prev;
-        });
+        handleSave(items);
     };
 
     const addItem = () => {
         const newItem = {
             id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-            name: isCategoryShowcase ? '' : 'New Item',
-            path: isCategoryShowcase ? '' : '/shop',
+            name: isCategoryDrivenSection ? '' : 'New Item',
+            path: isCategoryDrivenSection ? '' : '/shop',
             image: '',
             tag: '',
-            ...(sectionId === 'price-range-showcase' ? { priceMax: '' } : {}),
+            ...(sectionId === 'price-range-showcase' || isLuxuryWithinReach ? { priceMax: '' } : {}),
             ...(sectionId === 'latest-drop' ? { limit: '', categoryId: '' } : {}),
             ...(sectionId === 'most-gifted' ? { categoryId: '' } : {}),
             ...(sectionId === 'proposal-rings' ? { categoryId: '' } : {}),
@@ -352,7 +354,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         const nextItems = [...items, newItem];
         setItems(nextItems);
         setEditingId(newItem.id);
-        if (!isCategoryShowcase && sectionId !== 'price-range-showcase' && sectionId !== 'new-launch' && sectionId !== 'latest-drop' && sectionId !== 'most-gifted' && sectionId !== 'proposal-rings') {
+        if (!isCategoryDrivenSection && sectionId !== 'price-range-showcase' && !isLuxuryWithinReach && sectionId !== 'new-launch' && sectionId !== 'latest-drop' && sectionId !== 'most-gifted' && sectionId !== 'proposal-rings') {
             handleSave(nextItems);
         }
     };
@@ -400,6 +402,26 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         .replace(/-+(drop|drops|collection|collections|edit|edits|pick|picks)$/g, '')
         .replace(/^-+|-+$/g, '');
 
+    const expandCategoryTokens = (value) => {
+        const normalized = normalizeLabel(value);
+        const tokens = new Set();
+        if (!normalized) return tokens;
+
+        tokens.add(normalized);
+
+        if (normalized.endsWith('ies')) {
+            tokens.add(`${normalized.slice(0, -3)}y`);
+        }
+        if (normalized.endsWith('es')) {
+            tokens.add(normalized.slice(0, -2));
+        }
+        if (normalized.endsWith('s')) {
+            tokens.add(normalized.slice(0, -1));
+        }
+
+        return new Set(Array.from(tokens).filter(Boolean));
+    };
+
     const isRingCategory = (cat) => {
         const name = normalizeLabel(cat?.name || '');
         const slug = normalizeLabel(cat?.slug || cat?.path || '');
@@ -413,11 +435,26 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         try {
             if (path.startsWith('/category/')) {
                 const slug = path.replace('/category/', '').split('?')[0];
-                return categories.find(c => c.slug === slug || normalizeLabel(c.name) === slug) || null;
+                const slugTokens = expandCategoryTokens(slug);
+                return categories.find(c => {
+                    const categoryTokens = new Set([
+                        ...expandCategoryTokens(c.slug || ''),
+                        ...expandCategoryTokens(c.name || '')
+                    ]);
+                    return Array.from(slugTokens).some(token => categoryTokens.has(token));
+                }) || null;
             }
             if (path.includes('category=')) {
                 const query = path.split('category=')[1]?.split('&')[0];
-                return categories.find(c => c.slug === query || c.name === query || normalizeLabel(c.name) === query || String(c._id) === String(query)) || null;
+                const queryTokens = expandCategoryTokens(query);
+                return categories.find(c => {
+                    if (String(c._id) === String(query)) return true;
+                    const categoryTokens = new Set([
+                        ...expandCategoryTokens(c.slug || ''),
+                        ...expandCategoryTokens(c.name || '')
+                    ]);
+                    return Array.from(queryTokens).some(token => categoryTokens.has(token));
+                }) || null;
             }
         } catch (err) {
             return null;
@@ -432,23 +469,29 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             if (match) return match;
         }
         if (item.name) {
-            const normalizedItemName = normalizeLabel(item.name);
             const normalizedItemHint = normalizeShowcaseCategoryHint(item.name);
+            const itemTokens = new Set([
+                ...expandCategoryTokens(item.name),
+                ...expandCategoryTokens(normalizedItemHint)
+            ]);
             const byName = categories.find(c => {
-                const normalizedCategoryName = normalizeLabel(c.name);
-                const normalizedCategorySlug = normalizeLabel(c.slug || c.path || '');
-                return (
-                    normalizedCategoryName === normalizedItemName ||
-                    normalizedCategorySlug === normalizedItemName ||
-                    (normalizedItemHint && (
-                        normalizedCategoryName === normalizedItemHint ||
-                        normalizedCategorySlug === normalizedItemHint
-                    ))
-                );
+                const categoryTokens = new Set([
+                    ...expandCategoryTokens(c.name || ''),
+                    ...expandCategoryTokens(c.slug || c.path || '')
+                ]);
+                return Array.from(itemTokens).some(token => categoryTokens.has(token));
             });
             if (byName) return byName;
         }
         return getCategoryFromPath(item.path);
+    };
+
+    const canPreserveLegacyCategoryGridItem = (item) => {
+        if (!item || getCategoryFromItem(item)) return false;
+        const hasLegacyCategoryPath = typeof item.path === 'string'
+            && (item.path.startsWith('/category/') || item.path.includes('category='));
+        const hasUsableContent = Boolean((item.name || item.label || '').trim()) && Boolean(item.image);
+        return hasLegacyCategoryPath && hasUsableContent;
     };
 
     const validateItems = (nextItems) => {
@@ -501,25 +544,55 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             onSave({ items: normalizedItems });
             return;
         }
-        if (sectionId === 'price-range-showcase') {
+        if (isCategoryGrid) {
+            const missing = nextItems.filter(item => !getCategoryFromItem(item) && !canPreserveLegacyCategoryGridItem(item));
+            if (missing.length > 0) {
+                const labels = missing.map(item => item.name || item.label || `Item ${item.id}`).join(', ');
+                toast.error(`Select a category for each item before saving. Missing: ${labels}`);
+                return;
+            }
+            const normalizedItems = nextItems.map((item) => {
+                const category = getCategoryFromItem(item);
+                if (!category) {
+                    return {
+                        ...item,
+                        name: item.name || item.label || '',
+                        label: item.label || item.name || '',
+                        path: item.path || '/shop'
+                    };
+                }
+                return {
+                    ...item,
+                    categoryId: category._id,
+                    name: category.name,
+                    label: category.name,
+                    path: `/category/${category.slug || normalizeLabel(category.name)}`,
+                    image: item.image || category.image || item.image
+                };
+            });
+            onSave({ items: normalizedItems });
+            return;
+        }
+        if (sectionId === 'price-range-showcase' || isLuxuryWithinReach) {
             const missing = nextItems.filter(item => !getPriceMaxFromItem(item));
             if (missing.length > 0) {
                 const labels = missing.map(item => item.name || item.id || 'Item').join(', ');
                 toast.error(`Enter a max price for each item before saving. Missing: ${labels}`);
                 return;
             }
-            const normalizedItems = nextItems.map((item) => {
+            const normalizedItems = nextItems.map((item, index) => {
                 const priceMax = getPriceMaxFromItem(item);
                 if (!priceMax) return item;
                 return {
                     ...item,
+                    id: item.id || `price-${index + 1}`,
                     priceMax,
                     price: String(priceMax),
                     name: `Under INR ${priceMax}`,
                     label: `Under INR ${priceMax}`,
                     path: `/shop?price_max=${priceMax}`
                 };
-            });
+            }).slice(0, isLuxuryWithinReach ? 2 : nextItems.length);
             onSave({ items: normalizedItems });
             return;
         }
@@ -730,10 +803,12 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                     <p className="text-[10px] md:text-xs text-gray-400">
                         {isPremiumCategoryCards
                             ? 'These three cards stay fixed. You can update only their images to keep navigation consistent.'
+                            : isLuxuryWithinReach
+                                ? 'These two cards stay fixed. You can update only their prices to keep this section consistent.'
                             : 'Add, edit, or remove items in this section'}
                     </p>
                 </div>
-                {!isPremiumCategoryCards && sectionId !== 'proposal-rings' && (
+                {!isPremiumCategoryCards && !isLuxuryWithinReach && sectionId !== 'proposal-rings' && (
                     <button
                         onClick={addItem}
                         className="flex items-center gap-2 bg-[#3E2723] text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-[#2b1b18] transition-colors"
@@ -756,7 +831,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                     {isMostGiftedHero ? 'Hero Card' : `Item #${index + 1}`}
                                 </span>
                                 <div className="flex gap-2">
-                                    {isEditing && !isPremiumCategoryCards && !isMostGiftedHero && sectionId !== 'proposal-rings' && (
+                                    {isEditing && !isPremiumCategoryCards && !isLuxuryWithinReach && !isMostGiftedHero && sectionId !== 'proposal-rings' && (
                                         <button
                                             onClick={() => removeItem(item.id)}
                                             className="p-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
@@ -784,6 +859,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                 /* EDIT MODE */
                                 <div className="space-y-4">
                                     {/* Main Image */}
+                                    {!isLuxuryWithinReach && (
                                     <div className="aspect-square bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center overflow-hidden relative group/img">
                                         {item.image ? (
                                             <>
@@ -805,6 +881,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                             <Input placeholder="URL..." value={item.image} onChange={(e) => handleItemChange(item.id, 'image', e.target.value)} className="text-xs h-8" />
                                         </div>
                                     </div>
+                                    )}
 
                                     {isCategoryShowcase && (
                                         <div className="aspect-square bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center overflow-hidden relative group/img">
@@ -831,7 +908,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                     )}
 
                                     {/* Select Product Button (skip for locked premium cards and structured sections) */}
-                                    {!isPremiumCategoryCards && !isCategoryShowcase && sectionId !== 'nav-gifts-for' && sectionId !== 'nav-occasions' && sectionId !== 'price-range-showcase' && sectionId !== 'perfect-gift' && sectionId !== 'new-launch' && sectionId !== 'latest-drop' && sectionId !== 'most-gifted' && sectionId !== 'proposal-rings' && sectionId !== 'curated-for-you' && sectionId !== 'style-it-your-way' && (
+                                    {!isPremiumCategoryCards && !isCategoryDrivenSection && sectionId !== 'price-range-showcase' && !isLuxuryWithinReach && sectionId !== 'nav-gifts-for' && sectionId !== 'nav-occasions' && sectionId !== 'perfect-gift' && sectionId !== 'new-launch' && sectionId !== 'latest-drop' && sectionId !== 'most-gifted' && sectionId !== 'proposal-rings' && sectionId !== 'curated-for-you' && sectionId !== 'style-it-your-way' && (
                                         <button
                                             onClick={() => handleRedirectToSelect(item.id)}
                                             className="w-full py-2 bg-gray-50 text-gray-600 text-[10px] font-bold rounded-lg border border-gray-200 hover:bg-gray-100 flex items-center justify-center gap-2 uppercase tracking-widest"
@@ -848,7 +925,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                 <p className="mt-1 text-xs text-gray-500">{item.path}</p>
                                             </div>
                                         )}
-                                        {isCategoryShowcase && (
+                                        {isCategoryDrivenSection && (
                                             <div>
                                                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Category</label>
                                                 <select
@@ -862,7 +939,9 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                                 ...entry,
                                                                 categoryId: selected._id,
                                                                 name: selected.name,
-                                                                path: `/shop?category=${selected._id}`,
+                                                                path: isCategoryGrid
+                                                                    ? `/category/${selected.slug || normalizeLabel(selected.name)}`
+                                                                    : `/shop?category=${selected._id}`,
                                                                 image: entry.image || selected.image || entry.image
                                                             };
                                                         }));
@@ -1025,7 +1104,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                 />
                                             </div>
                                         )}
-                                        {!isPremiumCategoryCards && !isCategoryShowcase && sectionId !== 'price-range-showcase' && (
+                                        {!isPremiumCategoryCards && !isCategoryDrivenSection && sectionId !== 'price-range-showcase' && !isLuxuryWithinReach && (
                                             <Input
                                                 label={isMostGiftedHero ? "Hero Title" : sectionId === 'style-it-your-way' ? "Title" : "Name"}
                                                 value={item.name}
@@ -1033,7 +1112,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                 placeholder={isMostGiftedHero ? "Most Gifted Items" : "Name"}
                                             />
                                         )}
-                                        {isCategoryShowcase && (
+                                        {isCategoryDrivenSection && (
                                             <Input
                                                 label="Category Name"
                                                 value={item.name}
@@ -1042,7 +1121,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                 className="bg-gray-50 text-gray-500 cursor-not-allowed"
                                             />
                                         )}
-                                        {sectionId === 'price-range-showcase' && (
+                                        {(sectionId === 'price-range-showcase' || isLuxuryWithinReach) && (
                                             <div className="space-y-2">
                                                 <Input
                                                     label="Max Price (INR)"
@@ -1061,7 +1140,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                             };
                                                         }));
                                                     }}
-                                                    placeholder="999"
+                                                    placeholder={isLuxuryWithinReach ? "1499" : "999"}
                                                 />
                                                 <Input
                                                     label="Display Label"

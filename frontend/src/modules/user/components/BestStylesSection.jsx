@@ -1,110 +1,105 @@
-import React, { useRef, useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { Heart, Star, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useMemo, useRef } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
-
-// Assets
-import bestStylePot1 from '../assets/best_style_pot_1.png';
-import bestStylePot2 from '../assets/best_style_pot_2.png';
-import silverChainDark from '../assets/silver_chain_dark.png';
-import silverBraceletDark from '../assets/silver_bracelet_dark.png';
-import silverEarringsDark from '../assets/silver_earrings_dark.png';
-import silverAnkletDark from '../assets/silver_anklet_dark.png';
 
 import ProductCard from './ProductCard';
 
-const PRODUCTS = [
-    {
-        id: "best-1",
-        name: "Classic Silver Cuban Chain",
-        price: 2499,
-        originalPrice: 4999,
-        rating: 4.9,
-        reviewCount: 1240,
-        image: bestStylePot1,
-        bestseller: true,
-    },
-    {
-        id: "best-2",
-        name: "Elegant Silver Drop Earrings",
-        price: 1899,
-        originalPrice: 3599,
-        rating: 4.8,
-        reviewCount: 856,
-        image: bestStylePot2,
-        bestseller: true,
-    },
-    {
-        id: "best-3",
-        name: "Rustic Silver Signature Ring",
-        price: 1599,
-        originalPrice: 2899,
-        rating: 4.7,
-        reviewCount: 642,
-        image: silverChainDark, 
-        priceDrop: true,
-    },
-    {
-        id: "best-4",
-        name: "Vintage Silver Filigree Band",
-        price: 2199,
-        originalPrice: 4299,
-        rating: 4.8,
-        reviewCount: 312,
-        image: silverBraceletDark, 
-        priceDrop: true,
-    },
-    {
-        id: "best-5",
-        name: "Premium Silver Link Bracelet",
-        price: 3299,
-        originalPrice: 6499,
-        rating: 4.9,
-        reviewCount: 1105,
-        image: silverEarringsDark, 
-        bestseller: true,
-    },
-    {
-        id: "best-6",
-        name: "Minimalist Silver Choker",
-        price: 4599,
-        originalPrice: 8999,
-        rating: 4.7,
-        reviewCount: 432,
-        image: silverAnkletDark,
-        priceDrop: true,
-    }
-];
-
 const BestStylesSection = () => {
     const scrollRef = useRef(null);
-    const { products, activeMetal } = useShop();
+    const { products, activeMetal, homepageSections } = useShop();
+    const section = homepageSections?.['best-styles'];
+    const settings = section?.settings || {};
+    const sectionTitle = settings.title || 'Best styles, now for less!';
+    const ctaLabel = settings.ctaLabel || 'View All Collection';
+    const productLimit = Math.max(1, Number(settings.productLimit) || 6);
 
     const dynamicProducts = useMemo(() => {
-        let goldProds = products.filter(p => 
-            p.metal?.toLowerCase() === 'gold' || 
-            p.material?.toLowerCase() === 'gold' ||
-            p.category?.toLowerCase().includes('gold') ||
-            p.goldCategory
-        );
+        const getEffectivePrice = (product) => {
+            const topLevelCandidates = [
+                product?.finalPrice,
+                product?.price
+            ]
+                .map((value) => Number(value))
+                .filter((value) => Number.isFinite(value) && value > 0);
 
-        let otherProds = products.filter(p => !goldProds.some(gp => gp.id === p.id));
-        let combined = [...goldProds, ...otherProds];
+            if (topLevelCandidates.length > 0) return topLevelCandidates[0];
 
-        let processed = combined.map(p => ({
-            ...p,
-            id: p.id,
-            originalPrice: p.originalPrice || p.price * 1.5,
-            rating: p.rating || 4.5,
-            reviewCount: p.reviewCount || 0,
-            bestseller: p.isTrending || true,
-            priceDrop: p.originalPrice > p.price
-        }));
+            const variantPrices = (product?.variants || [])
+                .map((variant) => Number(variant?.finalPrice ?? variant?.price))
+                .filter((value) => Number.isFinite(value) && value > 0);
+            return variantPrices.length > 0 ? Math.min(...variantPrices) : 0;
+        };
 
-        const uniqueProcessed = processed.filter(p => !PRODUCTS.some(sp => sp.name === p.name));
-        return [...PRODUCTS, ...uniqueProcessed].slice(0, 12);
-    }, [products, activeMetal]);
+        const getOriginalPrice = (product) => {
+            const topLevelCandidates = [
+                product?.originalPrice,
+                product?.mrp
+            ]
+                .map((value) => Number(value))
+                .filter((value) => Number.isFinite(value) && value > 0);
+
+            if (topLevelCandidates.length > 0) return topLevelCandidates[0];
+
+            const variantMrps = (product?.variants || [])
+                .map((variant) => Number(variant?.mrp ?? variant?.price ?? variant?.finalPrice))
+                .filter((value) => Number.isFinite(value) && value > 0);
+            return variantMrps.length > 0 ? Math.max(...variantMrps) : 0;
+        };
+
+        const getDiscountAmount = (product) => {
+            const originalPrice = getOriginalPrice(product);
+            const effectivePrice = getEffectivePrice(product);
+            return Math.max(0, originalPrice - effectivePrice);
+        };
+
+        const getProductMetal = (product) => {
+            const explicitMetal = String(product?.metal || product?.material || '').trim().toLowerCase();
+            if (explicitMetal) return explicitMetal;
+            if (product?.goldCategory) return 'gold';
+            return 'silver';
+        };
+
+        const matchingMetalProducts = products.filter((product) => {
+            if (activeMetal === 'gold') {
+                return getProductMetal(product) === 'gold';
+            }
+            return getProductMetal(product) !== 'gold';
+        });
+
+        return matchingMetalProducts
+            .map((product) => {
+                const price = getEffectivePrice(product);
+                const originalPrice = getOriginalPrice(product);
+                const discountAmount = getDiscountAmount(product);
+                return {
+                    ...product,
+                    id: product.id || product._id,
+                    price,
+                    originalPrice,
+                    rating: Number(product.rating || 4.5),
+                    reviewCount: Number(product.reviewCount ?? product.reviews ?? 0),
+                    priceDrop: discountAmount > 0,
+                    isTrending: Boolean(product.isTrending || product.tags?.isTrending),
+                    discountAmount,
+                    soldCount: Number(product.sold || 0)
+                };
+            })
+            .filter((product) => product.price > 0 && product.originalPrice > product.price)
+            .sort((a, b) => {
+                if (Boolean(b.isTrending) !== Boolean(a.isTrending)) {
+                    return b.isTrending ? 1 : -1;
+                }
+                if (b.discountAmount !== a.discountAmount) {
+                    return b.discountAmount - a.discountAmount;
+                }
+                if (b.soldCount !== a.soldCount) {
+                    return b.soldCount - a.soldCount;
+                }
+                return b.originalPrice - a.originalPrice;
+            })
+            .slice(0, productLimit);
+    }, [activeMetal, productLimit, products]);
 
     const scroll = (direction) => {
         if (scrollRef.current) {
@@ -121,10 +116,10 @@ const BestStylesSection = () => {
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex flex-col md:flex-row md:items-baseline gap-2 md:gap-4">
                         <h2 className="text-[20px] md:text-[24px] font-sans font-medium text-gray-900 tracking-tight">
-                            Best styles, now for less!
+                            {sectionTitle}
                         </h2>
-                        <Link to="/collection/best-styles" className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#8E4A50] hover:underline transition-all">
-                            View All Collection
+                        <Link to="/shop" className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#8E4A50] hover:underline transition-all">
+                            {ctaLabel}
                         </Link>
                     </div>
                     <div className="hidden md:flex gap-2">

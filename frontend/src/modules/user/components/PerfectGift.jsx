@@ -2,23 +2,14 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
 import ProductCard from './ProductCard';
-
-// Import bond category images
 import bondWife from '../../../assets/bond_wife.png';
 import bondHusband from '../../../assets/bond_husband.png';
 import bondMother from '../../../assets/bond_mother.png';
 import bondBrothers from '../../../assets/bond_brothers.png';
 import bondSister from '../../../assets/bond_sister.png';
 import bondFriends from '../../../assets/bond_friends.png';
-
-const recipients = [
-    { id: 'wife', name: "Wife", image: bondWife, path: "/collection/bond/wife" },
-    { id: 'husband', name: "Husband", image: bondHusband, path: "/collection/bond/husband" },
-    { id: 'mother', name: "Mother", image: bondMother, path: "/collection/bond/mother" },
-    { id: 'brothers', name: "Brothers", image: bondBrothers, path: "/collection/bond/brothers" },
-    { id: 'sister', name: "Sister", image: bondSister, path: "/collection/bond/sister" },
-    { id: 'friends', name: "Friends", image: bondFriends, path: "/collection/bond/friends" }
-];
+import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
+import { ensureSilverHomePath } from '../utils/silverHomePaths';
 
 const LEAD_PRODUCTS = [
     { id: 'lp1', name: "Soulmate Silver Band", price: 3499, originalPrice: 4899, image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&q=80&w=800", rating: 4.5, reviewCount: 12 },
@@ -27,9 +18,30 @@ const LEAD_PRODUCTS = [
     { id: 'lp4', name: "Mens Curb Bracelet", price: 5999, originalPrice: 8399, image: "https://images.unsplash.com/photo-1611085583191-a3b1a6a939db?auto=format&fit=crop&q=80&w=800", rating: 4.7, reviewCount: 22 },
 ];
 
+const FALLBACK_RECIPIENTS = [
+    { id: 'wife', name: 'Wife', image: bondWife, path: ensureSilverHomePath('/collection/bond/wife') },
+    { id: 'husband', name: 'Husband', image: bondHusband, path: ensureSilverHomePath('/collection/bond/husband') },
+    { id: 'mother', name: 'Mother', image: bondMother, path: ensureSilverHomePath('/collection/bond/mother') },
+    { id: 'brothers', name: 'Brothers', image: bondBrothers, path: ensureSilverHomePath('/collection/bond/brothers') },
+    { id: 'sister', name: 'Sister', image: bondSister, path: ensureSilverHomePath('/collection/bond/sister') },
+    { id: 'friends', name: 'Friends', image: bondFriends, path: ensureSilverHomePath('/collection/bond/friends') }
+];
+
 const PerfectGift = () => {
-    const { products } = useShop();
+    const { products, homepageSections } = useShop();
     const displayLead = (products && products.length > 0) ? products.slice(0, 4) : LEAD_PRODUCTS;
+    const bondSection = homepageSections['shop-by-bond'];
+    const bondSettings = bondSection?.settings || {};
+    const recipients = (bondSection?.items?.length ? bondSection.items : FALLBACK_RECIPIENTS).map((item, index) => {
+        if (!bondSection?.items?.length) return item;
+        const bondKey = String(item.bondKey || item.id || '').trim().toLowerCase() || `bond-${index + 1}`;
+        return {
+            id: item.itemId || item.id || `bond-${index + 1}`,
+            name: item.name || 'Bond',
+            image: resolveLegacyCmsAsset(item.image, ''),
+            path: ensureSilverHomePath(`/collection/bond/${bondKey}`)
+        };
+    });
 
     return (
         <section className="py-8 md:py-20 bg-white text-black overflow-hidden font-sans border-b border-gray-100">
@@ -38,10 +50,10 @@ const PerfectGift = () => {
                 {/* Section Title */}
                 <div className="text-center mb-10 md:mb-16">
                     <h2 className="text-2xl md:text-5xl font-black text-black tracking-tighter mb-4">
-                        Shop by Bond
+                        {bondSettings.title || 'Shop by Bond'}
                     </h2>
                     <p className="text-gray-400 text-[10px] md:text-sm uppercase tracking-[0.4em] font-bold">
-                        Curated for your loved ones
+                        {bondSettings.subtitle || 'Curated for your loved ones'}
                     </p>
                 </div>
                 

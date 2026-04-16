@@ -207,12 +207,6 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                     onChange={(e) => updateItem(item.id, 'ctaLabel', e.target.value)}
                                     placeholder="Shop Collection"
                                 />
-                                <Input
-                                    label="CTA Link"
-                                    value={item.path || ''}
-                                    onChange={(e) => updateItem(item.id, 'path', e.target.value)}
-                                    placeholder="/shop"
-                                />
                             </div>
                         </div>
 

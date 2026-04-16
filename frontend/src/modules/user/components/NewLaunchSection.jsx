@@ -10,6 +10,7 @@ import newStuds from '../assets/new_launch_studs.png';
 import newBracelets from '../assets/new_launch_bracelets.png';
 import newAnklets from '../assets/new_launch_anklets.png';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
+import { ensureSilverHomePath } from '../utils/silverHomePaths';
 
 const newLaunches = [
     { id: 'earrings', name: "Earrings", image: newEarrings, path: "/shop" },
@@ -22,10 +23,10 @@ const newLaunches = [
 const resolveLaunchPath = (item, fallbackPath = '/shop') => {
     const categoryId = item?.categoryId;
     if (categoryId) {
-        return `/shop?category=${categoryId}`;
+        return ensureSilverHomePath(`/shop?category=${categoryId}`);
     }
-    if (item?.path) return item.path;
-    return fallbackPath;
+    if (item?.path) return ensureSilverHomePath(item.path);
+    return ensureSilverHomePath(fallbackPath);
 };
 
 const NewLaunchSection = () => {
