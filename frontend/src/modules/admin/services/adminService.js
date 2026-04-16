@@ -522,9 +522,8 @@ export const adminService = {
       });
       return res.data?.data?.url || null;
     } catch (err) {
-      const message = err.response?.data?.message || "Image upload failed. Please try again.";
       console.error("Admin section image upload failed:", err);
-      throw new Error(message);
+      return null;
     }
   },
   updateHomepageSection: async (sectionId, data) => {

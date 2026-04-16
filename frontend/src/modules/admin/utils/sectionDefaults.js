@@ -110,44 +110,6 @@ import menSilver from '../../../assets/categories/mensilver.png';
 import rings from '../../../assets/categories/rings.png';
 import earrings from '../../../assets/categories/earrings.png';
 
-// Women Landing Page Specific Assets
-import womenHeroRadiance from '../../user/assets/women_hero_radiance.png';
-import womenOccasionTemple from '../../../assets/occasions/TempleDate.png';
-import womenOccasionGirlOuting from '../../../assets/occasions/GirlOuting.png';
-import womenOccasionDateNight from '../../../assets/occasions/DateNight.png';
-import womenOccasionPartyGlam from '../../../assets/occasions/PartyGlam.png';
-import womenOccasionWedding from '../../../assets/occasions/GotHitched.png';
-
-import womenHueSilver from '../../../assets/hues/silver_woman.png';
-import womenHueGold from '../../../assets/hues/gold_woman.png';
-import womenHueRoseGold from '../../../assets/hues/rosegold_woman.png';
-import womenHueOxidised from '../../../assets/hues/oxidised_woman.png';
-
-import womenCatRings from '../../../assets/women-categories/Rings.png';
-import womenCatEarrings from '../../../assets/women-categories/Earrings.png';
-import womenCatBracelets from '../../../assets/women-categories/Bracelets.png';
-import womenCatPendants from '../../../assets/women-categories/Pendants.png';
-import womenCatChains from '../../../assets/women-categories/Chains.png';
-import womenCatBangles from '../../../assets/women-categories/Bangles.png';
-import womenCatSets from '../../../assets/women-categories/Sets.png';
-import womenCatPersonalised from '../../../assets/women-categories/Personalised.png';
-
-import womenTrendingRings from '../../../assets/trending/RingsStacking.png';
-import womenTrendingCombos from '../../../assets/trending/CuratedCombos.png';
-import womenTrendingChains from '../../../assets/trending/ChainLayering.png';
-import womenTrendingSpiritual from '../../../assets/trending/SpiritualPicks.png';
-
-import womenCuratedSilver from '../../../assets/collections/SilverClassics.png';
-import womenCuratedAstra from '../../../assets/collections/DazzlingRings.png';
-
-const womenCuratedBoho = '/images/collections/BohoAnklets.png';
-const womenCuratedGifts = '/images/collections/GiftsForHer.png';
-const womenCuratedBridal = '/images/collections/BridalBliss.png';
-const womenCuratedOffice = '/images/collections/OfficeChic.png';
-
-import womenPersonalisedPromo from '../../../assets/promos/PersonalisedBannerWine.png';
-import womenFeatureImage from '../../../assets/hero/image.png';
-
 export const PAGE_SECTIONS = [
   { pageKey: 'home', label: 'Home Sections', description: 'Manage the homepage narrative, hero banners, and product storytelling.' },
   { pageKey: 'shop-men', label: 'Shop for Men', description: "Manage the men's landing page banners, categories, and curated merchandising." },
@@ -700,163 +662,41 @@ const shopWomenSections = [
     isActive: true,
     sortOrder: 1,
     items: [
-      { 
-        id: 'women-hero-1', 
-        name: 'For Her', 
-        label: 'Eternal ', 
-        subtitle: 'Diamonds that capture the light and her heart.', 
-        image: womenHeroRadiance, 
-        path: '/shop?category=women', 
-        tag: 'Sands Ornaments Exclusive', 
-        ctaLabel: 'Shop Diamonds',
-        accent: '#FFFFFF',
-        titleItalic: 'Radiance' // Custom field for this specific UI
-      }
-    ]
-  },
-  {
-    pageKey: 'shop-women',
-    sectionKey: 'price-range',
-    sectionType: 'promo-grid',
-    label: 'Curated Price Points',
-    isActive: true,
-    sortOrder: 2,
-    settings: {
-        title: 'Curated Price Points',
-        subtitle: 'Luxury within Reach'
-    },
-    items: [
-        { id: 'under-1299', name: 'Under ₹1299', priceMax: 1299, path: '/shop?category=women&price_max=1299', tag: 'EVERYDAY ESSENTIALS' },
-        { id: 'under-1499', name: 'Under ₹1499', priceMax: 1499, path: '/shop?category=women&price_max=1499', tag: 'ELEGANT CHARMS' },
-        { id: 'under-1999', name: 'Under ₹1999', priceMax: 1999, path: '/shop?category=women&price_max=1999', tag: 'LUXURY STATEMENTS' }
+      { id: 'women-hero-1', name: 'For Her', label: 'Timeless Elegance for Women', subtitle: 'Discover refined silver and gold pieces for modern femininity.', image: womenHeroDefault, path: '/shop?filter=womens', tag: 'Shop for Women', ctaLabel: 'Explore Now' }
     ]
   },
   {
     pageKey: 'shop-women',
     sectionKey: 'product-categories',
     sectionType: 'category-grid',
-    label: 'Standard Categories',
+    label: 'Product Categories',
+    isActive: true,
+    sortOrder: 2,
+    items: [
+      { id: 'women-rings', name: 'Rings', image: womenCategoryDefault, path: '/shop?filter=womens' },
+      { id: 'women-earrings', name: 'Earrings', image: pinkEarrings, path: '/shop?filter=womens' },
+      { id: 'women-pendants', name: 'Pendants', image: promoCoupleRings, path: '/shop?filter=womens' }
+    ]
+  },
+  {
+    pageKey: 'shop-women',
+    sectionKey: 'promo-banners',
+    sectionType: 'promo-grid',
+    label: 'Promo Banners',
     isActive: true,
     sortOrder: 3,
     items: [
-        { id: 'rings', name: 'RINGS', image: womenCatRings, path: '/shop?category=rings' },
-        { id: 'earrings', name: 'EARRINGS', image: womenCatEarrings, path: '/shop?category=earrings' },
-        { id: 'bracelets', name: 'BRACELETS', image: womenCatBracelets, path: '/shop?category=bracelets' },
-        { id: 'pendants', name: 'PENDANTS', image: womenCatPendants, path: '/shop?category=pendants' },
-        { id: 'chains', name: 'CHAINS', image: womenCatChains, path: '/shop?category=chains' },
-        { id: 'bangles', name: 'BANGLES', image: womenCatBangles, path: '/shop?category=bangles' },
-        { id: 'sets', name: 'SETS', image: womenCatSets, path: '/shop?category=sets' },
-        { id: 'personalised', name: 'PERSONALISED', image: womenCatPersonalised, path: '/shop?category=personalised' }
-    ]
-  },
-  {
-    pageKey: 'shop-women',
-    sectionKey: 'trending-grid',
-    sectionType: 'category-grid',
-    label: 'Trending Near You',
-    isActive: true,
-    sortOrder: 4,
-    items: [
-        { id: '1', name: 'Rings Stacking', image: womenTrendingRings, path: '/shop?category=rings', tag: '1' },
-        { id: '2', name: 'Curated Combos', image: womenTrendingCombos, path: '/shop?category=sets', tag: '2' },
-        { id: '3', name: 'Chain Layering', image: womenTrendingChains, path: '/shop?category=chains', tag: '3' },
-        { id: '4', name: 'Spiritual Picks', image: womenTrendingSpiritual, path: '/shop?category=pendants', tag: '4' }
-    ]
-  },
-  {
-    pageKey: 'shop-women',
-    sectionKey: 'curated-collections',
-    sectionType: 'category-grid',
-    label: 'Curated Collections (Marquee)',
-    isActive: true,
-    sortOrder: 5,
-    items: [
-        { id: 'c1', name: '925 Silver Classics', image: womenCuratedSilver, path: '/shop?metal=silver' },
-        { id: 'c2', name: 'Astra Collection', image: womenCuratedAstra, path: '/shop?category=rings' },
-        { id: 'c3', name: 'Boho Anklets', image: womenCuratedBoho, path: '/shop?category=anklets' },
-        { id: 'c4', name: 'Gifts for Her', image: womenCuratedGifts, path: '/shop?sort=random' },
-        { id: 'c5', name: 'Bridal Bliss', image: womenCuratedBridal, path: '/shop?search=bridal' },
-        { id: 'c6', name: 'Office Chic', image: womenCuratedOffice, path: '/shop?search=office' }
-    ]
-  },
-  {
-    pageKey: 'shop-women',
-    sectionKey: 'occasion-carousel',
-    sectionType: 'category-grid',
-    label: 'Shop by Occasion',
-    isActive: true,
-    sortOrder: 6,
-    items: [
-        { id: 'o1', name: 'Temple Date', image: womenOccasionTemple, path: '/shop?occasion=temple-date' },
-        { id: 'o2', name: 'Girl Outing', image: womenOccasionGirlOuting, path: '/shop?occasion=girl-outing' },
-        { id: 'o3', name: 'Date Night', image: womenOccasionDateNight, path: '/shop?occasion=date-night' },
-        { id: 'o4', name: 'Party Glam', image: womenOccasionPartyGlam, path: '/shop?occasion=party-glam' },
-        { id: 'o5', name: 'Got Hitched', image: womenOccasionWedding, path: '/shop?occasion=wedding' }
-    ]
-  },
-  {
-    pageKey: 'shop-women',
-    sectionKey: 'personalised-promo',
-    sectionType: 'banner',
-    label: 'Personalised Promo Banner',
-    isActive: true,
-    sortOrder: 7,
-    items: [
-        { 
-            id: 'p1', 
-            name: 'Personalised', 
-            label: 'Personalised', 
-            subtitle: 'Silver that feels like you', 
-            image: womenPersonalisedPromo, 
-            path: '/shop?category=personalised',
-            tag: 'Exclusive Edit'
-        }
-    ]
-  },
-  {
-    pageKey: 'shop-women',
-    sectionKey: 'women-promos',
-    sectionType: 'promo-grid',
-    label: 'Promotional Banners (Dark Edit)',
-    isActive: true,
-    sortOrder: 8,
-    items: [
-        { id: 'p1', name: 'Couple Rings', subtitle: 'Eternal Bonds in Silver', image: '../../../assets/promos/DarkCoupleRings.png', path: '/shop?category=rings' },
-        { id: 'p2', name: 'Premium Gifts', subtitle: 'Luxury for your Loved Ones', image: '../../../assets/promos/DarkPremiumGifts.png', path: '/shop?products=w1,w2,w3' }
-    ]
-  },
-  {
-    pageKey: 'shop-women',
-    sectionKey: 'discover-hues',
-    sectionType: 'category-grid',
-    label: 'Discover Your Hue',
-    isActive: true,
-    sortOrder: 9,
-    items: [
-        { id: 'h1', name: 'Pure 925 Silver', image: womenHueSilver, path: '/shop?metal=silver' },
-        { id: 'h2', name: 'Gold Plated', image: womenHueGold, path: '/shop?metal=gold' },
-        { id: 'h3', name: 'Rose Gold Plated', image: womenHueRoseGold, path: '/shop?metal=rose-gold' },
-        { id: 'h4', name: 'Oxidised Silver', image: womenHueOxidised, path: '/shop?metal=oxidised-silver' }
-    ]
-  },
-  {
-    pageKey: 'shop-women',
-    sectionKey: 'feature-banner',
-    sectionType: 'banner',
-    label: 'Style Feature Banner',
-    isActive: true,
-    sortOrder: 10,
-    items: [
-        { id: 'f1', name: 'Style Guide', image: womenFeatureImage, path: '/shop' }
+      { id: 'women-promo-1', name: 'Personalised', image: promoPremiumGift, path: '/shop?filter=womens', tag: 'Personalised Picks' },
+      { id: 'women-promo-2', name: 'Occasion Styling', image: trendingCuratedCombos, path: '/shop?filter=womens', tag: 'Occasion Edit' }
     ]
   },
   {
     pageKey: 'shop-women',
     sectionKey: 'products-listing',
     sectionType: 'product-carousel',
-    label: 'Products Listing (Dynamic)',
+    label: 'Products Listing',
     isActive: true,
-    sortOrder: 11,
+    sortOrder: 4,
     items: []
   }
 ];

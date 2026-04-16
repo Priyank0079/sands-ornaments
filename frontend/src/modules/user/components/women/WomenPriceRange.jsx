@@ -30,11 +30,7 @@ const priceRanges = [
     },
 ];
 
-const WomenPriceRange = ({ data }) => {
-    // Falls back to hardcoded priceRanges if no CMS data exists
-    const activeRanges = data?.items?.length > 0 ? data.items : priceRanges;
-    const settings = data?.settings || {};
-
+const WomenPriceRange = () => {
     return (
         <section className="pt-2 pb-2 md:pt-12 md:pb-8 bg-white overflow-hidden">
             <div className="container mx-auto px-4 md:px-8 max-w-[1300px]">
@@ -51,16 +47,14 @@ const WomenPriceRange = ({ data }) => {
                         className="text-[9px] md:text-[11px] font-bold tracking-[0.32em] uppercase mb-1 inline-block px-3 py-0.5 md:py-1 rounded-full bg-[#9B2245]/10"
                         style={{ color: '#9B2245' }}
                     >
-                        {settings.subtitle || "Luxury within Reach"}
+                        Luxury within Reach
                     </span>
-                    <h2 className="text-[13px] md:text-[28px] font-display text-gray-900 tracking-tight">
-                        {settings.title || "Curated Price Points"}
-                    </h2>
+                    <h2 className="text-[13px] md:text-[28px] font-display text-gray-900 tracking-tight">Curated Price Points</h2>
                 </motion.div>
 
                 {/* Responsive Price Cards Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-[0.84fr_1.16fr_0.84fr] gap-2 md:gap-4 items-end">
-                    {activeRanges.map((item, idx) => (
+                    {priceRanges.map((item, idx) => (
                         <motion.div
                             key={item.id}
                             initial={{ opacity: 0, scale: 0.95 }}
@@ -77,7 +71,7 @@ const WomenPriceRange = ({ data }) => {
                                 <div
                                     className="relative flex flex-col items-center justify-center text-center overflow-hidden transition-all duration-700 ease-[0.22, 1, 0.36, 1] group-hover:shadow-[0_45px_100px_-20px_rgba(92,14,37,0.35)]"
                                     style={{
-                                        background: item.image ? `url(${item.image}) center/cover` : 'linear-gradient(135deg, #4A0E1C 0%, #2A0610 50%, #150207 100%)',
+                                        background: 'linear-gradient(135deg, #4A0E1C 0%, #2A0610 50%, #150207 100%)',
                                         borderRadius: '16px',
                                         padding: idx === 1 ? 'clamp(12px, 3.8vw, 40px) 18px' : 'clamp(10px, 3.1vw, 30px) 14px',
                                         minHeight: idx === 1 ? 'clamp(72px, 16vw, 170px)' : 'clamp(60px, 12.5vw, 132px)',

@@ -35,9 +35,8 @@ const hues = [
     }
 ];
 
-const WomenDiscoverHue = ({ data }) => {
+const WomenDiscoverHue = () => {
     const navigate = useNavigate();
-    const activeHues = data?.items?.length > 0 ? data.items : hues;
 
     return (
         <section className="pt-8 pb-4 md:pt-12 md:pb-6 bg-[#FFF9FA] overflow-hidden">
@@ -49,13 +48,13 @@ const WomenDiscoverHue = ({ data }) => {
                         viewport={{ once: true }}
                         className="text-2xl sm:text-3xl md:text-5xl font-serif text-zinc-900 tracking-tight"
                     >
-                        {data?.settings?.title || "Discover Your Hue"}
+                        Discover Your Hue
                     </motion.h2>
                     <div className="w-20 h-1 bg-rose-200 mx-auto rounded-full" />
                 </div>
 
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 pb-10">
-                    {activeHues.map((hue, index) => (
+                    {hues.map((hue, index) => (
                         <motion.div
                             key={hue.id}
                             initial={{ opacity: 0, y: 30 }}
@@ -69,7 +68,7 @@ const WomenDiscoverHue = ({ data }) => {
                             <div className="relative w-full aspect-square rounded-[1.5rem] md:rounded-[2rem] overflow-hidden border-[4px] md:border-[6px] border-white shadow-[0_10px_30px_rgba(255,182,193,0.3)] bg-white transition-all duration-500 group-hover:shadow-[0_20px_40px_rgba(255,182,193,0.5)] group-hover:-translate-y-1.5">
                                 <img
                                     src={hue.image}
-                                    alt={hue.name || hue.title}
+                                    alt={hue.title}
                                     className="w-full h-full object-cover transition-transform duration-[2s] ease-out group-hover:scale-105"
                                 />
                             </div>
@@ -78,7 +77,7 @@ const WomenDiscoverHue = ({ data }) => {
                             <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-[80%] z-20 transform transition-transform duration-300 group-hover:scale-105">
                                 <div className="bg-gradient-to-b from-[#FFE5EC] via-[#FFD1DD] to-[#FFB6C1] py-2.5 md:py-3 rounded-lg md:rounded-xl shadow-md border border-white/40 text-center">
                                     <span className="text-zinc-800 font-black tracking-widest uppercase text-[10px] md:text-xs">
-                                        {hue.name || hue.title}
+                                        {hue.title}
                                     </span>
                                 </div>
                             </div>

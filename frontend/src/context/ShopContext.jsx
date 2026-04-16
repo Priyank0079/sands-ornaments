@@ -772,7 +772,6 @@ export const ShopProvider = ({ children }) => {
                     const mapped = sections.reduce((acc, section) => {
                         acc[section.sectionId] = {
                             id: section.sectionId,
-                            sectionKey: section.sectionKey || section.sectionId,
                             label: section.label,
                             isActive: section.isActive !== false,
                             sortOrder: section.sortOrder || 0,

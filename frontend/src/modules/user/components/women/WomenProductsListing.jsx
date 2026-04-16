@@ -110,18 +110,10 @@ const dummyProducts = [
 const PINK = '#E8638A';
 const PINK_BG = '#FFF0F4';
 
-const WomenProductsListing = ({ data }) => {
+const WomenProductsListing = () => {
     const navigate = useNavigate();
     const { addToCart, products } = useContext(ShopContext);
     const { user } = useAuth();
-    
-    // Resolve products from CMS IDs
-    const cmsProductIds = (data?.items || []).map(item => item.productId).filter(Boolean);
-    const resolvedCmsProducts = products.filter(p => cmsProductIds.includes(p.id) || cmsProductIds.includes(p._id));
-    
-    // Fallback to dummy products if no CMS products are selected
-    const activeProducts = resolvedCmsProducts.length > 0 ? resolvedCmsProducts : dummyProducts;
-    const settings = data?.settings || {};
 
     const redirectToLogin = () => {
         toast.error('Please login to continue');
@@ -161,10 +153,10 @@ const WomenProductsListing = ({ data }) => {
             const mockToCart = {
                 ...product,
                 _id: product.id,
-                price: typeof product.price === 'string' ? parseFloat(product.price.replace(',', '')) : (product.price || 0),
-                originalPrice: typeof product.originalPrice === 'string' ? parseFloat(product.originalPrice.replace(',', '')) : (product.originalPrice || 0),
-                finalPrice: typeof product.discountPrice === 'string' ? parseFloat(product.discountPrice.replace(',', '')) : (product.finalPrice || 0),
-                variants: [{ id: product.id + '-v1', price: typeof product.price === 'string' ? parseFloat(product.price.replace(',', '')) : (product.price || 0) }]
+                price: parseFloat(product.price.replace(',', '')),
+                originalPrice: parseFloat(product.originalPrice.replace(',', '')),
+                finalPrice: parseFloat(product.discountPrice.replace(',', '')),
+                variants: [{ id: product.id + '-v1', price: parseFloat(product.price.replace(',', '')) }]
             };
             addToCart(mockToCart);
         }
@@ -190,9 +182,7 @@ const WomenProductsListing = ({ data }) => {
                         style={{ background: `${PINK}22`, border: `1px solid ${PINK}44` }}
                     >
                         <Sparkles className="w-3.5 h-3.5" style={{ color: PINK }} />
-                        <span className="text-xs font-black uppercase tracking-widest" style={{ color: PINK }}>
-                            {settings.subtitle || "For Her"}
-                        </span>
+                        <span className="text-xs font-black uppercase tracking-widest" style={{ color: PINK }}>For Her</span>
                     </motion.div>
                     <motion.h2
                         initial={{ opacity: 0, y: 20 }}
@@ -201,22 +191,14 @@ const WomenProductsListing = ({ data }) => {
                         transition={{ duration: 0.7, delay: 0.1 }}
                         className="text-3xl sm:text-4xl md:text-5xl font-serif text-zinc-900 tracking-tight mb-3"
                     >
-                        {settings.title ? (
-                            settings.title.split(' ').map((word, i) => (
-                                <span key={i} className={i === 1 ? "italic" : ""} style={i === 1 ? { color: PINK } : {}}>
-                                    {word}{' '}
-                                </span>
-                            ))
-                        ) : (
-                            <>Women's <span className="italic" style={{ color: PINK }}>Exclusives</span></>
-                        )}
+                        Women's <span className="italic" style={{ color: PINK }}>Exclusives</span>
                     </motion.h2>
                     <div className="w-20 h-1 mx-auto rounded-full" style={{ background: PINK }} />
                 </div>
 
                 {/* Product Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
-                    {activeProducts.map((product, idx) => (
+                    {dummyProducts.map((product, idx) => (
                         <motion.div
                             key={product.id}
                             initial={{ opacity: 0, scale: 0.98 }}

@@ -50,9 +50,8 @@ const occasions = [
     }
 ];
 
-const WomenOccasionCarousel = ({ data }) => {
+const WomenOccasionCarousel = () => {
     const navigate = useNavigate();
-    const activeOccasions = data?.items?.length > 0 ? data.items : occasions;
     const [activeIndex, setActiveIndex] = useState(2);
     const [isMobile, setIsMobile] = useState(false);
 
@@ -66,15 +65,15 @@ const WomenOccasionCarousel = ({ data }) => {
     const cardWidth = isMobile ? 120 : 180;
     const gap = isMobile ? 8 : 12;
 
-    const next = () => setActiveIndex((prev) => (prev + 1) % activeOccasions.length);
-    const prev = () => setActiveIndex((prev) => (prev - 1 + activeOccasions.length) % activeOccasions.length);
+    const next = () => setActiveIndex((prev) => (prev + 1) % occasions.length);
+    const prev = () => setActiveIndex((prev) => (prev - 1 + occasions.length) % occasions.length);
 
     return (
         <section className="py-6 md:py-10 bg-[#FBF0F2] overflow-hidden select-none">
             <div className="container mx-auto px-4 max-w-[1200px]">
                 <div className="text-center mb-6 md:mb-10">
                     <h3 className="text-2xl md:text-3xl font-bold text-[#333] tracking-tight font-serif italic" style={{ fontFamily: "'Cinzel', serif" }}>
-                        {data?.settings?.title || "Shop by Occasion"}
+                        Shop by Occasion
                     </h3>
                 </div>
 
@@ -93,7 +92,7 @@ const WomenOccasionCarousel = ({ data }) => {
                             animate={{ x: (2 - activeIndex) * (cardWidth + gap) }}
                             transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
                         >
-                            {activeOccasions.map((item, idx) => {
+                            {occasions.map((item, idx) => {
                                 const isActive = idx === activeIndex;
 
                                 return (
@@ -115,14 +114,14 @@ const WomenOccasionCarousel = ({ data }) => {
                                             else setActiveIndex(idx);
                                         }}
                                     >
-                                        <img src={item.image} alt={item.name || item.title} className="w-full h-full object-cover" />
+                                        <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
                                         
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                                         
                                         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[90%] pointer-events-none">
                                             <div className={`py-1.5 md:py-2.5 rounded-full bg-white/95 text-center shadow-md transition-all duration-500 ${isActive ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
                                                 <span className="text-[10px] md:text-[14px] font-bold text-gray-800 tracking-tight uppercase whitespace-nowrap px-3">
-                                                    {item.name || item.title}
+                                                    {item.title}
                                                 </span>
                                             </div>
                                         </div>

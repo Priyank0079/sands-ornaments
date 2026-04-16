@@ -40,20 +40,18 @@ const trendingCollections = [
     }
 ];
 
-const WomenCategoriesGrid = ({ data }) => {
-    const activeCollections = data?.items?.length > 0 ? data.items : trendingCollections;
-
+const WomenCategoriesGrid = () => {
     return (
         <section className="py-8 md:py-12 px-4 md:px-8 bg-white">
             <div className="max-w-7xl mx-auto">
                 <div className="text-center mb-8">
                     <h2 className="text-3xl md:text-4xl font-serif font-medium text-[#4A3B3F] tracking-tight">
-                        {data?.settings?.title || "Trending Near You"}
+                        Trending Near You
                     </h2>
                 </div>
 
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 lg:gap-8">
-                    {activeCollections.map((item, index) => (
+                    {trendingCollections.map((item, index) => (
                         <motion.div
                             key={item.id}
                             initial={{ opacity: 0, y: 30 }}
@@ -69,7 +67,7 @@ const WomenCategoriesGrid = ({ data }) => {
                             >
                                 <img
                                     src={item.image}
-                                    alt={item.name || item.title}
+                                    alt={item.title}
                                     className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110"
                                 />
                                 
@@ -78,7 +76,7 @@ const WomenCategoriesGrid = ({ data }) => {
                                 
                                 <div className="absolute inset-x-0 bottom-4 md:bottom-8 text-center px-2 md:px-4">
                                     <h4 className="text-white text-[10px] sm:text-lg md:text-2xl font-bold leading-tight px-1 drop-shadow-md uppercase tracking-wider">
-                                        {item.name || item.title}
+                                        {item.title}
                                     </h4>
                                 </div>
                             </Link>
@@ -86,7 +84,7 @@ const WomenCategoriesGrid = ({ data }) => {
                             {/* Large Background Number */}
                             <div className="absolute -left-4 md:-left-12 bottom-2 md:bottom-8 pointer-events-none select-none z-10">
                                 <span className="text-[70px] sm:text-[120px] md:text-[180px] font-black text-white/90 leading-none drop-shadow-[0_10px_10px_rgba(0,0,0,0.1)] transition-transform duration-700 group-hover:scale-110 group-hover:-translate-x-2">
-                                    {item.tag || item.number}
+                                    {item.number}
                                 </span>
                             </div>
                         </motion.div>

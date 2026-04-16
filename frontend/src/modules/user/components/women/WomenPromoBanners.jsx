@@ -26,27 +26,26 @@ const banners = [
     }
 ];
 
-const WomenPromoBanners = ({ data }) => {
+const WomenPromoBanners = () => {
     const navigate = useNavigate();
-    const activeBanners = data?.items?.length > 0 ? data.items : banners;
 
     return (
         <section className="pt-0 pb-6 md:pb-10 bg-white px-4 sm:px-6">
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-10">
-                {activeBanners.map((banner, index) => (
+                {banners.map((banner, index) => (
                     <motion.div
                         key={banner.id}
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: index * 0.2 }}
                         viewport={{ once: true }}
-                        onClick={() => navigate(banner.path || banner.link)}
+                        onClick={() => navigate(banner.link)}
                         className="relative h-[140px] sm:h-[160px] md:h-[200px] rounded-[2rem] md:rounded-[3rem] overflow-hidden cursor-pointer group shadow-2xl bg-zinc-900"
                     >
                         {/* High-Resolution Imagery */}
                         <img 
                             src={banner.image} 
-                            alt={banner.name || banner.title}
+                            alt={banner.title}
                             className="absolute inset-0 w-full h-full object-cover opacity-80 transition-transform duration-[4s] group-hover:scale-110 group-hover:rotate-1"
                         />
                         
@@ -61,10 +60,10 @@ const WomenPromoBanners = ({ data }) => {
                                 transition={{ delay: 0.5 }}
                             >
                                 <span className="inline-block px-2.5 py-0.5 md:px-3 md:py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] text-white mb-2 md:mb-3 shadow-sm">
-                                    {banner.tag || "Exclusive"}
+                                    Exclusive
                                 </span>
                                 <h3 className="text-xl sm:text-2xl md:text-4xl font-serif text-white tracking-tight leading-none mb-1 md:mb-2 transition-colors">
-                                    {banner.name || banner.title}
+                                    {banner.title}
                                 </h3>
                                 <p className="text-zinc-300 text-[10px] sm:text-xs md:text-sm font-medium tracking-wide mb-3 md:mb-5">
                                     {banner.subtitle}
