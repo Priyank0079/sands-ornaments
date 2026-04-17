@@ -12,6 +12,11 @@ import GoldRingCarousel from '../components/GoldRingCarousel';
 import GoldTestimonials from '../components/GoldTestimonials';
 import CuratedForEveryBond from '../components/CuratedForEveryBond';
 import GoldCuratedShowcase from '../components/GoldCuratedShowcase';
+import GoldExclusiveLaunch from '../components/GoldExclusiveLaunch';
+import GoldLifestyleGrid from '../components/GoldLifestyleGrid';
+import GoldShopByColour from '../components/GoldShopByColour';
+import GoldLuxuryWithinReach from '../components/GoldLuxuryWithinReach';
+import GoldDirectProducts from '../components/GoldDirectProducts';
 
 // Hero assets
 import heroGold from '@assets/hero/bridal_royal.png';
@@ -201,12 +206,21 @@ const GoldJewelleryPage = () => {
             <GoldNewLaunchBanner />
 
             {/* ============================================================ */}
+            {/* SECTION 4.5: EXCLUSIVE COLLECTION LAUNCH                     */}
+            {/* ============================================================ */}
+            <GoldExclusiveLaunch />
+
+            {/* ============================================================ */}
             {/* SECTION 5: GET THE RIGHT RING                                 */}
             {/* ============================================================ */}
             <GoldRingCarousel />
+            <GoldShopByColour />
+            <GoldLuxuryWithinReach />
             <GoldTestimonials />
             <CuratedForEveryBond />
             <GoldCuratedShowcase />
+            <GoldLifestyleGrid />
+            <GoldDirectProducts />
         </div>
     );
 };
