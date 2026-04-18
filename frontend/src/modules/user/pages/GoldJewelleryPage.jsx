@@ -48,8 +48,20 @@ const TRUST_BADGES = [
     },
 ];
 
+import Loader from '../../shared/components/Loader';
+
 const GoldJewelleryPage = () => {
     const [shopNowHover, setShopNowHover] = useState(false);
+    const [loading, setLoading] = React.useState(true);
+
+    React.useEffect(() => {
+        window.scrollTo(0, 0);
+        document.title = "Shop Gold Jewellery | Sands Ornaments";
+        const timer = setTimeout(() => setLoading(false), 800);
+        return () => clearTimeout(timer);
+    }, []);
+
+    if (loading) return <Loader />;
 
     return (
         <div className="bg-white min-h-screen font-body">

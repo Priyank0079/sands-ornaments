@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
 import ProductCard from '../components/ProductCard';
 import ProductSkeleton from '../components/ProductSkeleton';
+import Loader from '../../shared/components/Loader';
 import {
     Filter, ChevronDown, ShoppingBag, SlidersHorizontal,
     ArrowLeft, ArrowUpDown
@@ -691,10 +692,8 @@ const Shop = () => {
 
                 {/* Product Grid */}
                 {isLoading ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8 gap-y-8 md:gap-y-12">
-                        {[...Array(8)].map((_, i) => (
-                            <ProductSkeleton key={i} />
-                        ))}
+                    <div className="flex items-center justify-center py-20">
+                        <Loader fullPage={false} />
                     </div>
                 ) : (() => {
                     const isComingSoon = isComingSoonQuery || (selectedCategory !== 'All' && filteredProducts.length === 0);

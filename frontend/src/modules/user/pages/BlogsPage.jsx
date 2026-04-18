@@ -3,6 +3,7 @@ import { Calendar, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../../../services/api';
 import blogFallback from '@assets/trending_heritage.png';
+import Loader from '../../shared/components/Loader';
 
 const stripHtml = (html = '') => html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 const blogFallbackImage = blogFallback;
@@ -35,6 +36,8 @@ const BlogsPage = () => {
     )
   ), [blogs, searchTerm]);
 
+  if (loading) return <Loader />;
+
   return (
     <div className="min-h-screen bg-[#FDF5F6] font-sans pb-20 selection:bg-[#D39A9F] selection:text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 md:pt-14">
@@ -55,12 +58,7 @@ const BlogsPage = () => {
           </div>
         </div>
 
-        {loading ? (
-          <div className="text-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D39A9F] mx-auto mb-4"></div>
-            <p className="text-gray-500 font-medium">Loading articles...</p>
-          </div>
-        ) : filteredBlogs.length > 0 ? (
+        {filteredBlogs.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
             {filteredBlogs.map((blog) => (
               <article key={blog._id} className="bg-white rounded-[2rem] border border-[#3E2723]/8 overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col">
@@ -106,4 +104,3 @@ const BlogsPage = () => {
 };
 
 export default BlogsPage;
-

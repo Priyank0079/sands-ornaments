@@ -10,6 +10,8 @@ import Family3DCarousel from '../components/family/Family3DCarousel';
 import FamilyProductsCatalog from '../components/family/FamilyProductsCatalog';
 import { buildFamilyShopPath, getFamilyRecipientFromSearch, normalizeFamilyRecipient } from '../utils/familyNavigation';
 
+import Loader from '../../shared/components/Loader';
+
 const ShopForFamily = () => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -17,10 +19,13 @@ const ShopForFamily = () => {
     const [selectedRecipient, setSelectedRecipient] = useState(() => (
         normalizeFamilyRecipient(recipientParam || getFamilyRecipientFromSearch(location.search))
     ));
+    const [loading, setLoading] = React.useState(true);
 
     useEffect(() => {
         document.title = "Gifts for Family | Sands Ornaments";
         window.scrollTo(0, 0);
+        const timer = setTimeout(() => setLoading(false), 800);
+        return () => clearTimeout(timer);
     }, []);
 
     useEffect(() => {
@@ -29,6 +34,8 @@ const ShopForFamily = () => {
             setSelectedRecipient(nextRecipient);
         }
     }, [location.search, recipientParam, selectedRecipient]);
+
+    if (loading) return <Loader />;
 
     const handleSelectRecipient = (recipientId) => {
         const normalizedRecipient = normalizeFamilyRecipient(recipientId);

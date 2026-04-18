@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Clock } from 'lucide-react';
 import api from '../../../services/api';
+import Loader from '../../shared/components/Loader';
 
 const DynamicPage = ({ slug: propSlug }) => {
     const { slug: paramSlug } = useParams();
@@ -40,14 +41,7 @@ const DynamicPage = ({ slug: propSlug }) => {
     const updatedAtLabel = page?.lastUpdated || page?.updatedAt || page?.createdAt || null;
     const hasContent = Boolean(String(page?.content || '').trim());
 
-    if (loading) {
-        return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDF5F6]">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3E2723]"></div>
-                <p className="mt-4 text-gray-500 font-medium">Loading...</p>
-            </div>
-        );
-    }
+    if (loading) return <Loader />;
 
     if (!page) {
         return (

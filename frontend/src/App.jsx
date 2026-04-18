@@ -92,11 +92,9 @@ const BondCollectionPage = lazy(() => import('./modules/user/pages/BondCollectio
 const BestStylesPage = lazy(() => import('./modules/user/pages/BestStylesPage'));
 const AdminDashboard = lazy(() => import('./modules/admin/pages/Dashboard'));
 
-const LoadingFallback = () => (
-  <div className="min-h-[60vh] flex items-center justify-center">
-    <div className="w-8 h-8 border-4 border-[#7A2E3A] border-t-transparent rounded-full animate-spin"></div>
-  </div>
-);
+import Loader from './modules/shared/components/Loader';
+
+const LoadingFallback = () => <Loader fullPage={false} />;
 
 const AppContent = () => {
   const location = useLocation();

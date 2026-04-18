@@ -11,11 +11,19 @@ import WomenPersonalisedBanner from '../components/women/WomenPersonalisedBanner
 import WomenPriceRange from '../components/women/WomenPriceRange';
 import WomenFeatureBanner from '../components/women/WomenFeatureBanner';
 
+import Loader from '../../shared/components/Loader';
+
 const ShopForWomen = () => {
+    const [loading, setLoading] = React.useState(true);
+
     useEffect(() => {
         document.title = "Shop Women's Jewellery | Sands Ornaments";
         window.scrollTo(0, 0);
+        const timer = setTimeout(() => setLoading(false), 800);
+        return () => clearTimeout(timer);
     }, []);
+
+    if (loading) return <Loader />;
 
     return (
         <div className="bg-[#FDF5F6] min-h-screen text-black font-sans overflow-x-hidden">

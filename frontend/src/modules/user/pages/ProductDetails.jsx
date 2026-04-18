@@ -9,6 +9,7 @@ import WhyChooseUs from '../components/WhyChooseUs';
 import { Heart, ShoppingBag, Star, Share2, Plus, Minus, Truck, ShieldCheck, Smile, Gift, ChevronDown, SlidersHorizontal, X, Camera, Check, ArrowLeft, ArrowRight, Droplets, Sparkles, Play } from 'lucide-react';
 import { COLLECTION_MOCK_PRODUCTS } from '../data/mockCollectionData';
 import BrandVideo from '@assets/Screen Recording 2026-04-03 142555.mp4';
+import Loader from '../../shared/components/Loader';
 
 // Import model shots (angle 2) for maximum hover impact
 import latestRing from '@assets/latest_drop_ring.png';
@@ -377,11 +378,7 @@ const ProductDetails = () => {
 
 
     if (isLoading || detailLoading) {
-        return (
-            <div className="bg-white min-h-screen flex items-center justify-center">
-                <div className="w-12 h-12 border-4 border-[#D39A9F] border-t-transparent rounded-full animate-spin"></div>
-            </div>
-        );
+        return <Loader />;
     }
 
     if (!product) {

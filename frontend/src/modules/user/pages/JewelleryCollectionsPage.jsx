@@ -19,10 +19,18 @@ import img14k from '@assets/cat_earrings.png';
 import imgSterling from '@assets/silver_earrings_product.png';
 import imgSilver from '@assets/cat_anklets.png';
 
+import Loader from '../../shared/components/Loader';
+
 const JewelleryCollectionsPage = () => {
     const { products, categories, activeMetal } = useShop();
     const [viewLevel, setViewLevel] = useState('CATEGORIES');
     const [selectedCategory, setSelectedCategory] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    React.useEffect(() => {
+        const timer = setTimeout(() => setLoading(false), 800);
+        return () => clearTimeout(timer);
+    }, [activeMetal]);
 
     const goldSubCategories = [
         { id: '24k', name: '24K Gold', description: 'Pure 99.9% Gold', purity: '24k', image: img24k },
@@ -98,6 +106,8 @@ const JewelleryCollectionsPage = () => {
         hidden: { y: 10, opacity: 0 },
         visible: { y: 0, opacity: 1 }
     };
+
+    if (loading) return <Loader />;
 
     return (
         <div className="min-h-screen bg-[#FDF5F6] pt-6 pb-20 px-4 md:px-8 font-body">
