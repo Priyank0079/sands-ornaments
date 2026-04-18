@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { buildWomenShopPath } from '../../utils/womenNavigation';
+import { resolveLegacyCmsAsset } from '../../utils/legacyCmsAssets';
 
 import SilverImg from '@assets/hues/silver_woman.png';
 import GoldImg from '@assets/hues/gold_woman.png';
 import RoseGoldImg from '@assets/hues/rosegold_woman.png';
 import OxidisedImg from '@assets/hues/oxidised_woman.png';
 
-const hues = [
+const fallbackHues = [
     {
         id: 1,
         title: "Pure 925 Silver",
@@ -35,8 +36,37 @@ const hues = [
     }
 ];
 
-const WomenDiscoverHue = () => {
+const parseHueFromPath = (path = '') => {
+    const raw = String(path || '').trim();
+    if (!raw) return '';
+    try {
+        const query = raw.includes('?') ? raw.split('?')[1] : '';
+        const params = new URLSearchParams(query);
+        return String(params.get('metal') || '').trim();
+    } catch {
+        return '';
+    }
+};
+
+const WomenDiscoverHue = ({ sectionData }) => {
     const navigate = useNavigate();
+    const hues = useMemo(() => {
+        const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
+        const normalized = configuredItems
+            .map((item, index) => {
+                const hueKey = item.tag || parseHueFromPath(item.path) || '';
+                return {
+                    id: item.itemId || item.id || `women-hue-${index + 1}`,
+                    title: item.name || item.label || `Hue ${index + 1}`,
+                    image: resolveLegacyCmsAsset(item.image, fallbackHues[index]?.image || ''),
+                    path: item.path || (hueKey ? buildWomenShopPath({ metal: hueKey }) : fallbackHues[index]?.path || buildWomenShopPath())
+                };
+            })
+            .filter((item) => Boolean(item.title) && Boolean(item.image) && Boolean(item.path))
+            .slice(0, 4);
+
+        return normalized.length === 4 ? normalized : fallbackHues;
+    }, [sectionData]);
 
     return (
         <section className="pt-8 pb-4 md:pt-12 md:pb-6 bg-[#FFF9FA] overflow-hidden">
@@ -48,7 +78,7 @@ const WomenDiscoverHue = () => {
                         viewport={{ once: true }}
                         className="text-2xl sm:text-3xl md:text-5xl font-serif text-zinc-900 tracking-tight"
                     >
-                        Discover Your Hue
+                        {sectionData?.label || 'Discover Your Hue'}
                     </motion.h2>
                     <div className="w-20 h-1 bg-rose-200 mx-auto rounded-full" />
                 </div>

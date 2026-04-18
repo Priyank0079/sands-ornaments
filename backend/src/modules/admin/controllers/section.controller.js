@@ -98,6 +98,20 @@ const parsePositiveNumber = (value) => {
   return Number.isFinite(numeric) && numeric > 0 ? numeric : null;
 };
 
+const isObjectIdLike = (value) => /^[a-f\d]{24}$/i.test(String(value || "").trim());
+
+const parseCategoryFromPath = (path = "") => {
+  const raw = String(path || "").trim();
+  if (!raw) return "";
+  try {
+    const query = raw.includes("?") ? raw.split("?")[1] : "";
+    const params = new URLSearchParams(query);
+    return String(params.get("category") || "").trim();
+  } catch {
+    return "";
+  }
+};
+
 const buildCategoryPath = (categoryId, currentPath) => {
   if (categoryId) return `/shop?category=${categoryId}`;
   return currentPath || "/shop";
@@ -118,6 +132,33 @@ const buildMenCuratedCollectionPath = (categoryId, currentPath) => {
 const buildPriceRangePath = (priceMax, currentPath) => {
   if (priceMax) return `/shop?price_max=${priceMax}`;
   return currentPath || "/shop";
+};
+
+const buildWomenCategoryPath = (categoryKey, currentPath) => {
+  const normalized = String(categoryKey || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  if (normalized) {
+    return `/shop?source=women&category=${encodeURIComponent(normalized)}`;
+  }
+
+  return currentPath || "/shop?source=women";
+};
+
+const buildWomenCategoryIdPath = (categoryId, currentPath) => {
+  const normalized = String(categoryId || "").trim();
+  if (normalized) {
+    return `/shop?source=women&filter=womens&category=${encodeURIComponent(normalized)}`;
+  }
+  return currentPath || "/shop?source=women&filter=womens";
+};
+
+const buildWomenPriceRangePath = (priceMax, currentPath) => {
+  if (priceMax) return `/shop?source=women&filter=womens&price_max=${priceMax}`;
+  return currentPath || "/shop?source=women&filter=womens";
 };
 
 const buildCategoryLimitPath = (categoryId, limit, sort, currentPath) => {
@@ -285,11 +326,210 @@ const sanitizeSectionPayload = (identity, payload = {}) => {
           price: String(priceMax),
           name,
           label: item.label || name,
-          path: buildPriceRangePath(priceMax, item.path),
+          path: pageKey === "shop-women"
+            ? buildWomenPriceRangePath(priceMax, item.path)
+            : buildPriceRangePath(priceMax, item.path),
           sortOrder: item.sortOrder ?? idx
         };
       })
       .filter((item) => Boolean(item.priceMax));
+  }
+
+  if (sectionKey === "product-categories" && pageKey === "shop-women") {
+    cleaned.items = cleaned.items
+      .map((item, idx) => {
+        const label = String(item.name || item.label || "").trim();
+        if (!label || !item.image) {
+          return null;
+        }
+
+        return {
+          ...item,
+          name: label,
+          label: item.label || label,
+          path: item.path || buildWomenCategoryPath(label, item.path),
+          sortOrder: item.sortOrder ?? idx
+        };
+      })
+      .filter(Boolean);
+  }
+
+  if (sectionKey === "categories-grid" && pageKey === "shop-women") {
+    cleaned.items = cleaned.items
+      .map((item, idx) => {
+        const rawCategory = String(item.categoryId || "").trim()
+          || parseCategoryFromPath(item.path)
+          || slugifyLabel(item.name || item.label || "");
+        const categoryId = isObjectIdLike(rawCategory) ? rawCategory : null;
+        const pathCategory = categoryId || rawCategory;
+        const label = String(item.name || item.label || "").trim();
+        if (!pathCategory || !item.image) return null;
+        return {
+          ...item,
+          categoryId: categoryId || undefined,
+          name: label || `Collection ${idx + 1}`,
+          label: item.label || label || `Collection ${idx + 1}`,
+          path: buildWomenCategoryIdPath(pathCategory, item.path),
+          sortOrder: item.sortOrder ?? idx
+        };
+      })
+      .filter(Boolean)
+      .slice(0, 4);
+  }
+
+  if (sectionKey === "curated-collections" && pageKey === "shop-women") {
+    cleaned.items = cleaned.items
+      .map((item, idx) => {
+        const rawCategory = String(item.categoryId || "").trim()
+          || parseCategoryFromPath(item.path)
+          || slugifyLabel(item.name || item.label || "");
+        const categoryId = isObjectIdLike(rawCategory) ? rawCategory : null;
+        const pathCategory = categoryId || rawCategory;
+        const label = String(item.name || item.label || "").trim();
+        if (!pathCategory || !item.image) return null;
+        return {
+          ...item,
+          categoryId: categoryId || undefined,
+          name: label || `Collection ${idx + 1}`,
+          label: item.label || label || `Collection ${idx + 1}`,
+          path: buildWomenCategoryIdPath(pathCategory, item.path),
+          sortOrder: item.sortOrder ?? idx
+        };
+      })
+      .filter(Boolean);
+  }
+
+  if (sectionKey === "occasion-carousel" && pageKey === "shop-women") {
+    cleaned.items = cleaned.items
+      .map((item, idx) => {
+        const rawCategory = String(item.categoryId || "").trim()
+          || parseCategoryFromPath(item.path)
+          || slugifyLabel(item.name || item.label || "");
+        const categoryId = isObjectIdLike(rawCategory) ? rawCategory : null;
+        const pathCategory = categoryId || rawCategory;
+        const label = String(item.name || item.label || "").trim();
+        if (!pathCategory || !item.image || !label) return null;
+        return {
+          ...item,
+          categoryId: categoryId || undefined,
+          name: label,
+          label: item.label || label,
+          path: buildWomenCategoryIdPath(pathCategory, item.path),
+          sortOrder: item.sortOrder ?? idx
+        };
+      })
+      .filter(Boolean);
+  }
+
+  if (sectionKey === "personalized-banner" && pageKey === "shop-women") {
+    const sourceItem = cleaned.items[0];
+    const rawCategory = String(sourceItem?.categoryId || "").trim()
+      || parseCategoryFromPath(sourceItem?.path || "")
+      || "personalised";
+    const categoryId = isObjectIdLike(rawCategory) ? rawCategory : null;
+    const pathCategory = categoryId || rawCategory;
+
+    cleaned.items = sourceItem
+      ? [{
+          ...sourceItem,
+          categoryId: categoryId || undefined,
+          name: String(sourceItem.name || sourceItem.tag || "Exclusive Edit").trim() || "Exclusive Edit",
+          label: String(sourceItem.label || sourceItem.name || "Personalised").trim() || "Personalised",
+          subtitle: sourceItem.subtitle || sourceItem.description || "Silver that feels like you",
+          description: sourceItem.description || sourceItem.subtitle || "Silver that feels like you",
+          ctaLabel: sourceItem.ctaLabel || "Explore",
+          path: buildWomenCategoryIdPath(pathCategory, sourceItem.path),
+          sortOrder: 0
+        }].filter((item) => Boolean(item.image))
+      : [];
+  }
+
+  if (sectionKey === "discover-hue" && pageKey === "shop-women") {
+    cleaned.items = cleaned.items
+      .map((item, idx) => {
+        const rawCategory = String(item.categoryId || "").trim()
+          || parseCategoryFromPath(item.path)
+          || slugifyLabel(item.name || item.label || "");
+        const categoryId = isObjectIdLike(rawCategory) ? rawCategory : null;
+        const pathCategory = categoryId || rawCategory;
+        const label = String(item.name || item.label || "").trim() || `Hue ${idx + 1}`;
+        if (!item.image) return null;
+        return {
+          ...item,
+          categoryId: categoryId || undefined,
+          name: label,
+          label: item.label || label,
+          tag: String(item.tag || "").trim(),
+          path: pathCategory ? buildWomenCategoryIdPath(pathCategory, item.path) : (item.path || "/shop?source=women&filter=womens"),
+          sortOrder: item.sortOrder ?? idx
+        };
+      })
+      .filter(Boolean)
+      .slice(0, 4);
+  }
+
+  if (sectionKey === "promo-banners" && pageKey === "shop-women") {
+    cleaned.items = cleaned.items
+      .map((item, idx) => {
+        const label = String(item.name || item.label || "").trim();
+        const subtitle = String(item.subtitle || item.description || "").trim();
+        const rawCategory = String(item.categoryId || "").trim()
+          || parseCategoryFromPath(item.path)
+          || slugifyLabel(label);
+        const categoryId = isObjectIdLike(rawCategory) ? rawCategory : null;
+        const pathCategory = categoryId || rawCategory;
+
+        if (!label || !subtitle || !item.image) return null;
+
+        return {
+          ...item,
+          categoryId: categoryId || undefined,
+          name: label,
+          label: item.label || label,
+          subtitle,
+          description: item.description || subtitle,
+          tag: item.tag || "Exclusive",
+          ctaLabel: item.ctaLabel || "Shop Now",
+          path: pathCategory ? buildWomenCategoryIdPath(pathCategory, item.path) : (item.path || "/shop?source=women&filter=womens"),
+          sortOrder: item.sortOrder ?? idx
+        };
+      })
+      .filter(Boolean)
+      .slice(0, 2);
+  }
+
+  if (sectionKey === "products-listing" && pageKey === "shop-women") {
+    const sourceModeCandidate = String(cleaned.settings?.sourceMode || "").trim().toLowerCase();
+    const sourceMode = sourceModeCandidate === "manual" ? "manual" : "category";
+    const productLimit = parsePositiveNumber(cleaned.settings?.productLimit) || 8;
+    const categoryId = String(cleaned.settings?.categoryId || "").trim() || null;
+
+    const manualProductIds = normalizeObjectIdList(
+      cleaned.items.flatMap((item) => [
+        item.productId,
+        ...(Array.isArray(item.productIds) ? item.productIds : [])
+      ])
+    );
+
+    cleaned.settings = {
+      ...cleaned.settings,
+      title: String(cleaned.settings?.title || "Women's Exclusives").trim() || "Women's Exclusives",
+      productLimit,
+      sourceMode,
+      categoryId: sourceMode === "category" ? categoryId : null,
+      ctaLabel: String(cleaned.settings?.ctaLabel || "Explore All Women's Jewellery").trim()
+        || "Explore All Women's Jewellery"
+    };
+
+    cleaned.items = sourceMode === "manual"
+      ? manualProductIds.map((productId, idx) => ({
+          itemId: `women-featured-${idx + 1}`,
+          type: "product",
+          productId,
+          path: "/shop?source=women&filter=womens",
+          sortOrder: idx
+        }))
+      : [];
   }
 
   if (sectionKey === "latest-drop" || sectionKey === "most-gifted") {

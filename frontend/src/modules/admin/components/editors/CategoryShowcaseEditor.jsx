@@ -5,6 +5,7 @@ import { Input } from '../common/FormControls';
 import { adminService } from '../../services/adminService';
 import toast from 'react-hot-toast';
 import ProductBrowserModal from './ProductBrowserModal';
+import { resolveLegacyCmsAsset } from '../../../user/utils/legacyCmsAssets';
 
 // Import default assets
 import catPendant from '../../../user/assets/cat_pendant_wine.png';
@@ -17,11 +18,22 @@ import catChain from '../../../user/assets/cat_chain_wine.png';
 const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     const navigate = useNavigate();
     const sectionId = sectionData?.sectionKey || sectionData?.id || 'category-showcase';
+    const sectionPageKey = sectionData?.pageKey || (String(sectionData?.sectionId || '').startsWith('shop-women:') ? 'shop-women' : '');
+    const isShopWomenSection = sectionPageKey === 'shop-women';
+    const isFixedWomenPriceRange = sectionId === 'price-range-showcase' && isShopWomenSection;
+    const isWomenTrendingGrid = sectionId === 'categories-grid' && isShopWomenSection;
+    const isWomenCuratedCollections = sectionId === 'curated-collections' && isShopWomenSection;
+    const isWomenOccasionCarousel = sectionId === 'occasion-carousel' && isShopWomenSection;
+    const isWomenDiscoverHue = sectionId === 'discover-hue' && isShopWomenSection;
+    const isWomenPromoBanners = sectionId === 'promo-banners' && isShopWomenSection;
+    const isWomenCategoryLinkedSection = isWomenTrendingGrid || isWomenOccasionCarousel;
     const isCategoryShowcase = sectionId === 'category-showcase' || sectionData?.sectionType === 'category-showcase';
     const isCategoryGrid = sectionId === 'category-grid' || sectionData?.sectionType === 'category-grid';
     const isLuxuryWithinReach = sectionId === 'luxury-within-reach';
     const isCategoryDrivenSection = isCategoryShowcase || isCategoryGrid;
     const isPremiumCategoryCards = sectionId === 'premium-category-cards';
+    const isFixedWomenDiscoverHue = isWomenDiscoverHue;
+    const isFixedWomenPromoBanners = isWomenPromoBanners;
     const defaultMostGiftedHero = defaultItems.find(item => item?.type === 'hero') || {
         id: 'hero',
         type: 'hero',
@@ -100,6 +112,37 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         }
         return null;
     };
+
+    const buildPriceRangePath = (priceMax) => {
+        if (!priceMax) return '/shop';
+        if (isFixedWomenPriceRange) {
+            return `/shop?source=women&filter=womens&price_max=${priceMax}`;
+        }
+        return `/shop?price_max=${priceMax}`;
+    };
+
+    const buildWomenCategoryPath = (categoryId, currentPath = '') => {
+        if (categoryId) return `/shop?source=women&filter=womens&category=${encodeURIComponent(categoryId)}`;
+        return currentPath || '/shop?source=women&filter=womens';
+    };
+
+    const fixedWomenPriceDefaults = [
+        { id: 'women-under-1299', priceMax: 1299, tag: 'EVERYDAY ESSENTIALS' },
+        { id: 'women-under-1499', priceMax: 1499, tag: 'ELEGANT CHARMS' },
+        { id: 'women-under-1999', priceMax: 1999, tag: 'LUXURY STATEMENTS' }
+    ];
+
+    const fixedWomenHueDefaults = [
+        { id: 'women-hue-1', name: 'Pure 925 Silver' },
+        { id: 'women-hue-2', name: 'Gold Plated' },
+        { id: 'women-hue-3', name: 'Rose Gold Plated' },
+        { id: 'women-hue-4', name: 'Oxidised Silver' }
+    ];
+
+    const fixedWomenPromoDefaults = [
+        { id: 'women-promo-1', name: 'Couple Rings', subtitle: 'Eternal Bonds in Silver', tag: 'Exclusive', ctaLabel: 'Shop Now' },
+        { id: 'women-promo-2', name: 'Premium Gifts', subtitle: 'Luxury for your Loved Ones', tag: 'Exclusive', ctaLabel: 'Shop Now' }
+    ];
 
     const parseLimitValue = (value) => {
         if (value === undefined || value === null) return null;
@@ -188,7 +231,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     }, [initialItemsFromProps, sectionId]);
 
     useEffect(() => {
-        if (!isCategoryDrivenSection || categories.length === 0) return;
+        if (!isCategoryDrivenSection || isWomenCuratedCollections || categories.length === 0) return;
         setItems(prev => prev.map(item => {
             if (item.categoryId) return item;
             const resolved = getCategoryFromItem(item);
@@ -196,15 +239,45 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             return {
                 ...item,
                 categoryId: resolved._id,
-                name: resolved.name,
-                path: isCategoryGrid
-                    ? `/category/${resolved.slug || normalizeLabel(resolved.name)}`
+                name: isWomenCategoryLinkedSection ? (item.name || resolved.name) : resolved.name,
+                path: isWomenCategoryLinkedSection
+                    ? buildWomenCategoryPath(resolved._id, item.path)
+                    : isCategoryGrid
+                        ? `/category/${resolved.slug || normalizeLabel(resolved.name)}`
                     : `/shop?category=${resolved._id}`,
                 image: item.image || resolved.image || item.image,
                 hoverImage: item.hoverImage || ''
             };
         }));
-    }, [categories, isCategoryDrivenSection, isCategoryGrid]);
+    }, [categories, isCategoryDrivenSection, isCategoryGrid, isWomenCategoryLinkedSection, isWomenCuratedCollections]);
+
+    useEffect(() => {
+        if (!isWomenCuratedCollections || categories.length === 0) return;
+        setItems(prev => prev.map(item => {
+            const resolved = getCategoryFromItem(item) || inferWomenCategoryByHint(item);
+            if (!resolved) return item;
+            return {
+                ...item,
+                categoryId: resolved._id,
+                path: buildWomenCategoryPath(resolved._id, item.path),
+                name: item.name || resolved.name
+            };
+        }));
+    }, [categories, isWomenCuratedCollections]);
+
+    useEffect(() => {
+        if (!isWomenTrendingGrid || categories.length === 0) return;
+        setItems(prev => prev.map(item => {
+            const resolved = getCategoryFromItem(item) || inferWomenCategoryByHint(item);
+            if (!resolved) return item;
+            return {
+                ...item,
+                categoryId: resolved._id,
+                path: buildWomenCategoryPath(resolved._id, item.path),
+                name: item.name || resolved.name
+            };
+        }));
+    }, [categories, isWomenTrendingGrid]);
 
     useEffect(() => {
         if (sectionId !== 'price-range-showcase' && !isLuxuryWithinReach) return;
@@ -215,10 +288,66 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                 ...item,
                 priceMax,
                 name: `Under INR ${priceMax}`,
-                path: `/shop?price_max=${priceMax}`
+                path: buildPriceRangePath(priceMax)
             };
         }));
-    }, [sectionId, isLuxuryWithinReach]);
+    }, [sectionId, isLuxuryWithinReach, isShopWomenSection, isFixedWomenPriceRange]);
+
+    useEffect(() => {
+        if (!isFixedWomenPriceRange) return;
+        setItems(prev => fixedWomenPriceDefaults.map((fallback, index) => {
+            const current = prev[index] || {};
+            const priceMax = getPriceMaxFromItem(current) || fallback.priceMax;
+            return {
+                ...current,
+                id: current.id || current.itemId || fallback.id,
+                priceMax,
+                price: String(priceMax),
+                name: `Under INR ${priceMax}`,
+                label: `Under INR ${priceMax}`,
+                path: buildPriceRangePath(priceMax),
+                tag: current.tag || fallback.tag
+            };
+        }));
+    }, [isFixedWomenPriceRange]);
+
+    useEffect(() => {
+        if (!isFixedWomenDiscoverHue) return;
+        setItems(prev => fixedWomenHueDefaults.map((fallback, index) => {
+            const current = prev[index] || {};
+            const resolvedCategory = getCategoryFromItem(current) || inferWomenCategoryByHint(current);
+            const categoryId = resolvedCategory?._id || current.categoryId || '';
+            return {
+                ...current,
+                id: current.id || current.itemId || fallback.id,
+                name: current.name || fallback.name,
+                label: current.label || current.name || fallback.name,
+                categoryId: categoryId || current.categoryId,
+                path: categoryId ? buildWomenCategoryPath(categoryId, current.path) : (current.path || '/shop?source=women&filter=womens')
+            };
+        }));
+    }, [categories, isFixedWomenDiscoverHue]);
+
+    useEffect(() => {
+        if (!isFixedWomenPromoBanners) return;
+        setItems(prev => fixedWomenPromoDefaults.map((fallback, index) => {
+            const current = prev[index] || {};
+            const resolvedCategory = getCategoryFromItem(current) || inferWomenCategoryByHint(current);
+            const categoryId = resolvedCategory?._id || current.categoryId || '';
+            return {
+                ...current,
+                id: current.id || current.itemId || fallback.id,
+                name: current.name || fallback.name,
+                label: current.label || current.name || fallback.name,
+                subtitle: current.subtitle || current.description || fallback.subtitle,
+                description: current.description || current.subtitle || fallback.subtitle,
+                tag: current.tag || fallback.tag,
+                ctaLabel: current.ctaLabel || fallback.ctaLabel,
+                categoryId: categoryId || current.categoryId,
+                path: categoryId ? buildWomenCategoryPath(categoryId, current.path) : (current.path || '/shop?source=women&filter=womens')
+            };
+        }));
+    }, [categories, isFixedWomenPromoBanners]);
 
     useEffect(() => {
         if (sectionId !== 'latest-drop') return;
@@ -357,6 +486,9 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     };
 
     const addItem = () => {
+        if (isFixedWomenDiscoverHue || isFixedWomenPromoBanners) {
+            return;
+        }
         const newItem = {
             id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
             name: isCategoryDrivenSection ? '' : 'New Item',
@@ -368,13 +500,14 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             ...(sectionId === 'most-gifted' ? { categoryId: '' } : {}),
             ...(sectionId === 'proposal-rings' ? { categoryId: '' } : {}),
             ...(sectionId === 'new-launch' ? { categoryId: '' } : {}),
+            ...(isWomenCuratedCollections ? { categoryId: '' } : {}),
             ...(sectionId === 'curated-for-you' ? { limit: 12, productIds: [] } : {}),
             ...(sectionId === 'style-it-your-way' ? { limit: 12, productIds: [] } : {})
         };
         const nextItems = [...items, newItem];
         setItems(nextItems);
         setEditingId(newItem.id);
-        if (!isCategoryDrivenSection && sectionId !== 'price-range-showcase' && !isLuxuryWithinReach && sectionId !== 'new-launch' && sectionId !== 'latest-drop' && sectionId !== 'most-gifted' && sectionId !== 'proposal-rings') {
+        if (!isCategoryDrivenSection && !isWomenCuratedCollections && sectionId !== 'price-range-showcase' && !isLuxuryWithinReach && sectionId !== 'new-launch' && sectionId !== 'latest-drop' && sectionId !== 'most-gifted' && sectionId !== 'proposal-rings') {
             handleSave(nextItems);
         }
     };
@@ -506,6 +639,36 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         return getCategoryFromPath(item.path);
     };
 
+    const inferWomenCategoryByHint = (item) => {
+        if (!item || categories.length === 0) return null;
+        const blob = `${item?.name || ''} ${item?.label || ''} ${item?.path || ''}`.toLowerCase();
+        const hintMap = [
+            { keys: ['ring', 'rings', 'stack'], token: 'ring' },
+            { keys: ['earring', 'earrings', 'office'], token: 'earring' },
+            { keys: ['chain', 'layering', 'layer'], token: 'chain' },
+            { keys: ['pendant', 'spiritual', 'gift'], token: 'pendant' },
+            { keys: ['set', 'combo', 'bridal', 'date night'], token: 'set' },
+            { keys: ['anklet', 'boho'], token: 'anklet' },
+            { keys: ['bangle'], token: 'bangle' },
+            { keys: ['bracelet'], token: 'bracelet' },
+            { keys: ['temple'], token: 'pendant' },
+            { keys: ['outing', 'girl outing'], token: 'earring' },
+            { keys: ['party', 'glam'], token: 'chain' },
+            { keys: ['wedding', 'hitched'], token: 'anklet' }
+        ];
+
+        for (const hint of hintMap) {
+            if (!hint.keys.some((k) => blob.includes(k))) continue;
+            const found = categories.find((cat) => {
+                const name = String(cat?.name || '').toLowerCase();
+                const slug = String(cat?.slug || cat?.path || '').toLowerCase();
+                return name.includes(hint.token) || slug.includes(hint.token);
+            });
+            if (found) return found;
+        }
+        return null;
+    };
+
     const canPreserveLegacyCategoryGridItem = (item) => {
         if (!item || getCategoryFromItem(item)) return false;
         const hasLegacyCategoryPath = typeof item.path === 'string'
@@ -552,6 +715,58 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             await onSave({ items: normalizedItems });
             return;
         }
+        if (isFixedWomenDiscoverHue) {
+            const normalizedItems = fixedWomenHueDefaults.map((fallback, index) => {
+                const current = nextItems[index] || {};
+                const category = getCategoryFromItem(current) || inferWomenCategoryByHint(current);
+                const resolvedCategoryId = category?._id || current.categoryId || '';
+                return {
+                    ...current,
+                    id: current.id || current.itemId || fallback.id,
+                    name: current.name || fallback.name,
+                    label: current.label || current.name || fallback.name,
+                    categoryId: resolvedCategoryId || undefined,
+                    path: resolvedCategoryId
+                        ? buildWomenCategoryPath(resolvedCategoryId, current.path)
+                        : (current.path || '/shop?source=women&filter=womens')
+                };
+            });
+            const missing = normalizedItems.filter((item) => !(item.name || '').trim() || !item.image);
+            if (missing.length > 0) {
+                toast.error('Each hue card needs title and image before saving.');
+                return;
+            }
+            await onSave({ items: normalizedItems });
+            return;
+        }
+        if (isFixedWomenPromoBanners) {
+            const normalizedItems = fixedWomenPromoDefaults.map((fallback, index) => {
+                const current = nextItems[index] || {};
+                const category = getCategoryFromItem(current) || inferWomenCategoryByHint(current);
+                const resolvedCategoryId = category?._id || current.categoryId || '';
+                return {
+                    ...current,
+                    id: current.id || current.itemId || fallback.id,
+                    name: current.name || fallback.name,
+                    label: current.label || current.name || fallback.name,
+                    subtitle: current.subtitle || current.description || fallback.subtitle,
+                    description: current.description || current.subtitle || fallback.subtitle,
+                    tag: current.tag || fallback.tag,
+                    ctaLabel: current.ctaLabel || fallback.ctaLabel,
+                    categoryId: resolvedCategoryId || undefined,
+                    path: resolvedCategoryId
+                        ? buildWomenCategoryPath(resolvedCategoryId, current.path)
+                        : (current.path || '/shop?source=women&filter=womens')
+                };
+            });
+            const missing = normalizedItems.filter((item) => !(item.name || '').trim() || !(item.subtitle || '').trim() || !item.image);
+            if (missing.length > 0) {
+                toast.error('Each promo banner needs title, subtitle, and image before saving.');
+                return;
+            }
+            await onSave({ items: normalizedItems });
+            return;
+        }
         if (isCategoryShowcase) {
             const missing = nextItems.filter(item => !getCategoryFromItem(item));
             if (missing.length > 0) {
@@ -573,15 +788,15 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             await onSave({ items: normalizedItems });
             return;
         }
-        if (isCategoryGrid) {
-            const missing = nextItems.filter(item => !getCategoryFromItem(item) && !canPreserveLegacyCategoryGridItem(item));
+        if (isCategoryGrid && !isWomenCuratedCollections) {
+            const missing = nextItems.filter(item => !(getCategoryFromItem(item) || inferWomenCategoryByHint(item)) && !canPreserveLegacyCategoryGridItem(item));
             if (missing.length > 0) {
                 const labels = missing.map(item => item.name || item.label || `Item ${item.id}`).join(', ');
                 toast.error(`Select a category for each item before saving. Missing: ${labels}`);
                 return;
             }
-            const normalizedItems = nextItems.map((item) => {
-                const category = getCategoryFromItem(item);
+            let normalizedItems = nextItems.map((item) => {
+                const category = getCategoryFromItem(item) || inferWomenCategoryByHint(item);
                 if (!category) {
                     return {
                         ...item,
@@ -593,10 +808,36 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                 return {
                     ...item,
                     categoryId: category._id,
-                    name: category.name,
-                    label: category.name,
-                    path: `/category/${category.slug || normalizeLabel(category.name)}`,
+                    name: isWomenCategoryLinkedSection ? (item.name || category.name) : category.name,
+                    label: isWomenCategoryLinkedSection ? (item.label || item.name || category.name) : category.name,
+                    path: isWomenCategoryLinkedSection
+                        ? buildWomenCategoryPath(category._id, item.path)
+                        : `/category/${category.slug || normalizeLabel(category.name)}`,
                     image: item.image || category.image || item.image
+                };
+            });
+            if (isWomenTrendingGrid) {
+                normalizedItems = normalizedItems.slice(0, 4);
+            }
+            await onSave({ items: normalizedItems });
+            return;
+        }
+        if (isWomenCuratedCollections) {
+            const missing = nextItems.filter(item => !(getCategoryFromItem(item) || inferWomenCategoryByHint(item)));
+            if (missing.length > 0) {
+                const labels = missing.map(item => item.name || item.label || `Item ${item.id}`).join(', ');
+                toast.error(`Select a category for each item before saving. Missing: ${labels}`);
+                return;
+            }
+            const normalizedItems = nextItems.map((item) => {
+                const category = getCategoryFromItem(item) || inferWomenCategoryByHint(item);
+                return {
+                    ...item,
+                    categoryId: category?._id || item.categoryId || null,
+                    name: item.name || category?.name || '',
+                    label: item.label || item.name || category?.name || '',
+                    path: buildWomenCategoryPath(category?._id || item.categoryId, item.path),
+                    image: item.image || category?.image || item.image
                 };
             });
             await onSave({ items: normalizedItems });
@@ -619,10 +860,28 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                     price: String(priceMax),
                     name: `Under INR ${priceMax}`,
                     label: `Under INR ${priceMax}`,
-                    path: `/shop?price_max=${priceMax}`
+                    path: buildPriceRangePath(priceMax)
                 };
-            }).slice(0, isLuxuryWithinReach ? 2 : nextItems.length);
-            await onSave({ items: normalizedItems });
+            });
+
+            let constrainedItems = normalizedItems.slice(0, isLuxuryWithinReach ? 2 : nextItems.length);
+            if (isFixedWomenPriceRange) {
+                constrainedItems = fixedWomenPriceDefaults.map((fallback, index) => {
+                    const current = constrainedItems[index] || {};
+                    const priceMax = getPriceMaxFromItem(current) || fallback.priceMax;
+                    return {
+                        ...current,
+                        id: current.id || current.itemId || fallback.id,
+                        priceMax,
+                        price: String(priceMax),
+                        name: `Under INR ${priceMax}`,
+                        label: `Under INR ${priceMax}`,
+                        path: buildPriceRangePath(priceMax),
+                        tag: current.tag || fallback.tag
+                    };
+                });
+            }
+            await onSave({ items: constrainedItems });
             return;
         }
         if (sectionId === 'perfect-gift') {
@@ -906,10 +1165,18 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                             ? 'These three cards stay fixed. You can update only their images to keep navigation consistent.'
                             : isLuxuryWithinReach
                                 ? 'These two cards stay fixed. You can update only their prices to keep this section consistent.'
+                            : isFixedWomenPriceRange
+                                ? 'These three cards stay fixed. Update only max price and badge; images and card count are locked.'
+                            : isWomenTrendingGrid
+                                ? 'These four cards stay fixed. Update image/title/category only to preserve layout.'
+                            : isFixedWomenDiscoverHue
+                                ? 'These four hue cards stay fixed. Update title, hue type, and image only.'
+                            : isFixedWomenPromoBanners
+                                ? 'These two promo banners stay fixed. Update content and destination only.'
                             : 'Add, edit, or remove items in this section'}
                     </p>
                 </div>
-                {!isPremiumCategoryCards && !isLuxuryWithinReach && sectionId !== 'proposal-rings' && (
+                {!isPremiumCategoryCards && !isLuxuryWithinReach && !isFixedWomenPriceRange && !isWomenTrendingGrid && !isFixedWomenDiscoverHue && !isFixedWomenPromoBanners && sectionId !== 'proposal-rings' && (
                     <button
                         onClick={addItem}
                         className="flex items-center gap-2 bg-[#3E2723] text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-[#2b1b18] transition-colors"
@@ -932,7 +1199,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                     {isMostGiftedHero ? 'Hero Card' : `Item #${index + 1}`}
                                 </span>
                                 <div className="flex gap-2">
-                                    {isEditing && !isPremiumCategoryCards && !isLuxuryWithinReach && !isMostGiftedHero && sectionId !== 'proposal-rings' && (
+                                    {isEditing && !isPremiumCategoryCards && !isLuxuryWithinReach && !isFixedWomenPriceRange && !isWomenTrendingGrid && !isFixedWomenDiscoverHue && !isFixedWomenPromoBanners && !isMostGiftedHero && sectionId !== 'proposal-rings' && (
                                         <button
                                             onClick={() => removeItem(item.id)}
                                             className="p-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
@@ -960,11 +1227,11 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                 /* EDIT MODE */
                                 <div className="space-y-4">
                                     {/* Main Image */}
-                                    {!isLuxuryWithinReach && (
+                                    {!isLuxuryWithinReach && !isFixedWomenPriceRange && (
                                     <div className="aspect-square bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center overflow-hidden relative group/img">
                                         {item.image ? (
                                             <>
-                                                <img src={item.image} alt="" className="w-full h-full object-cover" />
+                                                <img src={resolveLegacyCmsAsset(item.image, item.image)} alt="" className="w-full h-full object-cover" />
                                                 <button onClick={() => handleItemChange(item.id, 'image', '')} className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity">
                                                     <Trash2 size={14} />
                                                 </button>
@@ -1009,7 +1276,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                     )}
 
                                     {/* Select Product Button (skip for locked premium cards and structured sections) */}
-                                    {!isPremiumCategoryCards && !isCategoryDrivenSection && sectionId !== 'price-range-showcase' && !isLuxuryWithinReach && sectionId !== 'nav-gifts-for' && sectionId !== 'nav-occasions' && sectionId !== 'perfect-gift' && sectionId !== 'new-launch' && sectionId !== 'latest-drop' && sectionId !== 'most-gifted' && sectionId !== 'proposal-rings' && sectionId !== 'curated-for-you' && sectionId !== 'style-it-your-way' && (
+                                    {!isPremiumCategoryCards && !isCategoryDrivenSection && !isWomenCuratedCollections && !isFixedWomenDiscoverHue && !isFixedWomenPromoBanners && sectionId !== 'price-range-showcase' && !isLuxuryWithinReach && sectionId !== 'nav-gifts-for' && sectionId !== 'nav-occasions' && sectionId !== 'perfect-gift' && sectionId !== 'new-launch' && sectionId !== 'latest-drop' && sectionId !== 'most-gifted' && sectionId !== 'proposal-rings' && sectionId !== 'curated-for-you' && sectionId !== 'style-it-your-way' && (
                                         <button
                                             onClick={() => handleRedirectToSelect(item.id)}
                                             className="w-full py-2 bg-gray-50 text-gray-600 text-[10px] font-bold rounded-lg border border-gray-200 hover:bg-gray-100 flex items-center justify-center gap-2 uppercase tracking-widest"
@@ -1026,7 +1293,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                 <p className="mt-1 text-xs text-gray-500">{item.path}</p>
                                             </div>
                                         )}
-                                        {isCategoryDrivenSection && (
+                                        {isCategoryDrivenSection && !isWomenCuratedCollections && (
                                             <div>
                                                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Category</label>
                                                 <select
@@ -1039,10 +1306,42 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                             return {
                                                                 ...entry,
                                                                 categoryId: selected._id,
-                                                                name: selected.name,
+                                                                name: isWomenCategoryLinkedSection ? (entry.name || selected.name) : selected.name,
                                                                 path: isCategoryGrid
-                                                                    ? `/category/${selected.slug || normalizeLabel(selected.name)}`
+                                                                    ? (isWomenCategoryLinkedSection
+                                                                        ? buildWomenCategoryPath(selected._id, entry.path)
+                                                                        : `/category/${selected.slug || normalizeLabel(selected.name)}`)
                                                                     : `/shop?category=${selected._id}`,
+                                                                image: entry.image || selected.image || entry.image
+                                                            };
+                                                        }));
+                                                    }}
+                                                    className="w-full bg-white border border-gray-200 rounded-lg py-2 px-3 text-xs focus:outline-none focus:border-[#3E2723] focus:ring-1 focus:ring-[#3E2723]/20"
+                                                >
+                                                    <option value="">Select Category</option>
+                                                    {categories.map(cat => (
+                                                        <option key={cat._id} value={cat._id}>
+                                                            {cat.name}{cat.isActive === false ? ' (Inactive)' : ''}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        )}
+                                        {isWomenCuratedCollections && (
+                                            <div>
+                                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Category</label>
+                                                <select
+                                                    value={getCategoryFromItem(item)?._id || ''}
+                                                    onChange={(e) => {
+                                                        const selected = categories.find(c => String(c._id) === String(e.target.value));
+                                                        if (!selected) return;
+                                                        setItems(prev => prev.map(entry => {
+                                                            if (entry.id !== item.id) return entry;
+                                                            return {
+                                                                ...entry,
+                                                                categoryId: selected._id,
+                                                                name: entry.name || selected.name,
+                                                                path: buildWomenCategoryPath(selected._id, entry.path),
                                                                 image: entry.image || selected.image || entry.image
                                                             };
                                                         }));
@@ -1205,15 +1504,85 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                 />
                                             </div>
                                         )}
-                                        {!isPremiumCategoryCards && !isCategoryDrivenSection && sectionId !== 'price-range-showcase' && !isLuxuryWithinReach && (
+                                        {!isPremiumCategoryCards && (!isCategoryDrivenSection || isWomenCategoryLinkedSection || isFixedWomenDiscoverHue || isFixedWomenPromoBanners) && sectionId !== 'price-range-showcase' && !isLuxuryWithinReach && (
                                             <Input
-                                                label={isMostGiftedHero ? "Hero Title" : sectionId === 'style-it-your-way' ? "Title" : "Name"}
+                                                label={isMostGiftedHero ? "Hero Title" : sectionId === 'style-it-your-way' ? "Title" : isWomenCuratedCollections ? "Card Title" : "Name"}
                                                 value={item.name}
                                                 onChange={(e) => handleItemChange(item.id, 'name', e.target.value)}
-                                                placeholder={isMostGiftedHero ? "Most Gifted Items" : "Name"}
+                                                placeholder={isMostGiftedHero ? "Most Gifted Items" : isWomenCuratedCollections ? "Boho Anklets" : "Name"}
                                             />
                                         )}
-                                        {isCategoryDrivenSection && (
+                                        {isFixedWomenDiscoverHue && (
+                                            <div>
+                                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Category</label>
+                                                <select
+                                                    value={getCategoryFromItem(item)?._id || ''}
+                                                    onChange={(e) => {
+                                                        const selected = categories.find(c => String(c._id) === String(e.target.value));
+                                                        if (!selected) return;
+                                                        setItems(prev => prev.map(entry => {
+                                                            if (entry.id !== item.id) return entry;
+                                                            return {
+                                                                ...entry,
+                                                                categoryId: selected._id,
+                                                                path: buildWomenCategoryPath(selected._id, entry.path)
+                                                            };
+                                                        }));
+                                                    }}
+                                                    className="w-full bg-white border border-gray-200 rounded-lg py-2 px-3 text-xs focus:outline-none focus:border-[#3E2723] focus:ring-1 focus:ring-[#3E2723]/20"
+                                                >
+                                                    <option value="">Select Category</option>
+                                                    {categories.map(cat => (
+                                                        <option key={cat._id} value={cat._id}>
+                                                            {cat.name}{cat.isActive === false ? ' (Inactive)' : ''}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        )}
+                                        {isFixedWomenPromoBanners && (
+                                            <>
+                                                <Input
+                                                    label="Subtitle"
+                                                    value={item.subtitle || ''}
+                                                    onChange={(e) => handleItemChange(item.id, 'subtitle', e.target.value)}
+                                                    placeholder="Luxury for your Loved Ones"
+                                                />
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Category</label>
+                                                    <select
+                                                        value={getCategoryFromItem(item)?._id || ''}
+                                                        onChange={(e) => {
+                                                            const selected = categories.find(c => String(c._id) === String(e.target.value));
+                                                            if (!selected) return;
+                                                            setItems(prev => prev.map(entry => {
+                                                                if (entry.id !== item.id) return entry;
+                                                                return {
+                                                                    ...entry,
+                                                                    categoryId: selected._id,
+                                                                    path: buildWomenCategoryPath(selected._id, entry.path)
+                                                                };
+                                                            }));
+                                                        }}
+                                                        className="w-full bg-white border border-gray-200 rounded-lg py-2 px-3 text-xs focus:outline-none focus:border-[#3E2723] focus:ring-1 focus:ring-[#3E2723]/20"
+                                                    >
+                                                        <option value="">Select Category</option>
+                                                        {categories.map(cat => (
+                                                            <option key={cat._id} value={cat._id}>
+                                                                {cat.name}{cat.isActive === false ? ' (Inactive)' : ''}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                <Input
+                                                    label="Button Label"
+                                                    value={item.ctaLabel || ''}
+                                                    onChange={(e) => handleItemChange(item.id, 'ctaLabel', e.target.value)}
+                                                    placeholder="Shop Now"
+                                                />
+                                            </>
+                                        )}
+                                        {isCategoryDrivenSection && !isWomenCategoryLinkedSection && (
                                             <Input
                                                 label="Category Name"
                                                 value={item.name}
@@ -1294,7 +1663,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                 </button>
                                             </div>
                                         )}
-                                        {!isPremiumCategoryCards && (
+                                        {!isPremiumCategoryCards && !isFixedWomenDiscoverHue && (
                                             <Input
                                                 label={isMostGiftedHero ? "Eyebrow" : sectionId === 'style-it-your-way' ? "Subtitle" : "Badge"}
                                                 value={item.tag}
@@ -1326,7 +1695,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                         <div key={i} className="flex-1 aspect-square rounded-lg border border-dashed border-gray-300 relative group/mini overflow-hidden bg-gray-50">
                                                             {item.extraImages?.[i] ? (
                                                                 <>
-                                                                    <img src={item.extraImages[i]} className="w-full h-full object-cover" alt="" />
+                                                                    <img src={resolveLegacyCmsAsset(item.extraImages[i], item.extraImages[i])} className="w-full h-full object-cover" alt="" />
                                                                     <button onClick={() => handleItemChange(item.id, `extraImage_${i}`, '')} className="absolute inset-0 bg-red-500/20 opacity-0 group-hover/mini:opacity-100 flex items-center justify-center">
                                                                         <Trash2 size={12} className="text-white bg-red-500 p-1 rounded-full shadow-lg" />
                                                                     </button>
@@ -1350,13 +1719,13 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                     {sectionId === 'style-it-your-way' ? (
                                         <div className="space-y-4">
                                             <div className="aspect-[16/9] md:aspect-[4/3] rounded-xl bg-gray-100 overflow-hidden relative shadow-sm border border-gray-100">
-                                                <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                                                <img src={resolveLegacyCmsAsset(item.image, item.image)} alt={item.name} className="w-full h-full object-cover" />
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                                             </div>
                                             <div className="flex gap-2 justify-end">
                                                 {(item.extraImages || ['', '', '']).map((img, i) => (
                                                     <div key={i} className="w-10 h-10 md:w-16 md:h-16 rounded-lg bg-gray-50 border border-gray-100 overflow-hidden shadow-sm">
-                                                        {img && <img src={img} alt="" className="w-full h-full object-cover" />}
+                                                        {img && <img src={resolveLegacyCmsAsset(img, img)} alt="" className="w-full h-full object-cover" />}
                                                     </div>
                                                 ))}
                                             </div>
@@ -1367,12 +1736,28 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                         </div>
                                     ) : (
                                         <>
-                                            <div className="aspect-square rounded-lg bg-gray-100 overflow-hidden relative">
-                                                <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                                            </div>
-                                            <div className="text-center">
-                                                <h3 className="font-bold text-gray-800 text-sm">{item.name}</h3>
-                                            </div>
+                                            {isFixedWomenPriceRange ? (
+                                                <div
+                                                    className="rounded-lg px-3 py-5 text-center"
+                                                    style={{
+                                                        background: 'linear-gradient(135deg, #4A0E1C 0%, #2A0610 50%, #150207 100%)',
+                                                        border: '1px solid rgba(255,255,255,0.05)'
+                                                    }}
+                                                >
+                                                    <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-white/60">Under</p>
+                                                    <h3 className="mt-1 text-white font-bold text-2xl leading-none">₹{getPriceMaxFromItem(item) || item.priceMax || ''}</h3>
+                                                    <p className="mt-2 text-[10px] font-bold tracking-[0.12em] uppercase text-[#EBCDD0]">{item.tag || ''}</p>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <div className="aspect-square rounded-lg bg-gray-100 overflow-hidden relative">
+                                                        <img src={resolveLegacyCmsAsset(item.image, item.image)} alt={item.name} className="w-full h-full object-cover" />
+                                                    </div>
+                                                    <div className="text-center">
+                                                        <h3 className="font-bold text-gray-800 text-sm">{item.name}</h3>
+                                                    </div>
+                                                </>
+                                            )}
                                         </>
                                     )}
                                 </div>

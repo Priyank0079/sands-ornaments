@@ -323,25 +323,38 @@ const Shop = () => {
             result = result.filter(p => matchesCategory(p, selectedCategory, selectedCat));
         }
 
+        const normalizeToken = (value) => String(value || '')
+            .trim()
+            .toLowerCase()
+            .replace(/['"]/g, '')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+
         // 2.1 Apply Audience/Occasion Text Filters (if present)
         const filterTerm = effectiveFilterQuery || occasionQuery;
         if (filterTerm) {
-            const normalize = (value) => String(value || '')
-                .trim()
-                .toLowerCase()
-                .replace(/['"]/g, '')
-                .replace(/[^a-z0-9]+/g, '-')
-                .replace(/^-+|-+$/g, '');
-            const term = normalize(filterTerm);
+            const term = normalizeToken(filterTerm);
             const matchesNavTags = (product) => {
-                const giftTags = (product.navGiftsFor || []).map(t => normalize(t));
-                const occasionTags = (product.navOccasions || []).map(t => normalize(t));
+                const giftTags = (product.navGiftsFor || []).map(t => normalizeToken(t));
+                const occasionTags = (product.navOccasions || []).map(t => normalizeToken(t));
                 if (effectiveFilterQuery) return giftTags.includes(term);
                 if (occasionQuery) return occasionTags.includes(term);
                 return false;
             };
 
             result = result.filter(matchesNavTags);
+        }
+
+        if (isWomenFlow && !effectiveFilterQuery) {
+            const womenAudienceTokens = new Set([
+                'women', 'womens', 'female', 'ladies', 'lady', 'girl', 'girls',
+                'wife', 'wives', 'girlfriend', 'girlfriends',
+                'sister', 'sisters', 'mother', 'mothers', 'daughter', 'daughters'
+            ]);
+            result = result.filter((product) => {
+                const giftTags = (product.navGiftsFor || []).map((tag) => normalizeToken(tag));
+                return giftTags.some((tag) => womenAudienceTokens.has(tag));
+            });
         }
 
         if (searchQuery) {

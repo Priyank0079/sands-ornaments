@@ -3,6 +3,7 @@ import { Image as ImageIcon, Plus, Save, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { adminService } from '../../services/adminService';
 import { FormSection, Input } from '../common/FormControls';
+import { resolveLegacyCmsAsset } from '../../../user/utils/legacyCmsAssets';
 
 const createBannerItem = () => ({
     id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
@@ -17,9 +18,14 @@ const createBannerItem = () => ({
 });
 
 const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
+    const sectionKey = sectionData?.sectionKey || sectionData?.id || '';
+    const pageKey = sectionData?.pageKey || '';
+    const isSingleBannerSection = sectionKey === 'personalized-banner' && pageKey === 'shop-women';
+
     const initialItems = useMemo(() => {
         if (Array.isArray(sectionData?.items) && sectionData.items.length > 0) {
-            return sectionData.items.map((item, index) => ({
+            const sourceItems = isSingleBannerSection ? sectionData.items.slice(0, 1) : sectionData.items;
+            return sourceItems.map((item, index) => ({
                 id: item.itemId || item.id || `${Date.now()}_${index}`,
                 ...item,
                 sortOrder: item.sortOrder ?? index,
@@ -29,7 +35,8 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         }
 
         if (Array.isArray(defaultItems) && defaultItems.length > 0) {
-            return defaultItems.map((item, index) => ({
+            const sourceItems = isSingleBannerSection ? defaultItems.slice(0, 1) : defaultItems;
+            return sourceItems.map((item, index) => ({
                 id: item.itemId || item.id || `${Date.now()}_${index}`,
                 ...item,
                 sortOrder: item.sortOrder ?? index,
@@ -39,7 +46,7 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         }
 
         return [createBannerItem()];
-    }, [defaultItems, sectionData?.items]);
+    }, [defaultItems, isSingleBannerSection, sectionData?.items]);
 
     const [items, setItems] = useState(initialItems);
     const [settings, setSettings] = useState({
@@ -74,6 +81,7 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     };
 
     const addBanner = () => {
+        if (isSingleBannerSection) return;
         setItems((prev) => ([
             ...prev,
             {
@@ -84,6 +92,7 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     };
 
     const removeBanner = (id) => {
+        if (isSingleBannerSection) return;
         const nextItems = items
             .filter((item) => item.id !== id)
             .map((item, index) => ({ ...item, sortOrder: index }));
@@ -119,19 +128,21 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
 
     return (
         <div className="space-y-6">
-            <FormSection title="Banner Section Settings">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Input
-                        label="Autoplay Interval (ms)"
-                        type="number"
-                        min="1000"
-                        step="500"
-                        value={settings.autoplayMs}
-                        onChange={(e) => setSettings((prev) => ({ ...prev, autoplayMs: e.target.value }))}
-                        placeholder="3000"
-                    />
-                </div>
-            </FormSection>
+            {!isSingleBannerSection && (
+                <FormSection title="Banner Section Settings">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <Input
+                            label="Autoplay Interval (ms)"
+                            type="number"
+                            min="1000"
+                            step="500"
+                            value={settings.autoplayMs}
+                            onChange={(e) => setSettings((prev) => ({ ...prev, autoplayMs: e.target.value }))}
+                            placeholder="3000"
+                        />
+                    </div>
+                </FormSection>
+            )}
 
             <div className="grid grid-cols-1 gap-6">
                 {items.map((item, index) => (
@@ -146,7 +157,11 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                 </label>
                                 <div className="relative aspect-[4/5] rounded-2xl border border-dashed border-gray-300 bg-[#F8F5F2] overflow-hidden">
                                     {item.image ? (
-                                        <img src={item.image} alt={item.label || `Banner ${index + 1}`} className="w-full h-full object-cover" />
+                                        <img
+                                            src={resolveLegacyCmsAsset(item.image, item.image)}
+                                            alt={item.label || `Banner ${index + 1}`}
+                                            className="w-full h-full object-cover"
+                                        />
                                     ) : (
                                         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-gray-400">
                                             <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center">
@@ -214,28 +229,32 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                             <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest">
                                 Banner {index + 1} of {items.length}
                             </div>
-                            <button
-                                type="button"
-                                onClick={() => removeBanner(item.id)}
-                                className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-3 py-2 text-[11px] font-bold uppercase tracking-widest text-red-500 hover:bg-red-50 transition-all"
-                            >
-                                <Trash2 size={14} />
-                                Remove
-                            </button>
+                            {!isSingleBannerSection && (
+                                <button
+                                    type="button"
+                                    onClick={() => removeBanner(item.id)}
+                                    className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-3 py-2 text-[11px] font-bold uppercase tracking-widest text-red-500 hover:bg-red-50 transition-all"
+                                >
+                                    <Trash2 size={14} />
+                                    Remove
+                                </button>
+                            )}
                         </div>
                     </FormSection>
                 ))}
             </div>
 
             <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-                <button
-                    type="button"
-                    onClick={addBanner}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#3E2723]/15 bg-white px-4 py-3 text-xs font-bold uppercase tracking-widest text-[#3E2723] hover:bg-[#F8F5F2] transition-all"
-                >
-                    <Plus size={14} />
-                    Add Banner
-                </button>
+                {!isSingleBannerSection && (
+                    <button
+                        type="button"
+                        onClick={addBanner}
+                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#3E2723]/15 bg-white px-4 py-3 text-xs font-bold uppercase tracking-widest text-[#3E2723] hover:bg-[#F8F5F2] transition-all"
+                    >
+                        <Plus size={14} />
+                        Add Banner
+                    </button>
+                )}
 
                 <button
                     type="button"

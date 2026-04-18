@@ -1,177 +1,232 @@
-import React, { useContext } from 'react';
+import React, { useContext, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, Star, ShoppingBag, Sparkles } from 'lucide-react';
+import { Heart, Sparkles, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ShopContext } from '../../../../context/ShopContext';
 import { useAuth } from '../../../../context/AuthContext';
-import { getWomenLoginRedirect, storeWomenPendingCartItem } from '../../utils/womenNavigation';
+import { buildWomenShopPath, getWomenLoginRedirect, storeWomenPendingCartItem } from '../../utils/womenNavigation';
 import toast from 'react-hot-toast';
 
-import prod1 from '@assets/prod_ring_main.png';
-import prod2 from '@assets/cat_earrings.png';
-import prod3 from '@assets/cat_rings.png';
-import prod4 from '@assets/cat_bracelets.png';
-import prod5 from '@assets/new_launch_anklets.png';
-import prod6 from '@assets/premium_ring_product.png';
-import prod7 from '@assets/trending_modern.png';
-import prod8 from '@assets/cat_chain_wine.png';
+const WOMEN_AUDIENCE_TOKENS = new Set([
+    'women', 'womens', 'woman', 'female', 'lady', 'ladies', 'girl', 'girls',
+    'wife', 'wives', 'mother', 'mothers', 'sister', 'sisters',
+    'daughter', 'daughters', 'bride', 'brides', 'her', 'for-her'
+]);
 
-const dummyProducts = [
-    {
-        id: 'w1',
-        name: "Rose Glow Sterling Drop Earrings",
-        price: "1,899",
-        originalPrice: "3,299",
-        discountPrice: "1,699",
-        image: prod2,
-        rating: 4.8,
-        reviews: 245,
-        badge: "Trending",
-    },
-    {
-        id: 'w2',
-        name: "Eternal Blossom Pendant Necklace",
-        price: "2,499",
-        originalPrice: "4,199",
-        discountPrice: "2,249",
-        image: prod7,
-        rating: 4.9,
-        reviews: 180,
-        badge: "Bestseller",
-    },
-    {
-        id: 'w3',
-        name: "Infinite Love Stackable Silver Ring",
-        price: "1,299",
-        originalPrice: "2,499",
-        discountPrice: "1,169",
-        image: prod1,
-        rating: 4.6,
-        reviews: 92,
-        badge: "New",
-    },
-    {
-        id: 'w4',
-        name: "Shimmering Triple-Link Bracelet",
-        price: "3,199",
-        originalPrice: "5,800",
-        discountPrice: "2,879",
-        image: prod4,
-        rating: 4.7,
-        reviews: 156,
-        badge: "Exclusive",
-    },
-    {
-        id: 'w5',
-        name: "Crystal Starlight Silver Anklet",
-        price: "1,499",
-        originalPrice: "2,699",
-        discountPrice: "1,349",
-        image: prod5,
-        rating: 4.5,
-        reviews: 64,
-        badge: "Trending",
-    },
-    {
-        id: 'w6',
-        name: "Serene Moissanite Solitaire Ring",
-        price: "4,599",
-        originalPrice: "7,999",
-        discountPrice: "4,139",
-        image: prod6,
-        rating: 5.0,
-        reviews: 310,
-        badge: "Eco-Lux",
-    },
-    {
-        id: 'w7',
-        name: "Layered Gold-Dip Zodiac Necklace",
-        price: "2,799",
-        originalPrice: "4,500",
-        discountPrice: "2,519",
-        image: prod7,
-        rating: 4.4,
-        reviews: 87,
-        badge: "New",
-    },
-    {
-        id: 'w8',
-        name: "Classic 925 Sterling Rope Chain",
-        price: "2,199",
-        originalPrice: "3,800",
-        discountPrice: "1,979",
-        image: prod8,
-        rating: 4.7,
-        reviews: 115,
-        badge: "Luxury",
+const MEN_AUDIENCE_TOKENS = new Set([
+    'men', 'mens', 'man', 'male',
+    'husband', 'husbands', 'brother', 'brothers',
+    'boyfriend', 'boyfriends', 'groom', 'father', 'fathers', 'dad'
+]);
+
+const normalizeToken = (value = '') => String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/['"]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+const parsePositiveNumber = (value, fallback = 8) => {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+    return parsed;
+};
+
+const parseCategoryFromPath = (path = '') => {
+    const source = String(path || '');
+    if (!source.includes('category=')) return '';
+    const raw = source.split('category=')[1]?.split('&')[0] || '';
+    try {
+        return decodeURIComponent(raw).trim();
+    } catch {
+        return raw.trim();
     }
-];
+};
+
+const getProductPrice = (product = {}) => {
+    const topLevel = [
+        product.finalPrice,
+        product.price,
+        product.originalPrice,
+        product.mrp
+    ]
+        .map((value) => Number(value))
+        .find((value) => Number.isFinite(value) && value > 0);
+    if (topLevel) return topLevel;
+
+    const variantPrices = (product.variants || [])
+        .map((variant) => Number(variant.finalPrice ?? variant.price ?? variant.mrp ?? 0))
+        .filter((value) => Number.isFinite(value) && value > 0);
+    if (variantPrices.length > 0) return Math.min(...variantPrices);
+
+    return 0;
+};
+
+const getProductOriginalPrice = (product = {}) => {
+    const variantMrps = (product.variants || [])
+        .map((variant) => Number(variant.mrp ?? variant.originalPrice ?? 0))
+        .filter((value) => Number.isFinite(value) && value > 0);
+    if (variantMrps.length > 0) return Math.max(...variantMrps);
+
+    const fallback = Number(product.originalPrice ?? product.mrp ?? 0);
+    return Number.isFinite(fallback) && fallback > 0 ? fallback : getProductPrice(product);
+};
+
+const formatMoney = (value) => {
+    const numeric = Number(value || 0);
+    return `\u20B9${numeric.toLocaleString('en-IN')}`;
+};
+
+const productCreatedAt = (product = {}) => {
+    const ts = product.createdAt || product.updatedAt || '';
+    const date = ts ? new Date(ts).getTime() : 0;
+    if (date) return date;
+    const id = String(product._id || product.id || '');
+    return id ? parseInt(id.substring(0, 8), 16) || 0 : 0;
+};
+
+const normalizeIdValue = (value) => {
+    if (!value) return '';
+    if (typeof value === 'string') return value.trim();
+    if (typeof value === 'object') {
+        return String(value._id || value.id || '').trim();
+    }
+    return String(value).trim();
+};
+
+const matchesCategory = (product = {}, categoryId = '') => {
+    const target = normalizeToken(categoryId);
+    if (!target) return true;
+    const categoryTokens = new Set([
+        normalizeToken(product.categoryId),
+        normalizeToken(product.category),
+        normalizeToken(product.categorySlug),
+        ...((product.navShopByCategory || []).map((id) => normalizeToken(id)))
+    ].filter(Boolean));
+    return categoryTokens.has(target);
+};
+
+const isWomenProduct = (product = {}) => {
+    const tags = (product.navGiftsFor || []).map(normalizeToken).filter(Boolean);
+    if (tags.some((token) => WOMEN_AUDIENCE_TOKENS.has(token))) return true;
+    if (tags.some((token) => MEN_AUDIENCE_TOKENS.has(token))) return false;
+
+    const text = normalizeToken([
+        product.name,
+        product.category,
+        product.categorySlug
+    ].filter(Boolean).join(' '));
+
+    if (text.includes('women') || text.includes('female') || text.includes('lady') || text.includes('girl') || text.includes('bridal')) {
+        return true;
+    }
+    if (text.includes('men') || text.includes('male')) {
+        return false;
+    }
+
+    return true;
+};
 
 const PINK = '#E8638A';
 const PINK_BG = '#FFF0F4';
 
-const WomenProductsListing = () => {
+const WomenProductsListing = ({ sectionData = null }) => {
     const navigate = useNavigate();
     const { addToCart, products } = useContext(ShopContext);
     const { user } = useAuth();
+
+    const resolvedSettings = useMemo(() => {
+        const settings = sectionData?.settings || {};
+        const sourceMode = settings.sourceMode === 'manual' ? 'manual' : 'category';
+        const categoryFromPath = parseCategoryFromPath(sectionData?.items?.[0]?.path);
+        const categoryId = String(settings.categoryId || categoryFromPath || '').trim();
+
+        return {
+            title: String(settings.title || "Women's Exclusives").trim() || "Women's Exclusives",
+            productLimit: parsePositiveNumber(settings.productLimit, 8),
+            sourceMode,
+            categoryId,
+            ctaLabel: String(settings.ctaLabel || "Explore All Women's Jewellery").trim() || "Explore All Women's Jewellery"
+        };
+    }, [sectionData]);
+
+    const displayedProducts = useMemo(() => {
+        const allProducts = Array.isArray(products) ? products : [];
+        const womenProducts = allProducts.filter(isWomenProduct);
+        const sortedByLatest = [...womenProducts].sort((a, b) => productCreatedAt(b) - productCreatedAt(a));
+
+        if (resolvedSettings.sourceMode === 'manual') {
+            const pinnedIds = (sectionData?.items || [])
+                .flatMap((item) => {
+                    const list = [];
+                    const primaryId = normalizeIdValue(item?.productId);
+                    if (primaryId) list.push(primaryId);
+                    if (Array.isArray(item?.productIds)) {
+                        list.push(...item.productIds.map((id) => normalizeIdValue(id)).filter(Boolean));
+                    }
+                    return list;
+                })
+                .filter(Boolean);
+
+            // In manual mode, admin-picked items must render exactly as selected.
+            // Do not apply women audience filtering here, otherwise selected products can disappear.
+            const pinnedMap = new Map(allProducts.map((product) => [String(product.id || product._id), product]));
+            return pinnedIds
+                .map((id) => pinnedMap.get(String(id)))
+                .filter(Boolean)
+                .slice(0, resolvedSettings.productLimit);
+        }
+
+        const categoryFiltered = resolvedSettings.categoryId
+            ? sortedByLatest.filter((product) => matchesCategory(product, resolvedSettings.categoryId))
+            : sortedByLatest;
+
+        return categoryFiltered.slice(0, resolvedSettings.productLimit);
+    }, [products, resolvedSettings, sectionData?.items]);
 
     const redirectToLogin = () => {
         toast.error('Please login to continue');
         navigate(getWomenLoginRedirect());
     };
 
-    const resolveRealProduct = (product) => (
-        products?.find((item) => item.id === product.id || item.name === product.name) || null
-    );
-
     const handleProductOpen = (product) => {
         if (!user) {
             redirectToLogin();
             return;
         }
-
-        const realProduct = resolveRealProduct(product);
-        navigate(`/product/${realProduct?.id || product.id}`);
+        navigate(`/product/${product.id || product._id}`);
     };
 
     const handleAddToCart = (product) => {
         if (!user) {
-            const realProduct = resolveRealProduct(product) || {
+            const productForCart = {
                 ...product,
-                _id: product.id,
-                id: product.id
+                _id: product._id || product.id,
+                id: product.id || product._id
             };
-            storeWomenPendingCartItem(realProduct);
+            storeWomenPendingCartItem(productForCart);
             redirectToLogin();
             return;
         }
 
-        const realProduct = products.find(p => p.id === product.id || p.name === product.name);
-        if (realProduct) {
-            addToCart(realProduct);
-        } else {
-            const mockToCart = {
-                ...product,
-                _id: product.id,
-                price: parseFloat(product.price.replace(',', '')),
-                originalPrice: parseFloat(product.originalPrice.replace(',', '')),
-                finalPrice: parseFloat(product.discountPrice.replace(',', '')),
-                variants: [{ id: product.id + '-v1', price: parseFloat(product.price.replace(',', '')) }]
-            };
-            addToCart(mockToCart);
-        }
-        toast.success(`${product.name} added to your bag!`, {
+        addToCart(product);
+        toast.success(`${product.name || 'Product'} added to your bag!`, {
             style: { background: PINK, color: '#fff', fontSize: '12px' },
             icon: '💖'
         });
         setTimeout(() => navigate('/cart'), 800);
     };
 
+    if (displayedProducts.length === 0) return null;
+
+    const ctaPath = buildWomenShopPath({
+        filter: 'womens',
+        category: resolvedSettings.sourceMode === 'category' ? resolvedSettings.categoryId : undefined
+    });
+
     return (
         <section className="py-6 md:py-10" style={{ background: PINK_BG }}>
             <div className="container mx-auto px-4 md:px-8 max-w-[1500px]">
-
-                {/* Section Header */}
                 <div className="text-center mb-6 md:mb-8">
                     <motion.div
                         initial={{ opacity: 0, y: -20 }}
@@ -191,98 +246,97 @@ const WomenProductsListing = () => {
                         transition={{ duration: 0.7, delay: 0.1 }}
                         className="text-3xl sm:text-4xl md:text-5xl font-serif text-zinc-900 tracking-tight mb-3"
                     >
-                        Women's <span className="italic" style={{ color: PINK }}>Exclusives</span>
+                        {resolvedSettings.title}
                     </motion.h2>
                     <div className="w-20 h-1 mx-auto rounded-full" style={{ background: PINK }} />
                 </div>
 
-                {/* Product Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
-                    {dummyProducts.map((product, idx) => (
-                        <motion.div
-                            key={product.id}
-                            initial={{ opacity: 0, scale: 0.98 }}
-                            whileInView={{ opacity: 1, scale: 1 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.5, delay: idx * 0.05 }}
-                            className="bg-white group cursor-pointer"
-                        >
-                            {/* Image Container */}
-                            <div className="relative aspect-square bg-[#F9F9F9] overflow-hidden mb-3" onClick={() => handleProductOpen(product)}>
-                                {/* Ribbon */}
-                                {idx < 3 && (
-                                    <div className="absolute top-0 left-0 z-20">
-                                        <div className="bg-[#E8638A] text-white text-[10px] font-bold px-3 py-1 flex items-center relative overflow-visible">
-                                            Bestseller
-                                            {/* Flag cutout effect */}
-                                            <div className="absolute top-0 -right-2 w-0 h-0 border-t-[10px] border-t-transparent border-b-[10px] border-b-transparent border-l-[10px] border-[#E8638A]"></div>
+                    {displayedProducts.map((product, idx) => {
+                        const price = getProductPrice(product);
+                        const originalPrice = getProductOriginalPrice(product);
+                        return (
+                            <motion.div
+                                key={product.id || product._id}
+                                initial={{ opacity: 0, scale: 0.98 }}
+                                whileInView={{ opacity: 1, scale: 1 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.5, delay: idx * 0.05 }}
+                                className="bg-white group cursor-pointer"
+                            >
+                                <div className="relative aspect-square bg-[#F9F9F9] overflow-hidden mb-3" onClick={() => handleProductOpen(product)}>
+                                    {idx < 3 && (
+                                        <div className="absolute top-0 left-0 z-20">
+                                            <div className="bg-[#E8638A] text-white text-[10px] font-bold px-3 py-1 flex items-center relative overflow-visible">
+                                                Bestseller
+                                                <div className="absolute top-0 -right-2 w-0 h-0 border-t-[10px] border-t-transparent border-b-[10px] border-b-transparent border-l-[10px] border-[#E8638A]" />
+                                            </div>
                                         </div>
+                                    )}
+
+                                    <img
+                                        src={product.image || product.images?.[0] || ''}
+                                        alt={product.name || 'Product'}
+                                        className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                                    />
+
+                                    <button className="absolute top-4 right-4 z-10 p-1.5 rounded-full hover:bg-white/80 transition-all" type="button">
+                                        <Heart className="w-5 h-5 text-gray-400 group-hover:text-red-500 transition-colors" />
+                                    </button>
+
+                                    <div className="absolute bottom-3 left-3 bg-[#F3F4F6]/90 backdrop-blur-sm px-2 py-0.5 rounded flex items-center gap-1 text-[10px] md:text-xs font-medium text-gray-700 shadow-sm">
+                                        {Number(product.rating || 0).toFixed(1)} <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                                        <span className="text-gray-300 mx-0.5">|</span>
+                                        {Number(product.reviews || product.reviewCount || 0)}
                                     </div>
-                                )}
-                                
-                                <img
-                                    src={product.image}
-                                    alt={product.name}
-                                    className="w-full h-full object-contain p-4 transition-transform duration-700 group-hover:scale-105"
-                                />
-                                
-                                {/* Wishlist */}
-                                <button className="absolute top-4 right-4 z-10 p-1.5 rounded-full hover:bg-white/80 transition-all">
-                                    <Heart className="w-5 h-5 text-gray-400 group-hover:text-red-500 transition-colors" />
-                                </button>
-
-                                {/* Rating Badge */}
-                                <div className="absolute bottom-3 left-3 bg-[#F3F4F6]/90 backdrop-blur-sm px-2 py-0.5 rounded flex items-center gap-1 text-[10px] md:text-xs font-medium text-gray-700 shadow-sm">
-                                    {product.rating} <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                                    <span className="text-gray-300 mx-0.5">|</span>
-                                    {product.reviews}
                                 </div>
-                            </div>
 
-                            {/* Product Info */}
-                            <div className="flex flex-col px-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-base md:text-lg font-bold text-gray-900">₹{product.price}</span>
-                                    <span className="text-[10px] md:text-xs text-gray-400 line-through">₹{product.originalPrice}</span>
+                                <div className="flex flex-col px-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className="text-base md:text-lg font-bold text-gray-900">{formatMoney(price)}</span>
+                                        <span className="text-[10px] md:text-xs text-gray-400 line-through">{formatMoney(originalPrice)}</span>
+                                    </div>
+                                    <h3
+                                        className="text-[12px] md:text-[14px] text-gray-600 font-medium mb-1.5 line-clamp-1 leading-tight hover:text-gray-900"
+                                        onClick={() => handleProductOpen(product)}
+                                    >
+                                        {product.name}
+                                    </h3>
+
+                                    <p className="text-[10px] md:text-[11px] font-bold text-[#1E3A8A] mb-3 uppercase tracking-tight">
+                                        {idx % 2 === 0 ? 'PRICE DROP!' : 'EXTRA 15% OFF with coupon'}
+                                    </p>
+
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleAddToCart(product);
+                                        }}
+                                        className="w-full py-2.5 rounded-md font-bold text-[11px] md:text-[13px] text-gray-700 transition-all duration-300 transform active:scale-95 shadow-sm"
+                                        style={{ background: '#FFE1E6' }}
+                                        onMouseEnter={(e) => { e.currentTarget.style.background = '#FFD1D9'; }}
+                                        onMouseLeave={(e) => { e.currentTarget.style.background = '#FFE1E6'; }}
+                                        type="button"
+                                    >
+                                        {Array.isArray(product.variants) && product.variants.length > 1 ? 'Choose options' : 'Add to Cart'}
+                                    </button>
                                 </div>
-                                <h3 className="text-[12px] md:text-[14px] text-gray-600 font-medium mb-1.5 line-clamp-1 leading-tight hover:text-gray-900" onClick={() => handleProductOpen(product)}>
-                                    {product.name}
-                                </h3>
-
-                                {/* Promo Text */}
-                                <p className="text-[10px] md:text-[11px] font-bold text-[#1E3A8A] mb-3 uppercase tracking-tight">
-                                    {idx % 2 === 0 ? 'PRICE DROP!' : 'EXTRA 15% OFF with coupon'}
-                                </p>
-
-                                {/* CTA Button */}
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleAddToCart(product);
-                                    }}
-                                    className="w-full py-2.5 rounded-md font-bold text-[11px] md:text-[13px] text-gray-700 transition-all duration-300 transform active:scale-95 shadow-sm"
-                                    style={{ background: '#FFE1E6' }}
-                                    onMouseEnter={e => e.currentTarget.style.background = '#FFD1D9'}
-                                    onMouseLeave={e => e.currentTarget.style.background = '#FFE1E6'}
-                                >
-                                    Add to Cart
-                                </button>
-                            </div>
-                        </motion.div>
-                    ))}
+                            </motion.div>
+                        );
+                    })}
                 </div>
 
-                {/* Explore Button */}
                 <div className="mt-10 md:mt-16 text-center">
                     <motion.button
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        onClick={() => navigate('/shop?source=women&category=women')}
+                        onClick={() => navigate(ctaPath)}
                         className="px-12 py-4 rounded-full font-bold uppercase tracking-widest text-xs transition-all shadow-lg hover:shadow-xl text-white"
                         style={{ background: PINK }}
+                        type="button"
                     >
-                        Explore All Women's Jewellery →
+                        {resolvedSettings.ctaLabel}
                     </motion.button>
                 </div>
             </div>
@@ -291,4 +345,3 @@ const WomenProductsListing = () => {
 };
 
 export default WomenProductsListing;
-

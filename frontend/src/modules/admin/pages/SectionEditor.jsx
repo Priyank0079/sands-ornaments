@@ -15,6 +15,7 @@ import MenPickYourGlamEditor from '../components/editors/MenPickYourGlamEditor';
 import MenStyleGuideEditor from '../components/editors/MenStyleGuideEditor';
 import MenStyleTrendsEditor from '../components/editors/MenStyleTrendsEditor';
 import MenFeaturedProductsEditor from '../components/editors/MenFeaturedProductsEditor';
+import WomenFeaturedProductsEditor from '../components/editors/WomenFeaturedProductsEditor';
 import CategoryShowcaseEditor from '../components/editors/CategoryShowcaseEditor';
 import BannerSectionEditor from '../components/editors/BannerSectionEditor';
 import BrandPromisesEditor from '../components/editors/BrandPromisesEditor';
@@ -176,6 +177,10 @@ const SectionEditor = () => {
             return <MenPersonalizedBannerEditor sectionData={sectionData} onSave={handleSave} defaultSection={defaultSection} />;
         }
 
+        if ((sectionData.sectionKey || id) === 'personalized-banner' && pageKey === 'shop-women') {
+            return <BannerSectionEditor sectionData={sectionData} onSave={handleSave} defaultItems={defaultItems} />;
+        }
+
         if ((sectionData.sectionKey || id) === 'pick-your-glam' && pageKey === 'shop-men') {
             return <MenPickYourGlamEditor sectionData={sectionData} onSave={handleSave} defaultSection={defaultSection} />;
         }
@@ -192,12 +197,21 @@ const SectionEditor = () => {
             return <MenFeaturedProductsEditor sectionData={sectionData} onSave={handleSave} defaultSection={defaultSection} />;
         }
 
+        if ((sectionData.sectionKey || id) === 'products-listing' && pageKey === 'shop-women') {
+            return <WomenFeaturedProductsEditor sectionData={sectionData} onSave={handleSave} defaultSection={defaultSection} />;
+        }
+
         const supportedSections = [
             'silver-collection',
             'silver-curated',
             'luxury-within-reach',
             'category-grid',
             'categories-grid',
+            'product-categories',
+            'curated-collections',
+            'occasion-carousel',
+            'discover-hue',
+            'promo-banners',
             'premium-category-cards',
             'category-showcase',
             'price-range-showcase',

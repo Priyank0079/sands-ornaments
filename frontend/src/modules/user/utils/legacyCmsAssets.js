@@ -89,6 +89,15 @@ import giftBrothers from '@assets/gift_brothers.png';
 import giftHusbands from '@assets/gift_husbands.png';
 import giftCouples from '@assets/gift_couples.png';
 import giftBoyfriends from '@assets/gift_boyfriends.png';
+import womenHeroRadiance from '@assets/women_hero_radiance.png';
+import womenCategoryRings from '@assets/women-categories/Rings.png';
+import womenCategoryEarrings from '@assets/women-categories/Earrings.png';
+import womenCategoryBracelets from '@assets/women-categories/Bracelets.png';
+import womenCategoryPendants from '@assets/women-categories/Pendants.png';
+import womenCategoryChains from '@assets/women-categories/Chains.png';
+import womenCategoryBangles from '@assets/women-categories/Bangles.png';
+import womenCategorySets from '@assets/women-categories/Sets.png';
+import womenCategoryPersonalised from '@assets/women-categories/Personalised.png';
 
 const legacyAssetMap = {
   'cat_pendant_wine.png': catPendantWine,
@@ -181,7 +190,16 @@ const legacyAssetMap = {
   'gift_brothers.png': giftBrothers,
   'gift_husbands.png': giftHusbands,
   'gift_couples.png': giftCouples,
-  'gift_boyfriends.png': giftBoyfriends
+  'gift_boyfriends.png': giftBoyfriends,
+  'women_hero_radiance.png': womenHeroRadiance,
+  'Rings.png': womenCategoryRings,
+  'Earrings.png': womenCategoryEarrings,
+  'Bracelets.png': womenCategoryBracelets,
+  'Pendants.png': womenCategoryPendants,
+  'Chains.png': womenCategoryChains,
+  'Bangles.png': womenCategoryBangles,
+  'Sets.png': womenCategorySets,
+  'Personalised.png': womenCategoryPersonalised
 };
 
 export const resolveLegacyCmsAsset = (value, fallback = '') => {

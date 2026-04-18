@@ -1,18 +1,39 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { buildWomenShopPath } from '../../utils/womenNavigation';
+import { resolveLegacyCmsAsset } from '../../utils/legacyCmsAssets';
 
 import PersonalisedImg from '@assets/promos/PersonalisedBannerWine.png';
 
-const WomenPersonalisedBanner = () => {
+const WomenPersonalisedBanner = ({ sectionData }) => {
     const navigate = useNavigate();
+    const banner = useMemo(() => {
+        const configured = Array.isArray(sectionData?.items) ? sectionData.items[0] : null;
+        const fallback = {
+            name: 'Exclusive Edit',
+            label: 'Personalised',
+            subtitle: 'Silver that feels like you',
+            image: PersonalisedImg,
+            path: buildWomenShopPath({ filter: 'womens', category: 'personalised' })
+        };
+
+        if (!configured) return fallback;
+
+        return {
+            name: configured.name || configured.tag || fallback.name,
+            label: configured.label || configured.name || fallback.label,
+            subtitle: configured.subtitle || configured.description || fallback.subtitle,
+            image: resolveLegacyCmsAsset(configured.image, fallback.image),
+            path: configured.path || fallback.path
+        };
+    }, [sectionData]);
 
     return (
         <section className="bg-white w-full py-0">
             <div 
                 className="w-full overflow-hidden relative h-[250px] md:h-[350px] group cursor-pointer shadow-none rounded-none" 
-                onClick={() => navigate(buildWomenShopPath({ category: 'personalised' }))}
+                onClick={() => navigate(banner.path)}
                 style={{ background: 'linear-gradient(to right, #4A0E0E, #2D0505)' }}
             >
                 {/* Decorative Background Pattern (Subtle waves/blobs on the left) */}
@@ -24,8 +45,8 @@ const WomenPersonalisedBanner = () => {
                 {/* Main Product Image (Right half) */}
                 <div className="absolute right-0 top-0 w-full md:w-[60%] h-full">
                     <img 
-                        src={PersonalisedImg} 
-                        alt="Personalised Jewellery Collection"
+                        src={banner.image} 
+                        alt={banner.label}
                         className="w-full h-full object-cover transition-transform duration-[8s] group-hover:scale-105"
                     />
                     {/* Seamless Gradient from Wine to Image */}
@@ -47,13 +68,13 @@ const WomenPersonalisedBanner = () => {
                                 className="text-4xl sm:text-5xl md:text-7xl font-display text-white tracking-wide"
                                 style={{ fontFamily: "'Cinzel', serif", fontWeight: 400 }}
                             >
-                                Personalised
+                                {banner.label}
                             </h2>
                             <p 
                                 className="text-sm sm:text-lg md:text-xl font-light text-rose-100/90 tracking-[0.1em] uppercase"
                                 style={{ fontFamily: "'Lato', sans-serif" }}
                             >
-                                Silver that feels like you
+                                {banner.subtitle}
                             </p>
                         </motion.div>
                         
@@ -74,7 +95,7 @@ const WomenPersonalisedBanner = () => {
                     <motion.span 
                         className="text-[10px] text-white/50 uppercase tracking-[0.3em] block origin-right -rotate-90 translate-y-24 group-hover:translate-y-0 transition-transform duration-700"
                     >
-                        Exclusive Edit
+                        {banner.name}
                     </motion.span>
                 </div>
             </div>
