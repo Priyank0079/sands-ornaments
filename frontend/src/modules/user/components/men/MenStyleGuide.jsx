@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { buildMenShopPath } from '../../utils/menNavigation';
+import api from '../../../../services/api';
+import { resolveLegacyCmsAsset } from '../../utils/legacyCmsAssets';
 
 // Import images from assets
 import styleChains from '../../../../assets/men/style_chains.png';
@@ -37,6 +39,54 @@ const styles = [
 ];
 
 const MenStyleGuide = () => {
+    const [sectionData, setSectionData] = useState(null);
+
+    useEffect(() => {
+        const fetchStyleGuide = async () => {
+            try {
+                const res = await api.get('public/cms/pages/shop-men');
+                if (res.data.success) {
+                    const sections = res.data.data?.sections || [];
+                    const section = sections.find((entry) => (
+                        (entry.sectionKey || entry.sectionId) === 'style-guide'
+                    ));
+                    if (section) setSectionData(section);
+                }
+            } catch (err) {
+                console.error('Failed to fetch men style guide section:', err);
+            }
+        };
+
+        fetchStyleGuide();
+    }, []);
+
+    const resolvedSettings = useMemo(() => ({
+        title: sectionData?.settings?.title || 'STYLE GUIDE',
+        subtitle: sectionData?.settings?.subtitle || 'Master the hottest trends'
+    }), [sectionData]);
+
+    const resolvedStyles = useMemo(() => {
+        const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items.slice(0, 3) : [];
+        const normalized = configuredItems
+            .filter((item) => item?.image)
+            .map((item, index) => {
+                const fallback = styles[index];
+                return {
+                    id: item.itemId || item.id || `men-style-guide-${index}`,
+                    step: item.step || fallback?.step || `${index + 1}. Step`,
+                    title: item.name || item.label || fallback?.title || '',
+                    image: resolveLegacyCmsAsset(item.image, fallback?.image || ''),
+                    path: item.categoryId
+                        ? buildMenShopPath({ category: item.categoryId })
+                        : (item.path || fallback?.path || buildMenShopPath()),
+                    buttonText: item.buttonText || item.ctaLabel || fallback?.buttonText || 'Explore'
+                };
+            })
+            .filter((item) => item.step && item.title && item.image && item.path);
+
+        return normalized.length === 3 ? normalized : styles;
+    }, [sectionData]);
+
     return (
         <section className="py-2 md:py-10 px-4 md:px-12 bg-[#F3EBE3]">
             <div className="max-w-6xl mx-auto">
@@ -49,17 +99,17 @@ const MenStyleGuide = () => {
                         className="flex flex-col items-center"
                     >
                         <h2 className="text-xl md:text-3xl font-display font-bold text-[#3B2516] tracking-tight mb-1">
-                            STYLE GUIDE
+                            {resolvedSettings.title}
                         </h2>
                         <p className="text-[12px] md:text-base text-[#6B4E3D] font-medium tracking-wide">
-                            Master the hottest trends
+                            {resolvedSettings.subtitle}
                         </p>
                     </motion.div>
                 </div>
 
                 {/* Cards Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
-                    {styles.map((style, index) => (
+                    {resolvedStyles.map((style, index) => (
                         <motion.div
                             key={style.id}
                             initial={{ opacity: 0, y: 30 }}

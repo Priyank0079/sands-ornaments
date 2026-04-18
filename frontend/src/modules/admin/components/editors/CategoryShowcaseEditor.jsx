@@ -340,7 +340,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         toast.error("Image upload failed. Please try again.");
     };
 
-    const removeItem = (id) => {
+    const removeItem = async (id) => {
         const itemToRemove = items.find(item => item.id === id);
         if (sectionId === 'most-gifted' && itemToRemove?.type === 'hero') {
             toast.error('The hero card stays fixed for this section.');
@@ -349,11 +349,11 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         const newItems = items.filter(item => item.id !== id);
         setItems(newItems);
         if (editingId === id) setEditingId(null);
-        handleSave(newItems);
+        await handleSave(newItems);
     };
 
-    const saveCurrentItems = () => {
-        handleSave(items);
+    const saveCurrentItems = async () => {
+        await handleSave(items);
     };
 
     const addItem = () => {
@@ -509,7 +509,16 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     const canPreserveLegacyCategoryGridItem = (item) => {
         if (!item || getCategoryFromItem(item)) return false;
         const hasLegacyCategoryPath = typeof item.path === 'string'
-            && (item.path.startsWith('/category/') || item.path.includes('category='));
+            && (
+                item.path.startsWith('/category/')
+                || item.path.includes('category=')
+                || (
+                    sectionId === 'categories-grid'
+                    && sectionData?.pageKey === 'shop-men'
+                    && item.path.startsWith('/shop?')
+                    && item.path.includes('source=men')
+                )
+            );
         const hasUsableContent = Boolean((item.name || item.label || '').trim()) && Boolean(item.image);
         return hasLegacyCategoryPath && hasUsableContent;
     };
@@ -527,7 +536,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         return true;
     };
 
-    const handleSave = (nextItems) => {
+    const handleSave = async (nextItems) => {
         if (!validateItems(nextItems)) return;
         if (isPremiumCategoryCards) {
             const normalizedItems = nextItems.map((item, index) => {
@@ -540,7 +549,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                     path: item.path || fallbackItem.path || '/shop'
                 };
             });
-            onSave({ items: normalizedItems });
+            await onSave({ items: normalizedItems });
             return;
         }
         if (isCategoryShowcase) {
@@ -561,7 +570,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                     image: item.image || category.image || item.image
                 };
             });
-            onSave({ items: normalizedItems });
+            await onSave({ items: normalizedItems });
             return;
         }
         if (isCategoryGrid) {
@@ -590,7 +599,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                     image: item.image || category.image || item.image
                 };
             });
-            onSave({ items: normalizedItems });
+            await onSave({ items: normalizedItems });
             return;
         }
         if (sectionId === 'price-range-showcase' || isLuxuryWithinReach) {
@@ -613,7 +622,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                     path: `/shop?price_max=${priceMax}`
                 };
             }).slice(0, isLuxuryWithinReach ? 2 : nextItems.length);
-            onSave({ items: normalizedItems });
+            await onSave({ items: normalizedItems });
             return;
         }
         if (sectionId === 'perfect-gift') {
@@ -625,7 +634,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                     ? `/shop?products=${encodeURIComponent(item.productIds.join(','))}`
                     : (item.path || '/shop?status=coming-soon')
             }));
-            onSave({ items: normalizedItems });
+            await onSave({ items: normalizedItems });
             return;
         }
         if (sectionId === 'new-launch') {
@@ -645,7 +654,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                     ? `/shop?category=${getCategoryFromItem(item)._id}`
                     : (item.path || '/shop')
             }));
-            onSave({ items: normalizedItems });
+            await onSave({ items: normalizedItems });
             return;
         }
         if (sectionId === 'latest-drop') {
@@ -672,7 +681,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                     path: `/shop?category=${category._id}&limit=${limit}&sort=latest`
                 };
             });
-            onSave({ items: normalizedItems });
+            await onSave({ items: normalizedItems });
             return;
         }
         if (sectionId === 'most-gifted') {
@@ -707,7 +716,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                     path: `/shop?category=${category._id}&sort=most-sold`
                 };
             });
-            onSave({ items: [...normalizedHeroItems, ...normalizedItems] });
+            await onSave({ items: [...normalizedHeroItems, ...normalizedItems] });
             return;
         }
         if (sectionId === 'proposal-rings') {
@@ -725,7 +734,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                 limit: undefined,
                 path: `/shop?category=${category._id}`
             };
-            onSave({ items: [normalizedItem] });
+            await onSave({ items: [normalizedItem] });
             return;
         }
         if (sectionId === 'curated-for-you') {
@@ -749,7 +758,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                     path
                 };
             });
-            onSave({ items: normalizedItems });
+            await onSave({ items: normalizedItems });
             return;
         }
         if (sectionId === 'style-it-your-way') {
@@ -773,7 +782,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                     path
                 };
             });
-            onSave({ items: normalizedItems });
+            await onSave({ items: normalizedItems });
             return;
         }
         if (sectionId === 'nav-gifts-for' || sectionId === 'nav-occasions') {
@@ -800,7 +809,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             }
             return item;
         });
-        onSave({ items: normalizedItems, settings });
+        await onSave({ items: normalizedItems, settings });
     };
 
     return (
@@ -933,9 +942,9 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                         </button>
                                     )}
                                     <button
-                                        onClick={() => {
+                                        onClick={async () => {
                                             if (isEditing) {
-                                                saveCurrentItems();
+                                                await saveCurrentItems();
                                             }
                                             setEditingId(isEditing ? null : item.id);
                                         }}

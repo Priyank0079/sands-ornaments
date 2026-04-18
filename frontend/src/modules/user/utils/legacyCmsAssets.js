@@ -72,6 +72,23 @@ import categoryAnklets from '../../../assets/categories/anklets.png';
 import categorySilverchains from '../../../assets/categories/silverchains.png';
 import heroMasterpiece from '../../../assets/hero/hero_masterpiece.png';
 import bridalRoyal from '../../../assets/hero/bridal_royal.png';
+import menLuxuryRing from '../../../assets/luxury_ring_men.png';
+import menLuxuryGifts from '../../../assets/luxury_gifts_men.png';
+import menLuxuryPendant from '../../../assets/luxury_pendant_men.png';
+import menStyleBracelets from '../../../assets/men/style_bracelets.png';
+import menHeroBold from '../assets/men_hero_bold.png';
+import menHeroStyle from '../assets/men_hero_style.png';
+import menHeroElite from '../assets/men_hero_elite.png';
+import exploreEdge from '../../../assets/explore/edge_banner.png';
+import exploreClassics from '../../../assets/explore/classics_banner.png';
+import exploreIykyk from '../../../assets/explore/iykyk_banner.png';
+import exploreThumbRing from '../../../assets/explore/thumb_ring.png';
+import exploreThumbChain from '../../../assets/explore/thumb_chain.png';
+import exploreThumbPendant from '../../../assets/explore/thumb_pendant.png';
+import giftBrothers from '../../../assets/gift_brothers.png';
+import giftHusbands from '../../../assets/gift_husbands.png';
+import giftCouples from '../../../assets/gift_couples.png';
+import giftBoyfriends from '../../../assets/gift_boyfriends.png';
 
 const legacyAssetMap = {
   'cat_pendant_wine.png': catPendantWine,
@@ -147,12 +164,40 @@ const legacyAssetMap = {
   'anklets.png': categoryAnklets,
   'silverchains.png': categorySilverchains,
   'hero_masterpiece.png': heroMasterpiece,
-  'bridal_royal.png': bridalRoyal
+  'bridal_royal.png': bridalRoyal,
+  'luxury_ring_men.png': menLuxuryRing,
+  'luxury_gifts_men.png': menLuxuryGifts,
+  'luxury_pendant_men.png': menLuxuryPendant,
+  'style_bracelets.png': menStyleBracelets,
+  'men_hero_bold.png': menHeroBold,
+  'men_hero_style.png': menHeroStyle,
+  'men_hero_elite.png': menHeroElite,
+  'edge_banner.png': exploreEdge,
+  'classics_banner.png': exploreClassics,
+  'iykyk_banner.png': exploreIykyk,
+  'thumb_ring.png': exploreThumbRing,
+  'thumb_chain.png': exploreThumbChain,
+  'thumb_pendant.png': exploreThumbPendant,
+  'gift_brothers.png': giftBrothers,
+  'gift_husbands.png': giftHusbands,
+  'gift_couples.png': giftCouples,
+  'gift_boyfriends.png': giftBoyfriends
 };
 
 export const resolveLegacyCmsAsset = (value, fallback = '') => {
   const source = String(value || '').trim();
   if (!source) return fallback;
+  // Keep real uploaded/remote URLs intact. Legacy remapping is only for old
+  // bundled asset references that came from seeded/static defaults.
+  if (
+    /^(https?:)?\/\//i.test(source) ||
+    source.startsWith('data:') ||
+    source.startsWith('blob:') ||
+    source.startsWith('/uploads/') ||
+    source.startsWith('/media/')
+  ) {
+    return source;
+  }
   const parts = source.split('/');
   const fileName = parts[parts.length - 1];
   return legacyAssetMap[fileName] || source || fallback;

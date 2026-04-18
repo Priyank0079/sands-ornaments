@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { buildMenShopPath } from '../../utils/menNavigation';
+import api from '../../../../services/api';
+import { resolveLegacyCmsAsset } from '../../utils/legacyCmsAssets';
 
 import heroMenBold from '../../assets/men_hero_bold.png';
 import heroMenStyle from '../../assets/men_hero_style.png';
@@ -40,15 +42,67 @@ const slides = [
     }
 ];
 
+const defaultSlides = slides.map((slide) => ({
+    ...slide,
+    image: resolveLegacyCmsAsset(slide.image, slide.image)
+}));
+
 const MenHeroCarousel = () => {
     const [current, setCurrent] = useState(0);
+    const [sectionData, setSectionData] = useState(null);
+
+    const resolvedSlides = useMemo(() => {
+        const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
+        const normalizedConfigured = configuredItems
+            .filter((item) => item?.image)
+            .map((item, index) => ({
+                id: item.itemId || item.id || `men-hero-${index}`,
+                brandTitle: item.name || '',
+                mainTitle: item.label || '',
+                scriptTitle: item.tag || '',
+                rightTitle: item.subtitle || '',
+                cta: item.ctaLabel || 'SHOP NOW',
+                link: item.path || buildMenShopPath(),
+                image: resolveLegacyCmsAsset(item.image, defaultSlides[index]?.image || heroMenBold)
+            }))
+            .filter((item) => item.mainTitle && item.image);
+
+        return normalizedConfigured.length > 0 ? normalizedConfigured : defaultSlides;
+    }, [sectionData]);
+
+    useEffect(() => {
+        const fetchMenHeroSection = async () => {
+            try {
+                const res = await api.get('public/cms/pages/shop-men');
+                if (res.data.success) {
+                    const sections = res.data.data?.sections || [];
+                    const heroSection = sections.find((section) => (
+                        (section.sectionKey || section.sectionId) === 'hero-banners'
+                    ));
+                    if (heroSection) {
+                        setSectionData(heroSection);
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to fetch men hero section:', err);
+            }
+        };
+
+        fetchMenHeroSection();
+    }, []);
 
     useEffect(() => {
         const timer = setInterval(() => {
-            setCurrent((prev) => (prev + 1) % slides.length);
-        }, 5000);
+            setCurrent((prev) => (prev + 1) % resolvedSlides.length);
+        }, Number(sectionData?.settings?.autoplayMs) || 5000);
         return () => clearInterval(timer);
-    }, []);
+    }, [resolvedSlides.length, sectionData?.settings?.autoplayMs]);
+
+    useEffect(() => {
+        if (current >= resolvedSlides.length) {
+            setCurrent(0);
+        }
+    }, [current, resolvedSlides.length]);
 
     return (
         <section className="relative w-full h-[220px] sm:h-[260px] md:h-[65vh] overflow-hidden bg-[#111111]">
@@ -63,7 +117,7 @@ const MenHeroCarousel = () => {
                 >
                     {/* Full-width Background Image */}
                     <img
-                        src={slides[current].image}
+                        src={resolvedSlides[current].image}
                         alt="Men Jewelry Model"
                         className="w-full h-full object-cover object-center"
                     />
@@ -87,7 +141,7 @@ const MenHeroCarousel = () => {
                             transition={{ delay: 0.3, duration: 0.6 }}
                             className="text-[8px] md:text-[11px] font-medium tracking-[0.4em] uppercase mb-1 md:mb-4 opacity-70"
                         >
-                            {slides[current].brandTitle}
+                            {resolvedSlides[current].brandTitle}
                         </motion.p>
 
                         <div className="leading-none select-none">
@@ -97,9 +151,9 @@ const MenHeroCarousel = () => {
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.5, duration: 0.6 }}
                                 className="text-4xl sm:text-7xl md:text-9xl font-black tracking-tighter"
-                            >
-                                {slides[current].mainTitle}
-                            </motion.h1>
+                        >
+                            {resolvedSlides[current].mainTitle}
+                        </motion.h1>
                             <div className="flex items-center gap-1.5 md:gap-3 -mt-1 md:-mt-4">
                                 <motion.span
                                     key={`in-${current}`}
@@ -118,7 +172,7 @@ const MenHeroCarousel = () => {
                                     className="text-2xl sm:text-5xl md:text-7xl italic font-serif"
                                     style={{ fontFamily: "'Dancing Script', 'Playball', cursive" }}
                                 >
-                                    {slides[current].scriptTitle}
+                                    {resolvedSlides[current].scriptTitle}
                                 </motion.span>
                             </div>
                         </div>
@@ -136,7 +190,7 @@ const MenHeroCarousel = () => {
                             transition={{ delay: 0.6, duration: 0.6 }}
                             className="text-[12px] sm:text-2xl md:text-4xl font-medium mb-2 md:mb-8 leading-[1.25] max-w-[240px] md:max-w-[300px] whitespace-pre-line"
                         >
-                            {slides[current].rightTitle}
+                            {resolvedSlides[current].rightTitle}
                         </motion.h2>
 
                         <motion.div
@@ -146,10 +200,10 @@ const MenHeroCarousel = () => {
                             transition={{ delay: 0.9 }}
                         >
                             <Link
-                                to={slides[current].link}
+                                to={resolvedSlides[current].link}
                                 className="px-4 py-1.5 md:px-12 md:py-3 bg-white text-black text-[9px] md:text-xs font-bold uppercase tracking-[0.2em] hover:bg-gray-100 transition-colors inline-block"
                             >
-                                {slides[current].cta}
+                                {resolvedSlides[current].cta}
                             </Link>
                         </motion.div>
                     </div>
@@ -159,7 +213,7 @@ const MenHeroCarousel = () => {
 
             {/* Navigation Dots */}
             <div className="absolute bottom-3 md:bottom-10 left-1/2 -translate-x-1/2 flex gap-2 md:gap-3 z-30">
-                {slides.map((_, idx) => (
+                {resolvedSlides.map((_, idx) => (
                     <button
                         key={idx}
                         onClick={() => setCurrent(idx)}

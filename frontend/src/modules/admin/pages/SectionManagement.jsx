@@ -6,8 +6,6 @@ import { adminService } from '../services/adminService';
 import { getPageConfig, getSectionDefaultsForPage, PAGE_SECTIONS } from '../utils/sectionDefaults';
 import toast from 'react-hot-toast';
 
-const BLACKLIST = ['nav-shop-by-category', 'chit-chat', 'perfect-gift', 'new-launch-grid', 'premium-category-cards', 'auto-banners', 'silver-new-launch'];
-
 const SectionManagement = () => {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -20,9 +18,10 @@ const SectionManagement = () => {
         setLoading(true);
         try {
             const defaultsForPage = getSectionDefaultsForPage(activePageKey);
+            const allowedSectionKeys = new Set(defaultsForPage.map(section => section.sectionKey || section.sectionId));
             const data = await adminService.getSections(activePageKey);
             const filteredSections = (data || [])
-                .filter(section => !BLACKLIST.includes(section.sectionId || section.sectionKey))
+                .filter(section => allowedSectionKeys.has(section.sectionKey || section.sectionId))
                 .map(section => {
                     const defaultSection = defaultsForPage.find(def => 
                         def.sectionKey === (section.sectionId || section.sectionKey)
@@ -42,7 +41,7 @@ const SectionManagement = () => {
                 if (seedRes.success !== false) {
                     const seeded = await adminService.getSections(activePageKey);
                     const filteredSeeded = (seeded || [])
-                        .filter(section => !BLACKLIST.includes(section.sectionId || section.sectionKey))
+                        .filter(section => allowedSectionKeys.has(section.sectionKey || section.sectionId))
                         .map(section => {
                             const defaultSection = defaultsForPage.find(def => 
                                 def.sectionKey === (section.sectionId || section.sectionKey)

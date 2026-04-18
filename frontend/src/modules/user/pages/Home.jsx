@@ -12,7 +12,6 @@ import AutoBannerSection from '../components/AutoBannerSection';
 import ShopByColour from '../components/ShopByColour';
 import StyleItYourWay from '../components/StyleItYourWay';
 import OccasionalSpecial from '../components/OccasionalSpecial';
-import DiamondStoryBanner from '../components/DiamondStoryBanner';
 import AllJewellery from '../components/AllJewellery';
 import Testimonials from '../components/Testimonials';
 import BrandPromises from '../components/BrandPromises';
@@ -76,7 +75,6 @@ const Home = () => {
             <NewLaunchSection />
             <StyleItYourWay />
             <OccasionalSpecial />
-            <DiamondStoryBanner />
             <AllJewellery />
             <SilverCollectionSection />
             <SilverCuratedShowcase />

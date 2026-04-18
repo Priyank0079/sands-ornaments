@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { buildMenShopPath } from '../../utils/menNavigation';
+import api from '../../../../services/api';
 
 const categories = [
     { title: 'Rings', image: '/images/men-categories/rings.png', link: buildMenShopPath({ category: 'rings' }) },
@@ -14,8 +15,73 @@ const categories = [
     { title: 'Personalised', image: '/images/men-categories/custom.png', link: buildMenShopPath({ category: 'personalised' }) }
 ];
 
+const normalizeCategorySlug = (value) =>
+    String(value || '')
+        .trim()
+        .toLowerCase()
+        .replace(/^\/category\//, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+
+const buildMenCategoryLink = (path, fallbackTitle) => {
+    const sourcePath = String(path || '').trim();
+    if (!sourcePath) return buildMenShopPath({ category: normalizeCategorySlug(fallbackTitle) });
+
+    if (sourcePath.startsWith('/shop?')) {
+        return sourcePath;
+    }
+
+    if (sourcePath.startsWith('/category/')) {
+        return buildMenShopPath({ category: normalizeCategorySlug(sourcePath) });
+    }
+
+    if (sourcePath.includes('category=')) {
+        const categoryValue = sourcePath.split('category=')[1]?.split('&')[0];
+        return buildMenShopPath({ category: normalizeCategorySlug(categoryValue || fallbackTitle) });
+    }
+
+    return buildMenShopPath({ category: normalizeCategorySlug(fallbackTitle) });
+};
+
 const MenCategoriesGrid = () => {
     const navigate = useNavigate();
+    const [sectionData, setSectionData] = useState(null);
+
+    const resolvedCategories = useMemo(() => {
+        const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
+        const normalizedConfigured = configuredItems
+            .filter((item) => item?.image)
+            .map((item, index) => ({
+                id: item.itemId || item.id || `men-category-${index}`,
+                title: item.label || item.name || categories[index]?.title || '',
+                image: item.image,
+                link: buildMenCategoryLink(item.path, item.label || item.name || categories[index]?.title || '')
+            }))
+            .filter((item) => item.title && item.image && item.link);
+
+        return normalizedConfigured.length > 0 ? normalizedConfigured : categories;
+    }, [sectionData]);
+
+    useEffect(() => {
+        const fetchMenCategoriesSection = async () => {
+            try {
+                const res = await api.get('public/cms/pages/shop-men');
+                if (res.data.success) {
+                    const sections = res.data.data?.sections || [];
+                    const categoriesSection = sections.find((section) => (
+                        (section.sectionKey || section.sectionId) === 'categories-grid'
+                    ));
+                    if (categoriesSection) {
+                        setSectionData(categoriesSection);
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to fetch men categories section:', err);
+            }
+        };
+
+        fetchMenCategoriesSection();
+    }, []);
 
     return (
         <section className="pt-2 pb-2 md:pt-8 md:pb-4 bg-white">
@@ -31,9 +97,9 @@ const MenCategoriesGrid = () => {
                 </div>
 
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4">
-                    {categories.map((cat, idx) => (
+                    {resolvedCategories.map((cat, idx) => (
                         <motion.div
-                            key={cat.title}
+                            key={cat.id || cat.title}
                             initial={{ opacity: 0, scale: 0.95 }}
                             whileInView={{ opacity: 1, scale: 1 }}
                             viewport={{ once: true }}

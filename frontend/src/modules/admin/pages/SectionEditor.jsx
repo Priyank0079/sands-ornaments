@@ -6,6 +6,15 @@ import BestStylesSectionEditor from '../components/editors/BestStylesSectionEdit
 import ShopByBondEditor from '../components/editors/ShopByBondEditor';
 import ShopByColourEditor from '../components/editors/ShopByColourEditor';
 import SilverNewLaunchGridEditor from '../components/editors/SilverNewLaunchGridEditor';
+import MenLuxurySectionEditor from '../components/editors/MenLuxurySectionEditor';
+import CelebrateMenEditor from '../components/editors/CelebrateMenEditor';
+import MenCuratedCollectionsEditor from '../components/editors/MenCuratedCollectionsEditor';
+import MenExploreCollectionsEditor from '../components/editors/MenExploreCollectionsEditor';
+import MenPersonalizedBannerEditor from '../components/editors/MenPersonalizedBannerEditor';
+import MenPickYourGlamEditor from '../components/editors/MenPickYourGlamEditor';
+import MenStyleGuideEditor from '../components/editors/MenStyleGuideEditor';
+import MenStyleTrendsEditor from '../components/editors/MenStyleTrendsEditor';
+import MenFeaturedProductsEditor from '../components/editors/MenFeaturedProductsEditor';
 import CategoryShowcaseEditor from '../components/editors/CategoryShowcaseEditor';
 import BannerSectionEditor from '../components/editors/BannerSectionEditor';
 import BrandPromisesEditor from '../components/editors/BrandPromisesEditor';
@@ -67,11 +76,38 @@ const SectionEditor = () => {
             const res = await adminService.updateSection(id, payload, pageKey);
             if (res.success === false) {
                 toast.error(res.message || "Failed to save section");
-                return;
+                return { success: false };
+            }
+            const savedSection = res.data?.section || res.data?.data?.section || res.section || null;
+            if (savedSection) {
+                const items = (savedSection.items || []).map((item) => ({
+                    id: item.itemId || item.id || item._id || `${Date.now()}_${Math.random()}`,
+                    ...item
+                }));
+                setSectionData({
+                    id: savedSection.sectionId,
+                    sectionKey: savedSection.sectionKey || id,
+                    pageKey: savedSection.pageKey || pageKey,
+                    sectionType: savedSection.sectionType || 'rich-content',
+                    label: savedSection.label || sectionData.label,
+                    items,
+                    settings: savedSection.settings || {}
+                });
+            } else {
+                setSectionData((prev) => ({
+                    ...prev,
+                    settings: newData.settings || prev.settings || {},
+                    items: (newData.items || []).map((item) => ({
+                        id: item.itemId || item.id || item._id || `${Date.now()}_${Math.random()}`,
+                        ...item
+                    }))
+                }));
             }
             toast.success("Section updated");
+            return { success: true };
         } catch (err) {
             toast.error("Failed to save section");
+            return { success: false };
         } finally {
             setSaving(false);
         }
@@ -120,11 +156,48 @@ const SectionEditor = () => {
             return <SilverNewLaunchGridEditor sectionData={sectionData} onSave={handleSave} defaultSection={defaultSection} />;
         }
 
+        if ((sectionData.sectionKey || id) === 'luxury-section') {
+            return <MenLuxurySectionEditor sectionData={sectionData} onSave={handleSave} defaultSection={defaultSection} />;
+        }
+
+        if ((sectionData.sectionKey || id) === 'celebrate-men') {
+            return <CelebrateMenEditor sectionData={sectionData} onSave={handleSave} defaultSection={defaultSection} />;
+        }
+
+        if ((sectionData.sectionKey || id) === 'curated-collections' && pageKey === 'shop-men') {
+            return <MenCuratedCollectionsEditor sectionData={sectionData} onSave={handleSave} defaultSection={defaultSection} />;
+        }
+
+        if ((sectionData.sectionKey || id) === 'explore-collections' && pageKey === 'shop-men') {
+            return <MenExploreCollectionsEditor sectionData={sectionData} onSave={handleSave} defaultSection={defaultSection} />;
+        }
+
+        if ((sectionData.sectionKey || id) === 'personalized-banner' && pageKey === 'shop-men') {
+            return <MenPersonalizedBannerEditor sectionData={sectionData} onSave={handleSave} defaultSection={defaultSection} />;
+        }
+
+        if ((sectionData.sectionKey || id) === 'pick-your-glam' && pageKey === 'shop-men') {
+            return <MenPickYourGlamEditor sectionData={sectionData} onSave={handleSave} defaultSection={defaultSection} />;
+        }
+
+        if ((sectionData.sectionKey || id) === 'style-guide' && pageKey === 'shop-men') {
+            return <MenStyleGuideEditor sectionData={sectionData} onSave={handleSave} defaultSection={defaultSection} />;
+        }
+
+        if ((sectionData.sectionKey || id) === 'style-trends' && pageKey === 'shop-men') {
+            return <MenStyleTrendsEditor sectionData={sectionData} onSave={handleSave} defaultSection={defaultSection} />;
+        }
+
+        if ((sectionData.sectionKey || id) === 'products-listing' && pageKey === 'shop-men') {
+            return <MenFeaturedProductsEditor sectionData={sectionData} onSave={handleSave} defaultSection={defaultSection} />;
+        }
+
         const supportedSections = [
             'silver-collection',
             'silver-curated',
             'luxury-within-reach',
             'category-grid',
+            'categories-grid',
             'premium-category-cards',
             'category-showcase',
             'price-range-showcase',
