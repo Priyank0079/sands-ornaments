@@ -10,6 +10,7 @@ import bondSister from '@assets/bond_sister.png';
 import bondFriends from '@assets/bond_friends.png';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 import { ensureSilverHomePath } from '../utils/silverHomePaths';
+import { matchesRequestedMetal } from '../utils/productMetal';
 
 const LEAD_PRODUCTS = [
     { id: 'lp1', name: "Soulmate Silver Band", price: 3499, originalPrice: 4899, image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&q=80&w=800", rating: 4.5, reviewCount: 12 },
@@ -42,9 +43,12 @@ const PerfectGift = () => {
     const featuredGifts = React.useMemo(() => {
         if (!products || products.length === 0) return LEAD_PRODUCTS.slice(0, giftProductLimit);
 
-        // Filter valid products
-        const validProducts = products.filter(p => 
-            (p.id || p._id) && p.name && (p.stockStatus !== 'out_of_stock')
+        // Keep this strip silver-safe on Silver Home.
+        const validProducts = products.filter((product) =>
+            (product.id || product._id)
+            && product.name
+            && (product.stockStatus !== 'out_of_stock')
+            && matchesRequestedMetal(product, 'silver')
         );
 
         // Sorting rule:

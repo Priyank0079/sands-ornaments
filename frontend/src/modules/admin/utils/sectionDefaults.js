@@ -95,6 +95,31 @@ import promoPremiumGift from '@assets/promos/PremiumGifts.png';
 import promoCoupleRings from '@assets/promos/CoupleRings.png';
 import trendingCuratedCombos from '@assets/trending/CuratedCombos.png';
 import trendingChainLayering from '@assets/trending/ChainLayering.png';
+import menHeroBoldDefault from '../../user/assets/men_hero_bold.png';
+import menHeroStyleDefault from '../../user/assets/men_hero_style.png';
+import menHeroEliteDefault from '../../user/assets/men_hero_elite.png';
+import menLuxuryRingDefault from '@assets/luxury_ring_men.png';
+import menLuxuryGiftsDefault from '@assets/luxury_gifts_men.png';
+import menLuxuryPendantDefault from '@assets/luxury_pendant_men.png';
+import menStyleBraceletsDefault from '@assets/men/style_bracelets.png';
+import menStyleChainsDefault from '@assets/men/style_chains.png';
+import menStyleRingsDefault from '@assets/men/style_rings.png';
+import menPersonalizedFullBannerDefault from '@assets/men/personalized_full_banner.png';
+import giftBrothersDefault from '@assets/gift_brothers.png';
+import giftHusbandsDefault from '@assets/gift_husbands.png';
+import giftCouplesDefault from '@assets/gift_couples.png';
+import giftBoyfriendsDefault from '@assets/gift_boyfriends.png';
+import exploreEdgeDefault from '@assets/explore/edge_banner.png';
+import exploreClassicsDefault from '@assets/explore/classics_banner.png';
+import exploreIykykDefault from '@assets/explore/iykyk_banner.png';
+import exploreThumbRingDefault from '@assets/explore/thumb_ring.png';
+import exploreThumbChainDefault from '@assets/explore/thumb_chain.png';
+import exploreThumbPendantDefault from '@assets/explore/thumb_pendant.png';
+import glamPartySparkDefault from '@assets/glam/party_spark.png';
+import glamWeddingJewelsDefault from '@assets/glam/wedding_jewels.png';
+import glamRitualRangeDefault from '@assets/glam/ritual_range.png';
+import glamDailyWearDefault from '@assets/glam/daily_wear.png';
+import glamOfficeWearDefault from '@assets/glam/office_wear.png';
 
 // Silver Collection & Curated Showcases
 import bannerSilverCollection from '@assets/banner_elegant_silver.png';
@@ -104,6 +129,7 @@ import themeDrops from '@assets/theme_drops.png';
 import themeLeaves from '@assets/theme_leaves.png';
 import themeBubbles from '@assets/theme_bubbles.png';
 import themeMoon from '@assets/theme_moon.png';
+import { buildMenShopPath } from '../../user/utils/menNavigation';
 
 import silverChains from '@assets/categories/silverchains.png';
 import menSilver from '@assets/categories/mensilver.png';
@@ -175,22 +201,6 @@ const homeSections = [
   },
   {
     pageKey: 'home',
-    sectionKey: 'category-showcase',
-    sectionType: 'category-grid',
-    label: 'Category Showcase',
-    isActive: true,
-    sortOrder: 100,
-    items: [
-      { id: 'pendants', name: 'Pendants', image: catPendant, hoverImage: latestNecklace, path: '/category/pendants', tag: '' },
-      { id: 'rings', name: 'Rings', image: catRing, hoverImage: latestRing, path: '/category/rings', tag: '' },
-      { id: 'earrings', name: 'Earrings', image: catEarrings, hoverImage: latestEarrings, path: '/category/earrings', tag: '' },
-      { id: 'bracelets', name: 'Bracelets', image: catBracelet, hoverImage: latestBracelet, path: '/category/bracelets', tag: '' },
-      { id: 'anklets', name: 'Anklets', image: catAnklet, hoverImage: newAnklets, path: '/category/anklets', tag: '' },
-      { id: 'chains', name: 'Chains', image: catChain, hoverImage: catChain, path: '/category/chains', tag: '' }
-    ]
-  },
-  {
-    pageKey: 'home',
     sectionKey: 'luxury-within-reach',
     sectionType: 'promo-grid',
     label: 'Luxury within Reach',
@@ -228,35 +238,6 @@ const homeSections = [
       { id: 'studs', name: 'Studs', image: newStuds, path: '/shop', tag: '', productIds: [] },
       { id: 'bracelets', name: 'Bracelets', image: newBracelets, path: '/shop', tag: '', productIds: [] },
       { id: 'anklets', name: 'Anklets', image: newAnklets, path: '/shop', tag: '', productIds: [] }
-    ]
-  },
-  {
-    pageKey: 'home',
-    sectionKey: 'latest-drop',
-    sectionType: 'product-carousel',
-    label: 'Latest Drop',
-    isActive: true,
-    sortOrder: 18,
-    items: [
-      { id: '1', name: 'Latest Rings', image: latestRing, path: '/shop?sort=latest', tag: '', limit: 12, categoryId: null },
-      { id: '2', name: 'Latest Pendants', image: latestNecklace, path: '/shop?sort=latest', tag: '', limit: 12, categoryId: null },
-      { id: '3', name: 'Latest Earrings', image: latestEarrings, path: '/shop?sort=latest', tag: '', limit: 12, categoryId: null },
-      { id: '4', name: 'Latest Chains', image: latestBracelet, path: '/shop?sort=latest', tag: '', limit: 12, categoryId: null }
-    ]
-  },
-  {
-    pageKey: 'home',
-    sectionKey: 'most-gifted',
-    sectionType: 'product-carousel',
-    label: 'Most Gifted Items',
-    isActive: true,
-    sortOrder: 19,
-    items: [
-      { id: 'hero', type: 'hero', name: 'Most Gifted Items', label: 'Most Gifted Items', image: giftWife, path: '/shop?sort=most-sold', tag: 'Collection Focus', ctaLabel: 'Explore Collection' },
-      { id: '1', name: 'Earrings', image: pinkEarrings, path: '/shop?sort=most-sold', tag: '', categoryId: null },
-      { id: '2', name: 'Bracelets', image: pinkBracelets, path: '/shop?sort=most-sold', tag: '', categoryId: null },
-      { id: '3', name: 'Chains', image: pinkChains, path: '/shop?sort=most-sold', tag: '', categoryId: null },
-      { id: '4', name: 'Anklets', image: pinkAnklets, path: '/shop?sort=most-sold', tag: '', categoryId: null }
     ]
   },
   {
@@ -617,8 +598,38 @@ const shopMenSections = [
     label: 'Hero Banners',
     isActive: true,
     sortOrder: 1,
+    settings: { autoplayMs: 5000 },
     items: [
-      { id: 'men-hero-1', name: 'For Him', label: 'Modern Jewellery for Men', subtitle: 'Clean silhouettes and strong styling for everyday statement looks.', image: menHeroDefault, path: '/shop?filter=mens', tag: 'Shop for Men', ctaLabel: 'Explore Now' }
+      {
+        id: 'men-hero-1',
+        name: 'SANDS BRINGS TO YOU',
+        label: 'MEN',
+        subtitle: 'Modern Silver for\nthe Bold Man',
+        image: menHeroBoldDefault,
+        path: '/shop?source=men&filter=men',
+        tag: 'Silver',
+        ctaLabel: 'SHOP NOW'
+      },
+      {
+        id: 'men-hero-2',
+        name: 'TIMELESS CRAFTSMANSHIP',
+        label: 'BOLD',
+        subtitle: 'Classic Designs,\nContemporary Edge',
+        image: menHeroStyleDefault,
+        path: '/shop?source=men&filter=men&sort=most-sold',
+        tag: 'Style',
+        ctaLabel: 'DISCOVER'
+      },
+      {
+        id: 'men-hero-3',
+        name: 'THE LUXURY COLLECTION',
+        label: 'ELITE',
+        subtitle: 'Signature Pieces for\nEvery Occasion',
+        image: menHeroEliteDefault,
+        path: '/shop?source=men&filter=men',
+        tag: 'Look',
+        ctaLabel: 'EXPLORE'
+      }
     ]
   },
   {
@@ -629,9 +640,93 @@ const shopMenSections = [
     isActive: true,
     sortOrder: 2,
     items: [
-      { id: 'men-rings', name: 'Rings', image: menCategoryDefault, path: '/shop?filter=mens' },
-      { id: 'men-bracelets', name: 'Bracelets', image: promoPremiumGift, path: '/shop?filter=mens' },
-      { id: 'men-chains', name: 'Chains', image: trendingChainLayering, path: '/shop?filter=mens' }
+      { id: 'men-rings', name: 'Rings', image: '/images/men-categories/rings.png', path: buildMenShopPath({ category: 'rings' }) },
+      { id: 'men-cufflinks', name: 'Cufflinks', image: '/images/men-categories/cufflinks.png', path: buildMenShopPath({ category: 'cufflinks' }) },
+      { id: 'men-chains', name: 'Chains', image: '/images/men-categories/chains.png', path: buildMenShopPath({ category: 'chains' }) },
+      { id: 'men-spiritual-picks', name: 'Spiritual Picks', image: '/images/men-categories/spiritual.png', path: buildMenShopPath({ search: 'spiritual' }) },
+      { id: 'men-pendants', name: 'Pendants', image: '/images/men-categories/pendants.png', path: buildMenShopPath({ category: 'pendants' }) },
+      { id: 'men-bracelets', name: 'Bracelets', image: '/images/men-categories/bracelets.png', path: buildMenShopPath({ category: 'bracelets' }) },
+      { id: 'men-sets', name: 'Sets', image: '/images/men-categories/sets.png', path: buildMenShopPath({ category: 'sets' }) },
+      { id: 'men-personalised', name: 'Personalised', image: '/images/men-categories/custom.png', path: buildMenShopPath({ category: 'personalised' }) }
+    ]
+  },
+  {
+    pageKey: 'shop-men',
+    sectionKey: 'luxury-section',
+    sectionType: 'promo-grid',
+    label: 'Luxury Within Reach',
+    isActive: true,
+    sortOrder: 3,
+    settings: {
+      title: 'Luxury Within Reach'
+    },
+    items: [
+      {
+        id: 'men-luxury-under-2999',
+        name: 'Rings',
+        image: menLuxuryRingDefault,
+        path: buildMenShopPath({ category: 'rings', priceMax: 2999 }),
+        priceMax: 2999,
+        label: 'Rings'
+      },
+      {
+        id: 'men-luxury-under-3999',
+        name: 'Bracelets',
+        image: menLuxuryGiftsDefault,
+        path: buildMenShopPath({ category: 'bracelets', priceMax: 3999 }),
+        priceMax: 3999,
+        label: 'Bracelets'
+      },
+      {
+        id: 'men-luxury-under-4999',
+        name: 'Pendants',
+        image: menLuxuryPendantDefault,
+        path: buildMenShopPath({ category: 'pendants', priceMax: 4999 }),
+        priceMax: 4999,
+        label: 'Pendants'
+      }
+    ]
+  },
+  {
+    pageKey: 'shop-men',
+    sectionKey: 'celebrate-men',
+    sectionType: 'category-grid',
+    label: 'Celebrate Men',
+    isActive: true,
+    sortOrder: 4,
+    settings: {
+      title: 'Celebrate Men',
+      subtitle: 'A Gifting Guide For Them'
+    },
+    items: [
+      {
+        id: 'celebrate-brothers',
+        name: 'Brothers',
+        image: giftBrothersDefault,
+        celebrateKey: 'brothers',
+        path: buildMenShopPath({ filter: 'brothers' })
+      },
+      {
+        id: 'celebrate-husbands',
+        name: 'Husbands',
+        image: giftHusbandsDefault,
+        celebrateKey: 'husbands',
+        path: buildMenShopPath({ filter: 'husbands' })
+      },
+      {
+        id: 'celebrate-couples',
+        name: 'Couple Gifts',
+        image: giftCouplesDefault,
+        celebrateKey: 'couples',
+        path: buildMenShopPath({ filter: 'couples' })
+      },
+      {
+        id: 'celebrate-boyfriends',
+        name: 'Boyfriends',
+        image: giftBoyfriendsDefault,
+        celebrateKey: 'boyfriends',
+        path: buildMenShopPath({ filter: 'boyfriends' })
+      }
     ]
   },
   {
@@ -640,8 +735,191 @@ const shopMenSections = [
     sectionType: 'product-collection',
     label: 'Curated Collections',
     isActive: true,
-    sortOrder: 3,
-    items: []
+    sortOrder: 5,
+    settings: {
+      badge: 'More Gifts for Him',
+      title: 'Curated Collections',
+      subtitle: 'Clean, easy-to-browse picks for gifting and everyday style.'
+    },
+    items: [
+      {
+        id: 'men-curated-silver',
+        name: 'SHOP SILVER FOR HIM',
+        image: menLuxuryRingDefault,
+        path: buildMenShopPath({ metal: 'silver' }),
+        tag: 'silver'
+      },
+      {
+        id: 'men-curated-astra',
+        name: 'ASTRA COLLECTION',
+        image: menLuxuryPendantDefault,
+        path: buildMenShopPath({ search: 'astra' }),
+        tag: 'astra'
+      },
+      {
+        id: 'men-curated-gifts',
+        name: 'SHOP GIFTS FOR HIM',
+        image: menLuxuryGiftsDefault,
+        path: buildMenShopPath(),
+        tag: 'gifts'
+      },
+      {
+        id: 'men-curated-classics',
+        name: 'THE CLASSICS FOR HIM',
+        image: menLuxuryRingDefault,
+        path: buildMenShopPath({ sort: 'most-sold' }),
+        tag: 'classics'
+      },
+      {
+        id: 'men-curated-pendants',
+        name: 'PENDANTS FOR HIM',
+        image: menLuxuryPendantDefault,
+        path: buildMenShopPath({ category: 'pendants' }),
+        tag: 'pendants'
+      },
+      {
+        id: 'men-curated-925-silver',
+        name: '925 SILVER SHOP',
+        image: menStyleBraceletsDefault,
+        path: buildMenShopPath({ metal: 'silver', silverType: '925 sterling silver' }),
+        tag: 'sterling'
+      }
+    ]
+  },
+  {
+    pageKey: 'shop-men',
+    sectionKey: 'explore-collections',
+    sectionType: 'promo-grid',
+    label: 'Explore Collections',
+    isActive: true,
+    sortOrder: 6,
+    settings: {
+      title: 'Explore Collections'
+    },
+    items: [
+      {
+        id: 'men-explore-edge',
+        name: 'EDGE',
+        subtitle: 'Sleek, silver, and made to turn heads',
+        image: exploreEdgeDefault,
+        extraImages: [exploreThumbRingDefault, exploreThumbChainDefault, exploreThumbRingDefault],
+        categoryId: null,
+        path: buildMenShopPath({ category: 'rings' })
+      },
+      {
+        id: 'men-explore-classics',
+        name: 'THE CLASSICS',
+        subtitle: 'Because classics never go out of style',
+        image: exploreClassicsDefault,
+        extraImages: [exploreThumbPendantDefault, exploreThumbChainDefault, exploreThumbChainDefault],
+        categoryId: null,
+        path: buildMenShopPath({ category: 'chains' })
+      },
+      {
+        id: 'men-explore-iykyk',
+        name: 'IYKYK',
+        subtitle: 'Street style that speaks for itself',
+        image: exploreIykykDefault,
+        extraImages: [exploreThumbPendantDefault, exploreThumbRingDefault, exploreThumbChainDefault],
+        categoryId: null,
+        path: buildMenShopPath({ category: 'bracelets' })
+      }
+    ]
+  },
+  {
+    pageKey: 'shop-men',
+    sectionKey: 'personalized-banner',
+    sectionType: 'rich-content',
+    label: 'Personalized Banner',
+    isActive: true,
+    sortOrder: 7,
+    settings: {},
+    items: [
+      {
+        id: 'men-personalized-main',
+        name: 'Personalised',
+        label: 'Personalised',
+        subtitle: 'Flawless Gifting, Tailored to You',
+        image: menPersonalizedFullBannerDefault,
+        categoryId: null,
+        path: buildMenShopPath({ category: 'personalised' }),
+        ctaLabel: 'Customise Now'
+      }
+    ]
+  },
+  {
+    pageKey: 'shop-men',
+    sectionKey: 'pick-your-glam',
+    sectionType: 'category-grid',
+    label: 'Pick Your Glam',
+    isActive: true,
+    sortOrder: 8,
+    settings: {
+      title: 'Pick Your Glam'
+    },
+    items: [
+      { id: 'men-glam-party-spark', name: 'Party Spark', image: glamPartySparkDefault, categoryId: null, path: buildMenShopPath({ category: 'rings' }) },
+      { id: 'men-glam-wedding-jewels', name: 'Wedding Jewels', image: glamWeddingJewelsDefault, categoryId: null, path: buildMenShopPath({ category: 'chains' }) },
+      { id: 'men-glam-ritual-range', name: 'Ritual Range', image: glamRitualRangeDefault, categoryId: null, path: buildMenShopPath({ category: 'pendants' }) },
+      { id: 'men-glam-daily-wear', name: 'Daily Wear', image: glamDailyWearDefault, categoryId: null, path: buildMenShopPath({ category: 'bracelets' }) },
+      { id: 'men-glam-office-wear', name: 'Office Wear', image: glamOfficeWearDefault, categoryId: null, path: buildMenShopPath({ category: 'rings' }) }
+    ]
+  },
+  {
+    pageKey: 'shop-men',
+    sectionKey: 'style-guide',
+    sectionType: 'category-grid',
+    label: 'Style Guide',
+    isActive: true,
+    sortOrder: 9,
+    settings: {
+      title: 'STYLE GUIDE',
+      subtitle: 'Master the hottest trends'
+    },
+    items: [
+      {
+        id: 'men-style-guide-1',
+        name: 'Chain Layering',
+        step: '1. Chain Layering',
+        buttonText: 'Explore Chains',
+        image: menStyleChainsDefault,
+        categoryId: null,
+        path: buildMenShopPath({ category: 'chains' })
+      },
+      {
+        id: 'men-style-guide-2',
+        name: 'One Piece, Big Impact',
+        step: '2. One Piece, Big Impact',
+        buttonText: 'Explore Rings',
+        image: menStyleRingsDefault,
+        categoryId: null,
+        path: buildMenShopPath({ category: 'rings' })
+      },
+      {
+        id: 'men-style-guide-3',
+        name: 'Wrist Stacking',
+        step: '3. Wrist Stacking',
+        buttonText: 'Explore Bracelets',
+        image: menStyleBraceletsDefault,
+        categoryId: null,
+        path: buildMenShopPath({ category: 'bracelets' })
+      }
+    ]
+  },
+  {
+    pageKey: 'shop-men',
+    sectionKey: 'style-trends',
+    sectionType: 'category-grid',
+    label: 'Style Trends',
+    isActive: true,
+    sortOrder: 10,
+    settings: {},
+    items: [
+      { id: 'men-style-trend-1', name: 'Rings Stacking', line1: 'Rings', line2: 'Stacking', image: '/men_style_1.png', categoryId: null, path: buildMenShopPath({ category: 'rings' }) },
+      { id: 'men-style-trend-2', name: 'Curated Combos', line1: 'Curated', line2: 'Combos', image: '/men_style_2.png', categoryId: null, path: buildMenShopPath({ category: 'sets' }) },
+      { id: 'men-style-trend-3', name: 'Chain Layering', line1: 'Chain', line2: 'Layering', image: '/men_style_3.png', categoryId: null, path: buildMenShopPath({ category: 'chains' }) },
+      { id: 'men-style-trend-4', name: 'Spiritual Picks', line1: 'Spiritual', line2: 'Picks', image: '/men_style_4.png', categoryId: null, path: buildMenShopPath({ category: 'pendants' }) }
+    ]
   },
   {
     pageKey: 'shop-men',
@@ -649,7 +927,14 @@ const shopMenSections = [
     sectionType: 'product-carousel',
     label: 'Products Listing',
     isActive: true,
-    sortOrder: 4,
+    sortOrder: 11,
+    settings: {
+      title: "Men's Exclusive",
+      productLimit: 8,
+      sourceMode: 'category',
+      categoryId: null,
+      ctaLabel: 'View All Collection'
+    },
     items: []
   }
 ];
@@ -745,9 +1030,18 @@ export const sectionDefaultsByPage = {
   'shop-family': shopFamilySections
 };
 
-export const sectionDefaults = Object.values(sectionDefaultsByPage).flat();
+const buildSectionIdentity = (pageKey, sectionKey) => (
+  pageKey === 'home' ? sectionKey : `${pageKey}:${sectionKey}`
+);
 
-export const getSectionDefaultsForPage = (pageKey) => sectionDefaultsByPage[pageKey] || [];
+const withSectionIdentity = (section) => ({
+  ...section,
+  sectionId: section.sectionId || buildSectionIdentity(section.pageKey || 'home', section.sectionKey)
+});
+
+export const sectionDefaults = Object.values(sectionDefaultsByPage).flat().map(withSectionIdentity);
+
+export const getSectionDefaultsForPage = (pageKey) => (sectionDefaultsByPage[pageKey] || []).map(withSectionIdentity);
 
 export const getPageConfig = (pageKey) => PAGE_SECTIONS.find((page) => page.pageKey === pageKey) || PAGE_SECTIONS[0];
 

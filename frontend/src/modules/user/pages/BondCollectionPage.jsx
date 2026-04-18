@@ -1,10 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, ChevronRight, ShieldCheck, RefreshCw, RotateCcw, Star } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
 import { COLLECTION_MOCK_PRODUCTS } from '../data/mockCollectionData';
 import ProductCard from '../components/ProductCard';
+import { matchesRequestedMetal } from '../utils/productMetal';
 
 // Import Banners
 import bannerWife from '@assets/banner_bond_wife.png';
@@ -85,6 +86,8 @@ const BondCollectionPage = () => {
     const { products } = useShop();
     const [shopNowHover, setShopNowHover] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
+    const metalQuery = new URLSearchParams(location.search).get('metal');
 
     const config = BONDS_CONFIG[bondId] || BONDS_CONFIG.wife;
 
@@ -92,12 +95,16 @@ const BondCollectionPage = () => {
         if (!products) return [];
         const real = products.filter(p => {
             const searchStr = `${p.name} ${p.description} ${p.category}`.toLowerCase();
-            return searchStr.includes(bondId.toLowerCase()) || searchStr.includes('gift');
+            const bondMatch = searchStr.includes(bondId.toLowerCase()) || searchStr.includes('gift');
+            const metalMatch = matchesRequestedMetal(p, metalQuery);
+            return bondMatch && metalMatch;
         });
         
-        const mocks = MOCKS_FOR_BONDS[bondId] || MOCKS_FOR_BONDS.wife;
+        const mocks = (!metalQuery || metalQuery.toLowerCase() === 'silver')
+            ? (MOCKS_FOR_BONDS[bondId] || MOCKS_FOR_BONDS.wife)
+            : [];
         return [...real, ...mocks].slice(0, 16);
-    }, [products, bondId]);
+    }, [products, bondId, metalQuery]);
 
     useEffect(() => {
         window.scrollTo(0, 0);

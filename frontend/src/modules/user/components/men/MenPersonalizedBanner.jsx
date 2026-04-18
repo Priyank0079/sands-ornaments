@@ -1,12 +1,58 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { buildMenShopPath } from '../../utils/menNavigation';
+import api from '../../../../services/api';
+import { resolveLegacyCmsAsset } from '../../utils/legacyCmsAssets';
 
 // Import image
 import personalizedImg from '@assets/men/personalized_full_banner.png';
 
 const MenPersonalizedBanner = () => {
+    const [sectionData, setSectionData] = useState(null);
+
+    useEffect(() => {
+        const fetchPersonalizedBanner = async () => {
+            try {
+                const res = await api.get('public/cms/pages/shop-men');
+                if (res.data.success) {
+                    const sections = res.data.data?.sections || [];
+                    const section = sections.find((entry) => (
+                        (entry.sectionKey || entry.sectionId) === 'personalized-banner'
+                    ));
+                    if (section) setSectionData(section);
+                }
+            } catch (err) {
+                console.error('Failed to fetch men personalized banner section:', err);
+            }
+        };
+
+        fetchPersonalizedBanner();
+    }, []);
+
+    const resolvedItem = useMemo(() => {
+        const configured = Array.isArray(sectionData?.items) ? sectionData.items[0] : null;
+        if (!configured) {
+            return {
+                name: 'Personalised',
+                subtitle: 'Flawless Gifting, Tailored to You',
+                ctaLabel: 'Customise Now',
+                image: personalizedImg,
+                path: buildMenShopPath({ category: 'personalised' })
+            };
+        }
+
+        return {
+            name: configured.name || configured.label || 'Personalised',
+            subtitle: configured.subtitle || configured.description || 'Flawless Gifting, Tailored to You',
+            ctaLabel: configured.ctaLabel || 'Customise Now',
+            image: resolveLegacyCmsAsset(configured.image, personalizedImg),
+            path: configured.categoryId
+                ? buildMenShopPath({ category: configured.categoryId })
+                : (configured.path || buildMenShopPath({ category: 'personalised' }))
+        };
+    }, [sectionData]);
+
     return (
         <section className="relative w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] bg-[#FDF5F6] py-0 overflow-hidden">
             <motion.div 
@@ -18,8 +64,8 @@ const MenPersonalizedBanner = () => {
             >
                 {/* Background Image - Full Width Edge to Edge */}
                 <img 
-                    src={personalizedImg} 
-                    alt="Personalised Men's Jewellery" 
+                    src={resolvedItem.image}
+                    alt={resolvedItem.name || "Personalised Men's Jewellery"}
                     className="w-full h-full object-cover transition-transform duration-[5s] group-hover:scale-105"
                 />
 
@@ -37,14 +83,14 @@ const MenPersonalizedBanner = () => {
                             className="max-w-2xl"
                         >
                             <h2 className="text-3xl md:text-6xl font-display text-white leading-none mb-3 md:mb-4" style={{ fontFamily: "'Cinzel', serif", fontWeight: 700 }}>
-                                Personalised
+                                {resolvedItem.name}
                             </h2>
                             <p className="text-xs md:text-lg text-[#D9C4B1] font-light tracking-[0.15em] uppercase mb-5 md:mb-7">
-                                Flawless Gifting, Tailored to You
+                                {resolvedItem.subtitle}
                             </p>
                             
                             <Link 
-                                to={buildMenShopPath({ category: 'personalised' })}
+                                to={resolvedItem.path}
                                 className="inline-block"
                             >
                                 <motion.div
@@ -52,7 +98,7 @@ const MenPersonalizedBanner = () => {
                                     whileTap={{ scale: 0.95 }}
                                     className="bg-gradient-to-r from-[#D9C4B1] to-[#C9A24D] text-[#3B2516] px-8 md:px-11 py-3 md:py-4 rounded-full font-bold text-[11px] md:text-base tracking-[0.2em] uppercase shadow-2xl transition-all border border-white/30"
                                 >
-                                    Customise Now
+                                    {resolvedItem.ctaLabel}
                                 </motion.div>
                             </Link>
                         </motion.div>

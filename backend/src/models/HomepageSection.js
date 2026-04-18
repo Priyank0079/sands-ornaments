@@ -13,6 +13,7 @@ const homepageItemSchema = new mongoose.Schema({
   description: String,
   image: String,
   hoverImage: String,
+  celebrateKey: String,
   iconKey: String,
   path: String,
   tag: String,

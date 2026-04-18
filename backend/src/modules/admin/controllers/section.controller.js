@@ -103,6 +103,18 @@ const buildCategoryPath = (categoryId, currentPath) => {
   return currentPath || "/shop";
 };
 
+const buildCelebrateMenPath = (celebrateKey, currentPath) => {
+  if (celebrateKey) return `/shop?source=men&filter=${encodeURIComponent(celebrateKey)}`;
+  return currentPath || "/shop?source=men&filter=men";
+};
+
+const buildMenCuratedCollectionPath = (categoryId, currentPath) => {
+  if (categoryId) {
+    return `/shop?source=men&filter=men&category=${encodeURIComponent(categoryId)}`;
+  }
+  return currentPath || "/shop?source=men&filter=men";
+};
+
 const buildPriceRangePath = (priceMax, currentPath) => {
   if (priceMax) return `/shop?price_max=${priceMax}`;
   return currentPath || "/shop";
@@ -163,9 +175,14 @@ const sanitizeSectionPayload = (identity, payload = {}) => {
       name: item.name,
       label: item.label,
       subtitle: item.subtitle,
+      step: item.step,
+      buttonText: item.buttonText,
+      line1: item.line1,
+      line2: item.line2,
       description: item.description,
       image: item.image,
       hoverImage: item.hoverImage,
+      celebrateKey: item.celebrateKey,
       path: item.path,
       tag: item.tag,
       location: item.location,
@@ -218,6 +235,33 @@ const sanitizeSectionPayload = (identity, payload = {}) => {
         };
       })
       .filter((item) => Boolean(item.categoryId));
+  }
+
+  if (sectionKey === "celebrate-men") {
+    cleaned.items = cleaned.items
+      .map((item, idx) => {
+        const celebrateKey = String(item.celebrateKey || "").trim();
+        const label = item.name || item.label || "";
+
+        if (!celebrateKey) {
+          return {
+            ...item,
+            name: label,
+            label,
+            sortOrder: item.sortOrder ?? idx
+          };
+        }
+
+        return {
+          ...item,
+          celebrateKey,
+          name: label,
+          label: item.label || label,
+          path: buildCelebrateMenPath(celebrateKey, item.path),
+          sortOrder: item.sortOrder ?? idx
+        };
+      })
+      .filter((item) => Boolean(item.celebrateKey));
   }
 
   if (sectionKey === "price-range-showcase" || sectionKey === "luxury-within-reach") {
@@ -373,6 +417,169 @@ const sanitizeSectionPayload = (identity, payload = {}) => {
       .filter((item) => Boolean(item.categoryId));
   }
 
+  if (sectionKey === "curated-collections" && pageKey === "shop-men") {
+    cleaned.items = cleaned.items
+      .map((item, idx) => {
+        const categoryId = item.categoryId || null;
+        const label = item.name || item.label || "";
+
+        if (!label || !item.image || (!categoryId && !item.path)) {
+          return null;
+        }
+
+        return {
+          ...item,
+          categoryId,
+          name: label,
+          label: item.label || label,
+          tag: item.tag || "",
+          path: buildMenCuratedCollectionPath(categoryId, item.path),
+          sortOrder: item.sortOrder ?? idx
+        };
+      })
+      .filter(Boolean);
+  }
+
+  if (sectionKey === "explore-collections" && pageKey === "shop-men") {
+    cleaned.items = cleaned.items
+      .map((item, idx) => {
+        const categoryId = item.categoryId || null;
+        const label = item.name || item.label || "";
+        const subtitle = item.subtitle || item.description || "";
+
+        if (!label || !subtitle || !item.image || (!categoryId && !item.path)) {
+          return null;
+        }
+
+        return {
+          ...item,
+          categoryId,
+          name: label,
+          label: item.label || label,
+          subtitle,
+          description: item.description || subtitle,
+          path: buildMenCuratedCollectionPath(categoryId, item.path),
+          sortOrder: item.sortOrder ?? idx
+        };
+      })
+      .filter(Boolean);
+  }
+
+  if (sectionKey === "personalized-banner" && pageKey === "shop-men") {
+    const sourceItem = cleaned.items[0];
+    cleaned.items = sourceItem
+      ? [{
+          ...sourceItem,
+          name: sourceItem.name || sourceItem.label || "Personalised",
+          label: sourceItem.label || sourceItem.name || "Personalised",
+          subtitle: sourceItem.subtitle || sourceItem.description || "",
+          description: sourceItem.description || sourceItem.subtitle || "",
+          ctaLabel: sourceItem.ctaLabel || "Customise Now",
+          categoryId: sourceItem.categoryId || null,
+          path: buildMenCuratedCollectionPath(sourceItem.categoryId || null, sourceItem.path),
+          sortOrder: 0
+        }].filter((item) => Boolean(item.image && item.categoryId))
+      : [];
+  }
+
+  if (sectionKey === "pick-your-glam" && pageKey === "shop-men") {
+    cleaned.items = cleaned.items
+      .map((item, idx) => {
+        const categoryId = item.categoryId || null;
+        const label = item.name || item.label || "";
+        if (!label || !item.image || !categoryId) return null;
+        return {
+          ...item,
+          name: label,
+          label: item.label || label,
+          categoryId,
+          path: buildMenCuratedCollectionPath(categoryId, item.path),
+          sortOrder: item.sortOrder ?? idx
+        };
+      })
+      .filter(Boolean);
+  }
+
+  if (sectionKey === "style-guide" && pageKey === "shop-men") {
+    cleaned.items = cleaned.items
+      .slice(0, 3)
+      .map((item, idx) => {
+        const categoryId = item.categoryId || null;
+        const label = item.name || item.label || "";
+        const step = item.step || `${idx + 1}. Step`;
+        const buttonText = item.buttonText || item.ctaLabel || "Explore";
+        if (!label || !step || !buttonText || !item.image || !categoryId) return null;
+        return {
+          ...item,
+          name: label,
+          label: item.label || label,
+          step,
+          buttonText,
+          ctaLabel: buttonText,
+          categoryId,
+          path: buildMenCuratedCollectionPath(categoryId, item.path),
+          sortOrder: idx
+        };
+      })
+      .filter(Boolean);
+  }
+
+  if (sectionKey === "style-trends" && pageKey === "shop-men") {
+    cleaned.items = cleaned.items
+      .slice(0, 4)
+      .map((item, idx) => {
+        const categoryId = item.categoryId || null;
+        const line1 = item.line1 || "";
+        const line2 = item.line2 || "";
+        const label = item.name || item.label || `${line1} ${line2}`.trim();
+        if (!line1 || !line2 || !item.image || !categoryId) return null;
+        return {
+          ...item,
+          name: label,
+          label: item.label || label,
+          line1,
+          line2,
+          categoryId,
+          path: buildMenCuratedCollectionPath(categoryId, item.path),
+          sortOrder: item.sortOrder ?? idx
+        };
+      })
+      .filter(Boolean);
+  }
+
+  if (sectionKey === "products-listing" && pageKey === "shop-men") {
+    const sourceModeCandidate = String(cleaned.settings?.sourceMode || "").trim().toLowerCase();
+    const sourceMode = sourceModeCandidate === "manual" ? "manual" : "category";
+    const productLimit = parsePositiveNumber(cleaned.settings?.productLimit) || 8;
+    const categoryId = String(cleaned.settings?.categoryId || "").trim() || null;
+
+    const manualProductIds = normalizeObjectIdList(
+      cleaned.items.flatMap((item) => [
+        item.productId,
+        ...(Array.isArray(item.productIds) ? item.productIds : [])
+      ])
+    );
+
+    cleaned.settings = {
+      ...cleaned.settings,
+      title: String(cleaned.settings?.title || "Men's Exclusive").trim() || "Men's Exclusive",
+      productLimit,
+      sourceMode,
+      categoryId: sourceMode === "category" ? categoryId : null,
+      ctaLabel: "View All Collection"
+    };
+
+    cleaned.items = sourceMode === "manual"
+      ? manualProductIds.map((productId, idx) => ({
+          itemId: `men-featured-${idx + 1}`,
+          type: "product",
+          productId,
+          path: "/shop?source=men&filter=men",
+          sortOrder: idx
+        }))
+      : [];
+  }
+
   if (sectionKey === "curated-for-you" || sectionKey === "style-it-your-way") {
     cleaned.items = cleaned.items.map((item, idx) => {
       const productIds = normalizeObjectIdList(item.productIds);
@@ -473,6 +680,8 @@ exports.bulkUpsertSections = async (req, res) => {
 exports.uploadSectionImage = async (req, res) => {
   try {
     if (!req.file) return error(res, "Image file is required", 400);
-    return success(res, { url: req.file.path }, "Image uploaded");
+    const url = req.file.path || req.file.secure_url || req.file.url || null;
+    if (!url) return error(res, "Image upload succeeded but no file URL was returned", 500);
+    return success(res, { url }, "Image uploaded");
   } catch (err) { return error(res, err.message); }
 };
