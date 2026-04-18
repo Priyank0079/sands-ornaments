@@ -5,9 +5,9 @@ import { buildMenShopPath } from '../../utils/menNavigation';
 import api from '../../../../services/api';
 import { resolveLegacyCmsAsset } from '../../utils/legacyCmsAssets';
 
-import heroMenBold from '../../assets/men_hero_bold.png';
-import heroMenStyle from '../../assets/men_hero_style.png';
-import heroMenElite from '../../assets/men_hero_elite.png';
+import heroMenBold from '@assets/men_hero_bold.png';
+import heroMenStyle from '@assets/men_hero_style.png';
+import heroMenElite from '@assets/men_hero_elite.png';
 
 const slides = [
     {
@@ -235,3 +235,4 @@ const MenHeroCarousel = () => {
 };
 
 export default MenHeroCarousel;
+

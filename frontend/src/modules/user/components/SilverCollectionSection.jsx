@@ -6,13 +6,13 @@ import { useShop } from '../../../context/ShopContext';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 
 // Import thematic assets
-import bannerImg from '../assets/banner_elegant_silver.png';
-import themeInfinity from '../assets/theme_infinity.png';
-import themeKnots from '../assets/theme_knots.png';
-import themeDrops from '../assets/theme_drops.png';
-import themeLeaves from '../assets/theme_leaves.png';
-import themeBubbles from '../assets/theme_bubbles.png';
-import themeMoon from '../assets/theme_moon.png';
+import bannerImg from '@assets/banner_elegant_silver.png';
+import themeInfinity from '@assets/theme_infinity.png';
+import themeKnots from '@assets/theme_knots.png';
+import themeDrops from '@assets/theme_drops.png';
+import themeLeaves from '@assets/theme_leaves.png';
+import themeBubbles from '@assets/theme_bubbles.png';
+import themeMoon from '@assets/theme_moon.png';
 
 const SILVER_STYLE_CATEGORIES = [
     {
@@ -236,3 +236,4 @@ const SilverCollectionSection = () => {
 };
 
 export default SilverCollectionSection;
+

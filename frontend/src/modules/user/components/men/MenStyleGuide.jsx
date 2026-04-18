@@ -7,9 +7,9 @@ import api from '../../../../services/api';
 import { resolveLegacyCmsAsset } from '../../utils/legacyCmsAssets';
 
 // Import images from assets
-import styleChains from '../../../../assets/men/style_chains.png';
-import styleRings from '../../../../assets/men/style_rings.png';
-import styleBracelets from '../../../../assets/men/style_bracelets.png';
+import styleChains from '@assets/men/style_chains.png';
+import styleRings from '@assets/men/style_rings.png';
+import styleBracelets from '@assets/men/style_bracelets.png';
 
 const styles = [
     {
@@ -169,3 +169,4 @@ const MenStyleGuide = () => {
 };
 
 export default MenStyleGuide;
+

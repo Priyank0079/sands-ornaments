@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
-import trendingHeritage from '../assets/trending_heritage.png';
-import trendingModern from '../assets/trending_modern.png';
+import trendingHeritage from '@assets/trending_heritage.png';
+import trendingModern from '@assets/trending_modern.png';
 
 {/* Trendy Products / Editorial Split Section */}
 <section className="py-24 bg-white overflow-hidden">
@@ -76,3 +76,4 @@ import trendingModern from '../assets/trending_modern.png';
 
     </div>
 </section>
+

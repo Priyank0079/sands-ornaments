@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { buildWomenShopPath } from '../../utils/womenNavigation';
 
-import CoupleRingsImg from '../../../../assets/promos/DarkCoupleRings.png';
-import PremiumGiftsImg from '../../../../assets/promos/DarkPremiumGifts.png';
+import CoupleRingsImg from '@assets/promos/DarkCoupleRings.png';
+import PremiumGiftsImg from '@assets/promos/DarkPremiumGifts.png';
 
 const banners = [
     {
@@ -93,3 +93,4 @@ const WomenPromoBanners = () => {
 };
 
 export default WomenPromoBanners;
+

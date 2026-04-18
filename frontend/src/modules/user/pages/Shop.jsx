@@ -8,14 +8,14 @@ import {
     ArrowLeft, ArrowUpDown
 } from 'lucide-react';
 
-import menRing from '../assets/men_prod_ring.png';
-import menPendant from '../assets/men_prod_pendant.png';
-import menBracelet from '../assets/men_prod_bracelet.png';
-import menChain from '../assets/men_prod_chain.png';
+import menRing from '@assets/men_prod_ring.png';
+import menPendant from '@assets/men_prod_pendant.png';
+import menBracelet from '@assets/men_prod_bracelet.png';
+import menChain from '@assets/men_prod_chain.png';
 
-import womenEarrings from '../assets/cat_earrings.png';
-import womenPendant from '../assets/trending_modern.png';
-import womenRing from '../assets/prod_ring_main.png';
+import womenEarrings from '@assets/cat_earrings.png';
+import womenPendant from '@assets/trending_modern.png';
+import womenRing from '@assets/prod_ring_main.png';
 
 const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
 
@@ -36,7 +36,7 @@ const Shop = () => {
     const [isSortOpen, setIsSortOpen] = useState(false);
     const [isWebSortOpen, setIsWebSortOpen] = useState(false);
     const [sortBy, setSortBy] = useState('Newest');
-    const [priceRange, setPriceRange] = useState(50000); 
+    const [priceRange, setPriceRange] = useState(50000);
     const [filteredProducts, setFilteredProducts] = useState(products || []);
     const [pageTitle, setPageTitle] = useState('All Jewellery');
     const queryParams = new URLSearchParams(location.search);
@@ -124,7 +124,7 @@ const Shop = () => {
         const path = location.pathname;
         const categoryQuery = queryParams.get('category');
         const metalQuery = queryParams.get('metal');
-        
+
         let baseProducts = products;
         let title = 'All Jewellery';
 
@@ -472,7 +472,7 @@ const Shop = () => {
                 variants: [{ id: 'p5-v1', price: 6599, mrp: 9999 }]
             }
         ];
-        
+
         const womenDummyProducts = [
             {
                 id: 'w1',
@@ -530,18 +530,18 @@ const Shop = () => {
         }
 
         // 6. Inject Dummy Products for Men/Women Categories if empty
-        const isMenCategory = category?.toLowerCase() === 'men' || 
-                             selectedCategory?.toLowerCase() === 'men' ||
-                             sourceQuery === 'men' ||
-                             location.pathname.includes('/men') ||
-                             menDummyProducts.some(p => p.categorySlug === category || p.categorySlug === selectedCategory?.toLowerCase());
+        const isMenCategory = category?.toLowerCase() === 'men' ||
+            selectedCategory?.toLowerCase() === 'men' ||
+            sourceQuery === 'men' ||
+            location.pathname.includes('/men') ||
+            menDummyProducts.some(p => p.categorySlug === category || p.categorySlug === selectedCategory?.toLowerCase());
 
-        const isWomenCategory = category?.toLowerCase() === 'women' || 
-                               category?.toLowerCase() === 'womens' ||
-                               selectedCategory?.toLowerCase() === 'women' ||
-                               sourceQuery === 'women' ||
-                               location.pathname.includes('/women') ||
-                               womenDummyProducts.some(p => p.categorySlug === category || p.categorySlug === selectedCategory?.toLowerCase());
+        const isWomenCategory = category?.toLowerCase() === 'women' ||
+            category?.toLowerCase() === 'womens' ||
+            selectedCategory?.toLowerCase() === 'women' ||
+            sourceQuery === 'women' ||
+            location.pathname.includes('/women') ||
+            womenDummyProducts.some(p => p.categorySlug === category || p.categorySlug === selectedCategory?.toLowerCase());
 
         if (result.length === 0 && isMenCategory) {
             result = menDummyProducts;
@@ -709,7 +709,7 @@ const Shop = () => {
                                 <p className="text-gray-500 max-w-md mx-auto mb-8">
                                     We're currently handcrafting new exquisite designs for <span className="text-black font-semibold">{selectedCategory}</span>. Stay tuned!
                                 </p>
-                                <button 
+                                <button
                                     onClick={clearAllFilters}
                                     className="bg-black text-white px-8 py-3 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-[#D39A9F] transition-all shadow-lg"
                                 >
@@ -738,8 +738,8 @@ const Shop = () => {
                         <div className="flex flex-col items-center justify-center py-20 text-center">
                             <h3 className="text-2xl font-serif text-black mb-2">No products found</h3>
                             <p className="text-gray-500">Try adjusting your filters to find your perfect match.</p>
-                            <button 
-                                onClick={clearAllFilters} 
+                            <button
+                                onClick={clearAllFilters}
                                 className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#D39A9F] hover:underline"
                             >
                                 <SlidersHorizontal className="w-4 h-4" /> Clear all filters
@@ -931,3 +931,4 @@ const Shop = () => {
 };
 
 export default Shop;
+

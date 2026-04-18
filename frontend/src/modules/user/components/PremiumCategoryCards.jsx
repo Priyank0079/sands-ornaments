@@ -2,8 +2,8 @@ import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
-import menImg from '../../../assets/collections/cat_men_nobg.png';
-import womenImg from '../../../assets/collections/cat_women_nobg.png';
+import menImg from '@assets/collections/cat_men_nobg.png';
+import womenImg from '@assets/collections/cat_women_nobg.png';
 
 const PremiumCategoryCards = () => {
     const navigate = useNavigate();
@@ -42,8 +42,8 @@ const PremiumCategoryCards = () => {
                     <div className="w-8 h-[1px] md:w-10 md:h-[2px] bg-[#C9A24D]/60 mt-3 md:mt-5" />
                 </div>
 
-                {/* Cards Grid */}
-                <div className="flex flex-col gap-6 md:grid md:grid-cols-2 md:gap-16 relative">
+                {/* Cards Grid - Increased gap on mobile to accommodate overlapping model images */}
+                <div className="flex flex-col gap-16 md:grid md:grid-cols-2 md:gap-16 relative">
                     {RECIPIENTS.map((item, idx) => (
                         <motion.div
                             key={item.id}
@@ -86,3 +86,4 @@ const PremiumCategoryCards = () => {
 };
 
 export default PremiumCategoryCards;
+

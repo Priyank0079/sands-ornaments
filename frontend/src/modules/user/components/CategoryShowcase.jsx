@@ -2,12 +2,12 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
-import catChoker from '../assets/cat_wedding_choker.png';
-import catHaram from '../assets/cat_wedding_haram.png';
-import catBangles from '../assets/cat_wedding_bangles.png';
-import catDiamond from '../assets/cat_wedding_diamond.png';
-import catMangalsutra from '../assets/cat_wedding_mangalsutra.png';
-import catPremiumAll from '../assets/cat_all_premium.png';
+import catChoker from '@assets/cat_wedding_choker.png';
+import catHaram from '@assets/cat_wedding_haram.png';
+import catBangles from '@assets/cat_wedding_bangles.png';
+import catDiamond from '@assets/cat_wedding_diamond.png';
+import catMangalsutra from '@assets/cat_wedding_mangalsutra.png';
+import catPremiumAll from '@assets/cat_all_premium.png';
 
 const finalItems = [
     {
@@ -112,3 +112,4 @@ const CategoryShowcase = () => {
 };
 
 export default CategoryShowcase;
+

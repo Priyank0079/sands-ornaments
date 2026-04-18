@@ -1,11 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
-import haldiImgDefault from '../assets/home_occasions/home_haldi.png';
-import sangeetImgDefault from '../assets/home_occasions/home_sangeet.png';
-import receptionImgDefault from '../assets/home_occasions/home_reception.png';
-import bridalImgDefault from '../assets/home_occasions/home_gift_for_bride.png';
-import bridesmaidImgDefault from '../assets/home_occasions/home_gift_for_bridesmaid.png';
+import haldiImgDefault from '@assets/home_occasions/home_haldi.png';
+import sangeetImgDefault from '@assets/home_occasions/home_sangeet.png';
+import receptionImgDefault from '@assets/home_occasions/home_reception.png';
+import bridalImgDefault from '@assets/home_occasions/home_gift_for_bride.png';
+import bridesmaidImgDefault from '@assets/home_occasions/home_gift_for_bridesmaid.png';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 import { ensureSilverHomePath } from '../utils/silverHomePaths';
 
@@ -175,3 +175,4 @@ const OccasionalSpecial = () => {
 };
 
 export default OccasionalSpecial;
+

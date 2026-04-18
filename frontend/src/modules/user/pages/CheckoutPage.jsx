@@ -5,7 +5,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, CreditCard, Banknote, Truck, Tag, X, Percent } from 'lucide-react';
 import CouponsModal from '../components/CouponsModal';
-import logo from '../../../assets/logo.png';
+import logo from '@assets/logo.png';
 
 const CheckoutPage = () => {
     const navigate = useNavigate();
@@ -461,3 +461,4 @@ const CheckoutPage = () => {
 };
 
 export default CheckoutPage;
+

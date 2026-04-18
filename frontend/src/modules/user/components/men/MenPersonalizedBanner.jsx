@@ -6,7 +6,7 @@ import api from '../../../../services/api';
 import { resolveLegacyCmsAsset } from '../../utils/legacyCmsAssets';
 
 // Import image
-import personalizedImg from '../../../../assets/men/personalized_full_banner.png';
+import personalizedImg from '@assets/men/personalized_full_banner.png';
 
 const MenPersonalizedBanner = () => {
     const [sectionData, setSectionData] = useState(null);
@@ -119,3 +119,4 @@ const MenPersonalizedBanner = () => {
 };
 
 export default MenPersonalizedBanner;
+

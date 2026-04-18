@@ -2,15 +2,15 @@ import React from 'react';
 import { Truck, ThumbsUp, Lock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import logoIcon from '../assets/SANDS JEWELS ICON PINK.png';
-import aboutHero1 from '../assets/cat_wedding_choker.png';
-import aboutHero2 from '../assets/cat_wedding_bangles.png';
-import aboutHero3 from '../assets/cat_wedding_diamond.png';
+import logoIcon from '@assets/SANDS JEWELS ICON PINK.png';
+import aboutHero1 from '@assets/cat_wedding_choker.png';
+import aboutHero2 from '@assets/cat_wedding_bangles.png';
+import aboutHero3 from '@assets/cat_wedding_diamond.png';
 
-import insta1 from '../assets/men_hero_style.png';
-import insta2 from '../assets/women_hero_radiance.png';
-import insta3 from '../assets/family_astra.png';
-import insta4 from '../assets/men_hero_bold.png';
+import insta1 from '@assets/men_hero_style.png';
+import insta2 from '@assets/women_hero_radiance.png';
+import insta3 from '@assets/family_astra.png';
+import insta4 from '@assets/men_hero_bold.png';
 
 const AboutUs = () => {
     return (
@@ -149,3 +149,4 @@ const AboutUs = () => {
 };
 
 export default AboutUs;
+

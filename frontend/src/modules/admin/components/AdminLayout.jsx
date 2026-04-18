@@ -8,8 +8,8 @@ import {
     AlertTriangle, FileBarChart, Store
 } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
-import logo from '../assets/sands-logo.png';
-import logoName from '../assets/sands-logoname.png';
+import logo from '@assets/sands-logo.png';
+import logoName from '@assets/sands-logoname.png';
 
 const AdminLayout = ({ children }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 1024);
@@ -384,3 +384,4 @@ const AdminLayout = ({ children }) => {
 };
 
 export default AdminLayout;
+

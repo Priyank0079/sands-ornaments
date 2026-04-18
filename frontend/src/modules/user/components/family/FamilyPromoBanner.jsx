@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import familyLuxuryBanner from '../../assets/family_luxury_banner_new.png';
+import familyLuxuryBanner from '@assets/family_luxury_banner_new.png';
 
 const FamilyPromoBanner = () => {
     return (
@@ -49,3 +49,4 @@ const FamilyPromoBanner = () => {
 };
 
 export default FamilyPromoBanner;
+

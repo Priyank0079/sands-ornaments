@@ -7,7 +7,7 @@ import {
 import { useAuth } from '../../../context/AuthContext';
 import api from '../../../services/api';
 import toast from 'react-hot-toast';
-import loginBg from '../assets/admin-login-bg.png';
+import loginBg from '@assets/admin-login-bg.png';
 
 const SellerRegister = () => {
     const navigate = useNavigate();
@@ -600,3 +600,4 @@ const SellerRegister = () => {
 };
 
 export default SellerRegister;
+

@@ -1,17 +1,17 @@
-import mangalsutraImg from '../../../assets/categories/mangalsutra.png';
-import nosepinImg from '../../../assets/categories/nosepin.png';
-import personalisedImg from '../../../assets/categories/personalised.png';
-import bangleImg from '../../../assets/categories/bangle.png';
-import toeringsImg from '../../../assets/categories/toerings.png';
-import newlaunchImg from '../../../assets/categories/newlaunch.png';
-import ringsImg from '../../../assets/categories/rings.png';
-import braceletsImg from '../../../assets/categories/bracelets.png';
-import pendantsImg from '../../../assets/categories/pendants.png';
-import earringsImg from '../../../assets/categories/earrings.png';
-import mensilverImg from '../../../assets/categories/mensilver.png';
-import setsImg from '../../../assets/categories/sets.png';
-import ankletsImg from '../../../assets/categories/anklets.png';
-import silverchainsImg from '../../../assets/categories/silverchains.png';
+import mangalsutraImg from '@assets/categories/mangalsutra.png';
+import nosepinImg from '@assets/categories/nosepin.png';
+import personalisedImg from '@assets/categories/personalised.png';
+import bangleImg from '@assets/categories/bangle.png';
+import toeringsImg from '@assets/categories/toerings.png';
+import newlaunchImg from '@assets/categories/newlaunch.png';
+import ringsImg from '@assets/categories/rings.png';
+import braceletsImg from '@assets/categories/bracelets.png';
+import pendantsImg from '@assets/categories/pendants.png';
+import earringsImg from '@assets/categories/earrings.png';
+import mensilverImg from '@assets/categories/mensilver.png';
+import setsImg from '@assets/categories/sets.png';
+import ankletsImg from '@assets/categories/anklets.png';
+import silverchainsImg from '@assets/categories/silverchains.png';
 
 export const homeCategoryGridDefaults = [
     { id: 'rings', name: 'Rings', image: ringsImg, path: '/category/rings' },
@@ -29,3 +29,4 @@ export const homeCategoryGridDefaults = [
     { id: 'toe-rings', name: 'Toe Rings', image: toeringsImg, path: '/category/toe-rings' },
     { id: 'new-launch', name: 'New Launch', image: newlaunchImg, path: '/category/new-launch', badge: 'Fresh Drops' }
 ];
+

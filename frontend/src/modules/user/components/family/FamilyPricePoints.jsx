@@ -3,9 +3,9 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { buildFamilyCollectionPath } from '../../utils/familyNavigation';
 
-import card2999 from '../../assets/family_price_2999_clean.jpg';
-import cardPremium from '../../assets/family_price_premium_clean.jpg';
-import card4999 from '../../assets/family_price_4999_clean.jpg';
+import card2999 from '@assets/family_price_2999_clean.jpg';
+import cardPremium from '@assets/family_price_premium_clean.jpg';
+import card4999 from '@assets/family_price_4999_clean.jpg';
 
 const pricePoints = [
     {
@@ -100,3 +100,4 @@ const FamilyPricePoints = () => {
 };
 
 export default FamilyPricePoints;
+

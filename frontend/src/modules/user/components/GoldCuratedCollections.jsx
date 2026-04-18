@@ -4,13 +4,13 @@ import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 // Import local gold assets for the display - ALL GREEN THEMED
-import goldRings from '../../../assets/categories/gold_rings_green.png';
-import goldEarrings from '../../../assets/categories/gold_earrings_green.png';
-import goldPendants from '../../../assets/categories/gold_pendants_green.png';
-import goldBangles from '../../../assets/categories/gold_bangles_green.png';
-import goldMangalsutra from '../../../assets/categories/gold_mangalsutra_green.png';
-import goldBracelets from '../../../assets/categories/gold_bracelets_green.png';
-import goldNewArrivals from '../../../assets/categories/gold_new_arrivals_green.png';
+import goldRings from '@assets/categories/gold_rings_green.png';
+import goldEarrings from '@assets/categories/gold_earrings_green.png';
+import goldPendants from '@assets/categories/gold_pendants_green.png';
+import goldBangles from '@assets/categories/gold_bangles_green.png';
+import goldMangalsutra from '@assets/categories/gold_mangalsutra_green.png';
+import goldBracelets from '@assets/categories/gold_bracelets_green.png';
+import goldNewArrivals from '@assets/categories/gold_new_arrivals_green.png';
 
 const collections = [
     { 
@@ -182,3 +182,4 @@ const GoldCuratedCollections = () => {
 };
 
 export default GoldCuratedCollections;
+

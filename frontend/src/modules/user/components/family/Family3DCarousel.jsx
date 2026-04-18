@@ -4,16 +4,16 @@ import { motion } from 'framer-motion';
 import { buildFamilyCollectionPath } from '../../utils/familyNavigation';
 
 // Import images
-import motherImg from '../../assets/family_3d_mother.png';
-import fatherImg from '../../assets/family_3d_father.png';
-import sisterImg from '../../assets/family_3d_sister.png';
-import brotherImg from '../../assets/family_3d_brother.png';
-import spouseImg from '../../assets/family_3d_spouse.png';
-import daughterImg from '../../assets/family_3d_daughter.png';
-import babyImg from '../../assets/family_3d_baby.png';
-import gmImg from '../../assets/family_3d_grandmother.png';
-import gfImg from '../../assets/family_3d_grandfather.png';
-import coupleImg from '../../assets/family_3d_couple.png';
+import motherImg from '@assets/family_3d_mother.png';
+import fatherImg from '@assets/family_3d_father.png';
+import sisterImg from '@assets/family_3d_sister.png';
+import brotherImg from '@assets/family_3d_brother.png';
+import spouseImg from '@assets/family_3d_spouse.png';
+import daughterImg from '@assets/family_3d_daughter.png';
+import babyImg from '@assets/family_3d_baby.png';
+import gmImg from '@assets/family_3d_grandmother.png';
+import gfImg from '@assets/family_3d_grandfather.png';
+import coupleImg from '@assets/family_3d_couple.png';
 
 const familyPicks = [
     { id: '1', name: "For Mother", image: motherImg, path: buildFamilyCollectionPath('mother-picks') },
@@ -192,3 +192,4 @@ const Family3DCarousel = () => {
 };
 
 export default Family3DCarousel;
+

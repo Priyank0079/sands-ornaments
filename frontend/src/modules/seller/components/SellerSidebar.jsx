@@ -17,8 +17,8 @@ import {
     Users,
     UserCircle
 } from 'lucide-react';
-import logo from '../assets/sands-logo.png';
-import logoName from '../assets/sands-logoname.png';
+import logo from '@assets/sands-logo.png';
+import logoName from '@assets/sands-logoname.png';
 import { sellerService } from '../services/sellerService';
 
 const SellerSidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
@@ -171,3 +171,4 @@ const SellerSidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
 };
 
 export default SellerSidebar;
+

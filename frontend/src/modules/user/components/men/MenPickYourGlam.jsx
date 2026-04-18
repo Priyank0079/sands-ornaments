@@ -7,11 +7,11 @@ import api from '../../../../services/api';
 import { resolveLegacyCmsAsset } from '../../utils/legacyCmsAssets';
 
 // Asset imports
-import partySparkImg from '../../../../assets/glam/party_spark.png';
-import weddingJewelsImg from '../../../../assets/glam/wedding_jewels.png';
-import ritualRangeImg from '../../../../assets/glam/ritual_range.png';
-import dailyWearImg from '../../../../assets/glam/daily_wear.png';
-import officeWearImg from '../../../../assets/glam/office_wear.png';
+import partySparkImg from '@assets/glam/party_spark.png';
+import weddingJewelsImg from '@assets/glam/wedding_jewels.png';
+import ritualRangeImg from '@assets/glam/ritual_range.png';
+import dailyWearImg from '@assets/glam/daily_wear.png';
+import officeWearImg from '@assets/glam/office_wear.png';
 
 const glamItems = [
     { id: 1, title: 'Party Spark', image: partySparkImg, path: buildMenShopPath({ category: 'rings' }) },
@@ -183,3 +183,4 @@ const MenPickYourGlam = () => {
 };
 
 export default MenPickYourGlam;
+

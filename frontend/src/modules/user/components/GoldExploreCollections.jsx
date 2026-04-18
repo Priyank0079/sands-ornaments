@@ -4,14 +4,14 @@ import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 // Asset imports
-import dailyWearBanner from '../../../assets/explore/gold_daily_wear_banner_1775911015640.png';
-import officeWearBanner from '../../../assets/explore/gold_office_wear_banner_1775911038204.png';
+import dailyWearBanner from '@assets/explore/gold_daily_wear_banner_1775911015640.png';
+import officeWearBanner from '@assets/explore/gold_office_wear_banner_1775911038204.png';
 
 // Import some thumbnails for the small circles
-import thumb1 from '../../../assets/categories/gold_rings_green.png';
-import thumb2 from '../../../assets/categories/gold_earrings_green.png';
-import thumb3 from '../../../assets/categories/gold_pendants_green.png';
-import thumb4 from '../../../assets/categories/gold_bracelets_green.png';
+import thumb1 from '@assets/categories/gold_rings_green.png';
+import thumb2 from '@assets/categories/gold_earrings_green.png';
+import thumb3 from '@assets/categories/gold_pendants_green.png';
+import thumb4 from '@assets/categories/gold_bracelets_green.png';
 
 const goldCollections = [
     {
@@ -158,3 +158,4 @@ const GoldExploreCollections = () => {
 };
 
 export default GoldExploreCollections;
+

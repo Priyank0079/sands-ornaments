@@ -5,14 +5,14 @@ import { useNavigate } from 'react-router-dom';
 import { ShopContext } from '../../../../context/ShopContext';
 import toast from 'react-hot-toast';
 
-import mProd1 from '../../assets/men_prod_ring.png';
-import mProd2 from '../../assets/men_prod_pendant.png';
-import mProd3 from '../../assets/men_prod_ring.png';
-import mProd4 from '../../assets/men_prod_bracelet.png';
-import mProd5 from '../../assets/men_prod_chain.png';
-import mProd6 from '../../assets/men_prod_stud.png';
-import mProd7 from '../../assets/men_prod_ring.png';
-import mProd8 from '../../assets/men_prod_bracelet.png';
+import mProd1 from '@assets/men_prod_ring.png';
+import mProd2 from '@assets/men_prod_pendant.png';
+import mProd3 from '@assets/men_prod_ring.png';
+import mProd4 from '@assets/men_prod_bracelet.png';
+import mProd5 from '@assets/men_prod_chain.png';
+import mProd6 from '@assets/men_prod_stud.png';
+import mProd7 from '@assets/men_prod_ring.png';
+import mProd8 from '@assets/men_prod_bracelet.png';
 
 const dummyProducts = [
     {
@@ -245,3 +245,4 @@ const MenProductsListing = () => {
 };
 
 export default MenProductsListing;
+

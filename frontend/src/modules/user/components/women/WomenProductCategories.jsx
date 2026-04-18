@@ -4,14 +4,14 @@ import { Link } from 'react-router-dom';
 import { buildWomenShopPath } from '../../utils/womenNavigation';
 
 // Import images from assets
-import RingsImg from '../../../../assets/women-categories/Rings.png';
-import EarringsImg from '../../../../assets/women-categories/Earrings.png';
-import BraceletsImg from '../../../../assets/women-categories/Bracelets.png';
-import PendantsImg from '../../../../assets/women-categories/Pendants.png';
-import ChainsImg from '../../../../assets/women-categories/Chains.png';
-import BanglesImg from '../../../../assets/women-categories/Bangles.png';
-import SetsImg from '../../../../assets/women-categories/Sets.png';
-import PersonalisedImg from '../../../../assets/women-categories/Personalised.png';
+import RingsImg from '@assets/women-categories/Rings.png';
+import EarringsImg from '@assets/women-categories/Earrings.png';
+import BraceletsImg from '@assets/women-categories/Bracelets.png';
+import PendantsImg from '@assets/women-categories/Pendants.png';
+import ChainsImg from '@assets/women-categories/Chains.png';
+import BanglesImg from '@assets/women-categories/Bangles.png';
+import SetsImg from '@assets/women-categories/Sets.png';
+import PersonalisedImg from '@assets/women-categories/Personalised.png';
 
 const categories = [
     { title: "RINGS", image: RingsImg, path: buildWomenShopPath({ category: 'rings' }) },
@@ -80,3 +80,4 @@ const WomenProductCategories = () => {
 };
 
 export default WomenProductCategories;
+

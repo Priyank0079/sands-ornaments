@@ -4,10 +4,10 @@ import { Link } from 'react-router-dom';
 import { buildWomenShopPath } from '../../utils/womenNavigation';
 
 // Import images
-import RingsStackingImg from '../../../../assets/trending/RingsStacking.png';
-import CuratedCombosImg from '../../../../assets/trending/CuratedCombos.png';
-import ChainLayeringImg from '../../../../assets/trending/ChainLayering.png';
-import SpiritualPicksImg from '../../../../assets/trending/SpiritualPicks.png';
+import RingsStackingImg from '@assets/trending/RingsStacking.png';
+import CuratedCombosImg from '@assets/trending/CuratedCombos.png';
+import ChainLayeringImg from '@assets/trending/ChainLayering.png';
+import SpiritualPicksImg from '@assets/trending/SpiritualPicks.png';
 
 const trendingCollections = [
     {
@@ -96,3 +96,4 @@ const WomenCategoriesGrid = () => {
 };
 
 export default WomenCategoriesGrid;
+

@@ -4,9 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { buildMenShopPath } from '../../utils/menNavigation';
 import api from '../../../../services/api';
 import { resolveLegacyCmsAsset } from '../../utils/legacyCmsAssets';
-import luxuryRing from '../../../../assets/luxury_ring_men.png';
-import luxuryGifts from '../../../../assets/luxury_gifts_men.png';
-import luxuryPendant from '../../../../assets/luxury_pendant_men.png';
+import luxuryRing from '@assets/luxury_ring_men.png';
+import luxuryGifts from '@assets/luxury_gifts_men.png';
+import luxuryPendant from '@assets/luxury_pendant_men.png';
 
 const luxuryOffers = [
     {
@@ -143,3 +143,4 @@ const MenLuxurySection = () => {
 };
 
 export default MenLuxurySection;
+

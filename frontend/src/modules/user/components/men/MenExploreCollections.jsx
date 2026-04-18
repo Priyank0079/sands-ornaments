@@ -7,12 +7,12 @@ import api from '../../../../services/api';
 import { resolveLegacyCmsAsset } from '../../utils/legacyCmsAssets';
 
 // Asset imports
-import edgeBanner from '../../../../assets/explore/edge_banner.png';
-import classicsBanner from '../../../../assets/explore/classics_banner.png';
-import iykykBanner from '../../../../assets/explore/iykyk_banner.png';
-import thumbRing from '../../../../assets/explore/thumb_ring.png';
-import thumbChain from '../../../../assets/explore/thumb_chain.png';
-import thumbPendant from '../../../../assets/explore/thumb_pendant.png';
+import edgeBanner from '@assets/explore/edge_banner.png';
+import classicsBanner from '@assets/explore/classics_banner.png';
+import iykykBanner from '@assets/explore/iykyk_banner.png';
+import thumbRing from '@assets/explore/thumb_ring.png';
+import thumbChain from '@assets/explore/thumb_chain.png';
+import thumbPendant from '@assets/explore/thumb_pendant.png';
 
 const exploreCollections = [
     {
@@ -213,3 +213,4 @@ const MenExploreCollections = () => {
 };
 
 export default MenExploreCollections;
+

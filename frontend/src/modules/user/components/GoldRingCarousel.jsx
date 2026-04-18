@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
 // Import local assets for variety
-import ringGreen from '../../../assets/categories/gold_rings_green.png';
+import ringGreen from '@assets/categories/gold_rings_green.png';
 
 const RING_TYPES = [
     { 
@@ -104,5 +104,6 @@ const GoldRingCarousel = () => {
 };
 
 export default GoldRingCarousel;
+
 
 

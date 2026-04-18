@@ -4,7 +4,7 @@ import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 // Assets
-import ringGreen from '../../../assets/categories/gold_rings_green.png';
+import ringGreen from '@assets/categories/gold_rings_green.png';
 
 const collections = [
     {
@@ -166,3 +166,4 @@ const GoldCuratedShowcase = () => {
 };
 
 export default GoldCuratedShowcase;
+

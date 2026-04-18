@@ -37,7 +37,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { useShop } from '../../../context/ShopContext';
-import logo from '../../../assets/logo.png';
+import logo from '@assets/logo.png';
 
 const AdminSidebar = () => {
     const location = useLocation();
@@ -628,3 +628,4 @@ const AdminSidebar = () => {
 };
 
 export default AdminSidebar;
+

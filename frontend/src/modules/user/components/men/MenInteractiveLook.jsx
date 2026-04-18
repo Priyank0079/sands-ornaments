@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { buildMenShopPath } from '../../utils/menNavigation';
+import menInteractiveImg from '@assets/men-interactive.png';
 
 const hotspots = [
     {
@@ -81,7 +82,7 @@ const MenInteractiveLook = () => {
 
                     {/* Model Image */}
                     <img
-                        src="/men-interactive.png"
+                        src={menInteractiveImg}
                         alt="Men Jewelry Model"
                         className="absolute inset-0 w-full h-full object-cover object-center brightness-90 contrast-110"
                     />

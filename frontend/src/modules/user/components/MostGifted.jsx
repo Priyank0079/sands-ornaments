@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
 import ProductCard from './ProductCard';
 import { COLLECTION_MOCK_PRODUCTS } from '../data/mockCollectionData';
-import bannerModel from '../assets/gift_wife_silver.png';
+import bannerModel from '@assets/gift_wife_silver.png';
 
 const defaultHeroItem = {
     id: 'hero',
@@ -149,3 +149,4 @@ const MostGifted = () => {
 };
 
 export default MostGifted;
+

@@ -1,28 +1,28 @@
 // Asset Imports for Collection Mock Data
-import prod1 from '../assets/cat_pendant_wine.png';
-import prod2 from '../assets/cat_ring_wine.png';
-import prod3 from '../assets/cat_bracelet_wine.png';
-import prod4 from '../assets/cat_earrings_wine.png';
-import prod5 from '../assets/latest_drop_necklace.png';
-import prod6 from '../assets/latest_drop_ring.png';
-import prod7 from '../assets/latest_drop_bracelet.png';
-import prod8 from '../assets/latest_drop_earrings.png';
-import prod9 from '../assets/new_launch_chains.png';
-import prod10 from '../assets/cat_rings.png';
-import prod11 from '../assets/new_launch_bracelets.png';
-import prod12 from '../assets/new_launch_earrings.png';
-import prod13 from '../assets/pink_chains_1767775516641.png';
-import prod14 from '../assets/prod_ring_main.png';
-import prod15 from '../assets/pink_bracelets_1767775488371.png';
-import prod16 from '../assets/pink_earrings_1767775466166.png';
-import prod17 from '../assets/silver_chain_product.png';
-import prod18 from '../assets/prod_ring_main.png';
-import prod19 from '../assets/silver_bracelet_product.png';
-import prod20 from '../assets/silver_earrings_product.png';
-import prod21 from '../assets/silver_anklet_product.png';
-import prod22 from '../assets/new_launch_anklets.png';
-import prod23 from '../assets/cat_anklets.png';
-import prod24 from '../assets/cat_anklet_wine.png';
+import prod1 from '@assets/cat_pendant_wine.png';
+import prod2 from '@assets/cat_ring_wine.png';
+import prod3 from '@assets/cat_bracelet_wine.png';
+import prod4 from '@assets/cat_earrings_wine.png';
+import prod5 from '@assets/latest_drop_necklace.png';
+import prod6 from '@assets/latest_drop_ring.png';
+import prod7 from '@assets/latest_drop_bracelet.png';
+import prod8 from '@assets/latest_drop_earrings.png';
+import prod9 from '@assets/new_launch_chains.png';
+import prod10 from '@assets/cat_rings.png';
+import prod11 from '@assets/new_launch_bracelets.png';
+import prod12 from '@assets/new_launch_earrings.png';
+import prod13 from '@assets/pink_chains_1767775516641.png';
+import prod14 from '@assets/prod_ring_main.png';
+import prod15 from '@assets/pink_bracelets_1767775488371.png';
+import prod16 from '@assets/pink_earrings_1767775466166.png';
+import prod17 from '@assets/silver_chain_product.png';
+import prod18 from '@assets/prod_ring_main.png';
+import prod19 from '@assets/silver_bracelet_product.png';
+import prod20 from '@assets/silver_earrings_product.png';
+import prod21 from '@assets/silver_anklet_product.png';
+import prod22 from '@assets/new_launch_anklets.png';
+import prod23 from '@assets/cat_anklets.png';
+import prod24 from '@assets/cat_anklet_wine.png';
 
 export const COLLECTION_MOCK_PRODUCTS = {
     '24k': [
@@ -119,3 +119,4 @@ export const COLLECTION_MOCK_PRODUCTS = {
         { id: "best-6", name: "Minimalist Silver Choker", price: 4599, originalPrice: 8999, img: prod21, rating: 4.7, reviewCount: 432, priceDrop: true, metal: 'Silver', purity: 'Sterling' }
     ]
 };
+

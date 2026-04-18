@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, ShoppingBag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { buildWomenShopPath } from '../../utils/womenNavigation';
-import heroRadiance from '../../assets/women_hero_radiance.png';
+import heroRadiance from '@assets/women_hero_radiance.png';
 
 const slides = [
     {
@@ -80,3 +80,4 @@ const WomenHeroCarousel = () => {
 
 
 export default WomenHeroCarousel;
+

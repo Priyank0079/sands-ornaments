@@ -5,9 +5,9 @@ import { useShop } from '../../../context/ShopContext';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 
 // Import local high-end customer portraits
-import customer1 from '../../../assets/testimonial_customer_1.png';
-import customer2 from '../../../assets/testimonial_customer_2.png';
-import customer3 from '../../../assets/testimonial_customer_3.png';
+import customer1 from '@assets/testimonial_customer_1.png';
+import customer2 from '@assets/testimonial_customer_2.png';
+import customer3 from '@assets/testimonial_customer_3.png';
 
 const TESTIMONIALS = [
     {
@@ -122,3 +122,4 @@ const Testimonials = () => {
 };
 
 export default Testimonials;
+

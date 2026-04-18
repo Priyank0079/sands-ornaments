@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Calendar, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../../../services/api';
-import blogFallback from '../assets/trending_heritage.png';
+import blogFallback from '@assets/trending_heritage.png';
 
 const stripHtml = (html = '') => html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 const blogFallbackImage = blogFallback;
@@ -106,3 +106,4 @@ const BlogsPage = () => {
 };
 
 export default BlogsPage;
+

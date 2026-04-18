@@ -3,9 +3,9 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
 // Import assets
-import imgTopLeft from '../assets/banner_daily.png';
-import imgBottomLeft from '../assets/banner_elegant_silver.png';
-import imgRight from '../assets/cat_bracelets.png';
+import imgTopLeft from '@assets/banner_daily.png';
+import imgBottomLeft from '@assets/banner_elegant_silver.png';
+import imgRight from '@assets/cat_bracelets.png';
 
 const PromoBannersSection = () => {
     return (
@@ -101,3 +101,4 @@ const PromoBannersSection = () => {
 };
 
 export default PromoBannersSection;
+
