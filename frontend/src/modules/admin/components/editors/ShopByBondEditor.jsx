@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Image as ImageIcon, Save } from 'lucide-react';
+import { CheckCircle, Edit2, Image as ImageIcon, Save } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { adminService } from '../../services/adminService';
 import { Input } from '../common/FormControls';
+import { resolveLegacyCmsAsset } from '../../../user/utils/legacyCmsAssets';
 
-const BOND_OPTIONS = [
+const HOME_BOND_OPTIONS = [
     { value: 'wife', label: 'Wife' },
     { value: 'husband', label: 'Husband' },
     { value: 'mother', label: 'Mother' },
@@ -13,35 +14,88 @@ const BOND_OPTIONS = [
     { value: 'friends', label: 'Friends' }
 ];
 
-const createFallbackItems = (items = []) => items.map((item, index) => ({
-    id: item.itemId || item.id || `shop-by-bond-${index + 1}`,
-    name: item.name || '',
-    image: item.image || '',
-    bondKey: item.bondKey || ''
-}));
+const FAMILY_RELATION_OPTIONS = [
+    { value: 'all', label: 'All', defaultTitle: 'ALL', defaultSubtitle: 'Every loved one' },
+    { value: 'mother', label: 'Mother', defaultTitle: 'MOTHER', defaultSubtitle: 'Graceful keepsakes' },
+    { value: 'father', label: 'Father', defaultTitle: 'FATHER', defaultSubtitle: 'Classic silver picks' },
+    { value: 'brother', label: 'Brother', defaultTitle: 'BROTHER', defaultSubtitle: 'Bold everyday styles' },
+    { value: 'sister', label: 'Sister', defaultTitle: 'SISTER', defaultSubtitle: 'Delicate favourites' },
+    { value: 'husband', label: 'Husband', defaultTitle: 'HUSBAND', defaultSubtitle: 'Signature essentials' },
+    { value: 'wife', label: 'Wife', defaultTitle: 'WIFE', defaultSubtitle: 'Elegant gifting edits' }
+];
+
+const normalizeKey = (value = '') => String(value || '').trim().toLowerCase();
+
+const buildFamilyRelationPath = (relationKey) => {
+    const normalized = normalizeKey(relationKey);
+    return normalized === 'all' ? '/category/family' : `/category/family/${normalized}`;
+};
+
+const resolveRelationKey = (item = {}) => {
+    const candidates = [item.relationKey, item.recipient, item.bondKey, item.id, item.itemId];
+    for (const value of candidates) {
+        const normalized = normalizeKey(value);
+        if (FAMILY_RELATION_OPTIONS.some((option) => option.value === normalized)) return normalized;
+        const relationSuffix = normalized.match(/(?:^|-)relation-(all|mother|father|brother|sister|husband|wife)$/)?.[1];
+        if (relationSuffix && FAMILY_RELATION_OPTIONS.some((option) => option.value === relationSuffix)) return relationSuffix;
+        const relationTail = normalized.match(/(?:^|[^a-z])(all|mother|father|brother|sister|husband|wife)$/)?.[1];
+        if (relationTail && FAMILY_RELATION_OPTIONS.some((option) => option.value === relationTail)) return relationTail;
+    }
+    return '';
+};
 
 const ShopByBondEditor = ({ sectionData, onSave, defaultSection = {} }) => {
+    const isFamilyRelationEditor = (sectionData?.pageKey === 'shop-family')
+        && (sectionData?.sectionKey === 'shop-by-relation');
+
     const initialSettings = useMemo(() => {
         const fallbackSettings = defaultSection?.settings || {};
         const currentSettings = sectionData?.settings || {};
+
+        if (isFamilyRelationEditor) {
+            return {
+                eyebrow: currentSettings.eyebrow || fallbackSettings.eyebrow || 'Family Edit',
+                title: currentSettings.title || fallbackSettings.title || 'SHOP BY RELATION',
+                subtitle: currentSettings.subtitle || fallbackSettings.subtitle || 'Explore curated gifting jewellery designed for every bond.'
+            };
+        }
 
         return {
             title: currentSettings.title || fallbackSettings.title || 'Shop by Bond',
             subtitle: currentSettings.subtitle || fallbackSettings.subtitle || 'Curated for your loved ones'
         };
-    }, [defaultSection?.settings, sectionData?.settings]);
+    }, [defaultSection?.settings, isFamilyRelationEditor, sectionData?.settings]);
 
     const initialItems = useMemo(() => {
         const sourceItems = Array.isArray(sectionData?.items) && sectionData.items.length > 0
             ? sectionData.items
             : (defaultSection?.items || []);
 
-        return createFallbackItems(sourceItems);
-    }, [defaultSection?.items, sectionData?.items]);
+        if (isFamilyRelationEditor) {
+            return FAMILY_RELATION_OPTIONS.map((option) => {
+                const match = sourceItems.find((item) => resolveRelationKey(item) === option.value) || {};
+                return {
+                    id: match.itemId || match.id || `shop-by-relation-${option.value}`,
+                    relationKey: option.value,
+                    name: match.name || match.label || option.defaultTitle,
+                    subtitle: match.subtitle || match.description || option.defaultSubtitle,
+                    image: match.image || ''
+                };
+            });
+        }
+
+        return sourceItems.map((item, index) => ({
+            id: item.itemId || item.id || `shop-by-bond-${index + 1}`,
+            name: item.name || '',
+            image: item.image || '',
+            bondKey: item.bondKey || ''
+        }));
+    }, [defaultSection?.items, isFamilyRelationEditor, sectionData?.items]);
 
     const [settings, setSettings] = useState(initialSettings);
     const [items, setItems] = useState(initialItems);
     const [saving, setSaving] = useState(false);
+    const [editingCardId, setEditingCardId] = useState(null);
 
     useEffect(() => {
         setSettings(initialSettings);
@@ -49,14 +103,15 @@ const ShopByBondEditor = ({ sectionData, onSave, defaultSection = {} }) => {
 
     useEffect(() => {
         setItems(initialItems);
+        setEditingCardId(null);
     }, [initialItems]);
 
     const updateItem = (id, field, value) => {
         setItems((prev) => prev.map((item) => {
             if (item.id !== id) return item;
 
-            if (field === 'bondKey') {
-                const selectedBond = BOND_OPTIONS.find((option) => option.value === value);
+            if (!isFamilyRelationEditor && field === 'bondKey') {
+                const selectedBond = HOME_BOND_OPTIONS.find((option) => option.value === value);
                 return {
                     ...item,
                     bondKey: value,
@@ -78,7 +133,62 @@ const ShopByBondEditor = ({ sectionData, onSave, defaultSection = {} }) => {
         updateItem(id, 'image', uploadedUrl);
     };
 
-    const handleSave = async () => {
+    const buildNormalizedFamilyItems = () => (
+        FAMILY_RELATION_OPTIONS.map((option, index) => {
+            const current = items.find((entry) => normalizeKey(entry.relationKey) === option.value) || {};
+            const title = (current.name || option.defaultTitle).trim();
+            const subtitle = (current.subtitle || option.defaultSubtitle).trim();
+            return {
+                id: current.id || `shop-by-relation-${option.value}`,
+                itemId: current.itemId || current.id || `shop-by-relation-${option.value}`,
+                relationKey: option.value,
+                recipient: option.value,
+                name: title,
+                label: title,
+                subtitle,
+                description: subtitle,
+                image: current.image,
+                path: buildFamilyRelationPath(option.value),
+                sortOrder: index
+            };
+        })
+    );
+
+    const handleSave = async ({ cardId = null, settingsOnly = false } = {}) => {
+        if (isFamilyRelationEditor) {
+            if (!settingsOnly) {
+                if (cardId) {
+                    const target = items.find((item) => item.id === cardId);
+                    if (!target || !target.image?.trim() || !target.relationKey || !target.name?.trim() || !target.subtitle?.trim()) {
+                        toast.error('This card needs title, subtitle, and image before saving.');
+                        return { success: false };
+                    }
+                } else {
+                    const invalid = items.find((item) => !item.image?.trim() || !item.relationKey || !item.name?.trim() || !item.subtitle?.trim());
+                    if (invalid) {
+                        toast.error(`Each relation card needs title, subtitle, and image before saving. Missing: ${invalid.name || 'Card'}`);
+                        return { success: false };
+                    }
+                }
+            }
+            const normalizedItems = buildNormalizedFamilyItems();
+
+            setSaving(true);
+            try {
+                const result = await onSave({
+                    settings: {
+                        eyebrow: settings.eyebrow?.trim() || 'Family Edit',
+                        title: settings.title?.trim() || 'SHOP BY RELATION',
+                        subtitle: settings.subtitle?.trim() || 'Explore curated gifting jewellery designed for every bond.'
+                    },
+                    items: normalizedItems
+                });
+                return result || { success: true };
+            } finally {
+                setSaving(false);
+            }
+        }
+
         const invalid = items.find((item) => !item.image?.trim() || !item.bondKey);
         if (invalid) {
             toast.error(`Each bond card needs an image and bond type before saving. Missing: ${invalid.name || 'Card'}`);
@@ -87,7 +197,7 @@ const ShopByBondEditor = ({ sectionData, onSave, defaultSection = {} }) => {
 
         setSaving(true);
         try {
-            await onSave({
+            const result = await onSave({
                 settings: {
                     title: settings.title?.trim() || 'Shop by Bond',
                     subtitle: settings.subtitle?.trim() || 'Curated for your loved ones'
@@ -98,6 +208,7 @@ const ShopByBondEditor = ({ sectionData, onSave, defaultSection = {} }) => {
                     sortOrder: index
                 }))
             });
+            return result || { success: true };
         } finally {
             setSaving(false);
         }
@@ -107,36 +218,45 @@ const ShopByBondEditor = ({ sectionData, onSave, defaultSection = {} }) => {
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="px-6 md:px-8 py-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                    <h3 className="text-xl md:text-2xl font-bold text-[#3E2723]">Shop by Bond</h3>
+                    <h3 className="text-xl md:text-2xl font-bold text-[#3E2723]">{isFamilyRelationEditor ? 'Shop by Relation' : 'Shop by Bond'}</h3>
                     <p className="text-sm text-gray-500 mt-1">
-                        Manage the six bond cards safely. The destination is generated automatically from the selected bond,
-                        so admin cannot break navigation with a custom link.
+                        {isFamilyRelationEditor
+                            ? 'Manage the seven fixed relation cards safely. Route mapping is locked so navigation stays stable.'
+                            : 'Manage the six bond cards safely. The destination is generated automatically from the selected bond, so admin cannot break navigation with a custom link.'}
                     </p>
                 </div>
                 <button
                     type="button"
-                    onClick={handleSave}
+                    onClick={() => handleSave({ settingsOnly: isFamilyRelationEditor })}
                     disabled={saving}
                     className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#3E2723] text-white font-semibold text-sm hover:bg-[#5a3d36] transition-colors disabled:opacity-60"
                 >
                     <Save size={16} />
-                    {saving ? 'Saving...' : 'Save Section'}
+                    {saving ? 'Saving...' : (isFamilyRelationEditor ? 'Save Header' : 'Save Section')}
                 </button>
             </div>
 
             <div className="p-6 md:p-8 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {isFamilyRelationEditor && (
+                        <Input
+                            label="Eyebrow"
+                            value={settings.eyebrow}
+                            onChange={(event) => setSettings((prev) => ({ ...prev, eyebrow: event.target.value }))}
+                            placeholder="Family Edit"
+                        />
+                    )}
                     <Input
                         label="Section Title"
                         value={settings.title}
                         onChange={(event) => setSettings((prev) => ({ ...prev, title: event.target.value }))}
-                        placeholder="Shop by Bond"
+                        placeholder={isFamilyRelationEditor ? 'SHOP BY RELATION' : 'Shop by Bond'}
                     />
                     <Input
                         label="Section Subtitle"
                         value={settings.subtitle}
                         onChange={(event) => setSettings((prev) => ({ ...prev, subtitle: event.target.value }))}
-                        placeholder="Curated for your loved ones"
+                        placeholder={isFamilyRelationEditor ? 'Explore curated gifting jewellery designed for every bond.' : 'Curated for your loved ones'}
                     />
                 </div>
 
@@ -147,16 +267,42 @@ const ShopByBondEditor = ({ sectionData, onSave, defaultSection = {} }) => {
                                 <div className="text-xs font-bold uppercase tracking-[0.24em] text-[#B28A8A]">
                                     Card {index + 1}
                                 </div>
-                                <div className="text-[11px] font-semibold text-gray-400">
-                                    Route auto-generated from bond type
-                                </div>
+                                {isFamilyRelationEditor ? (
+                                    <button
+                                        type="button"
+                                        onClick={async () => {
+                                            const isEditing = editingCardId === item.id;
+                                            if (!isEditing) {
+                                                setEditingCardId(item.id);
+                                                return;
+                                            }
+                                            const result = await handleSave({ cardId: item.id });
+                                            if (result?.success !== false) {
+                                                setEditingCardId(null);
+                                            }
+                                        }}
+                                        disabled={saving}
+                                        className={`inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-colors ${
+                                            editingCardId === item.id
+                                                ? 'bg-green-50 text-green-700 hover:bg-green-100'
+                                                : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                                        }`}
+                                    >
+                                        {editingCardId === item.id ? <CheckCircle size={14} /> : <Edit2 size={14} />}
+                                        {editingCardId === item.id ? 'Save Card' : 'Edit Card'}
+                                    </button>
+                                ) : (
+                                    <div className="text-[11px] font-semibold text-gray-400">
+                                        Route auto-generated from relation
+                                    </div>
+                                )}
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-[180px_minmax(0,1fr)] gap-5">
                                 <div className="space-y-3">
                                     <div className="relative aspect-[4/5] rounded-2xl border border-dashed border-gray-300 bg-[#F8F5F2] overflow-hidden">
                                         {item.image ? (
-                                            <img src={item.image} alt={item.name || `Bond card ${index + 1}`} className="w-full h-full object-cover" />
+                                            <img src={resolveLegacyCmsAsset(item.image, item.image)} alt={item.name || `Card ${index + 1}`} className="w-full h-full object-cover" />
                                         ) : (
                                             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-gray-400">
                                                 <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center">
@@ -166,36 +312,77 @@ const ShopByBondEditor = ({ sectionData, onSave, defaultSection = {} }) => {
                                             </div>
                                         )}
                                     </div>
-                                    <label className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#3E2723] px-4 py-3 text-xs font-bold uppercase tracking-widest text-white hover:bg-[#2D1B18] transition-all cursor-pointer">
+                                    <label className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-widest transition-all ${
+                                        isFamilyRelationEditor && editingCardId !== item.id
+                                            ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                            : 'bg-[#3E2723] text-white hover:bg-[#2D1B18] cursor-pointer'
+                                    }`}>
                                         <ImageIcon size={14} />
                                         Change Image
-                                        <input type="file" accept="image/*" className="hidden" onChange={(event) => handleImageUpload(item.id, event.target.files?.[0])} />
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            className="hidden"
+                                            disabled={isFamilyRelationEditor && editingCardId !== item.id}
+                                            onChange={async (event) => {
+                                                await handleImageUpload(item.id, event.target.files?.[0]);
+                                                event.target.value = '';
+                                            }}
+                                        />
                                     </label>
                                 </div>
 
                                 <div className="grid grid-cols-1 gap-4">
-                                    <div>
-                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Bond Type</label>
-                                        <select
-                                            value={item.bondKey || ''}
-                                            onChange={(event) => updateItem(item.id, 'bondKey', event.target.value)}
-                                            className="w-full bg-white border border-gray-200 rounded-lg py-2 px-3 text-sm focus:outline-none focus:border-[#3E2723] focus:ring-1 focus:ring-[#3E2723]/20"
-                                        >
-                                            <option value="">Select Bond</option>
-                                            {BOND_OPTIONS.map((option) => (
-                                                <option key={option.value} value={option.value}>
-                                                    {option.label}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
+                                    {isFamilyRelationEditor ? (
+                                        <div>
+                                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Relation Type</label>
+                                            <div className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 px-3 text-sm text-gray-600">
+                                                {(FAMILY_RELATION_OPTIONS.find((option) => option.value === item.relationKey)?.label) || 'Relation'}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div>
+                                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Bond Type</label>
+                                            <select
+                                                value={item.bondKey || ''}
+                                                onChange={(event) => updateItem(item.id, 'bondKey', event.target.value)}
+                                                className="w-full bg-white border border-gray-200 rounded-lg py-2 px-3 text-sm focus:outline-none focus:border-[#3E2723] focus:ring-1 focus:ring-[#3E2723]/20"
+                                            >
+                                                <option value="">Select Bond</option>
+                                                {HOME_BOND_OPTIONS.map((option) => (
+                                                    <option key={option.value} value={option.value}>
+                                                        {option.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
 
                                     <Input
                                         label="Display Name"
                                         value={item.name || ''}
-                                        onChange={(event) => updateItem(item.id, 'name', event.target.value)}
-                                        placeholder="Wife"
+                                        onChange={(event) => {
+                                            if (isFamilyRelationEditor && editingCardId !== item.id) return;
+                                            updateItem(item.id, 'name', event.target.value);
+                                        }}
+                                        placeholder={isFamilyRelationEditor ? 'MOTHER' : 'Wife'}
+                                        readOnly={isFamilyRelationEditor && editingCardId !== item.id}
+                                        className={isFamilyRelationEditor && editingCardId !== item.id ? 'bg-gray-50 text-gray-500' : ''}
                                     />
+
+                                    {isFamilyRelationEditor && (
+                                        <Input
+                                            label="Subtitle"
+                                            value={item.subtitle || ''}
+                                            onChange={(event) => {
+                                                if (editingCardId !== item.id) return;
+                                                updateItem(item.id, 'subtitle', event.target.value);
+                                            }}
+                                            placeholder="Graceful keepsakes"
+                                            readOnly={editingCardId !== item.id}
+                                            className={editingCardId !== item.id ? 'bg-gray-50 text-gray-500' : ''}
+                                        />
+                                    )}
                                 </div>
                             </div>
                         </div>

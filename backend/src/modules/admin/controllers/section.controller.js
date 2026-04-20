@@ -161,6 +161,14 @@ const buildWomenPriceRangePath = (priceMax, currentPath) => {
   return currentPath || "/shop?source=women&filter=womens";
 };
 
+const buildFamilyCategoryIdPath = (categoryId, currentPath) => {
+  const normalized = String(categoryId || "").trim();
+  if (normalized) {
+    return `/shop?source=family&filter=family&category=${encodeURIComponent(normalized)}`;
+  }
+  return currentPath || "/shop?source=family&filter=family";
+};
+
 const buildCategoryLimitPath = (categoryId, limit, sort, currentPath) => {
   if (categoryId && limit) return `/shop?category=${categoryId}&limit=${limit}&sort=${sort}`;
   return currentPath || `/shop?sort=${sort}`;
@@ -223,6 +231,9 @@ const sanitizeSectionPayload = (identity, payload = {}) => {
       description: item.description,
       image: item.image,
       hoverImage: item.hoverImage,
+      relationKey: item.relationKey || undefined,
+      recipient: item.recipient || undefined,
+      bondKey: item.bondKey || undefined,
       celebrateKey: item.celebrateKey,
       path: item.path,
       tag: item.tag,
@@ -529,6 +540,128 @@ const sanitizeSectionPayload = (identity, payload = {}) => {
           path: "/shop?source=women&filter=womens",
           sortOrder: idx
         }))
+      : [];
+  }
+
+  if (sectionKey === "products-listing" && pageKey === "shop-family") {
+    const legacyGlobalLimit = parsePositiveNumber(cleaned.settings?.productLimit) || 8;
+    const rawTabConfigs = cleaned.settings?.tabConfigs && typeof cleaned.settings.tabConfigs === "object"
+      ? cleaned.settings.tabConfigs
+      : {};
+    const tabKeys = ["all", "mother", "father", "brother", "sister", "husband", "wife"];
+    const defaultLabels = {
+      all: "All Family Collections",
+      mother: "Mother Collections",
+      father: "Father Collections",
+      brother: "Brother Collections",
+      sister: "Sister Collections",
+      husband: "Husband Collections",
+      wife: "Wife Collections"
+    };
+
+    const manualIdsByTabFromItems = {};
+    cleaned.items.forEach((item) => {
+      const tabKey = String(item.recipient || item.relationKey || "all").trim().toLowerCase();
+      if (!tabKeys.includes(tabKey)) return;
+      const ids = normalizeObjectIdList([
+        item.productId,
+        ...(Array.isArray(item.productIds) ? item.productIds : [])
+      ]);
+      if (ids.length === 0) return;
+      manualIdsByTabFromItems[tabKey] = [
+        ...(manualIdsByTabFromItems[tabKey] || []),
+        ...ids
+      ];
+    });
+
+    const normalizedTabConfigs = tabKeys.reduce((acc, tabKey) => {
+      const source = rawTabConfigs[tabKey] && typeof rawTabConfigs[tabKey] === "object"
+        ? rawTabConfigs[tabKey]
+        : {};
+      const sourceMode = String(source.sourceMode || "").trim().toLowerCase() === "manual" ? "manual" : "category";
+      const categoryId = String(source.categoryId || "").trim();
+      const tabLabel = String(source.tabLabel || defaultLabels[tabKey]).trim() || defaultLabels[tabKey];
+      const productLimit = parsePositiveNumber(source.productLimit) || legacyGlobalLimit;
+      const productIds = normalizeObjectIdList([
+        ...(Array.isArray(source.productIds) ? source.productIds : []),
+        ...(manualIdsByTabFromItems[tabKey] || [])
+      ]);
+
+      acc[tabKey] = {
+        tabLabel,
+        productLimit,
+        sourceMode,
+        categoryId: sourceMode === "category" ? categoryId : "",
+        productIds: sourceMode === "manual" ? productIds : []
+      };
+      return acc;
+    }, {});
+
+    cleaned.settings = {
+      ...cleaned.settings,
+      title: String(cleaned.settings?.title || "All Family Collections").trim() || "All Family Collections",
+      highlightWord: String(cleaned.settings?.highlightWord || "Edit").trim() || "Edit",
+      subtitle: String(cleaned.settings?.subtitle || '"Curated boutique jewellery picks for every family member."').trim()
+        || '"Curated boutique jewellery picks for every family member."',
+      ctaLabel: String(cleaned.settings?.ctaLabel || "View All Collections").trim() || "View All Collections",
+      tabConfigs: normalizedTabConfigs
+    };
+
+    cleaned.items = tabKeys.flatMap((tabKey) => {
+      const tab = normalizedTabConfigs[tabKey];
+      if (tab.sourceMode !== "manual") return [];
+      return tab.productIds.map((productId, idx) => ({
+        itemId: `family-featured-${tabKey}-${idx + 1}`,
+        type: "product",
+        productId,
+        recipient: tabKey,
+        sortOrder: idx
+      }));
+    });
+  }
+
+  if ((sectionKey === "trending-near-you" || sectionKey === "gifts-to-remember") && pageKey === "shop-family") {
+    cleaned.items = cleaned.items
+      .map((item, idx) => {
+        const rawCategory = String(item.categoryId || "").trim()
+          || parseCategoryFromPath(item.path)
+          || "";
+        const categoryId = isObjectIdLike(rawCategory) ? rawCategory : null;
+        const pathCategory = categoryId || rawCategory;
+        const label = String(item.name || item.label || "").trim();
+        if (!label || !item.image || !pathCategory) return null;
+        return {
+          ...item,
+          categoryId: categoryId || undefined,
+          name: label,
+          label: item.label || label,
+          path: buildFamilyCategoryIdPath(pathCategory, item.path),
+          sortOrder: item.sortOrder ?? idx
+        };
+      })
+      .filter(Boolean)
+      .slice(0, 12);
+  }
+
+  if (sectionKey === "family-promo-banner" && pageKey === "shop-family") {
+    const sourceItem = cleaned.items[0];
+    const rawCategory = String(sourceItem?.categoryId || "").trim()
+      || parseCategoryFromPath(sourceItem?.path || "");
+    const categoryId = isObjectIdLike(rawCategory) ? rawCategory : null;
+    const pathCategory = categoryId || rawCategory;
+
+    cleaned.items = sourceItem
+      ? [{
+          ...sourceItem,
+          categoryId: categoryId || undefined,
+          name: String(sourceItem.name || sourceItem.tag || "Exclusive Collection").trim() || "Exclusive Collection",
+          label: String(sourceItem.label || sourceItem.name || "Gifts for Family").trim() || "Gifts for Family",
+          subtitle: sourceItem.subtitle || sourceItem.description || "Choose the bonds that last a lifetime with our curated masterpiece collection.",
+          description: sourceItem.description || sourceItem.subtitle || "Choose the bonds that last a lifetime with our curated masterpiece collection.",
+          ctaLabel: sourceItem.ctaLabel || "Explore Now",
+          path: buildFamilyCategoryIdPath(pathCategory, sourceItem.path),
+          sortOrder: 0
+        }].filter((item) => Boolean(item.image && pathCategory))
       : [];
   }
 

@@ -89,6 +89,27 @@ import giftBrothers from '@assets/gift_brothers.png';
 import giftHusbands from '@assets/gift_husbands.png';
 import giftCouples from '@assets/gift_couples.png';
 import giftBoyfriends from '@assets/gift_boyfriends.png';
+import familyTrend1 from '@assets/family_trend_1.png';
+import familyTrend2 from '@assets/family_trend_2.png';
+import familyTrend3 from '@assets/family_trend_3.png';
+import familyTrend4 from '@assets/family_trend_4.png';
+import familyTrend5 from '@assets/family_trend_5.png';
+import familyTrend6 from '@assets/family_trend_6.png';
+import familyTrend7 from '@assets/family_trend_7.png';
+import familyTrend8 from '@assets/family_trend_8.png';
+import familyTrend9 from '@assets/family_trend_9.png';
+import familyTrend10 from '@assets/family_trend_10.png';
+import family3dMother from '@assets/family_3d_mother.png';
+import family3dFather from '@assets/family_3d_father.png';
+import family3dSister from '@assets/family_3d_sister.png';
+import family3dBrother from '@assets/family_3d_brother.png';
+import family3dSpouse from '@assets/family_3d_spouse.png';
+import family3dDaughter from '@assets/family_3d_daughter.png';
+import family3dBaby from '@assets/family_3d_baby.png';
+import family3dGrandmother from '@assets/family_3d_grandmother.png';
+import family3dGrandfather from '@assets/family_3d_grandfather.png';
+import family3dCouple from '@assets/family_3d_couple.png';
+import familyLuxuryBannerNew from '@assets/family_luxury_banner_new.png';
 import womenHeroRadiance from '@assets/women_hero_radiance.png';
 import womenCategoryRings from '@assets/women-categories/Rings.png';
 import womenCategoryEarrings from '@assets/women-categories/Earrings.png';
@@ -191,6 +212,27 @@ const legacyAssetMap = {
   'gift_husbands.png': giftHusbands,
   'gift_couples.png': giftCouples,
   'gift_boyfriends.png': giftBoyfriends,
+  'family_trend_1.png': familyTrend1,
+  'family_trend_2.png': familyTrend2,
+  'family_trend_3.png': familyTrend3,
+  'family_trend_4.png': familyTrend4,
+  'family_trend_5.png': familyTrend5,
+  'family_trend_6.png': familyTrend6,
+  'family_trend_7.png': familyTrend7,
+  'family_trend_8.png': familyTrend8,
+  'family_trend_9.png': familyTrend9,
+  'family_trend_10.png': familyTrend10,
+  'family_3d_mother.png': family3dMother,
+  'family_3d_father.png': family3dFather,
+  'family_3d_sister.png': family3dSister,
+  'family_3d_brother.png': family3dBrother,
+  'family_3d_spouse.png': family3dSpouse,
+  'family_3d_daughter.png': family3dDaughter,
+  'family_3d_baby.png': family3dBaby,
+  'family_3d_grandmother.png': family3dGrandmother,
+  'family_3d_grandfather.png': family3dGrandfather,
+  'family_3d_couple.png': family3dCouple,
+  'family_luxury_banner_new.png': familyLuxuryBannerNew,
   'women_hero_radiance.png': womenHeroRadiance,
   'Rings.png': womenCategoryRings,
   'Earrings.png': womenCategoryEarrings,
@@ -212,7 +254,11 @@ export const resolveLegacyCmsAsset = (value, fallback = '') => {
     source.startsWith('data:') ||
     source.startsWith('blob:') ||
     source.startsWith('/uploads/') ||
-    source.startsWith('/media/')
+    source.startsWith('/media/') ||
+    /^uploads\//i.test(source) ||
+    /^media\//i.test(source) ||
+    /(^|\/)uploads\//i.test(source) ||
+    /(^|\/)media\//i.test(source)
   ) {
     return source;
   }

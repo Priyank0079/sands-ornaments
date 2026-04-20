@@ -20,7 +20,9 @@ const createBannerItem = () => ({
 const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     const sectionKey = sectionData?.sectionKey || sectionData?.id || '';
     const pageKey = sectionData?.pageKey || '';
-    const isSingleBannerSection = sectionKey === 'personalized-banner' && pageKey === 'shop-women';
+    const isWomenPersonalizedBanner = sectionKey === 'personalized-banner' && pageKey === 'shop-women';
+    const isFamilyPromoBanner = sectionKey === 'family-promo-banner' && pageKey === 'shop-family';
+    const isSingleBannerSection = isWomenPersonalizedBanner || isFamilyPromoBanner;
 
     const initialItems = useMemo(() => {
         if (Array.isArray(sectionData?.items) && sectionData.items.length > 0) {
@@ -53,6 +55,7 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         autoplayMs: sectionData?.settings?.autoplayMs || 3000
     });
     const [saving, setSaving] = useState(false);
+    const [categories, setCategories] = useState([]);
 
     useEffect(() => {
         setItems(initialItems);
@@ -63,6 +66,19 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             autoplayMs: sectionData?.settings?.autoplayMs || 3000
         });
     }, [sectionData?.settings]);
+
+    useEffect(() => {
+        const loadCategories = async () => {
+            const data = await adminService.getCategories();
+            setCategories(Array.isArray(data) ? data : []);
+        };
+        loadCategories();
+    }, []);
+
+    const buildFamilyCategoryPath = (categoryId, currentPath = '') => {
+        if (categoryId) return `/shop?source=family&filter=family&category=${encodeURIComponent(categoryId)}`;
+        return currentPath || '/shop?source=family&filter=family';
+    };
 
     const updateItem = (id, field, value) => {
         setItems((prev) => prev.map((item) => (
@@ -105,6 +121,18 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             toast.error('Each banner needs at least a title and image before saving.');
             return;
         }
+        if (isFamilyPromoBanner) {
+            const missingSubtitle = items.find((item) => !item.subtitle?.trim());
+            if (missingSubtitle) {
+                toast.error('Add a subtitle before saving this banner.');
+                return;
+            }
+            const missingCategory = items.find((item) => !item.categoryId);
+            if (missingCategory) {
+                toast.error('Select a category before saving this banner.');
+                return;
+            }
+        }
 
         setSaving(true);
         try {
@@ -118,7 +146,11 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                     sortOrder: index,
                     subtitle: item.subtitle || '',
                     ctaLabel: item.ctaLabel || 'Shop Collection',
-                    price: item.subtitle || ''
+                    price: item.subtitle || '',
+                    categoryId: isFamilyPromoBanner ? (item.categoryId || null) : item.categoryId,
+                    path: isFamilyPromoBanner
+                        ? buildFamilyCategoryPath(item.categoryId, item.path)
+                        : (item.path || '/shop')
                 }))
             });
         } finally {
@@ -222,6 +254,34 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                     onChange={(e) => updateItem(item.id, 'ctaLabel', e.target.value)}
                                     placeholder="Shop Collection"
                                 />
+                                {isFamilyPromoBanner && (
+                                    <div className="md:col-span-2">
+                                        <label className="block text-xs font-semibold text-gray-700 tracking-wide mb-1.5">
+                                            Category
+                                        </label>
+                                        <select
+                                            value={item.categoryId || ''}
+                                            onChange={(e) => {
+                                                const selected = categories.find((category) => String(category._id) === String(e.target.value));
+                                                if (!selected) {
+                                                    updateItem(item.id, 'categoryId', '');
+                                                    updateItem(item.id, 'path', '/shop?source=family&filter=family');
+                                                    return;
+                                                }
+                                                updateItem(item.id, 'categoryId', selected._id);
+                                                updateItem(item.id, 'path', buildFamilyCategoryPath(selected._id, item.path));
+                                            }}
+                                            className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3.5 text-sm text-gray-900 focus:outline-none focus:border-[#3E2723] focus:ring-2 focus:ring-[#3E2723]/10 transition-all shadow-sm"
+                                        >
+                                            <option value="">Select Category</option>
+                                            {categories.map((category) => (
+                                                <option key={category._id} value={category._id}>
+                                                    {category.name}{category.isActive === false ? ' (Inactive)' : ''}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
                             </div>
                         </div>
 

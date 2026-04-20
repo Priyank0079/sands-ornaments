@@ -7,6 +7,8 @@ import giftMother from '@assets/gift_mother_silver.png';
 import giftFriends from '@assets/gift_friends_silver.png';
 import giftWife from '@assets/gift_wife_silver.png';
 import giftSister from '@assets/gift_sister_silver.png';
+import giftBrotherSilver from '@assets/gift_brother_silver.png';
+import giftHusbandSilver from '@assets/gift_husband_silver.png';
 
 import newEarrings from '@assets/new_launch_earrings.png';
 import newChains from '@assets/new_launch_chains.png';
@@ -163,6 +165,35 @@ import womenOccasionGotHitched from '@assets/occasions/GotHitched.png';
 import womenPersonalizedBannerDefault from '@assets/promos/PersonalisedBannerWine.png';
 import womenDarkCoupleRings from '@assets/promos/DarkCoupleRings.png';
 import womenDarkPremiumGifts from '@assets/promos/DarkPremiumGifts.png';
+import familyCuratedClassics from '@assets/family_curated_classics.png';
+import familyCuratedSisters from '@assets/family_curated_sisters.png';
+import familyCuratedAstra from '@assets/family_astra.png';
+import familyCuratedBoho from '@assets/family_boho.png';
+import familyCuratedSignature from '@assets/premium_necklace_product.png';
+import familyPrice2999 from '@assets/family_price_2999_clean.jpg';
+import familyPricePremium from '@assets/family_price_premium_clean.jpg';
+import familyPrice4999 from '@assets/family_price_4999_clean.jpg';
+import familyTrend1 from '@assets/family_trend_1.png';
+import familyTrend2 from '@assets/family_trend_2.png';
+import familyTrend3 from '@assets/family_trend_3.png';
+import familyTrend4 from '@assets/family_trend_4.png';
+import familyTrend5 from '@assets/family_trend_5.png';
+import familyTrend6 from '@assets/family_trend_6.png';
+import familyTrend7 from '@assets/family_trend_7.png';
+import familyTrend8 from '@assets/family_trend_8.png';
+import familyTrend9 from '@assets/family_trend_9.png';
+import familyTrend10 from '@assets/family_trend_10.png';
+import familyPromoBannerDefault from '@assets/family_luxury_banner_new.png';
+import family3dMother from '@assets/family_3d_mother.png';
+import family3dFather from '@assets/family_3d_father.png';
+import family3dSister from '@assets/family_3d_sister.png';
+import family3dBrother from '@assets/family_3d_brother.png';
+import family3dSpouse from '@assets/family_3d_spouse.png';
+import family3dDaughter from '@assets/family_3d_daughter.png';
+import family3dBaby from '@assets/family_3d_baby.png';
+import family3dGrandmother from '@assets/family_3d_grandmother.png';
+import family3dGrandfather from '@assets/family_3d_grandfather.png';
+import family3dCouple from '@assets/family_3d_couple.png';
 
 export const PAGE_SECTIONS = [
   { pageKey: 'home', label: 'Home Sections', description: 'Manage the homepage narrative, hero banners, and product storytelling.' },
@@ -1182,15 +1213,151 @@ const shopFamilySections = [
   },
   {
     pageKey: 'shop-family',
+    sectionKey: 'luxury-within-reach',
+    sectionType: 'promo-grid',
+    label: 'Luxury within Reach',
+    isActive: true,
+    sortOrder: 2,
+    settings: {
+      eyebrow: 'Luxury Within Reach',
+      title: 'Family Gift Picks'
+    },
+    items: [
+      {
+        id: 'family-under-2999',
+        name: 'Under Rs 2999',
+        subtitle: 'Keepsake rings and petite gifting picks.',
+        image: familyPrice2999,
+        priceMax: 2999,
+        path: '/shop?source=family&filter=family&price_max=2999',
+        tag: 'Rose Pick',
+        ctaLabel: 'Explore Edit'
+      },
+      {
+        id: 'family-premium-gifts',
+        name: 'Premium Gifts',
+        subtitle: 'Layered necklaces and heirloom-style favourites.',
+        image: familyPricePremium,
+        priceMax: 3999,
+        path: '/shop?source=family&filter=family&price_max=3999',
+        tag: 'Most Loved',
+        ctaLabel: 'Explore Edit'
+      },
+      {
+        id: 'family-under-4999',
+        name: 'Under Rs 4999',
+        subtitle: 'Statement bracelets for elegant family moments.',
+        image: familyPrice4999,
+        priceMax: 4999,
+        path: '/shop?source=family&filter=family&price_max=4999',
+        tag: 'Easy Upgrade',
+        ctaLabel: 'Explore Edit'
+      }
+    ]
+  },
+  {
+    pageKey: 'shop-family',
+    sectionKey: 'shop-by-relation',
+    sectionType: 'category-grid',
+    label: 'Shop by Relation',
+    isActive: true,
+    sortOrder: 3,
+    settings: {
+      eyebrow: 'Family Edit',
+      title: 'SHOP BY RELATION',
+      subtitle: 'Explore curated gifting jewellery designed for every bond.'
+    },
+    items: [
+      { id: 'family-relation-all', name: 'ALL', subtitle: 'Every loved one', image: giftMother, relationKey: 'all', path: '/category/family' },
+      { id: 'family-relation-mother', name: 'MOTHER', subtitle: 'Graceful keepsakes', image: giftMother, relationKey: 'mother', path: '/category/family/mother' },
+      { id: 'family-relation-father', name: 'FATHER', subtitle: 'Classic silver picks', image: giftHusbandSilver, relationKey: 'father', path: '/category/family/father' },
+      { id: 'family-relation-brother', name: 'BROTHER', subtitle: 'Bold everyday styles', image: giftBrotherSilver, relationKey: 'brother', path: '/category/family/brother' },
+      { id: 'family-relation-sister', name: 'SISTER', subtitle: 'Delicate favourites', image: giftSister, relationKey: 'sister', path: '/category/family/sister' },
+      { id: 'family-relation-husband', name: 'HUSBAND', subtitle: 'Signature essentials', image: giftHusbandSilver, relationKey: 'husband', path: '/category/family/husband' },
+      { id: 'family-relation-wife', name: 'WIFE', subtitle: 'Elegant gifting edits', image: giftWife, relationKey: 'wife', path: '/category/family/wife' }
+    ]
+  },
+  {
+    pageKey: 'shop-family',
     sectionKey: 'collections',
     sectionType: 'category-grid',
     label: 'Collections',
     isActive: true,
-    sortOrder: 2,
+    sortOrder: 4,
     items: [
-      { id: 'family-gifting', name: 'Gifting', image: familyCategoryDefault, path: '/shop' },
-      { id: 'family-combos', name: 'Curated Combos', image: trendingCuratedCombos, path: '/shop' },
-      { id: 'family-couple', name: 'Couple Picks', image: promoCoupleRings, path: '/shop' }
+      { id: 'classics', name: '925 SILVER CLASSICS', image: familyCuratedClassics, path: '/shop?source=family&filter=family' },
+      { id: 'astra', name: 'ASTRA EDITION', image: familyCuratedAstra, path: '/shop?source=family&filter=family' },
+      { id: 'signature', name: 'SIGNATURE SETS', image: familyCuratedSignature, path: '/shop?source=family&filter=family' },
+      { id: 'boho', name: 'BOHO ANKLETS', image: familyCuratedBoho, path: '/shop?source=family&filter=family' },
+      { id: 'bridal', name: 'BRIDAL EDIT', image: latestEarrings, path: '/shop?source=family&filter=family' },
+      { id: 'gifts', name: 'GIFTS FOR HER', image: familyCuratedSisters, path: '/shop?source=family&filter=family' }
+    ]
+  },
+  {
+    pageKey: 'shop-family',
+    sectionKey: 'trending-near-you',
+    sectionType: 'category-grid',
+    label: 'Trending Near You',
+    isActive: true,
+    sortOrder: 5,
+    settings: {
+      title: 'Trending Near You'
+    },
+    items: [
+      { id: 'family-trend-1', name: 'Matching Sets', image: familyTrend1, categoryId: null, path: '/shop?source=family&filter=family' },
+      { id: 'family-trend-2', name: 'Heirloom Pieces', image: familyTrend2, categoryId: null, path: '/shop?source=family&filter=family' },
+      { id: 'family-trend-3', name: 'Mom & Me', image: familyTrend3, categoryId: null, path: '/shop?source=family&filter=family' },
+      { id: 'family-trend-4', name: 'Generations', image: familyTrend4, categoryId: null, path: '/shop?source=family&filter=family' },
+      { id: 'family-trend-5', name: 'Everyday Wear', image: familyTrend5, categoryId: null, path: '/shop?source=family&filter=family' },
+      { id: 'family-trend-6', name: 'Festive Joy', image: familyTrend6, categoryId: null, path: '/shop?source=family&filter=family' },
+      { id: 'family-trend-7', name: 'Minimalist Luxe', image: familyTrend7, categoryId: null, path: '/shop?source=family&filter=family' },
+      { id: 'family-trend-8', name: 'Statement Picks', image: familyTrend8, categoryId: null, path: '/shop?source=family&filter=family' },
+      { id: 'family-trend-9', name: 'Traditional', image: familyTrend9, categoryId: null, path: '/shop?source=family&filter=family' },
+      { id: 'family-trend-10', name: 'Modern Staples', image: familyTrend10, categoryId: null, path: '/shop?source=family&filter=family' }
+    ]
+  },
+  {
+    pageKey: 'shop-family',
+    sectionKey: 'family-promo-banner',
+    sectionType: 'banner',
+    label: 'Gifts for Family Banner',
+    isActive: true,
+    sortOrder: 6,
+    items: [
+      {
+        id: 'family-promo-main',
+        name: 'Exclusive Collection',
+        label: 'Gifts for Family',
+        subtitle: 'Choose the bonds that last a lifetime with our curated masterpiece collection.',
+        image: familyPromoBannerDefault,
+        categoryId: null,
+        path: '/shop?source=family&filter=family',
+        ctaLabel: 'Explore Now'
+      }
+    ]
+  },
+  {
+    pageKey: 'shop-family',
+    sectionKey: 'gifts-to-remember',
+    sectionType: 'category-grid',
+    label: 'Gifts to Remember',
+    isActive: true,
+    sortOrder: 7,
+    settings: {
+      eyebrow: 'Curated Picks',
+      title: 'Gifts to Remember'
+    },
+    items: [
+      { id: 'family-memory-1', name: 'For Mother', image: family3dMother, categoryId: null, path: '/shop?source=family&filter=family' },
+      { id: 'family-memory-2', name: 'For Father', image: family3dFather, categoryId: null, path: '/shop?source=family&filter=family' },
+      { id: 'family-memory-3', name: 'For Sister', image: family3dSister, categoryId: null, path: '/shop?source=family&filter=family' },
+      { id: 'family-memory-4', name: 'For Brother', image: family3dBrother, categoryId: null, path: '/shop?source=family&filter=family' },
+      { id: 'family-memory-5', name: 'For Spouse', image: family3dSpouse, categoryId: null, path: '/shop?source=family&filter=family' },
+      { id: 'family-memory-6', name: 'For Daughter', image: family3dDaughter, categoryId: null, path: '/shop?source=family&filter=family' },
+      { id: 'family-memory-7', name: 'For Baby', image: family3dBaby, categoryId: null, path: '/shop?source=family&filter=family' },
+      { id: 'family-memory-8', name: 'Grandmother', image: family3dGrandmother, categoryId: null, path: '/shop?source=family&filter=family' },
+      { id: 'family-memory-9', name: 'Grandfather', image: family3dGrandfather, categoryId: null, path: '/shop?source=family&filter=family' },
+      { id: 'family-memory-10', name: 'For Couple', image: family3dCouple, categoryId: null, path: '/shop?source=family&filter=family' }
     ]
   },
   {
@@ -1199,7 +1366,22 @@ const shopFamilySections = [
     sectionType: 'product-carousel',
     label: 'Products Listing',
     isActive: true,
-    sortOrder: 3,
+    sortOrder: 8,
+    settings: {
+      title: 'All Family Collections',
+      highlightWord: 'Edit',
+      subtitle: '"Curated boutique jewellery picks for every family member."',
+      ctaLabel: 'View All Collections',
+      tabConfigs: {
+        all: { tabLabel: 'All Family Collections', productLimit: 8, sourceMode: 'category', categoryId: '', productIds: [] },
+        mother: { tabLabel: 'Mother Collections', productLimit: 8, sourceMode: 'category', categoryId: '', productIds: [] },
+        father: { tabLabel: 'Father Collections', productLimit: 8, sourceMode: 'category', categoryId: '', productIds: [] },
+        brother: { tabLabel: 'Brother Collections', productLimit: 8, sourceMode: 'category', categoryId: '', productIds: [] },
+        sister: { tabLabel: 'Sister Collections', productLimit: 8, sourceMode: 'category', categoryId: '', productIds: [] },
+        husband: { tabLabel: 'Husband Collections', productLimit: 8, sourceMode: 'category', categoryId: '', productIds: [] },
+        wife: { tabLabel: 'Wife Collections', productLimit: 8, sourceMode: 'category', categoryId: '', productIds: [] }
+      }
+    },
     items: []
   }
 ];

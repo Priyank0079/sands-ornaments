@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
@@ -9,8 +9,9 @@ import giftSister from '@assets/gift_sister_silver.png';
 import giftHusband from '@assets/gift_husband_silver.png';
 import giftWife from '@assets/gift_wife_silver.png';
 import { buildFamilyShopPath, normalizeFamilyRecipient } from '../../utils/familyNavigation';
+import { resolveLegacyCmsAsset } from '../../utils/legacyCmsAssets';
 
-const recipients = [
+const relationSlots = [
     { id: 'all', title: 'ALL', image: giftMother, subtitle: 'Every loved one' },
     { id: 'mother', title: 'MOTHER', image: giftMother, subtitle: 'Graceful keepsakes' },
     { id: 'father', title: 'FATHER', image: giftFather, subtitle: 'Classic silver picks' },
@@ -20,8 +21,63 @@ const recipients = [
     { id: 'wife', title: 'WIFE', image: giftWife, subtitle: 'Elegant gifting edits' }
 ];
 
-const FamilyRecipientCategories = ({ selectedRecipient = 'all', onSelectRecipient }) => {
+const resolveRelationKey = (item = {}) => {
+    const candidates = [
+        item.relationKey,
+        item.recipient,
+        item.bondKey,
+        item.id,
+        item.itemId
+    ];
+    for (const value of candidates) {
+        const raw = String(value || '').trim().toLowerCase();
+        const direct = normalizeFamilyRecipient(raw);
+        if (direct !== 'all' || raw === 'all') {
+            return direct;
+        }
+        const relationSuffix = raw.match(/(?:^|-)relation-(all|mother|father|brother|sister|husband|wife)$/)?.[1];
+        if (relationSuffix) {
+            return normalizeFamilyRecipient(relationSuffix);
+        }
+        const relationTail = raw.match(/(?:^|[^a-z])(all|mother|father|brother|sister|husband|wife)$/)?.[1];
+        if (relationTail) {
+            return normalizeFamilyRecipient(relationTail);
+        }
+        if (raw.includes('/family')) {
+            return 'all';
+        }
+    }
+    return '';
+};
+
+const FamilyRecipientCategories = ({ selectedRecipient = 'all', onSelectRecipient, sectionData }) => {
     const navigate = useNavigate();
+    const settings = sectionData?.settings || {};
+    const rawTitle = String(settings.title || 'SHOP BY RELATION').trim();
+    const hasRelationWord = /relation/i.test(rawTitle);
+    const titlePrefix = hasRelationWord ? (rawTitle.replace(/relation/ig, '').trim() || 'SHOP BY') : rawTitle;
+    const titleHighlight = hasRelationWord ? 'RELATION' : '';
+    const eyebrow = String(settings.eyebrow || 'Family Edit').trim() || 'Family Edit';
+    const recipients = useMemo(() => {
+        const sourceItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
+        const byRelation = new Map();
+        sourceItems.forEach((item) => {
+            const relationKey = resolveRelationKey(item);
+            if (relationKey && !byRelation.has(relationKey)) byRelation.set(relationKey, item);
+        });
+
+        return relationSlots.map((slot) => {
+            const configured = byRelation.get(slot.id) || {};
+            const resolvedTitle = String(configured.name || configured.label || slot.title).trim() || slot.title;
+            const resolvedSubtitle = String(configured.subtitle || configured.description || slot.subtitle).trim() || slot.subtitle;
+            return {
+                id: slot.id,
+                title: resolvedTitle,
+                subtitle: resolvedSubtitle,
+                image: resolveLegacyCmsAsset(configured.image, slot.image)
+            };
+        });
+    }, [sectionData]);
 
     const handleClick = (recipientId) => {
         const normalizedRecipient = normalizeFamilyRecipient(recipientId);
@@ -39,12 +95,13 @@ const FamilyRecipientCategories = ({ selectedRecipient = 'all', onSelectRecipien
                         viewport={{ once: true }}
                         className="flex flex-col items-center"
                     >
-                        <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-[#8E2B45] mb-2 bg-[#FFD9E0] px-3 py-1">Family Edit</span>
+                        <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-[#8E2B45] mb-2 bg-[#FFD9E0] px-3 py-1">{eyebrow}</span>
                         <h2 className="text-2xl md:text-4xl font-serif text-[#2D060F] tracking-tight flex flex-col md:flex-row items-center gap-2">
-                            SHOP BY <span className="italic font-light text-[#8E2B45]">RELATION</span>
+                            {titlePrefix}
+                            {titleHighlight && <span className="italic font-light text-[#8E2B45]">{titleHighlight}</span>}
                         </h2>
                         <p className="max-w-xl text-[10px] md:text-xs text-zinc-400 mt-2">
-                            Explore curated gifting jewellery designed for every bond.
+                            {settings.subtitle || 'Explore curated gifting jewellery designed for every bond.'}
                         </p>
                         <div className="w-10 h-[1px] bg-[#FFD9E0] mt-4" />
                     </motion.div>

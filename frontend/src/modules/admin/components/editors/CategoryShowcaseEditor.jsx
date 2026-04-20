@@ -18,19 +18,29 @@ import catChain from '../../../user/assets/cat_chain_wine.png';
 const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     const navigate = useNavigate();
     const sectionId = sectionData?.sectionKey || sectionData?.id || 'category-showcase';
-    const sectionPageKey = sectionData?.pageKey || (String(sectionData?.sectionId || '').startsWith('shop-women:') ? 'shop-women' : '');
+    const sectionPageKey = sectionData?.pageKey || (
+        String(sectionData?.sectionId || '').startsWith('shop-women:')
+            ? 'shop-women'
+            : (String(sectionData?.sectionId || '').startsWith('shop-family:') ? 'shop-family' : '')
+    );
     const isShopWomenSection = sectionPageKey === 'shop-women';
+    const isShopFamilySection = sectionPageKey === 'shop-family';
     const isFixedWomenPriceRange = sectionId === 'price-range-showcase' && isShopWomenSection;
     const isWomenTrendingGrid = sectionId === 'categories-grid' && isShopWomenSection;
     const isWomenCuratedCollections = sectionId === 'curated-collections' && isShopWomenSection;
     const isWomenOccasionCarousel = sectionId === 'occasion-carousel' && isShopWomenSection;
     const isWomenDiscoverHue = sectionId === 'discover-hue' && isShopWomenSection;
     const isWomenPromoBanners = sectionId === 'promo-banners' && isShopWomenSection;
+    const isFamilyCuratedCollections = sectionId === 'collections' && isShopFamilySection;
+    const isFamilyTrendingNearYou = sectionId === 'trending-near-you' && isShopFamilySection;
+    const isFamilyGiftsToRemember = sectionId === 'gifts-to-remember' && isShopFamilySection;
     const isWomenCategoryLinkedSection = isWomenTrendingGrid || isWomenOccasionCarousel;
+    const isFamilyCategoryLinkedSection = isFamilyTrendingNearYou || isFamilyGiftsToRemember;
     const isCategoryShowcase = sectionId === 'category-showcase' || sectionData?.sectionType === 'category-showcase';
     const isCategoryGrid = sectionId === 'category-grid' || sectionData?.sectionType === 'category-grid';
     const isLuxuryWithinReach = sectionId === 'luxury-within-reach';
-    const isCategoryDrivenSection = isCategoryShowcase || isCategoryGrid;
+    const isFamilyLuxuryWithinReach = isLuxuryWithinReach && isShopFamilySection;
+    const isCategoryDrivenSection = (isCategoryShowcase || isCategoryGrid) && !isFamilyCuratedCollections;
     const isPremiumCategoryCards = sectionId === 'premium-category-cards';
     const isFixedWomenDiscoverHue = isWomenDiscoverHue;
     const isFixedWomenPromoBanners = isWomenPromoBanners;
@@ -115,6 +125,9 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
 
     const buildPriceRangePath = (priceMax) => {
         if (!priceMax) return '/shop';
+        if (isFamilyLuxuryWithinReach) {
+            return `/shop?source=family&filter=family&price_max=${priceMax}`;
+        }
         if (isFixedWomenPriceRange) {
             return `/shop?source=women&filter=womens&price_max=${priceMax}`;
         }
@@ -124,6 +137,11 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     const buildWomenCategoryPath = (categoryId, currentPath = '') => {
         if (categoryId) return `/shop?source=women&filter=womens&category=${encodeURIComponent(categoryId)}`;
         return currentPath || '/shop?source=women&filter=womens';
+    };
+
+    const buildFamilyCategoryPath = (categoryId, currentPath = '') => {
+        if (categoryId) return `/shop?source=family&filter=family&category=${encodeURIComponent(categoryId)}`;
+        return currentPath || '/shop?source=family&filter=family';
     };
 
     const fixedWomenPriceDefaults = [
@@ -239,17 +257,19 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             return {
                 ...item,
                 categoryId: resolved._id,
-                name: isWomenCategoryLinkedSection ? (item.name || resolved.name) : resolved.name,
+                name: (isWomenCategoryLinkedSection || isFamilyCategoryLinkedSection) ? (item.name || resolved.name) : resolved.name,
                 path: isWomenCategoryLinkedSection
                     ? buildWomenCategoryPath(resolved._id, item.path)
+                    : isFamilyCategoryLinkedSection
+                        ? buildFamilyCategoryPath(resolved._id, item.path)
                     : isCategoryGrid
                         ? `/category/${resolved.slug || normalizeLabel(resolved.name)}`
-                    : `/shop?category=${resolved._id}`,
+                        : `/shop?category=${resolved._id}`,
                 image: item.image || resolved.image || item.image,
                 hoverImage: item.hoverImage || ''
             };
         }));
-    }, [categories, isCategoryDrivenSection, isCategoryGrid, isWomenCategoryLinkedSection, isWomenCuratedCollections]);
+    }, [categories, isCategoryDrivenSection, isCategoryGrid, isFamilyCategoryLinkedSection, isWomenCategoryLinkedSection, isWomenCuratedCollections]);
 
     useEffect(() => {
         if (!isWomenCuratedCollections || categories.length === 0) return;
@@ -287,11 +307,13 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             return {
                 ...item,
                 priceMax,
-                name: `Under INR ${priceMax}`,
+                name: isFamilyLuxuryWithinReach
+                    ? (item.name || `Under INR ${priceMax}`)
+                    : `Under INR ${priceMax}`,
                 path: buildPriceRangePath(priceMax)
             };
         }));
-    }, [sectionId, isLuxuryWithinReach, isShopWomenSection, isFixedWomenPriceRange]);
+    }, [sectionId, isLuxuryWithinReach, isShopWomenSection, isFixedWomenPriceRange, isFamilyLuxuryWithinReach]);
 
     useEffect(() => {
         if (!isFixedWomenPriceRange) return;
@@ -489,12 +511,17 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         if (isFixedWomenDiscoverHue || isFixedWomenPromoBanners) {
             return;
         }
+        if ((isFamilyTrendingNearYou || isFamilyGiftsToRemember) && items.length >= 12) {
+            toast.error('You can add up to 12 cards in this section.');
+            return;
+        }
         const newItem = {
             id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
             name: isCategoryDrivenSection ? '' : 'New Item',
             path: isCategoryDrivenSection ? '' : '/shop',
             image: '',
             tag: '',
+            ...(isFamilyCuratedCollections ? { categoryId: '', path: '/shop?source=family&filter=family' } : {}),
             ...(sectionId === 'price-range-showcase' || isLuxuryWithinReach ? { priceMax: '' } : {}),
             ...(sectionId === 'latest-drop' ? { limit: '', categoryId: '' } : {}),
             ...(sectionId === 'most-gifted' ? { categoryId: '' } : {}),
@@ -507,7 +534,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         const nextItems = [...items, newItem];
         setItems(nextItems);
         setEditingId(newItem.id);
-        if (!isCategoryDrivenSection && !isWomenCuratedCollections && sectionId !== 'price-range-showcase' && !isLuxuryWithinReach && sectionId !== 'new-launch' && sectionId !== 'latest-drop' && sectionId !== 'most-gifted' && sectionId !== 'proposal-rings') {
+        if (!isCategoryDrivenSection && !isWomenCuratedCollections && !isFamilyCuratedCollections && sectionId !== 'price-range-showcase' && !isLuxuryWithinReach && sectionId !== 'new-launch' && sectionId !== 'latest-drop' && sectionId !== 'most-gifted' && sectionId !== 'proposal-rings') {
             handleSave(nextItems);
         }
     };
@@ -671,16 +698,14 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
 
     const canPreserveLegacyCategoryGridItem = (item) => {
         if (!item || getCategoryFromItem(item)) return false;
+        const path = String(item.path || '');
         const hasLegacyCategoryPath = typeof item.path === 'string'
             && (
-                item.path.startsWith('/category/')
-                || item.path.includes('category=')
-                || (
-                    sectionId === 'categories-grid'
-                    && sectionData?.pageKey === 'shop-men'
-                    && item.path.startsWith('/shop?')
-                    && item.path.includes('source=men')
-                )
+                path.startsWith('/category/')
+                || path.includes('category=')
+                || (path.startsWith('/shop?') && path.includes('source=men'))
+                || (path.startsWith('/shop?') && path.includes('source=women'))
+                || (path.startsWith('/shop?') && path.includes('source=family'))
             );
         const hasUsableContent = Boolean((item.name || item.label || '').trim()) && Boolean(item.image);
         return hasLegacyCategoryPath && hasUsableContent;
@@ -767,6 +792,36 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             await onSave({ items: normalizedItems });
             return;
         }
+        if (isFamilyCuratedCollections) {
+            const missing = nextItems.filter(item => !getCategoryFromItem(item) && !canPreserveLegacyCategoryGridItem(item));
+            if (missing.length > 0) {
+                const labels = missing.map(item => item.name || item.label || `Item ${item.id}`).join(', ');
+                toast.error(`Select a category for each item before saving. Missing: ${labels}`);
+                return;
+            }
+            const normalizedItems = nextItems.map((item, index) => {
+                const category = getCategoryFromItem(item);
+                return {
+                    ...item,
+                    id: item.id || item.itemId || `family-collection-${index + 1}`,
+                    categoryId: category?._id || item.categoryId || '',
+                    name: (item.name || item.label || category?.name || '').trim(),
+                    label: (item.label || item.name || category?.name || '').trim(),
+                    path: category
+                        ? buildFamilyCategoryPath(category._id, item.path)
+                        : (item.path || '/shop?source=family&filter=family')
+                };
+            });
+
+            const missingContent = normalizedItems.filter((item) => !(item.name || item.label || '').trim() || !item.image);
+            if (missingContent.length > 0) {
+                toast.error('Each family collection card needs title and image before saving.');
+                return;
+            }
+
+            await onSave({ items: normalizedItems });
+            return;
+        }
         if (isCategoryShowcase) {
             const missing = nextItems.filter(item => !getCategoryFromItem(item));
             if (missing.length > 0) {
@@ -808,16 +863,21 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                 return {
                     ...item,
                     categoryId: category._id,
-                    name: isWomenCategoryLinkedSection ? (item.name || category.name) : category.name,
-                    label: isWomenCategoryLinkedSection ? (item.label || item.name || category.name) : category.name,
+                    name: (isWomenCategoryLinkedSection || isFamilyCategoryLinkedSection) ? (item.name || category.name) : category.name,
+                    label: (isWomenCategoryLinkedSection || isFamilyCategoryLinkedSection) ? (item.label || item.name || category.name) : category.name,
                     path: isWomenCategoryLinkedSection
                         ? buildWomenCategoryPath(category._id, item.path)
-                        : `/category/${category.slug || normalizeLabel(category.name)}`,
+                        : isFamilyCategoryLinkedSection
+                            ? buildFamilyCategoryPath(category._id, item.path)
+                            : `/category/${category.slug || normalizeLabel(category.name)}`,
                     image: item.image || category.image || item.image
                 };
             });
             if (isWomenTrendingGrid) {
                 normalizedItems = normalizedItems.slice(0, 4);
+            }
+            if (isFamilyTrendingNearYou || isFamilyGiftsToRemember) {
+                normalizedItems = normalizedItems.slice(0, 12);
             }
             await onSave({ items: normalizedItems });
             return;
@@ -850,6 +910,14 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                 toast.error(`Enter a max price for each item before saving. Missing: ${labels}`);
                 return;
             }
+            if (isFamilyLuxuryWithinReach) {
+                const missingContent = nextItems.filter((item) => !(item.name || '').trim() || !(item.subtitle || item.description || '').trim() || !item.image);
+                if (missingContent.length > 0) {
+                    const labels = missingContent.map(item => item.name || item.id || 'Item').join(', ');
+                    toast.error(`Each card needs title, subtitle, and image before saving. Missing: ${labels}`);
+                    return;
+                }
+            }
             const normalizedItems = nextItems.map((item, index) => {
                 const priceMax = getPriceMaxFromItem(item);
                 if (!priceMax) return item;
@@ -858,13 +926,19 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                     id: item.id || `price-${index + 1}`,
                     priceMax,
                     price: String(priceMax),
-                    name: `Under INR ${priceMax}`,
-                    label: `Under INR ${priceMax}`,
+                    name: isFamilyLuxuryWithinReach
+                        ? ((item.name || item.label || '').trim() || `Under INR ${priceMax}`)
+                        : `Under INR ${priceMax}`,
+                    label: isFamilyLuxuryWithinReach
+                        ? ((item.label || item.name || '').trim() || `Under INR ${priceMax}`)
+                        : `Under INR ${priceMax}`,
+                    subtitle: isFamilyLuxuryWithinReach ? (item.subtitle || item.description || '') : item.subtitle,
+                    description: isFamilyLuxuryWithinReach ? (item.description || item.subtitle || '') : item.description,
                     path: buildPriceRangePath(priceMax)
                 };
             });
 
-            let constrainedItems = normalizedItems.slice(0, isLuxuryWithinReach ? 2 : nextItems.length);
+            let constrainedItems = normalizedItems.slice(0, isLuxuryWithinReach ? (isFamilyLuxuryWithinReach ? 3 : 2) : nextItems.length);
             if (isFixedWomenPriceRange) {
                 constrainedItems = fixedWomenPriceDefaults.map((fallback, index) => {
                     const current = constrainedItems[index] || {};
@@ -1164,10 +1238,12 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                         {isPremiumCategoryCards
                             ? 'These three cards stay fixed. You can update only their images to keep navigation consistent.'
                             : isLuxuryWithinReach
-                                ? 'These two cards stay fixed. You can update only their prices to keep this section consistent.'
-                            : isFixedWomenPriceRange
-                                ? 'These three cards stay fixed. Update only max price and badge; images and card count are locked.'
-                            : isWomenTrendingGrid
+                                ? (isFamilyLuxuryWithinReach
+                                    ? 'These three cards stay fixed. Update title, subtitle, image, badge, and max price. User clicks always go to Family products under the selected price.'
+                                    : 'These two cards stay fixed. You can update only their prices to keep this section consistent.')
+                                : isFixedWomenPriceRange
+                                    ? 'These three cards stay fixed. Update only max price and badge; images and card count are locked.'
+                                    : isWomenTrendingGrid
                                 ? 'These four cards stay fixed. Update image/title/category only to preserve layout.'
                             : isFixedWomenDiscoverHue
                                 ? 'These four hue cards stay fixed. Update title, hue type, and image only.'
@@ -1227,7 +1303,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                 /* EDIT MODE */
                                 <div className="space-y-4">
                                     {/* Main Image */}
-                                    {!isLuxuryWithinReach && !isFixedWomenPriceRange && (
+                                    {(!isLuxuryWithinReach || isFamilyLuxuryWithinReach) && !isFixedWomenPriceRange && (
                                     <div className="aspect-square bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center overflow-hidden relative group/img">
                                         {item.image ? (
                                             <>
@@ -1276,7 +1352,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                     )}
 
                                     {/* Select Product Button (skip for locked premium cards and structured sections) */}
-                                    {!isPremiumCategoryCards && !isCategoryDrivenSection && !isWomenCuratedCollections && !isFixedWomenDiscoverHue && !isFixedWomenPromoBanners && sectionId !== 'price-range-showcase' && !isLuxuryWithinReach && sectionId !== 'nav-gifts-for' && sectionId !== 'nav-occasions' && sectionId !== 'perfect-gift' && sectionId !== 'new-launch' && sectionId !== 'latest-drop' && sectionId !== 'most-gifted' && sectionId !== 'proposal-rings' && sectionId !== 'curated-for-you' && sectionId !== 'style-it-your-way' && (
+                                    {!isPremiumCategoryCards && !isCategoryDrivenSection && !isWomenCuratedCollections && !isFamilyCuratedCollections && !isFixedWomenDiscoverHue && !isFixedWomenPromoBanners && sectionId !== 'price-range-showcase' && !isLuxuryWithinReach && sectionId !== 'nav-gifts-for' && sectionId !== 'nav-occasions' && sectionId !== 'perfect-gift' && sectionId !== 'new-launch' && sectionId !== 'latest-drop' && sectionId !== 'most-gifted' && sectionId !== 'proposal-rings' && sectionId !== 'curated-for-you' && sectionId !== 'style-it-your-way' && (
                                         <button
                                             onClick={() => handleRedirectToSelect(item.id)}
                                             className="w-full py-2 bg-gray-50 text-gray-600 text-[10px] font-bold rounded-lg border border-gray-200 hover:bg-gray-100 flex items-center justify-center gap-2 uppercase tracking-widest"
@@ -1306,10 +1382,12 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                             return {
                                                                 ...entry,
                                                                 categoryId: selected._id,
-                                                                name: isWomenCategoryLinkedSection ? (entry.name || selected.name) : selected.name,
+                                                                name: (isWomenCategoryLinkedSection || isFamilyCategoryLinkedSection) ? (entry.name || selected.name) : selected.name,
                                                                 path: isCategoryGrid
                                                                     ? (isWomenCategoryLinkedSection
                                                                         ? buildWomenCategoryPath(selected._id, entry.path)
+                                                                        : isFamilyCategoryLinkedSection
+                                                                            ? buildFamilyCategoryPath(selected._id, entry.path)
                                                                         : `/category/${selected.slug || normalizeLabel(selected.name)}`)
                                                                     : `/shop?category=${selected._id}`,
                                                                 image: entry.image || selected.image || entry.image
@@ -1343,6 +1421,35 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                                 name: entry.name || selected.name,
                                                                 path: buildWomenCategoryPath(selected._id, entry.path),
                                                                 image: entry.image || selected.image || entry.image
+                                                            };
+                                                        }));
+                                                    }}
+                                                    className="w-full bg-white border border-gray-200 rounded-lg py-2 px-3 text-xs focus:outline-none focus:border-[#3E2723] focus:ring-1 focus:ring-[#3E2723]/20"
+                                                >
+                                                    <option value="">Select Category</option>
+                                                    {categories.map(cat => (
+                                                        <option key={cat._id} value={cat._id}>
+                                                            {cat.name}{cat.isActive === false ? ' (Inactive)' : ''}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        )}
+                                        {isFamilyCuratedCollections && (
+                                            <div>
+                                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Category</label>
+                                                <select
+                                                    value={getCategoryFromItem(item)?._id || ''}
+                                                    onChange={(e) => {
+                                                        const selected = categories.find(c => String(c._id) === String(e.target.value));
+                                                        if (!selected) return;
+                                                        setItems(prev => prev.map(entry => {
+                                                            if (entry.id !== item.id) return entry;
+                                                            return {
+                                                                ...entry,
+                                                                categoryId: selected._id,
+                                                                name: entry.name || selected.name,
+                                                                path: buildFamilyCategoryPath(selected._id, entry.path)
                                                             };
                                                         }));
                                                     }}
@@ -1504,12 +1611,27 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                 />
                                             </div>
                                         )}
-                                        {!isPremiumCategoryCards && (!isCategoryDrivenSection || isWomenCategoryLinkedSection || isFixedWomenDiscoverHue || isFixedWomenPromoBanners) && sectionId !== 'price-range-showcase' && !isLuxuryWithinReach && (
+                                        {!isPremiumCategoryCards && (!isCategoryDrivenSection || isWomenCategoryLinkedSection || isFamilyCategoryLinkedSection || isFixedWomenDiscoverHue || isFixedWomenPromoBanners || isFamilyCuratedCollections || isFamilyLuxuryWithinReach) && sectionId !== 'price-range-showcase' && (!isLuxuryWithinReach || isFamilyLuxuryWithinReach) && (
                                             <Input
-                                                label={isMostGiftedHero ? "Hero Title" : sectionId === 'style-it-your-way' ? "Title" : isWomenCuratedCollections ? "Card Title" : "Name"}
+                                                label={isMostGiftedHero ? "Hero Title" : sectionId === 'style-it-your-way' ? "Title" : (isWomenCuratedCollections || isFamilyCuratedCollections) ? "Card Title" : "Name"}
                                                 value={item.name}
                                                 onChange={(e) => handleItemChange(item.id, 'name', e.target.value)}
-                                                placeholder={isMostGiftedHero ? "Most Gifted Items" : isWomenCuratedCollections ? "Boho Anklets" : "Name"}
+                                                placeholder={isMostGiftedHero ? "Most Gifted Items" : (isWomenCuratedCollections || isFamilyCuratedCollections) ? "Boho Anklets" : "Name"}
+                                            />
+                                        )}
+                                        {isFamilyLuxuryWithinReach && (
+                                            <Input
+                                                label="Subtitle"
+                                                value={item.subtitle || item.description || ''}
+                                                onChange={(e) => {
+                                                    const value = e.target.value;
+                                                    setItems(prev => prev.map(entry => (
+                                                        entry.id === item.id
+                                                            ? { ...entry, subtitle: value, description: value }
+                                                            : entry
+                                                    )));
+                                                }}
+                                                placeholder="Keepsake rings and petite gifting picks."
                                             />
                                         )}
                                         {isFixedWomenDiscoverHue && (
@@ -1582,7 +1704,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                 />
                                             </>
                                         )}
-                                        {isCategoryDrivenSection && !isWomenCategoryLinkedSection && (
+                                        {isCategoryDrivenSection && !isWomenCategoryLinkedSection && !isFamilyCategoryLinkedSection && (
                                             <Input
                                                 label="Category Name"
                                                 value={item.name}

@@ -3,6 +3,14 @@ import api from '../../../services/api';
 const isFormData = (payload) =>
   typeof FormData !== 'undefined' && payload instanceof FormData;
 
+const appendCacheBuster = (url) => {
+  const source = String(url || '').trim();
+  if (!source) return null;
+  if (source.startsWith('data:') || source.startsWith('blob:')) return source;
+  const stamp = Date.now();
+  return source.includes('?') ? `${source}&v=${stamp}` : `${source}?v=${stamp}`;
+};
+
 const getAdminOrderCustomerName = (order = {}) =>
   order.customerName ||
   order.userId?.name ||
@@ -520,7 +528,7 @@ export const adminService = {
       const res = await api.post('admin/sections/upload-image', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      return res.data?.data?.url || null;
+      return appendCacheBuster(res.data?.data?.url || null);
     } catch (err) {
       console.error("Admin section image upload failed:", err);
       return null;

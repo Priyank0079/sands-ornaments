@@ -16,6 +16,7 @@ import MenStyleGuideEditor from '../components/editors/MenStyleGuideEditor';
 import MenStyleTrendsEditor from '../components/editors/MenStyleTrendsEditor';
 import MenFeaturedProductsEditor from '../components/editors/MenFeaturedProductsEditor';
 import WomenFeaturedProductsEditor from '../components/editors/WomenFeaturedProductsEditor';
+import FamilyFeaturedProductsEditor from '../components/editors/FamilyFeaturedProductsEditor';
 import CategoryShowcaseEditor from '../components/editors/CategoryShowcaseEditor';
 import BannerSectionEditor from '../components/editors/BannerSectionEditor';
 import BrandPromisesEditor from '../components/editors/BrandPromisesEditor';
@@ -153,6 +154,10 @@ const SectionEditor = () => {
             return <ShopByBondEditor sectionData={sectionData} onSave={handleSave} defaultSection={defaultSection} />;
         }
 
+        if ((sectionData.sectionKey || id) === 'shop-by-relation') {
+            return <ShopByBondEditor sectionData={sectionData} onSave={handleSave} defaultSection={defaultSection} />;
+        }
+
         if ((sectionData.sectionKey || id) === 'silver-new-launch-grid') {
             return <SilverNewLaunchGridEditor sectionData={sectionData} onSave={handleSave} defaultSection={defaultSection} />;
         }
@@ -201,15 +206,22 @@ const SectionEditor = () => {
             return <WomenFeaturedProductsEditor sectionData={sectionData} onSave={handleSave} defaultSection={defaultSection} />;
         }
 
+        if ((sectionData.sectionKey || id) === 'products-listing' && pageKey === 'shop-family') {
+            return <FamilyFeaturedProductsEditor sectionData={sectionData} onSave={handleSave} defaultSection={defaultSection} />;
+        }
+
         const supportedSections = [
             'silver-collection',
             'silver-curated',
             'luxury-within-reach',
             'category-grid',
+            'collections',
             'categories-grid',
+            'trending-near-you',
             'product-categories',
             'curated-collections',
             'occasion-carousel',
+            'gifts-to-remember',
             'discover-hue',
             'promo-banners',
             'premium-category-cards',
