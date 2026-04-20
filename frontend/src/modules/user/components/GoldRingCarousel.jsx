@@ -14,6 +14,17 @@ const fallbackRingTypes = [
     { id: 6, name: 'Classic Ring', image: ringGreen, path: '/shop?category=Rings&search=classic' },
 ];
 
+const ensureGoldPath = (rawPath = '', categoryId = '') => {
+    const normalizedCategoryId = String(categoryId || '').trim();
+    if (normalizedCategoryId) return `/shop?metal=gold&category=${encodeURIComponent(normalizedCategoryId)}`;
+
+    const source = String(rawPath || '').trim();
+    if (!source) return '/shop?metal=gold';
+    if (!source.startsWith('/shop')) return source;
+    if (/([?&])metal=gold(&|$)/i.test(source)) return source;
+    return `${source}${source.includes('?') ? '&' : '?'}metal=gold`;
+};
+
 const GoldRingCarousel = ({ sectionData = null }) => {
     const navigate = useNavigate();
 
@@ -25,13 +36,13 @@ const GoldRingCarousel = ({ sectionData = null }) => {
             id: item?.itemId || item?.id || `gold-ring-${idx + 1}`,
             name: item?.name || item?.label || fallbackRingTypes[idx % fallbackRingTypes.length].name,
             image: resolveLegacyCmsAsset(item?.image, fallbackRingTypes[idx % fallbackRingTypes.length].image),
-            path: item?.path || fallbackRingTypes[idx % fallbackRingTypes.length].path
+            path: ensureGoldPath(item?.path || fallbackRingTypes[idx % fallbackRingTypes.length].path, item?.categoryId)
         }));
     }, [sectionData]);
 
     const title = String(sectionData?.settings?.title || sectionData?.label || 'Get The Right Ring').trim() || 'Get The Right Ring';
     const ctaLabel = String(sectionData?.settings?.ctaLabel || 'View All Rings').trim() || 'View All Rings';
-    const ctaPath = String(sectionData?.settings?.ctaPath || '/shop?category=Rings').trim() || '/shop?category=Rings';
+    const ctaPath = ensureGoldPath(String(sectionData?.settings?.ctaPath || '/shop?metal=gold&category=rings').trim() || '/shop?metal=gold&category=rings');
 
     return (
         <section className="w-full py-10 bg-white">

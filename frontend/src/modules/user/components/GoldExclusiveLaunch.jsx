@@ -24,6 +24,17 @@ const fallbackCards = [
     }
 ];
 
+const ensureGoldPath = (rawPath = '', categoryId = '') => {
+    const normalizedCategoryId = String(categoryId || '').trim();
+    if (normalizedCategoryId) return `/shop?metal=gold&category=${encodeURIComponent(normalizedCategoryId)}`;
+
+    const source = String(rawPath || '').trim();
+    if (!source) return '/shop?metal=gold';
+    if (!source.startsWith('/shop')) return source;
+    if (/([?&])metal=gold(&|$)/i.test(source)) return source;
+    return `${source}${source.includes('?') ? '&' : '?'}metal=gold`;
+};
+
 const GoldExclusiveLaunch = ({ sectionData = null }) => {
     const navigate = useNavigate();
 
@@ -36,12 +47,12 @@ const GoldExclusiveLaunch = ({ sectionData = null }) => {
             title: item?.name || item?.label || fallbackCards[idx % fallbackCards.length].title,
             subtitle: item?.subtitle || item?.description || fallbackCards[idx % fallbackCards.length].subtitle,
             image: resolveLegacyCmsAsset(item?.image, fallbackCards[idx % fallbackCards.length].image),
-            path: item?.path || fallbackCards[idx % fallbackCards.length].path
+            path: ensureGoldPath(item?.path || fallbackCards[idx % fallbackCards.length].path, item?.categoryId)
         }));
     }, [sectionData]);
 
     const heading = String(sectionData?.settings?.title || sectionData?.label || 'Exclusive Collection Launch').trim() || 'Exclusive Collection Launch';
-    const ctaPath = String(sectionData?.settings?.ctaPath || '/shop?new_arrival=true&metal=gold').trim() || '/shop?new_arrival=true&metal=gold';
+    const ctaPath = ensureGoldPath(String(sectionData?.settings?.ctaPath || '/shop?new_arrival=true&metal=gold').trim() || '/shop?new_arrival=true&metal=gold');
 
     return (
         <section className="w-full py-10 bg-white overflow-hidden">

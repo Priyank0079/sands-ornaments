@@ -604,6 +604,78 @@ const sanitizeSectionPayload = (identity, payload = {}) => {
       .filter(Boolean);
   }
 
+  if (sectionKey === "gold-new-launch-banner" && pageKey === "gold-collection") {
+    cleaned.items = cleaned.items
+      .map((item, idx) => {
+        const rawCategory = String(item.categoryId || "").trim()
+          || parseCategoryFromPath(item.path)
+          || slugifyLabel(item.name || item.label || "");
+        const categoryId = isObjectIdLike(rawCategory) ? rawCategory : null;
+        const pathCategory = categoryId || rawCategory;
+        const label = String(item.name || item.label || "").trim();
+        if (!label || !item.image || !pathCategory) return null;
+        return {
+          ...item,
+          categoryId: categoryId || undefined,
+          name: label,
+          label: item.label || label,
+          path: buildGoldCategoryIdPath(pathCategory, item.path),
+          sortOrder: item.sortOrder ?? idx
+        };
+      })
+      .filter(Boolean)
+      .slice(0, 3);
+  }
+
+  if (sectionKey === "gold-exclusive-launch" && pageKey === "gold-collection") {
+    cleaned.items = cleaned.items
+      .map((item, idx) => {
+        const rawCategory = String(item.categoryId || "").trim()
+          || parseCategoryFromPath(item.path)
+          || slugifyLabel(item.name || item.label || "");
+        const categoryId = isObjectIdLike(rawCategory) ? rawCategory : null;
+        const pathCategory = categoryId || rawCategory;
+        const title = String(item.name || item.label || "").trim();
+        const subtitle = String(item.subtitle || item.description || "").trim();
+        if (!title || !subtitle || !item.image || !pathCategory) return null;
+        return {
+          ...item,
+          categoryId: categoryId || undefined,
+          name: title,
+          label: item.label || title,
+          subtitle,
+          description: item.description || subtitle,
+          path: buildGoldCategoryIdPath(pathCategory, item.path),
+          sortOrder: item.sortOrder ?? idx
+        };
+      })
+      .filter(Boolean)
+      .slice(0, 2);
+  }
+
+  if (sectionKey === "gold-ring-carousel" && pageKey === "gold-collection") {
+    cleaned.items = cleaned.items
+      .map((item, idx) => {
+        const rawCategory = String(item.categoryId || "").trim()
+          || parseCategoryFromPath(item.path)
+          || slugifyLabel(item.name || item.label || "");
+        const categoryId = isObjectIdLike(rawCategory) ? rawCategory : null;
+        const pathCategory = categoryId || rawCategory;
+        const label = String(item.name || item.label || "").trim();
+        if (!label || !item.image || !pathCategory) return null;
+        return {
+          ...item,
+          categoryId: categoryId || undefined,
+          name: label,
+          label: item.label || label,
+          path: buildGoldCategoryIdPath(pathCategory, item.path),
+          sortOrder: item.sortOrder ?? idx
+        };
+      })
+      .filter(Boolean)
+      .slice(0, 6);
+  }
+
   if (sectionKey === "gold-shop-by-colour" && pageKey === "gold-collection") {
     cleaned.items = cleaned.items
       .map((item, idx) => {

@@ -13,6 +13,17 @@ const fallbackCards = [
     { id: 'earrings', name: 'Earrings', image: earringsImg, path: '/shop?metal=gold&category=earrings', highlight: false }
 ];
 
+const ensureGoldPath = (rawPath = '', categoryId = '') => {
+    const normalizedCategoryId = String(categoryId || '').trim();
+    if (normalizedCategoryId) return `/shop?metal=gold&category=${encodeURIComponent(normalizedCategoryId)}`;
+
+    const source = String(rawPath || '').trim();
+    if (!source) return '/shop?metal=gold';
+    if (!source.startsWith('/shop')) return source;
+    if (/([?&])metal=gold(&|$)/i.test(source)) return source;
+    return `${source}${source.includes('?') ? '&' : '?'}metal=gold`;
+};
+
 const GoldNewLaunchBanner = ({ sectionData = null }) => {
     const navigate = useNavigate();
 
@@ -24,7 +35,7 @@ const GoldNewLaunchBanner = ({ sectionData = null }) => {
             id: item?.itemId || item?.id || `gold-new-launch-${idx + 1}`,
             name: item?.name || item?.label || fallbackCards[idx % fallbackCards.length].name,
             image: resolveLegacyCmsAsset(item?.image, fallbackCards[idx % fallbackCards.length].image),
-            path: item?.path || fallbackCards[idx % fallbackCards.length].path,
+            path: ensureGoldPath(item?.path || fallbackCards[idx % fallbackCards.length].path, item?.categoryId),
             highlight: idx === 1
         }));
     }, [sectionData]);

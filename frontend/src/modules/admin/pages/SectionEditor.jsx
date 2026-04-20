@@ -123,6 +123,10 @@ const SectionEditor = () => {
 
     // Render appropriate editor based on section ID or type
     const renderEditor = () => {
+        if ((sectionData.sectionKey || id) === 'gold-new-launch-banner' && pageKey === 'gold-collection') {
+            return <CategoryShowcaseEditor sectionData={sectionData} onSave={handleSave} defaultItems={defaultItems} />;
+        }
+
         if (sectionData.sectionType === 'banner') {
             return <BannerSectionEditor sectionData={sectionData} onSave={handleSave} defaultItems={defaultItems} />;
         }

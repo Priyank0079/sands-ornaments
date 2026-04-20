@@ -64,8 +64,16 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     const isGoldCuratedShowcaseSection = sectionId === 'gold-curated-showcase' && isGoldCollectionSection;
     const isGoldLifestyleGridSection = sectionId === 'gold-lifestyle-grid' && isGoldCollectionSection;
     const isGoldExploreCollectionsSection = sectionId === 'gold-explore-collections' && isGoldCollectionSection;
+    const isGoldNewLaunchBannerSection = sectionId === 'gold-new-launch-banner' && isGoldCollectionSection;
+    const isGoldExclusiveLaunchSection = sectionId === 'gold-exclusive-launch' && isGoldCollectionSection;
+    const isGoldRingCarouselSection = sectionId === 'gold-ring-carousel' && isGoldCollectionSection;
     const isGoldLuxuryWithinReach = sectionId === 'gold-luxury-within-reach' && isGoldCollectionSection;
-    const isGoldCategoryLinkedSection = isGoldCategoryGridSection || isGoldShopByColourSection || isGoldCuratedBondSection || isGoldCuratedShowcaseSection || isGoldLifestyleGridSection;
+    const isGoldCategoryLinkedSection = isGoldCategoryGridSection
+        || isGoldShopByColourSection
+        || isGoldCuratedBondSection
+        || isGoldCuratedShowcaseSection
+        || isGoldLifestyleGridSection
+        || isGoldRingCarouselSection;
     const isFixedWomenPriceRange = sectionId === 'price-range-showcase' && isShopWomenSection;
     const isWomenTrendingGrid = sectionId === 'categories-grid' && isShopWomenSection;
     const isWomenCuratedCollections = sectionId === 'curated-collections' && isShopWomenSection;
@@ -181,6 +189,46 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                     tag: 'CELEBRATION READY',
                     extraImages: [goldPendantsGreen, goldBraceletsGreen, goldRingsGreen]
                 }
+            ]
+        : isGoldNewLaunchBannerSection
+            ? [
+                { id: 'gold-new-launch-1', name: 'Rings', label: 'Rings', image: goldRingsGreen, categoryId: '', path: '/shop?metal=gold&category=rings', tag: '' },
+                { id: 'gold-new-launch-2', name: 'Pendants', label: 'Pendants', image: goldPendantsGreen, categoryId: '', path: '/shop?metal=gold&category=necklaces', tag: '' },
+                { id: 'gold-new-launch-3', name: 'Earrings', label: 'Earrings', image: goldEarringsGreen, categoryId: '', path: '/shop?metal=gold&category=earrings', tag: '' }
+            ]
+        : isGoldExclusiveLaunchSection
+            ? [
+                {
+                    id: 'gold-exclusive-1',
+                    name: 'SOULitaire',
+                    label: 'SOULitaire',
+                    subtitle: 'Solitaire Collection',
+                    description: 'Solitaire Collection',
+                    image: goldRingsGreen,
+                    categoryId: '',
+                    path: '/shop?metal=gold&category=rings',
+                    tag: ''
+                },
+                {
+                    id: 'gold-exclusive-2',
+                    name: 'Beyond Bold',
+                    label: 'Beyond Bold',
+                    subtitle: 'Statement Collection',
+                    description: 'Statement Collection',
+                    image: goldSetsGreen,
+                    categoryId: '',
+                    path: '/shop?metal=gold&category=sets',
+                    tag: ''
+                }
+            ]
+        : isGoldRingCarouselSection
+            ? [
+                { id: 'gold-ring-1', name: 'Solitaire Ring', label: 'Solitaire Ring', image: goldRingsGreen, categoryId: '', path: '/shop?metal=gold&category=rings', tag: '' },
+                { id: 'gold-ring-2', name: 'Promise Ring', label: 'Promise Ring', image: goldRingsGreen, categoryId: '', path: '/shop?metal=gold&category=rings', tag: '' },
+                { id: 'gold-ring-3', name: '9kt Ring', label: '9kt Ring', image: goldRingsGreen, categoryId: '', path: '/shop?metal=gold&category=rings', tag: '' },
+                { id: 'gold-ring-4', name: 'Vanki Ring', label: 'Vanki Ring', image: goldRingsGreen, categoryId: '', path: '/shop?metal=gold&category=rings', tag: '' },
+                { id: 'gold-ring-5', name: 'Rose Gold Ring', label: 'Rose Gold Ring', image: goldRingsGreen, categoryId: '', path: '/shop?metal=gold&category=rings', tag: '' },
+                { id: 'gold-ring-6', name: 'Classic Ring', label: 'Classic Ring', image: goldRingsGreen, categoryId: '', path: '/shop?metal=gold&category=rings', tag: '' }
             ]
         : isGoldLuxuryWithinReach
             ? [
@@ -685,7 +733,15 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     };
 
     const addItem = () => {
-        if (isFixedWomenDiscoverHue || isFixedWomenPromoBanners || isGoldShopByColourSection || isGoldCuratedBondSection) {
+        if (
+            isFixedWomenDiscoverHue
+            || isFixedWomenPromoBanners
+            || isGoldShopByColourSection
+            || isGoldCuratedBondSection
+            || isGoldNewLaunchBannerSection
+            || isGoldExclusiveLaunchSection
+            || isGoldRingCarouselSection
+        ) {
             return;
         }
         if ((isFamilyTrendingNearYou || isFamilyGiftsToRemember) && items.length >= 12) {
@@ -990,6 +1046,159 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             }
             await onSave({ items: normalizedItems });
             return;
+        }
+        if (isGoldNewLaunchBannerSection) {
+            const hasCategoryInPath = (path = '') => /(^|[?&])category=/.test(String(path || '').split('?')[1] || '');
+            const templates = [
+                { id: 'gold-new-launch-1', name: 'Rings', label: 'Rings', image: goldRingsGreen, path: '/shop?metal=gold&category=rings' },
+                { id: 'gold-new-launch-2', name: 'Pendants', label: 'Pendants', image: goldPendantsGreen, path: '/shop?metal=gold&category=necklaces' },
+                { id: 'gold-new-launch-3', name: 'Earrings', label: 'Earrings', image: goldEarringsGreen, path: '/shop?metal=gold&category=earrings' }
+            ];
+
+            const currentEditingItem = editingId ? nextItems.find(item => item.id === editingId) : null;
+            const editingCategoryId = String(currentEditingItem?.categoryId || getCategoryFromItem(currentEditingItem)?._id || '').trim();
+            if (currentEditingItem && !editingCategoryId && !hasCategoryInPath(currentEditingItem?.path)) {
+                toast.error('Select a category for this card before saving.');
+                return false;
+            }
+
+            const normalizedItems = templates.map((template, index) => {
+                const current = nextItems[index] || {};
+                const resolvedCategoryId = String(current.categoryId || getCategoryFromItem(current)?._id || '').trim();
+                const title = String(current.name || current.label || template.name).trim();
+                const sourcePath = current.path || template.path;
+                return {
+                    ...current,
+                    id: current.id || current.itemId || template.id,
+                    name: title || template.name,
+                    label: current.label || title || template.label,
+                    image: current.image || template.image,
+                    categoryId: resolvedCategoryId || undefined,
+                    path: buildGoldCategoryPath(resolvedCategoryId, sourcePath),
+                    sortOrder: index
+                };
+            });
+
+            if (currentEditingItem) {
+                const editingIndex = nextItems.findIndex(item => item.id === currentEditingItem.id);
+                const savedEditing = editingIndex >= 0 ? normalizedItems[editingIndex] : null;
+                if (!savedEditing || !(savedEditing.name || '').trim() || !savedEditing.image) {
+                    toast.error('Title and image are required before saving this card.');
+                    return false;
+                }
+            }
+
+            const result = await onSave({ items: normalizedItems });
+            return result?.success !== false;
+        }
+        if (isGoldExclusiveLaunchSection) {
+            const hasCategoryInPath = (path = '') => /(^|[?&])category=/.test(String(path || '').split('?')[1] || '');
+            const templates = [
+                {
+                    id: 'gold-exclusive-1',
+                    name: 'SOULitaire',
+                    label: 'SOULitaire',
+                    subtitle: 'Solitaire Collection',
+                    description: 'Solitaire Collection',
+                    image: goldRingsGreen,
+                    path: '/shop?metal=gold&category=rings'
+                },
+                {
+                    id: 'gold-exclusive-2',
+                    name: 'Beyond Bold',
+                    label: 'Beyond Bold',
+                    subtitle: 'Statement Collection',
+                    description: 'Statement Collection',
+                    image: goldSetsGreen,
+                    path: '/shop?metal=gold&category=sets'
+                }
+            ];
+
+            const currentEditingItem = editingId ? nextItems.find(item => item.id === editingId) : null;
+            const editingCategoryId = String(currentEditingItem?.categoryId || getCategoryFromItem(currentEditingItem)?._id || '').trim();
+            if (currentEditingItem && !editingCategoryId && !hasCategoryInPath(currentEditingItem?.path)) {
+                toast.error('Select a category for this card before saving.');
+                return false;
+            }
+
+            const normalizedItems = templates.map((template, index) => {
+                const current = nextItems[index] || {};
+                const resolvedCategoryId = String(current.categoryId || getCategoryFromItem(current)?._id || '').trim();
+                const title = String(current.name || current.label || template.name).trim();
+                const subtitle = String(current.subtitle || current.description || template.subtitle).trim();
+                const sourcePath = current.path || template.path;
+                return {
+                    ...current,
+                    id: current.id || current.itemId || template.id,
+                    name: title || template.name,
+                    label: current.label || title || template.label,
+                    subtitle: subtitle || template.subtitle,
+                    description: current.description || subtitle || template.description,
+                    image: current.image || template.image,
+                    categoryId: resolvedCategoryId || undefined,
+                    path: buildGoldCategoryPath(resolvedCategoryId, sourcePath),
+                    sortOrder: index
+                };
+            });
+
+            if (currentEditingItem) {
+                const editingIndex = nextItems.findIndex(item => item.id === currentEditingItem.id);
+                const savedEditing = editingIndex >= 0 ? normalizedItems[editingIndex] : null;
+                if (!savedEditing || !(savedEditing.name || '').trim() || !(savedEditing.subtitle || savedEditing.description || '').trim() || !savedEditing.image) {
+                    toast.error('Title, subtitle, and image are required before saving this card.');
+                    return false;
+                }
+            }
+
+            const result = await onSave({ items: normalizedItems });
+            return result?.success !== false;
+        }
+        if (isGoldRingCarouselSection) {
+            const hasCategoryInPath = (path = '') => /(^|[?&])category=/.test(String(path || '').split('?')[1] || '');
+            const templates = [
+                { id: 'gold-ring-1', name: 'Solitaire Ring', label: 'Solitaire Ring', image: goldRingsGreen, path: '/shop?metal=gold&category=rings' },
+                { id: 'gold-ring-2', name: 'Promise Ring', label: 'Promise Ring', image: goldRingsGreen, path: '/shop?metal=gold&category=rings' },
+                { id: 'gold-ring-3', name: '9kt Ring', label: '9kt Ring', image: goldRingsGreen, path: '/shop?metal=gold&category=rings' },
+                { id: 'gold-ring-4', name: 'Vanki Ring', label: 'Vanki Ring', image: goldRingsGreen, path: '/shop?metal=gold&category=rings' },
+                { id: 'gold-ring-5', name: 'Rose Gold Ring', label: 'Rose Gold Ring', image: goldRingsGreen, path: '/shop?metal=gold&category=rings' },
+                { id: 'gold-ring-6', name: 'Classic Ring', label: 'Classic Ring', image: goldRingsGreen, path: '/shop?metal=gold&category=rings' }
+            ];
+
+            const currentEditingItem = editingId ? nextItems.find(item => item.id === editingId) : null;
+            const editingCategoryId = String(currentEditingItem?.categoryId || getCategoryFromItem(currentEditingItem)?._id || '').trim();
+            if (currentEditingItem && !editingCategoryId && !hasCategoryInPath(currentEditingItem?.path)) {
+                toast.error('Select a category for this card before saving.');
+                return false;
+            }
+
+            const normalizedItems = templates.map((template, index) => {
+                const current = nextItems[index] || {};
+                const resolvedCategoryId = String(current.categoryId || getCategoryFromItem(current)?._id || '').trim();
+                const title = String(current.name || current.label || template.name).trim();
+                const sourcePath = current.path || template.path;
+                return {
+                    ...current,
+                    id: current.id || current.itemId || template.id,
+                    categoryId: resolvedCategoryId || undefined,
+                    name: title || template.name,
+                    label: current.label || title || template.label,
+                    image: current.image || template.image,
+                    path: buildGoldCategoryPath(resolvedCategoryId, sourcePath),
+                    sortOrder: index
+                };
+            });
+
+            if (currentEditingItem) {
+                const editingIndex = nextItems.findIndex(item => item.id === currentEditingItem.id);
+                const savedEditing = editingIndex >= 0 ? normalizedItems[editingIndex] : null;
+                if (!savedEditing || !(savedEditing.name || '').trim() || !savedEditing.image) {
+                    toast.error('Title and image are required before saving this card.');
+                    return false;
+                }
+            }
+
+            const result = await onSave({ items: normalizedItems });
+            return result?.success !== false;
         }
         if (isGoldExploreCollectionsSection) {
             const currentEditingItem = editingId ? nextItems.find(item => item.id === editingId) : null;
@@ -1636,6 +1845,12 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                     ? 'Add, edit, or remove showcase cards. Set title, image, and category. Card clicks always open Gold products in the selected category.'
                                 : isGoldLifestyleGridSection
                                     ? 'Add, edit, or remove lifestyle cards (up to 8). Set title, image, and category. Card clicks always open Gold products in the selected category.'
+                                : isGoldNewLaunchBannerSection
+                                    ? 'These three cards stay fixed. Update title, image, and category. Card clicks always open Gold products in the selected category.'
+                                : isGoldExclusiveLaunchSection
+                                    ? 'These two cards stay fixed. Update title, subtitle, image, and category. Card clicks always open Gold products in the selected category.'
+                                : isGoldRingCarouselSection
+                                    ? 'These six ring cards stay fixed. Update title, image, and category. Card clicks always open Gold products in the selected category.'
                                 : isFixedWomenPriceRange
                                     ? 'These three cards stay fixed. Update only max price and badge; images and card count are locked.'
                                     : isWomenTrendingGrid
@@ -1647,7 +1862,19 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                             : 'Add, edit, or remove items in this section'}
                     </p>
                 </div>
-                {!isPremiumCategoryCards && !isLuxuryWithinReach && !isGoldShopByColourSection && !isGoldCuratedBondSection && !isFixedWomenPriceRange && !isWomenTrendingGrid && !isFixedWomenDiscoverHue && !isFixedWomenPromoBanners && sectionId !== 'proposal-rings' && (
+                {!isPremiumCategoryCards
+                    && !isLuxuryWithinReach
+                    && !isGoldShopByColourSection
+                    && !isGoldCuratedBondSection
+                    && !isGoldNewLaunchBannerSection
+                    && !isGoldExclusiveLaunchSection
+                    && !isGoldRingCarouselSection
+                    && !isFixedWomenPriceRange
+                    && !isWomenTrendingGrid
+                    && !isFixedWomenDiscoverHue
+                    && !isFixedWomenPromoBanners
+                    && sectionId !== 'proposal-rings'
+                    && (
                     <button
                         onClick={addItem}
                         className="flex items-center gap-2 bg-[#3E2723] text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-[#2b1b18] transition-colors"
@@ -1670,7 +1897,21 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                     {isMostGiftedHero ? 'Hero Card' : `Item #${index + 1}`}
                                 </span>
                                 <div className="flex gap-2">
-                                    {isEditing && !isPremiumCategoryCards && !isLuxuryWithinReach && !isGoldShopByColourSection && !isGoldCuratedBondSection && !isFixedWomenPriceRange && !isWomenTrendingGrid && !isFixedWomenDiscoverHue && !isFixedWomenPromoBanners && !isMostGiftedHero && sectionId !== 'proposal-rings' && (
+                                    {isEditing
+                                        && !isPremiumCategoryCards
+                                        && !isLuxuryWithinReach
+                                        && !isGoldShopByColourSection
+                                        && !isGoldCuratedBondSection
+                                        && !isGoldNewLaunchBannerSection
+                                        && !isGoldExclusiveLaunchSection
+                                        && !isGoldRingCarouselSection
+                                        && !isFixedWomenPriceRange
+                                        && !isWomenTrendingGrid
+                                        && !isFixedWomenDiscoverHue
+                                        && !isFixedWomenPromoBanners
+                                        && !isMostGiftedHero
+                                        && sectionId !== 'proposal-rings'
+                                        && (
                                         <button
                                             onClick={() => removeItem(item.id)}
                                             className="p-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
@@ -1748,7 +1989,28 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                     )}
 
                                     {/* Select Product Button (skip for locked premium cards and structured sections) */}
-                                    {!isPremiumCategoryCards && !isCategoryDrivenSection && !isWomenCuratedCollections && !isFamilyCuratedCollections && !isGoldExploreCollectionsSection && !isGoldCuratedShowcaseSection && !isFixedWomenDiscoverHue && !isFixedWomenPromoBanners && sectionId !== 'price-range-showcase' && !isLuxuryWithinReach && sectionId !== 'nav-gifts-for' && sectionId !== 'nav-occasions' && sectionId !== 'perfect-gift' && sectionId !== 'new-launch' && sectionId !== 'latest-drop' && sectionId !== 'most-gifted' && sectionId !== 'proposal-rings' && sectionId !== 'curated-for-you' && sectionId !== 'style-it-your-way' && (
+                                    {!isPremiumCategoryCards
+                                        && !isCategoryDrivenSection
+                                        && !isWomenCuratedCollections
+                                        && !isFamilyCuratedCollections
+                                        && !isGoldExploreCollectionsSection
+                                        && !isGoldCuratedShowcaseSection
+                                        && !isGoldNewLaunchBannerSection
+                                        && !isGoldExclusiveLaunchSection
+                                        && !isFixedWomenDiscoverHue
+                                        && !isFixedWomenPromoBanners
+                                        && sectionId !== 'price-range-showcase'
+                                        && !isLuxuryWithinReach
+                                        && sectionId !== 'nav-gifts-for'
+                                        && sectionId !== 'nav-occasions'
+                                        && sectionId !== 'perfect-gift'
+                                        && sectionId !== 'new-launch'
+                                        && sectionId !== 'latest-drop'
+                                        && sectionId !== 'most-gifted'
+                                        && sectionId !== 'proposal-rings'
+                                        && sectionId !== 'curated-for-you'
+                                        && sectionId !== 'style-it-your-way'
+                                        && (
                                         <button
                                             onClick={() => handleRedirectToSelect(item.id)}
                                             className="w-full py-2 bg-gray-50 text-gray-600 text-[10px] font-bold rounded-lg border border-gray-200 hover:bg-gray-100 flex items-center justify-center gap-2 uppercase tracking-widest"
@@ -2049,6 +2311,21 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                 placeholder="Sophisticated designs for the modern workplace"
                                             />
                                         )}
+                                        {isGoldExclusiveLaunchSection && (
+                                            <Input
+                                                label="Subtitle"
+                                                value={item.subtitle || item.description || ''}
+                                                onChange={(e) => {
+                                                    const value = e.target.value;
+                                                    setItems(prev => prev.map(entry => (
+                                                        entry.id === item.id
+                                                            ? { ...entry, subtitle: value, description: value }
+                                                            : entry
+                                                    )));
+                                                }}
+                                                placeholder="Solitaire Collection"
+                                            />
+                                        )}
                                         {isFixedWomenDiscoverHue && (
                                             <div>
                                                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Category</label>
@@ -2119,7 +2396,10 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                 />
                                             </>
                                         )}
-                                        {(isGoldExploreCollectionsSection || isGoldCuratedShowcaseSection) && (
+                                        {(isGoldExploreCollectionsSection
+                                            || isGoldCuratedShowcaseSection
+                                            || isGoldNewLaunchBannerSection
+                                            || isGoldExclusiveLaunchSection) && (
                                             <div>
                                                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Category</label>
                                                 <select
