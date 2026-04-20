@@ -4,54 +4,140 @@ import { useShop } from '../../../context/ShopContext';
 import ProductCard from './ProductCard';
 import { COLLECTION_MOCK_PRODUCTS } from '../data/mockCollectionData.js';
 
-const GoldDirectProducts = () => {
+const parsePositiveNumber = (value, fallback = 4) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+};
+
+const normalizeToken = (value = '') => String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-');
+
+const normalizeIdValue = (value) => {
+    if (!value) return '';
+    if (typeof value === 'string') return value.trim();
+    if (typeof value === 'object') return String(value._id || value.id || '').trim();
+    return String(value).trim();
+};
+
+const parseCategoryFromPath = (path = '') => {
+    const source = String(path || '');
+    if (!source.includes('category=')) return '';
+    const raw = source.split('category=')[1]?.split('&')[0] || '';
+    try {
+        return decodeURIComponent(raw).trim();
+    } catch {
+        return raw.trim();
+    }
+};
+
+const getProductMetal = (product = {}) => {
+    const explicitMetal = String(product?.metal || product?.material || '').trim().toLowerCase();
+    if (explicitMetal) return explicitMetal;
+    if (product?.goldCategory) return 'gold';
+    return '';
+};
+
+const matchesCategory = (product = {}, categoryId = '') => {
+    const target = normalizeToken(categoryId);
+    if (!target) return true;
+    const tokens = new Set([
+        normalizeToken(product.categoryId),
+        normalizeToken(product.category),
+        normalizeToken(product.categorySlug),
+        ...((product.navShopByCategory || []).map((id) => normalizeToken(id)))
+    ].filter(Boolean));
+    return tokens.has(target);
+};
+
+const GoldDirectProducts = ({ sectionData = null }) => {
     const { products } = useShop();
 
-    const displayProducts = useMemo(() => {
-        // 1. Try to get real products from context
-        let list = products.filter(p => p.metal?.toLowerCase() === 'gold');
+    const resolvedSettings = useMemo(() => {
+        const settings = sectionData?.settings || {};
+        const sourceMode = settings.sourceMode === 'manual' ? 'manual' : 'category';
+        const categoryFromPath = parseCategoryFromPath(sectionData?.items?.[0]?.path);
 
-        // 2. If none, pull from our high-quality mock data
-        if (list.length === 0) {
-            const goldMocks = [
-                ...COLLECTION_MOCK_PRODUCTS['24k'],
-                ...COLLECTION_MOCK_PRODUCTS['22k']
-            ];
-            list = goldMocks.map(m => ({
-                id: m.id,
-                _id: m.id,
-                name: m.name,
-                price: m.price,
-                img: m.img,
-                image: m.img,
-                images: [m.img],
-                isTrending: true,
-                rating: 4.5,
-                reviewCount: 0,
-                originalPrice: m.price * 1.5,
-                priceDrop: true,
-                metal: 'gold'
-            }));
+        return {
+            title: String(settings.title || sectionData?.label || 'All Jewellery').trim() || 'All Jewellery',
+            eyebrow: String(settings.eyebrow || 'Our Collection').trim() || 'Our Collection',
+            productLimit: parsePositiveNumber(settings.productLimit, 4),
+            sourceMode,
+            categoryId: String(settings.categoryId || categoryFromPath || '').trim()
+        };
+    }, [sectionData]);
+
+    const displayProducts = useMemo(() => {
+        const allProducts = Array.isArray(products) ? products : [];
+        const goldProducts = allProducts.filter((p) => getProductMetal(p) === 'gold');
+
+        if (resolvedSettings.sourceMode === 'manual') {
+            const pinnedIds = (Array.isArray(sectionData?.items) ? sectionData.items : [])
+                .flatMap((item) => {
+                    const ids = [];
+                    const primary = normalizeIdValue(item?.productId);
+                    if (primary) ids.push(primary);
+                    if (Array.isArray(item?.productIds)) {
+                        ids.push(...item.productIds.map((id) => normalizeIdValue(id)).filter(Boolean));
+                    }
+                    return ids;
+                })
+                .filter(Boolean);
+
+            const pinnedMap = new Map(allProducts.map((product) => [String(product.id || product._id), product]));
+            const manualProducts = pinnedIds
+                .map((id) => pinnedMap.get(String(id)))
+                .filter((product) => Boolean(product) && getProductMetal(product) === 'gold')
+                .slice(0, resolvedSettings.productLimit);
+
+            if (manualProducts.length > 0) return manualProducts;
         }
 
-        return list.slice(0, 4);
-    }, [products]);
+        const filtered = resolvedSettings.categoryId
+            ? goldProducts.filter((product) => matchesCategory(product, resolvedSettings.categoryId))
+            : goldProducts;
+
+        if (filtered.length > 0) {
+            return filtered.slice(0, resolvedSettings.productLimit);
+        }
+
+        const goldMocks = [
+            ...COLLECTION_MOCK_PRODUCTS['24k'],
+            ...COLLECTION_MOCK_PRODUCTS['22k']
+        ];
+
+        return goldMocks.slice(0, resolvedSettings.productLimit).map((m) => ({
+            id: m.id,
+            _id: m.id,
+            name: m.name,
+            price: m.price,
+            img: m.img,
+            image: m.img,
+            images: [m.img],
+            isTrending: true,
+            rating: 4.5,
+            reviewCount: 0,
+            originalPrice: m.price * 1.5,
+            priceDrop: true,
+            metal: 'gold'
+        }));
+    }, [products, sectionData, resolvedSettings]);
+
+    if (displayProducts.length === 0) return null;
 
     return (
         <section className="w-full py-12 bg-white">
             <div className="max-w-[1450px] mx-auto px-6">
-                
-                {/* Header Style (Matching Boutique Branding) */}
                 <div className="mb-10">
                     <p className="text-[#B58E3E] text-sm font-bold uppercase tracking-[0.3em] mb-1">
-                        Our Collection
+                        {resolvedSettings.eyebrow}
                     </p>
                     <h2 className="text-4xl md:text-5xl font-serif text-[#702931] leading-tight">
-                        All Jewellery
+                        {resolvedSettings.title}
                     </h2>
                 </div>
 
-                {/* Product Grid - Using standard ProductCard for consistent UI */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
                     {displayProducts.map((product, idx) => (
                         <motion.div

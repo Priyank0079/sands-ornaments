@@ -199,7 +199,8 @@ export const PAGE_SECTIONS = [
   { pageKey: 'home', label: 'Home Sections', description: 'Manage the homepage narrative, hero banners, and product storytelling.' },
   { pageKey: 'shop-men', label: 'Shop for Men', description: "Manage the men's landing page banners, categories, and curated merchandising." },
   { pageKey: 'shop-women', label: 'Shop for Women', description: "Manage the women's landing page banners, occasions, and curated product stories." },
-  { pageKey: 'shop-family', label: 'Shop for Family', description: 'Manage the family landing page hero, collections, and product merchandising.' }
+  { pageKey: 'shop-family', label: 'Shop for Family', description: 'Manage the family landing page hero, collections, and product merchandising.' },
+  { pageKey: 'gold-collection', label: 'Gold Collection', description: 'Manage the gold landing page sections, campaigns, and merchandising blocks.' }
 ];
 
 const homeSections = [
@@ -1386,11 +1387,172 @@ const shopFamilySections = [
   }
 ];
 
+const goldCollectionSections = [
+  {
+    pageKey: 'gold-collection',
+    sectionKey: 'hero-banners-gold',
+    sectionType: 'banner',
+    label: 'Gold Hero Banner',
+    isActive: true,
+    sortOrder: 1,
+    settings: {},
+    items: []
+  },
+  {
+    pageKey: 'gold-collection',
+    sectionKey: 'gold-category-grid',
+    sectionType: 'category-grid',
+    label: 'Shop by Category',
+    isActive: true,
+    sortOrder: 2,
+    settings: {},
+    items: []
+  },
+  {
+    pageKey: 'gold-collection',
+    sectionKey: 'gold-explore-collections',
+    sectionType: 'promo-grid',
+    label: 'Explore Collections',
+    isActive: true,
+    sortOrder: 3,
+    settings: {},
+    items: []
+  },
+  {
+    pageKey: 'gold-collection',
+    sectionKey: 'best-styles',
+    sectionType: 'product-carousel',
+    label: 'Best Styles',
+    isActive: true,
+    sortOrder: 4,
+    settings: {
+      title: 'Best styles, now for less!',
+      ctaLabel: 'View All Collection',
+      productLimit: 6
+    },
+    items: []
+  },
+  {
+    pageKey: 'gold-collection',
+    sectionKey: 'gold-trust-markers',
+    sectionType: 'rich-content',
+    label: 'Trust Markers',
+    isActive: true,
+    sortOrder: 5,
+    settings: {},
+    items: []
+  },
+  {
+    pageKey: 'gold-collection',
+    sectionKey: 'gold-new-launch-banner',
+    sectionType: 'banner',
+    label: 'Gold New Launch Banner',
+    isActive: true,
+    sortOrder: 6,
+    settings: {},
+    items: []
+  },
+  {
+    pageKey: 'gold-collection',
+    sectionKey: 'gold-exclusive-launch',
+    sectionType: 'promo-grid',
+    label: 'Exclusive Collection Launch',
+    isActive: true,
+    sortOrder: 7,
+    settings: {},
+    items: []
+  },
+  {
+    pageKey: 'gold-collection',
+    sectionKey: 'gold-ring-carousel',
+    sectionType: 'category-grid',
+    label: 'Get The Right Ring',
+    isActive: true,
+    sortOrder: 8,
+    settings: {},
+    items: []
+  },
+  {
+    pageKey: 'gold-collection',
+    sectionKey: 'gold-shop-by-colour',
+    sectionType: 'category-grid',
+    label: 'Shop by Colour',
+    isActive: true,
+    sortOrder: 9,
+    settings: {},
+    items: []
+  },
+  {
+    pageKey: 'gold-collection',
+    sectionKey: 'gold-luxury-within-reach',
+    sectionType: 'promo-grid',
+    label: 'Luxury within Reach',
+    isActive: true,
+    sortOrder: 10,
+    settings: {},
+    items: []
+  },
+  {
+    pageKey: 'gold-collection',
+    sectionKey: 'gold-testimonials',
+    sectionType: 'testimonial',
+    label: 'Gold Testimonials',
+    isActive: true,
+    sortOrder: 11,
+    settings: {},
+    items: []
+  },
+  {
+    pageKey: 'gold-collection',
+    sectionKey: 'gold-curated-bond',
+    sectionType: 'category-grid',
+    label: 'Curated For Every Bond',
+    isActive: true,
+    sortOrder: 12,
+    settings: {},
+    items: []
+  },
+  {
+    pageKey: 'gold-collection',
+    sectionKey: 'gold-curated-showcase',
+    sectionType: 'promo-grid',
+    label: 'Curated Showcase',
+    isActive: true,
+    sortOrder: 13,
+    settings: {},
+    items: []
+  },
+  {
+    pageKey: 'gold-collection',
+    sectionKey: 'gold-lifestyle-grid',
+    sectionType: 'category-grid',
+    label: 'Lifestyle Grid',
+    isActive: true,
+    sortOrder: 14,
+    settings: {},
+    items: []
+  },
+  {
+    pageKey: 'gold-collection',
+    sectionKey: 'gold-products-listing',
+    sectionType: 'product-carousel',
+    label: 'Products Listing',
+    isActive: true,
+    sortOrder: 15,
+    settings: {
+      title: 'All Jewellery',
+      productLimit: 4
+    },
+    items: []
+  }
+];
+
 export const sectionDefaultsByPage = {
   home: homeSections,
   'shop-men': shopMenSections,
   'shop-women': shopWomenSections,
-  'shop-family': shopFamilySections
+  'shop-family': shopFamilySections,
+  'gold-collection': goldCollectionSections
 };
 
 const buildSectionIdentity = (pageKey, sectionKey) => (

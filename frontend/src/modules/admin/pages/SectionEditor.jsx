@@ -17,6 +17,7 @@ import MenStyleTrendsEditor from '../components/editors/MenStyleTrendsEditor';
 import MenFeaturedProductsEditor from '../components/editors/MenFeaturedProductsEditor';
 import WomenFeaturedProductsEditor from '../components/editors/WomenFeaturedProductsEditor';
 import FamilyFeaturedProductsEditor from '../components/editors/FamilyFeaturedProductsEditor';
+import GoldFeaturedProductsEditor from '../components/editors/GoldFeaturedProductsEditor';
 import CategoryShowcaseEditor from '../components/editors/CategoryShowcaseEditor';
 import BannerSectionEditor from '../components/editors/BannerSectionEditor';
 import BrandPromisesEditor from '../components/editors/BrandPromisesEditor';
@@ -210,6 +211,10 @@ const SectionEditor = () => {
             return <FamilyFeaturedProductsEditor sectionData={sectionData} onSave={handleSave} defaultSection={defaultSection} />;
         }
 
+        if ((sectionData.sectionKey || id) === 'gold-products-listing' && pageKey === 'gold-collection') {
+            return <GoldFeaturedProductsEditor sectionData={sectionData} onSave={handleSave} defaultSection={defaultSection} />;
+        }
+
         const supportedSections = [
             'silver-collection',
             'silver-curated',
@@ -235,7 +240,20 @@ const SectionEditor = () => {
             'curated-for-you',
             'style-it-your-way',
             'nav-gifts-for',
-            'nav-occasions'
+            'nav-occasions',
+            'hero-banners-gold',
+            'gold-category-grid',
+            'gold-explore-collections',
+            'gold-trust-markers',
+            'gold-new-launch-banner',
+            'gold-exclusive-launch',
+            'gold-ring-carousel',
+            'gold-shop-by-colour',
+            'gold-luxury-within-reach',
+            'gold-curated-bond',
+            'gold-curated-showcase',
+            'gold-lifestyle-grid',
+            'gold-products-listing'
         ];
 
         if (supportedSections.includes(sectionData.sectionKey || id)) {

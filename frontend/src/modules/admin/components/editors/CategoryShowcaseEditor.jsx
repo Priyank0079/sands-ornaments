@@ -14,6 +14,25 @@ import catEarrings from '../../../user/assets/cat_earrings_wine.png';
 import catBracelet from '../../../user/assets/cat_bracelet_wine.png';
 import catAnklet from '../../../user/assets/cat_anklet_wine.png';
 import catChain from '../../../user/assets/cat_chain_wine.png';
+import goldRingsGreen from '../../../user/assets/categories/gold_rings_green.png';
+import goldEarringsGreen from '../../../user/assets/categories/gold_earrings_green.png';
+import goldPendantsGreen from '../../../user/assets/categories/gold_pendants_green.png';
+import goldBraceletsGreen from '../../../user/assets/categories/gold_bracelets_green.png';
+import goldNosepinsGreen from '../../../user/assets/categories/gold_nosepins_green.png';
+import goldMangalsutraGreen from '../../../user/assets/categories/gold_mangalsutra_green.png';
+import goldBanglesGreen from '../../../user/assets/categories/gold_bangles_green.png';
+import goldSetsGreen from '../../../user/assets/categories/gold_sets_green.png';
+import goldNewArrivalsGreen from '../../../user/assets/categories/gold_new_arrivals_green.png';
+import goldDailyWearBanner from '../../../user/assets/explore/gold_daily_wear_banner_1775911015640.png';
+import goldOfficeWearBanner from '../../../user/assets/explore/gold_office_wear_banner_1775911038204.png';
+import goldLuxuryRange10k from '../../../user/assets/luxury_range_10k.png';
+import goldLuxuryRange15k from '../../../user/assets/luxury_range_15k.png';
+import goldLuxuryRange20k from '../../../user/assets/premium_ring_product.png';
+import goldLuxuryPremium from '../../../user/assets/beyond_bold_emerald_set.png';
+import goldColorYellow from '../../../user/assets/gold_color_yellow.png';
+import goldColorRose from '../../../user/assets/gold_color_rose.png';
+import goldColorWhite from '../../../user/assets/gold_color_white.png';
+import goldColorDual from '../../../user/assets/gold_color_dual.png';
 
 const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     const navigate = useNavigate();
@@ -21,10 +40,18 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     const sectionPageKey = sectionData?.pageKey || (
         String(sectionData?.sectionId || '').startsWith('shop-women:')
             ? 'shop-women'
-            : (String(sectionData?.sectionId || '').startsWith('shop-family:') ? 'shop-family' : '')
+            : (String(sectionData?.sectionId || '').startsWith('shop-family:')
+                ? 'shop-family'
+                : (String(sectionData?.sectionId || '').startsWith('gold-collection:') ? 'gold-collection' : ''))
     );
     const isShopWomenSection = sectionPageKey === 'shop-women';
     const isShopFamilySection = sectionPageKey === 'shop-family';
+    const isGoldCollectionSection = sectionPageKey === 'gold-collection';
+    const isGoldCategoryGridSection = sectionId === 'gold-category-grid' && isGoldCollectionSection;
+    const isGoldShopByColourSection = sectionId === 'gold-shop-by-colour' && isGoldCollectionSection;
+    const isGoldExploreCollectionsSection = sectionId === 'gold-explore-collections' && isGoldCollectionSection;
+    const isGoldLuxuryWithinReach = sectionId === 'gold-luxury-within-reach' && isGoldCollectionSection;
+    const isGoldCategoryLinkedSection = isGoldCategoryGridSection || isGoldShopByColourSection;
     const isFixedWomenPriceRange = sectionId === 'price-range-showcase' && isShopWomenSection;
     const isWomenTrendingGrid = sectionId === 'categories-grid' && isShopWomenSection;
     const isWomenCuratedCollections = sectionId === 'curated-collections' && isShopWomenSection;
@@ -38,7 +65,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     const isFamilyCategoryLinkedSection = isFamilyTrendingNearYou || isFamilyGiftsToRemember;
     const isCategoryShowcase = sectionId === 'category-showcase' || sectionData?.sectionType === 'category-showcase';
     const isCategoryGrid = sectionId === 'category-grid' || sectionData?.sectionType === 'category-grid';
-    const isLuxuryWithinReach = sectionId === 'luxury-within-reach';
+    const isLuxuryWithinReach = sectionId === 'luxury-within-reach' || isGoldLuxuryWithinReach;
     const isFamilyLuxuryWithinReach = isLuxuryWithinReach && isShopFamilySection;
     const isCategoryDrivenSection = (isCategoryShowcase || isCategoryGrid) && !isFamilyCuratedCollections;
     const isPremiumCategoryCards = sectionId === 'premium-category-cards';
@@ -56,18 +83,85 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     };
 
     // Default items to show if new
-    const initialItemsFromProps = sectionData.items && sectionData.items.length > 0
-        ? (sectionId === 'most-gifted' && !sectionData.items.some(item => item?.type === 'hero')
-            ? [defaultMostGiftedHero, ...sectionData.items]
-            : sectionData.items)
-        : (defaultItems.length > 0 ? defaultItems : [
+    const defaultFallbackItems = isGoldCategoryGridSection
+        ? [
+            { id: '1', name: 'Gold Rings', path: '/shop?metal=gold&category=rings', image: goldRingsGreen, tag: '' },
+            { id: '2', name: 'Gold Earrings', path: '/shop?metal=gold&category=earrings', image: goldEarringsGreen, tag: '' },
+            { id: '3', name: 'Gold Pendants', path: '/shop?metal=gold&category=necklaces', image: goldPendantsGreen, tag: '' },
+            { id: '4', name: 'Gold Bracelets', path: '/shop?metal=gold&category=bracelets', image: goldBraceletsGreen, tag: '' },
+            { id: '5', name: 'Gold Nose Pins', path: '/shop?metal=gold&category=nose-pins', image: goldNosepinsGreen, tag: '' },
+            { id: '6', name: 'Gold Mangalsutra', path: '/shop?metal=gold&category=mangalsutras', image: goldMangalsutraGreen, tag: '' },
+            { id: '7', name: 'Gold Bangles', path: '/shop?metal=gold&category=bangles', image: goldBanglesGreen, tag: '' },
+            { id: '8', name: 'Gold Sets', path: '/shop?metal=gold&category=sets', image: goldSetsGreen, tag: '' },
+            { id: '9', name: 'New Arrivals', path: '/shop?metal=gold&filter=new', image: goldNewArrivalsGreen, tag: 'New' }
+        ]
+        : isGoldShopByColourSection
+            ? [
+                { id: 'gold-colour-1', name: 'Yellow Gold', label: 'Yellow Gold', image: goldColorYellow, categoryId: '', path: '/shop?metal=gold&search=Yellow Gold', tag: '' },
+                { id: 'gold-colour-2', name: 'Rose Gold', label: 'Rose Gold', image: goldColorRose, categoryId: '', path: '/shop?metal=gold&search=Rose Gold', tag: '' },
+                { id: 'gold-colour-3', name: 'White Gold', label: 'White Gold', image: goldColorWhite, categoryId: '', path: '/shop?metal=gold&search=White Gold', tag: '' },
+                { id: 'gold-colour-4', name: 'Dual tone Gold', label: 'Dual tone Gold', image: goldColorDual, categoryId: '', path: '/shop?metal=gold&search=Dual tone Gold', tag: '' }
+            ]
+        : isGoldExploreCollectionsSection
+            ? [
+                {
+                    id: 'gold-explore-1',
+                    name: 'DAILY WEAR',
+                    label: 'DAILY WEAR',
+                    subtitle: 'Minimalist gold pieces for your everyday sparkle',
+                    description: 'Minimalist gold pieces for your everyday sparkle',
+                    image: goldDailyWearBanner,
+                    categoryId: '',
+                    path: '/shop?metal=gold',
+                    tag: 'EFFORTLESS EVERYDAY',
+                    extraImages: [goldRingsGreen, goldEarringsGreen, goldPendantsGreen]
+                },
+                {
+                    id: 'gold-explore-2',
+                    name: 'OFFICE WEAR',
+                    label: 'OFFICE WEAR',
+                    subtitle: 'Sophisticated designs for the modern workplace',
+                    description: 'Sophisticated designs for the modern workplace',
+                    image: goldOfficeWearBanner,
+                    categoryId: '',
+                    path: '/shop?metal=gold',
+                    tag: 'PROFESSIONAL CHIC',
+                    extraImages: [goldBraceletsGreen, goldRingsGreen, goldEarringsGreen]
+                },
+                {
+                    id: 'gold-explore-3',
+                    name: 'PARTY WEAR',
+                    label: 'PARTY WEAR',
+                    subtitle: 'Extravagant gold jewelry for those special moments',
+                    description: 'Extravagant gold jewelry for those special moments',
+                    image: goldDailyWearBanner,
+                    categoryId: '',
+                    path: '/shop?metal=gold',
+                    tag: 'CELEBRATION READY',
+                    extraImages: [goldPendantsGreen, goldBraceletsGreen, goldRingsGreen]
+                }
+            ]
+        : isGoldLuxuryWithinReach
+            ? [
+                { id: 'gold-luxury-1', name: 'Under INR 10000', label: 'Under INR 10000', priceMax: 10000, image: goldLuxuryRange10k, categoryId: '', path: '/shop?metal=gold&price_max=10000', tag: '' },
+                { id: 'gold-luxury-2', name: 'Under INR 15000', label: 'Under INR 15000', priceMax: 15000, image: goldLuxuryRange15k, categoryId: '', path: '/shop?metal=gold&price_max=15000', tag: '' },
+                { id: 'gold-luxury-3', name: 'Under INR 20000', label: 'Under INR 20000', priceMax: 20000, image: goldLuxuryRange20k, categoryId: '', path: '/shop?metal=gold&price_max=20000', tag: '' },
+                { id: 'gold-luxury-4', name: 'Premium Gifts', label: 'Premium Gifts', priceMax: 25000, image: goldLuxuryPremium, categoryId: '', path: '/shop?metal=gold&price_max=25000', tag: '' }
+            ]
+            : [
             { id: '1', name: 'Pendants', path: '/category/pendants', image: catPendant, tag: '' },
             { id: '2', name: 'Rings', path: '/category/rings', image: catRing, tag: '' },
             { id: '3', name: 'Earrings', path: '/category/earrings', image: catEarrings, tag: '' },
             { id: '4', name: 'Bracelets', path: '/category/bracelets', image: catBracelet, tag: '' },
             { id: '5', name: 'Anklets', path: '/category/anklets', image: catAnklet, tag: '' },
             { id: '6', name: 'Chains', path: '/category/chains', image: catChain, tag: '' }
-        ]);
+        ];
+
+    const initialItemsFromProps = sectionData.items && sectionData.items.length > 0
+        ? (sectionId === 'most-gifted' && !sectionData.items.some(item => item?.type === 'hero')
+            ? [defaultMostGiftedHero, ...sectionData.items]
+            : sectionData.items)
+        : (defaultItems.length > 0 ? defaultItems : defaultFallbackItems);
 
     const [items, setItems] = useState(initialItemsFromProps);
     const [settings, setSettings] = useState(sectionData.settings || {});
@@ -142,6 +236,40 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     const buildFamilyCategoryPath = (categoryId, currentPath = '') => {
         if (categoryId) return `/shop?source=family&filter=family&category=${encodeURIComponent(categoryId)}`;
         return currentPath || '/shop?source=family&filter=family';
+    };
+
+    const buildGoldCategoryPath = (categoryId, currentPath = '') => {
+        const normalizedCategoryId = String(categoryId || '').trim();
+        const source = String(currentPath || '').trim();
+
+        if (normalizedCategoryId) {
+            return `/shop?metal=gold&category=${encodeURIComponent(normalizedCategoryId)}`;
+        }
+        if (!source || !source.startsWith('/shop')) {
+            return '/shop?metal=gold';
+        }
+
+        const queryString = source.includes('?') ? source.split('?')[1] : '';
+        const params = new URLSearchParams(queryString);
+        params.set('metal', 'gold');
+
+        const query = params.toString();
+        return `/shop${query ? `?${query}` : ''}`;
+    };
+
+    const buildGoldPriceRangePath = (priceMax, categoryId = '', currentPath = '') => {
+        const normalizedPrice = parsePriceValue(priceMax);
+        const source = String(currentPath || '').trim();
+        const query = source.startsWith('/shop') && source.includes('?') ? source.split('?')[1] : '';
+        const params = new URLSearchParams(query);
+        params.set('metal', 'gold');
+        if (normalizedPrice) params.set('price_max', String(normalizedPrice));
+        else params.delete('price_max');
+        const normalizedCategoryId = String(categoryId || '').trim();
+        if (normalizedCategoryId) params.set('category', normalizedCategoryId);
+        else params.delete('category');
+        const nextQuery = params.toString();
+        return `/shop${nextQuery ? `?${nextQuery}` : '?metal=gold'}`;
     };
 
     const fixedWomenPriceDefaults = [
@@ -257,11 +385,15 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             return {
                 ...item,
                 categoryId: resolved._id,
-                name: (isWomenCategoryLinkedSection || isFamilyCategoryLinkedSection) ? (item.name || resolved.name) : resolved.name,
+                name: (isWomenCategoryLinkedSection || isFamilyCategoryLinkedSection || isGoldCategoryLinkedSection)
+                    ? (item.name || resolved.name)
+                    : resolved.name,
                 path: isWomenCategoryLinkedSection
                     ? buildWomenCategoryPath(resolved._id, item.path)
                     : isFamilyCategoryLinkedSection
                         ? buildFamilyCategoryPath(resolved._id, item.path)
+                    : isGoldCategoryLinkedSection
+                        ? buildGoldCategoryPath(resolved._id, item.path)
                     : isCategoryGrid
                         ? `/category/${resolved.slug || normalizeLabel(resolved.name)}`
                         : `/shop?category=${resolved._id}`,
@@ -269,7 +401,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                 hoverImage: item.hoverImage || ''
             };
         }));
-    }, [categories, isCategoryDrivenSection, isCategoryGrid, isFamilyCategoryLinkedSection, isWomenCategoryLinkedSection, isWomenCuratedCollections]);
+    }, [categories, isCategoryDrivenSection, isCategoryGrid, isFamilyCategoryLinkedSection, isGoldCategoryLinkedSection, isWomenCategoryLinkedSection, isWomenCuratedCollections]);
 
     useEffect(() => {
         if (!isWomenCuratedCollections || categories.length === 0) return;
@@ -304,16 +436,19 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         setItems(prev => prev.map(item => {
             const priceMax = getPriceMaxFromItem(item);
             if (!priceMax) return item;
+            const resolvedCategoryId = item.categoryId || getCategoryFromItem(item)?._id || '';
             return {
                 ...item,
                 priceMax,
-                name: isFamilyLuxuryWithinReach
+                name: (isFamilyLuxuryWithinReach || isGoldLuxuryWithinReach)
                     ? (item.name || `Under INR ${priceMax}`)
                     : `Under INR ${priceMax}`,
-                path: buildPriceRangePath(priceMax)
+                path: isGoldLuxuryWithinReach
+                    ? buildGoldPriceRangePath(priceMax, resolvedCategoryId, item.path)
+                    : buildPriceRangePath(priceMax)
             };
         }));
-    }, [sectionId, isLuxuryWithinReach, isShopWomenSection, isFixedWomenPriceRange, isFamilyLuxuryWithinReach]);
+    }, [sectionId, isLuxuryWithinReach, isShopWomenSection, isFixedWomenPriceRange, isFamilyLuxuryWithinReach, isGoldLuxuryWithinReach, categories]);
 
     useEffect(() => {
         if (!isFixedWomenPriceRange) return;
@@ -504,17 +639,21 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     };
 
     const saveCurrentItems = async () => {
-        await handleSave(items);
+        const result = await handleSave(items);
+        return result !== false;
     };
 
     const addItem = () => {
-        if (isFixedWomenDiscoverHue || isFixedWomenPromoBanners) {
+        if (isFixedWomenDiscoverHue || isFixedWomenPromoBanners || isGoldShopByColourSection) {
             return;
         }
         if ((isFamilyTrendingNearYou || isFamilyGiftsToRemember) && items.length >= 12) {
             toast.error('You can add up to 12 cards in this section.');
             return;
         }
+        const defaultCategoryId = isGoldExploreCollectionsSection
+            ? String(categories?.[0]?._id || '')
+            : '';
         const newItem = {
             id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
             name: isCategoryDrivenSection ? '' : 'New Item',
@@ -528,13 +667,22 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             ...(sectionId === 'proposal-rings' ? { categoryId: '' } : {}),
             ...(sectionId === 'new-launch' ? { categoryId: '' } : {}),
             ...(isWomenCuratedCollections ? { categoryId: '' } : {}),
+            ...(isGoldExploreCollectionsSection ? {
+                name: 'New Collection',
+                label: 'New Collection',
+                subtitle: '',
+                description: '',
+                categoryId: defaultCategoryId,
+                path: buildGoldCategoryPath(defaultCategoryId, '/shop?metal=gold'),
+                extraImages: ['', '', '']
+            } : {}),
             ...(sectionId === 'curated-for-you' ? { limit: 12, productIds: [] } : {}),
             ...(sectionId === 'style-it-your-way' ? { limit: 12, productIds: [] } : {})
         };
         const nextItems = [...items, newItem];
         setItems(nextItems);
         setEditingId(newItem.id);
-        if (!isCategoryDrivenSection && !isWomenCuratedCollections && !isFamilyCuratedCollections && sectionId !== 'price-range-showcase' && !isLuxuryWithinReach && sectionId !== 'new-launch' && sectionId !== 'latest-drop' && sectionId !== 'most-gifted' && sectionId !== 'proposal-rings') {
+        if (!isCategoryDrivenSection && !isWomenCuratedCollections && !isFamilyCuratedCollections && !isGoldExploreCollectionsSection && sectionId !== 'price-range-showcase' && !isLuxuryWithinReach && sectionId !== 'new-launch' && sectionId !== 'latest-drop' && sectionId !== 'most-gifted' && sectionId !== 'proposal-rings') {
             handleSave(nextItems);
         }
     };
@@ -725,7 +873,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     };
 
     const handleSave = async (nextItems) => {
-        if (!validateItems(nextItems)) return;
+        if (!validateItems(nextItems)) return false;
         if (isPremiumCategoryCards) {
             const normalizedItems = nextItems.map((item, index) => {
                 const fallbackItem = defaultItems[index] || {};
@@ -737,8 +885,8 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                     path: item.path || fallbackItem.path || '/shop'
                 };
             });
-            await onSave({ items: normalizedItems });
-            return;
+            const result = await onSave({ items: normalizedItems });
+            return result?.success !== false;
         }
         if (isFixedWomenDiscoverHue) {
             const normalizedItems = fixedWomenHueDefaults.map((fallback, index) => {
@@ -792,12 +940,50 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             await onSave({ items: normalizedItems });
             return;
         }
+        if (isGoldExploreCollectionsSection) {
+            const currentEditingItem = editingId ? nextItems.find(item => item.id === editingId) : null;
+            const editingCategoryId = String(currentEditingItem?.categoryId || '').trim();
+            if (currentEditingItem && !editingCategoryId && !getCategoryFromItem(currentEditingItem)) {
+                toast.error('Select a category for this card before saving.');
+                return false;
+            }
+
+            const normalizedItems = nextItems.map((item, index) => {
+                const category = getCategoryFromItem(item);
+                const resolvedCategoryId = String(item.categoryId || category?._id || '').trim();
+                if (!resolvedCategoryId) return null;
+                const title = String(item.name || item.label || category?.name || `Collection ${index + 1}`).trim();
+                const subtitle = String(item.subtitle || item.description || '').trim();
+                const extraImages = Array.isArray(item.extraImages) ? item.extraImages.filter(Boolean).slice(0, 3) : [];
+                return {
+                    ...item,
+                    id: item.id || item.itemId || `gold-explore-${index + 1}`,
+                    categoryId: resolvedCategoryId,
+                    name: title,
+                    label: item.label || title,
+                    subtitle,
+                    description: item.description || subtitle,
+                    path: buildGoldCategoryPath(resolvedCategoryId, item.path),
+                    extraImages
+                };
+            }).filter(Boolean);
+
+            const missingContent = normalizedItems.filter(item => !(item.name || '').trim() || !item.image);
+            if (missingContent.length > 0) {
+                const labels = missingContent.map(item => item.name || item.id || 'Item').join(', ');
+                toast.error(`Each card needs title and image before saving. Missing: ${labels}`);
+                return false;
+            }
+
+            const result = await onSave({ items: normalizedItems });
+            return result?.success !== false;
+        }
         if (isFamilyCuratedCollections) {
             const missing = nextItems.filter(item => !getCategoryFromItem(item) && !canPreserveLegacyCategoryGridItem(item));
             if (missing.length > 0) {
                 const labels = missing.map(item => item.name || item.label || `Item ${item.id}`).join(', ');
                 toast.error(`Select a category for each item before saving. Missing: ${labels}`);
-                return;
+                return false;
             }
             const normalizedItems = nextItems.map((item, index) => {
                 const category = getCategoryFromItem(item);
@@ -819,8 +1005,8 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                 return;
             }
 
-            await onSave({ items: normalizedItems });
-            return;
+            const result = await onSave({ items: normalizedItems });
+            return result?.success !== false;
         }
         if (isCategoryShowcase) {
             const missing = nextItems.filter(item => !getCategoryFromItem(item));
@@ -844,6 +1030,46 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             return;
         }
         if (isCategoryGrid && !isWomenCuratedCollections) {
+            if (isGoldShopByColourSection) {
+                const currentEditingItem = editingId ? nextItems.find(item => item.id === editingId) : null;
+                const editingCategoryId = String(currentEditingItem?.categoryId || getCategoryFromItem(currentEditingItem)?._id || '').trim();
+                if (currentEditingItem && !editingCategoryId) {
+                    toast.error('Select a category for this card before saving.');
+                    return false;
+                }
+
+                let normalizedItems = nextItems.map((item) => {
+                    const category = getCategoryFromItem(item);
+                    if (!category) {
+                        return {
+                            ...item,
+                            name: item.name || item.label || '',
+                            label: item.label || item.name || '',
+                            path: item.path || '/shop?metal=gold'
+                        };
+                    }
+                    return {
+                        ...item,
+                        categoryId: category._id,
+                        name: (item.name || category.name || '').trim(),
+                        label: (item.label || item.name || category.name || '').trim(),
+                        path: buildGoldCategoryPath(category._id, item.path),
+                        image: item.image || category.image || item.image
+                    };
+                });
+
+                if (currentEditingItem) {
+                    const savedEditing = normalizedItems.find(item => item.id === currentEditingItem.id);
+                    if (!savedEditing || !(savedEditing.name || savedEditing.label || '').trim() || !savedEditing.image) {
+                        toast.error('Title and image are required before saving this card.');
+                        return false;
+                    }
+                }
+
+                normalizedItems = normalizedItems.slice(0, 4);
+                await onSave({ items: normalizedItems });
+                return true;
+            }
             const missing = nextItems.filter(item => !(getCategoryFromItem(item) || inferWomenCategoryByHint(item)) && !canPreserveLegacyCategoryGridItem(item));
             if (missing.length > 0) {
                 const labels = missing.map(item => item.name || item.label || `Item ${item.id}`).join(', ');
@@ -863,17 +1089,26 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                 return {
                     ...item,
                     categoryId: category._id,
-                    name: (isWomenCategoryLinkedSection || isFamilyCategoryLinkedSection) ? (item.name || category.name) : category.name,
-                    label: (isWomenCategoryLinkedSection || isFamilyCategoryLinkedSection) ? (item.label || item.name || category.name) : category.name,
+                    name: (isWomenCategoryLinkedSection || isFamilyCategoryLinkedSection || isGoldCategoryLinkedSection)
+                        ? (item.name || category.name)
+                        : category.name,
+                    label: (isWomenCategoryLinkedSection || isFamilyCategoryLinkedSection || isGoldCategoryLinkedSection)
+                        ? (item.label || item.name || category.name)
+                        : category.name,
                     path: isWomenCategoryLinkedSection
                         ? buildWomenCategoryPath(category._id, item.path)
                         : isFamilyCategoryLinkedSection
                             ? buildFamilyCategoryPath(category._id, item.path)
+                            : isGoldCategoryLinkedSection
+                                ? buildGoldCategoryPath(category._id, item.path)
                             : `/category/${category.slug || normalizeLabel(category.name)}`,
                     image: item.image || category.image || item.image
                 };
             });
             if (isWomenTrendingGrid) {
+                normalizedItems = normalizedItems.slice(0, 4);
+            }
+            if (isGoldShopByColourSection) {
                 normalizedItems = normalizedItems.slice(0, 4);
             }
             if (isFamilyTrendingNearYou || isFamilyGiftsToRemember) {
@@ -910,6 +1145,14 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                 toast.error(`Enter a max price for each item before saving. Missing: ${labels}`);
                 return;
             }
+            if (isGoldLuxuryWithinReach) {
+                const currentEditingItem = editingId ? nextItems.find(item => item.id === editingId) : null;
+                const selectedCategoryId = String(currentEditingItem?.categoryId || getCategoryFromItem(currentEditingItem)?._id || '').trim();
+                if (currentEditingItem && !selectedCategoryId) {
+                    toast.error('Select a category for this card before saving.');
+                    return false;
+                }
+            }
             if (isFamilyLuxuryWithinReach) {
                 const missingContent = nextItems.filter((item) => !(item.name || '').trim() || !(item.subtitle || item.description || '').trim() || !item.image);
                 if (missingContent.length > 0) {
@@ -918,27 +1161,39 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                     return;
                 }
             }
+            if (isGoldLuxuryWithinReach) {
+                const missingContent = nextItems.filter((item) => !(item.name || '').trim() || !item.image);
+                if (missingContent.length > 0) {
+                    const labels = missingContent.map(item => item.name || item.id || 'Item').join(', ');
+                    toast.error(`Each card needs title and image before saving. Missing: ${labels}`);
+                    return false;
+                }
+            }
             const normalizedItems = nextItems.map((item, index) => {
                 const priceMax = getPriceMaxFromItem(item);
                 if (!priceMax) return item;
+                const resolvedCategoryId = item.categoryId || getCategoryFromItem(item)?._id || '';
                 return {
                     ...item,
                     id: item.id || `price-${index + 1}`,
                     priceMax,
                     price: String(priceMax),
-                    name: isFamilyLuxuryWithinReach
+                    name: (isFamilyLuxuryWithinReach || isGoldLuxuryWithinReach)
                         ? ((item.name || item.label || '').trim() || `Under INR ${priceMax}`)
                         : `Under INR ${priceMax}`,
-                    label: isFamilyLuxuryWithinReach
+                    label: (isFamilyLuxuryWithinReach || isGoldLuxuryWithinReach)
                         ? ((item.label || item.name || '').trim() || `Under INR ${priceMax}`)
                         : `Under INR ${priceMax}`,
                     subtitle: isFamilyLuxuryWithinReach ? (item.subtitle || item.description || '') : item.subtitle,
                     description: isFamilyLuxuryWithinReach ? (item.description || item.subtitle || '') : item.description,
-                    path: buildPriceRangePath(priceMax)
+                    categoryId: isGoldLuxuryWithinReach ? (resolvedCategoryId || undefined) : item.categoryId,
+                    path: isGoldLuxuryWithinReach
+                        ? buildGoldPriceRangePath(priceMax, resolvedCategoryId, item.path)
+                        : buildPriceRangePath(priceMax)
                 };
             });
 
-            let constrainedItems = normalizedItems.slice(0, isLuxuryWithinReach ? (isFamilyLuxuryWithinReach ? 3 : 2) : nextItems.length);
+            let constrainedItems = normalizedItems.slice(0, isLuxuryWithinReach ? (isGoldLuxuryWithinReach ? 4 : (isFamilyLuxuryWithinReach ? 3 : 2)) : nextItems.length);
             if (isFixedWomenPriceRange) {
                 constrainedItems = fixedWomenPriceDefaults.map((fallback, index) => {
                     const current = constrainedItems[index] || {};
@@ -1142,7 +1397,8 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             }
             return item;
         });
-        await onSave({ items: normalizedItems, settings });
+        const result = await onSave({ items: normalizedItems, settings });
+        return result?.success !== false;
     };
 
     return (
@@ -1237,10 +1493,14 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                     <p className="text-[10px] md:text-xs text-gray-400">
                         {isPremiumCategoryCards
                             ? 'These three cards stay fixed. You can update only their images to keep navigation consistent.'
-                            : isLuxuryWithinReach
-                                ? (isFamilyLuxuryWithinReach
-                                    ? 'These three cards stay fixed. Update title, subtitle, image, badge, and max price. User clicks always go to Family products under the selected price.'
-                                    : 'These two cards stay fixed. You can update only their prices to keep this section consistent.')
+                                : isLuxuryWithinReach
+                                ? (isGoldLuxuryWithinReach
+                                    ? 'These four cards stay fixed. Update title, image, max price, and category. Card clicks always open Gold products only.'
+                                    : isFamilyLuxuryWithinReach
+                                     ? 'These three cards stay fixed. Update title, subtitle, image, badge, and max price. User clicks always go to Family products under the selected price.'
+                                     : 'These two cards stay fixed. You can update only their prices to keep this section consistent.')
+                                : isGoldShopByColourSection
+                                    ? 'These four colour cards stay fixed. Update title, image, and category. Card clicks always open Gold products in the selected category.'
                                 : isFixedWomenPriceRange
                                     ? 'These three cards stay fixed. Update only max price and badge; images and card count are locked.'
                                     : isWomenTrendingGrid
@@ -1252,7 +1512,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                             : 'Add, edit, or remove items in this section'}
                     </p>
                 </div>
-                {!isPremiumCategoryCards && !isLuxuryWithinReach && !isFixedWomenPriceRange && !isWomenTrendingGrid && !isFixedWomenDiscoverHue && !isFixedWomenPromoBanners && sectionId !== 'proposal-rings' && (
+                {!isPremiumCategoryCards && !isLuxuryWithinReach && !isGoldShopByColourSection && !isFixedWomenPriceRange && !isWomenTrendingGrid && !isFixedWomenDiscoverHue && !isFixedWomenPromoBanners && sectionId !== 'proposal-rings' && (
                     <button
                         onClick={addItem}
                         className="flex items-center gap-2 bg-[#3E2723] text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-[#2b1b18] transition-colors"
@@ -1275,7 +1535,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                     {isMostGiftedHero ? 'Hero Card' : `Item #${index + 1}`}
                                 </span>
                                 <div className="flex gap-2">
-                                    {isEditing && !isPremiumCategoryCards && !isLuxuryWithinReach && !isFixedWomenPriceRange && !isWomenTrendingGrid && !isFixedWomenDiscoverHue && !isFixedWomenPromoBanners && !isMostGiftedHero && sectionId !== 'proposal-rings' && (
+                                    {isEditing && !isPremiumCategoryCards && !isLuxuryWithinReach && !isGoldShopByColourSection && !isFixedWomenPriceRange && !isWomenTrendingGrid && !isFixedWomenDiscoverHue && !isFixedWomenPromoBanners && !isMostGiftedHero && sectionId !== 'proposal-rings' && (
                                         <button
                                             onClick={() => removeItem(item.id)}
                                             className="p-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
@@ -1287,7 +1547,8 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                     <button
                                         onClick={async () => {
                                             if (isEditing) {
-                                                await saveCurrentItems();
+                                                const didSave = await saveCurrentItems();
+                                                if (!didSave) return;
                                             }
                                             setEditingId(isEditing ? null : item.id);
                                         }}
@@ -1303,7 +1564,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                 /* EDIT MODE */
                                 <div className="space-y-4">
                                     {/* Main Image */}
-                                    {(!isLuxuryWithinReach || isFamilyLuxuryWithinReach) && !isFixedWomenPriceRange && (
+                                    {(!isLuxuryWithinReach || isFamilyLuxuryWithinReach || isGoldLuxuryWithinReach) && !isFixedWomenPriceRange && (
                                     <div className="aspect-square bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center overflow-hidden relative group/img">
                                         {item.image ? (
                                             <>
@@ -1352,7 +1613,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                     )}
 
                                     {/* Select Product Button (skip for locked premium cards and structured sections) */}
-                                    {!isPremiumCategoryCards && !isCategoryDrivenSection && !isWomenCuratedCollections && !isFamilyCuratedCollections && !isFixedWomenDiscoverHue && !isFixedWomenPromoBanners && sectionId !== 'price-range-showcase' && !isLuxuryWithinReach && sectionId !== 'nav-gifts-for' && sectionId !== 'nav-occasions' && sectionId !== 'perfect-gift' && sectionId !== 'new-launch' && sectionId !== 'latest-drop' && sectionId !== 'most-gifted' && sectionId !== 'proposal-rings' && sectionId !== 'curated-for-you' && sectionId !== 'style-it-your-way' && (
+                                    {!isPremiumCategoryCards && !isCategoryDrivenSection && !isWomenCuratedCollections && !isFamilyCuratedCollections && !isGoldExploreCollectionsSection && !isFixedWomenDiscoverHue && !isFixedWomenPromoBanners && sectionId !== 'price-range-showcase' && !isLuxuryWithinReach && sectionId !== 'nav-gifts-for' && sectionId !== 'nav-occasions' && sectionId !== 'perfect-gift' && sectionId !== 'new-launch' && sectionId !== 'latest-drop' && sectionId !== 'most-gifted' && sectionId !== 'proposal-rings' && sectionId !== 'curated-for-you' && sectionId !== 'style-it-your-way' && (
                                         <button
                                             onClick={() => handleRedirectToSelect(item.id)}
                                             className="w-full py-2 bg-gray-50 text-gray-600 text-[10px] font-bold rounded-lg border border-gray-200 hover:bg-gray-100 flex items-center justify-center gap-2 uppercase tracking-widest"
@@ -1382,12 +1643,16 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                             return {
                                                                 ...entry,
                                                                 categoryId: selected._id,
-                                                                name: (isWomenCategoryLinkedSection || isFamilyCategoryLinkedSection) ? (entry.name || selected.name) : selected.name,
+                                                                name: (isWomenCategoryLinkedSection || isFamilyCategoryLinkedSection || isGoldCategoryLinkedSection)
+                                                                    ? (entry.name || selected.name)
+                                                                    : selected.name,
                                                                 path: isCategoryGrid
                                                                     ? (isWomenCategoryLinkedSection
                                                                         ? buildWomenCategoryPath(selected._id, entry.path)
                                                                         : isFamilyCategoryLinkedSection
                                                                             ? buildFamilyCategoryPath(selected._id, entry.path)
+                                                                        : isGoldCategoryLinkedSection
+                                                                            ? buildGoldCategoryPath(selected._id, entry.path)
                                                                         : `/category/${selected.slug || normalizeLabel(selected.name)}`)
                                                                     : `/shop?category=${selected._id}`,
                                                                 image: entry.image || selected.image || entry.image
@@ -1611,7 +1876,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                 />
                                             </div>
                                         )}
-                                        {!isPremiumCategoryCards && (!isCategoryDrivenSection || isWomenCategoryLinkedSection || isFamilyCategoryLinkedSection || isFixedWomenDiscoverHue || isFixedWomenPromoBanners || isFamilyCuratedCollections || isFamilyLuxuryWithinReach) && sectionId !== 'price-range-showcase' && (!isLuxuryWithinReach || isFamilyLuxuryWithinReach) && (
+                                        {!isPremiumCategoryCards && (!isCategoryDrivenSection || isWomenCategoryLinkedSection || isFamilyCategoryLinkedSection || isGoldCategoryLinkedSection || isGoldExploreCollectionsSection || isFixedWomenDiscoverHue || isFixedWomenPromoBanners || isFamilyCuratedCollections || isFamilyLuxuryWithinReach || isGoldLuxuryWithinReach) && sectionId !== 'price-range-showcase' && (!isLuxuryWithinReach || isFamilyLuxuryWithinReach || isGoldLuxuryWithinReach) && (
                                             <Input
                                                 label={isMostGiftedHero ? "Hero Title" : sectionId === 'style-it-your-way' ? "Title" : (isWomenCuratedCollections || isFamilyCuratedCollections) ? "Card Title" : "Name"}
                                                 value={item.name}
@@ -1632,6 +1897,21 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                     )));
                                                 }}
                                                 placeholder="Keepsake rings and petite gifting picks."
+                                            />
+                                        )}
+                                        {isGoldExploreCollectionsSection && (
+                                            <Input
+                                                label="Subtitle"
+                                                value={item.subtitle || item.description || ''}
+                                                onChange={(e) => {
+                                                    const value = e.target.value;
+                                                    setItems(prev => prev.map(entry => (
+                                                        entry.id === item.id
+                                                            ? { ...entry, subtitle: value, description: value }
+                                                            : entry
+                                                    )));
+                                                }}
+                                                placeholder="Sophisticated designs for the modern workplace"
                                             />
                                         )}
                                         {isFixedWomenDiscoverHue && (
@@ -1704,7 +1984,78 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                 />
                                             </>
                                         )}
-                                        {isCategoryDrivenSection && !isWomenCategoryLinkedSection && !isFamilyCategoryLinkedSection && (
+                                        {isGoldExploreCollectionsSection && (
+                                            <div>
+                                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Category</label>
+                                                <select
+                                                    value={String(item.categoryId || getCategoryFromItem(item)?._id || '')}
+                                                    onChange={(e) => {
+                                                        const selectedId = String(e.target.value || '').trim();
+                                                        if (!selectedId) {
+                                                            setItems(prev => prev.map(entry => {
+                                                                if (entry.id !== item.id) return entry;
+                                                                return {
+                                                                    ...entry,
+                                                                    categoryId: '',
+                                                                    path: buildGoldCategoryPath('', entry.path)
+                                                                };
+                                                            }));
+                                                            return;
+                                                        }
+                                                        const selected = categories.find(c => String(c._id) === selectedId);
+                                                        if (!selected) return;
+                                                        setItems(prev => prev.map(entry => {
+                                                            if (entry.id !== item.id) return entry;
+                                                            return {
+                                                                ...entry,
+                                                                categoryId: selected._id,
+                                                                name: entry.name || selected.name,
+                                                                path: buildGoldCategoryPath(selected._id, entry.path)
+                                                            };
+                                                        }));
+                                                    }}
+                                                    className="w-full bg-white border border-gray-200 rounded-lg py-2 px-3 text-xs focus:outline-none focus:border-[#3E2723] focus:ring-1 focus:ring-[#3E2723]/20"
+                                                >
+                                                    <option value="">Select Category</option>
+                                                    {categories.map(cat => (
+                                                        <option key={cat._id} value={cat._id}>
+                                                            {cat.name}{cat.isActive === false ? ' (Inactive)' : ''}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        )}
+                                        {isGoldLuxuryWithinReach && (
+                                            <div>
+                                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Category</label>
+                                                <select
+                                                    value={String(item.categoryId || getCategoryFromItem(item)?._id || '')}
+                                                    onChange={(e) => {
+                                                        const selectedId = String(e.target.value || '').trim();
+                                                        const selected = categories.find(c => String(c._id) === selectedId);
+                                                        setItems(prev => prev.map(entry => {
+                                                            if (entry.id !== item.id) return entry;
+                                                            const nextCategoryId = selected?._id || '';
+                                                            const priceMax = getPriceMaxFromItem(entry);
+                                                            return {
+                                                                ...entry,
+                                                                categoryId: nextCategoryId,
+                                                                path: buildGoldPriceRangePath(priceMax, nextCategoryId, entry.path)
+                                                            };
+                                                        }));
+                                                    }}
+                                                    className="w-full bg-white border border-gray-200 rounded-lg py-2 px-3 text-xs focus:outline-none focus:border-[#3E2723] focus:ring-1 focus:ring-[#3E2723]/20"
+                                                >
+                                                    <option value="">Select Category</option>
+                                                    {categories.map(cat => (
+                                                        <option key={cat._id} value={cat._id}>
+                                                            {cat.name}{cat.isActive === false ? ' (Inactive)' : ''}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        )}
+                                        {isCategoryDrivenSection && !isWomenCategoryLinkedSection && !isFamilyCategoryLinkedSection && !isGoldCategoryLinkedSection && !isGoldExploreCollectionsSection && (
                                             <Input
                                                 label="Category Name"
                                                 value={item.name}
@@ -1728,19 +2079,26 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                             return {
                                                                 ...entry,
                                                                 priceMax: numeric,
-                                                                name: numeric ? `Under INR ${numeric}` : entry.name
+                                                                name: (isFamilyLuxuryWithinReach || isGoldLuxuryWithinReach)
+                                                                    ? entry.name
+                                                                    : (numeric ? `Under INR ${numeric}` : entry.name),
+                                                                path: isGoldLuxuryWithinReach
+                                                                    ? buildGoldPriceRangePath(numeric, entry.categoryId || getCategoryFromItem(entry)?._id || '', entry.path)
+                                                                    : entry.path
                                                             };
                                                         }));
                                                     }}
                                                     placeholder={isLuxuryWithinReach ? "1499" : "999"}
                                                 />
-                                                <Input
-                                                    label="Display Label"
-                                                    value={item.name || ''}
-                                                    readOnly
-                                                    placeholder="Under INR 999"
-                                                    className="bg-gray-50 text-gray-500 cursor-not-allowed"
-                                                />
+                                                {!isFamilyLuxuryWithinReach && !isGoldLuxuryWithinReach && (
+                                                    <Input
+                                                        label="Display Label"
+                                                        value={item.name || ''}
+                                                        readOnly
+                                                        placeholder="Under INR 999"
+                                                        className="bg-gray-50 text-gray-500 cursor-not-allowed"
+                                                    />
+                                                )}
                                             </div>
                                         )}
                                         {sectionId === 'new-launch' && (
@@ -1809,7 +2167,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                             </div>
                                         )}
 
-                                        {sectionId === 'style-it-your-way' && (
+                                        {(sectionId === 'style-it-your-way' || isGoldExploreCollectionsSection) && (
                                             <div className="pt-2">
                                                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">3 Mini Photos</label>
                                                 <div className="flex gap-2">
@@ -1820,6 +2178,12 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                                                     <img src={resolveLegacyCmsAsset(item.extraImages[i], item.extraImages[i])} className="w-full h-full object-cover" alt="" />
                                                                     <button onClick={() => handleItemChange(item.id, `extraImage_${i}`, '')} className="absolute inset-0 bg-red-500/20 opacity-0 group-hover/mini:opacity-100 flex items-center justify-center">
                                                                         <Trash2 size={12} className="text-white bg-red-500 p-1 rounded-full shadow-lg" />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleItemChange(item.id, `extraImage_${i}`, '')}
+                                                                        className="absolute bottom-1 left-1 right-1 bg-white/95 text-[9px] font-bold text-red-600 rounded py-0.5 border border-red-100"
+                                                                    >
+                                                                        Remove
                                                                     </button>
                                                                 </>
                                                             ) : (

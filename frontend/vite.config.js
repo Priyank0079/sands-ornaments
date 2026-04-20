@@ -7,6 +7,7 @@ import path from 'path'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
+    dedupe: ['react', 'react-dom'],
     alias: {
       '@assets': path.resolve(__dirname, './src/modules/user/assets'),
       '@': path.resolve(__dirname, './src')

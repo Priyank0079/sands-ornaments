@@ -1,7 +1,7 @@
 const HomepageSection = require("../../../models/HomepageSection");
 const { success, error } = require("../../../utils/apiResponse");
 
-const ALLOWED_PAGE_KEYS = new Set(["home", "shop-men", "shop-women", "shop-family"]);
+const ALLOWED_PAGE_KEYS = new Set(["home", "shop-men", "shop-women", "shop-family", "gold-collection"]);
 const ALLOWED_SECTION_TYPES = new Set([
   "banner",
   "category-grid",
@@ -167,6 +167,42 @@ const buildFamilyCategoryIdPath = (categoryId, currentPath) => {
     return `/shop?source=family&filter=family&category=${encodeURIComponent(normalized)}`;
   }
   return currentPath || "/shop?source=family&filter=family";
+};
+
+const buildGoldCategoryIdPath = (categoryId, currentPath) => {
+  const normalized = String(categoryId || "").trim();
+  if (normalized) {
+    return `/shop?metal=gold&category=${encodeURIComponent(normalized)}`;
+  }
+  const source = String(currentPath || "").trim();
+  if (!source || !source.startsWith("/shop")) return "/shop?metal=gold";
+  try {
+    const query = source.includes("?") ? source.split("?")[1] : "";
+    const params = new URLSearchParams(query);
+    params.set("metal", "gold");
+    const normalizedQuery = params.toString();
+    return `/shop${normalizedQuery ? `?${normalizedQuery}` : ""}`;
+  } catch {
+    return "/shop?metal=gold";
+  }
+};
+
+const buildGoldPriceRangePath = (priceMax, categoryId, currentPath) => {
+  const source = String(currentPath || "").trim();
+  const query = source.startsWith("/shop") && source.includes("?") ? source.split("?")[1] : "";
+  const params = new URLSearchParams(query);
+
+  params.set("metal", "gold");
+
+  if (priceMax) params.set("price_max", String(priceMax));
+  else params.delete("price_max");
+
+  const normalizedCategory = String(categoryId || "").trim();
+  if (normalizedCategory) params.set("category", normalizedCategory);
+  else params.delete("category");
+
+  const normalizedQuery = params.toString();
+  return `/shop${normalizedQuery ? `?${normalizedQuery}` : "?metal=gold"}`;
 };
 
 const buildCategoryLimitPath = (categoryId, limit, sort, currentPath) => {
@@ -346,6 +382,35 @@ const sanitizeSectionPayload = (identity, payload = {}) => {
       .filter((item) => Boolean(item.priceMax));
   }
 
+  if (sectionKey === "gold-luxury-within-reach" && pageKey === "gold-collection") {
+    cleaned.items = cleaned.items
+      .map((item, idx) => {
+        const priceMax = parsePositiveNumber(item.priceMax ?? item.price ?? item.name);
+        if (!priceMax) return null;
+
+        const rawCategory = String(item.categoryId || "").trim()
+          || parseCategoryFromPath(item.path)
+          || "";
+        const categoryId = isObjectIdLike(rawCategory) ? rawCategory : null;
+        const pathCategory = categoryId || rawCategory;
+
+        const label = String(item.name || item.label || "").trim() || `Under INR ${priceMax}`;
+
+        return {
+          ...item,
+          priceMax,
+          price: String(priceMax),
+          categoryId: categoryId || undefined,
+          name: label,
+          label: item.label || label,
+          path: buildGoldPriceRangePath(priceMax, pathCategory, item.path),
+          sortOrder: item.sortOrder ?? idx
+        };
+      })
+      .filter(Boolean)
+      .slice(0, 4);
+  }
+
   if (sectionKey === "product-categories" && pageKey === "shop-women") {
     cleaned.items = cleaned.items
       .map((item, idx) => {
@@ -507,6 +572,78 @@ const sanitizeSectionPayload = (identity, payload = {}) => {
       })
       .filter(Boolean)
       .slice(0, 2);
+  }
+
+  if (sectionKey === "gold-category-grid" && pageKey === "gold-collection") {
+    cleaned.items = cleaned.items
+      .map((item, idx) => {
+        const rawCategory = String(item.categoryId || "").trim()
+          || parseCategoryFromPath(item.path)
+          || slugifyLabel(item.name || item.label || "");
+        const categoryId = isObjectIdLike(rawCategory) ? rawCategory : null;
+        const pathCategory = categoryId || rawCategory;
+        const label = String(item.name || item.label || "").trim();
+        if (!pathCategory || !item.image) return null;
+        return {
+          ...item,
+          categoryId: categoryId || undefined,
+          name: label || `Category ${idx + 1}`,
+          label: item.label || label || `Category ${idx + 1}`,
+          path: buildGoldCategoryIdPath(pathCategory, item.path),
+          sortOrder: item.sortOrder ?? idx
+        };
+      })
+      .filter(Boolean);
+  }
+
+  if (sectionKey === "gold-shop-by-colour" && pageKey === "gold-collection") {
+    cleaned.items = cleaned.items
+      .map((item, idx) => {
+        const rawCategory = String(item.categoryId || "").trim()
+          || parseCategoryFromPath(item.path)
+          || slugifyLabel(item.name || item.label || "");
+        const categoryId = isObjectIdLike(rawCategory) ? rawCategory : null;
+        const pathCategory = categoryId || rawCategory;
+        const label = String(item.name || item.label || "").trim();
+        if (!pathCategory || !item.image) return null;
+        return {
+          ...item,
+          categoryId: categoryId || undefined,
+          name: label || `Colour ${idx + 1}`,
+          label: item.label || label || `Colour ${idx + 1}`,
+          path: buildGoldCategoryIdPath(pathCategory, item.path),
+          sortOrder: item.sortOrder ?? idx
+        };
+      })
+      .filter(Boolean)
+      .slice(0, 4);
+  }
+
+  if (sectionKey === "gold-explore-collections" && pageKey === "gold-collection") {
+    cleaned.items = cleaned.items
+      .map((item, idx) => {
+        const rawCategory = String(item.categoryId || "").trim()
+          || parseCategoryFromPath(item.path)
+          || slugifyLabel(item.name || item.label || "");
+        const categoryId = isObjectIdLike(rawCategory) ? rawCategory : null;
+        const pathCategory = categoryId || rawCategory;
+        const title = String(item.name || item.label || "").trim();
+        if (!pathCategory || !item.image || !title) return null;
+        return {
+          ...item,
+          categoryId: categoryId || undefined,
+          name: title,
+          label: item.label || title,
+          subtitle: String(item.subtitle || item.description || "").trim(),
+          description: String(item.description || item.subtitle || "").trim(),
+          path: buildGoldCategoryIdPath(pathCategory, item.path),
+          extraImages: Array.isArray(item.extraImages)
+            ? item.extraImages.filter(Boolean).slice(0, 3)
+            : [],
+          sortOrder: item.sortOrder ?? idx
+        };
+      })
+      .filter(Boolean);
   }
 
   if (sectionKey === "products-listing" && pageKey === "shop-women") {

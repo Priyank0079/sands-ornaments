@@ -586,7 +586,8 @@ const AdminSidebar = () => {
                                 { label: 'Home Sections', pageKey: 'home' },
                                 { label: 'Shop for Men', pageKey: 'shop-men' },
                                 { label: 'Shop for Women', pageKey: 'shop-women' },
-                                { label: 'Shop for Family', pageKey: 'shop-family' }
+                                { label: 'Shop for Family', pageKey: 'shop-family' },
+                                { label: 'Gold Collection', pageKey: 'gold-collection' }
                             ].map((item) => {
                                 const href = `/admin/sections?pageKey=${item.pageKey}`;
                                 const isActiveItem = location.pathname.startsWith('/admin/sections') && location.search.includes(`pageKey=${item.pageKey}`);

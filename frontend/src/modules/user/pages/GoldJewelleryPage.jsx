@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShieldCheck, RefreshCw, RotateCcw, Star, ArrowRight } from 'lucide-react';
-import { useShop } from '../../../context/ShopContext';
+import api from '../../../services/api';
 import GoldExploreCollections from '../components/GoldExploreCollections';
 import BestStylesSection from '../components/BestStylesSection';
 import GoldCategoryGrid from '../components/GoldCategoryGrid';
-import AutoBannerSection from '../components/AutoBannerSection';
 import GoldNewLaunchBanner from '../components/GoldNewLaunchBanner';
 import GoldRingCarousel from '../components/GoldRingCarousel';
 import GoldTestimonials from '../components/GoldTestimonials';
@@ -17,170 +16,182 @@ import GoldLifestyleGrid from '../components/GoldLifestyleGrid';
 import GoldShopByColour from '../components/GoldShopByColour';
 import GoldLuxuryWithinReach from '../components/GoldLuxuryWithinReach';
 import GoldDirectProducts from '../components/GoldDirectProducts';
+import Loader from '../../shared/components/Loader';
+import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 
-// Hero assets
 import heroGold from '@assets/hero/bridal_royal.png';
 
 const TRUST_BADGES = [
-    {
-        id: 1,
-        icon: ShieldCheck,
-        title: '100% Certified Lab',
-        subtitle: 'Grown Diamonds',
-    },
-    {
-        id: 2,
-        icon: RefreshCw,
-        title: 'Lifetime Exchange',
-        subtitle: '& Buyback',
-    },
-    {
-        id: 3,
-        icon: RotateCcw,
-        title: 'Easy 30',
-        subtitle: 'Days Return',
-    },
-    {
-        id: 4,
-        icon: Star,
-        title: 'B I S',
-        subtitle: 'Hallmark',
-    },
+    { id: 1, icon: ShieldCheck, title: '100% Certified Lab', subtitle: 'Grown Diamonds' },
+    { id: 2, icon: RefreshCw, title: 'Lifetime Exchange', subtitle: '& Buyback' },
+    { id: 3, icon: RotateCcw, title: 'Easy 30', subtitle: 'Days Return' },
+    { id: 4, icon: Star, title: 'B I S', subtitle: 'Hallmark' },
 ];
 
-import Loader from '../../shared/components/Loader';
-
 const GoldJewelleryPage = () => {
-    const [shopNowHover, setShopNowHover] = useState(false);
-    const [loading, setLoading] = React.useState(true);
+    const [loading, setLoading] = useState(true);
+    const [sections, setSections] = useState([]);
+    const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
 
-    React.useEffect(() => {
+    const fetchGoldSections = useCallback(async () => {
+        try {
+            const res = await api.get('public/cms/pages/gold-collection', {
+                params: { _t: Date.now() }
+            });
+            if (!res?.data?.success) return;
+            setSections(Array.isArray(res.data?.data?.sections) ? res.data.data.sections : []);
+        } catch (error) {
+            console.error('Failed to fetch gold collection sections:', error);
+        }
+    }, []);
+
+    useEffect(() => {
         window.scrollTo(0, 0);
-        document.title = "Shop Gold Jewellery | Sands Ornaments";
+        document.title = 'Shop Gold Jewellery | Sands Ornaments';
         const timer = setTimeout(() => setLoading(false), 800);
         return () => clearTimeout(timer);
     }, []);
+
+    useEffect(() => {
+        fetchGoldSections();
+    }, [fetchGoldSections]);
+
+    useEffect(() => {
+        const handleFocusRefresh = () => {
+            fetchGoldSections();
+        };
+        const handleVisibilityRefresh = () => {
+            if (document.visibilityState === 'visible') {
+                fetchGoldSections();
+            }
+        };
+
+        window.addEventListener('focus', handleFocusRefresh);
+        document.addEventListener('visibilitychange', handleVisibilityRefresh);
+
+        return () => {
+            window.removeEventListener('focus', handleFocusRefresh);
+            document.removeEventListener('visibilitychange', handleVisibilityRefresh);
+        };
+    }, [fetchGoldSections]);
+
+    const sectionMap = useMemo(() => (
+        (sections || []).reduce((acc, section) => {
+            const key = section.sectionKey || section.sectionId;
+            if (key) acc[key] = section;
+            return acc;
+        }, {})
+    ), [sections]);
+
+    const heroSlides = useMemo(() => {
+        const ensureGoldPath = (rawPath = '') => {
+            const source = String(rawPath || '').trim();
+            if (!source) return '/shop?metal=gold';
+            if (!source.startsWith('/shop')) return source;
+            if (/([?&])metal=gold(&|$)/i.test(source)) return source;
+            return `${source}${source.includes('?') ? '&' : '?'}metal=gold`;
+        };
+        const heroSection = sectionMap['hero-banners-gold'];
+        const configuredItems = Array.isArray(heroSection?.items) ? heroSection.items : [];
+        const slides = configuredItems
+            .filter((item) => item?.label || item?.name || item?.image)
+            .map((item, index) => ({
+                id: item.itemId || item.id || `gold-hero-${index + 1}`,
+                image: resolveLegacyCmsAsset(item.image, heroGold),
+                title: String(item?.label || item?.title || 'Akshaya Tritiya').trim() || 'Akshaya Tritiya',
+                subtitle: String(item?.subtitle || item?.description || 'On all gold jewellery').trim() || 'On all gold jewellery',
+                eyebrow: String(item?.name || item?.tag || item?.eyebrow || 'Shubh').trim() || 'Shubh',
+                ctaLabel: String(item?.ctaLabel || 'Shop Now').trim() || 'Shop Now',
+                ctaPath: ensureGoldPath(item?.path || '/shop?metal=gold')
+            }));
+
+        if (slides.length > 0) return slides;
+
+        return [{
+            id: 'gold-hero-fallback',
+            image: heroGold,
+            title: 'Akshaya Tritiya',
+            subtitle: 'On all gold jewellery',
+            eyebrow: 'Shubh',
+            ctaLabel: 'Shop Now',
+            ctaPath: '/shop?metal=gold'
+        }];
+    }, [sectionMap]);
+
+    useEffect(() => {
+        setCurrentHeroIndex(0);
+    }, [heroSlides.length]);
+
+    useEffect(() => {
+        if (heroSlides.length <= 1) return undefined;
+        const autoplayMs = Number(sectionMap['hero-banners-gold']?.settings?.autoplayMs) || 3000;
+        const timer = setInterval(() => {
+            setCurrentHeroIndex((prev) => (prev + 1) % heroSlides.length);
+        }, autoplayMs);
+        return () => clearInterval(timer);
+    }, [heroSlides.length, sectionMap]);
+
+    const heroContent = heroSlides[currentHeroIndex] || heroSlides[0];
+
+    const trustBadges = useMemo(() => {
+        const trustSection = sectionMap['gold-trust-markers'];
+        const configured = Array.isArray(trustSection?.items) ? trustSection.items : [];
+        if (configured.length === 0) return TRUST_BADGES;
+
+        return configured.map((item, idx) => ({
+            id: item?.itemId || item?.id || `gold-trust-${idx + 1}`,
+            icon: TRUST_BADGES[idx % TRUST_BADGES.length].icon,
+            title: item?.name || item?.label || TRUST_BADGES[idx % TRUST_BADGES.length].title,
+            subtitle: item?.subtitle || item?.description || TRUST_BADGES[idx % TRUST_BADGES.length].subtitle,
+            image: item?.image ? resolveLegacyCmsAsset(item.image, '') : ''
+        }));
+    }, [sectionMap]);
 
     if (loading) return <Loader />;
 
     return (
         <div className="bg-white min-h-screen font-body">
-
-            {/* ============================================================ */}
-            {/* SECTION 1: HERO BANNER                                        */}
-            {/* ============================================================ */}
             <div className="w-full h-[160px] md:h-[240px] flex overflow-hidden">
-
-                {/* Left Panel — Product / Jewellery Image */}
                 <div className="relative w-[55%] md:w-[60%] h-full overflow-hidden bg-[#0D1C12]">
                     <img
-                        src={heroGold}
+                        src={heroContent.image}
                         alt="Sands Gold Collection"
                         className="w-full h-full object-cover object-center opacity-90"
                     />
-                    {/* Gradient overlay for text readability */}
                     <div className="absolute inset-0 bg-gradient-to-r from-[#0D1C12]/30 via-transparent to-[#0D1C12]/60" />
-
-                    {/* Left-panel label */}
-                    <div className="absolute bottom-4 md:bottom-6 left-4 md:left-8">
-                        <p className="text-[#D4AF37] text-[9px] md:text-[11px] font-bold uppercase tracking-[0.3em] mb-1">
-                            Crafted in Pure Gold
-                        </p>
-                    </div>
                 </div>
 
-                {/* Right Panel — Offer / Branding */}
                 <div
                     className="relative w-[45%] md:w-[40%] h-full flex flex-col items-center justify-center"
                     style={{
                         background: 'linear-gradient(135deg, #0A1A0E 0%, #1A2E18 50%, #0D1C12 100%)',
                     }}
                 >
-                    {/* Decorative corner ornament */}
-                    <div className="absolute top-2 right-2 md:top-4 md:right-4 text-[#D4AF37]/30 text-[28px] md:text-[40px] leading-none select-none">
-                        ✦
-                    </div>
-                    <div className="absolute bottom-2 left-2 md:bottom-4 md:left-4 text-[#D4AF37]/30 text-[20px] md:text-[32px] leading-none select-none rotate-90">
-                        ✦
-                    </div>
-
-                    {/* Main Offer Text */}
                     <div className="text-center px-3 md:px-6">
-                        {/* Ornamental divider */}
-                        <div className="flex items-center justify-center gap-2 mb-3 md:mb-4">
-                            <div className="h-px w-6 md:w-10 bg-[#D4AF37]" />
-                            <span className="text-[#D4AF37] text-[10px] md:text-[13px]">✦</span>
-                            <div className="h-px w-6 md:w-10 bg-[#D4AF37]" />
-                        </div>
-
-                        <p className="text-[#D4AF37] font-serif italic text-[11px] md:text-[14px] mb-0.5">
-                            Shubh
-                        </p>
-                        <h1
-                            className="text-white font-serif font-bold leading-tight mb-3 md:mb-4"
-                            style={{ fontSize: 'clamp(16px, 4vw, 30px)' }}
-                        >
-                            Akshaya Tritiya
+                        <p className="text-[#D4AF37] font-serif italic text-[11px] md:text-[14px] mb-0.5">{heroContent.eyebrow}</p>
+                        <h1 className="text-white font-serif font-bold leading-tight mb-3 md:mb-4" style={{ fontSize: 'clamp(16px, 4vw, 30px)' }}>
+                            {heroContent.title}
                         </h1>
-
-                        {/* Ornamental divider */}
-                        <div className="flex items-center justify-center gap-2 mb-3 md:mb-5">
-                            <div className="h-px w-5 md:w-8 bg-[#D4AF37]/50" />
-                            <span className="text-[#D4AF37]/50 text-[8px]">✦</span>
-                            <div className="h-px w-5 md:w-8 bg-[#D4AF37]/50" />
-                        </div>
-
-                        {/* Offer Badge Box */}
-                        <div className="border border-[#D4AF37]/40 rounded-sm px-3 md:px-5 py-2 md:py-3 bg-[#D4AF37]/5 inline-block text-center">
-                            <p className="text-white/60 text-[7px] md:text-[9px] uppercase tracking-widest mb-0.5">
-                                Upto
-                            </p>
-                            <div className="flex items-baseline gap-1 justify-center">
-                                <span className="text-white font-black" style={{ fontSize: 'clamp(20px, 5vw, 38px)' }}>
-                                    0
-                                </span>
-                                <span className="text-white font-black text-[9px] md:text-[12px] leading-tight tracking-wide">
-                                    MAKING<br />CHARGE
-                                </span>
-                            </div>
-                            <p className="text-white/50 text-[6px] md:text-[8px] mt-1 mb-2">
-                                On all gold jewellery
-                            </p>
-                            <Link
-                                to="/shop?metal=gold"
-                                onMouseEnter={() => setShopNowHover(true)}
-                                onMouseLeave={() => setShopNowHover(false)}
-                                className="inline-flex items-center gap-1 bg-white text-[#0D1C12] text-[7px] md:text-[10px] font-black uppercase tracking-widest px-3 md:px-5 py-1 md:py-1.5 rounded-sm hover:bg-[#D4AF37] hover:text-white transition-all duration-300"
-                            >
-                                Shop Now
-                                <ArrowRight className={`w-2.5 h-2.5 transition-transform ${shopNowHover ? 'translate-x-1' : ''}`} />
-                            </Link>
-                        </div>
+                        <p className="text-white/70 text-[7px] md:text-[10px] mt-1 mb-2">{heroContent.subtitle}</p>
+                        <Link
+                            to={heroContent.ctaPath}
+                            className="inline-flex items-center gap-1 bg-white text-[#0D1C12] text-[7px] md:text-[10px] font-black uppercase tracking-widest px-3 md:px-5 py-1 md:py-1.5 rounded-sm hover:bg-[#D4AF37] hover:text-white transition-all duration-300"
+                        >
+                            {heroContent.ctaLabel}
+                            <ArrowRight className="w-2.5 h-2.5" />
+                        </Link>
                     </div>
-
-                    {/* T&C label */}
-                    <p className="absolute bottom-2 right-2 text-white/20 text-[6px] md:text-[7px]">*T&C Apply</p>
                 </div>
             </div>
 
-            {/* ============================================================ */}
-            {/* SECTION 2: SHOP BY CATEGORY                                   */}
-            {/* ============================================================ */}
-            <GoldCategoryGrid />
+            <GoldCategoryGrid sectionData={sectionMap['gold-category-grid']} />
+            <GoldExploreCollections sectionData={sectionMap['gold-explore-collections']} />
+            <BestStylesSection sectionData={sectionMap['best-styles']} />
 
-            {/* CURATED COLLECTIONS WITH OVERLAPPING THUMBNAILS (Matching Screenshot) */}
-            <GoldExploreCollections />
-
-            {/* BEST STYLES SECTION - NOW FULLY FUNCTIONAL */}
-            <BestStylesSection />
-
-            {/* ============================================================ */}
-            {/* SECTION 3: TRUST BADGES (MATCHING SCREENSHOT)                 */}
-            {/* ============================================================ */}
             <div className="w-full bg-white py-12">
                 <div className="container mx-auto px-4 max-w-[1450px]">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                        {TRUST_BADGES.map((badge, idx) => (
+                        {trustBadges.map((badge, idx) => (
                             <motion.div
                                 key={badge.id}
                                 initial={{ opacity: 0, y: 15 }}
@@ -188,18 +199,16 @@ const GoldJewelleryPage = () => {
                                 transition={{ delay: idx * 0.1 }}
                                 className="flex items-center gap-5 bg-[#F9F8EF] rounded-[24px] p-2 pr-4 md:pr-6 shadow-sm hover:shadow-md transition-shadow duration-300"
                             >
-                                {/* White Square Icon Container */}
-                                <div className="w-[70px] h-[70px] md:w-[85px] md:h-[85px] bg-white rounded-[20px] flex items-center justify-center shrink-0 shadow-sm border border-[#E8D8A0]/30">
-                                    <div className="relative">
+                                <div className="w-[70px] h-[70px] md:w-[85px] md:h-[85px] bg-white rounded-[20px] flex items-center justify-center shrink-0 shadow-sm border border-[#E8D8A0]/30 overflow-hidden">
+                                    {badge.image ? (
+                                        <img src={badge.image} alt={badge.title} className="w-full h-full object-cover" />
+                                    ) : (
                                         <badge.icon className="w-7 h-7 md:w-9 md:h-9 text-[#2A4D35]" />
-                                        {/* Decorative dots/circles from screenshot */}
-                                        <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-[#2A4D35]/40" />
-                                    </div>
+                                    )}
                                 </div>
 
-                                {/* Text Content */}
                                 <div className="py-1">
-                                    <h4 className={`text-gray-900 leading-tight font-black ${badge.id === 4 ? 'tracking-[0.4em] text-[16px] md:text-[20px]' : 'text-[15px] md:text-[17px]'}`}>
+                                    <h4 className={`text-gray-900 leading-tight font-black ${idx === 3 ? 'tracking-[0.4em] text-[16px] md:text-[20px]' : 'text-[15px] md:text-[17px]'}`}>
                                         {badge.title}
                                     </h4>
                                     <p className="text-[#333] text-[15px] md:text-[17px] font-medium leading-tight">
@@ -212,30 +221,18 @@ const GoldJewelleryPage = () => {
                 </div>
             </div>
 
-            {/* ============================================================ */}
-            {/* SECTION 4: NEW LAUNCH BANNER                                  */}
-            {/* ============================================================ */}
-            <GoldNewLaunchBanner />
-
-            {/* ============================================================ */}
-            {/* SECTION 4.5: EXCLUSIVE COLLECTION LAUNCH                     */}
-            {/* ============================================================ */}
-            <GoldExclusiveLaunch />
-
-            {/* ============================================================ */}
-            {/* SECTION 5: GET THE RIGHT RING                                 */}
-            {/* ============================================================ */}
-            <GoldRingCarousel />
-            <GoldShopByColour />
-            <GoldLuxuryWithinReach />
-            <GoldTestimonials />
-            <CuratedForEveryBond />
-            <GoldCuratedShowcase />
-            <GoldLifestyleGrid />
-            <GoldDirectProducts />
+            <GoldNewLaunchBanner sectionData={sectionMap['gold-new-launch-banner']} />
+            <GoldExclusiveLaunch sectionData={sectionMap['gold-exclusive-launch']} />
+            <GoldRingCarousel sectionData={sectionMap['gold-ring-carousel']} />
+            <GoldShopByColour sectionData={sectionMap['gold-shop-by-colour']} />
+            <GoldLuxuryWithinReach sectionData={sectionMap['gold-luxury-within-reach']} />
+            <GoldTestimonials sectionData={sectionMap['gold-testimonials']} />
+            <CuratedForEveryBond sectionData={sectionMap['gold-curated-bond']} />
+            <GoldCuratedShowcase sectionData={sectionMap['gold-curated-showcase']} />
+            <GoldLifestyleGrid sectionData={sectionMap['gold-lifestyle-grid']} />
+            <GoldDirectProducts sectionData={sectionMap['gold-products-listing']} />
         </div>
     );
 };
 
 export default GoldJewelleryPage;
-

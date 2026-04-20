@@ -1,110 +1,136 @@
-import React, { useRef } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 
-// Asset imports
 import dailyWearBanner from '@assets/explore/gold_daily_wear_banner_1775911015640.png';
 import officeWearBanner from '@assets/explore/gold_office_wear_banner_1775911038204.png';
-
-// Import some thumbnails for the small circles
 import thumb1 from '@assets/categories/gold_rings_green.png';
 import thumb2 from '@assets/categories/gold_earrings_green.png';
 import thumb3 from '@assets/categories/gold_pendants_green.png';
 import thumb4 from '@assets/categories/gold_bracelets_green.png';
 
-const goldCollections = [
+const fallbackCollections = [
     {
         id: 1,
-        label: "EFFORTLESS EVERYDAY",
-        title: "DAILY WEAR",
-        description: "Minimalist gold pieces for your everyday sparkle",
+        label: 'EFFORTLESS EVERYDAY',
+        title: 'DAILY WEAR',
+        description: 'Minimalist gold pieces for your everyday sparkle',
         image: dailyWearBanner,
-        link: "/shop?metal=gold",
-        items: [thumb1, thumb2, thumb3]
+        path: '/shop?metal=gold',
+        extraImages: [thumb1, thumb2, thumb3]
     },
     {
         id: 2,
-        label: "PROFESSIONAL CHIC",
-        title: "OFFICE WEAR",
-        description: "Sophisticated designs for the modern workplace",
+        label: 'PROFESSIONAL CHIC',
+        title: 'OFFICE WEAR',
+        description: 'Sophisticated designs for the modern workplace',
         image: officeWearBanner,
-        link: "/shop?metal=gold",
-        items: [thumb4, thumb1, thumb2]
+        path: '/shop?metal=gold',
+        extraImages: [thumb4, thumb1, thumb2]
     },
     {
         id: 3,
-        label: "CELEBRATION READY",
-        title: "PARTY WEAR",
-        description: "Extravagant gold jewelry for those special moments",
-        image: dailyWearBanner, 
-        link: "/shop?metal=gold",
-        items: [thumb3, thumb4, thumb1]
+        label: 'CELEBRATION READY',
+        title: 'PARTY WEAR',
+        description: 'Extravagant gold jewelry for those special moments',
+        image: dailyWearBanner,
+        path: '/shop?metal=gold',
+        extraImages: [thumb3, thumb4, thumb1]
     }
 ];
 
-const GoldExploreCollections = () => {
+const GoldExploreCollections = ({ sectionData = null }) => {
     const navigate = useNavigate();
     const scrollRef = useRef(null);
 
-    const scroll = (direction) => {
-        if (scrollRef.current) {
-            const { current } = scrollRef;
-            const scrollAmount = window.innerWidth > 768 ? 600 : 300;
-            if (direction === 'left') {
-                current.scrollLeft -= scrollAmount;
-            } else {
-                current.scrollLeft += scrollAmount;
-            }
+    const ensureGoldCategoryPath = (rawPath = '', categoryId = '') => {
+        const source = String(rawPath || '').trim();
+        const normalizedCategoryId = String(categoryId || '').trim();
+
+        if (!source || !source.startsWith('/shop')) {
+            return normalizedCategoryId
+                ? `/shop?metal=gold&category=${encodeURIComponent(normalizedCategoryId)}`
+                : '/shop?metal=gold';
         }
+
+        const params = new URLSearchParams(source.includes('?') ? source.split('?')[1] : '');
+        params.set('metal', 'gold');
+        if (normalizedCategoryId) {
+            params.set('category', normalizedCategoryId);
+        }
+        const query = params.toString();
+        return `/shop${query ? `?${query}` : ''}`;
+    };
+
+    const collections = useMemo(() => {
+        const configured = Array.isArray(sectionData?.items) ? sectionData.items : [];
+        if (configured.length === 0) return fallbackCollections;
+
+        return configured.map((item, idx) => {
+            const thumbDefaults = fallbackCollections[idx % fallbackCollections.length]?.extraImages || [thumb1, thumb2, thumb3];
+            const extraImages = Array.isArray(item?.extraImages)
+                ? item.extraImages.map((img, i) => resolveLegacyCmsAsset(img, thumbDefaults[i % thumbDefaults.length])).slice(0, 3)
+                : [];
+
+            return {
+                id: item?.itemId || item?.id || `gold-explore-${idx + 1}`,
+                label: String(item?.tag || '').trim() || fallbackCollections[idx % fallbackCollections.length].label,
+                title: String(item?.name || item?.label || '').trim() || fallbackCollections[idx % fallbackCollections.length].title,
+                description: String(item?.subtitle || item?.description || '').trim() || fallbackCollections[idx % fallbackCollections.length].description,
+                image: resolveLegacyCmsAsset(item?.image, fallbackCollections[idx % fallbackCollections.length].image),
+                path: ensureGoldCategoryPath(item?.path, item?.categoryId),
+                extraImages: extraImages.length > 0 ? extraImages : thumbDefaults
+            };
+        });
+    }, [sectionData]);
+
+    const scroll = (direction) => {
+        if (!scrollRef.current) return;
+        const scrollAmount = window.innerWidth > 768 ? 600 : 300;
+        scrollRef.current.scrollLeft += direction === 'left' ? -scrollAmount : scrollAmount;
     };
 
     return (
         <section className="py-4 md:py-16 bg-white select-none overflow-hidden">
             <div className="container mx-auto px-4 max-w-[1450px]">
-                
-                {/* Horizontal Scroll Area */}
                 <div className="relative group/main">
-                    
-                    {/* Navigation Arrows */}
-                    <button 
+                    <button
                         onClick={() => scroll('left')}
                         className="absolute left-0 top-1/2 -translate-y-1/2 z-30 w-10 h-10 bg-white/90 rounded-full hidden md:flex items-center justify-center shadow-md opacity-0 group-hover/main:opacity-100 transition-opacity border border-gray-100"
                     >
                         <ChevronLeft className="w-5 h-5 text-black" />
                     </button>
 
-                    <button 
+                    <button
                         onClick={() => scroll('right')}
                         className="absolute right-0 top-1/2 -translate-y-1/2 z-30 w-10 h-10 bg-white/90 rounded-full hidden md:flex items-center justify-center shadow-md opacity-0 group-hover/main:opacity-100 transition-opacity border border-gray-100"
                     >
                         <ChevronRight className="w-5 h-5 text-black" />
                     </button>
 
-                    <div 
+                    <div
                         ref={scrollRef}
                         className="flex overflow-x-auto gap-3 md:gap-8 pb-10 md:pb-16 hide-scrollbar scroll-smooth snap-x snap-mandatory"
                     >
-                        {goldCollections.map((col, idx) => (
+                        {collections.map((col, idx) => (
                             <div key={col.id} className="flex-shrink-0 w-[88vw] md:w-[680px] snap-start relative px-1">
-                                {/* Main Banner Card */}
-                                <motion.div 
+                                <motion.div
                                     initial={{ opacity: 0, y: 30 }}
                                     whileInView={{ opacity: 1, y: 0 }}
                                     viewport={{ once: true }}
                                     transition={{ duration: 0.8, delay: idx * 0.1 }}
-                                    onClick={() => navigate(col.link)}
+                                    onClick={() => navigate(col.path)}
                                     className="relative h-[200px] sm:h-[220px] md:h-[340px] rounded-[24px] md:rounded-[32px] overflow-hidden cursor-pointer shadow-2xl group/card border border-gray-100"
                                 >
-                                    <img 
-                                        src={col.image} 
+                                    <img
+                                        src={col.image}
                                         alt={col.title}
                                         className="absolute inset-0 w-full h-full object-cover transition-transform duration-[2s] group-hover/card:scale-110"
                                     />
-                                    {/* Glassy Overlay */}
                                     <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
-                                    
-                                    {/* Text Content */}
+
                                     <div className="absolute inset-y-0 left-5 md:left-14 flex flex-col justify-center max-w-[78%] md:max-w-[70%] text-white">
                                         <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-3 md:px-4 py-0.5 md:py-1 self-start mb-2.5 md:mb-4">
                                             <span className="text-[9px] md:text-[12px] font-bold tracking-[0.2em] text-[#D4AF37] uppercase">
@@ -121,11 +147,10 @@ const GoldExploreCollections = () => {
                                     </div>
                                 </motion.div>
 
-                                {/* Item Thumbnails */}
                                 <div className="absolute -bottom-6 md:-bottom-10 left-6 md:left-16 flex gap-2.5 md:gap-5 z-20">
-                                    {col.items.map((img, i) => (
+                                    {(col.extraImages || []).slice(0, 3).map((img, i) => (
                                         <motion.div
-                                            key={i}
+                                            key={`${col.id}-${i}`}
                                             initial={{ opacity: 0, scale: 0.8, y: 10 }}
                                             whileInView={{ opacity: 1, scale: 1, y: 0 }}
                                             viewport={{ once: true }}
@@ -158,4 +183,3 @@ const GoldExploreCollections = () => {
 };
 
 export default GoldExploreCollections;
-

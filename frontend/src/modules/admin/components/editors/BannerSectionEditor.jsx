@@ -22,6 +22,7 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     const pageKey = sectionData?.pageKey || '';
     const isWomenPersonalizedBanner = sectionKey === 'personalized-banner' && pageKey === 'shop-women';
     const isFamilyPromoBanner = sectionKey === 'family-promo-banner' && pageKey === 'shop-family';
+    const isGoldPageBanner = pageKey === 'gold-collection';
     const isSingleBannerSection = isWomenPersonalizedBanner || isFamilyPromoBanner;
 
     const initialItems = useMemo(() => {
@@ -78,6 +79,14 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     const buildFamilyCategoryPath = (categoryId, currentPath = '') => {
         if (categoryId) return `/shop?source=family&filter=family&category=${encodeURIComponent(categoryId)}`;
         return currentPath || '/shop?source=family&filter=family';
+    };
+
+    const ensureGoldPath = (rawPath = '') => {
+        const source = String(rawPath || '').trim();
+        if (!source) return '/shop?metal=gold';
+        if (!source.startsWith('/shop')) return source;
+        if (/([?&])metal=gold(&|$)/i.test(source)) return source;
+        return `${source}${source.includes('?') ? '&' : '?'}metal=gold`;
     };
 
     const updateItem = (id, field, value) => {
@@ -146,11 +155,11 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                     sortOrder: index,
                     subtitle: item.subtitle || '',
                     ctaLabel: item.ctaLabel || 'Shop Collection',
-                    price: item.subtitle || '',
+                    price: item.price || '',
                     categoryId: isFamilyPromoBanner ? (item.categoryId || null) : item.categoryId,
                     path: isFamilyPromoBanner
                         ? buildFamilyCategoryPath(item.categoryId, item.path)
-                        : (item.path || '/shop')
+                        : (isGoldPageBanner ? ensureGoldPath(item.path) : (item.path || '/shop'))
                 }))
             });
         } finally {

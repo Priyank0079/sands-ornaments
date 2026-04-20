@@ -5,10 +5,10 @@ import { useShop } from '../../../context/ShopContext';
 
 import ProductCard from './ProductCard';
 
-const BestStylesSection = () => {
+const BestStylesSection = ({ sectionData = null }) => {
     const scrollRef = useRef(null);
     const { products, activeMetal, homepageSections } = useShop();
-    const section = homepageSections?.['best-styles'];
+    const section = sectionData || homepageSections?.['best-styles'];
     const settings = section?.settings || {};
     const sectionTitle = settings.title || 'Best styles, now for less!';
     const ctaLabel = settings.ctaLabel || 'View All Collection';
