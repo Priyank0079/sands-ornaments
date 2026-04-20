@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShieldCheck, RefreshCw, RotateCcw, Star, ArrowRight } from 'lucide-react';
+import { ShieldCheck, RefreshCw, RotateCcw, Star, ArrowRight, Truck, FileText } from 'lucide-react';
 import api from '../../../services/api';
 import GoldExploreCollections from '../components/GoldExploreCollections';
 import BestStylesSection from '../components/BestStylesSection';
@@ -138,11 +138,24 @@ const GoldJewelleryPage = () => {
         const configured = Array.isArray(trustSection?.items) ? trustSection.items : [];
         if (configured.length === 0) return TRUST_BADGES;
 
+        const iconLookup = {
+            'ShieldCheck': ShieldCheck,
+            'RefreshCw': RefreshCw,
+            'RotateCcw': RotateCcw,
+            'Star': Star,
+            'Truck': Truck,
+            'FileText': FileText,
+            'gem': ShieldCheck,
+            'rotate-ccw': RefreshCw,
+            'truck': Truck,
+            'file-text': FileText
+        };
+
         return configured.map((item, idx) => ({
             id: item?.itemId || item?.id || `gold-trust-${idx + 1}`,
-            icon: TRUST_BADGES[idx % TRUST_BADGES.length].icon,
-            title: item?.name || item?.label || TRUST_BADGES[idx % TRUST_BADGES.length].title,
-            subtitle: item?.subtitle || item?.description || TRUST_BADGES[idx % TRUST_BADGES.length].subtitle,
+            icon: iconLookup[item.iconName] || iconLookup[item.iconKey] || TRUST_BADGES[idx % TRUST_BADGES.length].icon,
+            title: item.name || item.label || TRUST_BADGES[idx % TRUST_BADGES.length].title,
+            subtitle: item.subtitle || TRUST_BADGES[idx % TRUST_BADGES.length].subtitle,
             image: item?.image ? resolveLegacyCmsAsset(item.image, '') : ''
         }));
     }, [sectionMap]);

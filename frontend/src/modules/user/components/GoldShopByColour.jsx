@@ -38,7 +38,7 @@ const GoldShopByColour = ({ sectionData = null }) => {
             name: item?.name || item?.label || fallbackColors[idx % fallbackColors.length].name,
             image: resolveLegacyCmsAsset(item?.image, fallbackColors[idx % fallbackColors.length].image),
             path: ensureGoldCategoryPath(item?.path || fallbackColors[idx % fallbackColors.length].path, item?.categoryId || ''),
-            gradient: fallbackColors[idx % fallbackColors.length].gradient,
+            gradient: item?.gradient || item?.colorCode || fallbackColors[idx % fallbackColors.length].gradient,
         }));
     }, [sectionData]);
 

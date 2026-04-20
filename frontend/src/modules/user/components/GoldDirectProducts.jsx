@@ -21,6 +21,22 @@ const normalizeIdValue = (value) => {
     return String(value).trim();
 };
 
+const normalizeCategoryCandidates = (value) => {
+    if (!value) return [];
+    if (typeof value === 'string') return [value];
+    if (typeof value === 'object') {
+        return [
+            value._id,
+            value.id,
+            value.slug,
+            value.name,
+            value.categoryId,
+            value.category
+        ].filter(Boolean);
+    }
+    return [String(value)];
+};
+
 const parseCategoryFromPath = (path = '') => {
     const source = String(path || '');
     if (!source.includes('category=')) return '';
@@ -32,21 +48,31 @@ const parseCategoryFromPath = (path = '') => {
     }
 };
 
-const getProductMetal = (product = {}) => {
-    const explicitMetal = String(product?.metal || product?.material || '').trim().toLowerCase();
-    if (explicitMetal) return explicitMetal;
-    if (product?.goldCategory) return 'gold';
-    return '';
+const isGoldProduct = (product = {}) => {
+    const metalBlob = [
+        product?.metal,
+        product?.material,
+        product?.goldCategory
+    ].map((value) => String(value || '').trim().toLowerCase()).join(' ');
+    return metalBlob.includes('gold');
 };
 
 const matchesCategory = (product = {}, categoryId = '') => {
     const target = normalizeToken(categoryId);
     if (!target) return true;
+
+    const navCategoryTokens = Array.isArray(product.navShopByCategory)
+        ? product.navShopByCategory
+            .flatMap((entry) => normalizeCategoryCandidates(entry))
+            .map((entry) => normalizeToken(entry))
+            .filter(Boolean)
+        : [];
+
     const tokens = new Set([
         normalizeToken(product.categoryId),
         normalizeToken(product.category),
         normalizeToken(product.categorySlug),
-        ...((product.navShopByCategory || []).map((id) => normalizeToken(id)))
+        ...navCategoryTokens
     ].filter(Boolean));
     return tokens.has(target);
 };
@@ -70,7 +96,7 @@ const GoldDirectProducts = ({ sectionData = null }) => {
 
     const displayProducts = useMemo(() => {
         const allProducts = Array.isArray(products) ? products : [];
-        const goldProducts = allProducts.filter((p) => getProductMetal(p) === 'gold');
+        const goldProducts = allProducts.filter((p) => isGoldProduct(p));
 
         if (resolvedSettings.sourceMode === 'manual') {
             const pinnedIds = (Array.isArray(sectionData?.items) ? sectionData.items : [])
@@ -88,7 +114,7 @@ const GoldDirectProducts = ({ sectionData = null }) => {
             const pinnedMap = new Map(allProducts.map((product) => [String(product.id || product._id), product]));
             const manualProducts = pinnedIds
                 .map((id) => pinnedMap.get(String(id)))
-                .filter((product) => Boolean(product) && getProductMetal(product) === 'gold')
+                .filter((product) => Boolean(product) && isGoldProduct(product))
                 .slice(0, resolvedSettings.productLimit);
 
             if (manualProducts.length > 0) return manualProducts;

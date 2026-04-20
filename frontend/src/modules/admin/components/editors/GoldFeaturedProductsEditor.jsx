@@ -54,14 +54,27 @@ const resolveCategoryId = (hint, categories = []) => {
     return '';
 };
 
-const uniqueIds = (values = []) => [...new Set((values || []).map((value) => String(value || '').trim()).filter(Boolean))];
+const uniqueIds = (values = []) => [
+    ...new Set(
+        (values || [])
+            .map((value) => String(value || '').trim())
+            .filter((value) => Boolean(value) && value !== '[object Object]')
+    )
+];
+
+const normalizeProductId = (value) => {
+    if (!value) return '';
+    if (typeof value === 'string') return value.trim();
+    if (typeof value === 'object') return String(value._id || value.id || '').trim();
+    return String(value).trim();
+};
 
 const initialSelectedIds = (sectionData) => {
     const directProductIds = (Array.isArray(sectionData?.items) ? sectionData.items : [])
         .flatMap((item) => {
             const ids = [];
-            if (item?.productId) ids.push(String(item.productId));
-            if (Array.isArray(item?.productIds)) ids.push(...item.productIds.map((id) => String(id)));
+            if (item?.productId) ids.push(normalizeProductId(item.productId));
+            if (Array.isArray(item?.productIds)) ids.push(...item.productIds.map((id) => normalizeProductId(id)));
             if (item?.path) ids.push(...parseProductIdsFromPath(item.path));
             return ids;
         });

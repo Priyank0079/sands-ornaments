@@ -15,6 +15,17 @@ const fallbackCollections = [
     { id: 6, title: 'Luxury Ring Sets', image: ringGreen, path: '/shop?category=Rings&search=classic' }
 ];
 
+const ensureGoldCategoryPath = (path, categoryId = '') => {
+    const normalizedCategory = String(categoryId || '').trim();
+    const source = String(path || '').trim();
+    const queryString = source.startsWith('/shop') && source.includes('?') ? source.split('?')[1] : '';
+    const params = new URLSearchParams(queryString);
+    params.set('metal', 'gold');
+    if (normalizedCategory) params.set('category', normalizedCategory);
+    const query = params.toString();
+    return `/shop${query ? `?${query}` : '?metal=gold'}`;
+};
+
 const GoldCuratedShowcase = ({ sectionData = null }) => {
     const navigate = useNavigate();
     const scrollRef = useRef(null);
@@ -27,7 +38,10 @@ const GoldCuratedShowcase = ({ sectionData = null }) => {
             id: item?.itemId || item?.id || `gold-curated-${idx + 1}`,
             title: item?.name || item?.label || fallbackCollections[idx % fallbackCollections.length].title,
             image: resolveLegacyCmsAsset(item?.image, fallbackCollections[idx % fallbackCollections.length].image),
-            path: item?.path || fallbackCollections[idx % fallbackCollections.length].path
+            path: ensureGoldCategoryPath(
+                item?.path || fallbackCollections[idx % fallbackCollections.length].path,
+                item?.categoryId
+            )
         }));
     }, [sectionData]);
 

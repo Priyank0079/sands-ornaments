@@ -44,11 +44,16 @@ const TestimonialSectionEditor = ({ sectionData, onSave, defaultItems = [] }) =>
     }, [defaultItems, sectionData?.items]);
 
     const [items, setItems] = useState(initialItems);
+    const [settings, setSettings] = useState(sectionData.settings || {});
 
     const updateItem = (id, field, value) => {
         setItems((prev) => prev.map((item) => (
             item.id === id ? { ...item, [field]: value } : item
         )));
+    };
+
+    const handleSettingChange = (field, value) => {
+        setSettings((prev) => ({ ...prev, [field]: value }));
     };
 
     const handleImageUpload = async (id, file) => {
@@ -88,15 +93,24 @@ const TestimonialSectionEditor = ({ sectionData, onSave, defaultItems = [] }) =>
             return;
         }
 
-        onSave({ items: cleanedItems });
+        onSave({ 
+            items: cleanedItems,
+            settings: settings
+        });
     };
+
+    const isGoldPage = sectionData.pageKey === 'gold-collection';
 
     return (
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="px-6 md:px-8 py-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                    <h3 className="text-xl md:text-2xl font-bold text-[#3E2723]">Testimonial Section</h3>
-                    <p className="text-sm text-gray-500 mt-1">Manage customer stories while keeping the homepage testimonial cards visually consistent.</p>
+                    <h3 className="text-xl md:text-2xl font-bold text-[#3E2723]">
+                        {isGoldPage ? 'Gold Testimonials' : 'Testimonial Section'}
+                    </h3>
+                    <p className="text-sm text-gray-500 mt-1">
+                        Manage customer stories while keeping the {isGoldPage ? 'Gold Page' : 'homepage'} testimonial cards visually consistent.
+                    </p>
                 </div>
                 <div className="flex gap-3">
                     <button
@@ -118,6 +132,20 @@ const TestimonialSectionEditor = ({ sectionData, onSave, defaultItems = [] }) =>
             </div>
 
             <div className="p-6 md:p-8 space-y-6">
+                {/* Section Settings */}
+                <div className="bg-[#FAF9F6] rounded-2xl p-5 border border-gray-100">
+                    <h4 className="text-xs font-bold uppercase tracking-widest text-[#8D6E63] mb-4">Section Header</h4>
+                    <div className="max-w-md">
+                        <Input
+                            label="Section Title"
+                            value={settings.title || ''}
+                            onChange={(e) => handleSettingChange('title', e.target.value)}
+                            placeholder={isGoldPage ? 'Moments, Made by Heer' : 'Customer Stories'}
+                        />
+                    </div>
+                </div>
+
+                <div className="space-y-6">
                 {items.map((item, index) => (
                     <div key={item.id} className="rounded-2xl border border-[#EFE3DF] bg-[#FFFCFB] p-5 md:p-6">
                         <div className="flex items-start justify-between gap-4 mb-5">
@@ -209,6 +237,7 @@ const TestimonialSectionEditor = ({ sectionData, onSave, defaultItems = [] }) =>
                         </div>
                     </div>
                 ))}
+                </div>
             </div>
         </div>
     );

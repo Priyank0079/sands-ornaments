@@ -15,6 +15,17 @@ const BONDS = [
     { id: 4, label: 'Sister', image: giftSister, path: '/shop?search=sister&metal=gold' }
 ];
 
+const ensureGoldCategoryPath = (rawPath, categoryId = '') => {
+    const source = String(rawPath || '/shop').trim();
+    const queryString = source.startsWith('/shop') && source.includes('?') ? source.split('?')[1] : '';
+    const params = new URLSearchParams(queryString);
+    params.set('metal', 'gold');
+    const normalizedCategoryId = String(categoryId || '').trim();
+    if (normalizedCategoryId) params.set('category', normalizedCategoryId);
+    const query = params.toString();
+    return `/shop${query ? `?${query}` : '?metal=gold'}`;
+};
+
 const CuratedForEveryBond = ({ sectionData = null }) => {
     const bonds = useMemo(() => {
         const configured = Array.isArray(sectionData?.items) ? sectionData.items : [];
@@ -24,7 +35,7 @@ const CuratedForEveryBond = ({ sectionData = null }) => {
             id: item?.itemId || item?.id || `gold-bond-${idx + 1}`,
             label: item?.name || item?.label || BONDS[idx % BONDS.length].label,
             image: resolveLegacyCmsAsset(item?.image, BONDS[idx % BONDS.length].image),
-            path: item?.path || BONDS[idx % BONDS.length].path
+            path: ensureGoldCategoryPath(item?.path || BONDS[idx % BONDS.length].path, item?.categoryId || '')
         }));
     }, [sectionData]);
 

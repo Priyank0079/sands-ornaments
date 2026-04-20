@@ -1440,7 +1440,12 @@ const goldCollectionSections = [
     isActive: true,
     sortOrder: 5,
     settings: {},
-    items: []
+    items: [
+      { id: 'trust-1', name: '100% Certified Lab', subtitle: 'Grown Diamonds', iconName: 'ShieldCheck' },
+      { id: 'trust-2', name: 'Lifetime Exchange', subtitle: '& Buyback', iconName: 'RefreshCw' },
+      { id: 'trust-3', name: 'Easy 30', subtitle: 'Days Return', iconName: 'RotateCcw' },
+      { id: 'trust-4', name: 'B I S', subtitle: 'Hallmark', iconName: 'Star' }
+    ]
   },
   {
     pageKey: 'gold-collection',
@@ -1480,7 +1485,12 @@ const goldCollectionSections = [
     isActive: true,
     sortOrder: 9,
     settings: {},
-    items: []
+    items: [
+      { id: 'gold-color-1', name: 'Yellow Gold', image: categoryGoldPendant, gradient: 'bg-gradient-to-tr from-[#DEB36D] to-[#F7E2AF]', path: '/shop?metal=gold&search=Yellow+Gold' },
+      { id: 'gold-color-2', name: 'Rose Gold', image: categoryGoldBracelet, gradient: 'bg-gradient-to-tr from-[#E6A0A0] to-[#FAD4D4]', path: '/shop?metal=gold&search=Rose+Gold' },
+      { id: 'gold-color-3', name: 'White Gold', image: categoryPersonalised, gradient: 'bg-gradient-to-tr from-[#C0C0C0] to-[#E8E8E8]', path: '/shop?metal=gold&search=White+Gold' },
+      { id: 'gold-color-4', name: 'Dual Tone', image: categoryGoldPendant, gradient: 'bg-gradient-to-tr from-[#E8C59A] via-[#E8E8E8] to-[#E6A0A0]', path: '/shop?metal=gold&search=Dual+Tone' }
+    ]
   },
   {
     pageKey: 'gold-collection',
@@ -1499,8 +1509,38 @@ const goldCollectionSections = [
     label: 'Gold Testimonials',
     isActive: true,
     sortOrder: 11,
-    settings: {},
-    items: []
+    settings: {
+        title: 'Moments, Made by Heer'
+    },
+    items: [
+      {
+        id: 'gold-testimonial-1',
+        name: 'Shashi',
+        subtitle: 'Verified Buyer',
+        image: testimonialCustomer1,
+        rating: 5,
+        description: 'This time for our 5th year anniversary I wanted to gift her something different. Glad I got to custom make a modern solitaire ring for her...simple yet different, and exactly what I had pictured.',
+        location: 'Mumbai'
+      },
+      {
+        id: 'gold-testimonial-2',
+        name: 'Renuka',
+        subtitle: 'Verified Buyer',
+        image: testimonialCustomer2,
+        rating: 5,
+        description: 'Most gold rings for men look dated. I wanted to gift him something that matches the wedding ring he got me too. Finally got to know SANDS\' gold made-to-order option.',
+        location: 'Mumbai'
+      },
+      {
+        id: 'gold-testimonial-3',
+        name: 'Priya',
+        subtitle: 'Verified Buyer',
+        image: testimonialCustomer3,
+        rating: 5,
+        description: 'Wanted something special and matchy for my sister. So I got these rings custom-made with our coloured diamonds. And well, diamonds are a girl\'s best friend for a reason!',
+        location: 'Mumbai'
+      }
+    ]
   },
   {
     pageKey: 'gold-collection',
@@ -1541,6 +1581,9 @@ const goldCollectionSections = [
     sortOrder: 15,
     settings: {
       title: 'All Jewellery',
+      eyebrow: 'Our Collection',
+      sourceMode: 'category',
+      categoryId: '',
       productLimit: 4
     },
     items: []
