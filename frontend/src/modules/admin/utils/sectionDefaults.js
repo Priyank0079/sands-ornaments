@@ -407,6 +407,7 @@ const homeSections = [
     settings: {
       title: 'Best styles, now for less!',
       ctaLabel: 'View All Collection',
+      ctaPath: '/shop',
       productLimit: 6
     },
     items: []
@@ -1428,6 +1429,7 @@ const goldCollectionSections = [
     settings: {
       title: 'Best styles, now for less!',
       ctaLabel: 'View All Collection',
+      ctaPath: '/shop?metal=gold',
       productLimit: 6
     },
     items: []

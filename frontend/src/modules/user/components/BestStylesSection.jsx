@@ -5,13 +5,26 @@ import { useShop } from '../../../context/ShopContext';
 
 import ProductCard from './ProductCard';
 
+const ensureGoldPath = (rawPath = '') => {
+    const source = String(rawPath || '').trim();
+    if (!source) return '/shop?metal=gold';
+    if (!source.startsWith('/shop')) return source;
+    if (/([?&])metal=gold(&|$)/i.test(source)) return source;
+    return `${source}${source.includes('?') ? '&' : '?'}metal=gold`;
+};
+
 const BestStylesSection = ({ sectionData = null }) => {
     const scrollRef = useRef(null);
     const { products, activeMetal, homepageSections } = useShop();
     const section = sectionData || homepageSections?.['best-styles'];
     const settings = section?.settings || {};
+    const isGoldSection = section?.pageKey === 'gold-collection' || String(section?.sectionId || '').startsWith('gold-collection:');
     const sectionTitle = settings.title || 'Best styles, now for less!';
+    const sectionSubtitle = settings.subtitle || '';
     const ctaLabel = settings.ctaLabel || 'View All Collection';
+    const ctaPath = isGoldSection
+        ? ensureGoldPath(settings.ctaPath || '/shop?metal=gold')
+        : (settings.ctaPath || '/shop');
     const productLimit = Math.max(1, Number(settings.productLimit) || 6);
 
     const dynamicProducts = useMemo(() => {
@@ -61,7 +74,7 @@ const BestStylesSection = ({ sectionData = null }) => {
         };
 
         const matchingMetalProducts = products.filter((product) => {
-            if (activeMetal === 'gold') {
+            if (isGoldSection || activeMetal === 'gold') {
                 return getProductMetal(product) === 'gold';
             }
             return getProductMetal(product) !== 'gold';
@@ -99,7 +112,7 @@ const BestStylesSection = ({ sectionData = null }) => {
                 return b.originalPrice - a.originalPrice;
             })
             .slice(0, productLimit);
-    }, [activeMetal, productLimit, products]);
+    }, [activeMetal, isGoldSection, productLimit, products]);
 
     const scroll = (direction) => {
         if (scrollRef.current) {
@@ -118,7 +131,10 @@ const BestStylesSection = ({ sectionData = null }) => {
                         <h2 className="text-[20px] md:text-[24px] font-sans font-medium text-gray-900 tracking-tight">
                             {sectionTitle}
                         </h2>
-                        <Link to="/shop" className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#8E4A50] hover:underline transition-all">
+                        {sectionSubtitle ? (
+                            <p className="text-[12px] text-gray-500">{sectionSubtitle}</p>
+                        ) : null}
+                        <Link to={ctaPath} className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#8E4A50] hover:underline transition-all">
                             {ctaLabel}
                         </Link>
                     </div>

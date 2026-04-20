@@ -205,6 +205,27 @@ const buildGoldPriceRangePath = (priceMax, categoryId, currentPath) => {
   return `/shop${normalizedQuery ? `?${normalizedQuery}` : "?metal=gold"}`;
 };
 
+const TRUST_ICON_NAME_LOOKUP = {
+  shieldcheck: "ShieldCheck",
+  shield: "ShieldCheck",
+  gem: "ShieldCheck",
+  refreshcw: "RefreshCw",
+  "refresh-cw": "RefreshCw",
+  "rotate-ccw": "RefreshCw",
+  rotateccw: "RotateCcw",
+  star: "Star",
+  truck: "Truck",
+  filetext: "FileText",
+  "file-text": "FileText"
+};
+
+const normalizeTrustIconName = (value, fallback = "ShieldCheck") => {
+  const raw = String(value || "").trim();
+  if (!raw) return fallback;
+  const key = raw.replace(/[^a-zA-Z]/g, "").toLowerCase();
+  return TRUST_ICON_NAME_LOOKUP[key] || TRUST_ICON_NAME_LOOKUP[String(raw).toLowerCase()] || raw;
+};
+
 const buildCategoryLimitPath = (categoryId, limit, sort, currentPath) => {
   if (categoryId && limit) return `/shop?category=${categoryId}&limit=${limit}&sort=${sort}`;
   return currentPath || `/shop?sort=${sort}`;
@@ -602,6 +623,50 @@ const sanitizeSectionPayload = (identity, payload = {}) => {
         };
       })
       .filter(Boolean);
+  }
+
+  if (sectionKey === "gold-trust-markers" && pageKey === "gold-collection") {
+    const defaults = [
+      { id: "trust-1", name: "100% Certified Lab", subtitle: "Grown Diamonds", iconName: "ShieldCheck" },
+      { id: "trust-2", name: "Lifetime Exchange", subtitle: "& Buyback", iconName: "RefreshCw" },
+      { id: "trust-3", name: "Easy 30", subtitle: "Days Return", iconName: "RotateCcw" },
+      { id: "trust-4", name: "B I S", subtitle: "Hallmark", iconName: "Star" }
+    ];
+    const sourceItems = Array.isArray(cleaned.items) && cleaned.items.length > 0 ? cleaned.items : defaults;
+
+    cleaned.items = defaults.map((fallback, idx) => {
+      const item = sourceItems[idx] || {};
+      const name = String(item.name || item.label || fallback.name).trim();
+      const subtitle = String(item.subtitle || item.description || fallback.subtitle).trim();
+      const iconName = normalizeTrustIconName(item.iconName || item.iconKey, fallback.iconName);
+
+      return {
+        ...item,
+        itemId: item.itemId || item.id || fallback.id,
+        name: name || fallback.name,
+        label: item.label || name || fallback.name,
+        subtitle: subtitle || fallback.subtitle,
+        description: item.description || subtitle || fallback.subtitle,
+        iconName,
+        iconKey: item.iconKey || iconName,
+        sortOrder: idx
+      };
+    });
+  }
+
+  if (sectionKey === "best-styles" || sectionKey === "featured-gifts") {
+    const productLimit = parsePositiveNumber(cleaned.settings?.productLimit) || 6;
+    const title = String(cleaned.settings?.title || "Best styles, now for less!").trim() || "Best styles, now for less!";
+    const ctaLabel = String(cleaned.settings?.ctaLabel || "View All Collection").trim() || "View All Collection";
+
+    cleaned.settings = {
+      ...cleaned.settings,
+      title,
+      subtitle: String(cleaned.settings?.subtitle || "").trim(),
+      ctaLabel,
+      ctaPath: pageKey === "gold-collection" ? "/shop?metal=gold" : "/shop",
+      productLimit
+    };
   }
 
   if (sectionKey === "gold-new-launch-banner" && pageKey === "gold-collection") {

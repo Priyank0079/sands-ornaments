@@ -18,6 +18,7 @@ import MenFeaturedProductsEditor from '../components/editors/MenFeaturedProducts
 import WomenFeaturedProductsEditor from '../components/editors/WomenFeaturedProductsEditor';
 import FamilyFeaturedProductsEditor from '../components/editors/FamilyFeaturedProductsEditor';
 import GoldFeaturedProductsEditor from '../components/editors/GoldFeaturedProductsEditor';
+import GoldTrustMarkersEditor from '../components/editors/GoldTrustMarkersEditor';
 import CategoryShowcaseEditor from '../components/editors/CategoryShowcaseEditor';
 import BannerSectionEditor from '../components/editors/BannerSectionEditor';
 import BrandPromisesEditor from '../components/editors/BrandPromisesEditor';
@@ -217,6 +218,10 @@ const SectionEditor = () => {
 
         if ((sectionData.sectionKey || id) === 'gold-products-listing' && pageKey === 'gold-collection') {
             return <GoldFeaturedProductsEditor sectionData={sectionData} onSave={handleSave} defaultSection={defaultSection} />;
+        }
+
+        if ((sectionData.sectionKey || id) === 'gold-trust-markers' && pageKey === 'gold-collection') {
+            return <GoldTrustMarkersEditor sectionData={sectionData} onSave={handleSave} defaultItems={defaultItems} />;
         }
 
         const supportedSections = [

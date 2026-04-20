@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { Input } from '../common/FormControls';
 
 const BestStylesSectionEditor = ({ sectionData, onSave, defaultSection = {} }) => {
+    const isGoldPage = sectionData?.pageKey === 'gold-collection';
     const initialSettings = useMemo(() => {
         const fallbackSettings = defaultSection?.settings || {};
         const currentSettings = sectionData?.settings || {};
@@ -13,7 +14,7 @@ const BestStylesSectionEditor = ({ sectionData, onSave, defaultSection = {} }) =
             ctaLabel: currentSettings.ctaLabel || fallbackSettings.ctaLabel || 'View All Collection',
             productLimit: String(currentSettings.productLimit || fallbackSettings.productLimit || 6)
         };
-    }, [defaultSection?.settings, sectionData?.settings]);
+    }, [defaultSection?.settings, isGoldPage, sectionData?.settings]);
 
     const [settings, setSettings] = useState(initialSettings);
 
@@ -35,6 +36,7 @@ const BestStylesSectionEditor = ({ sectionData, onSave, defaultSection = {} }) =
                 title: settings.title?.trim() || '',
                 subtitle: settings.subtitle?.trim() || '',
                 ctaLabel: settings.ctaLabel?.trim() || 'View All Collection',
+                ctaPath: isGoldPage ? '/shop?metal=gold' : '/shop',
                 productLimit: parsedLimit
             }
         });
