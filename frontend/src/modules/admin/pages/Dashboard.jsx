@@ -4,7 +4,7 @@ import api from '../../../services/api';
 import {
     Plus, Ticket, Clock, RotateCcw, AlertTriangle,
     Users, IndianRupee, ShoppingBag,
-    ChevronRight, Store
+    Store
 } from 'lucide-react';
 import AdminStatsCard from '../components/AdminStatsCard';
 import AdminTable from '../components/AdminTable';
@@ -34,40 +34,50 @@ const AdminDashboard = () => {
         revenue: 0,
         recent: []
     });
+    const [loading, setLoading] = React.useState(true);
+    const [errorMessage, setErrorMessage] = React.useState('');
+
+    const fetchStats = React.useCallback(async () => {
+        setLoading(true);
+        setErrorMessage('');
+        try {
+            const res = await api.get('admin/stats');
+            if (!res.data.success) {
+                setErrorMessage('Unable to load dashboard stats.');
+                return;
+            }
+            const payload = res.data.data || {};
+            const summary = payload.summary || {};
+            const pendingFromDistribution = (payload.statusDistribution || []).reduce((sum, item) => (
+                ['Processing', 'Confirmed', 'Packed'].includes(item?._id) ? sum + Number(item.count || 0) : sum
+            ), 0);
+            const recentOrders = Array.isArray(payload.recentOrders) ? payload.recentOrders : [];
+
+            setStatsData({
+                users: Number(summary.totalUsers || 0),
+                orders: Number(summary.totalOrders || 0),
+                pendingOrders: Number(payload.pendingOrders ?? pendingFromDistribution ?? 0),
+                sellers: Number(summary.totalSellers || 0),
+                revenue: Number(summary.totalRevenue || 0),
+                recent: recentOrders.map((order) => ({
+                    id: order.orderId || order._id || 'N/A',
+                    date: order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A',
+                    customer: order.customerName || order.userId?.name || order.user?.name || order.shippingAddress?.firstName || 'Customer',
+                    amount: formatCurrency(order.total || order.totalAmount || 0),
+                    status: order.status || order.orderStatus || 'Processing'
+                }))
+            });
+        } catch (err) {
+            console.error('Failed to fetch admin stats:', err);
+            setErrorMessage('Unable to load dashboard stats. Please retry.');
+        } finally {
+            setLoading(false);
+        }
+    }, []);
 
     React.useEffect(() => {
-        const fetchStats = async () => {
-            try {
-                const res = await api.get('admin/stats');
-                if (res.data.success) {
-                    const payload = res.data.data || {};
-                    const summary = payload.summary || {};
-                    const recentOrders = payload.recentOrders || [];
-
-                    setStatsData({
-                        users: summary.totalUsers || 0,
-                        orders: summary.totalOrders || 0,
-                        pendingOrders: (payload.statusDistribution || []).reduce((sum, item) => (
-                            ['Processing', 'Confirmed', 'Packed'].includes(item?._id) ? sum + Number(item.count || 0) : sum
-                        ), 0),
-                        sellers: 0,
-                        revenue: summary.totalRevenue || 0,
-                        recent: recentOrders.map((order) => ({
-                            id: order.orderId || order._id,
-                            date: new Date(order.createdAt).toLocaleDateString(),
-                            customer: order.customerName || order.userId?.name || order.user?.name || order.shippingAddress?.firstName || 'Customer',
-                            amount: formatCurrency(order.total || order.totalAmount || 0),
-                            status: order.status || order.orderStatus || 'Processing'
-                        }))
-                    });
-                }
-            } catch (err) {
-                console.error('Failed to fetch admin stats:', err);
-            }
-        };
-
         fetchStats();
-    }, []);
+    }, [fetchStats]);
 
     const quickActions = [
         { label: 'ADD PRODUCT', icon: Plus, bg: 'bg-[#F0FDF4]', text: 'text-emerald-500', path: '/admin/products/new' },
@@ -129,6 +139,18 @@ const AdminDashboard = () => {
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mt-1">PLATFORM ANALYTICS & QUICK CONTROLS</p>
             </div>
 
+            {errorMessage && (
+                <div className="rounded-xl border border-red-200 bg-red-50 p-4 flex items-center justify-between gap-4">
+                    <p className="text-sm font-semibold text-red-700">{errorMessage}</p>
+                    <button
+                        onClick={fetchStats}
+                        className="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-bold uppercase tracking-wide hover:bg-red-700"
+                    >
+                        Retry
+                    </button>
+                </div>
+            )}
+
             <div>
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 text-left">QUICK MANAGEMENT</p>
                 <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
@@ -183,7 +205,11 @@ const AdminDashboard = () => {
                         </div>
                         <button onClick={() => navigate('/admin/orders')} className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest hover:text-emerald-700">VIEW ALL</button>
                     </div>
-                    <AdminTable columns={orderColumns} data={statsData.recent} />
+                    <AdminTable
+                        columns={orderColumns}
+                        data={statsData.recent}
+                        emptyMessage={loading ? 'Loading recent orders...' : 'No Data Available'}
+                    />
                 </div>
             </div>
         </div>
