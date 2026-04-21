@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Heart, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -6,7 +6,6 @@ import { ShopContext } from '../../../../context/ShopContext';
 import { useAuth } from '../../../../context/AuthContext';
 import { buildMenShopPath, getMenLoginRedirect, storeMenPendingCartItem } from '../../utils/menNavigation';
 import toast from 'react-hot-toast';
-import api from '../../../../services/api';
 
 // Reusing existing assets that fit the white-background minimalist theme
 import prodRing from '@assets/men_prod_ring.png';
@@ -124,35 +123,15 @@ const discountTextFor = (product) => {
     return 'Best Price';
 };
 
-const MenFeaturedProducts = () => {
+const MenFeaturedProducts = ({ sectionData }) => {
     const navigate = useNavigate();
     const { addToCart, products } = useContext(ShopContext);
     const { user } = useAuth();
-    const [sectionData, setSectionData] = useState(null);
 
     const redirectToLogin = () => {
         toast.error('Please login to continue');
         navigate(getMenLoginRedirect());
     };
-
-    useEffect(() => {
-        const fetchSection = async () => {
-            try {
-                const res = await api.get('public/cms/pages/shop-men');
-                if (!res?.data?.success) return;
-                const sections = res.data.data?.sections || [];
-                const featuredSection = sections.find((section) => (
-                    (section.sectionKey || section.sectionId) === 'products-listing'
-                ));
-                if (featuredSection) {
-                    setSectionData(featuredSection);
-                }
-            } catch (err) {
-                console.error('Failed to fetch men featured products section:', err);
-            }
-        };
-        fetchSection();
-    }, []);
 
     const resolvedSettings = useMemo(() => {
         const settings = sectionData?.settings || {};

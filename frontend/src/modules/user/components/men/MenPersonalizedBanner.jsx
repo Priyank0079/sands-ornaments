@@ -1,34 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { buildMenShopPath } from '../../utils/menNavigation';
-import api from '../../../../services/api';
 import { resolveLegacyCmsAsset } from '../../utils/legacyCmsAssets';
 
 // Import image
 import personalizedImg from '@assets/men/personalized_full_banner.png';
 
-const MenPersonalizedBanner = () => {
-    const [sectionData, setSectionData] = useState(null);
-
-    useEffect(() => {
-        const fetchPersonalizedBanner = async () => {
-            try {
-                const res = await api.get('public/cms/pages/shop-men');
-                if (res.data.success) {
-                    const sections = res.data.data?.sections || [];
-                    const section = sections.find((entry) => (
-                        (entry.sectionKey || entry.sectionId) === 'personalized-banner'
-                    ));
-                    if (section) setSectionData(section);
-                }
-            } catch (err) {
-                console.error('Failed to fetch men personalized banner section:', err);
-            }
-        };
-
-        fetchPersonalizedBanner();
-    }, []);
+const MenPersonalizedBanner = ({ sectionData }) => {
 
     const resolvedItem = useMemo(() => {
         const configured = Array.isArray(sectionData?.items) ? sectionData.items[0] : null;

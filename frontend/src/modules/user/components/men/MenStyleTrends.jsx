@@ -1,8 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { buildMenShopPath } from '../../utils/menNavigation';
-import api from '../../../../services/api';
 import { resolveLegacyCmsAsset } from '../../utils/legacyCmsAssets';
 
 const fallbackTrends = [
@@ -67,27 +66,7 @@ const ensureMinimumVisibleCards = (resolved, minCount = 4) => {
     return merged;
 };
 
-const MenStyleTrends = () => {
-    const [sectionData, setSectionData] = useState(null);
-
-    useEffect(() => {
-        const fetchStyleTrends = async () => {
-            try {
-                const res = await api.get('public/cms/pages/shop-men');
-                if (res.data.success) {
-                    const sections = res.data.data?.sections || [];
-                    const section = sections.find((entry) => (
-                        (entry.sectionKey || entry.sectionId) === 'style-trends'
-                    ));
-                    if (section) setSectionData(section);
-                }
-            } catch (err) {
-                console.error('Failed to fetch men style trends section:', err);
-            }
-        };
-
-        fetchStyleTrends();
-    }, []);
+const MenStyleTrends = ({ sectionData }) => {
 
     const resolvedTrends = useMemo(() => {
         const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];

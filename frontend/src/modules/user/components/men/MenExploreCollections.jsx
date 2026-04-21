@@ -1,9 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { buildMenShopPath } from '../../utils/menNavigation';
-import api from '../../../../services/api';
 import { resolveLegacyCmsAsset } from '../../utils/legacyCmsAssets';
 
 // Asset imports
@@ -41,10 +40,9 @@ const exploreCollections = [
     }
 ];
 
-const MenExploreCollections = () => {
+const MenExploreCollections = ({ sectionData }) => {
     const navigate = useNavigate();
     const scrollRef = useRef(null);
-    const [sectionData, setSectionData] = useState(null);
 
     const resolvedTitle = sectionData?.settings?.title || 'Explore Collections';
     const resolvedCollections = useMemo(() => {
@@ -76,27 +74,6 @@ const MenExploreCollections = () => {
 
         return normalizedConfigured.length > 0 ? normalizedConfigured : exploreCollections;
     }, [sectionData]);
-
-    useEffect(() => {
-        const fetchExploreCollectionsSection = async () => {
-            try {
-                const res = await api.get('public/cms/pages/shop-men');
-                if (res.data.success) {
-                    const sections = res.data.data?.sections || [];
-                    const exploreSection = sections.find((section) => (
-                        (section.sectionKey || section.sectionId) === 'explore-collections'
-                    ));
-                    if (exploreSection) {
-                        setSectionData(exploreSection);
-                    }
-                }
-            } catch (err) {
-                console.error('Failed to fetch men explore collections section:', err);
-            }
-        };
-
-        fetchExploreCollectionsSection();
-    }, []);
 
     const scroll = (direction) => {
         if (scrollRef.current) {

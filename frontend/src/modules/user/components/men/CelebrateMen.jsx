@@ -1,8 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { buildMenShopPath } from '../../utils/menNavigation';
-import api from '../../../../services/api';
 import { resolveLegacyCmsAsset } from '../../utils/legacyCmsAssets';
 
 // Correct path to assets (4 levels up from src/modules/user/components/men/)
@@ -18,9 +17,8 @@ const guides = [
     { id: 4, title: 'Boyfriends', image: giftBoyfriends, link: buildMenShopPath({ filter: 'boyfriends' }) }
 ];
 
-const CelebrateMen = () => {
+const CelebrateMen = ({ sectionData }) => {
     const navigate = useNavigate();
-    const [sectionData, setSectionData] = useState(null);
 
     const resolvedTitle = sectionData?.settings?.title || 'Celebrate Men';
     const resolvedSubtitle = sectionData?.settings?.subtitle || 'A Gifting Guide For Them';
@@ -50,27 +48,6 @@ const CelebrateMen = () => {
 
         return normalizedConfigured.length > 0 ? normalizedConfigured : guides;
     }, [sectionData]);
-
-    useEffect(() => {
-        const fetchCelebrateMenSection = async () => {
-            try {
-                const res = await api.get('public/cms/pages/shop-men');
-                if (res.data.success) {
-                    const sections = res.data.data?.sections || [];
-                    const celebrateSection = sections.find((section) => (
-                        (section.sectionKey || section.sectionId) === 'celebrate-men'
-                    ));
-                    if (celebrateSection) {
-                        setSectionData(celebrateSection);
-                    }
-                }
-            } catch (err) {
-                console.error('Failed to fetch celebrate men section:', err);
-            }
-        };
-
-        fetchCelebrateMenSection();
-    }, []);
 
     return (
         <section className="py-3 md:py-9 bg-[#F2E8E1]">

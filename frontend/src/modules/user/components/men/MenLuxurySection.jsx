@@ -1,8 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { buildMenShopPath } from '../../utils/menNavigation';
-import api from '../../../../services/api';
 import { resolveLegacyCmsAsset } from '../../utils/legacyCmsAssets';
 import luxuryRing from '@assets/luxury_ring_men.png';
 import luxuryGifts from '@assets/luxury_gifts_men.png';
@@ -26,9 +25,8 @@ const luxuryOffers = [
     }
 ];
 
-const MenLuxurySection = () => {
+const MenLuxurySection = ({ sectionData }) => {
     const navigate = useNavigate();
-    const [sectionData, setSectionData] = useState(null);
 
     const resolvedSectionTitle = sectionData?.settings?.title || 'Luxury Within Reach';
     const resolvedOffers = useMemo(() => {
@@ -67,27 +65,6 @@ const MenLuxurySection = () => {
 
         return normalizedConfigured.length > 0 ? normalizedConfigured : luxuryOffers;
     }, [sectionData]);
-
-    useEffect(() => {
-        const fetchMenLuxurySection = async () => {
-            try {
-                const res = await api.get('public/cms/pages/shop-men');
-                if (res.data.success) {
-                    const sections = res.data.data?.sections || [];
-                    const luxurySection = sections.find((section) => (
-                        (section.sectionKey || section.sectionId) === 'luxury-section'
-                    ));
-                    if (luxurySection) {
-                        setSectionData(luxurySection);
-                    }
-                }
-            } catch (err) {
-                console.error('Failed to fetch men luxury section:', err);
-            }
-        };
-
-        fetchMenLuxurySection();
-    }, []);
 
     return (
         <section className="pt-0 pb-2 md:pt-1 md:pb-6 bg-white">

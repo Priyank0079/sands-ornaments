@@ -1,9 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { buildMenShopPath } from '../../utils/menNavigation';
-import api from '../../../../services/api';
 import { resolveLegacyCmsAsset } from '../../utils/legacyCmsAssets';
 
 // Import existing assets from global and local folders
@@ -21,10 +20,9 @@ const collections = [
     { id: 6, title: "925 SILVER SHOP", image: men4, link: buildMenShopPath({ metal: 'silver', silverType: '925 sterling silver' }), type: 'image' }
 ];
 
-const MenCuratedCollections = () => {
+const MenCuratedCollections = ({ sectionData }) => {
     const navigate = useNavigate();
     const scrollRef = useRef(null);
-    const [sectionData, setSectionData] = useState(null);
 
     const resolvedSettings = useMemo(() => ({
         badge: sectionData?.settings?.badge || 'More Gifts for Him',
@@ -52,27 +50,6 @@ const MenCuratedCollections = () => {
 
         return normalizedConfigured.length > 0 ? normalizedConfigured : collections;
     }, [sectionData]);
-
-    useEffect(() => {
-        const fetchCuratedSection = async () => {
-            try {
-                const res = await api.get('public/cms/pages/shop-men');
-                if (res.data.success) {
-                    const sections = res.data.data?.sections || [];
-                    const curatedSection = sections.find((section) => (
-                        (section.sectionKey || section.sectionId) === 'curated-collections'
-                    ));
-                    if (curatedSection) {
-                        setSectionData(curatedSection);
-                    }
-                }
-            } catch (err) {
-                console.error('Failed to fetch men curated collections section:', err);
-            }
-        };
-
-        fetchCuratedSection();
-    }, []);
 
     const scroll = (direction) => {
         if (scrollRef.current) {

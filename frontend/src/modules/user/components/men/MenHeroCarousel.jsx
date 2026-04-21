@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { buildMenShopPath } from '../../utils/menNavigation';
-import api from '../../../../services/api';
 import { resolveLegacyCmsAsset } from '../../utils/legacyCmsAssets';
 
 import heroMenBold from '@assets/men_hero_bold.png';
@@ -47,9 +46,8 @@ const defaultSlides = slides.map((slide) => ({
     image: resolveLegacyCmsAsset(slide.image, slide.image)
 }));
 
-const MenHeroCarousel = () => {
+const MenHeroCarousel = ({ sectionData }) => {
     const [current, setCurrent] = useState(0);
-    const [sectionData, setSectionData] = useState(null);
 
     const resolvedSlides = useMemo(() => {
         const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
@@ -69,27 +67,6 @@ const MenHeroCarousel = () => {
 
         return normalizedConfigured.length > 0 ? normalizedConfigured : defaultSlides;
     }, [sectionData]);
-
-    useEffect(() => {
-        const fetchMenHeroSection = async () => {
-            try {
-                const res = await api.get('public/cms/pages/shop-men');
-                if (res.data.success) {
-                    const sections = res.data.data?.sections || [];
-                    const heroSection = sections.find((section) => (
-                        (section.sectionKey || section.sectionId) === 'hero-banners'
-                    ));
-                    if (heroSection) {
-                        setSectionData(heroSection);
-                    }
-                }
-            } catch (err) {
-                console.error('Failed to fetch men hero section:', err);
-            }
-        };
-
-        fetchMenHeroSection();
-    }, []);
 
     useEffect(() => {
         const timer = setInterval(() => {

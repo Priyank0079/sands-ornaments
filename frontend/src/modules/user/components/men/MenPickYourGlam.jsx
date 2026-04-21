@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { buildMenShopPath } from '../../utils/menNavigation';
-import api from '../../../../services/api';
 import { resolveLegacyCmsAsset } from '../../utils/legacyCmsAssets';
 
 // Asset imports
@@ -21,36 +20,16 @@ const glamItems = [
     { id: 5, title: 'Office Wear', image: officeWearImg, path: buildMenShopPath({ category: 'rings' }) },
 ];
 
-const MenPickYourGlam = () => {
+const MenPickYourGlam = ({ sectionData }) => {
     const navigate = useNavigate();
     const [activeIndex, setActiveIndex] = useState(2);
     const [isMobile, setIsMobile] = useState(false);
-    const [sectionData, setSectionData] = useState(null);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
         handleResize();
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
-    }, []);
-
-    useEffect(() => {
-        const fetchPickYourGlamSection = async () => {
-            try {
-                const res = await api.get('public/cms/pages/shop-men');
-                if (res.data.success) {
-                    const sections = res.data.data?.sections || [];
-                    const section = sections.find((entry) => (
-                        (entry.sectionKey || entry.sectionId) === 'pick-your-glam'
-                    ));
-                    if (section) setSectionData(section);
-                }
-            } catch (err) {
-                console.error('Failed to fetch pick your glam section:', err);
-            }
-        };
-
-        fetchPickYourGlamSection();
     }, []);
 
     const resolvedItems = useMemo(() => {

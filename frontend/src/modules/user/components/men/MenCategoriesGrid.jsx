@@ -1,8 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { buildMenShopPath } from '../../utils/menNavigation';
-import api from '../../../../services/api';
 
 import ringsImg from '@assets/images/men-categories/rings.png';
 import cufflinksImg from '@assets/images/men-categories/cufflinks.png';
@@ -52,9 +51,8 @@ const buildMenCategoryLink = (path, fallbackTitle) => {
     return buildMenShopPath({ category: normalizeCategorySlug(fallbackTitle) });
 };
 
-const MenCategoriesGrid = () => {
+const MenCategoriesGrid = ({ sectionData }) => {
     const navigate = useNavigate();
-    const [sectionData, setSectionData] = useState(null);
 
     const resolvedCategories = useMemo(() => {
         const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
@@ -70,27 +68,6 @@ const MenCategoriesGrid = () => {
 
         return normalizedConfigured.length > 0 ? normalizedConfigured : categories;
     }, [sectionData]);
-
-    useEffect(() => {
-        const fetchMenCategoriesSection = async () => {
-            try {
-                const res = await api.get('public/cms/pages/shop-men');
-                if (res.data.success) {
-                    const sections = res.data.data?.sections || [];
-                    const categoriesSection = sections.find((section) => (
-                        (section.sectionKey || section.sectionId) === 'categories-grid'
-                    ));
-                    if (categoriesSection) {
-                        setSectionData(categoriesSection);
-                    }
-                }
-            } catch (err) {
-                console.error('Failed to fetch men categories section:', err);
-            }
-        };
-
-        fetchMenCategoriesSection();
-    }, []);
 
     return (
         <section className="pt-2 pb-2 md:pt-8 md:pb-4 bg-white">

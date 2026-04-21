@@ -1,9 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { buildMenShopPath } from '../../utils/menNavigation';
-import api from '../../../../services/api';
 import { resolveLegacyCmsAsset } from '../../utils/legacyCmsAssets';
 
 // Import images from assets
@@ -38,27 +37,7 @@ const styles = [
     }
 ];
 
-const MenStyleGuide = () => {
-    const [sectionData, setSectionData] = useState(null);
-
-    useEffect(() => {
-        const fetchStyleGuide = async () => {
-            try {
-                const res = await api.get('public/cms/pages/shop-men');
-                if (res.data.success) {
-                    const sections = res.data.data?.sections || [];
-                    const section = sections.find((entry) => (
-                        (entry.sectionKey || entry.sectionId) === 'style-guide'
-                    ));
-                    if (section) setSectionData(section);
-                }
-            } catch (err) {
-                console.error('Failed to fetch men style guide section:', err);
-            }
-        };
-
-        fetchStyleGuide();
-    }, []);
+const MenStyleGuide = ({ sectionData }) => {
 
     const resolvedSettings = useMemo(() => ({
         title: sectionData?.settings?.title || 'STYLE GUIDE',
