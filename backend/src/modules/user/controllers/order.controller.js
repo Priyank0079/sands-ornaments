@@ -12,13 +12,19 @@ const {
   restockSerializedUnits
 } = require("../../../utils/inventorySync");
 
+const toIdSet = (values = []) =>
+  new Set((Array.isArray(values) ? values : []).map((value) => String(value)));
+
 /**
  * Shared helper: validate + compute coupon discount.
  * Returns { discount, coupon } or throws an error string.
  * BUG-12 FIX: centralised coupon validation re-used at order time.
  */
 const applyCoupon = async (couponCode, subtotal, userId, items = []) => {
-  const coupon = await Coupon.findOne({ code: couponCode.toUpperCase(), active: true });
+  const normalizedCode = String(couponCode || "").trim().toUpperCase();
+  if (!normalizedCode) return { discount: 0, coupon: null };
+
+  const coupon = await Coupon.findOne({ code: normalizedCode, active: true });
   if (!coupon) return { discount: 0, coupon: null };
 
   const now = new Date();
@@ -38,10 +44,14 @@ const applyCoupon = async (couponCode, subtotal, userId, items = []) => {
   // Applicability Checks
   let applicableTotal = subtotal;
   if (coupon.applicabilityType !== "all") {
+    const categoryIdSet = toIdSet(coupon.applicableCategories);
+    const productIdSet = toIdSet(coupon.applicableProducts);
+
     const applicableItems = items.filter(item => {
-      if (coupon.applicabilityType === "category") return coupon.applicableCategories.includes(item.categoryId);
-      if (coupon.applicabilityType === "subcategory") return coupon.applicableSubcategories.includes(item.subcategoryId);
-      if (coupon.applicabilityType === "product") return coupon.applicableProducts.includes(item.productId);
+      const itemCategoryId = String(item?.categoryId || "");
+      const itemProductId = String(item?.productId || item?.id || "");
+      if (coupon.applicabilityType === "category") return categoryIdSet.has(itemCategoryId);
+      if (coupon.applicabilityType === "product") return productIdSet.has(itemProductId);
       return false;
     });
 

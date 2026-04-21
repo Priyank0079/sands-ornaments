@@ -364,11 +364,15 @@ export const ShopProvider = ({ children }) => {
                 return null;
             }
 
-            const { order } = res.data;
+            const order = res.data?.data?.order;
+            if (!order) {
+                toast.error("Order response is incomplete. Please try again.");
+                return null;
+            }
 
             // 2. Handle Razorpay if selected
-            if (orderDetails.paymentMethod === 'razorpay' && res.data.razorpayOrderId) {
-                return await handleRazorpayPayment(res.data.razorpayOrderId, order);
+            if (orderDetails.paymentMethod === 'razorpay' && order.razorpayOrderId) {
+                return await handleRazorpayPayment(order.razorpayOrderId, order);
             }
 
             // 3. For COD or other methods, complete local flow
@@ -392,7 +396,7 @@ export const ShopProvider = ({ children }) => {
         return new Promise((resolve) => {
             const options = {
                 key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-                amount: backendOrder.totalAmount * 100,
+                amount: Math.round(Number(backendOrder.total || 0) * 100),
                 currency: "INR",
                 name: "Sands Ornaments",
                 description: "Order #" + backendOrder.orderId,
@@ -400,6 +404,7 @@ export const ShopProvider = ({ children }) => {
                 handler: async (response) => {
                     try {
                         const verifyRes = await api.post('/user/payments/verify', {
+                            orderId: backendOrder._id,
                             razorpay_order_id: response.razorpay_order_id,
                             razorpay_payment_id: response.razorpay_payment_id,
                             razorpay_signature: response.razorpay_signature
@@ -720,13 +725,16 @@ export const ShopProvider = ({ children }) => {
     const validateCoupon = async (code, cartTotal, items) => {
         try {
             // Format items for backend: { productId, variantId, quantity, price, categoryId }
-            const formattedItems = items.map(item => ({
-                productId: item.productId || item.id,
-                variantId: item.variantId || item.id,
-                quantity: item.qty || item.quantity,
-                price: item.price,
-                categoryId: item.categoryId || ''
-            }));
+            const formattedItems = (Array.isArray(items) ? items : []).map(item => {
+                const rawCategory = item.categoryId || item.category?._id || item.category?.id || item.categories?.[0]?._id || item.categories?.[0]?.id || '';
+                return {
+                    productId: item.productId || item.id || item._id,
+                    variantId: item.variantId || item.selectedVariant?.id || item.selectedVariant?._id || item.id,
+                    quantity: item.qty || item.quantity || 1,
+                    price: Number(item.price || 0),
+                    categoryId: rawCategory ? String(rawCategory) : ''
+                };
+            });
 
             const res = await api.post('/user/coupons/validate', {
                 code,
@@ -852,7 +860,7 @@ export const ShopProvider = ({ children }) => {
     };
 
     const getActiveCoupons = () => {
-        return coupons.filter(c => c.active);
+        return (coupons || []).filter(c => c?.active !== false);
     };
 
     // Persist Notifications

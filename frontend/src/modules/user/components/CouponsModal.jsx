@@ -22,7 +22,6 @@ const CouponsModal = ({ isOpen, onClose, coupons, onApply }) => {
                     exit={{ opacity: 0, scale: 0.95 }}
                     className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden"
                 >
-                    {/* Header */}
                     <div className="bg-gradient-to-r from-primary to-footerBg p-6 text-white relative">
                         <button
                             onClick={onClose}
@@ -41,7 +40,6 @@ const CouponsModal = ({ isOpen, onClose, coupons, onApply }) => {
                         </div>
                     </div>
 
-                    {/* Coupons List */}
                     <div className="p-6 space-y-4 overflow-y-auto max-h-[calc(80vh-140px)]">
                         {coupons.length === 0 ? (
                             <div className="text-center py-12">
@@ -53,12 +51,11 @@ const CouponsModal = ({ isOpen, onClose, coupons, onApply }) => {
                         ) : (
                             coupons.map((coupon) => (
                                 <div
-                                    key={coupon.id}
+                                    key={coupon.id || coupon._id || coupon.code}
                                     className="border-2 border-dashed border-primary/30 rounded-2xl p-5 bg-gradient-to-br from-primary/5 to-transparent hover:border-primary/50 transition-all group"
                                 >
                                     <div className="flex justify-between items-start gap-4">
                                         <div className="flex-1">
-                                            {/* Coupon Code */}
                                             <div className="flex items-center gap-2 mb-3">
                                                 <div className="bg-primary text-white px-4 py-2 rounded-lg font-black text-sm uppercase tracking-wider">
                                                     {coupon.code}
@@ -76,16 +73,14 @@ const CouponsModal = ({ isOpen, onClose, coupons, onApply }) => {
                                                 </button>
                                             </div>
 
-                                            {/* Description */}
                                             <p className="text-sm font-bold text-footerBg mb-2">
-                                                {coupon.description}
+                                                {coupon.description || 'Special savings on your order'}
                                             </p>
 
-                                            {/* Details */}
                                             <div className="flex flex-wrap gap-3 text-xs text-gray-500 font-medium">
-                                                <span>Min order: ₹{coupon.minOrderValue}</span>
-                                                {coupon.maxDiscount && <span>Max discount: ₹{coupon.maxDiscount}</span>}
-                                                {coupon.applicableCategories.length > 0 && (
+                                                <span>Min order: Rs {coupon.minOrderValue || 0}</span>
+                                                {coupon.maxDiscount && <span>Max discount: Rs {coupon.maxDiscount}</span>}
+                                                {Array.isArray(coupon.applicableCategories) && coupon.applicableCategories.length > 0 && (
                                                     <span className="text-primary font-bold">
                                                         Only on {coupon.applicableCategories.join(', ')}
                                                     </span>
@@ -93,7 +88,6 @@ const CouponsModal = ({ isOpen, onClose, coupons, onApply }) => {
                                             </div>
                                         </div>
 
-                                        {/* Apply Button */}
                                         <button
                                             onClick={() => {
                                                 onApply(coupon.code);

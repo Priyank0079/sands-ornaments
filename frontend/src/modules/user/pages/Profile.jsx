@@ -531,7 +531,7 @@ const Profile = () => {
     const safeOrders = Array.isArray(orders) ? orders : [];
     const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
     const safeAddresses = Array.isArray(addresses) ? addresses : [];
-    const availableCoupons = Array.isArray(coupons) ? coupons.filter(c => c.active) : [];
+    const availableCoupons = Array.isArray(coupons) ? coupons.filter(c => c?.active !== false) : [];
     const { activeTab: tabParam, subId } = useParams();
     const activeTab = tabParam || 'profile';
     const navigate = useNavigate();

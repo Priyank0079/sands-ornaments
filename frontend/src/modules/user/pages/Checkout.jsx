@@ -48,7 +48,7 @@ const Checkout = () => {
     const total = subtotal + shipping - discount;
 
     // Get active coupons from context
-    const availableCoupons = coupons ? coupons.filter(c => c.active) : [];
+    const availableCoupons = coupons ? coupons.filter(c => c.active !== false) : [];
 
     const handleApplyCoupon = async (coupon) => {
         return handleApplyCouponValidated(coupon);

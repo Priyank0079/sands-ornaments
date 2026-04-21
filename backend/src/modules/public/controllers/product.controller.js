@@ -1,8 +1,26 @@
 const Product = require("../../../models/Product");
 const Category = require("../../../models/Category");
+const Seller = require("../../../models/Seller");
 const mongoose = require("mongoose");
 const { success, error } = require("../../../utils/apiResponse");
 const { normalizeProductForResponse } = require("../../../utils/productCompatibility");
+
+const getApprovedSellerScope = async () => {
+  const approvedSellers = await Seller.find({ status: "APPROVED" }).select("_id").lean();
+  const approvedSellerIds = approvedSellers.map((seller) => seller._id);
+
+  return approvedSellerIds.length
+    ? {
+        $or: [
+          { sellerId: null },
+          { sellerId: { $exists: false } },
+          { sellerId: { $in: approvedSellerIds } }
+        ]
+      }
+    : {
+        $or: [{ sellerId: null }, { sellerId: { $exists: false } }]
+      };
+};
 
 /**
  * GET /api/products
@@ -16,14 +34,17 @@ exports.getProducts = async (req, res) => {
     } = req.query;
 
     const query = { status: "Active", active: { $ne: false } };
+    const andFilters = [await getApprovedSellerScope()];
 
     // 1. Text Search
     if (search) {
-      query.$or = [
+      andFilters.push({
+        $or: [
         { name: { $regex: search, $options: "i" } },
         { brand: { $regex: search, $options: "i" } },
         { description: { $regex: search, $options: "i" } }
-      ];
+        ]
+      });
     }
 
     // 2. Category Filter
@@ -67,6 +88,10 @@ exports.getProducts = async (req, res) => {
       }
     }
 
+    if (andFilters.length) {
+      query.$and = andFilters;
+    }
+
     // 6. Execute Query with Pagination
     const products = await Product.find(query)
       .select("name slug productCode brand images variants tags rating reviewCount categories category categorySlug categoryId navShopByCategory navGiftsFor navOccasions weight weightUnit goldCategory silverCategory material")
@@ -108,6 +133,13 @@ exports.getProductDetail = async (req, res) => {
 
     if (!product) return error(res, "Product not found", 404);
 
+    if (product.sellerId) {
+      const seller = await Seller.findById(product.sellerId).select("status").lean();
+      if (!seller || seller.status !== "APPROVED") {
+        return error(res, "Product not found", 404);
+      }
+    }
+
     return success(res, { product: normalizeProductForResponse(product) }, "Product details retrieved");
   } catch (err) { return error(res, err.message); }
 };
@@ -121,10 +153,12 @@ exports.searchProducts = async (req, res) => {
     const { q } = req.query;
     if (!q) return success(res, { suggestions: [] });
 
-    const suggestions = await Product.find({ 
+    const approvedSellerScope = await getApprovedSellerScope();
+    const suggestions = await Product.find({
       status: "Active",
       active: { $ne: false },
-      name: { $regex: q, $options: "i" } 
+      name: { $regex: q, $options: "i" },
+      ...approvedSellerScope
     })
     .select("name slug images")
     .limit(10);
