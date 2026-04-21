@@ -25,7 +25,7 @@ const parseNumber = (value) => {
 
 exports.createCategory = async (req, res) => {
   try {
-    const { name, slug, description, showInNavbar, showInCollection, sortOrder, isActive, metal } = req.body;
+    const { name, slug, description, showInNavbar, showInCollection, sortOrder, isActive } = req.body;
     
     // Auto-generate slug if not provided
     const categorySlug = slug ? slugify(slug) : slugify(name);
@@ -46,7 +46,6 @@ exports.createCategory = async (req, res) => {
       showInCollection: parseBoolean(showInCollection) ?? true,
       sortOrder: parseNumber(sortOrder) ?? 0,
       isActive: parseBoolean(isActive) ?? true,
-      metal: metal || "silver",
       image: req.file ? req.file.path : null, // Cloudinary URL
     });
 
@@ -95,7 +94,7 @@ exports.getCategoryById = async (req, res) => {
 exports.updateCategory = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, slug, description, showInNavbar, showInCollection, sortOrder, isActive, metal } = req.body;
+    const { name, slug, description, showInNavbar, showInCollection, sortOrder, isActive } = req.body;
 
     const category = await Category.findById(id);
     if (!category) return error(res, "Category not found", 404);
@@ -115,7 +114,6 @@ exports.updateCategory = async (req, res) => {
     if (showInCollection !== undefined) category.showInCollection = parseBoolean(showInCollection);
     if (sortOrder !== undefined) category.sortOrder = parseNumber(sortOrder) ?? category.sortOrder;
     if (isActive !== undefined) category.isActive = parseBoolean(isActive);
-    if (metal !== undefined) category.metal = metal;
 
     const deletedImages = Array.isArray(req.body.deletedImages)
       ? req.body.deletedImages

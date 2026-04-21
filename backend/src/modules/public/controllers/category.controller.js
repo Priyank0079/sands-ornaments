@@ -3,7 +3,16 @@ const { success, error } = require("../../../utils/apiResponse");
 
 exports.getCategories = async (req, res) => {
   try {
-    const categories = await Category.find({ isActive: true })
+    const scope = String(req.query?.scope || "all").trim().toLowerCase();
+    const query = { isActive: true };
+
+    if (scope === "navbar") {
+      query.showInNavbar = true;
+    } else if (scope === "collection") {
+      query.showInCollection = true;
+    }
+
+    const categories = await Category.find(query)
       .sort({ sortOrder: 1, name: 1 });
       
     return success(res, { categories }, "Categories retrieved successfully");

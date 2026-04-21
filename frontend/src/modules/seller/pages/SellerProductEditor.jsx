@@ -28,16 +28,12 @@ const SellerProductEditor = () => {
     }), []);
 
     const categoryApi = useMemo(() => async () => {
-        const res = await api.get('public/categories');
+        const res = await api.get('public/categories', { params: { scope: 'all' } });
         const categories = res.data?.data?.categories || res.data?.categories || [];
         return [...categories]
             .filter((category) => category?.isActive !== false)
-            .sort((a, b) => {
-                const metalA = String(a?.metal || '').toLowerCase();
-                const metalB = String(b?.metal || '').toLowerCase();
-                if (metalA !== metalB) return metalA.localeCompare(metalB);
-                return String(a?.name || '').localeCompare(String(b?.name || ''));
-            });
+            .sort((a, b) => Number(a?.sortOrder ?? 0) - Number(b?.sortOrder ?? 0)
+                || String(a?.name || '').localeCompare(String(b?.name || '')));
     }, []);
 
     return (

@@ -70,7 +70,7 @@ exports.getProducts = async (req, res) => {
     // 6. Execute Query with Pagination
     const products = await Product.find(query)
       .select("name slug productCode brand images variants tags rating reviewCount categories category categorySlug categoryId navShopByCategory navGiftsFor navOccasions weight weightUnit goldCategory silverCategory material")
-      .populate("categories", "name slug metal")
+      .populate("categories", "name slug")
       .sort(sortOption)
       .limit(limit * 1)
       .skip((page - 1) * limit);
@@ -103,7 +103,7 @@ exports.getProductDetail = async (req, res) => {
       : { ...baseQuery, slug: identifier };
 
     const product = await Product.findOne(lookup)
-      .populate("categories", "name slug metal")
+      .populate("categories", "name slug")
       .populate("sellerId", "shopName");
 
     if (!product) return error(res, "Product not found", 404);

@@ -15,7 +15,6 @@ export const useCatalogue = () => {
                 slug: cat.slug,
                 path: cat.slug,
                 image: cat.image,
-                metal: cat.metal,
                 showInNavbar: cat.showInNavbar,
                 showInCollection: cat.showInCollection,
                 isActive: cat.isActive,
@@ -41,7 +40,6 @@ export const useCatalogue = () => {
                 const rawCategoryId = rawCategory?._id || (typeof rawCategory === 'string' ? rawCategory : '');
                 const rawCategoryName = typeof rawCategory === 'string' ? rawCategory : (rawCategory?.name || '');
                 const rawCategorySlug = rawCategory?.slug || '';
-                const rawCategoryMetal = rawCategory?.metal || '';
 
                 return ({
                 id: prod._id,
@@ -61,8 +59,7 @@ export const useCatalogue = () => {
                 category: rawCategoryName || '', // Updated for flat populate + legacy string fallback
                 categoryId: rawCategoryId || '',
                 categorySlug: rawCategorySlug || '',
-                metal: rawCategoryMetal || '',
-                material: prod.material || rawCategoryMetal || '',
+                material: prod.material || '',
                 navShopByCategory: prod.navShopByCategory || [],
                 navGiftsFor: prod.navGiftsFor || [],
                 navOccasions: prod.navOccasions || [],

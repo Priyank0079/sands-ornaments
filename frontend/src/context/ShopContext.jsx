@@ -194,7 +194,6 @@ export const ShopProvider = ({ children }) => {
                     const categoryName = typeof rawCategory === 'string' ? rawCategory : (rawCategory?.name || item.category || '');
                     const categoryId = rawCategory?._id || rawCategory?.id || item.categoryId || '';
                     const categorySlug = rawCategory?.slug || item.categorySlug || '';
-                    const metal = rawCategory?.metal || item.metal || '';
                     return {
                         ...item,
                         id: item._id || item.id,
@@ -207,7 +206,7 @@ export const ShopProvider = ({ children }) => {
                         category: categoryName,
                         categoryId,
                         categorySlug,
-                        metal,
+                        metal: item.metal || item.material || '',
                         variants: variants.map(v => ({
                             ...v,
                             id: v._id || v.id,

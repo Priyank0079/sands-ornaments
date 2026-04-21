@@ -3,7 +3,6 @@ require("dotenv").config();
 const mongoose = require("mongoose");
 const connectDB = require("../src/config/db");
 const Product = require("../src/models/Product");
-const Category = require("../src/models/Category");
 
 const applyMode = process.argv.includes("--apply");
 
@@ -25,14 +24,10 @@ const detectSilverTier = (text) => {
   return "";
 };
 
-const getProductMetal = (product, categoryMap) => {
+const getProductMetal = (product) => {
   const material = normalizeText(product.material || product.metal);
   if (material.includes("gold")) return "gold";
   if (material.includes("silver")) return "silver";
-
-  const categoryId = Array.isArray(product.categories) ? product.categories[0] : null;
-  const category = categoryId ? categoryMap.get(String(categoryId)) : null;
-  if (category?.metal) return normalizeText(category.metal);
 
   if (product.goldCategory) return "gold";
   if (product.silverCategory) return "silver";
@@ -42,9 +37,6 @@ const getProductMetal = (product, categoryMap) => {
 const run = async () => {
   await connectDB();
 
-  const categories = await Category.find({}).select("_id metal");
-  const categoryMap = new Map(categories.map((cat) => [String(cat._id), cat]));
-
   const products = await Product.find({});
 
   let touchedProducts = 0;
@@ -52,7 +44,7 @@ const run = async () => {
   let silverAssigned = 0;
 
   for (const product of products) {
-    const metal = getProductMetal(product, categoryMap);
+    const metal = getProductMetal(product);
     let changed = false;
 
     if (metal === "gold" && !product.goldCategory) {

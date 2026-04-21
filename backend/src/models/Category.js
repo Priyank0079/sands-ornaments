@@ -9,7 +9,6 @@ const categorySchema = new mongoose.Schema({
   showInCollection: { type: Boolean, default: true },
   sortOrder: { type: Number, default: 0 },
   isActive: { type: Boolean, default: true },
-  metal: { type: String, default: 'silver' },
 }, { timestamps: true });
 
 module.exports = mongoose.model("Category", categorySchema);
