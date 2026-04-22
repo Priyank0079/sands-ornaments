@@ -8,6 +8,5 @@ router.use(authenticate, requireRole("seller"));
 router.get("/", orderController.getMyOrders);
 router.get("/:id", orderController.getMyOrderDetail);
 router.patch("/:orderId/status", orderController.updateOrderStatus);
-router.patch("/:orderId/items/:itemId/status", orderController.updateOrderStatus);
 
 module.exports = router;

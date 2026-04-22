@@ -33,7 +33,7 @@ const orderSchema = new mongoose.Schema({
   total: { type: Number, required: true },
   status: {
     type: String,
-    enum: ["Processing", "Confirmed", "Packed", "Shipped", "Out for Delivery", "Delivered", "Cancelled", "Return Requested", "Returned"],
+    enum: ["Pending", "Processing", "Confirmed", "Packed", "Shipped", "Out for Delivery", "Delivered", "Cancelled", "Return Requested", "Returned"],
     default: "Processing"
   },
   shippingInfo: { carrier: String, trackingId: String, trackingUrl: String, estimatedDelivery: Date },

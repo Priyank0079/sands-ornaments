@@ -1,7 +1,9 @@
 const Order = require("../../../models/Order");
 const { success, error } = require("../../../utils/apiResponse");
+const mongoose = require("mongoose");
 
 const ALLOWED_TRANSITIONS = {
+  Pending: [],
   Processing: ["Confirmed", "Cancelled"],
   Confirmed: ["Packed", "Cancelled"],
   Packed: ["Shipped", "Cancelled"],
@@ -13,9 +15,58 @@ const ALLOWED_TRANSITIONS = {
   Returned: []
 };
 
+exports.getOrderSummary = async (req, res) => {
+  try {
+    const [summary] = await Order.aggregate([
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          delivered: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "Delivered"] }, 1, 0]
+            }
+          },
+          cancelled: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "Cancelled"] }, 1, 0]
+            }
+          },
+          returned: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "Returned"] }, 1, 0]
+            }
+          },
+          pending: {
+            $sum: {
+              $cond: [
+                {
+                  $in: [
+                    "$status",
+                    ["Pending", "Processing", "Confirmed", "Packed", "Shipped", "Out for Delivery", "Return Requested"]
+                  ]
+                },
+                1,
+                0
+              ]
+            }
+          }
+        }
+      }
+    ]);
+
+    const data = summary || { total: 0, pending: 0, delivered: 0, cancelled: 0, returned: 0 };
+    return success(res, { summary: data }, "Order summary retrieved");
+  } catch (err) {
+    return error(res, err.message);
+  }
+};
+
 exports.getOrders = async (req, res) => {
   try {
     const { page = 1, limit = 20, status, search, userId } = req.query;
+    const parsedPage = Math.max(1, Number(page) || 1);
+    const parsedLimit = Math.min(100, Math.max(1, Number(limit) || 20));
     const query = {};
 
     if (status) query.status = status;
@@ -31,20 +82,28 @@ exports.getOrders = async (req, res) => {
     const orders = await Order.find(query)
       .populate("userId", "name email phone")
       .sort({ createdAt: -1 })
-      .limit(limit * 1)
-      .skip((page - 1) * limit);
+      .limit(parsedLimit)
+      .skip((parsedPage - 1) * parsedLimit);
 
     const total = await Order.countDocuments(query);
 
     return success(res, { 
       orders, 
-      pagination: { total, page: Number(page), limit: Number(limit), pages: Math.ceil(total / limit) } 
+      pagination: {
+        total,
+        page: parsedPage,
+        limit: parsedLimit,
+        pages: Math.max(1, Math.ceil(total / parsedLimit))
+      } 
     }, "Orders retrieved");
   } catch (err) { return error(res, err.message); }
 };
 
 exports.getOrderDetail = async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return error(res, "Invalid order id", 400);
+    }
     const order = await Order.findById(req.params.id)
       .populate("userId", "name email phone")
       .populate("items.productId", "name images variants");
@@ -57,6 +116,9 @@ exports.updateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status, note, shippingInfo } = req.body;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return error(res, "Invalid order id", 400);
+    }
 
     const order = await Order.findById(id);
     if (!order) return error(res, "Order not found", 404);

@@ -5,6 +5,7 @@ const requireRole = require("../../../middlewares/requireRole");
 
 router.use(authenticate, requireRole("admin"));
 
+router.get("/summary", orderController.getOrderSummary);
 router.get("/", orderController.getOrders);
 router.get("/:id", orderController.getOrderDetail);
 router.patch("/:id/status", orderController.updateOrderStatus);

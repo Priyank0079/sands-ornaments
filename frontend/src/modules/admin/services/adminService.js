@@ -545,14 +545,42 @@ export const adminService = {
   },
 
   // Order Management
+  getOrderSummary: async () => {
+    try {
+      const res = await api.get('admin/orders/summary');
+      const summary = res.data.data?.summary || res.data.summary || {};
+      return {
+        total: Number(summary.total || 0),
+        pending: Number(summary.pending || 0),
+        delivered: Number(summary.delivered || 0),
+        cancelled: Number(summary.cancelled || 0),
+        returned: Number(summary.returned || 0)
+      };
+    } catch (err) {
+      console.error("Admin fetch order summary failed:", err);
+      return { total: 0, pending: 0, delivered: 0, cancelled: 0, returned: 0 };
+    }
+  },
   getOrders: async (params = {}) => {
     try {
       const res = await api.get('admin/orders', { params });
       const orders = res.data.data?.orders || res.data.orders || [];
-      return orders.map(normalizeAdminOrder).filter(Boolean);
+      const pagination = res.data.data?.pagination || res.data.pagination || {
+        total: orders.length,
+        page: Number(params.page) || 1,
+        limit: Number(params.limit) || orders.length || 20,
+        pages: 1
+      };
+      return {
+        orders: orders.map(normalizeAdminOrder).filter(Boolean),
+        pagination
+      };
     } catch (err) {
       console.error("Admin fetch orders failed:", err);
-      return [];
+      return {
+        orders: [],
+        pagination: { total: 0, page: 1, limit: Number(params.limit) || 20, pages: 1 }
+      };
     }
   },
   getOrderDetails: async (id) => {

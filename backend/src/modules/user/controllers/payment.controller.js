@@ -4,6 +4,7 @@ const Order = require("../../../models/Order");
 const Coupon = require("../../../models/Coupon");
 const { _deductStockForOrder } = require("./order.controller");
 const { success, error } = require("../../../utils/apiResponse");
+const mongoose = require("mongoose");
 
 // POST /api/user/payment/razorpay-order
 exports.createRazorpayOrder = async (req, res) => {
@@ -13,6 +14,9 @@ exports.createRazorpayOrder = async (req, res) => {
     }
 
     const { orderId } = req.body;
+    if (!mongoose.Types.ObjectId.isValid(orderId)) {
+      return error(res, "Invalid order id", 400);
+    }
 
     // BUG-03 FIX: Ensure the order belongs to the requesting user
     const order = await Order.findOne({ _id: orderId, userId: req.user.userId });
@@ -42,6 +46,9 @@ exports.verifyPayment = async (req, res) => {
     }
 
     const { orderId, razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
+    if (!mongoose.Types.ObjectId.isValid(orderId)) {
+      return error(res, "Invalid order id", 400);
+    }
 
     // BUG-03 FIX: Only the order owner can verify payment
     const order = await Order.findOne({ _id: orderId, userId: req.user.userId });

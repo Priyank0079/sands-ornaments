@@ -273,6 +273,9 @@ exports.getOrders = async (req, res) => {
 // ─────────────────────────────────────────────────────────────────
 exports.getOrderDetail = async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return error(res, "Invalid order id", 400);
+    }
     const order = await Order.findOne({ _id: req.params.id, userId: req.user.userId });
     if (!order) return error(res, "Order not found", 404);
     return success(res, { order }, "Order details retrieved");
@@ -285,6 +288,9 @@ exports.getOrderDetail = async (req, res) => {
 // ─────────────────────────────────────────────────────────────────
 exports.cancelOrder = async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return error(res, "Invalid order id", 400);
+    }
     const order = await Order.findOne({ _id: req.params.id, userId: req.user.userId });
     if (!order) return error(res, "Order not found", 404);
 

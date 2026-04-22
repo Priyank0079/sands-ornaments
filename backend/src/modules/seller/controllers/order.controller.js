@@ -1,9 +1,11 @@
 const Order = require("../../../models/Order");
 const { success, error } = require("../../../utils/apiResponse");
+const mongoose = require("mongoose");
 
 const normalizeOrderStatus = (value = "") => String(value || "").trim();
 
 const allowedTransitions = {
+  Pending: [],
   Processing: ["Confirmed", "Cancelled"],
   Confirmed: ["Packed"],
   Packed: ["Shipped"],
@@ -71,6 +73,9 @@ exports.getMyOrders = async (req, res) => {
 exports.getMyOrderDetail = async (req, res) => {
   try {
     const sellerId = req.user.userId;
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return error(res, "Invalid order id", 400);
+    }
     const order = await Order.findOne({ _id: req.params.id, "items.sellerId": sellerId })
       .populate("userId", "fullName email mobileNumber")
       .populate("items.productId", "name images image");
@@ -88,6 +93,9 @@ exports.updateOrderStatus = async (req, res) => {
     const { status, note, shippingInfo } = req.body;
     const sellerId = req.user.userId;
     const nextStatus = normalizeOrderStatus(status);
+    if (!mongoose.Types.ObjectId.isValid(orderId)) {
+      return error(res, "Invalid order id", 400);
+    }
 
     if (!nextStatus) return error(res, "Status is required", 400);
 
