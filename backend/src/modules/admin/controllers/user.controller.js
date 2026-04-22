@@ -5,6 +5,15 @@ const Address = require("../../../models/Address");
 const { success, error } = require("../../../utils/apiResponse");
 
 const escapeRegex = (value = "") => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const isValidObjectId = (value) => mongoose.Types.ObjectId.isValid(String(value || ""));
+
+const parseBooleanQuery = (value) => {
+  if (typeof value === "boolean") return value;
+  const normalized = String(value || "").trim().toLowerCase();
+  if (["true", "1", "yes"].includes(normalized)) return true;
+  if (["false", "0", "no"].includes(normalized)) return false;
+  return null;
+};
 
 const buildUserMetrics = async (userIds = []) => {
   const normalizedIds = userIds
@@ -79,8 +88,17 @@ const buildUserMetrics = async (userIds = []) => {
 
 exports.getUsers = async (req, res) => {
   try {
-    const { role, search } = req.query;
+    const { role, search, isBlocked, status, page, limit } = req.query;
     const query = { role: role || "user" };
+    const blockedFlag = parseBooleanQuery(isBlocked);
+
+    if (blockedFlag !== null) {
+      query.isBlocked = blockedFlag;
+    } else if (status) {
+      const normalizedStatus = String(status).trim().toLowerCase();
+      if (normalizedStatus === "active") query.isBlocked = false;
+      if (normalizedStatus === "blocked") query.isBlocked = true;
+    }
 
     if (search) {
       const escaped = escapeRegex(search.trim());
@@ -91,7 +109,18 @@ exports.getUsers = async (req, res) => {
       ];
     }
 
-    const users = await User.find(query).select("-password").sort({ createdAt: -1 }).lean();
+    const shouldPaginate = page !== undefined || limit !== undefined;
+    const pageNumber = Math.max(parseInt(page, 10) || 1, 1);
+    const pageLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 200);
+
+    const total = shouldPaginate ? await User.countDocuments(query) : null;
+
+    const usersQuery = User.find(query).select("-password").sort({ createdAt: -1 });
+    if (shouldPaginate) {
+      usersQuery.skip((pageNumber - 1) * pageLimit).limit(pageLimit);
+    }
+
+    const users = await usersQuery.lean();
     const metricsMap = await buildUserMetrics(users.map((user) => user._id));
 
     const enrichedUsers = users.map((user) => {
@@ -112,7 +141,17 @@ exports.getUsers = async (req, res) => {
       };
     });
 
-    return success(res, { users: enrichedUsers }, "Users retrieved");
+    const payload = { users: enrichedUsers };
+    if (shouldPaginate) {
+      payload.pagination = {
+        total,
+        page: pageNumber,
+        limit: pageLimit,
+        pages: Math.ceil(total / pageLimit)
+      };
+    }
+
+    return success(res, payload, "Users retrieved");
   } catch (err) {
     return error(res, err.message);
   }
@@ -120,6 +159,10 @@ exports.getUsers = async (req, res) => {
 
 exports.getUserDetail = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return error(res, "Invalid user id", 400);
+    }
+
     const user = await User.findById(req.params.id)
       .select("-password")
       .populate({
@@ -175,6 +218,10 @@ exports.getUserDetail = async (req, res) => {
 
 exports.blockUser = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return error(res, "Invalid user id", 400);
+    }
+
     const user = await User.findById(req.params.id).select("-password");
     if (!user) return error(res, "User not found", 404);
 

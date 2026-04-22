@@ -36,6 +36,12 @@ api.interceptors.response.use(
       // Optional: Optional: Redirect to login or refresh page
       // window.location.href = '/login';
     }
+
+    if (error.response && error.response.status === 403 && error.response?.data?.error === 'ACCOUNT_BLOCKED') {
+      localStorage.removeItem('sands_token');
+      localStorage.removeItem('sands_current_user');
+    }
+
     return Promise.reject(error);
   }
 );

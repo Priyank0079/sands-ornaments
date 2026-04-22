@@ -3,8 +3,10 @@ const addressController = require("../controllers/address.controller");
 const validate = require("../../../middlewares/validate");
 const { addressSchema } = require("../validators/address.validator");
 const authenticate = require("../../../middlewares/authenticate");
+const requireRole = require("../../../middlewares/requireRole");
+const requireActiveUser = require("../../../middlewares/requireActiveUser");
 
-router.use(authenticate);
+router.use(authenticate, requireRole("user"), requireActiveUser);
 
 router.get("/", addressController.getAddresses);
 router.post("/", validate(addressSchema), addressController.addAddress);
