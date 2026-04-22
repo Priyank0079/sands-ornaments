@@ -1,4 +1,5 @@
 const Return = require("../../../models/Return");
+const Replacement = require("../../../models/Replacement");
 const Order = require("../../../models/Order");
 const { generateReturnId } = require("../../../utils/generateId");
 const { success, error } = require("../../../utils/apiResponse");
@@ -18,9 +19,15 @@ exports.requestReturn = async (req, res) => {
     const item = order.items.id(itemId);
     if (!item) return error(res, "Item not found in order", 404);
 
-    // Check if already requested
+    // Check if already requested for return flow
     const existing = await Return.findOne({ orderId, "items.variantId": item.variantId });
     if (existing) return error(res, "Return already requested for this item", 409);
+
+    // Prevent parallel replacement + return for the same variant
+    const replacementExists = await Replacement.findOne({ orderId, "originalItems.variantId": item.variantId });
+    if (replacementExists) {
+      return error(res, "Replacement already requested for this item. Please complete that flow first.", 409);
+    }
 
     const images = req.files ? req.files.map(f => f.path) : [];
 

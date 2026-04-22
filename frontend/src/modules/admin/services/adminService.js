@@ -611,9 +611,9 @@ export const adminService = {
   },
 
   // Return Management (RMA)
-  getReturns: async () => {
+  getReturns: async (params = {}) => {
     try {
-      const res = await api.get('admin/returns');
+      const res = await api.get('admin/returns', { params });
       const returns = res.data.data?.returns || res.data.returns || [];
       return returns.map(normalizeAdminReturn).filter(Boolean);
     } catch (err) {

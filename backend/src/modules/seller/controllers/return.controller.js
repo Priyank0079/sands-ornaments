@@ -1,5 +1,6 @@
 const Return = require("../../../models/Return");
 const Product = require("../../../models/Product");
+const Order = require("../../../models/Order");
 const { success, error } = require("../../../utils/apiResponse");
 
 const SELLER_ACTIONABLE_STATUSES = ["Pending"];
@@ -73,6 +74,23 @@ exports.processReturn = async (req, res) => {
       date: new Date()
     });
     await returnReq.save();
+
+    if (returnReq.orderId) {
+      const nextOrderStatus = status === "Rejected" ? "Delivered" : "Return Requested";
+      await Order.updateOne(
+        { _id: returnReq.orderId },
+        {
+          $set: { status: nextOrderStatus },
+          $push: {
+            timeline: {
+              status: nextOrderStatus,
+              note: remarks || `Seller marked return as ${status}`,
+              date: new Date()
+            }
+          }
+        }
+      );
+    }
 
     const refreshed = await Return.findById(returnReq._id)
       .populate("userId", "name email phone")
