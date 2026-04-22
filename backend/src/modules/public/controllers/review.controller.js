@@ -3,7 +3,7 @@ const Review = require("../../../models/Review");
 const Product = require("../../../models/Product");
 const Order = require("../../../models/Order");
 const { success, error } = require("../../../utils/apiResponse");
-const { APPROVED_REVIEW_QUERY } = require("../../../utils/reviewMetrics");
+const { APPROVED_REVIEW_QUERY, syncProductReviewStats } = require("../../../utils/reviewMetrics");
 
 exports.getReviews = async (req, res) => {
   try {
@@ -11,6 +11,9 @@ exports.getReviews = async (req, res) => {
     const query = { ...APPROVED_REVIEW_QUERY };
 
     if (productId) {
+      if (!mongoose.Types.ObjectId.isValid(productId)) {
+        return error(res, "Invalid product", 400);
+      }
       query.productId = productId;
     }
 
@@ -66,6 +69,7 @@ exports.createReview = async (req, res) => {
       existingReview.status = "pending";
       existingReview.isApproved = false;
       await existingReview.save();
+      await syncProductReviewStats(product._id);
 
       return success(res, { review: existingReview }, "Review updated and sent for approval");
     }

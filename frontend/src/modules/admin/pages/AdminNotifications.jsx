@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    Bell, ShoppingBag, UserPlus, Star, Store,
+    Bell, ShoppingBag, Star, Store,
     AlertTriangle, Check, Trash2,
     Clock, CheckCircle2, Eye
 } from 'lucide-react';
@@ -59,12 +59,12 @@ const AdminNotifications = () => {
     };
 
     const typeIcons = {
-        'Order': <ShoppingBag className="w-4 h-4 text-blue-600" />,
-        'Inventory': <AlertTriangle className="w-4 h-4 text-red-600" />,
-        'Review': <Star className="w-4 h-4 text-amber-600" />,
-        'User': <UserPlus className="w-4 h-4 text-green-600" />,
-        'SELLER_REQUEST': <Store className="w-4 h-4 text-indigo-600" />,
-        'GENERAL': <Bell className="w-4 h-4 text-gray-600" />
+        ORDER: <ShoppingBag className="w-4 h-4 text-blue-600" />,
+        RETURN: <AlertTriangle className="w-4 h-4 text-orange-600" />,
+        REPLACEMENT: <AlertTriangle className="w-4 h-4 text-red-600" />,
+        COUPON: <Star className="w-4 h-4 text-amber-600" />,
+        SELLER_REQUEST: <Store className="w-4 h-4 text-indigo-600" />,
+        GENERAL: <Bell className="w-4 h-4 text-gray-600" />
     };
 
     const priorityStyles = {

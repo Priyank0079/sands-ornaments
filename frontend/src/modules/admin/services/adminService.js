@@ -842,9 +842,9 @@ export const adminService = {
   },
 
   // Admin Notifications
-  getAdminNotifications: async () => {
+  getAdminNotifications: async (params = {}) => {
     try {
-      const res = await api.get('admin/notifications');
+      const res = await api.get('admin/notifications', { params });
       return res.data.data?.notifications || res.data.notifications || [];
     } catch (err) {
       console.error("Admin fetch notifications failed:", err);
@@ -876,6 +876,23 @@ export const adminService = {
     } catch (err) {
       console.error("Admin delete notification failed:", err);
       return false;
+    }
+  },
+  broadcastAdminNotification: async (payload = {}) => {
+    try {
+      const res = await api.post('admin/notifications/broadcast', payload);
+      return {
+        success: !!res.data?.success,
+        notification: res.data?.data?.notification || res.data?.notification || null,
+        message: res.data?.message || "Notification broadcasted successfully"
+      };
+    } catch (err) {
+      console.error("Admin broadcast notification failed:", err);
+      return {
+        success: false,
+        notification: null,
+        message: err.response?.data?.message || "Failed to broadcast notification"
+      };
     }
   }
 };
