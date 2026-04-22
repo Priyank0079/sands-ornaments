@@ -7,6 +7,7 @@ const InventoryReportsPage = () => {
     const activeTabState = useState('category'); // 'category' or 'sales'
     const activeTab = activeTabState[0];
     const setActiveTab = activeTabState[1];
+    const [period, setPeriod] = useState('month');
     const [loading, setLoading] = useState(false);
     const [categoryData, setCategoryData] = useState([]);
     const [salesData, setSalesData] = useState([]);
@@ -16,9 +17,14 @@ const InventoryReportsPage = () => {
         const loadInventory = async () => {
             setLoading(true);
             try {
+                const now = new Date();
+                const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+                const historyParams = period === 'month'
+                    ? { startDate: monthStart, endDate: now.toISOString(), limit: 500 }
+                    : { limit: 500 };
                 const [inventory, logs] = await Promise.all([
-                    adminService.getInventory(),
-                    adminService.getStockHistory()
+                    adminService.getInventory({ limit: 500 }),
+                    adminService.getStockHistory(historyParams)
                 ]);
                 const categoryMap = new Map();
                 const productPriceMap = new Map();
@@ -92,7 +98,7 @@ const InventoryReportsPage = () => {
             }
         };
         loadInventory();
-    }, []);
+    }, [period]);
 
     const totalInventoryValue = useMemo(
         () => categoryData.reduce((acc, item) => acc + (item.value || 0), 0),
@@ -150,8 +156,11 @@ const InventoryReportsPage = () => {
                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mt-1">Valuation and sales analytics</p>
                 </div>
                 <div className="flex gap-3">
-                    <button className="px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 transition-all shadow-sm flex items-center gap-2">
-                        <Calendar size={14} /> This Month
+                    <button
+                        onClick={() => setPeriod(prev => (prev === 'month' ? 'all' : 'month'))}
+                        className="px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 transition-all shadow-sm flex items-center gap-2"
+                    >
+                        <Calendar size={14} /> {period === 'month' ? 'This Month' : 'All Time'}
                     </button>
                     <button
                         onClick={exportActiveReport}

@@ -30,7 +30,7 @@ exports.getProducts = async (req, res) => {
   try {
     const { 
       search, category, minPrice, maxPrice, 
-      tags, sort, page = 1, limit = 20 
+      tags, sort, inStockOnly = "false", page = 1, limit = 20 
     } = req.query;
 
     const query = { status: "Active", active: { $ne: false } };
@@ -75,6 +75,10 @@ exports.getProducts = async (req, res) => {
           query[`tags.${t}`] = true;
         }
       });
+    }
+
+    if (String(inStockOnly).toLowerCase() === "true") {
+      query["variants.stock"] = { $gt: 0 };
     }
 
     // 5. Sorting
@@ -123,6 +127,7 @@ exports.getProductDetail = async (req, res) => {
   try {
     const identifier = req.params.slug;
     const baseQuery = { status: "Active", active: { $ne: false } };
+    const inStockOnly = String(req.query?.inStockOnly || "false").toLowerCase() === "true";
     const lookup = mongoose.isValidObjectId(identifier)
       ? { ...baseQuery, _id: identifier }
       : { ...baseQuery, slug: identifier };
@@ -138,6 +143,11 @@ exports.getProductDetail = async (req, res) => {
       if (!seller || seller.status !== "APPROVED") {
         return error(res, "Product not found", 404);
       }
+    }
+
+    if (inStockOnly) {
+      const hasStock = (product.variants || []).some((variant) => Number(variant?.stock || 0) > 0);
+      if (!hasStock) return error(res, "Product not found", 404);
     }
 
     return success(res, { product: normalizeProductForResponse(product) }, "Product details retrieved");

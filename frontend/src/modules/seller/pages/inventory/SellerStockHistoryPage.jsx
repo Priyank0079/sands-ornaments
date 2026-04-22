@@ -28,7 +28,9 @@ const SellerStockHistoryPage = () => {
                     effect: { from: log.previousStock, to: log.newStock },
                     user: log.adminId?.name
                         ? `Admin (${log.adminId.name})`
-                        : (log.sellerId?.fullName ? `Seller (${log.sellerId.fullName})` : 'Seller'),
+                        : (log.sellerId?.shopName || log.sellerId?.fullName
+                            ? `Seller (${log.sellerId.shopName || log.sellerId.fullName})`
+                            : (log.userId?.name ? `Customer (${log.userId.name})` : 'Seller')),
                     reason: log.reason || ''
                 }));
                 setHistory(normalized);
@@ -186,7 +188,7 @@ const SellerStockHistoryPage = () => {
                                             <div className="flex items-center gap-3">
                                                 <div className="w-8 h-8 bg-gray-50 rounded border border-gray-100 p-0.5 flex-shrink-0">
                                                     {item.product.image ? (
-                                                        <img src={item.product.image} className="w-full h-full object-contain mix-blend-multiply" />
+                                                        <img src={item.product.image} alt="" className="w-full h-full object-contain mix-blend-multiply" />
                                                     ) : (
                                                         <Package size={16} className="text-gray-300 m-auto" />
                                                     )}

@@ -43,6 +43,19 @@ const normalizeProductForCart = (product = {}, selectedVariant = null) => {
     };
 };
 
+const resolveAvailableStock = (product = {}, variantId = null) => {
+    const selected = (product.selectedVariant && (variantId == null || String(product.selectedVariant.id || product.selectedVariant._id) === String(variantId)))
+        ? product.selectedVariant
+        : (product.variants || []).find((variant) => String(variant.id || variant._id) === String(variantId))
+            || product.selectedVariant
+            || (product.variants || [])[0]
+            || null;
+
+    const stock = Number(selected?.stock);
+    if (Number.isFinite(stock) && stock >= 0) return stock;
+    return null;
+};
+
 export const ShopProvider = ({ children }) => {
     const { user, logout: authLogout } = useAuth();
     // Initialize from LocalStorage if available
@@ -463,24 +476,46 @@ export const ShopProvider = ({ children }) => {
         }
 
         if (!productId) return;
+        const requestedQty = Number.isFinite(Number(qty)) ? Math.max(1, Number(qty)) : 1;
+        const maxStock = resolveAvailableStock(productData || {}, variantId);
+        if (maxStock !== null && maxStock <= 0) {
+            toast.error("This variant is out of stock");
+            return;
+        }
 
         setCart((prev) => {
             const existing = prev.find((item) => item.id === productId && item.variantId === variantId);
             if (existing) {
+                const currentStock = resolveAvailableStock(existing, variantId);
+                const limitStock = currentStock !== null ? currentStock : maxStock;
+                const nextQuantity = existing.quantity + requestedQty;
+                if (limitStock !== null && nextQuantity > limitStock) {
+                    toast.error(`Only ${limitStock} units available`);
+                    const cappedQty = Math.max(1, Math.min(limitStock, nextQuantity));
+                    return prev.map((item) =>
+                        (item.id === productId && item.variantId === variantId)
+                            ? { ...item, quantity: cappedQty, qty: cappedQty }
+                            : item
+                    );
+                }
                 return prev.map((item) =>
-                    (item.id === productId && item.variantId === variantId) ? { ...item, quantity: item.quantity + qty, qty: item.quantity + qty } : item
+                    (item.id === productId && item.variantId === variantId) ? { ...item, quantity: nextQuantity, qty: nextQuantity } : item
                 );
             }
             // If productData not found in list, try to use whatever we have
             const itemBase = productData || { id: productId, name: 'Product', price: 0, originalPrice: 0, image: '' };
+            const finalQty = maxStock !== null ? Math.min(requestedQty, maxStock) : requestedQty;
+            if (maxStock !== null && requestedQty > maxStock) {
+                toast.error(`Only ${maxStock} units available`);
+            }
             return [...prev, {
                 ...itemBase,
                 id: productId,
                 variantId: variantId,
                 packId: variantId || productId, // For CartPage compatibility
                 gst: Number(itemBase.gst ?? itemBase.selectedVariant?.gst) || 0,
-                quantity: qty,
-                qty: qty // For CartPage compatibility
+                quantity: finalQty,
+                qty: finalQty // For CartPage compatibility
             }];
         });
         showNotification("Added to bag");
@@ -491,7 +526,12 @@ export const ShopProvider = ({ children }) => {
             const itemVariantKey = item.variantId || item.packId || null;
             const targetVariantKey = variantId || null;
             if (item.id === productId && (targetVariantKey === null || itemVariantKey === targetVariantKey)) {
-                const newQuantity = Math.max(1, item.quantity + amount);
+                const maxStock = resolveAvailableStock(item, itemVariantKey);
+                const requestedQuantity = Math.max(1, item.quantity + amount);
+                const newQuantity = maxStock !== null ? Math.min(requestedQuantity, maxStock) : requestedQuantity;
+                if (maxStock !== null && requestedQuantity > maxStock) {
+                    toast.error(`Only ${maxStock} units available`);
+                }
                 return { ...item, quantity: newQuantity, qty: newQuantity };
             }
             return item;
@@ -502,7 +542,13 @@ export const ShopProvider = ({ children }) => {
     const updateCartQty = (userId, packId, newQty) => {
         setCart(prev => prev.map(item => {
             if (item.packId === packId || item.id === packId || item.variantId === packId) {
-                return { ...item, quantity: Math.max(1, newQty), qty: Math.max(1, newQty) };
+                const normalizedQty = Math.max(1, Number(newQty) || 1);
+                const maxStock = resolveAvailableStock(item, item.variantId || item.packId || null);
+                const finalQty = maxStock !== null ? Math.min(normalizedQty, maxStock) : normalizedQty;
+                if (maxStock !== null && normalizedQty > maxStock) {
+                    toast.error(`Only ${maxStock} units available`);
+                }
+                return { ...item, quantity: finalQty, qty: finalQty };
             }
             return item;
         }));

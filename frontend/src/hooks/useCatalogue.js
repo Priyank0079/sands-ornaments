@@ -33,7 +33,12 @@ export const useCatalogue = () => {
     const productsQuery = useQuery({
         queryKey: ['products'],
         queryFn: async () => {
-            const res = await api.get('public/products');
+            const res = await api.get('public/products', {
+                params: {
+                    inStockOnly: true,
+                    limit: 200
+                }
+            });
             const data = res.data.data.products || [];
             return data.map(prod => {
                 const rawCategory = Array.isArray(prod.categories) ? prod.categories[0] : null;

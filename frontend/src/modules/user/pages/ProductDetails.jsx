@@ -313,6 +313,9 @@ const ProductDetails = () => {
     const variantPrice = selectedVariant?.price ?? product?.price;
     const variantMrp = selectedVariant?.mrp ?? product?.originalPrice;
     const variantDiscount = variantMrp > variantPrice ? Math.round(((variantMrp - variantPrice) / variantMrp) * 100) : 0;
+    const selectedVariantStock = Number(selectedVariant?.stock);
+    const availableStock = Number.isFinite(selectedVariantStock) ? Math.max(0, selectedVariantStock) : null;
+    const canAddToCart = availableStock === null || availableStock > 0;
 
     // Compute primary image with robust fallback
     const primaryImage = useMemo(() => {
@@ -344,6 +347,10 @@ const ProductDetails = () => {
 
     // Handlers for Animation
     const handleAddToCart = () => {
+        if (!canAddToCart) {
+            toast.error("This variant is out of stock");
+            return;
+        }
 
         // Add to cart with specific size
         setFlyingType('cart');
@@ -488,9 +495,10 @@ const ProductDetails = () => {
                         {/* Action Button */}
                         <button
                             onClick={handleAddToCart}
-                            className="bg-[#8E2424] hover:bg-black text-white px-14 py-5 rounded-full font-bold text-xs tracking-widest uppercase transition-all shadow-xl shadow-[#8E2424]/20 active:scale-95"
+                            disabled={!canAddToCart}
+                            className={`px-14 py-5 rounded-full font-bold text-xs tracking-widest uppercase transition-all shadow-xl active:scale-95 ${canAddToCart ? 'bg-[#8E2424] hover:bg-black text-white shadow-[#8E2424]/20' : 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-gray-200'}`}
                         >
-                            Add to Cart
+                            {canAddToCart ? 'Add to Cart' : 'Out of Stock'}
                         </button>
                     </div>
                 </div>
@@ -759,9 +767,13 @@ const ProductDetails = () => {
                                 </div>
                             )}
 
-                            <div className="flex items-center gap-2 text-emerald-700 text-sm font-medium">
+                            <div className={`flex items-center gap-2 text-sm font-medium ${canAddToCart ? 'text-emerald-700' : 'text-red-600'}`}>
                                 <ShieldCheck className="w-4 h-4" />
-                                <span>In stock - ready to ship from Sands Royal</span>
+                                <span>
+                                    {canAddToCart
+                                        ? `In stock${availableStock !== null ? ` - ${availableStock} left` : ''} - ready to ship from Sands Royal`
+                                        : 'Out of stock - this variant is currently unavailable'}
+                                </span>
                             </div>
 
 
@@ -773,9 +785,10 @@ const ProductDetails = () => {
                                 </div>
                                 <button
                                     onClick={handleAddToCart}
-                                    className="flex-1 bg-[#8E2424] text-white rounded-full h-14 font-bold uppercase tracking-widest text-[11px] flex items-center justify-center gap-2 active:scale-95 transition-all shadow-xl shadow-[#8E2424]/20"
+                                    disabled={!canAddToCart}
+                                    className={`flex-1 rounded-full h-14 font-bold uppercase tracking-widest text-[11px] flex items-center justify-center gap-2 active:scale-95 transition-all shadow-xl ${canAddToCart ? 'bg-[#8E2424] text-white shadow-[#8E2424]/20' : 'bg-gray-300 text-gray-500 shadow-gray-200 cursor-not-allowed'}`}
                                 >
-                                    Add to Cart
+                                    {canAddToCart ? 'Add to Cart' : 'Out of Stock'}
                                 </button>
                             </div>
                         </div>
