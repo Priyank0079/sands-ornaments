@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, User, LogOut, ShoppingBag, XCircle, RotateCcw, AlertTriangle, CheckCircle2, Menu, ArrowLeft, QrCode } from 'lucide-react';
+import { Bell, User, LogOut, ShoppingBag, XCircle, RotateCcw, RefreshCw, AlertTriangle, CheckCircle2, Menu, ArrowLeft, QrCode } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { sellerService } from '../services/sellerService';
 import { sellerOrderService } from '../services/sellerOrderService';
@@ -48,6 +48,7 @@ const SellerHeader = ({ isSidebarOpen, setIsSidebarOpen }) => {
             case 'ORDER': return <ShoppingBag className="text-blue-500" size={16} />;
             case 'CANCEL': return <XCircle className="text-red-500" size={16} />;
             case 'RETURN': return <RotateCcw className="text-amber-500" size={16} />;
+            case 'REPLACEMENT': return <RefreshCw className="text-violet-500" size={16} />;
             case 'STOCK': return <AlertTriangle className="text-purple-500" size={16} />;
             default: return <Bell className="text-gray-400" size={16} />;
         }
@@ -72,6 +73,7 @@ const SellerHeader = ({ isSidebarOpen, setIsSidebarOpen }) => {
         if (path.includes('add-product')) return 'Add Product';
         if (path.includes('orders')) return 'Shipments';
         if (path.includes('returns')) return 'Returns';
+        if (path.includes('replacements')) return 'Replacements';
         if (path.includes('customers')) return 'Customer Management';
         if (path.includes('profile')) return 'Identity Configuration';
         if (path.includes('offline-sale')) return 'Direct Sales';

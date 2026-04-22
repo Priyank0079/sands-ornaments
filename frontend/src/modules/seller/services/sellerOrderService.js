@@ -52,6 +52,31 @@ const normalizeReturn = (returnReq) => {
     };
 };
 
+const normalizeReplacement = (replacementReq) => {
+    if (!replacementReq) return null;
+    const primaryItem = Array.isArray(replacementReq.originalItems) ? replacementReq.originalItems[0] : null;
+    return {
+        ...replacementReq,
+        id: replacementReq._id,
+        replacementDisplayId: replacementReq.replacementId || replacementReq._id,
+        orderDisplayId: replacementReq.orderId?.orderId || replacementReq.orderId || 'N/A',
+        product: primaryItem?.name || 'Replacement item',
+        barcode: primaryItem?.sku || 'N/A',
+        quantity: Number(primaryItem?.qty || 0),
+        replacementReason: replacementReq.evidence?.reason || primaryItem?.reason || 'Not specified',
+        comment: replacementReq.evidence?.comment || '',
+        createdAt: replacementReq.createdAt || replacementReq.requestDate,
+        images: replacementReq.evidence?.images || [],
+        evidenceVideo: replacementReq.evidence?.video || '',
+        customerName: replacementReq.userId?.name || replacementReq.customerName || 'Customer',
+        customerEmail: replacementReq.userId?.email || '',
+        customerPhone: replacementReq.userId?.phone || '',
+        item: primaryItem,
+        user: replacementReq.userId,
+        order: replacementReq.orderId,
+    };
+};
+
 export const sellerOrderService = {
     getSellerOrders: async () => {
         const res = await api.get('seller/orders');
@@ -105,6 +130,38 @@ export const sellerOrderService = {
                 success: true,
                 message: res.data?.message || 'Return updated',
                 data: normalizeReturn(res.data?.data?.returnReq || res.data?.returnReq),
+            };
+        } catch (err) {
+            return {
+                success: false,
+                message: err.response?.data?.message || 'Process failed',
+            };
+        }
+    },
+
+    getReplacements: async () => {
+        try {
+            const res = await api.get('seller/replacements');
+            const replacements = res.data?.data?.replacements || res.data?.replacements || [];
+            return replacements.map(normalizeReplacement).filter(Boolean);
+        } catch (err) {
+            console.error('Failed to fetch replacement requests:', err);
+            return [];
+        }
+    },
+
+    getReplacementDetails: async (id) => {
+        const res = await api.get(`seller/replacements/${id}`);
+        return normalizeReplacement(res.data?.data?.replacementReq || res.data?.replacementReq);
+    },
+
+    processReplacement: async (replacementId, status, remarks = '') => {
+        try {
+            const res = await api.patch(`seller/replacements/${replacementId}/process`, { status, remarks });
+            return {
+                success: true,
+                message: res.data?.message || 'Replacement updated',
+                data: normalizeReplacement(res.data?.data?.replacementReq || res.data?.replacementReq),
             };
         } catch (err) {
             return {

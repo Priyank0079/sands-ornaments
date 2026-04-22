@@ -263,6 +263,8 @@ export const ShopProvider = ({ children }) => {
                     reason: rep.evidence?.reason || rep.reason || rep.originalItems?.[0]?.reason || '',
                     comments: rep.evidence?.comment || rep.comments || '',
                     images: rep.evidence?.images || rep.images || [],
+                    video: rep.evidence?.video || rep.video || '',
+                    evidenceVideo: rep.evidence?.video || rep.evidenceVideo || '',
                     items: rep.originalItems || rep.items || [],
                     type: 'replacement'
                 })));

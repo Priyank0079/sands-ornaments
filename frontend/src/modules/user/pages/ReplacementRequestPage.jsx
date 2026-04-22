@@ -189,13 +189,13 @@ const ReplacementRequestPage = () => {
                             </div>
 
                             <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Upload Photos (Optional)</label>
+                                <label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Upload Photos / Video (Optional)</label>
                                 <input
                                     type="file"
                                     ref={fileInputRef}
                                     onChange={handleImageChange}
                                     multiple
-                                    accept="image/*"
+                                    accept="image/*,video/*"
                                     className="hidden"
                                 />
                                 <div
@@ -203,14 +203,18 @@ const ReplacementRequestPage = () => {
                                     className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center cursor-pointer hover:bg-gray-50 transition-colors"
                                 >
                                     <Upload size={24} className="mx-auto text-gray-400 mb-2" />
-                                    <p className="text-xs text-gray-500">Click to select up to 5 images</p>
+                                    <p className="text-xs text-gray-500">Click to select up to 5 files</p>
                                 </div>
 
                                 {selectedFiles.length > 0 && (
                                     <div className="grid grid-cols-4 gap-4 mt-4">
                                         {selectedFiles.map((file, idx) => (
                                             <div key={`${file.name}-${idx}`} className="relative aspect-square rounded-lg overflow-hidden border border-gray-100 group">
-                                                <img src={URL.createObjectURL(file)} alt="Preview" className="w-full h-full object-cover" />
+                                                {String(file.type || '').startsWith('video/') ? (
+                                                    <video src={URL.createObjectURL(file)} className="w-full h-full object-cover" controls muted />
+                                                ) : (
+                                                    <img src={URL.createObjectURL(file)} alt="Preview" className="w-full h-full object-cover" />
+                                                )}
                                             </div>
                                         ))}
                                     </div>

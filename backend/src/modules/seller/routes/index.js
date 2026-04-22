@@ -7,6 +7,7 @@ router.use("/profile",   require("./profile.routes"));
 router.use("/analytics", require("./analytics.routes"));
 router.use("/customers", require("./customer.routes"));
 router.use("/returns",   require("./return.routes"));
+router.use("/replacements", require("./replacement.routes"));
 router.use("/inventory", require("./inventory.routes"));
 
 module.exports = router;

@@ -50,6 +50,7 @@ const SellerSidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
         },
         { name: 'Shipments', icon: ShoppingBag, path: '/seller/orders' },
         { name: 'Returns', icon: RotateCcw, path: '/seller/returns' },
+        { name: 'Replacements', icon: RefreshCcw, path: '/seller/replacements' },
         { name: 'Customers', icon: Users, path: '/seller/customers' },
         { name: 'Direct Sales', icon: ScanLine, path: '/seller/offline-sale' },
         { name: 'Metal Pricing', icon: RefreshCcw, path: '/seller/metal-pricing' },

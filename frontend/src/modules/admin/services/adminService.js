@@ -647,9 +647,9 @@ export const adminService = {
       };
     }
   },
-  getReplacements: async () => {
+  getReplacements: async (params = {}) => {
     try {
-      const res = await api.get('admin/replacements');
+      const res = await api.get('admin/replacements', { params });
       const replacements = res.data.data?.replacements || res.data.replacements || [];
       return replacements.map(normalizeAdminReplacement).filter(Boolean);
     } catch (err) {

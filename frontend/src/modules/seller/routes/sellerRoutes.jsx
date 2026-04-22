@@ -12,6 +12,8 @@ import SellerOrders from '../pages/SellerOrders';
 import SellerOrderDetail from '../pages/SellerOrderDetail';
 import SellerReturns from '../pages/SellerReturns';
 import SellerReturnDetail from '../pages/SellerReturnDetail';
+import SellerReplacements from '../pages/SellerReplacements';
+import SellerReplacementDetail from '../pages/SellerReplacementDetail';
 import SellerCustomers from '../pages/SellerCustomers';
 import SellerCustomerDetail from '../pages/SellerCustomerDetail';
 import SellerProfile from '../pages/SellerProfile';
@@ -90,6 +92,8 @@ const SellerRoutes = () => {
                             <Route path="/order-details/:id" element={<SellerOrderDetail />} />
                             <Route path="/returns" element={<SellerReturns />} />
                             <Route path="/return-details/:id" element={<SellerReturnDetail />} />
+                            <Route path="/replacements" element={<SellerReplacements />} />
+                            <Route path="/replacement-details/:id" element={<SellerReplacementDetail />} />
                             <Route path="/customers" element={<SellerCustomers />} />
                             <Route path="/customer-details/:id" element={<SellerCustomerDetail />} />
                             <Route path="/profile" element={<SellerProfile />} />
