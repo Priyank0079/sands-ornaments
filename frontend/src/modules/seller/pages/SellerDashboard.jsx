@@ -24,10 +24,12 @@ const SellerDashboard = () => {
     const [analytics, setAnalytics] = useState(null);
     const [recentOrders, setRecentOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState('');
 
     useEffect(() => {
         const fetchSellerStats = async () => {
             try {
+                setLoadError('');
                 const res = await api.get('seller/dashboard/stats');
                 if (res.data.success) {
                     const payload = res.data.data || res.data;
@@ -48,13 +50,14 @@ const SellerDashboard = () => {
                         id: order._id,
                         customerName: order.userId?.fullName || order.userId?.name || order.shippingAddress?.firstName || 'Customer',
                         product: order.items?.[0]?.productId?.name || order.items?.[0]?.name || 'Jewellery Item',
-                        price: Number(order.total || 0),
+                        // Prefer seller-scoped totals if present (avoids multi-seller order inflation).
+                        price: Number(order.sellerSubtotal ?? order.total ?? 0),
                         paymentStatus: String(order.paymentStatus || 'pending').toLowerCase(),
                         orderStatus: order.status || 'Processing'
                     })));
                 }
             } catch (err) {
-                console.error('Failed to fetch seller stats:', err);
+                setLoadError(err?.response?.data?.message || err?.message || 'Failed to load dashboard');
             } finally {
                 setLoading(false);
             }
@@ -89,6 +92,38 @@ const SellerDashboard = () => {
         return (
             <div className="p-20 text-center text-gray-400 font-black uppercase tracking-widest animate-pulse">
                 Synchronizing seller dashboard...
+            </div>
+        );
+    }
+
+    if (loadError) {
+        return (
+            <div className="p-10 md:p-20">
+                <div className="max-w-2xl mx-auto bg-white border border-red-100 rounded-3xl p-8 shadow-sm">
+                    <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center">
+                            <AlertCircle size={22} />
+                        </div>
+                        <div className="flex-1">
+                            <h2 className="text-sm font-black uppercase tracking-widest text-gray-900">Dashboard Unavailable</h2>
+                            <p className="text-sm text-gray-600 mt-2">{loadError}</p>
+                            <div className="mt-6 flex items-center gap-3">
+                                <button
+                                    onClick={() => window.location.reload()}
+                                    className="px-6 py-3 bg-black text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#3E2723] transition-all"
+                                >
+                                    Retry
+                                </button>
+                                <button
+                                    onClick={() => navigate('/seller/orders')}
+                                    className="px-6 py-3 bg-gray-50 border border-gray-200 text-gray-700 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all"
+                                >
+                                    Open Orders
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }
