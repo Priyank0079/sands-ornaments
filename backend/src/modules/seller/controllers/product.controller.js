@@ -151,8 +151,6 @@ exports.createProduct = async (req, res) => {
     });
     const tags = tryParse(data.tags) || {};
     const faqs = tryParse(data.faqs) || [];
-    const navGiftsFor = tryParse(data.navGiftsFor) || [];
-    const navOccasions = tryParse(data.navOccasions) || [];
     const material = normalizeMaterial(data);
     const baseSlug = data.slug ? slugify(data.slug) : slugify(data.name);
 
@@ -170,8 +168,6 @@ exports.createProduct = async (req, res) => {
     data.variants = variants;
     data.tags = tags;
     data.faqs = faqs;
-    data.navGiftsFor = navGiftsFor;
-    data.navOccasions = navOccasions;
     data.isSerialized = true;
     
     // Ensure slug is clean

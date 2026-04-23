@@ -98,7 +98,7 @@ exports.getProducts = async (req, res) => {
 
     // 6. Execute Query with Pagination
     const products = await Product.find(query)
-      .select("name slug productCode brand images variants tags rating reviewCount categories category categorySlug categoryId navShopByCategory navGiftsFor navOccasions weight weightUnit goldCategory silverCategory material")
+      .select("name slug productCode brand images variants tags rating reviewCount categories category categorySlug categoryId navShopByCategory weight weightUnit goldCategory silverCategory material")
       .populate("categories", "name slug")
       .sort(sortOption)
       .limit(limit * 1)

@@ -13,8 +13,7 @@ const PRODUCT_COMPLEX_FIELDS = [
   "deletedImages",
   "showInNavbar",
   "showInCollection",
-  "navGiftsFor",
-  "navOccasions"
+  "navShopByCategory"
 ];
 
 router.get("/", productController.getProducts);

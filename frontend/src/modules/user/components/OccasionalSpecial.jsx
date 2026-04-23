@@ -15,11 +15,12 @@ const OccasionalSpecial = () => {
 
     // Default categories if none managed
     const defaultCategories = [
-        { id: 'haldi', name: 'Haldi', image: haldiImgDefault, path: '/shop?occasion=haldi' },
-        { id: 'sangeet', name: 'Sangeet', image: sangeetImgDefault, path: '/shop?occasion=sangeet' },
-        { id: 'reception', name: 'Reception', image: receptionImgDefault, path: '/shop?occasion=reception' },
-        { id: 'bridal', name: 'Gift for Bride', image: bridalImgDefault, path: '/shop?occasion=gift%20for%20bride' },
-        { id: 'bridesmaids', name: 'Gift for Bridesmaid', image: bridesmaidImgDefault, path: '/shop?occasion=gift%20for%20bridesmaid' },
+        // Legacy "?occasion=" filtering has been retired. Fall back to safe search-based links.
+        { id: 'haldi', name: 'Haldi', image: haldiImgDefault, path: '/shop?search=haldi' },
+        { id: 'sangeet', name: 'Sangeet', image: sangeetImgDefault, path: '/shop?search=sangeet' },
+        { id: 'reception', name: 'Reception', image: receptionImgDefault, path: '/shop?search=reception' },
+        { id: 'bridal', name: 'Gift for Bride', image: bridalImgDefault, path: '/shop?search=bride' },
+        { id: 'bridesmaids', name: 'Gift for Bridesmaid', image: bridesmaidImgDefault, path: '/shop?search=bridesmaid' },
     ];
 
     const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];

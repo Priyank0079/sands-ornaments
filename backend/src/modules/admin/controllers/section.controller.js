@@ -82,14 +82,6 @@ const slugifyLabel = (value = "") => String(value || "")
   .replace(/[^a-z0-9]+/g, '-')
   .replace(/^-+|-+$/g, '');
 
-const buildNavPath = (sectionId, label, currentPath) => {
-  const key = sectionId === "nav-gifts-for" ? "filter" : "occasion";
-  const fallbackPath = `/shop?${key}=${encodeURIComponent(slugifyLabel(label))}`;
-  if (!currentPath || !String(currentPath).trim()) return fallbackPath;
-  if (String(currentPath).includes(`${key}=`)) return currentPath;
-  return fallbackPath;
-};
-
 const parsePositiveNumber = (value) => {
   if (value === undefined || value === null || value === "") return null;
   const cleaned = String(value).replace(/[^0-9]/g, "");
@@ -311,21 +303,6 @@ const sanitizeSectionPayload = (identity, payload = {}) => {
       sortOrder: item.sortOrder ?? idx
     })) : []
   };
-
-  if (sectionKey === "nav-gifts-for" || sectionKey === "nav-occasions") {
-    cleaned.items = cleaned.items
-      .map((item, idx) => {
-        const label = item.name || item.label || '';
-        return {
-          ...item,
-          name: label,
-          label: label,
-          path: buildNavPath(sectionKey, label, item.path),
-          sortOrder: item.sortOrder ?? idx
-        };
-      })
-      .filter((item) => Boolean(item.name));
-  }
 
   if (sectionKey === "category-showcase") {
     cleaned.items = cleaned.items

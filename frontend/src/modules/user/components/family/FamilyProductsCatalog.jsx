@@ -24,16 +24,6 @@ const defaultRecipientLabels = {
 
 const FAMILY_TABS = ['all', 'mother', 'father', 'brother', 'sister', 'husband', 'wife'];
 
-const FAMILY_AUDIENCE_TOKENS = {
-    all: new Set(['family', 'all', 'everyone', 'gift-family', 'for-family']),
-    mother: new Set(['mother', 'mothers', 'mom', 'for-mother']),
-    father: new Set(['father', 'fathers', 'dad', 'for-father']),
-    brother: new Set(['brother', 'brothers', 'for-brother']),
-    sister: new Set(['sister', 'sisters', 'for-sister']),
-    husband: new Set(['husband', 'husbands', 'for-husband']),
-    wife: new Set(['wife', 'wives', 'for-wife'])
-};
-
 const FALLBACK_PRODUCTS = [
     { id: 'f1', recipient: 'mother', name: 'Grace Bloom Silver Pendant for Mother', price: '2,499', originalPrice: '3,699', image: giftMother, rating: 4.7, reviews: 132, badge: "Mother's Pick" },
     { id: 'f2', recipient: 'mother', name: 'Heritage Silver Gift Set for Mother', price: '4,299', originalPrice: '6,299', image: giftMother, rating: 4.9, reviews: 208, badge: 'Limited Edition' },
@@ -113,12 +103,10 @@ const matchesCategory = (product = {}, categoryId = '') => {
     return categoryTokens.has(target);
 };
 
-const matchesRecipientAudience = (product = {}, recipient = 'all') => {
-    if (!recipient || recipient === 'all') return true;
-    const tags = (product.navGiftsFor || []).map(normalizeToken).filter(Boolean);
-    if (tags.length === 0) return true;
-    const allowed = FAMILY_AUDIENCE_TOKENS[recipient] || new Set();
-    return tags.some((tag) => allowed.has(tag));
+const matchesRecipientAudience = (_product = {}, _recipient = 'all') => {
+    // Legacy "navGiftsFor/navOccasions" tags are retired. Family tabs are driven by CMS
+    // category selection (or manual pinned products), so we no longer filter by audience tags.
+    return true;
 };
 
 const toFallbackProductCard = (product) => {

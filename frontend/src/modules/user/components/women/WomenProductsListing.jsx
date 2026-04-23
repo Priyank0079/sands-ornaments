@@ -7,18 +7,6 @@ import { useAuth } from '../../../../context/AuthContext';
 import { buildWomenShopPath, getWomenLoginRedirect, storeWomenPendingCartItem } from '../../utils/womenNavigation';
 import toast from 'react-hot-toast';
 
-const WOMEN_AUDIENCE_TOKENS = new Set([
-    'women', 'womens', 'woman', 'female', 'lady', 'ladies', 'girl', 'girls',
-    'wife', 'wives', 'mother', 'mothers', 'sister', 'sisters',
-    'daughter', 'daughters', 'bride', 'brides', 'her', 'for-her'
-]);
-
-const MEN_AUDIENCE_TOKENS = new Set([
-    'men', 'mens', 'man', 'male',
-    'husband', 'husbands', 'brother', 'brothers',
-    'boyfriend', 'boyfriends', 'groom', 'father', 'fathers', 'dad'
-]);
-
 const normalizeToken = (value = '') => String(value || '')
     .trim()
     .toLowerCase()
@@ -106,27 +94,6 @@ const matchesCategory = (product = {}, categoryId = '') => {
     return categoryTokens.has(target);
 };
 
-const isWomenProduct = (product = {}) => {
-    const tags = (product.navGiftsFor || []).map(normalizeToken).filter(Boolean);
-    if (tags.some((token) => WOMEN_AUDIENCE_TOKENS.has(token))) return true;
-    if (tags.some((token) => MEN_AUDIENCE_TOKENS.has(token))) return false;
-
-    const text = normalizeToken([
-        product.name,
-        product.category,
-        product.categorySlug
-    ].filter(Boolean).join(' '));
-
-    if (text.includes('women') || text.includes('female') || text.includes('lady') || text.includes('girl') || text.includes('bridal')) {
-        return true;
-    }
-    if (text.includes('men') || text.includes('male')) {
-        return false;
-    }
-
-    return true;
-};
-
 const PINK = '#E8638A';
 const PINK_BG = '#FFF0F4';
 
@@ -152,8 +119,10 @@ const WomenProductsListing = ({ sectionData = null }) => {
 
     const displayedProducts = useMemo(() => {
         const allProducts = Array.isArray(products) ? products : [];
-        const womenProducts = allProducts.filter(isWomenProduct);
-        const sortedByLatest = [...womenProducts].sort((a, b) => productCreatedAt(b) - productCreatedAt(a));
+        // "navGiftsFor/navOccasions" legacy placement tags are retired. Women sections are now driven by:
+        // - CMS pinned products (manual), or
+        // - CMS category selection (category mode).
+        const sortedByLatest = [...allProducts].sort((a, b) => productCreatedAt(b) - productCreatedAt(a));
 
         if (resolvedSettings.sourceMode === 'manual') {
             const pinnedIds = (sectionData?.items || [])

@@ -18,7 +18,7 @@ const PRODUCT_UPDATE_WHITELIST = [
   "isFeatured", "isTrending", "isNewArrival",
   "returnEligibilities", "weight", "material", "faqs",
   "showInNavbar", "showInCollection", "active",
-  "navShopByCategory", "navGiftsFor", "navOccasions",
+  "navShopByCategory",
   "cardLabel", "cardBadge", "careTips", "silverCategory",
   "goldCategory", "weightUnit", "specifications", "supplierInfo",
   "huid", "sizes", "isSerialized", "paymentGatewayChargeBearer"

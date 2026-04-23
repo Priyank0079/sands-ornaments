@@ -15,14 +15,6 @@ import prodChain from '@assets/men_prod_chain.png';
 import prodStud from '@assets/men_prod_stud.png';
 import premiumRing from '@assets/premium_ring_product.png';
 
-const MEN_AUDIENCE_TOKENS = new Set([
-    'men', 'mens', 'man', 'male',
-    'husband', 'husbands',
-    'brother', 'brothers',
-    'boyfriend', 'boyfriends',
-    'groom', 'father', 'fathers', 'dad'
-]);
-
 const normalizeToken = (value = '') => String(value || '')
     .trim()
     .toLowerCase()
@@ -80,19 +72,6 @@ const getProductOriginalPrice = (product = {}) => {
     return Number.isFinite(fallback) && fallback > 0 ? fallback : getProductPrice(product);
 };
 
-const isMenProduct = (product = {}) => {
-    const tags = (product.navGiftsFor || []).map(normalizeToken).filter(Boolean);
-    if (tags.some((token) => MEN_AUDIENCE_TOKENS.has(token))) return true;
-
-    const text = normalizeToken([
-        product.name,
-        product.category,
-        product.categorySlug
-    ].filter(Boolean).join(' '));
-
-    return text.includes('men') || text.includes('male');
-};
-
 const productCreatedAt = (product = {}) => {
     const ts = product.createdAt || product.updatedAt || '';
     const date = ts ? new Date(ts).getTime() : 0;
@@ -146,8 +125,10 @@ const MenFeaturedProducts = ({ sectionData }) => {
 
     const displayedProducts = useMemo(() => {
         const allProducts = Array.isArray(products) ? products : [];
-        const menProducts = allProducts.filter(isMenProduct);
-        const sortedByLatest = [...menProducts].sort((a, b) => productCreatedAt(b) - productCreatedAt(a));
+        // "navGiftsFor/navOccasions" legacy placement tags are retired. Men sections are now driven by:
+        // - CMS pinned products (manual), or
+        // - CMS category selection (category mode).
+        const sortedByLatest = [...allProducts].sort((a, b) => productCreatedAt(b) - productCreatedAt(a));
 
         if (resolvedSettings.sourceMode === 'manual') {
             const pinnedIds = (sectionData?.items || [])
@@ -161,7 +142,7 @@ const MenFeaturedProducts = ({ sectionData }) => {
                 })
                 .filter(Boolean);
 
-            const pinnedMap = new Map(menProducts.map((product) => [String(product.id || product._id), product]));
+            const pinnedMap = new Map(allProducts.map((product) => [String(product.id || product._id), product]));
             return pinnedIds
                 .map((id) => pinnedMap.get(String(id)))
                 .filter(Boolean)

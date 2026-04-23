@@ -72,8 +72,6 @@ const productSchema = Joi.object({
   showInNavbar: boolField,
   showInCollection: boolField,
   active: boolField,
-  navGiftsFor: Joi.array().items(Joi.string().trim()).optional(),
-  navOccasions: Joi.array().items(Joi.string().trim()).optional(),
   isSerialized: boolField.optional(),
   images: Joi.any(),
   deletedImages: Joi.array().items(Joi.string()).allow(null),

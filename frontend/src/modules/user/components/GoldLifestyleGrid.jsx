@@ -12,14 +12,15 @@ import dateNightImg from '@assets/lifestyle_date_night.png';
 import giftCardImg from '@assets/lifestyle_gift_card.png';
 
 const fallbackItems = [
-    { id: 1, title: 'Casual Wear', image: casualImg, path: '/shop?occasion=casual&metal=gold' },
-    { id: 2, title: 'Party Wear', image: partyImg, path: '/shop?occasion=party&metal=gold' },
+    // Legacy "?occasion=" filtering has been retired. Use search queries instead.
+    { id: 1, title: 'Casual Wear', image: casualImg, path: '/shop?search=casual&metal=gold' },
+    { id: 2, title: 'Party Wear', image: partyImg, path: '/shop?search=party&metal=gold' },
     { id: 3, title: 'Gold Gift Card', image: giftCardImg, path: '/help' },
     { id: 4, title: 'Twinning', image: twinningImg, path: '/shop?search=twinning&metal=gold' },
-    { id: 5, title: 'Traditional', image: traditionalImg, path: '/shop?occasion=traditional&metal=gold' },
-    { id: 6, title: 'Traditional', image: traditionalImg, path: '/shop?occasion=traditional&metal=gold' },
+    { id: 5, title: 'Traditional', image: traditionalImg, path: '/shop?search=traditional&metal=gold' },
+    { id: 6, title: 'Traditional', image: traditionalImg, path: '/shop?search=traditional&metal=gold' },
     { id: 7, title: 'Minimalistic', image: minimalisticImg, path: '/shop?search=minimalistic&metal=gold' },
-    { id: 8, title: 'Date Nights', image: dateNightImg, path: '/shop?occasion=date-night&metal=gold' }
+    { id: 8, title: 'Date Nights', image: dateNightImg, path: '/shop?search=date-night&metal=gold' }
 ];
 
 const ensureGoldCategoryPath = (path, categoryId = '') => {

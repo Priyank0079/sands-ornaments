@@ -142,14 +142,14 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             ]
         : isGoldLifestyleGridSection
             ? [
-                { id: 'gold-lifestyle-1', name: 'Casual Wear', label: 'Casual Wear', image: goldLifestyleCasual, categoryId: '', path: '/shop?metal=gold&occasion=casual', tag: '' },
-                { id: 'gold-lifestyle-2', name: 'Party Wear', label: 'Party Wear', image: goldLifestyleParty, categoryId: '', path: '/shop?metal=gold&occasion=party', tag: '' },
+                { id: 'gold-lifestyle-1', name: 'Casual Wear', label: 'Casual Wear', image: goldLifestyleCasual, categoryId: '', path: '/shop?metal=gold&search=casual', tag: '' },
+                { id: 'gold-lifestyle-2', name: 'Party Wear', label: 'Party Wear', image: goldLifestyleParty, categoryId: '', path: '/shop?metal=gold&search=party', tag: '' },
                 { id: 'gold-lifestyle-3', name: 'Gold Gift Card', label: 'Gold Gift Card', image: goldLifestyleGiftCard, categoryId: '', path: '/shop?metal=gold', tag: '' },
                 { id: 'gold-lifestyle-4', name: 'Twinning', label: 'Twinning', image: goldLifestyleTwinning, categoryId: '', path: '/shop?metal=gold', tag: '' },
-                { id: 'gold-lifestyle-5', name: 'Traditional', label: 'Traditional', image: goldLifestyleTraditional, categoryId: '', path: '/shop?metal=gold&occasion=traditional', tag: '' },
-                { id: 'gold-lifestyle-6', name: 'Traditional', label: 'Traditional', image: goldLifestyleTraditional, categoryId: '', path: '/shop?metal=gold&occasion=traditional', tag: '' },
+                { id: 'gold-lifestyle-5', name: 'Traditional', label: 'Traditional', image: goldLifestyleTraditional, categoryId: '', path: '/shop?metal=gold&search=traditional', tag: '' },
+                { id: 'gold-lifestyle-6', name: 'Traditional', label: 'Traditional', image: goldLifestyleTraditional, categoryId: '', path: '/shop?metal=gold&search=traditional', tag: '' },
                 { id: 'gold-lifestyle-7', name: 'Minimalistic', label: 'Minimalistic', image: goldLifestyleMinimalistic, categoryId: '', path: '/shop?metal=gold', tag: '' },
-                { id: 'gold-lifestyle-8', name: 'Date Nights', label: 'Date Nights', image: goldLifestyleDateNight, categoryId: '', path: '/shop?metal=gold&occasion=date-night', tag: '' }
+                { id: 'gold-lifestyle-8', name: 'Date Nights', label: 'Date Nights', image: goldLifestyleDateNight, categoryId: '', path: '/shop?metal=gold&search=date-night', tag: '' }
             ]
         : isGoldExploreCollectionsSection
             ? [
@@ -1711,28 +1711,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             await onSave({ items: normalizedItems });
             return;
         }
-        if (sectionId === 'nav-gifts-for' || sectionId === 'nav-occasions') {
-            const missingLabels = nextItems.filter(item => !(item.name || item.label || '').trim());
-            if (missingLabels.length > 0) {
-                toast.error('Enter a name for each navigation item before saving.');
-                return;
-            }
-        }
         const normalizedItems = nextItems.map((item) => {
-            if (sectionId === 'nav-gifts-for' || sectionId === 'nav-occasions') {
-                const label = item.name || item.label || '';
-                const slug = String(label || '')
-                    .trim()
-                    .toLowerCase()
-                    .replace(/['"]/g, '')
-                    .replace(/[^a-z0-9]+/g, '-')
-                    .replace(/^-+|-+$/g, '');
-                const key = sectionId === 'nav-gifts-for' ? 'filter' : 'occasion';
-                const path = item.path && item.path.trim().length > 0
-                    ? item.path
-                    : `/shop?${key}=${encodeURIComponent(slug)}`;
-                return { ...item, name: label, label, path };
-            }
             return item;
         });
         const result = await onSave({ items: normalizedItems, settings });
@@ -2001,8 +1980,6 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                         && !isFixedWomenPromoBanners
                                         && sectionId !== 'price-range-showcase'
                                         && !isLuxuryWithinReach
-                                        && sectionId !== 'nav-gifts-for'
-                                        && sectionId !== 'nav-occasions'
                                         && sectionId !== 'perfect-gift'
                                         && sectionId !== 'new-launch'
                                         && sectionId !== 'latest-drop'

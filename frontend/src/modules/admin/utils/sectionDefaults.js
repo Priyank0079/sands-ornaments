@@ -54,17 +54,7 @@ import catBracelet from '@assets/cat_bracelets.png';
 import catAnklet from '@assets/cat_anklets.png';
 import catChain from '@assets/cat_chain_wine.png';
 
-import navGiftWomen from '@assets/nav_gift_women.png';
-import navGiftGirls from '@assets/nav_gift_girls.png';
-import navGiftMens from '@assets/nav_gift_mens.png';
-import navGiftCouple from '@assets/nav_gift_couple.png';
-import navGiftKids from '@assets/nav_gift_kids.png';
-
-import navOccasionBirthday from '@assets/nav_occasion_birthday.png';
-import navOccasionAnniversary from '@assets/nav_occasion_anniversary.png';
-import navOccasionWedding from '@assets/nav_occasion_wedding.png';
-import navOccasionMothers from '@assets/nav_occasion_mothers.png';
-import navOccasionValentine from '@assets/nav_occasion_valentine.png';
+// Legacy homepage nav sections (nav-gifts-for / nav-occasions) have been retired.
 import bondWife from '@assets/bond_wife.png';
 import bondHusband from '@assets/bond_husband.png';
 import bondMother from '@assets/bond_mother.png';
@@ -204,36 +194,6 @@ export const PAGE_SECTIONS = [
 ];
 
 const homeSections = [
-  {
-    pageKey: 'home',
-    sectionKey: 'nav-gifts-for',
-    sectionType: 'nav-links',
-    label: 'Nav: Gifts For',
-    isActive: true,
-    sortOrder: 101,
-    items: [
-      { id: 'women', name: 'Womens', image: navGiftWomen, path: '/shop?filter=womens', tag: '' },
-      { id: 'girls', name: 'Girls', image: navGiftGirls, path: '/shop?filter=girls', tag: '' },
-      { id: 'mens', name: 'Mens', image: navGiftMens, path: '/shop?filter=mens', tag: '' },
-      { id: 'couple', name: 'Couple', image: navGiftCouple, path: '/shop?filter=couple', tag: '' },
-      { id: 'kids', name: 'Kids', image: navGiftKids, path: '/shop?filter=kids', tag: '' }
-    ]
-  },
-  {
-    pageKey: 'home',
-    sectionKey: 'nav-occasions',
-    sectionType: 'nav-links',
-    label: 'Nav: Occasions',
-    isActive: true,
-    sortOrder: 102,
-    items: [
-      { id: 'birthday', name: 'Birthday', image: navOccasionBirthday, path: '/shop?occasion=birthday', tag: '' },
-      { id: 'anniversary', name: 'Anniversary', image: navOccasionAnniversary, path: '/shop?occasion=anniversary', tag: '' },
-      { id: 'wedding', name: 'Wedding', image: navOccasionWedding, path: '/shop?occasion=wedding', tag: '' },
-      { id: 'mothers-day', name: "Mother's Day", image: navOccasionMothers, path: '/shop?occasion=mothers-day', tag: '' },
-      { id: 'valentine', name: 'Valentine Day', image: navOccasionValentine, path: '/shop?occasion=valentine', tag: '' }
-    ]
-  },
   {
     pageKey: 'home',
     sectionKey: 'hero-banners',

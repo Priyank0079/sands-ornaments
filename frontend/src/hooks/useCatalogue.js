@@ -66,8 +66,6 @@ export const useCatalogue = () => {
                 categorySlug: rawCategorySlug || '',
                 material: prod.material || '',
                 navShopByCategory: prod.navShopByCategory || [],
-                navGiftsFor: prod.navGiftsFor || [],
-                navOccasions: prod.navOccasions || [],
                 faqs: prod.faqs || [], // Added FAQs
                 goldCategory: prod.goldCategory || '',
                 silverCategory: prod.silverCategory || '',

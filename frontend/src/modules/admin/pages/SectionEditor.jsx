@@ -248,8 +248,6 @@ const SectionEditor = () => {
             'proposal-rings',
             'curated-for-you',
             'style-it-your-way',
-            'nav-gifts-for',
-            'nav-occasions',
             'hero-banners-gold',
             'gold-category-grid',
             'gold-explore-collections',

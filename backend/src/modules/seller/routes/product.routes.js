@@ -12,8 +12,6 @@ const SELLER_COMPLEX_FIELDS = [
   "tags",
   "variants",
   "sizes",
-  "navGiftsFor",
-  "navOccasions",
   "faqs",
   "deletedImages"
 ];

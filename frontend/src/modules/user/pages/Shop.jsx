@@ -42,10 +42,7 @@ const Shop = () => {
     const [pageTitle, setPageTitle] = useState('All Jewellery');
     const queryParams = new URLSearchParams(location.search);
     const isComingSoonQuery = queryParams.get('status') === 'coming-soon';
-    const filterQuery = queryParams.get('filter');
-    const giftsQuery = queryParams.get('gifts');
     const sourceQuery = queryParams.get('source');
-    const occasionQuery = queryParams.get('occasion');
     const priceMaxQuery = queryParams.get('price_max');   // upper bound — e.g. price_max=3000
     const priceMinQuery = queryParams.get('price_min');   // lower bound — e.g. price_min=1500
     const productsQuery = queryParams.get('products');
@@ -54,7 +51,6 @@ const Shop = () => {
     const searchQuery = queryParams.get('search');
     const karatQuery = queryParams.get('karat');
     const silverTypeQuery = queryParams.get('silver_type');
-    const effectiveFilterQuery = filterQuery || giftsQuery;
     const isMenFlow = sourceQuery === 'men';
     const isWomenFlow = sourceQuery === 'women';
 
@@ -254,10 +250,6 @@ const Shop = () => {
             const currentCat = categories.find(c => c.path === category || c.slug === category);
             title = currentCat ? currentCat.name : category.charAt(0).toUpperCase() + category.slice(1);
             baseProducts = products.filter(p => matchesCategory(p, category, currentCat));
-        } else if (effectiveFilterQuery) {
-            title = `Gifts for ${effectiveFilterQuery.charAt(0).toUpperCase() + effectiveFilterQuery.slice(1)}`;
-        } else if (occasionQuery) {
-            title = `${occasionQuery.charAt(0).toUpperCase() + occasionQuery.slice(1)} Picks`;
         }
 
         if (metalQuery && (karatQuery || silverTypeQuery)) {
@@ -321,40 +313,6 @@ const Shop = () => {
             result = result.filter(p => matchesCategory(p, selectedCategory, selectedCat));
         }
 
-        const normalizeToken = (value) => String(value || '')
-            .trim()
-            .toLowerCase()
-            .replace(/['"]/g, '')
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/^-+|-+$/g, '');
-
-        // 2.1 Apply Audience/Occasion Text Filters (if present)
-        const filterTerm = effectiveFilterQuery || occasionQuery;
-        if (filterTerm) {
-            const term = normalizeToken(filterTerm);
-            const matchesNavTags = (product) => {
-                const giftTags = (product.navGiftsFor || []).map(t => normalizeToken(t));
-                const occasionTags = (product.navOccasions || []).map(t => normalizeToken(t));
-                if (effectiveFilterQuery) return giftTags.includes(term);
-                if (occasionQuery) return occasionTags.includes(term);
-                return false;
-            };
-
-            result = result.filter(matchesNavTags);
-        }
-
-        if (isWomenFlow && !effectiveFilterQuery) {
-            const womenAudienceTokens = new Set([
-                'women', 'womens', 'female', 'ladies', 'lady', 'girl', 'girls',
-                'wife', 'wives', 'girlfriend', 'girlfriends',
-                'sister', 'sisters', 'mother', 'mothers', 'daughter', 'daughters'
-            ]);
-            result = result.filter((product) => {
-                const giftTags = (product.navGiftsFor || []).map((tag) => normalizeToken(tag));
-                return giftTags.some((tag) => womenAudienceTokens.has(tag));
-            });
-        }
-
         if (searchQuery) {
             const normalizedSearch = String(searchQuery).trim().toLowerCase();
             result = result.filter((product) => {
@@ -365,8 +323,6 @@ const Shop = () => {
                     product.category,
                     product.categorySlug,
                     ...(product.tags || []),
-                    ...(product.navGiftsFor || []),
-                    ...(product.navOccasions || []),
                     ...(product.variants || []).map((variant) => variant.name)
                 ]
                     .filter(Boolean)
@@ -778,7 +734,7 @@ const Shop = () => {
                         <Filter className="w-3 h-3" /> Filter
                     </span>
                     <span className="text-[10px] text-gray-600 font-medium mt-0.5">
-                        {(selectedCategory !== 'All' || filterNewArrivals || filterTrending || priceRange < 50000 || !!searchQuery || !!effectiveFilterQuery || !!occasionQuery) ? 'Filters applied' : 'No filter applied'}
+                        {(selectedCategory !== 'All' || filterNewArrivals || filterTrending || priceRange < 50000 || !!searchQuery) ? 'Filters applied' : 'No filter applied'}
                     </span>
                 </button>
             </div>
