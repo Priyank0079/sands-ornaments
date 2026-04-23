@@ -5,6 +5,7 @@ import PageHeader from '../../admin/components/common/PageHeader';
 import DataTable from '../../admin/components/common/DataTable';
 import { sellerProductService } from '../services/sellerProductService';
 import toast from 'react-hot-toast';
+import api from '../../../services/api';
 
 const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString()}`;
 
@@ -14,59 +15,85 @@ const SellerProducts = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
+    const [categoryOptions, setCategoryOptions] = useState([{ label: 'All Categories', value: 'all' }]);
+    const [page, setPage] = useState(1);
+    const [limit] = useState(10);
+    const [pagination, setPagination] = useState({ page: 1, limit: 10, totalItems: 0, totalPages: 1 });
+
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+
+    useEffect(() => {
+        const t = setTimeout(() => setDebouncedSearch(searchTerm), 300);
+        return () => clearTimeout(t);
+    }, [searchTerm]);
+
+    useEffect(() => {
+        const loadCategories = async () => {
+            try {
+                const res = await api.get('public/categories', { params: { scope: 'all' } });
+                const categories = res.data?.data?.categories || res.data?.categories || [];
+                const options = [
+                    { label: 'All Categories', value: 'all' },
+                    ...categories
+                        .filter((c) => c?.isActive !== false)
+                        .sort((a, b) => Number(a?.sortOrder ?? 0) - Number(b?.sortOrder ?? 0)
+                            || String(a?.name || '').localeCompare(String(b?.name || '')))
+                        .map((c) => ({ label: c.name, value: c._id }))
+                ];
+                setCategoryOptions(options);
+            } catch (err) {
+                // Silent fallback: product list still works without category options.
+            }
+        };
+        loadCategories();
+    }, []);
+
+    useEffect(() => {
+        // Reset server page when query changes
+        setPage(1);
+    }, [debouncedSearch, selectedCategory]);
 
     useEffect(() => {
         const loadProducts = async () => {
             try {
                 setLoading(true);
-                const data = await sellerProductService.getSellerProductsRaw();
-                setProducts(data || []);
+                const params = { page, limit };
+                if (debouncedSearch) params.search = debouncedSearch;
+                if (selectedCategory !== 'all') params.category = selectedCategory;
+
+                const result = await sellerProductService.getSellerProductsPaged(params);
+                setProducts(result.products || []);
+                setPagination(result.pagination || { page, limit, totalItems: (result.products || []).length, totalPages: 1 });
             } finally {
                 setLoading(false);
             }
         };
 
         loadProducts();
-    }, []);
+    }, [page, limit, debouncedSearch, selectedCategory]);
 
     const handleDelete = async (id) => {
         if (!window.confirm('Are you sure you want to delete this product?')) return;
 
         const success = await sellerProductService.deleteProduct(id);
         if (success) {
-            setProducts((prev) => prev.filter((product) => product._id !== id));
+            const next = products.filter((product) => product._id !== id);
+            if (next.length === 0 && page > 1) {
+                setPage((prev) => Math.max(1, prev - 1));
+            } else {
+                setProducts(next);
+                setPagination((prev) => ({
+                    ...prev,
+                    totalItems: Math.max(0, Number(prev.totalItems || 0) - 1)
+                }));
+            }
             toast.success('Product deleted successfully');
         } else {
             toast.error('Failed to delete product');
         }
     };
 
-    const categoryOptions = useMemo(() => {
-        const categories = Array.from(
-            new Map(
-                products
-                    .flatMap((product) => product.categories || [])
-                    .map((category) => [
-                        String(category?._id || category),
-                        category?.name || category || 'Uncategorized'
-                    ])
-            )
-        ).map(([value, label]) => ({ value, label }));
-
-        return [
-            { label: 'All Categories', value: 'all' },
-            ...categories.sort((a, b) => a.label.localeCompare(b.label))
-        ];
-    }, [products]);
-
-    const filteredProducts = useMemo(() => {
-        return products.filter((product) => {
-            const matchesSearch = (product.name || '').toLowerCase().includes(searchTerm.toLowerCase());
-            const firstCategoryId = String(product.categories?.[0]?._id || product.categories?.[0] || '');
-            const matchesCategory = selectedCategory === 'all' || firstCategoryId === selectedCategory;
-            return matchesSearch && matchesCategory;
-        });
-    }, [products, searchTerm, selectedCategory]);
+    const filteredProducts = useMemo(() => products, [products]);
 
     const columns = [
         {
@@ -238,6 +265,11 @@ const SellerProducts = () => {
                     setSearchTerm={setSearchTerm}
                     searchPlaceholder="Search products by name..."
                     filters={filters}
+                    itemsPerPage={limit}
+                    pagination={{
+                        ...pagination,
+                        onPageChange: (nextPage) => setPage(nextPage)
+                    }}
                 >
                     <div className="flex gap-2 items-center">
                         <button

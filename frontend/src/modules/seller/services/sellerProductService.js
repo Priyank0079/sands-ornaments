@@ -23,6 +23,27 @@ const normalizeProduct = (product) => {
 };
 
 export const sellerProductService = {
+  getSellerProductsPaged: async (params = {}) => {
+    try {
+      const res = await api.get('seller/products', { params });
+      const payload = res.data?.data || res.data || {};
+      return {
+        products: payload.products || [],
+        pagination: payload.pagination || {
+          page: Number(params.page || 1),
+          limit: Number(params.limit || 10),
+          totalItems: Array.isArray(payload.products) ? payload.products.length : 0,
+          totalPages: 1
+        }
+      };
+    } catch (err) {
+      console.error("Failed to fetch seller products:", err);
+      return {
+        products: [],
+        pagination: { page: 1, limit: Number(params.limit || 10), totalItems: 0, totalPages: 1 }
+      };
+    }
+  },
   getSellerProducts: async () => {
     try {
       const res = await api.get('seller/products');
@@ -67,7 +88,7 @@ export const sellerProductService = {
       const res = await api.post('/seller/products', data, {
         headers: isFormData ? { 'Content-Type': 'multipart/form-data' } : {}
       });
-      return res.data?.data?.product || res.data?.product;
+      return res.data;
     } catch (err) {
       console.error("Failed to add product:", err);
       throw err;
@@ -88,7 +109,7 @@ export const sellerProductService = {
   deleteProduct: async (id) => {
     try {
       const res = await api.delete(`/seller/products/${id}`);
-      return res.data?.success ?? true;
+      return res.data?.success === true;
     } catch (err) {
       console.error("Failed to delete product:", err);
       return false;

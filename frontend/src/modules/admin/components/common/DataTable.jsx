@@ -9,18 +9,30 @@ const DataTable = ({
     searchPlaceholder = "Search...",
     filters,
     children,
-    itemsPerPage = 10
+    itemsPerPage = 10,
+    // Optional server-side pagination mode: caller supplies already-paginated `data`
+    // plus a pagination object controlling page/total and navigation.
+    pagination
 }) => {
-    const [currentPage, setCurrentPage] = useState(1);
+    const [internalPage, setInternalPage] = useState(1);
+    const isServerPaged = Boolean(pagination && typeof pagination === 'object');
+    const currentPage = isServerPaged ? (pagination.page || 1) : internalPage;
 
     // Calculate pagination
-    const totalPages = Math.ceil(data.length / itemsPerPage);
+    const totalItems = isServerPaged ? Number(pagination.totalItems || 0) : data.length;
+    const totalPages = isServerPaged
+        ? Math.max(1, Number(pagination.totalPages || 1))
+        : Math.ceil(data.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
-    const paginatedData = data.slice(startIndex, startIndex + itemsPerPage);
+    const paginatedData = isServerPaged ? data : data.slice(startIndex, startIndex + itemsPerPage);
 
     const handlePageChange = (newPage) => {
         if (newPage >= 1 && newPage <= totalPages) {
-            setCurrentPage(newPage);
+            if (isServerPaged) {
+                pagination.onPageChange?.(newPage);
+            } else {
+                setInternalPage(newPage);
+            }
         }
     };
 
@@ -36,7 +48,11 @@ const DataTable = ({
                         value={searchTerm}
                         onChange={(e) => {
                             setSearchTerm(e.target.value);
-                            setCurrentPage(1); // Reset to page 1 on search
+                            if (isServerPaged) {
+                                pagination.onPageChange?.(1);
+                            } else {
+                                setInternalPage(1); // Reset to page 1 on search
+                            }
                         }}
                         className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-[#8D6E63]/20 focus:border-[#8D6E63] transition-all text-gray-900 placeholder-gray-500"
                     />
@@ -48,7 +64,11 @@ const DataTable = ({
                                 <select
                                     onChange={(e) => {
                                         filter.onChange(e.target.value);
-                                        setCurrentPage(1); // Reset to page 1 on filter change
+                                        if (isServerPaged) {
+                                            pagination.onPageChange?.(1);
+                                        } else {
+                                            setInternalPage(1); // Reset to page 1 on filter change
+                                        }
                                     }}
                                     className="bg-gray-50 border border-gray-200 rounded-lg pl-3 md:pl-4 pr-8 md:pr-10 py-1.5 md:py-2 text-[10px] md:text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#8D6E63]/20 appearance-none cursor-pointer"
                                 >
@@ -100,9 +120,11 @@ const DataTable = ({
                 </div>
 
                 {/* Pagination Controls */}
-                {data.length > 0 && (
+                {totalItems > 0 && (
                     <div className="px-4 md:px-6 py-3 border-t border-gray-200 flex items-center justify-between text-xs md:text-sm text-gray-500">
-                        <span>Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, data.length)} of {data.length} entries</span>
+                        <span>
+                            Showing {totalItems === 0 ? 0 : (startIndex + 1)} to {Math.min(startIndex + paginatedData.length, totalItems)} of {totalItems} entries
+                        </span>
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={() => handlePageChange(currentPage - 1)}

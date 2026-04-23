@@ -9,6 +9,34 @@ const { applyMetalPricingToProduct } = require("../../../utils/metalPricing");
 const { generateUniqueProductCode, generateVariantCode } = require("../../../utils/productIdentity");
 const { normalizeProductForResponse } = require("../../../utils/productCompatibility");
 
+// Seller update whitelist: prevent field injection (e.g., active/status toggles) via API.
+// Sellers can edit product content + variants + pricing inputs; lifecycle flags are admin-controlled.
+const SELLER_UPDATE_WHITELIST = [
+  "name",
+  "slug",
+  "description",
+  "stylingTips",
+  "careTips",
+  "material",
+  "audience",
+  "categories",
+  "variants",
+  "tags",
+  "faqs",
+  "weight",
+  "weightUnit",
+  "specifications",
+  "supplierInfo",
+  "cardLabel",
+  "cardBadge",
+  "silverCategory",
+  "goldCategory",
+  "paymentGatewayChargeBearer",
+  "huid",
+  "sizes",
+  "isSerialized"
+];
+
 const normalizeCategories = (categories) => {
   if (!categories) return [];
   if (Array.isArray(categories)) return categories.filter(Boolean).slice(0, 1);
@@ -272,10 +300,47 @@ exports.createProduct = async (req, res) => {
 
 exports.getMyProducts = async (req, res) => {
   try {
-    const products = await Product.find({ sellerId: req.user.userId })
-      .populate("categories", "name slug")
-      .sort({ createdAt: -1 });
-    return success(res, { products: products.map((product) => normalizeProductForResponse(product)) });
+    const sellerId = req.user.userId;
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(Number(req.query.limit) || 10, 100);
+    const { search, category, status, active } = req.query;
+
+    const query = { sellerId };
+    if (search) {
+      const escaped = String(search).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      query.name = { $regex: escaped, $options: "i" };
+    }
+    if (category) {
+      query.categories = category;
+    }
+    if (status) {
+      query.status = status;
+    }
+    if (active === "true") query.active = true;
+    if (active === "false") query.active = false;
+
+    const skip = (page - 1) * limit;
+
+    const [products, total] = await Promise.all([
+      Product.find(query)
+        .populate("categories", "name slug")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Product.countDocuments(query)
+    ]);
+
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+
+    return success(res, {
+      products: products.map((product) => normalizeProductForResponse(product)),
+      pagination: {
+        page,
+        limit,
+        totalItems: total,
+        totalPages
+      }
+    });
   } catch (err) { return error(res, err.message); }
 };
 
@@ -343,6 +408,11 @@ exports.updateProduct = async (req, res) => {
     delete safeData.updatedAt;
     delete safeData.__v;
     delete safeData.deletedImages;
+    // Seller cannot update lifecycle/visibility flags directly.
+    delete safeData.status;
+    delete safeData.active;
+    delete safeData.showInNavbar;
+    delete safeData.showInCollection;
 
     // Sanitize unique fields to prevent duplicate "" key errors
     if (!safeData.productCode) delete safeData.productCode;
@@ -364,7 +434,12 @@ exports.updateProduct = async (req, res) => {
     if (safeData.material !== undefined || safeData.metal !== undefined || safeData.metalType !== undefined) {
       safeData.material = normalizeMaterial(safeData);
     }
-    Object.assign(product, safeData);
+    // Apply only explicitly allowed fields.
+    SELLER_UPDATE_WHITELIST.forEach((key) => {
+      if (safeData[key] !== undefined) {
+        product[key] = safeData[key];
+      }
+    });
     if (Array.isArray(product.variants)) {
       product.variants = sanitizeVariants(product.variants, {
         weight: product.weight,
