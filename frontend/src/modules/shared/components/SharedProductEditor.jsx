@@ -210,14 +210,39 @@ const SharedProductEditor = ({
         return roundCurrency(weight * getMetalRate(variant));
     };
 
+    const getPaymentGatewayChargePercent = () => (
+        String(formData.paymentGatewayChargeBearer || 'seller').toLowerCase() === 'user' ? 2 : 0
+    );
+
     const getPricingForVariant = (variant) => {
         const metalPrice = getMetalPrice(variant);
         const makingCharge = Number(variant.makingCharge) || 0;
-        const diamondPrice = Number(variant.diamondPrice) || 0;
-        const subtotal = roundCurrency(metalPrice + makingCharge + diamondPrice);
-        const gstValue = roundCurrency((subtotal * (Number(gstRate) || 0)) / 100);
-        const finalPrice = roundCurrency(subtotal + gstValue);
-        return { metalPrice, subtotal, gstValue, finalPrice };
+        const hallmarkingCharge = Number(variant.hallmarkingCharge) || 0;
+        const diamondCertificateCharge = Number(
+            variant.diamondCertificateCharge !== undefined && variant.diamondCertificateCharge !== null
+                ? variant.diamondCertificateCharge
+                : variant.diamondPrice
+        ) || 0;
+        const hiddenCharge = roundCurrency(hallmarkingCharge + diamondCertificateCharge);
+        const subtotalBeforeTax = roundCurrency(metalPrice + makingCharge + hiddenCharge);
+        const gstValue = roundCurrency((subtotalBeforeTax * (Number(gstRate) || 0)) / 100);
+        const priceAfterTax = roundCurrency(subtotalBeforeTax + gstValue);
+        const pgChargePercent = getPaymentGatewayChargePercent();
+        const pgChargeAmount = roundCurrency((priceAfterTax * pgChargePercent) / 100);
+        const finalPrice = roundCurrency(priceAfterTax + pgChargeAmount);
+        return {
+            metalPrice,
+            makingCharge,
+            hallmarkingCharge,
+            diamondCertificateCharge,
+            hiddenCharge,
+            subtotalBeforeTax,
+            gstValue,
+            priceAfterTax,
+            pgChargePercent,
+            pgChargeAmount,
+            finalPrice
+        };
     };
 
     const generateSerialCode = (existingSet, variantIndex, prefixOverride) => {
@@ -315,6 +340,7 @@ const SharedProductEditor = ({
         weightUnit: 'Grams',
         specifications: '',
         supplierInfo: '',
+        paymentGatewayChargeBearer: 'seller',
         categories: [{ category: '' }],
         tags: {
             isNewArrival: false,
@@ -324,7 +350,32 @@ const SharedProductEditor = ({
         navGiftsFor: [],
         navOccasions: [],
         variants: [
-            { id: Date.now(), name: 'Standard', weight: '', weightUnit: 'Grams', makingCharge: '0', diamondPrice: '0', mrp: '0', price: '', stock: 0, serialCodes: [], metalPrice: 0, gst: 0, finalPrice: 0, variantCode: '', variantImages: [], variantFaqs: [] }
+            {
+                id: Date.now(),
+                name: 'Standard',
+                weight: '',
+                weightUnit: 'Grams',
+                makingCharge: '0',
+                hallmarkingCharge: '0',
+                diamondCertificateCharge: '0',
+                diamondPrice: '0',
+                mrp: '0',
+                price: '',
+                stock: 0,
+                serialCodes: [],
+                metalPrice: 0,
+                hiddenCharge: 0,
+                subtotalBeforeTax: 0,
+                gstAmount: 0,
+                priceAfterTax: 0,
+                pgChargePercent: 0,
+                pgChargeAmount: 0,
+                gst: 0,
+                finalPrice: 0,
+                variantCode: '',
+                variantImages: [],
+                variantFaqs: []
+            }
         ],
         faqs: [],
         deletedImages: [],
@@ -428,12 +479,18 @@ const SharedProductEditor = ({
                     mrp: pricing.finalPrice.toString(),
                     price: pricing.finalPrice.toString(),
                     metalPrice: pricing.metalPrice,
+                    hiddenCharge: pricing.hiddenCharge,
+                    subtotalBeforeTax: pricing.subtotalBeforeTax,
+                    gstAmount: pricing.gstValue,
+                    priceAfterTax: pricing.priceAfterTax,
+                    pgChargePercent: pricing.pgChargePercent,
+                    pgChargeAmount: pricing.pgChargeAmount,
                     gst: pricing.gstValue,
                     finalPrice: pricing.finalPrice
                 };
             })
         }));
-    }, [formData.material, formData.weight, formData.weightUnit, gstRate, metalRates]);
+    }, [formData.material, formData.weight, formData.weightUnit, formData.paymentGatewayChargeBearer, gstRate, metalRates]);
 
     useEffect(() => {
         const loadProduct = async () => {
@@ -474,6 +531,7 @@ const SharedProductEditor = ({
                         material: data.material || data.metal || 'Silver',
                         weight: data.weight || '',
                         weightUnit: data.weightUnit || 'Grams',
+                        paymentGatewayChargeBearer: data.paymentGatewayChargeBearer || 'seller',
                         categories: normalizedCategories.slice(0, 1),
                         navGiftsFor: Array.isArray(data.navGiftsFor) ? data.navGiftsFor : [],
                         navOccasions: Array.isArray(data.navOccasions) ? data.navOccasions : [],
@@ -492,6 +550,12 @@ const SharedProductEditor = ({
                                 weight: v.weight ?? data.weight ?? '',
                                 weightUnit: v.weightUnit || data.weightUnit || 'Grams',
                                 makingCharge: (v.makingCharge || 0).toString(),
+                                hallmarkingCharge: (v.hallmarkingCharge || 0).toString(),
+                                diamondCertificateCharge: (
+                                    v.diamondCertificateCharge !== undefined && v.diamondCertificateCharge !== null
+                                        ? v.diamondCertificateCharge
+                                        : (v.diamondPrice || 0)
+                                ).toString(),
                                 diamondPrice: (v.diamondPrice || 0).toString(),
                                 serialCodes: ensured.serialCodes,
                                 stock: ensured.stock,
@@ -629,11 +693,20 @@ const SharedProductEditor = ({
                 if (v.id === vid) {
                     const updated = { ...v, [field]: value };
                     
-                    if (['makingCharge', 'diamondPrice', 'weight', 'weightUnit'].includes(field)) {
+                    if (['makingCharge', 'hallmarkingCharge', 'diamondCertificateCharge', 'diamondPrice', 'weight', 'weightUnit'].includes(field)) {
+                        if (field === 'diamondCertificateCharge') {
+                            updated.diamondPrice = value;
+                        }
                         const pricing = getPricingForVariant(updated);
                         updated.mrp = pricing.finalPrice.toString();
                         updated.price = pricing.finalPrice.toString();
                         updated.metalPrice = pricing.metalPrice;
+                        updated.hiddenCharge = pricing.hiddenCharge;
+                        updated.subtotalBeforeTax = pricing.subtotalBeforeTax;
+                        updated.gstAmount = pricing.gstValue;
+                        updated.priceAfterTax = pricing.priceAfterTax;
+                        updated.pgChargePercent = pricing.pgChargePercent;
+                        updated.pgChargeAmount = pricing.pgChargeAmount;
                         updated.gst = pricing.gstValue;
                         updated.finalPrice = pricing.finalPrice;
                     }
@@ -653,11 +726,19 @@ const SharedProductEditor = ({
                 weight: prev.weight || '',
                 weightUnit: prev.weightUnit || 'Grams',
                 makingCharge: '0', 
+                hallmarkingCharge: '0',
+                diamondCertificateCharge: '0',
                 diamondPrice: '0', 
                 mrp: '0', 
                 price: '', 
                 stock: 0,
                 serialCodes: [],
+                hiddenCharge: 0,
+                subtotalBeforeTax: 0,
+                gstAmount: 0,
+                priceAfterTax: 0,
+                pgChargePercent: 0,
+                pgChargeAmount: 0,
                 variantCode: '',
                 variantImages: [],
                 variantFaqs: []
@@ -898,7 +979,15 @@ const SharedProductEditor = ({
             productForm.append('variants', JSON.stringify(normalizedVariants.map(({ id, _id, sold, ...rest }) => ({
                 ...rest,
                 makingCharge: parseFloat(rest.makingCharge) || 0,
+                hallmarkingCharge: parseFloat(rest.hallmarkingCharge) || 0,
+                diamondCertificateCharge: parseFloat(rest.diamondCertificateCharge) || 0,
                 diamondPrice: parseFloat(rest.diamondPrice) || 0,
+                hiddenCharge: parseFloat(rest.hiddenCharge) || 0,
+                subtotalBeforeTax: parseFloat(rest.subtotalBeforeTax) || 0,
+                gstAmount: parseFloat(rest.gstAmount) || 0,
+                priceAfterTax: parseFloat(rest.priceAfterTax) || 0,
+                pgChargePercent: parseFloat(rest.pgChargePercent) || 0,
+                pgChargeAmount: parseFloat(rest.pgChargeAmount) || 0,
                 mrp: parseFloat(rest.mrp) || 0,
                 price: parseFloat(rest.price) || 0,
                 stock: parseInt(rest.stock) || 0,
@@ -1096,6 +1185,19 @@ const SharedProductEditor = ({
                                 onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
                                 disabled={isViewMode}
                             />
+                            <Select
+                                label="Payment Gateway Charges Borne By"
+                                value={formData.paymentGatewayChargeBearer || 'seller'}
+                                onChange={(e) => setFormData({ ...formData, paymentGatewayChargeBearer: e.target.value })}
+                                options={[
+                                    { label: 'Seller / Admin', value: 'seller' },
+                                    { label: 'User', value: 'user' }
+                                ]}
+                                disabled={isViewMode}
+                            />
+                            <p className="text-[10px] text-gray-400 -mt-2">
+                                If user bears the payment gateway charge, an additional 2% is added after GST.
+                            </p>
                             <Select
                                 label="Default Weight Unit"
                                 value={formData.weightUnit}
@@ -1448,7 +1550,7 @@ const SharedProductEditor = ({
                                                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em]">Variant Details</p>
                                                 <p className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">Step 1</p>
                                             </div>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-5 gap-4 xl:gap-6">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-6 gap-4 xl:gap-6">
                                             <div className="space-y-2">
                                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Variant Name</label>
                                                 <input 
@@ -1497,21 +1599,35 @@ const SharedProductEditor = ({
                                                         className="w-full bg-white border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723]/30 transition-all shadow-sm" 
                                                         placeholder="0" 
                                                     />
-                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
+                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">Rs</span>
                                                 </div>
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Diamond Price</label>
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Hallmarking Charge</label>
                                                 <div className="relative group/field">
                                                     <input 
                                                         type="number" 
-                                                        value={v.diamondPrice} 
-                                                        onChange={(e) => handleVariantChange(v.id, 'diamondPrice', e.target.value)} 
+                                                        value={v.hallmarkingCharge ?? '0'} 
+                                                        onChange={(e) => handleVariantChange(v.id, 'hallmarkingCharge', e.target.value)} 
                                                         disabled={isViewMode} 
                                                         className="w-full bg-white border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723]/30 transition-all shadow-sm" 
                                                         placeholder="0" 
                                                     />
-                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 font-bold group-focus-within/field:text-[#3E2723]">₹</span>
+                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 font-bold group-focus-within/field:text-[#3E2723]">Rs</span>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Diamond Certificate Charge</label>
+                                                <div className="relative group/field">
+                                                    <input 
+                                                        type="number" 
+                                                        value={v.diamondCertificateCharge ?? '0'} 
+                                                        onChange={(e) => handleVariantChange(v.id, 'diamondCertificateCharge', e.target.value)} 
+                                                        disabled={isViewMode} 
+                                                        className="w-full bg-white border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723]/30 transition-all shadow-sm" 
+                                                        placeholder="0" 
+                                                    />
+                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 font-bold group-focus-within/field:text-[#3E2723]">Rs</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -1534,21 +1650,35 @@ const SharedProductEditor = ({
                                                         className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-black text-gray-700 outline-none shadow-sm" 
                                                         placeholder="0" 
                                                     />
-                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
+                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">Rs</span>
                                                 </div>
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Subtotal (Auto)</label>
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Hidden Charge (Auto)</label>
                                                 <div className="relative group/field">
                                                     <input 
                                                         type="number" 
-                                                        value={pricing.subtotal.toFixed(2)} 
+                                                        value={pricing.hiddenCharge.toFixed(2)} 
                                                         readOnly
                                                         disabled={isViewMode} 
                                                         className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-700 outline-none shadow-sm" 
                                                         placeholder="0" 
                                                     />
-                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">â‚¹</span>
+                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">Rs</span>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Subtotal Before GST (Auto)</label>
+                                                <div className="relative group/field">
+                                                    <input 
+                                                        type="number" 
+                                                        value={pricing.subtotalBeforeTax.toFixed(2)} 
+                                                        readOnly
+                                                        disabled={isViewMode} 
+                                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-700 outline-none shadow-sm" 
+                                                        placeholder="0" 
+                                                    />
+                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">Rs</span>
                                                 </div>
                                             </div>
                                             <div className="space-y-2">
@@ -1562,7 +1692,35 @@ const SharedProductEditor = ({
                                                         className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-700 outline-none shadow-sm" 
                                                         placeholder="0" 
                                                     />
-                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
+                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">Rs</span>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Price After GST (Auto)</label>
+                                                <div className="relative group/field">
+                                                    <input 
+                                                        type="number" 
+                                                        value={pricing.priceAfterTax.toFixed(2)} 
+                                                        readOnly
+                                                        disabled={isViewMode} 
+                                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-700 outline-none shadow-sm" 
+                                                        placeholder="0" 
+                                                    />
+                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">Rs</span>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">PG Charge ({pricing.pgChargePercent}% {String(formData.paymentGatewayChargeBearer || 'seller').toLowerCase() === 'user' ? 'User' : 'Seller'})</label>
+                                                <div className="relative group/field">
+                                                    <input 
+                                                        type="number" 
+                                                        value={pricing.pgChargeAmount.toFixed(2)} 
+                                                        readOnly
+                                                        disabled={isViewMode} 
+                                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-700 outline-none shadow-sm" 
+                                                        placeholder="0" 
+                                                    />
+                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">Rs</span>
                                                 </div>
                                             </div>
                                             <div className="space-y-2">
@@ -1576,7 +1734,7 @@ const SharedProductEditor = ({
                                                         className="w-full bg-amber-50/20 border border-amber-100/30 rounded-2xl py-4 pl-12 pr-6 text-sm font-black text-[#3E2723] outline-none shadow-sm" 
                                                         placeholder="Final Price" 
                                                     />
-                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-amber-600 font-bold">₹</span>
+                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-amber-600 font-bold">Rs</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -2195,3 +2353,4 @@ const SharedProductEditor = ({
 };
 
 export default SharedProductEditor;
+

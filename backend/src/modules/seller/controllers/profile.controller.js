@@ -143,9 +143,13 @@ exports.getMetalPricing = async (req, res) => {
 
 exports.updateMetalPricing = async (req, res) => {
   try {
-    const { metalRates } = req.body || {};
+    const { metalRates, gstRate: requestedGstRate } = req.body || {};
     const seller = await Seller.findById(req.user.userId);
     if (!seller) return error(res, "Seller not found", 404);
+
+    if (requestedGstRate !== undefined && requestedGstRate !== null) {
+      return error(res, "GST is managed by admin and cannot be updated from seller metal pricing", 400);
+    }
 
     if (metalRates && typeof metalRates === "object") {
       const normalized = normalizeMetalRates(metalRates, seller.metalRates || {});
@@ -167,7 +171,7 @@ exports.updateMetalPricing = async (req, res) => {
 
     const sellerProductCount = products.length;
     return success(res, {
-      metalRates: seller.metalRates,
+      metalRates: normalizeMetalRates({}, seller.metalRates || {}),
       gstRate,
       sellerProductCount,
       updatedAt: seller.updatedAt || null

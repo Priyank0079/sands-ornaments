@@ -133,6 +133,10 @@ exports.updateTaxSettings = async (req, res) => {
       return error(res, "GST cannot be negative", 400);
     }
 
+    if (normalizedGst > 100) {
+      return error(res, "GST cannot be greater than 100", 400);
+    }
+
     const settings = await getOrCreateSettings();
     settings.gstRate = normalizedGst;
     settings.taxSettingsUpdatedAt = new Date();

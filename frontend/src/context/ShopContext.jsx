@@ -851,62 +851,6 @@ export const ShopProvider = ({ children }) => {
         setProducts(prev => prev.map(p => p.id === id ? { ...p, ...updatedData } : p));
     };
 
-    const bulkUpdatePrices = (config) => {
-        const { type, value, category, productIds } = config;
-        const numValue = parseFloat(value);
-        if (isNaN(numValue)) return;
-
-        setProducts(prev => prev.map(product => {
-            // Filter logic
-            const matchCategory = !category || category === 'all' || product.category === category;
-            const matchIds = !productIds || productIds.includes(product.id);
-
-            if (matchCategory && matchIds) {
-                // Products in mockData have variants. We need to update prices in variants.
-                const updatedVariants = (product.variants || []).map(variant => {
-                    let newPrice = variant.price;
-                    let newMrp = variant.mrp;
-
-                    switch (type) {
-                        case 'increase_amount':
-                            newPrice += numValue;
-                            newMrp += numValue;
-                            break;
-                        case 'decrease_amount':
-                            newPrice = Math.max(0, newPrice - numValue);
-                            newMrp = Math.max(0, newMrp - numValue);
-                            break;
-                        case 'increase_percent':
-                            newPrice = Math.round(newPrice * (1 + numValue / 100));
-                            newMrp = Math.round(newMrp * (1 + numValue / 100));
-                            break;
-                        case 'decrease_percent':
-                            newPrice = Math.round(newPrice * (1 - numValue / 100));
-                            newMrp = Math.round(newMrp * (1 - numValue / 100));
-                            break;
-                        case 'set_price':
-                            newPrice = numValue;
-                            break;
-                        default:
-                            break;
-                    }
-
-                    return {
-                        ...variant,
-                        price: newPrice,
-                        mrp: newMrp,
-                        discount: newMrp > 0 ? `${Math.round(((newMrp - newPrice) / newMrp) * 100)}%off` : '0%off'
-                    };
-                });
-
-                return { ...product, variants: updatedVariants };
-            }
-            return product;
-        }));
-
-        showNotification("Bulk price update completed successfully!");
-    };
-
     const getActiveCoupons = () => {
         return (coupons || []).filter(c => c?.active !== false);
     };
@@ -938,7 +882,7 @@ export const ShopProvider = ({ children }) => {
             pincode, updatePincode,
             activeMetal, updateActiveMetal,
 
-            products, updateProduct, bulkUpdatePrices,
+            products, updateProduct,
             categories, isLoading: isCatalogueLoading,
 
             // Homepage Sections Management

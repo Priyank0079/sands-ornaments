@@ -99,7 +99,8 @@ const SellerMetalPricing = () => {
 
         if (res.success) {
             toast.success('Metal pricing updated');
-            syncRates(res.data || res);
+            const refresh = await sellerService.getMetalPricing();
+            syncRates(refresh);
         } else {
             toast.error(res.message || 'Failed to update metal pricing');
         }
@@ -141,7 +142,7 @@ const SellerMetalPricing = () => {
 
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-6">
                 <div className="rounded-2xl border border-amber-100 bg-amber-50 p-4 text-sm text-amber-900">
-                    Set your seller metal pricing per 10 grams. Admin controls global GST separately in Tax Settings, and your current GST setting is {gstRate}% across final pricing.
+                    Set your seller metal pricing per 10 grams. These rates apply only to your seller-owned products. Admin controls global GST separately in Tax Settings, and your current GST setting is {gstRate}%. Final product prices still include making charge, hidden charge, GST, and optional payment gateway charge based on each product configuration.
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -231,7 +232,7 @@ const SellerMetalPricing = () => {
                 </div>
 
                 <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 text-xs text-gray-600">
-                    Per milligram values are derived automatically from the per‑10g rates: for example, 10g ÷ 10 ÷ 1000.
+                    Per milligram values are derived automatically from the per-10g rates: for example, 10g / 10 / 1000.
                     Current example: 18K per milligram is {formatCurrency(toPerMilligram(rates.gold10g?.k18))}.
                 </div>
 
@@ -249,3 +250,4 @@ const SellerMetalPricing = () => {
 };
 
 export default SellerMetalPricing;
+

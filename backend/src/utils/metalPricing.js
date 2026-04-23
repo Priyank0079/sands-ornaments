@@ -62,36 +62,86 @@ const computeMetalPrice = (materialOrProduct = "", weight = 0, weightUnit = "Gra
 
 const roundCurrency = (value) => Math.round((Number(value) || 0) * 100) / 100;
 
-const applyMetalPricingToProduct = (product, rates = {}, gstRate = 0) => {
-  if (!product) return product;
-  const gstPercentage = Number(gstRate) || 0;
+const normalizeChargeBearer = (value = "") => {
+  const normalized = normalizeString(value);
+  if (normalized === "user") return "user";
+  if (normalized === "seller" || normalized === "admin") return "seller";
+  return "seller";
+};
+
+const getPaymentGatewayChargePercent = (chargeBearer = "") => (
+  normalizeChargeBearer(chargeBearer) === "user" ? 2 : 0
+);
+
+const computeVariantPricing = ({
+  product = {},
+  variant = {},
+  rates = {},
+  gstRate = 0
+} = {}) => {
   const fallbackWeight = Number(product.weight) || 0;
   const fallbackWeightUnit = product.weightUnit || "Grams";
+  const variantWeight = variant.weight !== undefined && variant.weight !== null
+    ? Number(variant.weight) || 0
+    : fallbackWeight;
+  const variantWeightUnit = variant.weightUnit || fallbackWeightUnit;
+  const metalPrice = roundCurrency(
+    computeMetalPrice(product, variantWeight, variantWeightUnit, rates)
+  );
+  const makingCharge = roundCurrency(Number(variant.makingCharge) || 0);
+  const hallmarkingCharge = roundCurrency(Number(variant.hallmarkingCharge) || 0);
+  const diamondCertificateCharge = roundCurrency(
+    Number(
+      variant.diamondCertificateCharge !== undefined && variant.diamondCertificateCharge !== null
+        ? variant.diamondCertificateCharge
+        : variant.diamondPrice
+    ) || 0
+  );
+  const hiddenCharge = roundCurrency(hallmarkingCharge + diamondCertificateCharge);
+  const subtotalBeforeTax = roundCurrency(metalPrice + makingCharge + hiddenCharge);
+  const gstPercentage = Number(gstRate) || 0;
+  const gstAmount = roundCurrency((subtotalBeforeTax * gstPercentage) / 100);
+  const priceAfterTax = roundCurrency(subtotalBeforeTax + gstAmount);
+  const pgChargePercent = getPaymentGatewayChargePercent(product.paymentGatewayChargeBearer);
+  const pgChargeAmount = roundCurrency((priceAfterTax * pgChargePercent) / 100);
+  const finalPrice = roundCurrency(priceAfterTax + pgChargeAmount);
+
+  return {
+    weight: variantWeight,
+    weightUnit: variantWeightUnit,
+    metalPrice,
+    makingCharge,
+    hallmarkingCharge,
+    diamondCertificateCharge,
+    hiddenCharge,
+    subtotalBeforeTax,
+    gstAmount,
+    priceAfterTax,
+    pgChargePercent,
+    pgChargeAmount,
+    gst: gstAmount,
+    finalPrice,
+    price: finalPrice,
+    mrp: finalPrice
+  };
+};
+
+const applyMetalPricingToProduct = (product, rates = {}, gstRate = 0) => {
+  if (!product) return product;
+  product.paymentGatewayChargeBearer = normalizeChargeBearer(product.paymentGatewayChargeBearer);
 
   if (Array.isArray(product.variants)) {
     product.variants = product.variants.map((variant) => {
-      const variantWeight = variant.weight !== undefined && variant.weight !== null
-        ? Number(variant.weight) || 0
-        : fallbackWeight;
-      const variantWeightUnit = variant.weightUnit || fallbackWeightUnit;
-      const metalPrice = roundCurrency(
-        computeMetalPrice(product, variantWeight, variantWeightUnit, rates)
-      );
-      const makingCharge = Number(variant.makingCharge) || 0;
-      const diamondPrice = Number(variant.diamondPrice) || 0;
-      const subtotal = roundCurrency(metalPrice + makingCharge + diamondPrice);
-      const gstValue = roundCurrency((subtotal * gstPercentage) / 100);
-      const finalPrice = roundCurrency(subtotal + gstValue);
+      const pricing = computeVariantPricing({
+        product,
+        variant,
+        rates,
+        gstRate
+      });
 
       return {
         ...variant,
-        weight: variantWeight,
-        weightUnit: variantWeightUnit,
-        metalPrice,
-        gst: gstValue,
-        finalPrice,
-        price: finalPrice,
-        mrp: finalPrice
+        ...pricing
       };
     });
   }
@@ -99,4 +149,11 @@ const applyMetalPricingToProduct = (product, rates = {}, gstRate = 0) => {
   return product;
 };
 
-module.exports = { applyMetalPricingToProduct, computeMetalPrice, getMetalRate };
+module.exports = {
+  applyMetalPricingToProduct,
+  computeMetalPrice,
+  computeVariantPricing,
+  getMetalRate,
+  getPaymentGatewayChargePercent,
+  normalizeChargeBearer
+};

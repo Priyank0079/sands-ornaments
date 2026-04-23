@@ -16,6 +16,8 @@
     "test:ops-errors": "node scripts/ops-error-tests.js",
     "migrate:product-variant-pricing:dry": "node scripts/migrate-product-variant-pricing.js",
     "migrate:product-variant-pricing": "node scripts/migrate-product-variant-pricing.js --apply",
+    "migrate:product-pricing-formula:dry": "node scripts/migrate-product-pricing-formula.js",
+    "migrate:product-pricing-formula": "node scripts/migrate-product-pricing-formula.js --apply",
     "migrate:product-purity:dry": "node scripts/migrate-product-purity.js",
     "migrate:product-purity": "node scripts/migrate-product-purity.js --apply",
     "backup:categories": "node scripts/backup-categories.js",

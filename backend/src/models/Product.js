@@ -30,6 +30,11 @@ const productSchema = new mongoose.Schema({
   cardLabel: { type: String },
   cardBadge: { type: String },
   images: [{ type: String }],
+  paymentGatewayChargeBearer: {
+    type: String,
+    enum: ["seller", "user"],
+    default: "seller"
+  },
   variants: [{
     name: { type: String, required: true },
     variantCode: { type: String, trim: true },
@@ -42,6 +47,14 @@ const productSchema = new mongoose.Schema({
     }],
     makingCharge: { type: Number, default: 0 },
     diamondPrice: { type: Number, default: 0 },
+    hallmarkingCharge: { type: Number, default: 0 },
+    diamondCertificateCharge: { type: Number, default: 0 },
+    hiddenCharge: { type: Number, default: 0 },
+    subtotalBeforeTax: { type: Number, default: 0 },
+    gstAmount: { type: Number, default: 0 },
+    priceAfterTax: { type: Number, default: 0 },
+    pgChargePercent: { type: Number, default: 0 },
+    pgChargeAmount: { type: Number, default: 0 },
     mrp: { type: Number, required: true },
     price: { type: Number, required: true },
     metalPrice: { type: Number, default: 0 },

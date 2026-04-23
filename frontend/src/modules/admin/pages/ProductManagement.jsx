@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Edit2, Trash2, Eye, Package, TrendingUp, Check, Plus } from 'lucide-react';
 import PageHeader from '../components/common/PageHeader';
 import DataTable from '../components/common/DataTable';
-import { useShop } from '../../../context/ShopContext';
 import BulkUpdateModal from '../components/BulkUpdateModal';
 import { adminService } from '../services/adminService';
 import toast from 'react-hot-toast';
@@ -74,12 +73,10 @@ const ProductManagement = () => {
     useEffect(() => {
         const loadCategories = async () => {
             const cats = await adminService.getCategories();
-            const sorted = [...cats].sort((a, b) => {
-                const metalA = (a.metal || '').toLowerCase();
-                const metalB = (b.metal || '').toLowerCase();
-                if (metalA !== metalB) return metalA.localeCompare(metalB);
-                return (a.name || '').localeCompare(b.name || '');
-            });
+            const sorted = [...cats].sort((a, b) =>
+                Number(a?.sortOrder ?? 0) - Number(b?.sortOrder ?? 0)
+                || (a.name || '').localeCompare(b.name || '')
+            );
             const map = sorted.reduce((acc, cat) => {
                 acc[String(cat._id)] = cat.name;
                 return acc;

@@ -17,8 +17,6 @@ import CategoryPage from './modules/admin/pages/categories/CategoryPage';
 import CategoryEditor from './modules/admin/pages/categories/CategoryEditor';
 
 import ProductManagement from './modules/admin/pages/ProductManagement';
-import ProductView from './modules/admin/pages/ProductView';
-import ItemEditor from './modules/admin/pages/ItemEditor';
 import AdminProductEditor from './modules/admin/pages/AdminProductEditor';
 import OrderListPage from './modules/admin/pages/OrderListPage';
 import OrderDetailPage from './modules/admin/pages/OrderDetailPage';

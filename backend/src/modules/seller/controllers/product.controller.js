@@ -51,6 +51,18 @@ const sanitizeVariants = (variants, fallback = {}) => {
     weightUnit: v.weightUnit || fallbackWeightUnit,
     makingCharge: Number(v.makingCharge) || 0,
     diamondPrice: Number(v.diamondPrice) || 0,
+    hallmarkingCharge: Number(v.hallmarkingCharge) || 0,
+    diamondCertificateCharge: Number(
+      v.diamondCertificateCharge !== undefined && v.diamondCertificateCharge !== null
+        ? v.diamondCertificateCharge
+        : v.diamondPrice
+    ) || 0,
+    hiddenCharge: Number(v.hiddenCharge) || 0,
+    subtotalBeforeTax: Number(v.subtotalBeforeTax) || 0,
+    gstAmount: Number(v.gstAmount) || 0,
+    priceAfterTax: Number(v.priceAfterTax) || 0,
+    pgChargePercent: Number(v.pgChargePercent) || 0,
+    pgChargeAmount: Number(v.pgChargeAmount) || 0,
     metalPrice: Number(v.metalPrice) || 0,
     gst: Number(v.gst) || 0,
     finalPrice: Number(v.finalPrice) || 0,

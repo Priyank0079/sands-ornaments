@@ -23,7 +23,6 @@ import SellerStockAdjustmentPage from '../pages/inventory/SellerStockAdjustmentP
 import SellerStockHistoryPage from '../pages/inventory/SellerStockHistoryPage';
 import SellerLowStockAlertsPage from '../pages/inventory/SellerLowStockAlertsPage';
 import SellerInventoryReportsPage from '../pages/inventory/SellerInventoryReportsPage';
-import { sellerService } from '../services/sellerService';
 import { ShieldAlert } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 

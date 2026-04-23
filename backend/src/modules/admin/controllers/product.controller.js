@@ -6,6 +6,7 @@ const slugify = require("../../../utils/slugify");
 const { deleteFromCloudinary } = require("../../../utils/cloudinaryUtils");
 const { success, error } = require("../../../utils/apiResponse");
 const Setting = require("../../../models/Setting");
+const Seller = require("../../../models/Seller");
 const { applyMetalPricingToProduct } = require("../../../utils/metalPricing");
 const { generateUniqueProductCode, generateVariantCode } = require("../../../utils/productIdentity");
 const { normalizeProductForResponse } = require("../../../utils/productCompatibility");
@@ -20,7 +21,7 @@ const PRODUCT_UPDATE_WHITELIST = [
   "navShopByCategory", "navGiftsFor", "navOccasions",
   "cardLabel", "cardBadge", "careTips", "silverCategory",
   "goldCategory", "weightUnit", "specifications", "supplierInfo",
-  "huid", "sizes", "isSerialized"
+  "huid", "sizes", "isSerialized", "paymentGatewayChargeBearer"
 ];
 
 const normalizeSerialCodes = (codes = []) => {
@@ -62,6 +63,18 @@ const normalizeVariantFields = (variants = [], fallback = {}) => {
     weightUnit: variant.weightUnit || fallbackWeightUnit,
     makingCharge: Number(variant.makingCharge) || 0,
     diamondPrice: Number(variant.diamondPrice) || 0,
+    hallmarkingCharge: Number(variant.hallmarkingCharge) || 0,
+    diamondCertificateCharge: Number(
+      variant.diamondCertificateCharge !== undefined && variant.diamondCertificateCharge !== null
+        ? variant.diamondCertificateCharge
+        : variant.diamondPrice
+    ) || 0,
+    hiddenCharge: Number(variant.hiddenCharge) || 0,
+    subtotalBeforeTax: Number(variant.subtotalBeforeTax) || 0,
+    gstAmount: Number(variant.gstAmount) || 0,
+    priceAfterTax: Number(variant.priceAfterTax) || 0,
+    pgChargePercent: Number(variant.pgChargePercent) || 0,
+    pgChargeAmount: Number(variant.pgChargeAmount) || 0,
     metalPrice: Number(variant.metalPrice) || 0,
     gst: Number(variant.gst) || 0,
     finalPrice: Number(variant.finalPrice) || 0,
@@ -405,21 +418,31 @@ exports.toggleProductStatus = async (req, res) => {
 exports.bulkPriceUpdate = async (req, res) => {
   try {
     const { categoryId, productIds = [], type, value } = req.body;
-
-    const numericValue = Number(value);
-    if (!type || Number.isNaN(numericValue) || numericValue <= 0) {
-      return error(res, "A valid positive 'value' and 'type' are required.", 400);
-    }
-
     const allowedTypes = [
-      "increase_amount",
-      "decrease_amount",
-      "increase_percent",
-      "decrease_percent",
-      "set_price"
+      "increase_making_amount",
+      "decrease_making_amount",
+      "increase_making_percent",
+      "decrease_making_percent",
+      "set_hallmarking_charge",
+      "set_diamond_certificate_charge",
+      "set_pg_charge_to_user",
+      "set_pg_charge_to_seller"
     ];
     if (!allowedTypes.includes(type)) {
       return error(res, "Invalid update type provided.", 400);
+    }
+
+    const typesRequiringValue = new Set([
+      "increase_making_amount",
+      "decrease_making_amount",
+      "increase_making_percent",
+      "decrease_making_percent",
+      "set_hallmarking_charge",
+      "set_diamond_certificate_charge"
+    ]);
+    const numericValue = Number(value);
+    if (typesRequiringValue.has(type) && (Number.isNaN(numericValue) || numericValue < 0)) {
+      return error(res, "A valid non-negative value is required for this bulk update.", 400);
     }
 
     const query = {};
@@ -430,54 +453,59 @@ exports.bulkPriceUpdate = async (req, res) => {
     }
 
     const products = await Product.find(query);
+    const settings = await Setting.findOne();
+    const gstRate = settings?.gstRate || 0;
+    const sellerIds = [...new Set(
+      products
+        .map((product) => product.sellerId ? String(product.sellerId) : null)
+        .filter(Boolean)
+    )];
+    const sellers = await Seller.find({ _id: { $in: sellerIds } }).select("_id metalRates");
+    const sellerRateMap = new Map(
+      sellers.map((seller) => [String(seller._id), seller.metalRates || {}])
+    );
 
     for (const prod of products) {
       prod.variants = prod.variants.map(v => {
-        let newPrice = v.price;
-        let newMrp = v.mrp;
-
         switch (type) {
-          case "increase_amount":
-            newPrice = v.price + numericValue;
-            newMrp = v.mrp + numericValue;
+          case "increase_making_amount":
+            v.makingCharge = (Number(v.makingCharge) || 0) + numericValue;
             break;
-          case "decrease_amount":
-            newPrice = v.price - numericValue;
-            newMrp = v.mrp - numericValue;
+          case "decrease_making_amount":
+            v.makingCharge = Math.max(0, (Number(v.makingCharge) || 0) - numericValue);
             break;
-          case "increase_percent":
-            newPrice = Math.round(v.price * (1 + numericValue / 100));
-            newMrp = Math.round(v.mrp * (1 + numericValue / 100));
+          case "increase_making_percent":
+            v.makingCharge = Math.max(0, Math.round((Number(v.makingCharge) || 0) * (1 + numericValue / 100) * 100) / 100);
             break;
-          case "decrease_percent":
-            newPrice = Math.round(v.price * (1 - numericValue / 100));
-            newMrp = Math.round(v.mrp * (1 - numericValue / 100));
+          case "decrease_making_percent":
+            v.makingCharge = Math.max(0, Math.round((Number(v.makingCharge) || 0) * (1 - numericValue / 100) * 100) / 100);
             break;
-          case "set_price":
-            newPrice = numericValue;
-            newMrp = Math.max(v.mrp, newPrice);
+          case "set_hallmarking_charge":
+            v.hallmarkingCharge = numericValue;
+            break;
+          case "set_diamond_certificate_charge":
+            v.diamondCertificateCharge = numericValue;
+            v.diamondPrice = numericValue;
+            break;
+          case "set_pg_charge_to_user":
+            prod.paymentGatewayChargeBearer = "user";
+            break;
+          case "set_pg_charge_to_seller":
+            prod.paymentGatewayChargeBearer = "seller";
             break;
           default:
             break;
         }
-
-        // Prevent non-positive values
-        newPrice = Math.max(1, newPrice);
-        newMrp = Math.max(newPrice, newMrp);
-
-        v.price = newPrice;
-        v.mrp = newMrp;
-
-        if (v.mrp && v.mrp > v.price) {
-          v.discount = Math.round(((v.mrp - v.price) / v.mrp) * 100);
-        } else {
-          v.discount = 0;
-        }
         return v;
       });
+
+      const ownerRates = prod.sellerId
+        ? (sellerRateMap.get(String(prod.sellerId)) || {})
+        : (settings?.metalRates || {});
+      applyMetalPricingToProduct(prod, ownerRates, gstRate);
       await prod.save();
     }
 
-    return success(res, { count: products.length }, "Bulk price update complete");
+    return success(res, { count: products.length }, "Bulk product pricing inputs updated successfully");
   } catch (err) { return error(res, err.message); }
 };
