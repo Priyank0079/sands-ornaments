@@ -98,7 +98,7 @@ exports.getProducts = async (req, res) => {
 
     // 6. Execute Query with Pagination
     const products = await Product.find(query)
-      .select("name slug productCode brand images variants tags rating reviewCount categories category categorySlug categoryId navShopByCategory weight weightUnit goldCategory silverCategory material")
+      .select("name slug productCode brand images videoUrl variants tags rating reviewCount categories category categorySlug categoryId navShopByCategory weight weightUnit goldCategory silverCategory material audience")
       .populate("categories", "name slug")
       .sort(sortOption)
       .limit(limit * 1)
@@ -152,6 +152,52 @@ exports.getProductDetail = async (req, res) => {
 
     return success(res, { product: normalizeProductForResponse(product) }, "Product details retrieved");
   } catch (err) { return error(res, err.message); }
+};
+
+/**
+ * GET /api/public/products/by-ids?ids=a,b,c&inStockOnly=false
+ * Returns products in the same order as requested ids (when possible).
+ * Use this for pinned CMS sections so they don't disappear due to catalogue paging.
+ */
+exports.getProductsByIds = async (req, res) => {
+  try {
+    const idsParam = String(req.query?.ids || "").trim();
+    if (!idsParam) return success(res, { products: [] });
+
+    const ids = idsParam
+      .split(",")
+      .map((id) => String(id || "").trim())
+      .filter((id) => mongoose.isValidObjectId(id));
+
+    if (ids.length === 0) return success(res, { products: [] });
+
+    const approvedScope = await getApprovedSellerScope();
+    const query = {
+      status: "Active",
+      active: { $ne: false },
+      _id: { $in: ids },
+      ...approvedScope
+    };
+
+    const inStockOnly = String(req.query?.inStockOnly || "false").toLowerCase() === "true";
+    if (inStockOnly) {
+      query["variants.stock"] = { $gt: 0 };
+    }
+
+    const found = await Product.find(query)
+      .select("name slug productCode brand images videoUrl variants tags rating reviewCount categories category categorySlug categoryId navShopByCategory weight weightUnit goldCategory silverCategory material audience")
+      .populate("categories", "name slug")
+      .lean();
+
+    const foundMap = new Map(found.map((p) => [String(p._id), p]));
+    const ordered = ids.map((id) => foundMap.get(String(id))).filter(Boolean);
+
+    return success(res, {
+      products: ordered.map((product) => normalizeProductForResponse(product))
+    });
+  } catch (err) {
+    return error(res, err.message);
+  }
 };
 
 /**

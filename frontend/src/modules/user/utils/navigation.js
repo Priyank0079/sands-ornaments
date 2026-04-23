@@ -61,7 +61,7 @@ export const normalizeExternalLink = (link) => {
     if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
       return value;
     }
-  } catch (error) {
+  } catch {
     return '#';
   }
 

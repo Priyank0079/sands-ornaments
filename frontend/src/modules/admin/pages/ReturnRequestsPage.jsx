@@ -14,8 +14,8 @@ import {
     Truck
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useShop } from '../../../context/ShopContext';
 import Pagination from '../components/Pagination';
+import { adminService } from '../services/adminService';
 
 const ReturnRequestsPage = () => {
     const navigate = useNavigate();
@@ -156,14 +156,14 @@ const ReturnRequestsPage = () => {
                                 <th className="px-6 py-5 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-50">
-                            {paginatedReturns.map((ret) => {
-                                const prod = getPackById(ret.packId);
+                            <tbody className="divide-y divide-gray-50">
+                                {paginatedReturns.map((ret) => {
+                                const primaryItem = ret.primaryItem || {};
                                 return (
                                     <tr key={ret.id} className="hover:bg-slate-50/50 transition-colors group">
                                         <td className="px-6 py-3.5">
                                             <div className="space-y-1">
-                                                <p className="font-bold text-footerBg text-sm uppercase tracking-tighter">#{ret.orderId?.slice(-8)}</p>
+                                                <p className="font-bold text-footerBg text-sm uppercase tracking-tighter">#{String(ret.orderDisplayId || ret.orderId || '').slice(-8)}</p>
                                                 <p className="text-[10px] text-gray-400 font-medium">Req Date: {(new Date(ret.requestDate)).toLocaleDateString()}</p>
                                                 <span className={`inline-block px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ${ret.type === 'refund' ? 'bg-orange-50 text-orange-600' : 'bg-indigo-50 text-indigo-600'
                                                     }`}>
@@ -174,19 +174,19 @@ const ReturnRequestsPage = () => {
                                         <td className="px-6 py-5">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-8 h-8 bg-gray-100 text-gray-500 rounded-lg flex items-center justify-center font-bold text-xs">
-                                                    {ret.userName?.charAt(0)}
+                                                    {(ret.customerName || ret.userName || 'C').charAt(0)}
                                                 </div>
-                                                <p className="text-sm font-bold text-footerBg">{ret.userName}</p>
+                                                <p className="text-sm font-bold text-footerBg">{ret.customerName || ret.userName || 'Customer'}</p>
                                             </div>
                                         </td>
                                         <td className="px-6 py-5">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 bg-gray-50 rounded-lg border border-gray-100 p-1 shrink-0">
-                                                    <img src={prod?.image} alt="" className="w-full h-full object-contain" />
+                                                    <img src={primaryItem?.image || ''} alt="" className="w-full h-full object-contain" />
                                                 </div>
                                                 <div className="max-w-[150px]">
-                                                    <p className="text-xs font-bold text-footerBg truncate">{prod?.name}</p>
-                                                    <p className="text-[10px] text-gray-400 font-medium">Variant: {ret.variant?.weight}</p>
+                                                    <p className="text-xs font-bold text-footerBg truncate">{primaryItem?.name || 'Product'}</p>
+                                                    <p className="text-[10px] text-gray-400 font-medium">SKU: {primaryItem?.sku || 'N/A'}</p>
                                                 </div>
                                             </div>
                                         </td>

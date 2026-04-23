@@ -65,6 +65,8 @@ export const useCatalogue = () => {
                 categoryId: rawCategoryId || '',
                 categorySlug: rawCategorySlug || '',
                 material: prod.material || '',
+                videoUrl: prod.videoUrl || '',
+                audience: Array.isArray(prod.audience) && prod.audience.length > 0 ? prod.audience : ['unisex'],
                 navShopByCategory: prod.navShopByCategory || [],
                 faqs: prod.faqs || [], // Added FAQs
                 goldCategory: prod.goldCategory || '',

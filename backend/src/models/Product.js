@@ -14,6 +14,11 @@ const productSchema = new mongoose.Schema({
   description: { type: String },
   stylingTips: { type: String },
   material: { type: String, default: 'Silver' },
+  audience: [{
+    type: String,
+    enum: ["men", "women", "family", "unisex"],
+    default: "unisex"
+  }],
   silverCategory: {
       type: String,
       enum: ['800', '835', '925', '925 sterling silver', '958', '970', '990', '999', '']
@@ -30,6 +35,8 @@ const productSchema = new mongoose.Schema({
   cardLabel: { type: String },
   cardBadge: { type: String },
   images: [{ type: String }],
+  // Optional product-specific video used on Product Details. Admin/Seller can upload it.
+  videoUrl: { type: String, default: "" },
   paymentGatewayChargeBearer: {
     type: String,
     enum: ["seller", "user"],

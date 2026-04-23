@@ -132,6 +132,15 @@ const collectReferencedImageUrls = (productLike = {}) => {
   return new Set([...productImages, ...variantImages]);
 };
 
+const normalizeAudience = (value) => {
+  const raw = Array.isArray(value) ? value : (value ? [value] : []);
+  const allowed = new Set(["men", "women", "family", "unisex"]);
+  const normalized = raw
+    .map((entry) => String(entry || "").trim().toLowerCase())
+    .filter((entry) => allowed.has(entry));
+  return normalized.length > 0 ? [...new Set(normalized)] : ["unisex"];
+};
+
 exports.createProduct = async (req, res) => {
   try {
     const data = { ...req.body };
@@ -152,6 +161,7 @@ exports.createProduct = async (req, res) => {
     const tags = tryParse(data.tags) || {};
     const faqs = tryParse(data.faqs) || [];
     const material = normalizeMaterial(data);
+    const audience = normalizeAudience(tryParse(data.audience));
     const baseSlug = data.slug ? slugify(data.slug) : slugify(data.name);
 
     // Sanitize unique fields to prevent duplicate "" key errors
@@ -169,6 +179,7 @@ exports.createProduct = async (req, res) => {
     data.tags = tags;
     data.faqs = faqs;
     data.isSerialized = true;
+    data.audience = audience;
     
     // Ensure slug is clean
     data.slug = baseSlug;
@@ -183,6 +194,10 @@ exports.createProduct = async (req, res) => {
       images = tryParse(data.images);
       if (!Array.isArray(images)) images = [data.images].filter(Boolean);
     }
+
+    const uploadedVideo = (Array.isArray(req.files) ? req.files : [])
+      .find((file) => file?.fieldname === "video");
+    const videoUrl = uploadedVideo?.path || (typeof data.videoUrl === "string" ? data.videoUrl.trim() : "");
 
     const existing = await Product.findOne({ slug: baseSlug });
     const finalSlug = existing ? `${baseSlug}-${Math.floor(1000 + Math.random() * 9000)}` : baseSlug;
@@ -223,6 +238,7 @@ exports.createProduct = async (req, res) => {
       sellerId,
       slug: finalSlug,
       images,
+      videoUrl,
       categories,
       material,
       productCode: data.productCode,
@@ -296,6 +312,24 @@ exports.updateProduct = async (req, res) => {
       product.images = [...product.images, ...productImages];
     }
 
+    const removeVideo = String(data.removeVideo || "").toLowerCase() === "true";
+    const uploadedVideo = (Array.isArray(req.files) ? req.files : [])
+      .find((file) => file?.fieldname === "video");
+
+    if (removeVideo && product.videoUrl) {
+      const previous = product.videoUrl;
+      product.videoUrl = "";
+      await Promise.allSettled([deleteFromCloudinary(previous)]);
+    }
+
+    if (uploadedVideo?.path) {
+      const previous = product.videoUrl;
+      product.videoUrl = uploadedVideo.path;
+      if (previous) {
+        await Promise.allSettled([deleteFromCloudinary(previous)]);
+      }
+    }
+
     const deletedImages = Array.isArray(data.deletedImages) ? data.deletedImages.filter(Boolean) : [];
     if (deletedImages.length > 0) {
       product.images = (product.images || []).filter((img) => !deletedImages.includes(img));
@@ -323,6 +357,9 @@ exports.updateProduct = async (req, res) => {
 
     if (safeData.categories !== undefined) {
       safeData.categories = normalizeCategories(safeData.categories);
+    }
+    if (safeData.audience !== undefined) {
+      safeData.audience = normalizeAudience(safeData.audience);
     }
     if (safeData.material !== undefined || safeData.metal !== undefined || safeData.metalType !== undefined) {
       safeData.material = normalizeMaterial(safeData);
@@ -372,6 +409,15 @@ exports.deleteProduct = async (req, res) => {
   try {
     const product = await Product.findOneAndDelete({ _id: req.params.id, sellerId: req.user.userId });
     if (!product) return error(res, "Product not found", 404);
+
+    const mediaToRemove = [
+      ...(Array.isArray(product.images) ? product.images : []),
+      product.videoUrl
+    ].filter(Boolean);
+
+    if (mediaToRemove.length > 0) {
+      await Promise.allSettled(mediaToRemove.map((url) => deleteFromCloudinary(url)));
+    }
     return success(res, {}, "Product deleted");
   } catch (err) { return error(res, err.message); }
 };

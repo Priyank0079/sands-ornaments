@@ -6,6 +6,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, CreditCard, Banknote, Truck, Tag, X, Percent } from 'lucide-react';
 import CouponsModal from '../components/CouponsModal';
 import logo from '@assets/logo.png';
+import api from '../../../services/api';
 
 const CheckoutPage = () => {
     const navigate = useNavigate();
@@ -31,7 +32,6 @@ const CheckoutPage = () => {
                 mrp: variantData.mrp,
                 image: variantData.product.image,
                 category: variantData.product.category,
-                categoryId: variantData.product.categoryId,
                 categoryId: variantData.product.categoryId,
                 productId: variantData.product.id
             };

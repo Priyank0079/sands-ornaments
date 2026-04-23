@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
 import ProductCard from '../components/ProductCard';
 import ProductSkeleton from '../components/ProductSkeleton';
 import Loader from '../../shared/components/Loader';
+import api from '../../../services/api';
 import {
     Filter, ChevronDown, ShoppingBag, SlidersHorizontal,
     ArrowLeft, ArrowUpDown
@@ -51,8 +52,57 @@ const Shop = () => {
     const searchQuery = queryParams.get('search');
     const karatQuery = queryParams.get('karat');
     const silverTypeQuery = queryParams.get('silver_type');
+    // Backwards compatibility for older links (e.g. All Type mega menu used `purity`)
+    const purityQuery = queryParams.get('purity');
     const isMenFlow = sourceQuery === 'men';
     const isWomenFlow = sourceQuery === 'women';
+
+    const [pinnedProducts, setPinnedProducts] = useState([]);
+    const [isPinnedLoading, setIsPinnedLoading] = useState(false);
+
+    const requestedPinnedIds = useMemo(() => {
+        if (!productsQuery) return [];
+        return String(productsQuery)
+            .split(',')
+            .map((id) => id.trim())
+            .filter(Boolean);
+    }, [productsQuery]);
+
+    useEffect(() => {
+        const loadPinned = async () => {
+            if (!productsQuery) {
+                setPinnedProducts([]);
+                return;
+            }
+
+            const validIds = requestedPinnedIds.filter((id) => /^[a-f\\d]{24}$/i.test(id));
+            if (validIds.length === 0) {
+                setPinnedProducts([]);
+                return;
+            }
+
+            setIsPinnedLoading(true);
+            try {
+                const res = await api.get('public/products/by-ids', {
+                    params: {
+                        ids: validIds.join(','),
+                        // Pinned CMS should not silently disappear if stock is 0.
+                        inStockOnly: false,
+                        _t: Date.now()
+                    }
+                });
+                const list = res?.data?.data?.products || [];
+                setPinnedProducts(Array.isArray(list) ? list : []);
+            } catch (err) {
+                console.error('Failed to fetch pinned products:', err);
+                setPinnedProducts([]);
+            } finally {
+                setIsPinnedLoading(false);
+            }
+        };
+
+        loadPinned();
+    }, [productsQuery, requestedPinnedIds]);
 
     useEffect(() => {
         const categoryQuery = queryParams.get('category');
@@ -94,6 +144,21 @@ const Shop = () => {
             setPriceRange(50000);
         }
     }, [location.search, location.pathname, categories]);
+
+    const normalizeAudience = (value) => String(value || '').trim().toLowerCase();
+    const getProductAudience = (product) => {
+        const list = Array.isArray(product?.audience) ? product.audience : [];
+        if (list.length === 0) return ['unisex'];
+        return list.map(normalizeAudience).filter(Boolean);
+    };
+    const matchesAudienceScope = (product) => {
+        if (!isMenFlow && !isWomenFlow) return true;
+        const audience = getProductAudience(product);
+        if (audience.includes('unisex')) return true;
+        if (isMenFlow) return audience.includes('men');
+        if (isWomenFlow) return audience.includes('women');
+        return true;
+    };
 
     const updateShopQuery = (updates = {}, pathOverride = location.pathname) => {
         const params = new URLSearchParams(location.search);
@@ -212,16 +277,39 @@ const Shop = () => {
         };
         const normalizeSilverTier = (value) => {
             const normalized = String(value || '').trim().toLowerCase();
-            if (!normalized) return 'silver';
-            if (normalized === '925 sterling silver') return '925 sterling silver';
-            return 'silver';
+            if (!normalized) return null;
+            if (normalized === '925' || normalized.startsWith('925 ') || normalized.includes('sterling')) return 'sterling';
+            if (normalized.includes('fine')) return 'fine';
+            // Treat all other silver categories (800/835/958/970/990/999 etc) as fine for filtering.
+            return 'fine';
         };
+        const normalizeGoldKarat = (value) => {
+            const normalized = String(value || '').trim().toLowerCase();
+            if (!normalized) return null;
+            // Accept: "24", "24k", "24 k", etc.
+            const digits = normalized.replace(/[^0-9]/g, '');
+            return digits || null;
+        };
+
+        const effectiveKarat = normalizeGoldKarat(karatQuery || (purityQuery && String(purityQuery).toLowerCase().includes('k') ? purityQuery : ''));
+        const effectiveSilverType = (() => {
+            if (silverTypeQuery) return normalizeSilverTier(silverTypeQuery);
+            if (!purityQuery) return null;
+            const normalized = String(purityQuery).trim().toLowerCase();
+            if (normalized === '925' || normalized.includes('sterling')) return 'sterling';
+            if (normalized.includes('fine')) return 'fine';
+            return null;
+        })();
+
         const matchesPurityTier = (product) => {
-            if (metalQuery?.toLowerCase() === 'gold' && karatQuery) {
-                return String(product.goldCategory || '') === String(karatQuery);
+            if (metalQuery?.toLowerCase() === 'gold' && effectiveKarat) {
+                return String(product.goldCategory || '') === String(effectiveKarat);
             }
-            if (metalQuery?.toLowerCase() === 'silver' && silverTypeQuery) {
-                return normalizeSilverTier(product.silverCategory) === normalizeSilverTier(silverTypeQuery);
+            if (metalQuery?.toLowerCase() === 'silver' && effectiveSilverType) {
+                const productTier = normalizeSilverTier(product.silverCategory) || 'fine';
+                if (effectiveSilverType === 'sterling') return productTier === 'sterling';
+                if (effectiveSilverType === 'fine') return productTier !== 'sterling';
+                return true;
             }
             return true;
         };
@@ -239,11 +327,11 @@ const Shop = () => {
                 const metal = getProductMetal(p);
                 return metal?.toLowerCase() === metalQuery.toLowerCase();
             });
-            if (karatQuery) {
-                title = `${metalQuery.toUpperCase()} ${karatQuery} Karat`;
-            } else if (silverTypeQuery) {
+            if (metalQuery?.toLowerCase() === 'gold' && effectiveKarat) {
+                title = `${effectiveKarat}K Gold`;
+            } else if (metalQuery?.toLowerCase() === 'silver' && effectiveSilverType) {
                 title = metalQuery.toLowerCase() === 'silver'
-                    ? (normalizeSilverTier(silverTypeQuery) === '925 sterling silver' ? '925 Sterling Silver' : 'Silver')
+                    ? (effectiveSilverType === 'sterling' ? '925 Sterling Silver' : 'Fine Silver')
                     : title;
             }
         } else if (category) {
@@ -252,7 +340,7 @@ const Shop = () => {
             baseProducts = products.filter(p => matchesCategory(p, category, currentCat));
         }
 
-        if (metalQuery && (karatQuery || silverTypeQuery)) {
+        if (metalQuery && (effectiveKarat || effectiveSilverType)) {
             baseProducts = baseProducts.filter(matchesPurityTier);
         }
 
@@ -272,13 +360,18 @@ const Shop = () => {
             title = `Above ₹${parsedMin.toLocaleString('en-IN')}`;
         }
         if (productsQuery) {
-            const ids = String(productsQuery)
-                .split(',')
-                .map(id => id.trim())
-                .filter(Boolean);
-            if (ids.length > 0) {
-                baseProducts = baseProducts.filter(p => ids.includes(String(p._id || p.id)));
+            if (pinnedProducts.length > 0) {
+                baseProducts = pinnedProducts;
                 title = 'Perfect Gift';
+            } else {
+                const ids = String(productsQuery)
+                    .split(',')
+                    .map(id => id.trim())
+                    .filter(Boolean);
+                if (ids.length > 0) {
+                    baseProducts = baseProducts.filter(p => ids.includes(String(p._id || p.id)));
+                    title = 'Perfect Gift';
+                }
             }
         }
         if (sortQuery === 'latest') {
@@ -306,6 +399,9 @@ const Shop = () => {
         setPageTitle(title);
 
         let result = baseProducts;
+
+        // Enforce men/women audience scope when coming from those landing pages.
+        result = result.filter(matchesAudienceScope);
 
         // 2. Apply Local Category Filter (if selected)
         if (selectedCategory !== 'All') {
@@ -658,7 +754,7 @@ const Shop = () => {
 
 
                 {/* Product Grid */}
-                {isLoading ? (
+                {(isLoading || isPinnedLoading) ? (
                     <div className="flex items-center justify-center py-20">
                         <Loader fullPage={false} />
                     </div>

@@ -76,7 +76,9 @@ const QrScannerPage = () => {
             if (window.navigator?.vibrate) {
                 window.navigator.vibrate(200);
             }
-        } catch (e) {}
+        } catch (_e) {
+            // Ignore sound/vibration failures (common on some browsers/devices).
+        }
     };
 
     const handleProductScan = async (code) => {

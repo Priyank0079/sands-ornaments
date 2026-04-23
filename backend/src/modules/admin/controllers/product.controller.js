@@ -21,7 +21,8 @@ const PRODUCT_UPDATE_WHITELIST = [
   "navShopByCategory",
   "cardLabel", "cardBadge", "careTips", "silverCategory",
   "goldCategory", "weightUnit", "specifications", "supplierInfo",
-  "huid", "sizes", "isSerialized", "paymentGatewayChargeBearer"
+  "huid", "sizes", "isSerialized", "paymentGatewayChargeBearer", "audience",
+  "videoUrl"
 ];
 
 const normalizeSerialCodes = (codes = []) => {
@@ -175,6 +176,10 @@ exports.createProduct = async (req, res) => {
 
     const { productImages, variantImageMap } = splitUploadedProductImages(req.files, data.variants?.length || 0);
     let images = productImages;
+
+    const uploadedVideo = (Array.isArray(req.files) ? req.files : [])
+      .find((file) => file?.fieldname === "video");
+    const videoUrl = uploadedVideo?.path || (typeof data.videoUrl === "string" ? data.videoUrl.trim() : "");
     if (Array.isArray(data.variants) && data.variants.length > 0) {
       data.variants = data.variants.map((variant, index) => ({
         ...variant,
@@ -187,7 +192,7 @@ exports.createProduct = async (req, res) => {
     const gstRate = settings?.gstRate || 0;
 
     const productData = applyMetalPricingToProduct(
-      { ...data, productCode: data.productCode, slug: productSlug, images, isSerialized: true },
+      { ...data, productCode: data.productCode, slug: productSlug, images, videoUrl, isSerialized: true },
       metalRates,
       gstRate
     );
@@ -316,6 +321,24 @@ exports.updateProduct = async (req, res) => {
       product.images = (product.images || []).filter((img) => !deletedImages.includes(img));
     }
 
+    const removeVideo = String(data.removeVideo || "").toLowerCase() === "true";
+    const uploadedVideo = (Array.isArray(req.files) ? req.files : [])
+      .find((file) => file?.fieldname === "video");
+
+    if (removeVideo && product.videoUrl) {
+      const previous = product.videoUrl;
+      product.videoUrl = "";
+      await Promise.allSettled([deleteFromCloudinary(previous)]);
+    }
+
+    if (uploadedVideo?.path) {
+      const previous = product.videoUrl;
+      product.videoUrl = uploadedVideo.path;
+      if (previous) {
+        await Promise.allSettled([deleteFromCloudinary(previous)]);
+      }
+    }
+
     // Append new images (don't allow overwrite via body)
     const { productImages, variantImageMap } = splitUploadedProductImages(req.files, data.variants?.length || product.variants?.length || 0);
 
@@ -379,6 +402,11 @@ exports.deleteProduct = async (req, res) => {
     const product = await Product.findById(req.params.id);
     if (!product) return error(res, "Product not found", 404);
 
+    const mediaToRemove = [
+      ...(Array.isArray(product.images) ? product.images : []),
+      product.videoUrl
+    ].filter(Boolean);
+
     // BUG-07 FIX: cascade cleanup to prevent orphaned data
     await Promise.all([
       // Remove reviews for this product
@@ -393,6 +421,10 @@ exports.deleteProduct = async (req, res) => {
     ]);
 
     await product.deleteOne();
+
+    if (mediaToRemove.length > 0) {
+      await Promise.allSettled(mediaToRemove.map((url) => deleteFromCloudinary(url)));
+    }
 
     return success(res, {}, "Product and associated data deleted successfully");
   } catch (err) { return error(res, err.message); }

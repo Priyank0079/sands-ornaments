@@ -102,7 +102,7 @@ const AllJewelleryMenu = ({ resetMenu }) => {
                 // Map style to the sort param Shop.jsx supports
                 { name: 'Everyday',  path: '/shop?sort=most-sold' },
                 { name: 'Festive',   path: '/shop?search=festive' },
-                { name: 'Gifting',   path: '/shop?filter=gift' },
+                { name: 'Gifting',   path: '/shop?search=gift' },
                 { name: 'Minimalist',path: '/shop?search=minimalist' },
             ]
         }

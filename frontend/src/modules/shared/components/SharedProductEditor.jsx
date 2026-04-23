@@ -23,7 +23,8 @@ const quillModules = {
 const quillFormats = [
     'header',
     'bold', 'italic', 'underline', 'strike',
-    'list', 'bullet',
+    // Quill only needs `list` here; "bullet" is a list value, not a format.
+    'list',
     'link'
 ];
 
@@ -50,6 +51,9 @@ const SharedProductEditor = ({
     const [previewImages, setPreviewImages] = useState([]);
     const [variantImageFiles, setVariantImageFiles] = useState({});
     const [variantImagePreviews, setVariantImagePreviews] = useState({});
+    const [videoFile, setVideoFile] = useState(null);
+    const [videoPreview, setVideoPreview] = useState('');
+    const [removeVideo, setRemoveVideo] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [errors, setErrors] = useState({});
     const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -307,6 +311,7 @@ const SharedProductEditor = ({
         cardBadge: '',
         huid: '',
         material: 'Silver',
+        audience: ['unisex'],
         weight: '',
         weightUnit: 'Grams',
         specifications: '',
@@ -351,6 +356,7 @@ const SharedProductEditor = ({
         silverCategory: '', // New Field for silver purity
         goldCategory: '', // New Field for gold purity
         careTips: '', // New Field for caring tips
+        videoUrl: '',
         isSerialized: true,
         productCodes: []
     });
@@ -419,6 +425,15 @@ const SharedProductEditor = ({
         };
         loadPricing();
     }, []);
+
+    // Clean up object URLs for selected local video files.
+    useEffect(() => {
+        return () => {
+            if (videoPreview && String(videoPreview).startsWith('blob:')) {
+                try { URL.revokeObjectURL(videoPreview); } catch (e) { /* noop */ }
+            }
+        };
+    }, [videoPreview]);
 
     // Auto-generate Product Code Logic
     useEffect(() => {
@@ -489,6 +504,7 @@ const SharedProductEditor = ({
                         ...prev,
                         ...restData,
                         material: data.material || data.metal || 'Silver',
+                        audience: Array.isArray(data.audience) && data.audience.length > 0 ? data.audience : ['unisex'],
                         weight: data.weight || '',
                         weightUnit: data.weightUnit || 'Grams',
                         paymentGatewayChargeBearer: data.paymentGatewayChargeBearer || 'seller',
@@ -526,12 +542,17 @@ const SharedProductEditor = ({
                         silverCategory: data.silverCategory || '',
                         goldCategory: data.goldCategory || '',
                         careTips: data.careTips || '',
+                        videoUrl: data.videoUrl || '',
                         isSerialized: true,
                         productCodes: []
                     }));
                     if (data.images) {
                         setPreviewImages(data.images);
                     }
+                    // Video is optional. Preview comes from backend URL (if any).
+                    setVideoFile(null);
+                    setRemoveVideo(false);
+                    setVideoPreview(data.videoUrl || '');
                     setVariantImageFiles({});
                     setVariantImagePreviews({});
                 }
@@ -544,12 +565,39 @@ const SharedProductEditor = ({
         loadProduct();
     }, [id, isEditMode, isViewMode]);
 
+    const handleVideoUpload = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setVideoFile(file);
+        setRemoveVideo(false);
+        setVideoPreview(URL.createObjectURL(file));
+    };
+
+    const handleRemoveVideo = () => {
+        setVideoFile(null);
+        setVideoPreview('');
+        setRemoveVideo(true);
+        setFormData(prev => ({ ...prev, videoUrl: '' }));
+    };
+
     const handleImageUpload = (e) => {
         const files = Array.from(e.target.files);
         const newFiles = files.slice(0, 5 - imageFiles.length);
         const previews = newFiles.map(file => URL.createObjectURL(file));
         setImageFiles(prev => [...prev, ...newFiles]);
         setPreviewImages(prev => [...prev, ...previews].slice(0, 5));
+    };
+
+    const handleHoverImageUpload = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (previewImages.length >= 5) {
+            toast.error('You can upload up to 5 images.');
+            return;
+        }
+        const preview = URL.createObjectURL(file);
+        setImageFiles(prev => [...prev, file]);
+        setPreviewImages(prev => [...prev, preview].slice(0, 5));
     };
 
     const handleVariantImageUpload = (variantId, filesList) => {
@@ -871,9 +919,11 @@ const SharedProductEditor = ({
                 'tags',
                 'deletedImages',
                 'navShopByCategory',
+                'audience',
                 'faqs',
                 'isSerialized',
                 'productCodes',
+                'videoUrl',
                 'image',
                 '_id',
                 'id',
@@ -902,6 +952,7 @@ const SharedProductEditor = ({
             });
 
             productForm.append('categories', JSON.stringify([formData.categories[0].category]));
+            productForm.append('audience', JSON.stringify(Array.isArray(formData.audience) && formData.audience.length > 0 ? formData.audience : ['unisex']));
             const normalizedVariants = formData.variants.map((variantItem) => {
                 const serialCodes = normalizeSerialCodes(variantItem.serialCodes || []);
                 const availableCount = serialCodes.filter(code => (code.status || 'AVAILABLE') === 'AVAILABLE').length;
@@ -955,6 +1006,13 @@ const SharedProductEditor = ({
                 uploadFiles.forEach((file) => productForm.append(`variantImages_${index}`, file));
             });
 
+            if (removeVideo) {
+                productForm.append('removeVideo', 'true');
+            }
+            if (videoFile) {
+                productForm.append('video', videoFile);
+            }
+
             if (isEditMode) {
                 const res = await resolvedProductApi.updateProduct(id, productForm);
                 if (res?.success === false) throw new Error(res?.message || "Update failed");
@@ -991,10 +1049,27 @@ const SharedProductEditor = ({
                     <div className="lg:col-span-4 space-y-6">
                         <FormSection title="Images">
                             <div className="space-y-4">
+                                <div className="rounded-xl border border-gray-100 bg-white p-3">
+                                    <p className="text-[11px] font-black uppercase tracking-widest text-gray-600">Card Image Rules</p>
+                                    <p className="text-[11px] text-gray-500 mt-1">
+                                        Image 1 is the main card image. Image 2 (optional) is used for the hover effect. Upload at least 2 images to enable hover.
+                                    </p>
+                                </div>
+
                                 <div className="grid grid-cols-2 gap-3">
                                     {previewImages.map((img, idx) => (
                                         <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-gray-200">
                                             <img src={img} alt="" className="w-full h-full object-cover" />
+                                            {idx === 0 && (
+                                                <div className="absolute bottom-2 left-2 px-2 py-1 rounded-full bg-black/70 text-white text-[9px] font-black uppercase tracking-widest">
+                                                    Main
+                                                </div>
+                                            )}
+                                            {idx === 1 && (
+                                                <div className="absolute bottom-2 left-2 px-2 py-1 rounded-full bg-black/70 text-white text-[9px] font-black uppercase tracking-widest">
+                                                    Hover
+                                                </div>
+                                            )}
                                             {!isViewMode && (
                                                 <button
                                                     type="button"
@@ -1022,6 +1097,14 @@ const SharedProductEditor = ({
                                             <Upload size={14} /> Upload Image
                                             <input type="file" multiple className="hidden" onChange={handleImageUpload} accept="image/*" />
                                         </label>
+
+                                        {/* Quick affordance: when there is exactly 1 image, let admin/seller add the hover image explicitly. */}
+                                        {previewImages.length === 1 && previewImages.length < 5 && (
+                                            <label className="flex-[4] py-3.5 bg-white border border-gray-200 text-gray-700 rounded-xl text-[9px] font-black uppercase tracking-widest text-center cursor-pointer hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
+                                                <ImagePlus size={14} /> Upload Hover
+                                                <input type="file" className="hidden" onChange={handleHoverImageUpload} accept="image/*" />
+                                            </label>
+                                        )}
                                         
                                         <div className="flex-[6] relative group">
                                             <button 
@@ -1061,6 +1144,51 @@ const SharedProductEditor = ({
                             </div>
                         </FormSection>
 
+                        <FormSection title="Product Video (Optional)">
+                            <div className="space-y-3">
+                                {removeVideo ? (
+                                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+                                        <p className="text-xs font-semibold text-amber-900">Video will be removed after you save.</p>
+                                        <p className="text-[11px] text-amber-800 mt-1">Upload a new video before saving to replace it.</p>
+                                    </div>
+                                ) : videoPreview ? (
+                                    <div className="rounded-lg overflow-hidden border border-gray-200 bg-black">
+                                        <video
+                                            src={videoPreview}
+                                            controls
+                                            playsInline
+                                            className="w-full h-[220px] object-cover"
+                                        />
+                                    </div>
+                                ) : (
+                                    <div className="rounded-lg border border-dashed border-gray-200 p-6 text-center">
+                                        <p className="text-[11px] text-gray-500 font-semibold uppercase tracking-widest">No video</p>
+                                        <p className="text-[11px] text-gray-400 mt-2">Optional. Supported: mp4, mov, webm.</p>
+                                    </div>
+                                )}
+
+                                {!isViewMode && (
+                                    <div className="flex items-center gap-2">
+                                        <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 cursor-pointer text-xs font-semibold">
+                                            <Upload size={14} className="text-gray-500" />
+                                            Upload Video
+                                            <input type="file" accept="video/*" className="hidden" onChange={handleVideoUpload} />
+                                        </label>
+                                        {(videoPreview || formData.videoUrl) && !removeVideo && (
+                                            <button
+                                                type="button"
+                                                onClick={handleRemoveVideo}
+                                                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 text-xs font-semibold text-red-700"
+                                            >
+                                                <Trash2 size={14} />
+                                                Remove
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </FormSection>
+
                         <FormSection title="Display Labels">
                             <Input
                                 label="Card Label"
@@ -1087,6 +1215,34 @@ const SharedProductEditor = ({
                                 ]}
                                 disabled={isViewMode}
                             />
+                            <div className="space-y-2">
+                                <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Audience</p>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {['unisex', 'men', 'women', 'family'].map((key) => {
+                                        const checked = Array.isArray(formData.audience) && formData.audience.includes(key);
+                                        return (
+                                            <label key={key} className="flex items-center gap-2 text-xs text-gray-700">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={checked}
+                                                    disabled={isViewMode}
+                                                    onChange={(e) => {
+                                                        const next = new Set(Array.isArray(formData.audience) ? formData.audience : []);
+                                                        if (e.target.checked) next.add(key);
+                                                        else next.delete(key);
+                                                        const normalized = Array.from(next);
+                                                        setFormData({ ...formData, audience: normalized.length > 0 ? normalized : ['unisex'] });
+                                                    }}
+                                                />
+                                                <span className="capitalize">{key}</span>
+                                            </label>
+                                        );
+                                    })}
+                                </div>
+                                <p className="text-[10px] text-gray-400">
+                                    Used to keep Men/Women pages clean. “Unisex” products can appear on both.
+                                </p>
+                            </div>
                             {formData.material === 'Silver' && (
                                 <Select
                                     label="Silver Purity Categorization"
@@ -1340,7 +1496,7 @@ const SharedProductEditor = ({
                                         <ReactQuill
                                             theme="snow"
                                             value={formData.description}
-                                            onChange={(value) => setFormData({ ...formData, description: value })}
+                                            onChange={(value) => setFormData((prev) => ({ ...prev, description: value }))}
                                             readOnly={isViewMode}
                                             modules={quillModules}
                                             formats={quillFormats}
@@ -1355,7 +1511,7 @@ const SharedProductEditor = ({
                                         <ReactQuill
                                             theme="snow"
                                             value={formData.stylingTips}
-                                            onChange={(value) => setFormData({ ...formData, stylingTips: value })}
+                                            onChange={(value) => setFormData((prev) => ({ ...prev, stylingTips: value }))}
                                             readOnly={isViewMode}
                                             modules={quillModules}
                                             formats={quillFormats}
@@ -1381,7 +1537,7 @@ const SharedProductEditor = ({
                                         <ReactQuill
                                             theme="snow"
                                             value={formData.careTips}
-                                            onChange={(value) => setFormData({ ...formData, careTips: value })}
+                                            onChange={(value) => setFormData((prev) => ({ ...prev, careTips: value }))}
                                             readOnly={isViewMode}
                                             modules={quillModules}
                                             formats={quillFormats}

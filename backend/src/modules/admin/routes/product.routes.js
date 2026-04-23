@@ -2,7 +2,7 @@ const router = require("express").Router();
 const productController = require("../controllers/product.controller");
 const validate = require("../../../middlewares/validate");
 const { productSchema } = require("../validators/product.validator");
-const { productUpload } = require("../../../middlewares/uploadMiddleware");
+const { productMediaUpload } = require("../../../middlewares/uploadMiddleware");
 const parseFormData = require("../../../middlewares/parseFormData");
 
 const PRODUCT_COMPLEX_FIELDS = [
@@ -13,7 +13,8 @@ const PRODUCT_COMPLEX_FIELDS = [
   "deletedImages",
   "showInNavbar",
   "showInCollection",
-  "navShopByCategory"
+  "navShopByCategory",
+  "audience"
 ];
 
 router.get("/", productController.getProducts);
@@ -21,7 +22,7 @@ router.get("/:id", productController.getProductDetail);
 
 router.post(
   "/",
-  productUpload.any(),
+  productMediaUpload.any(),
   parseFormData(PRODUCT_COMPLEX_FIELDS),
   validate(productSchema),
   productController.createProduct
@@ -29,7 +30,7 @@ router.post(
 
 router.put(
   "/:id",
-  productUpload.any(),
+  productMediaUpload.any(),
   parseFormData(PRODUCT_COMPLEX_FIELDS),
   validate(productSchema),
   productController.updateProduct

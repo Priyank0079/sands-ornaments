@@ -8,7 +8,7 @@ import ProductCard from '../components/ProductCard';
 import WhyChooseUs from '../components/WhyChooseUs';
 import { Heart, ShoppingBag, Star, Share2, Plus, Minus, Truck, ShieldCheck, Smile, Gift, ChevronDown, SlidersHorizontal, X, Camera, Check, ArrowLeft, ArrowRight, Droplets, Sparkles, Play } from 'lucide-react';
 import { COLLECTION_MOCK_PRODUCTS } from '../data/mockCollectionData';
-import BrandVideo from '@assets/Screen Recording 2026-04-03 142555.mp4';
+// Product video is backend-driven (optional) via `product.videoUrl`.
 import Loader from '../../shared/components/Loader';
 
 // Import model shots (angle 2) for maximum hover impact
@@ -507,18 +507,27 @@ const ProductDetails = () => {
                     {/* Left: Product Lookbook (Split: Video & Image) */}
                     <div className="relative space-y-4">
                         <div className="h-[400px] lg:h-[520px] w-full bg-white rounded-2xl overflow-hidden shadow-sm relative flex flex-col md:flex-row gap-[1px] border border-gray-100">
-                            {/* Video Pane */}
-                            <div className="w-full md:w-1/2 relative h-1/2 md:h-full group overflow-hidden border-r border-white/10">
-                                <video 
-                                    src={BrandVideo} 
-                                    autoPlay 
-                                    muted 
-                                    loop 
-                                    playsInline
-                                    className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
-                                />
-                                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/5 transition-colors" />
-                                
+                            {/* Video Pane (optional, product-specific) */}
+                            <div className="w-full md:w-1/2 relative h-1/2 md:h-full group overflow-hidden border-r border-white/10 bg-black">
+                                {product?.videoUrl ? (
+                                    <>
+                                        <video 
+                                            src={product.videoUrl} 
+                                            autoPlay 
+                                            muted 
+                                            loop 
+                                            playsInline
+                                            controls
+                                            className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
+                                        />
+                                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/5 transition-colors" />
+                                    </>
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-[#111]">
+                                        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/60">No product video</p>
+                                    </div>
+                                )}
+
                                 {/* Experience Sticker Layer (Subtle) */}
                                 <div className="absolute bottom-4 right-4 z-30 scale-75 md:scale-[0.85]">
                                     <div className="relative w-24 h-24 flex items-center justify-center animate-[spin_10s_linear_infinite]">
@@ -683,34 +692,6 @@ const ProductDetails = () => {
                             </div>
                             <p className="text-xs text-gray-500 font-medium">Inclusive of all taxes</p>
                         </div>
-
-                        {false && (
-                            <div className="border-b border-gray-100 pb-6">
-                                <div className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-3">Price Breakdown</div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                                    <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
-                                        <span className="text-gray-600">Metal Price</span>
-                                        <span className="font-semibold text-gray-900">{currencyText(pricingBreakdown.metalPrice || 0)}</span>
-                                    </div>
-                                    <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
-                                        <span className="text-gray-600">Making Charge</span>
-                                        <span className="font-semibold text-gray-900">{currencyText(pricingBreakdown.makingCharge || 0)}</span>
-                                    </div>
-                                    <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
-                                        <span className="text-gray-600">Diamond Price</span>
-                                        <span className="font-semibold text-gray-900">{currencyText(pricingBreakdown.diamondPrice || 0)}</span>
-                                    </div>
-                                    <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
-                                        <span className="text-gray-600">GST ({gstPercent}%)</span>
-                                        <span className="font-semibold text-gray-900">{currencyText(pricingBreakdown.gst || 0)}</span>
-                                    </div>
-                                </div>
-                                <div className="mt-4 flex items-center justify-between border-t border-gray-200 pt-4">
-                                    <span className="text-sm font-bold uppercase tracking-widest text-gray-500">Final Price</span>
-                                    <span className="text-lg font-bold text-black">{currencyText(pricingBreakdown.finalPrice || variantPrice || 0)}</span>
-                                </div>
-                            </div>
-                        )}
 
                         <div className="border-b border-gray-100 pb-6">
                             <div className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-3">Price Breakdown</div>

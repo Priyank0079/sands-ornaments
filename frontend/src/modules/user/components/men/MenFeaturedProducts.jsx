@@ -80,6 +80,16 @@ const productCreatedAt = (product = {}) => {
     return id ? parseInt(id.substring(0, 8), 16) || 0 : 0;
 };
 
+const getProductAudience = (product = {}) => {
+    const list = Array.isArray(product?.audience) ? product.audience : [];
+    return list.length > 0 ? list.map(normalizeToken) : ['unisex'];
+};
+
+const isMenAudienceProduct = (product = {}) => {
+    const audience = getProductAudience(product);
+    return audience.includes('unisex') || audience.includes('men');
+};
+
 const matchesCategory = (product = {}, categoryId = '') => {
     const target = normalizeToken(categoryId);
     if (!target) return true;
@@ -128,7 +138,9 @@ const MenFeaturedProducts = ({ sectionData }) => {
         // "navGiftsFor/navOccasions" legacy placement tags are retired. Men sections are now driven by:
         // - CMS pinned products (manual), or
         // - CMS category selection (category mode).
-        const sortedByLatest = [...allProducts].sort((a, b) => productCreatedAt(b) - productCreatedAt(a));
+        const sortedByLatest = [...allProducts]
+            .filter(isMenAudienceProduct)
+            .sort((a, b) => productCreatedAt(b) - productCreatedAt(a));
 
         if (resolvedSettings.sourceMode === 'manual') {
             const pinnedIds = (sectionData?.items || [])
@@ -145,7 +157,7 @@ const MenFeaturedProducts = ({ sectionData }) => {
             const pinnedMap = new Map(allProducts.map((product) => [String(product.id || product._id), product]));
             return pinnedIds
                 .map((id) => pinnedMap.get(String(id)))
-                .filter(Boolean)
+                .filter((p) => Boolean(p) && isMenAudienceProduct(p))
                 .slice(0, resolvedSettings.productLimit);
         }
 

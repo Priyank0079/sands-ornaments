@@ -163,7 +163,9 @@ export const ShopProvider = ({ children }) => {
 
     // FETCH USER DATA ON LOGIN
     useEffect(() => {
-        if (user) {
+        // These endpoints are user-only. When logged in as admin/seller, calling them
+        // will correctly return 403, but we don't want console noise or wasted requests.
+        if (user?.role === 'user') {
             fetchAddresses();
             fetchWishlist();
             fetchOrders();
@@ -714,7 +716,8 @@ export const ShopProvider = ({ children }) => {
     };
 
     const deleteAccount = () => {
-        setUser(null);
+        // User state is owned by AuthContext; we just clear dependent state here.
+        authLogout();
         setOrders([]);
         setAddresses([]);
         setCart([]);
@@ -847,9 +850,8 @@ export const ShopProvider = ({ children }) => {
     }, []);
 
     // Product & Bulk Management
-    const updateProduct = (id, updatedData) => {
-        setProducts(prev => prev.map(p => p.id === id ? { ...p, ...updatedData } : p));
-    };
+    // `products` comes from `useCatalogue()` (read-only). Admin/Seller updates are handled
+    // through their own modules; the user shop doesn't mutate this list directly.
 
     const getActiveCoupons = () => {
         return (coupons || []).filter(c => c?.active !== false);
@@ -882,7 +884,7 @@ export const ShopProvider = ({ children }) => {
             pincode, updatePincode,
             activeMetal, updateActiveMetal,
 
-            products, updateProduct,
+            products,
             categories, isLoading: isCatalogueLoading,
 
             // Homepage Sections Management

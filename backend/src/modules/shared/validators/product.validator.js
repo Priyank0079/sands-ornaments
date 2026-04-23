@@ -49,6 +49,10 @@ const productSchema = Joi.object({
   stylingTips: Joi.string().allow(""),
   careTips: Joi.string().allow(""),
   material: Joi.string().required(),
+  audience: Joi.array()
+    .items(Joi.string().valid("men", "women", "family", "unisex"))
+    .min(1)
+    .default(["unisex"]),
   silverCategory: Joi.string().allow(""),
   goldCategory: Joi.string().allow(""),
   weight: Joi.number().min(0),
@@ -57,6 +61,8 @@ const productSchema = Joi.object({
   supplierInfo: Joi.string().allow(""),
   cardLabel: Joi.string().allow(""),
   cardBadge: Joi.string().allow(""),
+  videoUrl: Joi.string().trim().allow(""),
+  removeVideo: boolField.optional(),
   paymentGatewayChargeBearer: Joi.string().valid("seller", "user").default("seller"),
   huid: Joi.string().allow(""),
   sizes: Joi.array().items(Joi.string().trim()).optional(),
