@@ -11,14 +11,16 @@ const banners = [
     {
         id: 1,
         image: bannerMasterpiece,
-        title: 'Discover Your Unique Story in Diamonds',
-        subtitle: 'Timeless pieces for your most memorable moments.'
+        title: 'Celestial Silver Masterpieces',
+        subtitle: 'Artisan Crafted Jewels for Timeless Stories',
+        ctaLabel: 'Discover Now'
     },
     {
         id: 2,
         image: bannerBridal,
-        title: 'Exquisite Bridal Collection',
-        subtitle: 'Crafted for Elegance and Eternal Love'
+        title: 'The Royal Bridal Heritage',
+        subtitle: 'Ethereal Grace for Your Eternal Vows',
+        ctaLabel: 'Explore Bridal'
     }
 ];
 
@@ -56,50 +58,85 @@ const AutoBannerSection = () => {
     }, [currentIndex, slides.length]);
 
     return (
-        <section className="w-full relative overflow-hidden bg-white">
-            <div className="w-full h-[160px] md:h-[280px] relative">
+        <section className="w-full relative overflow-hidden bg-white pt-10 md:pt-16 pb-0">
+            <div className="container mx-auto px-4 mb-8 md:mb-12 text-center">
+                <motion.span 
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="text-[#8E2B45] text-[10px] md:text-xs font-bold tracking-[0.4em] uppercase mb-3 block"
+                >
+                    Premium Narrative
+                </motion.span>
+                <motion.h2 
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="text-2xl md:text-4xl font-serif text-gray-900 tracking-tight"
+                >
+                    Signature <span className="italic font-light text-[#8E2B45]">Curations</span>
+                </motion.h2>
+                <div className="w-12 h-[2px] bg-[#8E2B45]/20 mx-auto mt-4 rounded-full" />
+            </div>
+
+            <div className="w-full h-[220px] md:h-[420px] relative">
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={currentIndex}
-                        initial={{ opacity: 0, x: 100 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -100 }}
-                        transition={{ duration: 0.8, ease: "easeInOut" }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 1 }}
                         className="absolute inset-0 w-full h-full"
                     >
                         <div className="w-full h-full relative group">
-                            {/* Banner Image */}
-                            <img 
+                            {/* Banner Image with subtle zoom */}
+                            <motion.img 
+                                key={`img-${currentIndex}`}
+                                initial={{ scale: 1.1 }}
+                                animate={{ scale: 1 }}
+                                transition={{ duration: 5 }}
                                 src={slides[currentIndex].image} 
                                 alt={slides[currentIndex].title}
-                                className="w-full h-full object-cover rounded-none"
+                                className="w-full h-full object-cover"
                             />
                             
                             {/* Premium Content Overlay */}
-                            <div className="absolute inset-0 bg-black/30 flex flex-col justify-center items-center text-center px-4">
-                                <motion.h2 
-                                    key={`title-${currentIndex}`}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="text-white text-2xl md:text-5xl font-serif font-bold mb-2 drop-shadow-lg"
-                                >
-                                    {slides[currentIndex].title}
-                                </motion.h2>
-                                <motion.p 
-                                    key={`subtitle-${currentIndex}`}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.2 }}
-                                    className="text-white/90 text-sm md:text-xl font-light italic drop-shadow-md"
-                                >
-                                    {slides[currentIndex].subtitle}
-                                </motion.p>
-                                <Link
-                                    to={slides[currentIndex].link || '/shop'}
-                                    className="mt-4 inline-flex items-center justify-center rounded-full bg-white/95 px-6 py-2.5 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-[#5B1E26] hover:bg-white transition-all"
-                                >
-                                    {slides[currentIndex].ctaLabel || 'Explore Collection'}
-                                </Link>
+                            <div className="absolute inset-0 bg-black/20 flex flex-col justify-center items-center text-center px-4">
+                                <div className="max-w-4xl space-y-4 md:space-y-6">
+                                    <motion.p 
+                                        key={`subtitle-${currentIndex}`}
+                                        initial={{ opacity: 0, y: -20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.3 }}
+                                        className="text-[#D9C4B1] text-[9px] md:text-sm font-bold uppercase tracking-[0.4em]"
+                                    >
+                                        {slides[currentIndex].subtitle}
+                                    </motion.p>
+
+                                    <motion.h2 
+                                        key={`title-${currentIndex}`}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.5 }}
+                                        className="text-white text-3xl md:text-7xl font-serif italic leading-tight drop-shadow-2xl"
+                                    >
+                                        {slides[currentIndex].title}
+                                    </motion.h2>
+
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.8 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        transition={{ delay: 0.7 }}
+                                    >
+                                        <Link
+                                            to={slides[currentIndex].link || '/shop'}
+                                            className="inline-flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md border border-white/30 px-8 py-3 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-white hover:bg-white hover:text-[#5B1E26] transition-all duration-500 shadow-2xl"
+                                        >
+                                            {slides[currentIndex].ctaLabel || 'Explore Collection'}
+                                        </Link>
+                                    </motion.div>
+                                </div>
                             </div>
                             
                             {/* Optional Overlay for readability if wanted, but user asked for simple banner */}

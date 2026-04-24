@@ -20,7 +20,7 @@ const Loader = ({ fullPage = true }) => {
         {/* Loading Text */}
         <div className="absolute -bottom-16 md:-bottom-20 left-1/2 -translate-x-1/2 whitespace-nowrap">
           <span className="font-display text-[#7A2E3A] text-sm tracking-[0.3em] uppercase animate-pulse">
-            Sands Ornaments
+            Sands Jewels
           </span>
         </div>
       </div>

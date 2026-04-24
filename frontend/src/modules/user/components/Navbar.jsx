@@ -76,7 +76,7 @@ const Navbar = () => {
                             <img
                                 src={logo}
                                 alt="Sands Jewels"
-                                className="h-16 w-auto object-contain"
+                                className="h-20 w-auto object-contain transform scale-110"
                             />
                         </Link>
 
@@ -154,12 +154,12 @@ const Navbar = () => {
             </div>
 
             {/* Mobile Header - Same refinement */}
-            <div className="lg:hidden flex items-center justify-between px-4 py-3 sm:py-4 border-b border-gray-100">
+            <div className="lg:hidden flex items-center justify-between px-4 py-1.5 border-b border-gray-100">
                 <button onClick={() => setIsMenuOpen(true)} className="p-1">
                     <Menu className="w-7 h-7 text-gray-800" />
                 </button>
                 <Link to="/">
-                    <img src={logo} alt="Sands Jewels" className="h-14 sm:h-12 w-auto" />
+                    <img src={logo} alt="Sands Jewels" className="h-[72px] w-auto object-contain" />
                 </Link>
                 <div className="flex items-center gap-5">
                     <Link to="/wishlist" className="relative">
@@ -191,14 +191,14 @@ const Navbar = () => {
                                     <X className="w-7 h-7 text-gray-500" />
                                 </button>
                             </div>
-                            <div className="flex bg-gray-50 p-1 rounded-full border border-[#D4B390] mb-6">
+                            <div className="flex bg-gray-50 p-1 rounded-full border border-[#D4B390]/30 mb-6">
                                 <button
                                     onClick={() => {
                                         updateActiveMetal('silver');
                                         navigate('/');
                                         setIsMenuOpen(false);
                                     }}
-                                    className={`flex-1 py-1.5 px-4 rounded-full text-sm font-bold transition-all duration-500 ${activeMetal === 'silver' ? 'bg-[#9C3D5E] text-white shadow-md' : 'text-gray-700'}`}
+                                    className={`flex-1 py-1.5 px-4 rounded-full text-sm font-bold transition-all duration-500 ${activeMetal === 'silver' ? 'bg-gradient-to-r from-[#707070] via-[#E0E0E0] to-[#707070] text-white shadow-md' : 'text-gray-700'}`}
                                 >
                                     Silver
                                 </button>
@@ -208,7 +208,7 @@ const Navbar = () => {
                                         navigate('/gold-collection');
                                         setIsMenuOpen(false);
                                     }}
-                                    className={`flex-1 py-1.5 px-4 rounded-full text-sm font-bold transition-all duration-500 ${activeMetal === 'gold' ? 'bg-[#9C3D5E] text-white shadow-md' : 'text-gray-700'}`}
+                                    className={`flex-1 py-1.5 px-4 rounded-full text-sm font-bold transition-all duration-500 ${activeMetal === 'gold' ? 'bg-gradient-to-r from-[#C9A24D] via-[#E2C074] to-[#C9A24D] text-white shadow-md' : 'text-gray-700'}`}
                                 >
                                     Gold
                                 </button>
@@ -234,7 +234,7 @@ const Navbar = () => {
                                 
                                 <div className="flex flex-col gap-3">
                                     <span className="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">More at Sands</span>
-                                    <Link to="/shop?search=gift" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Gift Store</Link>
+                                    <Link to="/blogs" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Blogs</Link>
                                     <Link to="/about" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>About Us</Link>
                                 </div>
                             </nav>

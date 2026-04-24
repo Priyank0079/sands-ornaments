@@ -88,28 +88,28 @@ const PerfectGift = () => {
     });
 
     return (
-        <section className="py-6 md:py-20 bg-white text-black overflow-hidden font-sans border-b border-gray-100">
+        <section className="pt-2 pb-6 md:pt-4 md:pb-20 bg-white text-black overflow-hidden font-sans border-b border-gray-100">
             <div className="container mx-auto px-4">
                 
                 {/* Section Title */}
-                <div className="text-center mb-6 md:mb-16">
-                    <h2 className="text-2xl md:text-5xl font-black text-black tracking-tighter mb-4">
+                <div className="text-center mb-8 md:mb-16">
+                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight mb-3">
                         {bondSettings.title || 'Shop by Bond'}
                     </h2>
-                    <p className="text-gray-400 text-[10px] md:text-sm uppercase tracking-[0.4em] font-bold">
+                    <p className="text-gray-500 text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold">
                         {bondSettings.subtitle || 'Curated for your loved ones'}
                     </p>
                 </div>
                 
                 {/* Bonds Category Grid */}
-                <div className="flex overflow-x-auto scrollbar-hide gap-4 md:gap-6 pb-6 md:pb-12 px-1 md:px-2 max-w-[1500px] mx-auto justify-start md:justify-center">
+                <div className="flex overflow-x-auto scrollbar-hide gap-4 md:gap-6 pb-4 md:pb-6 px-1 md:px-2 max-w-[1500px] mx-auto justify-start md:justify-center">
                     {recipients.map((item) => (
                         <Link 
                             key={item.id} 
                             to={item.path} 
                             className="flex flex-col items-center shrink-0 w-[130px] md:w-[210px] group"
                         >
-                            <div className="bg-[#E8E8E8] p-1.5 md:p-2 rounded-2xl md:rounded-3xl w-full flex flex-col items-center transition-all duration-500 group-hover:bg-[#D3D3D3] group-hover:translate-y-[-6px]">
+                            <div className="bg-[#F3F3F3] p-1.5 md:p-2 rounded-2xl md:rounded-3xl w-full flex flex-col items-center transition-all duration-500 group-hover:bg-[#EAEAEA] group-hover:translate-y-[-6px] shadow-sm">
                                 <div className="w-full aspect-[4/5] overflow-hidden rounded-xl md:rounded-2xl mb-3">
                                     <img
                                         src={item.image}
@@ -117,7 +117,7 @@ const PerfectGift = () => {
                                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                     />
                                 </div>
-                                <h3 className="text-[14px] md:text-[18px] font-black text-black tracking-tight pb-3 px-2 text-center leading-none">
+                                <h3 className="text-[14px] md:text-[16px] font-semibold text-gray-800 tracking-tight pb-3 px-2 text-center leading-none">
                                     {item.name}
                                 </h3>
                             </div>
@@ -126,22 +126,22 @@ const PerfectGift = () => {
                 </div>
 
                 {/* Featured Products Sub-section */}
-                <div className="mt-6 md:mt-20 pt-6 md:pt-16 border-t border-gray-100">
-                    <div className="flex items-center justify-between mb-6 md:mb-12">
+                <div className="mt-4 md:mt-8 pt-4 md:pt-8 border-t border-gray-100">
+                    <div className="flex items-center justify-between mb-4 md:mb-8">
                         <div>
-                            <h3 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">
+                            <h3 className="text-xl md:text-2xl font-semibold text-gray-900 tracking-tight">
                                 {giftSettings.title || 'Featured Gifts'}
                             </h3>
-                            <p className="text-gray-400 text-[10px] md:text-xs uppercase tracking-widest mt-1">
+                            <p className="text-gray-500 text-[10px] md:text-xs uppercase tracking-widest mt-0.5">
                                 {giftSettings.subtitle || 'Handpicked for the perfect moment'}
                             </p>
                         </div>
-                        <Link to="/shop" className="text-[11px] font-black uppercase tracking-[0.2em] text-[#9C5B61] hover:text-black transition-all border-b-2 border-transparent hover:border-black">
-                            {giftSettings.ctaLabel || 'View All Collection'}
+                        <Link to="/shop" className="text-[10px] font-bold uppercase tracking-wider text-[#9C5B61] hover:text-black transition-all border-b border-transparent hover:border-black">
+                            {giftSettings.ctaLabel || 'View All'}
                         </Link>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-10">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
                         {featuredGifts.map((p) => (
                             <ProductCard key={p.id || p._id} product={p} />
                         ))}

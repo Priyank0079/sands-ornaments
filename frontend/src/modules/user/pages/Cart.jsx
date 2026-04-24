@@ -111,7 +111,7 @@ const Cart = () => {
                                     className="group relative bg-[#FDF5F6] p-2.5 md:p-6 rounded-2xl md:rounded-3xl border border-[#EBCDD0] shadow-sm hover:shadow-md transition-all flex gap-3 md:gap-8 overflow-hidden"
                                 >
                                     {/* Image */}
-                                    <div className="w-20 h-24 md:w-32 md:h-40 flex-shrink-0 bg-gray-50 rounded-xl md:rounded-2xl overflow-hidden border border-gray-50">
+                                    <Link to={`/product/${item.id}`} className="w-20 h-24 md:w-32 md:h-40 flex-shrink-0 bg-gray-50 rounded-xl md:rounded-2xl overflow-hidden border border-gray-50 cursor-pointer">
                                         {item.image ? (
                                             <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                                         ) : (
@@ -119,14 +119,15 @@ const Cart = () => {
                                                 No Image
                                             </div>
                                         )}
-                                    </div>
+                                    </Link>
 
                                     {/* Details */}
                                     <div className="flex-grow flex flex-col py-0.5 md:py-1">
                                         <div className="flex justify-between items-start gap-2">
                                             <div className="space-y-0.5 md:space-y-1">
-                                                <h3 className="font-serif font-extrabold text-sm md:text-2xl text-black leading-tight group-hover:text-[#D39A9F] transition-colors line-clamp-1 md:line-clamp-2">{item.name}</h3>
-                                                <div className="flex items-center gap-2">
+                                                <Link to={`/product/${item.id}`}>
+                                                    <h3 className="font-serif font-extrabold text-sm md:text-2xl text-black leading-tight group-hover:text-[#D39A9F] transition-colors line-clamp-1 md:line-clamp-2 cursor-pointer">{item.name}</h3>
+                                                </Link>    <div className="flex items-center gap-2">
                                                     <span className="text-[8px] md:text-xs font-bold uppercase tracking-wider text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded-md border border-gray-100">
                                                         {item.category}
                                                     </span>

@@ -107,38 +107,21 @@ const JewelleryCollectionsPage = () => {
         visible: { y: 0, opacity: 1 }
     };
 
-    if (loading) return <Loader />;
-
     return (
-        <div className="min-h-screen bg-[#FDF5F6] pt-6 pb-20 px-4 md:px-8 font-body">
-            <div className="container mx-auto max-w-5xl">
+        <div className="min-h-screen bg-[#FDF5F6] pt-8 pb-20 px-4 md:px-8 font-sans">
+            <div className="container mx-auto max-w-6xl">
                 
-                <div className="flex items-center gap-4 mb-8">
-                    {viewLevel !== 'CATEGORIES' && (
-                        <button 
-                            onClick={goBack}
-                            className="p-2 bg-white rounded-full shadow-sm hover:shadow-md transition-all text-[#9C5B61]"
-                        >
-                            <ArrowLeft className="w-4 h-4" />
-                        </button>
-                    )}
-                    <div>
-                        <h1 className="text-xl md:text-2xl font-bold text-black uppercase tracking-wider">
-                            {viewLevel === 'CATEGORIES' && `${activeMetal} Collection`}
-                            {viewLevel === 'PRODUCTS' && `${selectedCategory.name}`}
-                        </h1>
-                        <nav className="flex items-center gap-2 mt-1 text-[10px] font-medium uppercase tracking-widest text-gray-500">
-                            <span>Home</span>
-                            <ChevronRight className="w-2.5 h-2.5" />
-                            <span className={`cursor-pointer ${viewLevel === 'CATEGORIES' ? 'text-[#9C5B61]' : ''}`} onClick={() => setViewLevel('CATEGORIES')}>All Jewellery</span>
-                            {activeMetal && (
-                                <>
-                                    <ChevronRight className="w-2.5 h-2.5" />
-                                    <span className={viewLevel === 'CATEGORIES' ? 'text-[#9C5B61]' : ''}>{activeMetal}</span>
-                                </>
-                            )}
-                        </nav>
-                    </div>
+                {/* Clean Header with Back Button */}
+                <div className="flex items-center gap-5 mb-12">
+                    <button 
+                        onClick={goBack}
+                        className="w-10 h-10 flex items-center justify-center bg-[#FFF0F3] rounded-full text-[#8E2B45] hover:bg-[#FFE0E6] transition-colors"
+                    >
+                        <ArrowLeft className="w-5 h-5" />
+                    </button>
+                    <h1 className="text-[16px] md:text-[18px] font-medium text-[#8E2B45] uppercase tracking-[0.4em]">
+                        {viewLevel === 'CATEGORIES' ? `${activeMetal} Purities`.toUpperCase() : `${selectedCategory.name}`.toUpperCase()}
+                    </h1>
                 </div>
 
                 <AnimatePresence mode="wait">
@@ -146,27 +129,44 @@ const JewelleryCollectionsPage = () => {
                         <motion.div 
                             key="categories"
                             variants={containerVariants}
-                            initial={{ opacity: 0, x: 10 }}
+                            initial={{ opacity: 0, y: 15 }}
                             animate="visible"
-                            exit={{ opacity: 0, x: -10 }}
-                            className="grid grid-cols-2 md:grid-cols-4 gap-4"
+                            exit={{ opacity: 0, y: -15 }}
+                            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10"
                         >
                             {(activeMetal === 'gold' ? goldSubCategories : silverSubCategories).map((cat) => (
                                 <motion.div
                                     key={cat.id}
                                     variants={itemVariants}
                                     onClick={() => handleCategoryClick(cat)}
-                                    className="group bg-white rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-md transition-all border border-gray-100 p-3"
+                                    className="group relative aspect-[1/1.2] rounded-[24px] overflow-hidden cursor-pointer shadow-md hover:shadow-2xl transition-all duration-700"
                                 >
-                                    <div className="aspect-square relative overflow-hidden rounded-xl bg-gray-50 mb-3">
-                                        <img 
-                                            src={cat.image} 
-                                            alt={cat.name} 
-                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                        />
+                                    {/* Full-Bleed Image with Slow Zoom */}
+                                    <img 
+                                        src={cat.image} 
+                                        alt={cat.name} 
+                                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-110"
+                                    />
+                                    
+                                    {/* Cinematic Bottom Gradient */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500" />
+
+                                    {/* Simple, Elegant Content Overlay */}
+                                    <div className="absolute bottom-0 left-0 right-0 p-8 flex flex-col items-start">
+                                        <h3 className="text-white text-xl md:text-2xl font-medium tracking-tight mb-3">
+                                            {cat.name}
+                                        </h3>
+                                        
+                                        <div className="flex items-center gap-4">
+                                            <span className="text-white/80 text-[10px] md:text-[11px] uppercase font-bold tracking-[0.2em]">
+                                                {cat.description}
+                                            </span>
+                                            <div className="h-[1px] w-0 bg-white/50 group-hover:w-12 transition-all duration-700 ease-out" />
+                                        </div>
                                     </div>
-                                    <h3 className="text-xs md:text-sm font-bold text-black uppercase tracking-wide text-center">{cat.name}</h3>
-                                    <p className="text-[8px] md:text-[9px] font-medium text-gray-400 uppercase tracking-widest text-center mt-0.5">{cat.description}</p>
+
+                                    {/* Subtle Overlay Border */}
+                                    <div className="absolute inset-0 border border-white/10 rounded-[24px] pointer-events-none" />
                                 </motion.div>
                             ))}
                         </motion.div>

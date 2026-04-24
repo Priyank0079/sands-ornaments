@@ -34,7 +34,7 @@ const PremiumCategoryCards = () => {
         >
             <div className="container mx-auto px-4 max-w-[1100px]">
                 {/* Header */}
-                <div className="flex flex-col items-center mb-10 md:mb-20 relative z-50">
+                <div className="flex flex-col items-center mb-6 md:mb-20 relative z-50">
                     <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-[#C9A24D] mb-1.5 md:mb-3">Gift the Excellence</span>
                     <h2 className="text-2xl md:text-4xl font-serif text-gray-950 tracking-tight leading-none text-center">
                         Shop by <span className="italic font-light text-[#8E2B45]">Recipient</span>
@@ -42,8 +42,8 @@ const PremiumCategoryCards = () => {
                     <div className="w-8 h-[1px] md:w-10 md:h-[2px] bg-[#C9A24D]/60 mt-3 md:mt-5" />
                 </div>
 
-                {/* Cards Grid - Increased gap on mobile to accommodate overlapping model images */}
-                <div className="flex flex-col gap-16 md:grid md:grid-cols-2 md:gap-16 relative">
+                {/* Cards Grid - Tightened gap for mobile */}
+                <div className="flex flex-col gap-8 md:grid md:grid-cols-2 md:gap-16 relative">
                     {RECIPIENTS.map((item, idx) => (
                         <motion.div
                             key={item.id}
@@ -51,11 +51,11 @@ const PremiumCategoryCards = () => {
                             animate={isInView ? { opacity: 1, y: 0 } : {}}
                             transition={{ duration: 0.8, delay: idx * 0.2 }}
                             onClick={() => navigate(item.path)}
-                            className="relative h-[130px] md:h-[180px] bg-[#FDF8F8] rounded-[32px] md:rounded-[48px] cursor-pointer group shadow-sm flex items-center border border-[#F3E0E2]/50"
+                            className="relative h-[115px] md:h-[180px] bg-[#FDF8F8] rounded-[24px] md:rounded-[48px] cursor-pointer group shadow-sm flex items-center border border-[#F3E0E2]/50"
                         >
                             {/* Maroon Inset Box - More Compact */}
                             <div 
-                                className={`absolute top-[4%] bottom-[4%] w-[75%] bg-gradient-to-br from-[#8E2B45] via-[#5C1625] to-[#2D060F] rounded-[28px] md:rounded-[44px] flex items-center justify-center p-4 md:p-8 z-10 transition-all duration-500 group-hover:shadow-[0_15px_30px_rgba(74,16,21,0.2)] 
+                                className={`absolute top-[6%] bottom-[6%] w-[75%] bg-gradient-to-br from-[#8E2B45] via-[#5C1625] to-[#2D060F] rounded-[20px] md:rounded-[44px] flex items-center justify-center p-3 md:p-8 z-10 transition-all duration-500 group-hover:shadow-[0_15px_30px_rgba(74,16,21,0.2)] 
                                 ${item.layout === 'left' ? 'left-[2%]' : 'right-[2%]'}`}
                             >
                                 {/* Shop Now Button inside maroon box */}

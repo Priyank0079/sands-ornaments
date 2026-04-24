@@ -87,7 +87,7 @@ const NewLaunchSection = () => {
 
     return (
         <section 
-            className="py-10 md:py-16 bg-[#FEF6F7] relative overflow-hidden"
+            className="pt-10 pb-2 md:pt-16 md:pb-4 bg-gradient-to-b from-[#FFF8F9] via-[#FDF0F2] to-[#FFF8F9] relative overflow-hidden"
             style={{
                 '--radius': `${radius}px`,
                 '--cardW': `${cardWidth}px`,
@@ -141,7 +141,7 @@ const NewLaunchSection = () => {
                     viewport={{ once: true }}
                     className="relative flex flex-col items-center justify-center mb-0 md:mb-2 text-center"
                 >
-                    <div className="inline-block bg-[#722F37] text-white px-5 py-1 font-serif tracking-[0.2em] text-[10px] uppercase rounded-full shadow-sm mb-4">
+                    <div className="inline-block bg-[#8E2B45] text-white px-5 py-1 font-serif tracking-[0.2em] text-[10px] uppercase rounded-full shadow-sm mb-4">
                         New Launch
                     </div>
                     <h3 className="font-serif text-[#1F1F1F] text-2xl md:text-6xl font-light tracking-tight uppercase">
