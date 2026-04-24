@@ -3,6 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, LogIn, AlertCircle, ArrowRight, ShieldCheck, Phone } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import loginBg from '@assets/admin-login-bg.png';
+import api from '../../../services/api';
+import toast from 'react-hot-toast';
 
 const SellerLogin = () => {
     const navigate = useNavigate();
@@ -11,6 +13,13 @@ const SellerLogin = () => {
     const [formData, setFormData] = useState({ identifier: '', password: '' });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+
+    const [showReset, setShowReset] = useState(false);
+    const [resetStep, setResetStep] = useState(1); // 1=email, 2=otp+newpass
+    const [resetEmail, setResetEmail] = useState('');
+    const [resetOtp, setResetOtp] = useState('');
+    const [resetPassword, setResetPassword] = useState('');
+    const [resetLoading, setResetLoading] = useState(false);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -38,6 +47,61 @@ const SellerLogin = () => {
 
     const inputClasses = "w-full bg-[#FDFBF7] border border-[#EFEBE9] rounded-xl py-4 px-12 text-sm focus:outline-none focus:border-[#8D6E63] focus:ring-4 focus:ring-[#8D6E63]/5 transition-all shadow-inner";
     const iconClasses = "absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-[#8D6E63] transition-colors mt-[2px]";
+
+    const openReset = () => {
+        setShowReset(true);
+        setResetStep(1);
+        setResetEmail(loginType === 'email' ? formData.identifier : '');
+        setResetOtp('');
+        setResetPassword('');
+    };
+
+    const sendResetOtp = async () => {
+        setResetLoading(true);
+        try {
+            const email = String(resetEmail || '').trim().toLowerCase();
+            if (!email) {
+                toast.error('Email is required');
+                return;
+            }
+            const res = await api.post('auth/seller/send-reset-otp', { email });
+            if (res.data?.success) {
+                toast.success(res.data?.message || 'OTP sent');
+                setResetStep(2);
+            } else {
+                toast.error(res.data?.message || 'Failed to send OTP');
+            }
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to send OTP');
+        } finally {
+            setResetLoading(false);
+        }
+    };
+
+    const resetSellerPassword = async () => {
+        setResetLoading(true);
+        try {
+            const email = String(resetEmail || '').trim().toLowerCase();
+            const otp = String(resetOtp || '').trim();
+            const newPassword = String(resetPassword || '').trim();
+            if (!email || !otp || !newPassword) {
+                toast.error('Email, OTP, and new password are required');
+                return;
+            }
+            const res = await api.post('auth/seller/reset-password', { email, otp, newPassword });
+            if (res.data?.success) {
+                toast.success(res.data?.message || 'Password updated');
+                setShowReset(false);
+                setResetStep(1);
+            } else {
+                toast.error(res.data?.message || 'Password reset failed');
+            }
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Password reset failed');
+        } finally {
+            setResetLoading(false);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-[#FDF5F6] flex flex-col lg:flex-row overflow-hidden font-sans">
@@ -116,7 +180,13 @@ const SellerLogin = () => {
                                 <Lock className={iconClasses} />
                             </div>
                             <div className="flex justify-end p-1">
-                                <button type="button" className="text-[10px] font-black text-[#8D6E63] uppercase tracking-widest hover:text-[#3E2723] transition-colors">Forgot Password?</button>
+                                <button
+                                    type="button"
+                                    onClick={openReset}
+                                    className="text-[10px] font-black text-[#8D6E63] uppercase tracking-widest hover:text-[#3E2723] transition-colors"
+                                >
+                                    Forgot Password?
+                                </button>
                             </div>
                         </div>
 
@@ -149,6 +219,102 @@ const SellerLogin = () => {
                     </div>
                 </div>
             </div>
+
+            {showReset && (
+                <div className="fixed inset-0 z-[200] bg-black/40 flex items-center justify-center p-6">
+                    <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-white overflow-hidden font-sans">
+                        <div className="p-6 border-b border-gray-50 flex items-center justify-between">
+                            <div>
+                                <h3 className="text-sm font-black text-gray-900 uppercase tracking-tight">Reset Password</h3>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
+                                    {resetStep === 1 ? 'Send OTP to email' : 'Verify OTP & set new password'}
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setShowReset(false)}
+                                className="px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-gray-200 hover:bg-gray-50 transition-all"
+                            >
+                                Close
+                            </button>
+                        </div>
+
+                        <div className="p-6 space-y-4">
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Email</label>
+                                <input
+                                    type="email"
+                                    value={resetEmail}
+                                    onChange={(e) => setResetEmail(e.target.value)}
+                                    className="w-full bg-[#FDFBF7] border border-[#EFEBE9] rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-[#8D6E63] focus:ring-4 focus:ring-[#8D6E63]/5 transition-all"
+                                    placeholder="Enter your registered email"
+                                />
+                            </div>
+
+                            {resetStep === 2 && (
+                                <>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">OTP</label>
+                                        <input
+                                            type="text"
+                                            value={resetOtp}
+                                            onChange={(e) => setResetOtp(e.target.value)}
+                                            className="w-full bg-[#FDFBF7] border border-[#EFEBE9] rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-[#8D6E63] focus:ring-4 focus:ring-[#8D6E63]/5 transition-all"
+                                            placeholder="6-digit OTP"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">New Password</label>
+                                        <input
+                                            type="password"
+                                            value={resetPassword}
+                                            onChange={(e) => setResetPassword(e.target.value)}
+                                            className="w-full bg-[#FDFBF7] border border-[#EFEBE9] rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-[#8D6E63] focus:ring-4 focus:ring-[#8D6E63]/5 transition-all"
+                                            placeholder="Minimum 6 characters"
+                                        />
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
+                        <div className="p-6 border-t border-gray-50 flex items-center justify-end gap-3">
+                            {resetStep === 1 ? (
+                                <button
+                                    type="button"
+                                    disabled={resetLoading}
+                                    onClick={sendResetOtp}
+                                    className="bg-[#3E2723] text-white px-6 py-3 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-[#2D1B18] transition-all disabled:opacity-70"
+                                >
+                                    {resetLoading ? 'Sending...' : 'Send OTP'}
+                                </button>
+                            ) : (
+                                <>
+                                    <button
+                                        type="button"
+                                        disabled={resetLoading}
+                                        onClick={() => {
+                                            setResetStep(1);
+                                            setResetOtp('');
+                                            setResetPassword('');
+                                        }}
+                                        className="px-5 py-3 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] border border-gray-200 hover:bg-gray-50 transition-all disabled:opacity-70"
+                                    >
+                                        Back
+                                    </button>
+                                    <button
+                                        type="button"
+                                        disabled={resetLoading}
+                                        onClick={resetSellerPassword}
+                                        className="bg-[#3E2723] text-white px-6 py-3 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-[#2D1B18] transition-all disabled:opacity-70"
+                                    >
+                                        {resetLoading ? 'Updating...' : 'Update Password'}
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

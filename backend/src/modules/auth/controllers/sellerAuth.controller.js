@@ -1,10 +1,16 @@
 const Seller = require("../../../models/Seller");
 const Notification = require("../../../models/Notification");
+const EmailOTP = require("../../../models/EmailOTP");
 const Page = require("../../../models/Page");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { success, error } = require("../../../utils/apiResponse");
 const { sendEmail } = require("../../../services/emailService");
+
+const MIN_SELLER_PASSWORD_LEN = 6;
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_MINUTES = 15;
+const SELLER_RESET_MAX_ATTEMPTS = 5;
 
 const signToken = (id) => {
   return jwt.sign({ userId: id, role: "seller" }, process.env.JWT_SECRET, {
@@ -41,6 +47,9 @@ exports.register = async (req, res) => {
     if (!normalizedMobile) return error(res, "Mobile number is required", 400);
     if (!/^\d{10}$/.test(normalizedMobile)) return error(res, "Mobile number must be 10 digits", 400);
     if (!password || !String(password).trim()) return error(res, "Password is required", 400);
+    if (String(password).trim().length < MIN_SELLER_PASSWORD_LEN) {
+      return error(res, `Password must be at least ${MIN_SELLER_PASSWORD_LEN} characters`, 400);
+    }
     if (!gstNumber || !String(gstNumber).trim()) return error(res, "GST number is required", 400);
     if (!panNumber || !String(panNumber).trim()) return error(res, "PAN number is required", 400);
     if (!bisNumber || !String(bisNumber).trim()) return error(res, "BIS license number is required", 400);
@@ -154,6 +163,12 @@ exports.login = async (req, res) => {
     });
     if (!seller) return error(res, "Invalid credentials", 401);
 
+    // Brute-force protection: lock account temporarily after repeated failures.
+    if (seller.lockUntil && new Date(seller.lockUntil).getTime() > Date.now()) {
+      const mins = Math.ceil((new Date(seller.lockUntil).getTime() - Date.now()) / (60 * 1000));
+      return error(res, `Too many failed attempts. Try again in ${mins} minute(s).`, 429, "SELLER_LOCKED");
+    }
+
     if (seller.status === "PENDING") {
       return error(res, "Your seller account is under review. Please wait for admin approval.", 403);
     }
@@ -166,7 +181,22 @@ exports.login = async (req, res) => {
     }
 
     const isMatch = await bcrypt.compare(password, seller.password);
-    if (!isMatch) return error(res, "Invalid credentials", 401);
+    if (!isMatch) {
+      seller.loginAttempts = Number(seller.loginAttempts || 0) + 1;
+      if (seller.loginAttempts >= MAX_LOGIN_ATTEMPTS) {
+        seller.lockUntil = new Date(Date.now() + LOCKOUT_MINUTES * 60 * 1000);
+        seller.loginAttempts = 0; // reset counter once locked
+      }
+      await seller.save();
+      return error(res, "Invalid credentials", 401);
+    }
+
+    // Successful login: clear counters if present.
+    if (seller.loginAttempts || seller.lockUntil) {
+      seller.loginAttempts = 0;
+      seller.lockUntil = null;
+      await seller.save();
+    }
 
     const token = signToken(seller._id);
     
@@ -180,4 +210,95 @@ exports.login = async (req, res) => {
 
 exports.logout = async (req, res) => {
   return success(res, {}, "Logged out");
+};
+
+// --- SELLER PASSWORD RESET (EMAIL OTP) ---
+exports.sendResetOtp = async (req, res) => {
+  try {
+    const normalizedEmail = String(req.body.email || "").trim().toLowerCase();
+    if (!normalizedEmail) return error(res, "Email is required", 400);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      return error(res, "Please enter a valid email address", 400);
+    }
+
+    // Always respond success to avoid account enumeration.
+    const seller = await Seller.findOne({ email: normalizedEmail }).select("_id email fullName");
+    if (!seller) {
+      return success(res, {}, "If an account exists, an OTP has been sent.");
+    }
+
+    const otp = String(Math.floor(100000 + Math.random() * 900000)); // 6 digits
+    await EmailOTP.deleteMany({ email: normalizedEmail, purpose: "seller_password_reset" });
+    await EmailOTP.create({ email: normalizedEmail, otp, purpose: "seller_password_reset", attempts: 0 });
+
+    try {
+      await sendEmail({
+        email: normalizedEmail,
+        subject: "Sands Ornaments - Seller Password Reset OTP",
+        message: `Hello ${seller.fullName || "Seller"},\n\nYour OTP to reset your seller password is: ${otp}\n\nThis OTP is valid for 10 minutes.\nIf you did not request this, you can ignore this message.\n\nThanks,\nSands Ornaments`
+      });
+    } catch (mailErr) {
+      // Still return a generic response; log internally.
+      console.error("Seller reset OTP email failed:", mailErr.message);
+    }
+
+    if (process.env.NODE_ENV !== "production") {
+      console.log(`[DEV Seller Reset OTP] ${normalizedEmail}: ${otp}`);
+    }
+
+    return success(res, {}, "If an account exists, an OTP has been sent.");
+  } catch (err) {
+    return error(res, err.message);
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  try {
+    const normalizedEmail = String(req.body.email || "").trim().toLowerCase();
+    const otp = String(req.body.otp || "").trim();
+    const newPassword = String(req.body.newPassword || "").trim();
+
+    if (!normalizedEmail) return error(res, "Email is required", 400);
+    if (!otp) return error(res, "OTP is required", 400);
+    if (!newPassword) return error(res, "New password is required", 400);
+    if (newPassword.length < MIN_SELLER_PASSWORD_LEN) {
+      return error(res, `Password must be at least ${MIN_SELLER_PASSWORD_LEN} characters`, 400);
+    }
+
+    const otpRecord = await EmailOTP.findOne({ email: normalizedEmail, purpose: "seller_password_reset" });
+    if (!otpRecord) {
+      return error(res, "OTP expired or not found. Please request a new OTP.", 400, "OTP_EXPIRED");
+    }
+
+    if ((Number(otpRecord.attempts) || 0) >= SELLER_RESET_MAX_ATTEMPTS) {
+      await EmailOTP.deleteMany({ email: normalizedEmail, purpose: "seller_password_reset" });
+      return error(res, "Too many failed attempts. Please request a new OTP.", 429, "OTP_MAX_ATTEMPTS");
+    }
+
+    if (String(otpRecord.otp) !== otp) {
+      await EmailOTP.updateOne({ _id: otpRecord._id }, { $inc: { attempts: 1 } });
+      const remaining = SELLER_RESET_MAX_ATTEMPTS - ((Number(otpRecord.attempts) || 0) + 1);
+      return error(res, `Invalid OTP. ${Math.max(0, remaining)} attempt(s) remaining.`, 400, "OTP_INVALID");
+    }
+
+    const seller = await Seller.findOne({ email: normalizedEmail });
+    if (!seller) {
+      // Still delete OTP so it can't be replayed
+      await EmailOTP.deleteMany({ email: normalizedEmail, purpose: "seller_password_reset" });
+      return success(res, {}, "Password updated successfully");
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    seller.password = await bcrypt.hash(newPassword, salt);
+    // Clear lockouts on password reset
+    seller.loginAttempts = 0;
+    seller.lockUntil = null;
+    await seller.save();
+
+    await EmailOTP.deleteMany({ email: normalizedEmail, purpose: "seller_password_reset" });
+
+    return success(res, {}, "Password updated successfully");
+  } catch (err) {
+    return error(res, err.message);
+  }
 };

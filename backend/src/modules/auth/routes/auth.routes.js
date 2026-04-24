@@ -1,5 +1,12 @@
 const router = require("express").Router();
-const { otpLimiter, verifyOtpLimiter } = require("../../../middlewares/rateLimiter");
+const {
+  otpLimiter,
+  verifyOtpLimiter,
+  sellerLoginLimiter,
+  sellerRegisterLimiter,
+  sellerResetOtpLimiter,
+  sellerResetVerifyLimiter,
+} = require("../../../middlewares/rateLimiter");
 const userAuth   = require("../controllers/userAuth.controller");
 const adminAuth  = require("../controllers/adminAuth.controller");
 const sellerAuth = require("../controllers/sellerAuth.controller");
@@ -18,6 +25,7 @@ router.post("/admin/logout", adminAuth.logout);
 // Seller auth
 router.post(
   "/seller/register",
+  sellerRegisterLimiter,
   sellerUpload.fields([
     { name: "aadhar", maxCount: 1 },
     { name: "shopLicense", maxCount: 1 },
@@ -25,7 +33,9 @@ router.post(
   ]),
   sellerAuth.register
 );
-router.post("/seller/login",    sellerAuth.login);
+router.post("/seller/login",    sellerLoginLimiter, sellerAuth.login);
 router.post("/seller/logout",   sellerAuth.logout);
+router.post("/seller/send-reset-otp", sellerResetOtpLimiter, sellerAuth.sendResetOtp);
+router.post("/seller/reset-password", sellerResetVerifyLimiter, sellerAuth.resetPassword);
 
 module.exports = router;

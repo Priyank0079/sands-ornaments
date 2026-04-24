@@ -1,4 +1,5 @@
 const User    = require("../../../models/User");
+const Seller  = require("../../../models/Seller");
 const OTP     = require("../../../models/OTP");
 const { signToken } = require("../../../config/jwt");
 const { sendOtpSms } = require("../../../services/smsService");
@@ -119,6 +120,21 @@ exports.verifyOtp = async (req, res) => {
  */
 exports.getMe = async (req, res) => {
   try {
+    const role = String(req.user?.role || "").trim().toLowerCase();
+
+    // Role-aware "me" endpoint so seller/admin sessions survive reloads.
+    // Admins and customers are stored in User model; sellers are stored in Seller model.
+    if (role === "seller") {
+      const seller = await Seller.findById(req.user.userId).select("-password");
+      if (!seller) return error(res, "Seller account not found.", 401, "UNAUTHENTICATED");
+
+      const sellerObj = seller.toObject ? seller.toObject() : seller;
+      // Ensure frontend always sees an explicit role value.
+      sellerObj.role = "seller";
+
+      return success(res, { user: sellerObj }, "Seller profile retrieved");
+    }
+
     const user = await User.findById(req.user.userId).select("-password");
     if (!user) return error(res, "User not found.", 404, "USER_NOT_FOUND");
 

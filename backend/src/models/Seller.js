@@ -44,7 +44,11 @@ const sellerSchema = new mongoose.Schema({
     }
   },
   termsAcceptedAt: { type: Date },
-  termsVersion: { type: Date }
+  termsVersion: { type: Date },
+
+  // Auth hardening: DB-backed login lockout to mitigate brute force.
+  loginAttempts: { type: Number, default: 0 },
+  lockUntil: { type: Date, default: null },
 }, { timestamps: true });
 
 module.exports = mongoose.model("Seller", sellerSchema);
