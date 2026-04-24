@@ -171,6 +171,8 @@ const AppContent = () => {
               <AdminLayout>
                 <Routes>
                   <Route path="/" element={<AdminDashboard />} />
+                  {/* Legacy alias: older admin UI linked to /admin/dashboard */}
+                  <Route path="/dashboard" element={<AdminDashboard />} />
                   <Route path="/categories" element={<CategoryPage />} />
                   <Route path="/categories/new" element={<CategoryEditor />} />
                   <Route path="/categories/edit/:id" element={<CategoryEditor />} />

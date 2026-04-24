@@ -58,6 +58,7 @@ const resolveAvailableStock = (product = {}, variantId = null) => {
 
 export const ShopProvider = ({ children }) => {
     const { user, logout: authLogout } = useAuth();
+    const isUserRole = user?.role === 'user';
     // Initialize from LocalStorage if available
     const [cart, setCart] = useState(() => {
         const saved = localStorage.getItem('cart');
@@ -145,6 +146,7 @@ export const ShopProvider = ({ children }) => {
     };
 
     const deleteUserNotification = async (id) => {
+        if (!isUserRole) return;
         try {
             await api.patch(`/user/notifications/${id}/read`);
             await fetchNotifications();
@@ -165,7 +167,7 @@ export const ShopProvider = ({ children }) => {
     useEffect(() => {
         // These endpoints are user-only. When logged in as admin/seller, calling them
         // will correctly return 403, but we don't want console noise or wasted requests.
-        if (user?.role === 'user') {
+        if (isUserRole) {
             fetchAddresses();
             fetchWishlist();
             fetchOrders();
@@ -185,6 +187,7 @@ export const ShopProvider = ({ children }) => {
     }, [user]);
 
     const fetchAddresses = async () => {
+        if (!isUserRole) return;
         try {
             const res = await api.get('user/addresses');
             if (res.data.success) {
@@ -198,6 +201,7 @@ export const ShopProvider = ({ children }) => {
     };
 
     const fetchWishlist = async () => {
+        if (!isUserRole) return;
         try {
             const res = await api.get('user/wishlist');
             if (res.data.success) {
@@ -237,6 +241,7 @@ export const ShopProvider = ({ children }) => {
     };
 
     const fetchOrders = async () => {
+        if (!isUserRole) return;
         try {
             const res = await api.get('user/orders');
             if (res.data.success) {
@@ -247,6 +252,7 @@ export const ShopProvider = ({ children }) => {
     };
 
     const fetchReturns = async () => {
+        if (!isUserRole) return;
         try {
             const res = await api.get('user/returns');
             if (res.data.success) {
@@ -266,6 +272,7 @@ export const ShopProvider = ({ children }) => {
     };
 
     const fetchReplacements = async () => {
+        if (!isUserRole) return;
         try {
             const res = await api.get('user/replacements');
             if (res.data.success) {
@@ -288,6 +295,7 @@ export const ShopProvider = ({ children }) => {
     };
 
     const fetchSupportTickets = async () => {
+        if (!isUserRole) return;
         try {
             const res = await api.get('user/support');
             if (res.data.success) {
@@ -298,6 +306,7 @@ export const ShopProvider = ({ children }) => {
     };
 
     const fetchNotifications = async () => {
+        if (!isUserRole) return;
         try {
             const res = await api.get('user/notifications');
             if (res.data.success) {

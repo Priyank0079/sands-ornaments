@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import PageHeader from '../components/common/PageHeader';
 import AllJewellerySectionEditor from '../components/editors/AllJewellerySectionEditor';
@@ -24,6 +24,7 @@ import BannerSectionEditor from '../components/editors/BannerSectionEditor';
 import BrandPromisesEditor from '../components/editors/BrandPromisesEditor';
 import FAQSectionEditor from '../components/editors/FAQSectionEditor';
 import TestimonialSectionEditor from '../components/editors/TestimonialSectionEditor';
+import GenericJsonSectionEditor from '../components/editors/GenericJsonSectionEditor';
 import { adminService } from '../services/adminService';
 import { getPageConfig, getSectionDefaultsForPage } from '../utils/sectionDefaults';
 import toast from 'react-hot-toast';
@@ -33,33 +34,45 @@ const SectionEditor = () => {
     const [searchParams] = useSearchParams();
     const [sectionData, setSectionData] = useState(null);
     const [saving, setSaving] = useState(false);
+    const [reloading, setReloading] = useState(false);
     const pageKey = searchParams.get('pageKey') || 'home';
     const pageConfig = getPageConfig(pageKey);
+    const requestSeqRef = useRef(0);
+
+    const hydrateSection = (data) => {
+        if (!data) return null;
+        const items = (data.items || []).map((item) => ({
+            id: item.itemId || item.id || item._id || `${Date.now()}_${Math.random()}`,
+            ...item
+        }));
+        return {
+            id: data.sectionId,
+            sectionKey: data.sectionKey || id,
+            pageKey: data.pageKey || pageKey,
+            sectionType: data.sectionType || 'rich-content',
+            label: data.label,
+            items,
+            settings: data.settings || {}
+        };
+    };
+
+    const loadSection = async (mode = 'initial') => {
+        const seq = ++requestSeqRef.current;
+        if (mode === 'reload') setReloading(true);
+        try {
+            const data = await adminService.getSectionById(id, pageKey);
+            if (seq !== requestSeqRef.current) return;
+            const hydrated = hydrateSection(data);
+            if (hydrated) setSectionData(hydrated);
+        } catch (err) {
+            toast.error(mode === 'reload' ? "Failed to reload section" : "Failed to load section");
+        } finally {
+            if (seq === requestSeqRef.current) setReloading(false);
+        }
+    };
 
     useEffect(() => {
-        const loadSection = async () => {
-            try {
-                const data = await adminService.getSectionById(id, pageKey);
-                if (data) {
-                    const items = (data.items || []).map((item) => ({
-                        id: item.itemId || item.id || item._id || `${Date.now()}_${Math.random()}`,
-                        ...item
-                    }));
-                    setSectionData({
-                        id: data.sectionId,
-                        sectionKey: data.sectionKey || id,
-                        pageKey: data.pageKey || pageKey,
-                        sectionType: data.sectionType || 'rich-content',
-                        label: data.label,
-                        items,
-                        settings: data.settings || {}
-                    });
-                }
-            } catch (err) {
-                toast.error("Failed to load section");
-            }
-        };
-        loadSection();
+        loadSection('initial');
     }, [id, pageKey]);
 
     if (!sectionData) {
@@ -67,6 +80,7 @@ const SectionEditor = () => {
     }
 
     const handleSave = async (newData) => {
+        const seq = ++requestSeqRef.current;
         setSaving(true);
         try {
             const payload = {
@@ -84,28 +98,24 @@ const SectionEditor = () => {
             }
             const savedSection = res.data?.section || res.data?.data?.section || res.section || null;
             if (savedSection) {
-                const items = (savedSection.items || []).map((item) => ({
-                    id: item.itemId || item.id || item._id || `${Date.now()}_${Math.random()}`,
-                    ...item
-                }));
-                setSectionData({
-                    id: savedSection.sectionId,
-                    sectionKey: savedSection.sectionKey || id,
-                    pageKey: savedSection.pageKey || pageKey,
-                    sectionType: savedSection.sectionType || 'rich-content',
-                    label: savedSection.label || sectionData.label,
-                    items,
-                    settings: savedSection.settings || {}
-                });
+                if (seq === requestSeqRef.current) {
+                    const hydrated = hydrateSection(savedSection);
+                    if (hydrated) {
+                        hydrated.label = hydrated.label || sectionData.label;
+                        setSectionData(hydrated);
+                    }
+                }
             } else {
-                setSectionData((prev) => ({
-                    ...prev,
-                    settings: newData.settings || prev.settings || {},
-                    items: (newData.items || []).map((item) => ({
-                        id: item.itemId || item.id || item._id || `${Date.now()}_${Math.random()}`,
-                        ...item
-                    }))
-                }));
+                if (seq === requestSeqRef.current) {
+                    setSectionData((prev) => ({
+                        ...prev,
+                        settings: newData.settings || prev.settings || {},
+                        items: (newData.items || []).map((item) => ({
+                            id: item.itemId || item.id || item._id || `${Date.now()}_${Math.random()}`,
+                            ...item
+                        }))
+                    }));
+                }
             }
             toast.success("Section updated");
             return { success: true };
@@ -113,7 +123,7 @@ const SectionEditor = () => {
             toast.error("Failed to save section");
             return { success: false };
         } finally {
-            setSaving(false);
+            if (seq === requestSeqRef.current) setSaving(false);
         }
     };
 
@@ -267,11 +277,9 @@ const SectionEditor = () => {
             return <CategoryShowcaseEditor sectionData={sectionData} onSave={handleSave} defaultItems={defaultItems} />;
         }
 
-        return (
-            <div className="text-center py-20 bg-gray-50 rounded-xl border border-dashed border-gray-300">
-                <h3 className="text-xl font-bold text-gray-400">Editor not implemented for this section type yet.</h3>
-            </div>
-        );
+        // Never leave admins at a dead-end "not implemented" screen in production.
+        // Use a safe JSON fallback editor so content remains editable even for new/legacy section keys.
+        return <GenericJsonSectionEditor sectionData={sectionData} onSave={handleSave} />;
     };
 
     return (
@@ -281,6 +289,10 @@ const SectionEditor = () => {
                     title={`Edit ${sectionData.label}`}
                     subtitle={saving ? "Saving changes..." : `Customize the content for ${pageConfig?.label || 'this page'} section`}
                     backPath={`/admin/sections?pageKey=${pageKey}`}
+                    action={{
+                        label: reloading ? 'Reloading...' : 'Reload',
+                        onClick: () => loadSection('reload')
+                    }}
                 />
 
                 {renderEditor()}

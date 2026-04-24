@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Edit2, Image as ImageIcon, LayoutTemplate } from 'lucide-react';
+import { Edit2, Image as ImageIcon, LayoutTemplate, RefreshCw } from 'lucide-react';
 import PageHeader from '../components/common/PageHeader';
 import { adminService } from '../services/adminService';
 import { getPageConfig, getSectionDefaultsForPage, PAGE_SECTIONS } from '../utils/sectionDefaults';
@@ -11,15 +11,21 @@ const SectionManagement = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const [sections, setSections] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState('');
     const activePageKey = searchParams.get('pageKey') || 'home';
     const activePage = useMemo(() => getPageConfig(activePageKey), [activePageKey]);
+    const requestSeqRef = useRef(0);
+    const seedingRef = useRef({});
 
     const fetchSections = async () => {
+        const seq = ++requestSeqRef.current;
         setLoading(true);
+        setLoadError('');
         try {
             const defaultsForPage = getSectionDefaultsForPage(activePageKey);
             const allowedSectionKeys = new Set(defaultsForPage.map(section => section.sectionKey || section.sectionId));
             const data = await adminService.getSections(activePageKey);
+            if (seq !== requestSeqRef.current) return;
             const filteredSections = (data || [])
                 .filter(section => allowedSectionKeys.has(section.sectionKey || section.sectionId))
                 .map(section => {
@@ -35,15 +41,20 @@ const SectionManagement = () => {
             setSections(filteredSections);
             const existingIds = new Set(filteredSections.map(section => section.sectionId));
             const missingDefaults = defaultsForPage.filter(def => !existingIds.has(def.sectionId) && !existingIds.has(def.sectionKey));
-            if (!data || data.length === 0 || missingDefaults.length > 0) {
+            // Auto-seed missing defaults once per pageKey to keep production CMS stable,
+            // but guard against repeated bulk calls on fast navigation/re-renders.
+            const shouldSeed = (!data || data.length === 0 || missingDefaults.length > 0);
+            if (shouldSeed && !seedingRef.current[activePageKey]) {
+                seedingRef.current[activePageKey] = true;
                 const seedPayload = missingDefaults.length > 0 ? missingDefaults : defaultsForPage;
                 const seedRes = await adminService.bulkUpsertSections(seedPayload, activePageKey);
                 if (seedRes.success !== false) {
                     const seeded = await adminService.getSections(activePageKey);
+                    if (seq !== requestSeqRef.current) return;
                     const filteredSeeded = (seeded || [])
                         .filter(section => allowedSectionKeys.has(section.sectionKey || section.sectionId))
                         .map(section => {
-                            const defaultSection = defaultsForPage.find(def => 
+                            const defaultSection = defaultsForPage.find(def =>
                                 def.sectionKey === (section.sectionId || section.sectionKey)
                             );
                             return {
@@ -53,12 +64,15 @@ const SectionManagement = () => {
                         })
                         .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
                     setSections(filteredSeeded);
+                } else {
+                    seedingRef.current[activePageKey] = false;
                 }
             }
         } catch (err) {
+            setLoadError(err?.response?.data?.message || err?.message || 'Failed to load sections');
             toast.error("Failed to load sections");
         } finally {
-            setLoading(false);
+            if (seq === requestSeqRef.current) setLoading(false);
         }
     };
 
@@ -73,7 +87,25 @@ const SectionManagement = () => {
                     title={activePage?.label || 'Sections'}
                     subtitle={activePage?.description || 'Manage page sections and banners with consistent content blocks.'}
                     backPath="/admin"
+                    action={{
+                        label: loading ? 'Refreshing...' : 'Refresh',
+                        icon: <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />,
+                        onClick: fetchSections
+                    }}
                 />
+
+                {loadError && (
+                    <div className="mb-6 bg-red-50 border border-red-100 text-red-700 rounded-xl p-4 text-sm">
+                        {loadError}
+                        <button
+                            type="button"
+                            onClick={fetchSections}
+                            className="ml-3 text-xs font-bold uppercase tracking-widest text-red-700 hover:underline"
+                        >
+                            Retry
+                        </button>
+                    </div>
+                )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
                     {PAGE_SECTIONS.map((page) => {

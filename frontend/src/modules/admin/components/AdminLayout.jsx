@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
     LayoutDashboard, Package, ShoppingCart, Users, Image as ImageIcon,
@@ -7,7 +7,6 @@ import {
     Clock, RefreshCw, RefreshCcw, RotateCcw, Boxes, ClipboardList, MapPin, Truck, CheckCircle2, XCircle, Percent,
     AlertTriangle, FileBarChart, Store
 } from 'lucide-react';
-import { useShop } from '../../../context/ShopContext';
 import { adminService } from '../services/adminService';
 import logo from '@assets/sands-logo.png';
 import logoName from '@assets/sands-logoname.png';
@@ -16,10 +15,6 @@ const AdminLayout = ({ children }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 1024);
     const location = useLocation();
     const navigate = useNavigate();
-    const { orders } = useShop();
-
-    const allOrders = useMemo(() => Object.values(orders || {}).flat(), [orders]);
-    const getCount = (status) => allOrders.filter(o => o.status === status).length;
 
     const menuItems = [
         { name: 'Dashboard', icon: LayoutDashboard, path: '/admin' },
@@ -40,14 +35,15 @@ const AdminLayout = ({ children }) => {
             icon: ShoppingCart,
             path: '/admin/orders',
             subItems: [
-                { name: `All Orders (${allOrders.length})`, path: '/admin/orders?status=all', icon: ShoppingCart },
-                { name: `Pending (${getCount('Processing')})`, path: '/admin/orders?status=pending', icon: Clock },
-                { name: `Received (${getCount('Received')})`, path: '/admin/orders?status=received', icon: CheckCircle2 },
-                { name: `Processed (${getCount('Processed')})`, path: '/admin/orders?status=processed', icon: ClipboardList },
-                { name: `Shipped (${getCount('Shipped')})`, path: '/admin/orders?status=shipped', icon: Truck },
-                { name: `Out for Delivery (${getCount('Out For Delivery')})`, path: '/admin/orders?status=out-for-delivery', icon: MapPin },
-                { name: `Delivered (${getCount('Delivered')})`, path: '/admin/orders?status=delivered', icon: CheckCircle2 },
-                { name: `Cancelled (${getCount('Cancelled')})`, path: '/admin/orders?status=cancelled', icon: XCircle },
+                // Counts should come from admin-side stats APIs (not the user ShopContext).
+                { name: 'All Orders', path: '/admin/orders?status=all', icon: ShoppingCart },
+                { name: 'Pending', path: '/admin/orders?status=pending', icon: Clock },
+                { name: 'Received', path: '/admin/orders?status=received', icon: CheckCircle2 },
+                { name: 'Processed', path: '/admin/orders?status=processed', icon: ClipboardList },
+                { name: 'Shipped', path: '/admin/orders?status=shipped', icon: Truck },
+                { name: 'Out for Delivery', path: '/admin/orders?status=out-for-delivery', icon: MapPin },
+                { name: 'Delivered', path: '/admin/orders?status=delivered', icon: CheckCircle2 },
+                { name: 'Cancelled', path: '/admin/orders?status=cancelled', icon: XCircle },
             ]
         },
         { name: 'Returns', icon: RotateCcw, path: '/admin/returns' },
