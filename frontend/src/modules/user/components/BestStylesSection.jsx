@@ -123,22 +123,31 @@ const BestStylesSection = ({ sectionData = null }) => {
         }
     };
 
+    const displayItems = dynamicProducts;
+
+    if (displayItems.length === 0) return null;
+
     return (
-        <section className="py-6 md:py-12 bg-white overflow-hidden">
+        <section className="pt-2 pb-2 md:pt-4 md:pb-4 bg-white overflow-hidden">
             <div className="container mx-auto px-4 max-w-[1450px]">
-                <div className="flex items-center justify-between mb-5 md:mb-8">
-                    <div className="flex flex-col md:flex-row md:items-baseline gap-2 md:gap-4">
-                        <h2 className="text-[20px] md:text-[24px] font-sans font-medium text-gray-900 tracking-tight">
+                <div className="relative mb-4 md:mb-6 flex flex-col items-center">
+                    <div className="flex flex-col items-center text-center">
+                        <h2 className="text-[24px] md:text-[40px] font-serif text-gray-900 tracking-tight leading-tight mb-2">
                             {sectionTitle}
                         </h2>
                         {sectionSubtitle ? (
-                            <p className="text-[12px] text-gray-500">{sectionSubtitle}</p>
+                            <p className="text-[13px] md:text-[15px] text-gray-500 mb-3">{sectionSubtitle}</p>
                         ) : null}
-                        <Link to={ctaPath} className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#8E4A50] hover:underline transition-all">
+                        <Link to={ctaPath} className="text-[10px] md:text-[12px] font-black uppercase tracking-[0.3em] text-[#8E4A50] hover:text-[#5B1E26] transition-all flex items-center gap-2 group">
                             {ctaLabel}
+                            <div className="w-4 h-4 rounded-full bg-[#8E4A50]/10 flex items-center justify-center group-hover:bg-[#8E4A50] group-hover:text-white transition-all">
+                                <ChevronRight className="w-2.5 h-2.5" />
+                            </div>
                         </Link>
                     </div>
-                    <div className="hidden md:flex gap-2">
+                    
+                    {/* Navigation Arrows - Positioned on the right for desktop */}
+                    <div className="hidden md:flex gap-2 absolute right-0 bottom-0">
                         <button onClick={() => scroll('left')} className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors">
                             <ChevronLeft className="w-5 h-5 text-gray-600" />
                         </button>

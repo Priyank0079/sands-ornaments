@@ -40,7 +40,7 @@ const CategoryGrid = () => {
     }
 
     return (
-        <div className="w-full bg-white py-5 md:py-10 relative group">
+        <div className="w-full bg-white py-3 md:py-6 relative group">
             <div className="container mx-auto px-4 relative">
                 <button
                     onClick={() => scroll('left')}

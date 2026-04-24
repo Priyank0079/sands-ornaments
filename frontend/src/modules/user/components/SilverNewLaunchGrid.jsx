@@ -51,7 +51,7 @@ const SilverNewLaunchGrid = () => {
     const ctaLabel = sectionData?.settings?.ctaLabel || 'Explore';
 
     return (
-        <section className="w-full bg-[#D1C7CB] mt-4 md:mt-6 py-4 md:py-5 overflow-hidden font-sans">
+        <section className="w-full bg-[#D1C7CB] mt-1 md:mt-2 py-3 md:py-4 overflow-hidden font-sans">
             <div className="container mx-auto px-4 max-w-[1450px]">
                 <div className="flex flex-row items-center justify-center mb-5 gap-4 md:gap-6">
                     <div className="shrink-0">

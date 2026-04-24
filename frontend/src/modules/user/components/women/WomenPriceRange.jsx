@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
 import { buildWomenShopPath } from '../../utils/womenNavigation';
 
 const defaultPriceRanges = [

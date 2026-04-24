@@ -3,108 +3,85 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
 
-const FALLBACK_PRICE_POINTS = [
-    {
-        id: '1499',
-        priceMax: 1499,
-        label: 'Under',
-        path: '/shop?price_max=1499'
-    },
-    {
-        id: '1999',
-        priceMax: 1999,
-        label: 'Under',
-        path: '/shop?price_max=1999'
-    }
-];
+import budgetEarrings from '../../../assets/promos/budget_earrings.png';
+import budgetPendant from '../../../assets/promos/budget_pendant.png';
 
 const ShopByPrice = () => {
     const navigate = useNavigate();
     const { homepageSections } = useShop();
     const sectionData = homepageSections?.['luxury-within-reach'];
 
-    const parsePriceValue = (value) => {
-        if (value === undefined || value === null) return null;
-        const cleaned = String(value).replace(/[^0-9]/g, '');
-        if (!cleaned) return null;
-        const numeric = Number(cleaned);
-        return Number.isFinite(numeric) ? numeric : null;
-    };
-
-    const getPriceMaxFromItem = (item) => {
-        if (!item) return null;
-        if (item.priceMax !== undefined && item.priceMax !== null && item.priceMax !== '') {
-            return parsePriceValue(item.priceMax);
+    // Using the user's specific labels from the reference design
+    const displayItems = [
+        {
+            id: 'soulitaire',
+            title: 'SOULitaire',
+            subtitle: 'Under ₹999',
+            image: budgetEarrings,
+            path: '/shop?price_max=999'
+        },
+        {
+            id: 'beyond-bold',
+            title: 'Beyond Bold',
+            subtitle: 'Under ₹1999',
+            image: budgetPendant,
+            path: '/shop?price_max=1999'
         }
-        if (item.price !== undefined && item.price !== null && item.price !== '') {
-            return parsePriceValue(item.price);
-        }
-        if (item.path && String(item.path).includes('price_max=')) {
-            const query = item.path.split('price_max=')[1]?.split('&')[0];
-            return parsePriceValue(query);
-        }
-        if (item.name) {
-            return parsePriceValue(item.name);
-        }
-        return null;
-    };
-
-    const configuredItems = Array.isArray(sectionData?.items)
-        ? sectionData.items
-            .map((item, index) => {
-                const priceMax = getPriceMaxFromItem(item);
-                if (!priceMax) return null;
-                return {
-                    id: item.itemId || item._id || item.id || `${priceMax}-${index}`,
-                    priceMax,
-                    label: 'Under',
-                    path: `/shop?price_max=${priceMax}`
-                };
-            })
-            .filter(Boolean)
-            .slice(0, 2)
-        : [];
-
-    const displayItems = configuredItems.length > 0 ? configuredItems : FALLBACK_PRICE_POINTS;
+    ];
 
     return (
-        <section className="py-6 md:py-12 bg-[#FEF6F7]">
+        <section className="py-4 md:py-8 bg-[#FDF8F8]">
             <div className="container mx-auto px-4 max-w-[1240px]">
-                <div className="flex flex-col items-center mb-6 md:mb-10 group">
-                    <span className="inline-block bg-[#8E2B45] text-white px-3 py-0.5 text-[8px] md:text-[10px] font-black tracking-[0.3em] uppercase mb-2 rounded-none shadow-sm group-hover:bg-[#AC3B61] transition-colors duration-500">
+                {/* Minimal Editorial Header */}
+                <div className="flex flex-col items-center mb-6 md:mb-10 text-center">
+                    <span className="inline-block bg-[#9C5B61] text-white px-3 py-1 text-[8px] md:text-[10px] font-black tracking-[0.3em] uppercase mb-3 rounded-sm shadow-sm">
                         Budget Boutique
                     </span>
-                    <h2 className="text-2xl md:text-5xl font-serif text-gray-950 tracking-tight leading-none">
-                        Luxury <span className="italic font-light text-[#8E2B45]">within Reach</span>
+                    <h2 className="text-2xl md:text-5xl font-serif text-gray-950 tracking-tight leading-none mb-4">
+                        Luxury <span className="italic font-light text-[#9C5B61]">within Reach</span>
                     </h2>
-                    <div className="w-10 h-[1px] bg-[#8E2B45]/30 mt-3 md:mt-5" />
+                    <div className="w-12 h-[1px] bg-[#9C5B61]/20" />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-10 max-w-[900px] mx-auto">
+                {/* New Image-Based Cards Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-8 max-w-[1100px] mx-auto">
                     {displayItems.map((item) => (
                         <motion.div
                             key={item.id}
-                            whileHover={{
-                                y: -6,
-                                scale: 1.02,
-                                transition: { duration: 0.3, ease: 'easeOut' }
-                            }}
-                            whileTap={{ scale: 0.98 }}
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            whileHover={{ y: -5 }}
                             onClick={() => navigate(item.path)}
-                            className="relative h-[100px] md:h-[160px] bg-gradient-to-br from-[#4A1015] via-[#540D1D] to-[#2D060F] rounded-[20px] md:rounded-[36px] cursor-pointer flex flex-col items-center justify-center text-white shadow-[0_15px_30px_rgba(74,16,21,0.12)] hover:shadow-[0_30px_60px_rgba(74,16,21,0.25)] overflow-hidden group border border-white/10"
+                            className="relative aspect-[16/7.5] md:aspect-[16/6.5] rounded-[24px] md:rounded-[36px] overflow-hidden cursor-pointer group shadow-md hover:shadow-xl transition-all duration-500"
                         >
-                            <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-500" />
-
-                            <span className="text-[9px] md:text-xs font-sans tracking-[0.35em] uppercase font-bold mb-0.5 relative z-10 text-[#FFD9E0]/80">
-                                {item.label}
-                            </span>
-                            <div className="flex items-center gap-1.5 relative z-10">
-                                <span className="text-3xl md:text-6xl font-serif font-medium tracking-tighter">
-                                    {'\u20B9'}{item.priceMax}
-                                </span>
+                            {/* Background Image with soft zoom */}
+                            <img 
+                                src={item.image} 
+                                alt={item.title} 
+                                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                            />
+                            
+                            {/* Soft Gradient Overlay (using brand primary pink) */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-[#4A1B24]/90 via-[#4A1B24]/40 to-transparent opacity-80 group-hover:opacity-70 transition-opacity duration-500" />
+                            
+                            {/* Content */}
+                            <div className="absolute inset-0 p-6 md:p-10 flex flex-col justify-center">
+                                <motion.div 
+                                    className="transform transition-transform duration-500 group-hover:translate-x-2"
+                                >
+                                    <h3 className="text-white font-bold text-2xl md:text-4xl tracking-tight mb-1">
+                                        {item.title}
+                                    </h3>
+                                    <div className="h-[2px] w-8 bg-[#C9A24D] mb-2 md:mb-3 group-hover:w-16 transition-all duration-500" />
+                                    <p className="text-white/90 text-sm md:text-lg font-medium tracking-wide">
+                                        {item.subtitle}
+                                    </p>
+                                </motion.div>
                             </div>
 
-                            <div className="absolute inset-0 bg-[#8E2B45]/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 mix-blend-overlay" />
+                            {/* Interactive Shine Effect */}
+                            <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-0 group-hover:opacity-40 transition-opacity duration-700 pointer-events-none" />
                         </motion.div>
                     ))}
                 </div>
