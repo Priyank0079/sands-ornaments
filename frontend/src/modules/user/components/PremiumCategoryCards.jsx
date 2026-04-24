@@ -34,7 +34,7 @@ const PremiumCategoryCards = () => {
         >
             <div className="container mx-auto px-4 max-w-[1100px]">
                 {/* Header */}
-                <div className="flex flex-col items-center mb-6 md:mb-12">
+                <div className="flex flex-col items-center mb-10 md:mb-20 relative z-50">
                     <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-[#C9A24D] mb-1.5 md:mb-3">Gift the Excellence</span>
                     <h2 className="text-2xl md:text-4xl font-serif text-gray-950 tracking-tight leading-none text-center">
                         Shop by <span className="italic font-light text-[#8E2B45]">Recipient</span>
@@ -70,7 +70,7 @@ const PremiumCategoryCards = () => {
                             </div>
 
                             {/* Model Image - Scaled for Compactness */}
-                            <div className={`absolute bottom-0 h-[135%] md:h-[165%] z-30 pointer-events-none transition-all duration-1000 group-hover:scale-[1.03] ${item.layout === 'left' ? 'right-0' : 'left-0'}`}>
+                            <div className={`absolute bottom-0 h-[130%] md:h-[150%] z-30 pointer-events-none transition-all duration-1000 group-hover:scale-[1.03] ${item.layout === 'left' ? 'right-0' : 'left-0'}`}>
                                 <img
                                     src={item.image}
                                     alt={item.title}
