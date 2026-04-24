@@ -1,8 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShieldCheck, RefreshCw, RotateCcw, Star, ArrowRight, Truck, FileText } from 'lucide-react';
-import api from '../../../services/api';
 import GoldExploreCollections from '../components/GoldExploreCollections';
 import BestStylesSection from '../components/BestStylesSection';
 import GoldCategoryGrid from '../components/GoldCategoryGrid';
@@ -18,6 +17,7 @@ import GoldLuxuryWithinReach from '../components/GoldLuxuryWithinReach';
 import GoldDirectProducts from '../components/GoldDirectProducts';
 import Loader from '../../shared/components/Loader';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
+import { usePublicCmsPage } from '../hooks/usePublicCmsPage';
 
 import heroGold from '@assets/hero/bridal_royal.png';
 
@@ -30,20 +30,14 @@ const TRUST_BADGES = [
 
 const GoldJewelleryPage = () => {
     const [loading, setLoading] = useState(true);
-    const [sections, setSections] = useState([]);
     const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
-
-    const fetchGoldSections = useCallback(async () => {
-        try {
-            const res = await api.get('public/cms/pages/gold-collection', {
-                params: { _t: Date.now() }
-            });
-            if (!res?.data?.success) return;
-            setSections(Array.isArray(res.data?.data?.sections) ? res.data.data.sections : []);
-        } catch (error) {
-            console.error('Failed to fetch gold collection sections:', error);
-        }
-    }, []);
+    const {
+        data: sections = [],
+        isLoading: isCmsLoading,
+        isError,
+        error: cmsError,
+        refetch
+    } = usePublicCmsPage('gold-collection');
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -51,29 +45,6 @@ const GoldJewelleryPage = () => {
         const timer = setTimeout(() => setLoading(false), 800);
         return () => clearTimeout(timer);
     }, []);
-
-    useEffect(() => {
-        fetchGoldSections();
-    }, [fetchGoldSections]);
-
-    useEffect(() => {
-        const handleFocusRefresh = () => {
-            fetchGoldSections();
-        };
-        const handleVisibilityRefresh = () => {
-            if (document.visibilityState === 'visible') {
-                fetchGoldSections();
-            }
-        };
-
-        window.addEventListener('focus', handleFocusRefresh);
-        document.addEventListener('visibilitychange', handleVisibilityRefresh);
-
-        return () => {
-            window.removeEventListener('focus', handleFocusRefresh);
-            document.removeEventListener('visibilitychange', handleVisibilityRefresh);
-        };
-    }, [fetchGoldSections]);
 
     const sectionMap = useMemo(() => (
         (sections || []).reduce((acc, section) => {
@@ -160,7 +131,31 @@ const GoldJewelleryPage = () => {
         }));
     }, [sectionMap]);
 
-    if (loading) return <Loader />;
+    if (loading || isCmsLoading) return <Loader />;
+    if (isError) {
+        return (
+            <div className="bg-white min-h-screen flex items-center justify-center px-6 py-14">
+                <div className="max-w-xl w-full bg-white border border-gray-100 rounded-2xl p-8 shadow-sm text-center">
+                    <div className="text-[10px] font-black uppercase tracking-[0.35em] text-gray-400">
+                        Gold Collection
+                    </div>
+                    <h1 className="mt-2 text-2xl font-extrabold text-gray-900">
+                        Unable to load page content
+                    </h1>
+                    <p className="mt-3 text-sm text-gray-600">
+                        {cmsError?.response?.data?.message || cmsError?.message || 'Please try again.'}
+                    </p>
+                    <button
+                        type="button"
+                        onClick={() => refetch()}
+                        className="mt-6 inline-flex items-center justify-center rounded-lg bg-[#3E2723] px-5 py-2.5 text-xs font-black uppercase tracking-widest text-white hover:opacity-95"
+                    >
+                        Retry
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-white min-h-screen font-body">

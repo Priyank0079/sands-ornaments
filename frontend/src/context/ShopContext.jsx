@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from './AuthContext';
 import { useCatalogue } from '../hooks/useCatalogue';
 import { adminService } from '../modules/admin/services/adminService';
+import { useQuery } from '@tanstack/react-query';
 
 export const ShopContext = createContext();
 
@@ -828,35 +829,36 @@ export const ShopProvider = ({ children }) => {
         }
     };
 
-    const [homepageSections, setHomepageSections] = useState({});
+    const homepageSectionsQuery = useQuery({
+        queryKey: ['public-cms', 'homepage'],
+        queryFn: async () => api.get('public/cms/homepage'),
+        select: (res) => {
+            const sections = res?.data?.data?.sections || [];
+            return (sections || []).reduce((acc, section) => {
+                const key = section.sectionId || section.sectionKey;
+                if (!key) return acc;
+                acc[key] = {
+                    id: section.sectionId,
+                    sectionId: section.sectionId,
+                    sectionKey: section.sectionKey,
+                    label: section.label,
+                    isActive: section.isActive !== false,
+                    sortOrder: section.sortOrder || 0,
+                    items: section.items || [],
+                    settings: section.settings || {},
+                    pageKey: section.pageKey || 'home',
+                    sectionType: section.sectionType || null
+                };
+                return acc;
+            }, {});
+        },
+        staleTime: 30 * 1000,
+        retry: 1,
+        refetchOnWindowFocus: true,
+        refetchOnReconnect: true,
+    });
 
-    useEffect(() => {
-        const fetchHomepageSections = async () => {
-            try {
-                const res = await api.get('public/cms/homepage');
-                if (res.data.success) {
-                    const sections = res.data.data?.sections || [];
-                    const mapped = sections.reduce((acc, section) => {
-                        acc[section.sectionId] = {
-                            id: section.sectionId,
-                            label: section.label,
-                            isActive: section.isActive !== false,
-                            sortOrder: section.sortOrder || 0,
-                            items: section.items || [],
-                            settings: section.settings || {},
-                            pageKey: section.pageKey || 'home',
-                            sectionType: section.sectionType || null
-                        };
-                        return acc;
-                    }, {});
-                    setHomepageSections(mapped);
-                }
-            } catch (err) {
-                console.error("Failed to fetch homepage sections:", err);
-            }
-        };
-        fetchHomepageSections();
-    }, []);
+    const homepageSections = homepageSectionsQuery.data || {};
 
     // Product & Bulk Management
     // `products` comes from `useCatalogue()` (read-only). Admin/Seller updates are handled

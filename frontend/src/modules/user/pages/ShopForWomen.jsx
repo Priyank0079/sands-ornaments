@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import WomenHeroCarousel from '../components/women/WomenHeroCarousel';
 import WomenCategoriesGrid from '../components/women/WomenCategoriesGrid';
 import WomenCuratedCollections from '../components/women/WomenCuratedCollections';
@@ -11,23 +11,17 @@ import WomenPersonalisedBanner from '../components/women/WomenPersonalisedBanner
 import WomenPriceRange from '../components/women/WomenPriceRange';
 import WomenFeatureBanner from '../components/women/WomenFeatureBanner';
 import Loader from '../../shared/components/Loader';
-import api from '../../../services/api';
+import { usePublicCmsPage } from '../hooks/usePublicCmsPage';
 
 const ShopForWomen = () => {
     const [loading, setLoading] = useState(true);
-    const [sections, setSections] = useState([]);
-
-    const fetchWomenSections = useCallback(async () => {
-        try {
-            const res = await api.get('public/cms/pages/shop-women', {
-                params: { _t: Date.now() }
-            });
-            if (!res?.data?.success) return;
-            setSections(Array.isArray(res.data?.data?.sections) ? res.data.data.sections : []);
-        } catch (err) {
-            console.error('Failed to fetch women page sections:', err);
-        }
-    }, []);
+    const {
+        data: sections = [],
+        isLoading: isCmsLoading,
+        isError,
+        error,
+        refetch
+    } = usePublicCmsPage('shop-women');
 
     useEffect(() => {
         document.title = "Shop Women's Jewellery | Sands Ornaments";
@@ -35,28 +29,6 @@ const ShopForWomen = () => {
         const timer = setTimeout(() => setLoading(false), 800);
         return () => clearTimeout(timer);
     }, []);
-
-    useEffect(() => {
-        fetchWomenSections();
-    }, [fetchWomenSections]);
-
-    useEffect(() => {
-        const handleFocusRefresh = () => {
-            fetchWomenSections();
-        };
-        const handleVisibilityRefresh = () => {
-            if (document.visibilityState === 'visible') {
-                fetchWomenSections();
-            }
-        };
-
-        window.addEventListener('focus', handleFocusRefresh);
-        document.addEventListener('visibilitychange', handleVisibilityRefresh);
-        return () => {
-            window.removeEventListener('focus', handleFocusRefresh);
-            document.removeEventListener('visibilitychange', handleVisibilityRefresh);
-        };
-    }, [fetchWomenSections]);
 
     const sectionMap = useMemo(() => (
         (sections || []).reduce((acc, section) => {
@@ -66,7 +38,31 @@ const ShopForWomen = () => {
         }, {})
     ), [sections]);
 
-    if (loading) return <Loader />;
+    if (loading || isCmsLoading) return <Loader />;
+    if (isError) {
+        return (
+            <div className="bg-[#FDF5F6] min-h-screen flex items-center justify-center px-6 py-14">
+                <div className="max-w-xl w-full bg-white border border-gray-100 rounded-2xl p-8 shadow-sm text-center">
+                    <div className="text-[10px] font-black uppercase tracking-[0.35em] text-gray-400">
+                        Shop for Women
+                    </div>
+                    <h1 className="mt-2 text-2xl font-extrabold text-gray-900">
+                        Unable to load page content
+                    </h1>
+                    <p className="mt-3 text-sm text-gray-600">
+                        {error?.response?.data?.message || error?.message || 'Please try again.'}
+                    </p>
+                    <button
+                        type="button"
+                        onClick={() => refetch()}
+                        className="mt-6 inline-flex items-center justify-center rounded-lg bg-[#3E2723] px-5 py-2.5 text-xs font-black uppercase tracking-widest text-white hover:opacity-95"
+                    >
+                        Retry
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-[#FDF5F6] min-h-screen text-black font-sans overflow-x-hidden">

@@ -5,6 +5,7 @@ import { AuthProvider } from './context/AuthContext';
 import Navbar from './modules/user/components/Navbar';
 import Footer from './modules/user/components/Footer';
 import ScrollToTop from './ScrollToTop';
+import AppErrorBoundary from './components/AppErrorBoundary';
 import CategoryNav from './modules/user/components/CategoryNav';
 import AnnouncementBar from './modules/user/components/AnnouncementBar';
 import PincodeModal from './modules/user/components/PincodeModal';
@@ -239,7 +240,9 @@ function App() {
       <ShopProvider>
         <Router>
           <ScrollToTop />
-          <AppContent />
+          <AppErrorBoundary>
+            <AppContent />
+          </AppErrorBoundary>
         </Router>
       </ShopProvider>
     </AuthProvider>

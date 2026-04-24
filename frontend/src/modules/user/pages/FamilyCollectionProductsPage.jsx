@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import FamilyProductsCatalog from '../components/family/FamilyProductsCatalog';
 import { normalizeFamilyCollection } from '../utils/familyNavigation';
-import api from '../../../services/api';
+import Loader from '../../shared/components/Loader';
+import { usePublicCmsPage } from '../hooks/usePublicCmsPage';
 
 const collectionMeta = {
     classics: {
@@ -185,27 +186,12 @@ const FamilyCollectionProductsPage = () => {
     const { collectionId } = useParams();
     const normalizedCollection = normalizeFamilyCollection(collectionId);
     const meta = collectionMeta[normalizedCollection] || collectionMeta['under-2999'];
-    const [sections, setSections] = useState([]);
+    const { data: sections = [], isLoading, isError, error, refetch } = usePublicCmsPage('shop-family');
 
     useEffect(() => {
         document.title = `${meta.title} | Sands Ornaments`;
         window.scrollTo(0, 0);
     }, [meta.title]);
-
-    useEffect(() => {
-        const fetchSections = async () => {
-            try {
-                const res = await api.get('public/cms/pages/shop-family', {
-                    params: { _t: Date.now() }
-                });
-                if (!res?.data?.success) return;
-                setSections(Array.isArray(res.data?.data?.sections) ? res.data.data.sections : []);
-            } catch (err) {
-                console.error('Failed to fetch family sections for collection page:', err);
-            }
-        };
-        fetchSections();
-    }, []);
 
     const sectionMap = useMemo(() => (
         (sections || []).reduce((acc, section) => {
@@ -214,6 +200,32 @@ const FamilyCollectionProductsPage = () => {
             return acc;
         }, {})
     ), [sections]);
+
+    if (isLoading) return <Loader />;
+    if (isError) {
+        return (
+            <div className="bg-white min-h-screen flex items-center justify-center px-6 py-14">
+                <div className="max-w-xl w-full bg-white border border-gray-100 rounded-2xl p-8 shadow-sm text-center">
+                    <div className="text-[10px] font-black uppercase tracking-[0.35em] text-gray-400">
+                        Family Gift Picks
+                    </div>
+                    <h1 className="mt-2 text-2xl font-extrabold text-gray-900">
+                        Unable to load page content
+                    </h1>
+                    <p className="mt-3 text-sm text-gray-600">
+                        {error?.response?.data?.message || error?.message || 'Please try again.'}
+                    </p>
+                    <button
+                        type="button"
+                        onClick={() => refetch()}
+                        className="mt-6 inline-flex items-center justify-center rounded-lg bg-[#3E2723] px-5 py-2.5 text-xs font-black uppercase tracking-widest text-white hover:opacity-95"
+                    >
+                        Retry
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-white min-h-screen text-black font-sans overflow-x-hidden">

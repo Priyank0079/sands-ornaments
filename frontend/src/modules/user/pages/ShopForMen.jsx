@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import MenHeroCarousel from '../components/men/MenHeroCarousel';
 import MenCategoriesGrid from '../components/men/MenCategoriesGrid';
 import MenLuxurySection from '../components/men/MenLuxurySection';
@@ -13,23 +13,17 @@ import MenStyleTrends from '../components/men/MenStyleTrends';
 import MenFeaturedProducts from '../components/men/MenFeaturedProducts';
 
 import Loader from '../../shared/components/Loader';
-import api from '../../../services/api';
+import { usePublicCmsPage } from '../hooks/usePublicCmsPage';
 
 const ShopForMen = () => {
     const [loading, setLoading] = useState(true);
-    const [sections, setSections] = useState([]);
-
-    const fetchMenSections = useCallback(async () => {
-        try {
-            const res = await api.get('public/cms/pages/shop-men', {
-                params: { _t: Date.now() }
-            });
-            if (!res?.data?.success) return;
-            setSections(Array.isArray(res.data?.data?.sections) ? res.data.data.sections : []);
-        } catch (err) {
-            console.error('Failed to fetch men page sections:', err);
-        }
-    }, []);
+    const {
+        data: sections = [],
+        isLoading: isCmsLoading,
+        isError,
+        error,
+        refetch
+    } = usePublicCmsPage('shop-men');
 
     useEffect(() => {
         document.title = "Shop Men's Jewellery | Sands Ornaments";
@@ -37,28 +31,6 @@ const ShopForMen = () => {
         const timer = setTimeout(() => setLoading(false), 800);
         return () => clearTimeout(timer);
     }, []);
-
-    useEffect(() => {
-        fetchMenSections();
-    }, [fetchMenSections]);
-
-    useEffect(() => {
-        const handleFocusRefresh = () => {
-            fetchMenSections();
-        };
-        const handleVisibilityRefresh = () => {
-            if (document.visibilityState === 'visible') {
-                fetchMenSections();
-            }
-        };
-
-        window.addEventListener('focus', handleFocusRefresh);
-        document.addEventListener('visibilitychange', handleVisibilityRefresh);
-        return () => {
-            window.removeEventListener('focus', handleFocusRefresh);
-            document.removeEventListener('visibilitychange', handleVisibilityRefresh);
-        };
-    }, [fetchMenSections]);
 
     const sectionMap = useMemo(() => (
         (sections || []).reduce((acc, section) => {
@@ -68,7 +40,31 @@ const ShopForMen = () => {
         }, {})
     ), [sections]);
 
-    if (loading) return <Loader />;
+    if (loading || isCmsLoading) return <Loader />;
+    if (isError) {
+        return (
+            <div className="bg-[#FDF5F6] min-h-screen flex items-center justify-center px-6 py-14">
+                <div className="max-w-xl w-full bg-white border border-gray-100 rounded-2xl p-8 shadow-sm text-center">
+                    <div className="text-[10px] font-black uppercase tracking-[0.35em] text-gray-400">
+                        Shop for Men
+                    </div>
+                    <h1 className="mt-2 text-2xl font-extrabold text-gray-900">
+                        Unable to load page content
+                    </h1>
+                    <p className="mt-3 text-sm text-gray-600">
+                        {error?.response?.data?.message || error?.message || 'Please try again.'}
+                    </p>
+                    <button
+                        type="button"
+                        onClick={() => refetch()}
+                        className="mt-6 inline-flex items-center justify-center rounded-lg bg-[#3E2723] px-5 py-2.5 text-xs font-black uppercase tracking-widest text-white hover:opacity-95"
+                    >
+                        Retry
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="mens-section bg-[#FDF5F6] min-h-screen text-[#111827] overflow-x-hidden">

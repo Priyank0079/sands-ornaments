@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import FamilyHeroCarousel from '../components/family/FamilyHeroCarousel';
 import FamilyPricePoints from '../components/family/FamilyPricePoints';
@@ -9,7 +9,7 @@ import FamilyPromoBanner from '../components/family/FamilyPromoBanner';
 import Family3DCarousel from '../components/family/Family3DCarousel';
 import FamilyProductsCatalog from '../components/family/FamilyProductsCatalog';
 import { buildFamilyShopPath, getFamilyRecipientFromSearch, normalizeFamilyRecipient } from '../utils/familyNavigation';
-import api from '../../../services/api';
+import { usePublicCmsPage } from '../hooks/usePublicCmsPage';
 
 import Loader from '../../shared/components/Loader';
 
@@ -21,19 +21,13 @@ const ShopForFamily = () => {
         normalizeFamilyRecipient(recipientParam || getFamilyRecipientFromSearch(location.search))
     ));
     const [loading, setLoading] = useState(true);
-    const [sections, setSections] = useState([]);
-
-    const fetchFamilySections = useCallback(async () => {
-        try {
-            const res = await api.get('public/cms/pages/shop-family', {
-                params: { _t: Date.now() }
-            });
-            if (!res?.data?.success) return;
-            setSections(Array.isArray(res.data?.data?.sections) ? res.data.data.sections : []);
-        } catch (err) {
-            console.error('Failed to fetch family page sections:', err);
-        }
-    }, []);
+    const {
+        data: sections = [],
+        isLoading: isCmsLoading,
+        isError,
+        error,
+        refetch
+    } = usePublicCmsPage('shop-family');
 
     useEffect(() => {
         document.title = "Gifts for Family | Sands Ornaments";
@@ -41,28 +35,6 @@ const ShopForFamily = () => {
         const timer = setTimeout(() => setLoading(false), 800);
         return () => clearTimeout(timer);
     }, []);
-
-    useEffect(() => {
-        fetchFamilySections();
-    }, [fetchFamilySections]);
-
-    useEffect(() => {
-        const handleFocusRefresh = () => {
-            fetchFamilySections();
-        };
-        const handleVisibilityRefresh = () => {
-            if (document.visibilityState === 'visible') {
-                fetchFamilySections();
-            }
-        };
-
-        window.addEventListener('focus', handleFocusRefresh);
-        document.addEventListener('visibilitychange', handleVisibilityRefresh);
-        return () => {
-            window.removeEventListener('focus', handleFocusRefresh);
-            document.removeEventListener('visibilitychange', handleVisibilityRefresh);
-        };
-    }, [fetchFamilySections]);
 
     useEffect(() => {
         const nextRecipient = normalizeFamilyRecipient(recipientParam || getFamilyRecipientFromSearch(location.search));
@@ -79,7 +51,31 @@ const ShopForFamily = () => {
         }, {})
     ), [sections]);
 
-    if (loading) return <Loader />;
+    if (loading || isCmsLoading) return <Loader />;
+    if (isError) {
+        return (
+            <div className="bg-white min-h-screen flex items-center justify-center px-6 py-14">
+                <div className="max-w-xl w-full bg-white border border-gray-100 rounded-2xl p-8 shadow-sm text-center">
+                    <div className="text-[10px] font-black uppercase tracking-[0.35em] text-gray-400">
+                        Gifts for Family
+                    </div>
+                    <h1 className="mt-2 text-2xl font-extrabold text-gray-900">
+                        Unable to load page content
+                    </h1>
+                    <p className="mt-3 text-sm text-gray-600">
+                        {error?.response?.data?.message || error?.message || 'Please try again.'}
+                    </p>
+                    <button
+                        type="button"
+                        onClick={() => refetch()}
+                        className="mt-6 inline-flex items-center justify-center rounded-lg bg-[#3E2723] px-5 py-2.5 text-xs font-black uppercase tracking-widest text-white hover:opacity-95"
+                    >
+                        Retry
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     const handleSelectRecipient = (recipientId) => {
         const normalizedRecipient = normalizeFamilyRecipient(recipientId);
