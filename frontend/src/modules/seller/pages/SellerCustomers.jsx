@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Search, Mail, ShoppingBag, IndianRupee, CalendarDays, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AdminTable from '../../admin/components/AdminTable';
@@ -8,16 +8,31 @@ const SellerCustomers = () => {
     const navigate = useNavigate();
     const [customers, setCustomers] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(1);
+    const [pagination, setPagination] = useState(null);
 
     useEffect(() => {
         let active = true;
         const loadCustomers = async () => {
-            const data = await sellerCustomerService.getCustomers();
-            if (active) setCustomers(data || []);
+            setLoading(true);
+            const res = await sellerCustomerService.getCustomersPaged({
+                page,
+                limit: 10,
+                ...(searchQuery ? { search: searchQuery } : {})
+            });
+            if (!active) return;
+            setCustomers(res.customers || []);
+            setPagination(res.pagination || null);
+            setLoading(false);
         };
-        loadCustomers();
+        const t = setTimeout(loadCustomers, 250);
         return () => { active = false; };
-    }, []);
+    }, [page, searchQuery]);
+
+    useEffect(() => {
+        setPage(1);
+    }, [searchQuery]);
 
     const columns = [
         {
@@ -94,11 +109,6 @@ const SellerCustomers = () => {
         }
     ];
 
-    const filteredCustomers = customers.filter(c =>
-        (c.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (c.email || '').toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
     return (
         <div className="space-y-8 animate-in fade-in duration-500 font-sans">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -124,9 +134,13 @@ const SellerCustomers = () => {
             <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden min-h-[500px]">
                 <AdminTable
                     columns={columns}
-                    data={filteredCustomers}
-                    emptyMessage="No customers found"
+                    data={customers}
+                    emptyMessage={loading ? "Loading customers..." : "No customers found"}
                     onRowClick={(row) => navigate(`/seller/customer-details/${row.id}`)}
+                    pagination={pagination ? {
+                        ...pagination,
+                        onPageChange: (nextPage) => setPage(nextPage)
+                    } : undefined}
                 />
             </div>
         </div>

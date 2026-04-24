@@ -3,73 +3,146 @@ const Order = require("../../../models/Order");
 const User = require("../../../models/User");
 const { success, error } = require("../../../utils/apiResponse");
 
+const parsePositiveInt = (value, fallback) => {
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+  return parsed;
+};
+
+const escapeRegex = (value = "") => String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 exports.getMyCustomers = async (req, res) => {
   try {
     const sellerId = req.user.userId;
-    const sellerObjectId = mongoose.Types.ObjectId.isValid(sellerId)
-      ? new mongoose.Types.ObjectId(sellerId)
-      : sellerId;
+    if (!mongoose.Types.ObjectId.isValid(sellerId)) {
+      return error(res, "Invalid seller id", 400);
+    }
+    const sellerObjectId = new mongoose.Types.ObjectId(sellerId);
 
-    const orders = await Order.find({ "items.sellerId": sellerObjectId })
-      .select("userId customerName customerEmail shippingAddress items createdAt")
-      .sort({ createdAt: -1 });
+    const page = parsePositiveInt(req.query.page, 1);
+    const limit = Math.min(parsePositiveInt(req.query.limit, 10), 100);
+    const search = String(req.query.search || "").trim();
+    const skip = (page - 1) * limit;
 
-    if (!orders.length) {
-      return success(res, { customers: [] });
+    const base = [
+      { $match: { "items.sellerId": sellerObjectId, userId: { $ne: null } } },
+      { $sort: { createdAt: -1 } },
+      {
+        $addFields: {
+          sellerItems: {
+            $filter: {
+              input: "$items",
+              as: "it",
+              cond: { $eq: ["$$it.sellerId", sellerObjectId] }
+            }
+          }
+        }
+      },
+      {
+        $addFields: {
+          sellerSpend: {
+            $sum: {
+              $map: {
+                input: "$sellerItems",
+                as: "s",
+                in: {
+                  $multiply: [
+                    { $ifNull: ["$$s.price", 0] },
+                    { $ifNull: ["$$s.quantity", 0] }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        $group: {
+          _id: "$userId",
+          totalOrders: { $sum: 1 },
+          totalSpend: { $sum: "$sellerSpend" },
+          lastOrderDate: { $first: "$createdAt" },
+          fallbackName: {
+            $first: {
+              $ifNull: [
+                "$customerName",
+                {
+                  $trim: {
+                    input: {
+                      $concat: [
+                        { $ifNull: ["$shippingAddress.firstName", ""] },
+                        " ",
+                        { $ifNull: ["$shippingAddress.lastName", ""] }
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          fallbackEmail: {
+            $first: {
+              $ifNull: ["$customerEmail", { $ifNull: ["$shippingAddress.email", ""] }]
+            }
+          }
+        }
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "userDoc"
+        }
+      },
+      {
+        $addFields: {
+          userName: { $arrayElemAt: ["$userDoc.name", 0] },
+          userEmail: { $arrayElemAt: ["$userDoc.email", 0] }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          id: "$_id",
+          name: { $ifNull: ["$userName", { $ifNull: ["$fallbackName", "Customer"] }] },
+          email: { $ifNull: ["$userEmail", { $ifNull: ["$fallbackEmail", ""] }] },
+          totalOrders: 1,
+          totalSpend: 1,
+          lastOrderDate: 1
+        }
+      }
+    ];
+
+    const pipeline = [...base];
+    if (search) {
+      const escaped = escapeRegex(search);
+      pipeline.push({
+        $match: {
+          $or: [
+            { name: { $regex: escaped, $options: "i" } },
+            { email: { $regex: escaped, $options: "i" } }
+          ]
+        }
+      });
     }
 
-    const userIds = [...new Set(
-      orders
-        .map((order) => String(order.userId || ""))
-        .filter(Boolean)
-    )];
-
-    const users = await User.find({ _id: { $in: userIds } }).select("name email");
-    const userMap = new Map(users.map((user) => [String(user._id), user]));
-    const customersMap = new Map();
-
-    orders.forEach((order) => {
-      const userKey = String(order.userId || "");
-      if (!userKey) return;
-
-      const sellerItems = (order.items || []).filter((item) => (
-        String(item.sellerId) === String(sellerObjectId)
-      ));
-      if (!sellerItems.length) return;
-
-      const user = userMap.get(userKey);
-      const shipping = order.shippingAddress || {};
-      const nameParts = [shipping.firstName, shipping.lastName].filter(Boolean);
-      const name = user?.name || nameParts.join(" ").trim() || order.customerName || "Customer";
-      const email = user?.email || order.customerEmail || shipping.email || "";
-      const spend = sellerItems.reduce((sum, item) => (
-        sum + (Number(item.price) || 0) * (Number(item.quantity) || 0)
-      ), 0);
-
-      if (!customersMap.has(userKey)) {
-        customersMap.set(userKey, {
-          id: userKey,
-          name,
-          email,
-          totalOrders: 0,
-          totalSpend: 0,
-          lastOrderDate: order.createdAt
-        });
-      }
-
-      const current = customersMap.get(userKey);
-      current.totalOrders += 1;
-      current.totalSpend += spend;
-      if (!current.lastOrderDate || new Date(order.createdAt) > new Date(current.lastOrderDate)) {
-        current.lastOrderDate = order.createdAt;
+    pipeline.push({
+      $facet: {
+        data: [{ $skip: skip }, { $limit: limit }],
+        meta: [{ $count: "totalItems" }]
       }
     });
 
-    const normalized = Array.from(customersMap.values()).sort((a, b) => (
-      new Date(b.lastOrderDate) - new Date(a.lastOrderDate)
-    ));
+    const result = await Order.aggregate(pipeline);
+    const customers = result?.[0]?.data || [];
+    const totalItems = result?.[0]?.meta?.[0]?.totalItems || 0;
+    const totalPages = Math.max(1, Math.ceil(totalItems / limit));
 
-    return success(res, { customers: normalized });
+    return success(res, {
+      customers,
+      pagination: { page, limit, totalItems, totalPages }
+    });
   } catch (err) { return error(res, err.message); }
 };
 
@@ -77,65 +150,138 @@ exports.getMyCustomerDetails = async (req, res) => {
   try {
     const sellerId = req.user.userId;
     const { id: customerId } = req.params;
-    const sellerObjectId = mongoose.Types.ObjectId.isValid(sellerId)
-      ? new mongoose.Types.ObjectId(sellerId)
-      : sellerId;
-
-    const orders = await Order.find({
-      userId: customerId,
-      "items.sellerId": sellerObjectId
-    }).sort({ createdAt: -1 });
-
-    if (!orders.length) {
-      return success(res, { customer: null, orders: [] });
+    if (!mongoose.Types.ObjectId.isValid(sellerId)) {
+      return error(res, "Invalid seller id", 400);
+    }
+    if (!mongoose.Types.ObjectId.isValid(customerId)) {
+      return error(res, "Invalid customer id", 400);
     }
 
-    const latestOrder = orders[0];
-    const shipping = latestOrder.shippingAddress || {};
-    const nameParts = [shipping.firstName, shipping.lastName].filter(Boolean);
-    const fallbackName = nameParts.join(" ").trim() || latestOrder.customerName || "Customer";
-    const user = mongoose.Types.ObjectId.isValid(customerId)
-      ? await User.findById(customerId).select("name email")
-      : null;
+    const sellerObjectId = new mongoose.Types.ObjectId(sellerId);
+    const customerObjectId = new mongoose.Types.ObjectId(customerId);
+    const page = parsePositiveInt(req.query.page, 1);
+    const limit = Math.min(parsePositiveInt(req.query.limit, 10), 50);
+    const skip = (page - 1) * limit;
 
-    const name = user?.name || fallbackName;
-    const email = user?.email || latestOrder.customerEmail || shipping.email || "";
+    const pipeline = [
+      {
+        $match: {
+          userId: customerObjectId,
+          "items.sellerId": sellerObjectId
+        }
+      },
+      { $sort: { createdAt: -1 } },
+      {
+        $addFields: {
+          sellerItems: {
+            $filter: {
+              input: "$items",
+              as: "it",
+              cond: { $eq: ["$$it.sellerId", sellerObjectId] }
+            }
+          }
+        }
+      },
+      {
+        $addFields: {
+          amount: {
+            $sum: {
+              $map: {
+                input: "$sellerItems",
+                as: "s",
+                in: {
+                  $multiply: [
+                    { $ifNull: ["$$s.price", 0] },
+                    { $ifNull: ["$$s.quantity", 0] }
+                  ]
+                }
+              }
+            }
+          },
+          itemsSummary: {
+            $reduce: {
+              input: {
+                $map: {
+                  input: "$sellerItems",
+                  as: "s",
+                  in: { $ifNull: ["$$s.name", "Item"] }
+                }
+              },
+              initialValue: "",
+              in: {
+                $cond: [
+                  { $eq: ["$$value", ""] },
+                  "$$this",
+                  { $concat: ["$$value", ", ", "$$this"] }
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        $facet: {
+          orders: [
+            { $skip: skip },
+            { $limit: limit },
+            {
+              $project: {
+                _id: 0,
+                id: { $ifNull: ["$orderId", "$_id"] },
+                date: "$createdAt",
+                items: { $ifNull: ["$itemsSummary", "Items"] },
+                amount: 1,
+                status: { $toUpper: { $ifNull: ["$status", "Processing"] } }
+              }
+            }
+          ],
+          stats: [
+            {
+              $group: {
+                _id: null,
+                totalOrders: { $sum: 1 },
+                totalSpend: { $sum: "$amount" },
+                lastOrderDate: { $first: "$createdAt" },
+                fallbackName: { $first: "$customerName" },
+                fallbackEmail: { $first: "$customerEmail" },
+                shippingEmail: { $first: "$shippingAddress.email" },
+                shipFirst: { $first: "$shippingAddress.firstName" },
+                shipLast: { $first: "$shippingAddress.lastName" }
+              }
+            }
+          ],
+          meta: [{ $count: "totalItems" }]
+        }
+      }
+    ];
 
-    let totalOrders = 0;
-    let totalSpend = 0;
-    const normalizedOrders = orders.map((order) => {
-      const sellerItems = (order.items || []).filter((item) => (
-        String(item.sellerId) === String(sellerObjectId)
-      ));
-      if (!sellerItems.length) return null;
-      totalOrders += 1;
-      const amount = sellerItems.reduce((sum, item) => {
-        return sum + (Number(item.price) || 0) * (Number(item.quantity) || 0);
-      }, 0);
-      totalSpend += amount;
-      const itemsSummary = sellerItems.map((item) => item.name).filter(Boolean).join(", ");
+    const result = await Order.aggregate(pipeline);
+    const orders = result?.[0]?.orders || [];
+    const stats = result?.[0]?.stats?.[0] || null;
+    const totalItems = result?.[0]?.meta?.[0]?.totalItems || 0;
+    const totalPages = Math.max(1, Math.ceil(totalItems / limit));
 
-      return {
-        id: order.orderId || order._id,
-        date: order.createdAt,
-        items: itemsSummary || "Items",
-        amount,
-        status: String(order.status || "Processing").toUpperCase()
-      };
-    }).filter(Boolean);
+    if (!stats) {
+      return success(res, { customer: null, orders: [], pagination: { page, limit, totalItems, totalPages } });
+    }
 
-    const averageOrder = totalOrders ? Math.round(totalSpend / totalOrders) : 0;
+    const user = await User.findById(customerObjectId).select("name email");
+    const shipName = [stats.shipFirst, stats.shipLast].filter(Boolean).join(" ").trim();
+    const name = user?.name || shipName || stats.fallbackName || "Customer";
+    const email = user?.email || stats.fallbackEmail || stats.shippingEmail || "";
+    const averageOrder = stats.totalOrders ? Math.round((stats.totalSpend || 0) / stats.totalOrders) : 0;
 
     return success(res, {
       customer: {
         id: customerId,
         name,
         email,
-        totalOrders,
-        totalSpend,
+        totalOrders: stats.totalOrders || 0,
+        totalSpend: stats.totalSpend || 0,
         averageOrder
       },
-      orders: normalizedOrders
+      orders,
+      pagination: { page, limit, totalItems, totalPages }
     });
   } catch (err) { return error(res, err.message); }
 };

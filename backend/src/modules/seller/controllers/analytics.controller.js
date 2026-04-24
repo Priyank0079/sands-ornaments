@@ -1,18 +1,24 @@
 const Order = require("../../../models/Order");
-const Product = require("../../../models/Product");
+const mongoose = require("mongoose");
 const { success, error } = require("../../../utils/apiResponse");
 
 exports.getSalesTrend = async (req, res) => {
   try {
     const sellerId = req.user.userId;
-    const days = parseInt(req.query.days) || 30;
+    if (!mongoose.Types.ObjectId.isValid(String(sellerId || ""))) {
+      return error(res, "Invalid seller id", 400);
+    }
+    const sellerObjectId = new mongoose.Types.ObjectId(sellerId);
+
+    const rawDays = Number.parseInt(req.query.days, 10);
+    const days = Number.isFinite(rawDays) ? Math.min(Math.max(rawDays, 1), 365) : 30;
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
     const trend = await Order.aggregate([
-      { $match: { "items.sellerId": sellerId, paymentStatus: "paid", createdAt: { $gte: startDate } } },
+      { $match: { "items.sellerId": sellerObjectId, paymentStatus: "paid", createdAt: { $gte: startDate } } },
       { $unwind: "$items" },
-      { $match: { "items.sellerId": sellerId } },
+      { $match: { "items.sellerId": sellerObjectId } },
       {
         $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
@@ -30,10 +36,15 @@ exports.getSalesTrend = async (req, res) => {
 exports.getProductPerformance = async (req, res) => {
   try {
     const sellerId = req.user.userId;
+    if (!mongoose.Types.ObjectId.isValid(String(sellerId || ""))) {
+      return error(res, "Invalid seller id", 400);
+    }
+    const sellerObjectId = new mongoose.Types.ObjectId(sellerId);
+
     const performance = await Order.aggregate([
-      { $match: { "items.sellerId": sellerId, paymentStatus: "paid" } },
+      { $match: { "items.sellerId": sellerObjectId, paymentStatus: "paid" } },
       { $unwind: "$items" },
-      { $match: { "items.sellerId": sellerId } },
+      { $match: { "items.sellerId": sellerObjectId } },
       {
         $group: {
           _id: "$items.productId",

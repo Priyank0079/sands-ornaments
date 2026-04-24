@@ -15,7 +15,10 @@ import {
     RefreshCcw,
     AlertTriangle,
     Users,
-    UserCircle
+    UserCircle,
+    QrCode,
+    BarChart3,
+    Bell
 } from 'lucide-react';
 import logo from '@assets/sands-logo.png';
 import logoName from '@assets/sands-logoname.png';
@@ -24,6 +27,10 @@ import { sellerService } from '../services/sellerService';
 const SellerSidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     const location = useLocation();
     const navigate = useNavigate();
+
+    const isPathMatch = (pathname, targetPath) => (
+        pathname === targetPath || pathname.startsWith(`${targetPath}/`)
+    );
 
     const menuItems = [
         { name: 'Overview', icon: LayoutDashboard, path: '/seller/dashboard' },
@@ -52,14 +59,25 @@ const SellerSidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
         { name: 'Returns', icon: RotateCcw, path: '/seller/returns' },
         { name: 'Replacements', icon: RefreshCcw, path: '/seller/replacements' },
         { name: 'Customers', icon: Users, path: '/seller/customers' },
-        { name: 'Direct Sales', icon: ScanLine, path: '/seller/offline-sale' },
+        { name: 'Analytics', icon: BarChart3, path: '/seller/analytics' },
+        { name: 'Notifications', icon: Bell, path: '/seller/notifications' },
+        {
+            name: 'Direct Sales',
+            icon: ScanLine,
+            path: '/seller/offline-sale',
+            subItems: [
+                { name: 'Terminal', path: '/seller/offline-sale', icon: ScanLine },
+                { name: 'Scanner', path: '/seller/qr-scanner', icon: QrCode },
+                { name: 'History', path: '/seller/direct-sales', icon: List }
+            ]
+        },
         { name: 'Metal Pricing', icon: RefreshCcw, path: '/seller/metal-pricing' },
         { name: 'Profile', icon: UserCircle, path: '/seller/profile' }
     ];
 
     const [expandedMenu, setExpandedMenu] = useState(() => {
         const activeItem = menuItems.find(item =>
-            item.subItems?.some(sub => location.pathname === sub.path)
+            item.subItems?.some(sub => isPathMatch(location.pathname, sub.path))
         );
         return activeItem ? activeItem.name : null;
     });
@@ -107,7 +125,18 @@ const SellerSidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
             <div className="flex-1 min-h-0 overflow-y-auto sidebar-scroll bg-[#3E2723]">
                 <nav className="py-6 lg:py-4 px-4 lg:px-0 space-y-1 lg:space-y-0 pb-20">
                     {menuItems.map((item) => {
-                        const isActive = location.pathname === item.path || (item.subItems && location.pathname.startsWith(item.path));
+                        const relatedPrefixes = (() => {
+                            if (item.path === '/seller/orders') return ['/seller/order-details'];
+                            if (item.path === '/seller/returns') return ['/seller/return-details'];
+                            if (item.path === '/seller/replacements') return ['/seller/replacement-details'];
+                            if (item.path === '/seller/customers') return ['/seller/customer-details'];
+                            if (item.path === '/seller/direct-sales') return ['/seller/direct-sales'];
+                            return [];
+                        })();
+
+                        const isActive = isPathMatch(location.pathname, item.path)
+                            || relatedPrefixes.some((p) => location.pathname.startsWith(`${p}/`))
+                            || (item.subItems && item.subItems.some((sub) => isPathMatch(location.pathname, sub.path)));
                         const isExpanded = expandedMenu === item.name;
 
                         return (

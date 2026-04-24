@@ -35,7 +35,12 @@ const getTenGramRate = (payload = {}, rates = {}) => {
   if (material === "silver") {
     const silverCategory = normalizeString(payload.silverCategory);
     const silver10g = rates.silver10g || {};
-    const isSterling = silverCategory === "925 sterling silver";
+    const isSterling = (
+      silverCategory === "925" ||
+      silverCategory.startsWith("925 ") ||
+      silverCategory.includes("sterling") ||
+      silverCategory.includes("925 sterling")
+    );
     if (isSterling) return Number(silver10g.sterling925) || Number(rates.silverPerGram || 0) * 10;
     return Number(silver10g.silverOther) || Number(rates.silverPerGram || 0) * 10;
   }

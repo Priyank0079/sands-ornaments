@@ -9,12 +9,32 @@ const SellerReplacements = () => {
     const [replacements, setReplacements] = useState([]);
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [search, setSearch] = useState('');
+    const [status, setStatus] = useState('all');
+    const [page, setPage] = useState(1);
+    const [limit] = useState(10);
+    const [pagination, setPagination] = useState({ page: 1, limit: 10, totalItems: 0, totalPages: 1 });
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+
+    useEffect(() => {
+        const t = setTimeout(() => setDebouncedSearch(search), 300);
+        return () => clearTimeout(t);
+    }, [search]);
+
+    useEffect(() => {
+        setPage(1);
+    }, [debouncedSearch, status]);
 
     useEffect(() => {
         const fetchReplacements = async () => {
             try {
-                const data = await sellerOrderService.getReplacements();
-                setReplacements(data);
+                const params = { page, limit };
+                if (debouncedSearch) params.search = debouncedSearch;
+                if (status !== 'all') params.status = status;
+                const result = await sellerOrderService.getReplacementsPaged(params);
+                setReplacements(result.replacements || []);
+                setPagination(result.pagination || { page, limit, totalItems: (result.replacements || []).length, totalPages: 1 });
             } catch (err) {
                 toast.error('Unable to load seller replacements right now.');
             } finally {
@@ -22,17 +42,24 @@ const SellerReplacements = () => {
             }
         };
         fetchReplacements();
-    }, []);
+    }, [page, limit, debouncedSearch, status]);
 
     const handleAction = async (id, status) => {
+        if (isUpdating) return;
+        setIsUpdating(true);
         const res = await sellerOrderService.processReplacement(id, status);
         if (res.success) {
-            const data = await sellerOrderService.getReplacements();
-            setReplacements(data);
+            const params = { page, limit };
+            if (debouncedSearch) params.search = debouncedSearch;
+            if (status !== 'all') params.status = status;
+            const result = await sellerOrderService.getReplacementsPaged(params);
+            setReplacements(result.replacements || []);
+            setPagination(result.pagination || { page, limit, totalItems: (result.replacements || []).length, totalPages: 1 });
             toast.success(res.message || `Replacement ${status.toLowerCase()} successfully.`);
         } else {
             toast.error(res.message || 'Unable to process replacement right now.');
         }
+        setIsUpdating(false);
     };
 
     const columns = [
@@ -120,10 +147,41 @@ const SellerReplacements = () => {
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="p-4 md:p-6 border-b border-gray-100 bg-white flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
+                    <div className="flex-1">
+                        <input
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="Search by Replacement ID..."
+                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#8D6E63]/20"
+                        />
+                    </div>
+                    <div className="flex gap-2 flex-wrap">
+                        <select
+                            value={status}
+                            onChange={(e) => setStatus(e.target.value)}
+                            className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-3 text-xs font-black uppercase tracking-widest text-gray-700"
+                        >
+                            <option value="all">All Status</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Rejected">Rejected</option>
+                            <option value="Closed">Closed</option>
+                        </select>
+                    </div>
+                </div>
                 {loading ? (
                     <div className="px-6 py-20 text-center text-sm font-black uppercase tracking-widest text-gray-400">Loading replacement requests...</div>
                 ) : (
-                    <AdminTable columns={columns} data={replacements} emptyMessage="No replacement requests found" />
+                    <AdminTable
+                        columns={columns}
+                        data={replacements}
+                        emptyMessage="No replacement requests found"
+                        pagination={{
+                            ...pagination,
+                            onPageChange: (next) => setPage(next)
+                        }}
+                    />
                 )}
             </div>
         </div>

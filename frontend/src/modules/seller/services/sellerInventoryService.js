@@ -10,6 +10,19 @@ export const sellerInventoryService = {
       return [];
     }
   },
+  getInventoryPaged: async (params = {}) => {
+    try {
+      const res = await api.get('seller/inventory', { params });
+      const payload = res.data?.data || res.data || {};
+      return {
+        inventory: payload.inventory || [],
+        pagination: payload.pagination || null
+      };
+    } catch (err) {
+      console.error("Seller fetch inventory (paged) failed:", err);
+      return { inventory: [], pagination: null };
+    }
+  },
   adjustStock: async (payload) => {
     try {
       const res = await api.post('seller/inventory/adjust', payload);
@@ -28,6 +41,19 @@ export const sellerInventoryService = {
       return [];
     }
   },
+  getStockHistoryPaged: async (params = {}) => {
+    try {
+      const res = await api.get('seller/inventory/history', { params });
+      const payload = res.data?.data || res.data || {};
+      return {
+        logs: payload.logs || [],
+        pagination: payload.pagination || null
+      };
+    } catch (err) {
+      console.error("Seller fetch stock history (paged) failed:", err);
+      return { logs: [], pagination: null };
+    }
+  },
   getLowStockAlerts: async (params = {}) => {
     try {
       const res = await api.get('seller/inventory/alerts', { params });
@@ -35,6 +61,19 @@ export const sellerInventoryService = {
     } catch (err) {
       console.error("Seller fetch low stock alerts failed:", err);
       return [];
+    }
+  },
+  getLowStockAlertsPaged: async (params = {}) => {
+    try {
+      const res = await api.get('seller/inventory/alerts', { params });
+      const payload = res.data?.data || res.data || {};
+      return {
+        alerts: payload.alerts || [],
+        pagination: payload.pagination || null
+      };
+    } catch (err) {
+      console.error("Seller fetch low stock alerts (paged) failed:", err);
+      return { alerts: [], pagination: null };
     }
   },
   serializeStock: async (payload) => {

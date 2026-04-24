@@ -8,6 +8,7 @@ const Setting = require("../../../models/Setting");
 const { applyMetalPricingToProduct } = require("../../../utils/metalPricing");
 const { generateUniqueProductCode, generateVariantCode } = require("../../../utils/productIdentity");
 const { normalizeProductForResponse } = require("../../../utils/productCompatibility");
+const { consumeSerializedStock, isSerializedVariant } = require("../../../utils/inventorySync");
 
 // Seller update whitelist: prevent field injection (e.g., active/status toggles) via API.
 // Sellers can edit product content + variants + pricing inputs; lifecycle flags are admin-controlled.
@@ -520,9 +521,21 @@ exports.scanProduct = async (req, res) => {
       return error(res, "Product already sold", 400);
     }
 
-    const previousStock = variant.stock || 0;
-    codeEntry.status = "SOLD_OFFLINE";
-    variant.stock = Math.max(0, previousStock - 1);
+    const previousStock = Number(variant.stock) || 0;
+    if (isSerializedVariant(product, variant)) {
+      const variantIndex = product.variants.findIndex((v) => String(v._id) === String(variant._id));
+      consumeSerializedStock({
+        product,
+        variant,
+        quantity: 1,
+        variantIndex,
+        saleStatus: "SOLD_OFFLINE"
+      });
+    } else {
+      // Fallback: treat it as a single unit decrement.
+      codeEntry.status = "SOLD_OFFLINE";
+      variant.stock = Math.max(0, previousStock - 1);
+    }
 
     await product.save();
 

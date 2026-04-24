@@ -98,7 +98,17 @@ const SellerMetalPricing = () => {
         });
 
         if (res.success) {
-            toast.success('Metal pricing updated');
+            const summary = res.data?.updateSummary || res.updateSummary;
+            if (summary) {
+                const count = summary.modifiedProducts || summary.processedProducts || 0;
+                const variants = summary.processedVariants || 0;
+                toast.success(`Metal pricing updated. Repriced ${count} products (${variants} variants).`);
+                if (Array.isArray(summary.failedProductIds) && summary.failedProductIds.length > 0) {
+                    toast.error(`Some products could not be repriced (${summary.failedProductIds.length}).`);
+                }
+            } else {
+                toast.success('Metal pricing updated');
+            }
             const refresh = await sellerService.getMetalPricing();
             syncRates(refresh);
         } else {

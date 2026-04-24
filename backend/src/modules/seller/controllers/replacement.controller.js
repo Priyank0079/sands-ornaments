@@ -11,18 +11,60 @@ const buildSellerReplacementScope = async (sellerId) => {
   return products.map((product) => product._id);
 };
 
+const filterReplacementsToOwnedItemsOnly = (replacements = [], sellerProductIds = []) => {
+  const owned = new Set((sellerProductIds || []).map((id) => String(id)));
+  return (replacements || []).filter((rep) => {
+    const items = Array.isArray(rep?.originalItems) ? rep.originalItems : [];
+    if (items.length === 0) return false;
+    return items.every((it) => owned.has(String(it.productId)));
+  });
+};
+
 exports.getReplacements = async (req, res) => {
   try {
     const sellerId = req.user.userId;
     const sellerProductIds = await buildSellerReplacementScope(sellerId);
-    const replacements = sellerProductIds.length
-      ? await Replacement.find({ "originalItems.productId": { $in: sellerProductIds } })
-          .populate("userId", "name email phone")
-          .populate("orderId", "orderId total paymentStatus")
-          .sort({ createdAt: -1 })
-      : [];
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(Number(req.query.limit) || 10, 100);
+    const { status, search } = req.query;
 
-    return success(res, { replacements });
+    const query = sellerProductIds.length ? { "originalItems.productId": { $in: sellerProductIds } } : { _id: null };
+    if (status) {
+      query.status = String(status);
+    }
+    if (search) {
+      const escaped = String(search).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      query.$or = [
+        { replacementId: { $regex: escaped, $options: "i" } }
+      ];
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [replacementsRaw, totalRaw] = sellerProductIds.length
+      ? await Promise.all([
+          Replacement.find(query)
+            .populate("userId", "name email")
+            .populate("orderId", "orderId total paymentStatus")
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit),
+          Replacement.countDocuments(query)
+        ])
+      : [[], 0];
+
+    const replacements = filterReplacementsToOwnedItemsOnly(replacementsRaw, sellerProductIds);
+    const totalPages = Math.max(1, Math.ceil(totalRaw / limit));
+
+    return success(res, {
+      replacements,
+      pagination: {
+        page,
+        limit,
+        totalItems: totalRaw,
+        totalPages
+      }
+    });
   } catch (err) { return error(res, err.message); }
 };
 
@@ -32,11 +74,15 @@ exports.getReplacementDetail = async (req, res) => {
     const sellerProductIds = await buildSellerReplacementScope(sellerId);
     const replacementReq = sellerProductIds.length
       ? await Replacement.findOne({ _id: req.params.id, "originalItems.productId": { $in: sellerProductIds } })
-          .populate("userId", "name email phone")
+          .populate("userId", "name email")
           .populate("orderId", "orderId total paymentStatus shippingAddress")
       : null;
 
     if (!replacementReq) return error(res, "Replacement request not found", 404);
+
+    const ownedOnly = filterReplacementsToOwnedItemsOnly([replacementReq], sellerProductIds)[0] || null;
+    if (!ownedOnly) return error(res, "Replacement request not found", 404);
+
     return success(res, { replacementReq });
   } catch (err) { return error(res, err.message); }
 };
@@ -55,6 +101,9 @@ exports.processReplacement = async (req, res) => {
       ? await Replacement.findOne({ _id: req.params.id, "originalItems.productId": { $in: sellerProductIds } })
       : null;
     if (!replacementReq) return error(res, "Replacement request not found", 404);
+
+    const ownedOnly = filterReplacementsToOwnedItemsOnly([replacementReq], sellerProductIds)[0] || null;
+    if (!ownedOnly) return error(res, "Replacement request not found", 404);
 
     if (!SELLER_ACTIONABLE_STATUSES.includes(replacementReq.status)) {
       return error(res, `Seller can only process replacements in: ${SELLER_ACTIONABLE_STATUSES.join(", ")}`, 400);
@@ -90,7 +139,7 @@ exports.processReplacement = async (req, res) => {
     }
 
     const refreshed = await Replacement.findById(replacementReq._id)
-      .populate("userId", "name email phone")
+      .populate("userId", "name email")
       .populate("orderId", "orderId total paymentStatus shippingAddress");
 
     return success(res, { replacementReq: refreshed }, "Replacement request processed successfully");

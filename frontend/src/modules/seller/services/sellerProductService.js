@@ -1,11 +1,28 @@
 import api from '../../../services/api';
 
+const mapSerialStatusToLegacy = (status) => {
+  const normalized = String(status || '').toUpperCase();
+  if (normalized === 'SOLD_OFFLINE') return 'SOLD OFFLINE';
+  if (normalized === 'SOLD_ONLINE') return 'SOLD ONLINE';
+  if (normalized === 'SOLD ONLINE') return 'SOLD ONLINE';
+  if (normalized === 'SOLD OFFLINE') return 'SOLD OFFLINE';
+  return 'AVAILABLE';
+};
+
 const normalizeProduct = (product) => {
   if (!product) return null;
   const variants = product.variants || [];
   const totalStock = variants.reduce((sum, v) => sum + (Number(v.stock) || 0), 0);
   const totalSold = variants.reduce((sum, v) => sum + (Number(v.sold) || 0), 0);
   const firstCategory = Array.isArray(product.categories) ? product.categories[0] : null;
+  const serialCodes = variants.flatMap((v) => Array.isArray(v.serialCodes) ? v.serialCodes : []);
+  const barcodes = serialCodes
+    .filter((c) => c && (c.code || c.number))
+    .map((c) => ({
+      number: String(c.code || c.number || '').trim(),
+      status: mapSerialStatusToLegacy(c.status)
+    }))
+    .filter((c) => Boolean(c.number));
 
   return {
     id: product._id,
@@ -17,7 +34,7 @@ const normalizeProduct = (product) => {
     quantity: totalStock,
     availableStock: totalStock,
     soldItems: totalSold,
-    barcodes: product.barcodes || [],
+    barcodes,
     raw: product
   };
 };
@@ -46,9 +63,10 @@ export const sellerProductService = {
   },
   getSellerProducts: async () => {
     try {
-      const res = await api.get('seller/products');
-      const products = res.data?.data?.products || res.data?.products || [];
-      return products.map(normalizeProduct).filter(Boolean);
+      // Backward-compatible helper: fetch a single larger page to avoid silent truncation
+      // now that the backend endpoint is paginated by default.
+      const { products } = await sellerProductService.getSellerProductsPaged({ page: 1, limit: 100 });
+      return (products || []).map(normalizeProduct).filter(Boolean);
     } catch (err) {
       console.error("Failed to fetch seller products:", err);
       return [];
@@ -56,8 +74,9 @@ export const sellerProductService = {
   },
   getSellerProductsRaw: async () => {
     try {
-      const res = await api.get('seller/products');
-      return res.data?.data?.products || res.data?.products || [];
+      // Backward-compatible helper: fetch a single larger page to avoid silent truncation.
+      const { products } = await sellerProductService.getSellerProductsPaged({ page: 1, limit: 100 });
+      return products || [];
     } catch (err) {
       console.error("Failed to fetch seller products:", err);
       return [];
@@ -129,8 +148,13 @@ export const sellerProductService = {
       if (isOnline) {
          return { success: false, message: 'Online sales handled by storefront' };
       }
-      const res = await api.post('/seller/orders/offline', { barcodeNumber });
-      return res.data;
+      const res = await api.post('/seller/products/scan', { productCode: String(barcodeNumber || '').trim() });
+      const payload = res.data || {};
+      return {
+        success: payload.success === true,
+        message: payload.message || (payload.success ? 'Product sold successfully' : 'Failed to sell product'),
+        data: payload.data || null
+      };
     } catch (err) {
       return { 
         success: false, 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, User, LogOut, ShoppingBag, XCircle, RotateCcw, RefreshCw, AlertTriangle, CheckCircle2, Menu, ArrowLeft, QrCode } from 'lucide-react';
+import { Bell, User, LogOut, ShoppingBag, XCircle, RotateCcw, RefreshCw, AlertTriangle, CheckCircle2, Menu, ArrowLeft } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { sellerService } from '../services/sellerService';
 import { sellerOrderService } from '../services/sellerOrderService';
@@ -11,25 +11,34 @@ const SellerHeader = ({ isSidebarOpen, setIsSidebarOpen }) => {
     const [showNotifications, setShowNotifications] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     useEffect(() => {
         const refreshSeller = () => setSeller(sellerService.getCurrentSeller());
         refreshSeller();
         loadNotifications();
 
-        const interval = setInterval(loadNotifications, 5000);
+        // Production hardening: poll less frequently and avoid background-tab noise.
+        const interval = setInterval(loadNotifications, 30000);
         window.addEventListener('seller-profile-updated', refreshSeller);
+        const onVisibility = () => {
+            if (!document.hidden) loadNotifications();
+        };
+        document.addEventListener('visibilitychange', onVisibility);
         return () => {
             clearInterval(interval);
             window.removeEventListener('seller-profile-updated', refreshSeller);
+            document.removeEventListener('visibilitychange', onVisibility);
         };
     }, []);
 
     const loadNotifications = async () => {
-        const notifs = await sellerOrderService.getNotifications();
-        const safeList = Array.isArray(notifs) ? notifs : [];
+        if (typeof document !== 'undefined' && document.hidden) return;
+        const res = await sellerOrderService.getNotifications({ page: 1, limit: 20 });
+        const safeList = Array.isArray(res?.notifications) ? res.notifications : [];
         setNotifications(safeList);
-        setUnreadCount(safeList.filter(n => n.unread).length);
+        // Backend uses isRead; keep the UI stable by computing unread count here.
+        setUnreadCount(safeList.filter(n => !n?.isRead).length);
     };
 
     const handleLogout = () => {
@@ -39,8 +48,37 @@ const SellerHeader = ({ isSidebarOpen, setIsSidebarOpen }) => {
 
     const markRead = () => {
         sellerOrderService.markNotificationsRead();
+        // Optimistic UI update: treat all as read right away.
+        setNotifications((prev) => (Array.isArray(prev) ? prev.map((n) => ({ ...n, isRead: true })) : prev));
         setUnreadCount(0);
         setShowNotifications(!showNotifications);
+    };
+
+    const handleNotificationClick = async (notification) => {
+        if (!notification) return;
+        const id = notification._id || notification.id;
+        const link = notification.link;
+
+        // Optimistic: mark this one as read locally
+        setNotifications((prev) => {
+            const list = Array.isArray(prev) ? prev : [];
+            return list.map((n) => {
+                const nid = n?._id || n?.id;
+                if (String(nid) !== String(id)) return n;
+                return { ...n, isRead: true };
+            });
+        });
+        setUnreadCount((c) => Math.max(0, Number(c || 0) - (notification?.isRead ? 0 : 1)));
+
+        // Best-effort: persist read state
+        if (id && !notification?.isRead) {
+            await sellerOrderService.markNotificationRead(id);
+        }
+
+        setShowNotifications(false);
+        if (link && typeof link === 'string') {
+            navigate(link);
+        }
     };
 
     const getIcon = (type) => {
@@ -51,6 +89,15 @@ const SellerHeader = ({ isSidebarOpen, setIsSidebarOpen }) => {
             case 'REPLACEMENT': return <RefreshCw className="text-violet-500" size={16} />;
             case 'STOCK': return <AlertTriangle className="text-purple-500" size={16} />;
             default: return <Bell className="text-gray-400" size={16} />;
+        }
+    };
+
+    const handleManualRefresh = async () => {
+        try {
+            setIsRefreshing(true);
+            await loadNotifications();
+        } finally {
+            setIsRefreshing(false);
         }
     };
 
@@ -96,18 +143,6 @@ const SellerHeader = ({ isSidebarOpen, setIsSidebarOpen }) => {
             </div>
 
             <div className="flex items-center gap-4 lg:gap-6">
-                {/* Terminal Scanner */}
-                <div className="relative">
-                    <button 
-                        onClick={() => navigate('/scanner')}
-                        className="relative p-2.5 hover:bg-gray-50 rounded-xl transition-all border border-gray-100 shadow-sm group bg-amber-50/30 border-amber-100/50"
-                        title="Terminal Scanner"
-                    >
-                        <QrCode className="w-5 h-5 text-amber-700 group-hover:scale-110 transition-transform" />
-                        <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-500 rounded-full border-2 border-white shadow-sm animate-pulse"></span>
-                    </button>
-                </div>
-
                 {/* Notification Bell */}
                 <div className="relative">
                     <button 
@@ -134,19 +169,46 @@ const SellerHeader = ({ isSidebarOpen, setIsSidebarOpen }) => {
                                     </button>
                                     <h4 className="text-[10px] font-black text-gray-900 uppercase tracking-widest leading-none">Activity Stream</h4>
                                 </div>
-                                <span className="text-[8px] font-bold text-[#8D6E63] uppercase tracking-widest leading-none">{unreadCount} New Update</span>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={handleManualRefresh}
+                                        className="p-1.5 hover:bg-gray-50 rounded-lg text-gray-400 hover:text-gray-900 transition-all"
+                                        title="Refresh"
+                                    >
+                                        <RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setShowNotifications(false);
+                                            navigate('/seller/notifications');
+                                        }}
+                                        className="text-[8px] font-black text-[#8D6E63] uppercase tracking-widest leading-none hover:underline"
+                                        title="View all notifications"
+                                    >
+                                        View All
+                                    </button>
+                                </div>
                             </div>
                             <div className="max-h-[300px] overflow-y-auto sidebar-scroll">
                                 {notifications.length > 0 ? (
                                     notifications.map((n, i) => (
-                                        <div key={i} className="px-6 py-4 hover:bg-gray-50 transition-all border-b border-gray-50 last:border-0 flex gap-4 items-start">
+                                        <button
+                                            type="button"
+                                            key={n?._id || n?.id || i}
+                                            onClick={() => handleNotificationClick(n)}
+                                            className="w-full text-left px-6 py-4 hover:bg-gray-50 transition-all border-b border-gray-50 last:border-0 flex gap-4 items-start"
+                                        >
                                             <div className="p-2 bg-gray-50 rounded-lg shrink-0">{getIcon(n.type)}</div>
                                             <div className="space-y-1">
                                                 <p className="text-[10px] font-black text-gray-900 uppercase leading-snug">{n.title}</p>
                                                 <p className="text-[9px] font-bold text-gray-400 uppercase leading-relaxed">{n.message}</p>
-                                                <p className="text-[8px] font-medium text-gray-300 mt-1 uppercase tracking-tighter">{new Date(n.date).toLocaleTimeString()}</p>
+                                                <p className="text-[8px] font-medium text-gray-300 mt-1 uppercase tracking-tighter">
+                                                    {new Date(n.createdAt || n.date || Date.now()).toLocaleTimeString()}
+                                                </p>
                                             </div>
-                                        </div>
+                                        </button>
                                     ))
                                 ) : (
                                     <div className="p-12 text-center space-y-3">

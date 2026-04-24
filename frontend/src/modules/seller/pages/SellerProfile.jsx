@@ -105,12 +105,38 @@ const SellerProfile = () => {
             toast.error('Full name, shop name, email, and mobile number are required');
             return;
         }
+        if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(normalizedProfile.email)) {
+            toast.error('Enter a valid email address');
+            return;
+        }
         if (normalizedProfile.mobileNumber.length !== 10) {
             toast.error('Enter a valid 10-digit mobile number');
             return;
         }
         if (normalizedProfile.pincode && normalizedProfile.pincode.length !== 6) {
             toast.error('Enter a valid 6-digit pincode');
+            return;
+        }
+        if (normalizedProfile.gstNumber && !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(normalizedProfile.gstNumber)) {
+            toast.error('Enter a valid GST number');
+            return;
+        }
+        if (normalizedProfile.panNumber && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(normalizedProfile.panNumber)) {
+            toast.error('Enter a valid PAN number');
+            return;
+        }
+        const acc = normalizedProfile.bankAccount.accountNumber;
+        const ifsc = normalizedProfile.bankAccount.ifscCode;
+        if ((acc && !ifsc) || (!acc && ifsc)) {
+            toast.error('Enter both account number and IFSC code');
+            return;
+        }
+        if (acc && (acc.length < 9 || acc.length > 18)) {
+            toast.error('Enter a valid bank account number');
+            return;
+        }
+        if (ifsc && !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc)) {
+            toast.error('Enter a valid IFSC code');
             return;
         }
 

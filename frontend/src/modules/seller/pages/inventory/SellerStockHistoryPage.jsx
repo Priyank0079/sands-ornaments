@@ -8,12 +8,26 @@ const SellerStockHistoryPage = () => {
     const [filterType, setFilterType] = useState('All');
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(1);
+    const [limit] = useState(25);
+    const [pagination, setPagination] = useState(null);
 
     useEffect(() => {
         const loadHistory = async () => {
             setLoading(true);
             try {
-                const logs = await sellerInventoryService.getStockHistory();
+                const changeType = filterType === 'Adjustment'
+                    ? 'adjustment'
+                    : (filterType === 'Order' ? 'sale' : (filterType === 'Return' ? 'return' : undefined));
+
+                const result = await sellerInventoryService.getStockHistoryPaged({
+                    page,
+                    limit,
+                    ...(changeType ? { changeType } : {}),
+                    ...(searchTerm ? { search: searchTerm } : {})
+                });
+
+                const logs = result?.logs || [];
                 const normalized = (logs || []).map(log => ({
                     id: log._id,
                     date: log.createdAt,
@@ -34,14 +48,20 @@ const SellerStockHistoryPage = () => {
                     reason: log.reason || ''
                 }));
                 setHistory(normalized);
+                setPagination(result?.pagination || null);
             } catch (err) {
                 toast.error("Failed to load stock history");
             } finally {
                 setLoading(false);
             }
         };
-        loadHistory();
-    }, []);
+        const t = setTimeout(loadHistory, 250);
+        return () => clearTimeout(t);
+    }, [page, limit, filterType, searchTerm]);
+
+    useEffect(() => {
+        setPage(1);
+    }, [filterType, searchTerm]);
 
     const getTypeStyle = (type) => {
         switch (type) {
@@ -226,6 +246,30 @@ const SellerStockHistoryPage = () => {
                     </table>
                 </div>
             </div>
+
+            {pagination?.pages > 1 && (
+                <div className="flex items-center justify-between gap-3">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                        Page {pagination.page} of {pagination.pages} ({pagination.total} logs)
+                    </p>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => setPage((p) => Math.max(1, p - 1))}
+                            disabled={page <= 1 || loading}
+                            className="px-3 py-2 rounded-lg border border-gray-200 bg-white text-gray-600 text-[10px] font-black uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Prev
+                        </button>
+                        <button
+                            onClick={() => setPage((p) => Math.min(pagination.pages, p + 1))}
+                            disabled={page >= pagination.pages || loading}
+                            className="px-3 py-2 rounded-lg border border-gray-200 bg-white text-gray-600 text-[10px] font-black uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Next
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -9,20 +9,27 @@ const SellerCustomerDetail = () => {
     const navigate = useNavigate();
     const [customer, setCustomer] = useState(null);
     const [orders, setOrders] = useState([]);
+    const [pagination, setPagination] = useState(null);
+    const [page, setPage] = useState(1);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         let active = true;
         const loadCustomer = async () => {
-            const data = await sellerCustomerService.getCustomerDetails(id);
+            setLoading(true);
+            const data = await sellerCustomerService.getCustomerDetailsPaged(id, { page, limit: 10 });
             if (!active) return;
             setCustomer(data.customer);
             setOrders(data.orders || []);
+            setPagination(data.pagination || null);
+            setLoading(false);
         };
         loadCustomer();
         return () => { active = false; };
-    }, [id]);
+    }, [id, page]);
 
-    if (!customer) return <div className="p-20 text-center text-gray-400 font-black uppercase tracking-widest">Client Not Found</div>;
+    if (!customer && !loading) return <div className="p-20 text-center text-gray-400 font-black uppercase tracking-widest">Client Not Found</div>;
+    if (!customer && loading) return <div className="p-20 text-center text-gray-400 font-black uppercase tracking-widest">Loading...</div>;
 
     const stats = [
         { label: 'Total Acquisitions', value: customer.totalOrders || 0, icon: ShoppingBag, color: 'text-blue-600', bg: 'bg-blue-50' },
@@ -135,7 +142,15 @@ const SellerCustomerDetail = () => {
                                 <Calendar size={14} className="text-[#3E2723]" /> Historic Acquisitions
                             </h3>
                         </div>
-                        <AdminTable columns={columns} data={orders} emptyMessage="No orders found" />
+                        <AdminTable
+                            columns={columns}
+                            data={orders}
+                            emptyMessage={loading ? "Loading orders..." : "No orders found"}
+                            pagination={pagination ? {
+                                ...pagination,
+                                onPageChange: (nextPage) => setPage(nextPage)
+                            } : undefined}
+                        />
                     </div>
                 </div>
             </div>

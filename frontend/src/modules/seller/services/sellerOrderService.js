@@ -78,10 +78,25 @@ const normalizeReplacement = (replacementReq) => {
 };
 
 export const sellerOrderService = {
+    getSellerOrdersPaged: async (params = {}) => {
+        const res = await api.get('seller/orders', { params });
+        const payload = res.data?.data || {};
+        const orders = payload.orders || [];
+        return {
+            orders: orders.map(mapSellerOrder),
+            pagination: payload.pagination || {
+                page: Number(params.page || 1),
+                limit: Number(params.limit || 10),
+                totalItems: orders.length,
+                totalPages: 1
+            }
+        };
+    },
+
     getSellerOrders: async () => {
-        const res = await api.get('seller/orders');
-        const orders = res.data?.data?.orders || [];
-        return orders.map(mapSellerOrder);
+        // Backward-compatible helper now that backend is paginated by default.
+        const { orders } = await sellerOrderService.getSellerOrdersPaged({ page: 1, limit: 100 });
+        return orders;
     },
 
     getOrderDetails: async (id) => {
@@ -109,12 +124,31 @@ export const sellerOrderService = {
 
     getReturns: async () => {
         try {
-            const res = await api.get('seller/returns');
-            const returns = res.data?.data?.returns || res.data?.returns || [];
-            return returns.map(normalizeReturn).filter(Boolean);
+            const { returns } = await sellerOrderService.getReturnsPaged({ page: 1, limit: 100 });
+            return returns;
         } catch (err) {
             console.error('Failed to fetch return requests:', err);
             return [];
+        }
+    },
+
+    getReturnsPaged: async (params = {}) => {
+        try {
+            const res = await api.get('seller/returns', { params });
+            const payload = res.data?.data || {};
+            const list = payload.returns || res.data?.returns || [];
+            return {
+                returns: list.map(normalizeReturn).filter(Boolean),
+                pagination: payload.pagination || {
+                    page: Number(params.page || 1),
+                    limit: Number(params.limit || 10),
+                    totalItems: list.length,
+                    totalPages: 1
+                }
+            };
+        } catch (err) {
+            console.error('Failed to fetch return requests:', err);
+            return { returns: [], pagination: { page: 1, limit: Number(params.limit || 10), totalItems: 0, totalPages: 1 } };
         }
     },
 
@@ -141,12 +175,31 @@ export const sellerOrderService = {
 
     getReplacements: async () => {
         try {
-            const res = await api.get('seller/replacements');
-            const replacements = res.data?.data?.replacements || res.data?.replacements || [];
-            return replacements.map(normalizeReplacement).filter(Boolean);
+            const { replacements } = await sellerOrderService.getReplacementsPaged({ page: 1, limit: 100 });
+            return replacements;
         } catch (err) {
             console.error('Failed to fetch replacement requests:', err);
             return [];
+        }
+    },
+
+    getReplacementsPaged: async (params = {}) => {
+        try {
+            const res = await api.get('seller/replacements', { params });
+            const payload = res.data?.data || {};
+            const list = payload.replacements || res.data?.replacements || [];
+            return {
+                replacements: list.map(normalizeReplacement).filter(Boolean),
+                pagination: payload.pagination || {
+                    page: Number(params.page || 1),
+                    limit: Number(params.limit || 10),
+                    totalItems: list.length,
+                    totalPages: 1
+                }
+            };
+        } catch (err) {
+            console.error('Failed to fetch replacement requests:', err);
+            return { replacements: [], pagination: { page: 1, limit: Number(params.limit || 10), totalItems: 0, totalPages: 1 } };
         }
     },
 
@@ -171,22 +224,37 @@ export const sellerOrderService = {
         }
     },
 
-    getNotifications: async () => {
+    getNotifications: async (params = {}) => {
         try {
-            const res = await api.get('user/notifications');
-            return res.data?.data?.notifications || res.data?.notifications || [];
+            const res = await api.get('seller/notifications', { params });
+            const data = res.data?.data || res.data;
+            return {
+                notifications: data?.notifications || [],
+                pagination: data?.pagination || null,
+            };
         } catch (err) {
             console.error('Failed to fetch notifications:', err);
-            return [];
+            return { notifications: [], pagination: null };
         }
     },
 
     markNotificationsRead: async () => {
         try {
-            await api.patch('user/notifications/read-all');
+            await api.patch('seller/notifications/read-all');
             return true;
         } catch (err) {
             console.error('Failed to mark notifications as read:', err);
+            return false;
+        }
+    },
+
+    markNotificationRead: async (notificationId) => {
+        try {
+            if (!notificationId) return false;
+            await api.patch(`seller/notifications/${notificationId}/read`);
+            return true;
+        } catch (err) {
+            console.error('Failed to mark notification as read:', err);
             return false;
         }
     }

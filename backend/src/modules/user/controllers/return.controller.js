@@ -3,6 +3,7 @@ const Replacement = require("../../../models/Replacement");
 const Order = require("../../../models/Order");
 const { generateReturnId } = require("../../../utils/generateId");
 const { success, error } = require("../../../utils/apiResponse");
+const { createSellerNotification } = require("../../../services/sellerNotificationService");
 
 exports.requestReturn = async (req, res) => {
   try {
@@ -57,6 +58,18 @@ exports.requestReturn = async (req, res) => {
       date: new Date()
     });
     await order.save();
+
+    // Notify seller (if this item belongs to a seller listing).
+    if (item?.sellerId) {
+      await createSellerNotification({
+        sellerId: item.sellerId,
+        title: "Return requested",
+        message: `Return requested for order ${order.orderId || order._id}. Item: ${item.name || "Order item"}.`,
+        type: "RETURN",
+        priority: "High",
+        link: `/seller/return-details/${returnRequest._id}`
+      });
+    }
 
     return success(res, { returnRequest }, "Return requested successfully", 201);
   } catch (err) { return error(res, err.message); }

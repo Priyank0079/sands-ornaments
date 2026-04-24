@@ -3,6 +3,7 @@ const Return = require("../../../models/Return");
 const Order = require("../../../models/Order");
 const { generateReplacementId } = require("../../../utils/generateId");
 const { success, error } = require("../../../utils/apiResponse");
+const { createSellerNotification } = require("../../../services/sellerNotificationService");
 
 exports.requestReplacement = async (req, res) => {
   try {
@@ -54,6 +55,18 @@ exports.requestReplacement = async (req, res) => {
       date: new Date()
     });
     await order.save();
+
+    // Notify seller (if this item belongs to a seller listing).
+    if (item?.sellerId) {
+      await createSellerNotification({
+        sellerId: item.sellerId,
+        title: "Replacement requested",
+        message: `Replacement requested for order ${order.orderId || order._id}. Item: ${item.name || "Order item"}.`,
+        type: "REPLACEMENT",
+        priority: "High",
+        link: `/seller/replacement-details/${replacement._id}`
+      });
+    }
 
     return success(res, { replacement }, "Replacement requested successfully", 201);
   } catch (err) { return error(res, err.message); }

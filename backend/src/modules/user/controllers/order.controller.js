@@ -6,6 +6,8 @@ const StockLog = require("../../../models/StockLog");
 const { generateOrderId } = require("../../../utils/generateId");
 const { success, error } = require("../../../utils/apiResponse");
 const razorpay = require("../../../config/razorpay");
+const Notification = require("../../../models/Notification");
+const { notifySellerLowStock, DEFAULT_LOW_STOCK_THRESHOLD } = require("../../../services/sellerNotificationService");
 const {
   isSerializedVariant,
   consumeSerializedStock,
@@ -113,6 +115,19 @@ const deductStockForOrder = async (orderItems, orderId, userId) => {
 
     variant.sold = (Number(variant.sold) || 0) + quantity;
     await product.save();
+
+    // Low stock notification (best-effort, de-duped).
+    if (item?.sellerId) {
+      await notifySellerLowStock({
+        sellerId: item.sellerId,
+        productId: product._id,
+        variantId: variant._id,
+        productName: product.name,
+        variantName: variant.name,
+        currentStock: Number(variant.stock) || 0,
+        threshold: DEFAULT_LOW_STOCK_THRESHOLD
+      });
+    }
 
     await StockLog.create({
       productId: item.productId,
@@ -229,6 +244,31 @@ exports.placeOrder = async (req, res) => {
     }
 
     const order = await Order.create(orderData);
+
+    // Notify sellers involved in this order (seller panel bell).
+    // For Razorpay orders, this is "order placed" (payment may still be pending).
+    // For COD orders, this is also the correct moment (order is created and can be fulfilled).
+    const sellerCounts = new Map();
+    for (const item of orderItems) {
+      const sid = item?.sellerId ? String(item.sellerId) : "";
+      if (!sid) continue;
+      sellerCounts.set(sid, (sellerCounts.get(sid) || 0) + (Number(item.quantity) || 0));
+    }
+    if (sellerCounts.size > 0) {
+      const sellerOrderLink = `/seller/order-details/${order._id}`;
+      const docs = Array.from(sellerCounts.entries()).map(([sid, qty]) => ({
+        sellerId: sid,
+        title: "New order received",
+        message: `Order ${order.orderId} placed (${qty} item${qty === 1 ? "" : "s"}).`,
+        type: "ORDER",
+        priority: "Medium",
+        link: sellerOrderLink,
+        isBroadcast: false,
+        isRead: false
+      }));
+      // Best-effort; don't block checkout if notification insert fails
+      try { await Notification.insertMany(docs); } catch (e) { /* ignore */ }
+    }
 
     // 5. Deduct Stock immediately ONLY for COD (cash is guaranteed)
     //    For Razorpay, stock is deducted inside verifyPayment after signature check.

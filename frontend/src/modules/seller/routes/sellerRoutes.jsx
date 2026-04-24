@@ -6,6 +6,9 @@ import SellerProducts from '../pages/SellerProducts';
 import SellerProductEditor from '../pages/SellerProductEditor';
 import ProductBarcodes from '../pages/ProductBarcodes';
 import OfflineSale from '../pages/OfflineSale';
+import QrScannerPage from '../pages/QrScannerPage';
+import SellerDirectSales from '../pages/SellerDirectSales';
+import SellerDirectSaleDetail from '../pages/SellerDirectSaleDetail';
 import SellerLogin from '../pages/SellerLogin';
 import SellerRegister from '../pages/SellerRegister';
 import SellerOrders from '../pages/SellerOrders';
@@ -19,12 +22,14 @@ import SellerCustomerDetail from '../pages/SellerCustomerDetail';
 import SellerProfile from '../pages/SellerProfile';
 import SellerMetalPricing from '../pages/SellerMetalPricing';
 import SellerInventory from '../pages/SellerInventory';
+import SellerNotifications from '../pages/SellerNotifications';
 import SellerStockAdjustmentPage from '../pages/inventory/SellerStockAdjustmentPage';
 import SellerStockHistoryPage from '../pages/inventory/SellerStockHistoryPage';
 import SellerLowStockAlertsPage from '../pages/inventory/SellerLowStockAlertsPage';
 import SellerInventoryReportsPage from '../pages/inventory/SellerInventoryReportsPage';
 import { ShieldAlert } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
+import SellerAnalytics from '../pages/SellerAnalytics';
 
 // Protected Route Component for Seller
 const SellerProtectedRoute = ({ children }) => {
@@ -82,6 +87,9 @@ const SellerRoutes = () => {
                             <Route path="/products/view/:id" element={<SellerProductEditor />} />
                             <Route path="/product-barcodes/:id" element={<ProductBarcodes />} />
                             <Route path="/offline-sale" element={<OfflineSale />} />
+                            <Route path="/qr-scanner" element={<QrScannerPage />} />
+                            <Route path="/direct-sales" element={<SellerDirectSales />} />
+                            <Route path="/direct-sales/:id" element={<SellerDirectSaleDetail />} />
                             <Route path="/inventory" element={<SellerInventory />} />
                             <Route path="/inventory/adjust" element={<SellerStockAdjustmentPage />} />
                             <Route path="/inventory/history" element={<SellerStockHistoryPage />} />
@@ -95,6 +103,8 @@ const SellerRoutes = () => {
                             <Route path="/replacement-details/:id" element={<SellerReplacementDetail />} />
                             <Route path="/customers" element={<SellerCustomers />} />
                             <Route path="/customer-details/:id" element={<SellerCustomerDetail />} />
+                            <Route path="/analytics" element={<SellerAnalytics />} />
+                            <Route path="/notifications" element={<SellerNotifications />} />
                             <Route path="/profile" element={<SellerProfile />} />
                             <Route path="/metal-pricing" element={<SellerMetalPricing />} />
                             <Route path="/" element={<Navigate to="/seller/dashboard" replace />} />
