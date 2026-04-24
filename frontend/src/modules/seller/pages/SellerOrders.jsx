@@ -20,12 +20,30 @@ const SellerOrders = () => {
     const navigate = useNavigate();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [search, setSearch] = useState('');
+    const [status, setStatus] = useState('all');
+    const [paymentStatus, setPaymentStatus] = useState('all');
+    const [page, setPage] = useState(1);
+    const [limit] = useState(10);
+    const [pagination, setPagination] = useState({ page: 1, limit: 10, totalItems: 0, totalPages: 1 });
+
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+    useEffect(() => {
+        const t = setTimeout(() => setDebouncedSearch(search), 300);
+        return () => clearTimeout(t);
+    }, [search]);
 
     const loadOrders = async () => {
         setLoading(true);
         try {
-            const data = await sellerOrderService.getSellerOrders();
-            setOrders(data);
+            const params = { page, limit };
+            if (debouncedSearch) params.search = debouncedSearch;
+            if (status !== 'all') params.status = status;
+            if (paymentStatus !== 'all') params.paymentStatus = paymentStatus;
+
+            const result = await sellerOrderService.getSellerOrdersPaged(params);
+            setOrders(result.orders || []);
+            setPagination(result.pagination || { page, limit, totalItems: (result.orders || []).length, totalPages: 1 });
         } catch (err) {
             toast.error('Unable to load seller orders right now.');
             setOrders([]);
@@ -36,7 +54,11 @@ const SellerOrders = () => {
 
     useEffect(() => {
         loadOrders();
-    }, []);
+    }, [page, limit, debouncedSearch, status, paymentStatus]);
+
+    useEffect(() => {
+        setPage(1);
+    }, [debouncedSearch, status, paymentStatus]);
 
     const handleAction = async (orderId, status) => {
         const res = await sellerOrderService.updateOrderStatus(orderId, status);
@@ -172,10 +194,54 @@ const SellerOrders = () => {
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="p-4 md:p-6 border-b border-gray-100 bg-white flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
+                    <div className="flex-1">
+                        <input
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="Search by order id, customer name, email, phone..."
+                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#8D6E63]/20"
+                        />
+                    </div>
+                    <div className="flex gap-2 flex-wrap">
+                        <select
+                            value={status}
+                            onChange={(e) => setStatus(e.target.value)}
+                            className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-3 text-xs font-black uppercase tracking-widest text-gray-700"
+                        >
+                            <option value="all">All Status</option>
+                            <option value="Processing">Processing</option>
+                            <option value="Confirmed">Confirmed</option>
+                            <option value="Packed">Packed</option>
+                            <option value="Shipped">Shipped</option>
+                            <option value="Delivered">Delivered</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                        <select
+                            value={paymentStatus}
+                            onChange={(e) => setPaymentStatus(e.target.value)}
+                            className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-3 text-xs font-black uppercase tracking-widest text-gray-700"
+                        >
+                            <option value="all">All Payments</option>
+                            <option value="pending">Pending</option>
+                            <option value="paid">Paid</option>
+                            <option value="cod">COD</option>
+                            <option value="failed">Failed</option>
+                            <option value="refunded">Refunded</option>
+                        </select>
+                    </div>
+                </div>
                 {loading ? (
                     <div className="p-12 text-center text-gray-400 font-black uppercase tracking-widest">Loading seller orders...</div>
                 ) : (
-                    <AdminTable columns={columns} data={orders} />
+                    <AdminTable
+                        columns={columns}
+                        data={orders}
+                        pagination={{
+                            ...pagination,
+                            onPageChange: (next) => setPage(next)
+                        }}
+                    />
                 )}
             </div>
         </div>

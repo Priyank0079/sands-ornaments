@@ -6,14 +6,14 @@ import { ShopContext } from '../../../../context/ShopContext';
 import toast from 'react-hot-toast';
 import { buildFamilyShopPath } from '../../utils/familyNavigation';
 
-import fProd1 from '../../assets/nav_gift_kids.png';
-import fProd2 from '../../assets/nav_gift_women.png';
-import fProd3 from '../../assets/nav_gift_couple.png';
-import fProd4 from '../../assets/nav_gift_kids.png';
-import fProd5 from '../../assets/cat_anklets.png';
-import fProd6 from '../../assets/nav_gift_kids.png';
-import fProd7 from '../../assets/trending_heritage.png';
-import fProd8 from '../../assets/nav_gift_girls.png';
+import fProd1 from '@assets/nav_gift_kids.png';
+import fProd2 from '@assets/nav_gift_women.png';
+import fProd3 from '@assets/nav_gift_couple.png';
+import fProd4 from '@assets/nav_gift_kids.png';
+import fProd5 from '@assets/cat_anklets.png';
+import fProd6 from '@assets/nav_gift_kids.png';
+import fProd7 from '@assets/trending_heritage.png';
+import fProd8 from '@assets/nav_gift_girls.png';
 
 const familyProducts = [
     {
@@ -264,3 +264,4 @@ const FamilyProductsListing = () => {
 };
 
 export default FamilyProductsListing;
+

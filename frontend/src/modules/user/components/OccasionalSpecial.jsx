@@ -1,12 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
-import haldiImgDefault from '../assets/home_occasions/home_haldi.png';
-import sangeetImgDefault from '../assets/home_occasions/home_sangeet.png';
-import receptionImgDefault from '../assets/home_occasions/home_reception.png';
-import bridalImgDefault from '../assets/home_occasions/home_gift_for_bride.png';
-import bridesmaidImgDefault from '../assets/home_occasions/home_gift_for_bridesmaid.png';
+import haldiImgDefault from '@assets/home_occasions/home_haldi.png';
+import sangeetImgDefault from '@assets/home_occasions/home_sangeet.png';
+import receptionImgDefault from '@assets/home_occasions/home_reception.png';
+import bridalImgDefault from '@assets/home_occasions/home_gift_for_bride.png';
+import bridesmaidImgDefault from '@assets/home_occasions/home_gift_for_bridesmaid.png';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
+import { ensureSilverHomePath } from '../utils/silverHomePaths';
 
 const OccasionalSpecial = () => {
     const { homepageSections } = useShop();
@@ -14,24 +15,25 @@ const OccasionalSpecial = () => {
 
     // Default categories if none managed
     const defaultCategories = [
-        { id: 'haldi', name: 'Haldi', image: haldiImgDefault, path: '/shop?occasion=haldi' },
-        { id: 'sangeet', name: 'Sangeet', image: sangeetImgDefault, path: '/shop?occasion=sangeet' },
-        { id: 'reception', name: 'Reception', image: receptionImgDefault, path: '/shop?occasion=reception' },
-        { id: 'bridal', name: 'Gift for Bride', image: bridalImgDefault, path: '/shop?occasion=gift%20for%20bride' },
-        { id: 'bridesmaids', name: 'Gift for Bridesmaid', image: bridesmaidImgDefault, path: '/shop?occasion=gift%20for%20bridesmaid' },
+        // Legacy "?occasion=" filtering has been retired. Fall back to safe search-based links.
+        { id: 'haldi', name: 'Haldi', image: haldiImgDefault, path: '/shop?search=haldi' },
+        { id: 'sangeet', name: 'Sangeet', image: sangeetImgDefault, path: '/shop?search=sangeet' },
+        { id: 'reception', name: 'Reception', image: receptionImgDefault, path: '/shop?search=reception' },
+        { id: 'bridal', name: 'Gift for Bride', image: bridalImgDefault, path: '/shop?search=bride' },
+        { id: 'bridesmaids', name: 'Gift for Bridesmaid', image: bridesmaidImgDefault, path: '/shop?search=bridesmaid' },
     ];
 
     const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
 
     const buildPath = (item, fallback) => {
         if (!item) return fallback?.path || '/shop';
-        if (typeof item.path === 'string' && item.path.trim()) return item.path;
+        if (typeof item.path === 'string' && item.path.trim()) return ensureSilverHomePath(item.path);
         const productIds = Array.isArray(item.productIds) ? item.productIds : [];
         const limit = item.limit ? Number(item.limit) : 12;
         if (productIds.length > 0) {
-            return `/shop?products=${encodeURIComponent(productIds.join(','))}&limit=${limit}&sort=random`;
+            return ensureSilverHomePath(`/shop?products=${encodeURIComponent(productIds.join(','))}&limit=${limit}&sort=random`);
         }
-        return fallback?.path || `/shop?limit=${limit}&sort=random`;
+        return ensureSilverHomePath(fallback?.path || `/shop?limit=${limit}&sort=random`);
     };
 
     const normalizedConfiguredItems = configuredItems.map((item, index) => {
@@ -174,3 +176,4 @@ const OccasionalSpecial = () => {
 };
 
 export default OccasionalSpecial;
+

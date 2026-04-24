@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, Heart, ShoppingCart, User, Menu, X, ChevronDown } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
-import logo from '../../user/assets/SANDS JEWELS PINK (1).png';
+import logo from '@assets/SANDS JEWELS PINK (1).png';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Navbar = () => {
@@ -227,14 +227,14 @@ const Navbar = () => {
                                     <Link to="/category/men" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Gifts for Him</Link>
                                     <Link to="/category/women" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Gifts for Her</Link>
                                     <Link to="/category/family" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Gifts for Family</Link>
-                                    <Link to="/shop?filter=exclusive" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Exclusive Collections</Link>
+                                    <Link to="/shop?search=exclusive" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Exclusive Collections</Link>
                                 </div>
 
                                 <hr className="border-gray-100" />
                                 
                                 <div className="flex flex-col gap-3">
                                     <span className="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">More at Sands</span>
-                                    <Link to="/shop?filter=gift" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Gift Store</Link>
+                                    <Link to="/shop?search=gift" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Gift Store</Link>
                                     <Link to="/about" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>About Us</Link>
                                 </div>
                             </nav>
@@ -247,3 +247,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+

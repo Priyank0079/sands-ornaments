@@ -48,20 +48,10 @@ const Checkout = () => {
     const total = subtotal + shipping - discount;
 
     // Get active coupons from context
-    const availableCoupons = coupons ? coupons.filter(c => c.active) : [];
-
+    const availableCoupons = coupons ? coupons.filter(c => c.active !== false) : [];
     const handleApplyCoupon = async (coupon) => {
-        return handleApplyCouponValidated(coupon);
-        if (subtotal < coupon.minOrder) {
-            alert(`Minimum order value of ₹${coupon.minOrder} required`);
-            return;
-        }
-        setAppliedCoupon(coupon);
-        setDiscount(coupon.amount > subtotal ? subtotal : coupon.amount); // Discount can't exceed subtotal
-        setShowCouponModal(false);
-    };
-
-    const handleApplyCouponValidated = async (coupon) => {
+        await handleApplyCouponValidated(coupon);
+    };    const handleApplyCouponValidated = async (coupon) => {
         const code = coupon?.code || couponCode;
         if (!code) return;
         const result = await applyCoupon(code, subtotal, cart);

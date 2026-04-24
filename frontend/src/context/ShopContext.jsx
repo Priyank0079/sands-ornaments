@@ -43,6 +43,19 @@ const normalizeProductForCart = (product = {}, selectedVariant = null) => {
     };
 };
 
+const resolveAvailableStock = (product = {}, variantId = null) => {
+    const selected = (product.selectedVariant && (variantId == null || String(product.selectedVariant.id || product.selectedVariant._id) === String(variantId)))
+        ? product.selectedVariant
+        : (product.variants || []).find((variant) => String(variant.id || variant._id) === String(variantId))
+            || product.selectedVariant
+            || (product.variants || [])[0]
+            || null;
+
+    const stock = Number(selected?.stock);
+    if (Number.isFinite(stock) && stock >= 0) return stock;
+    return null;
+};
+
 export const ShopProvider = ({ children }) => {
     const { user, logout: authLogout } = useAuth();
     // Initialize from LocalStorage if available
@@ -65,7 +78,6 @@ export const ShopProvider = ({ children }) => {
     const {
         products,
         categories,
-        banners,
         coupons: apiCoupons,
         isLoading: isCatalogueLoading
     } = useCatalogue();
@@ -151,7 +163,9 @@ export const ShopProvider = ({ children }) => {
 
     // FETCH USER DATA ON LOGIN
     useEffect(() => {
-        if (user) {
+        // These endpoints are user-only. When logged in as admin/seller, calling them
+        // will correctly return 403, but we don't want console noise or wasted requests.
+        if (user?.role === 'user') {
             fetchAddresses();
             fetchWishlist();
             fetchOrders();
@@ -195,7 +209,6 @@ export const ShopProvider = ({ children }) => {
                     const categoryName = typeof rawCategory === 'string' ? rawCategory : (rawCategory?.name || item.category || '');
                     const categoryId = rawCategory?._id || rawCategory?.id || item.categoryId || '';
                     const categorySlug = rawCategory?.slug || item.categorySlug || '';
-                    const metal = rawCategory?.metal || item.metal || '';
                     return {
                         ...item,
                         id: item._id || item.id,
@@ -208,7 +221,7 @@ export const ShopProvider = ({ children }) => {
                         category: categoryName,
                         categoryId,
                         categorySlug,
-                        metal,
+                        metal: item.metal || item.material || '',
                         variants: variants.map(v => ({
                             ...v,
                             id: v._id || v.id,
@@ -265,6 +278,8 @@ export const ShopProvider = ({ children }) => {
                     reason: rep.evidence?.reason || rep.reason || rep.originalItems?.[0]?.reason || '',
                     comments: rep.evidence?.comment || rep.comments || '',
                     images: rep.evidence?.images || rep.images || [],
+                    video: rep.evidence?.video || rep.video || '',
+                    evidenceVideo: rep.evidence?.video || rep.evidenceVideo || '',
                     items: rep.originalItems || rep.items || [],
                     type: 'replacement'
                 })));
@@ -366,11 +381,15 @@ export const ShopProvider = ({ children }) => {
                 return null;
             }
 
-            const { order } = res.data;
+            const order = res.data?.data?.order;
+            if (!order) {
+                toast.error("Order response is incomplete. Please try again.");
+                return null;
+            }
 
             // 2. Handle Razorpay if selected
-            if (orderDetails.paymentMethod === 'razorpay' && res.data.razorpayOrderId) {
-                return await handleRazorpayPayment(res.data.razorpayOrderId, order);
+            if (orderDetails.paymentMethod === 'razorpay' && order.razorpayOrderId) {
+                return await handleRazorpayPayment(order.razorpayOrderId, order);
             }
 
             // 3. For COD or other methods, complete local flow
@@ -394,7 +413,7 @@ export const ShopProvider = ({ children }) => {
         return new Promise((resolve) => {
             const options = {
                 key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-                amount: backendOrder.totalAmount * 100,
+                amount: Math.round(Number(backendOrder.total || 0) * 100),
                 currency: "INR",
                 name: "Sands Ornaments",
                 description: "Order #" + backendOrder.orderId,
@@ -402,6 +421,7 @@ export const ShopProvider = ({ children }) => {
                 handler: async (response) => {
                     try {
                         const verifyRes = await api.post('/user/payments/verify', {
+                            orderId: backendOrder._id,
                             razorpay_order_id: response.razorpay_order_id,
                             razorpay_payment_id: response.razorpay_payment_id,
                             razorpay_signature: response.razorpay_signature
@@ -458,24 +478,46 @@ export const ShopProvider = ({ children }) => {
         }
 
         if (!productId) return;
+        const requestedQty = Number.isFinite(Number(qty)) ? Math.max(1, Number(qty)) : 1;
+        const maxStock = resolveAvailableStock(productData || {}, variantId);
+        if (maxStock !== null && maxStock <= 0) {
+            toast.error("This variant is out of stock");
+            return;
+        }
 
         setCart((prev) => {
             const existing = prev.find((item) => item.id === productId && item.variantId === variantId);
             if (existing) {
+                const currentStock = resolveAvailableStock(existing, variantId);
+                const limitStock = currentStock !== null ? currentStock : maxStock;
+                const nextQuantity = existing.quantity + requestedQty;
+                if (limitStock !== null && nextQuantity > limitStock) {
+                    toast.error(`Only ${limitStock} units available`);
+                    const cappedQty = Math.max(1, Math.min(limitStock, nextQuantity));
+                    return prev.map((item) =>
+                        (item.id === productId && item.variantId === variantId)
+                            ? { ...item, quantity: cappedQty, qty: cappedQty }
+                            : item
+                    );
+                }
                 return prev.map((item) =>
-                    (item.id === productId && item.variantId === variantId) ? { ...item, quantity: item.quantity + qty, qty: item.quantity + qty } : item
+                    (item.id === productId && item.variantId === variantId) ? { ...item, quantity: nextQuantity, qty: nextQuantity } : item
                 );
             }
             // If productData not found in list, try to use whatever we have
             const itemBase = productData || { id: productId, name: 'Product', price: 0, originalPrice: 0, image: '' };
+            const finalQty = maxStock !== null ? Math.min(requestedQty, maxStock) : requestedQty;
+            if (maxStock !== null && requestedQty > maxStock) {
+                toast.error(`Only ${maxStock} units available`);
+            }
             return [...prev, {
                 ...itemBase,
                 id: productId,
                 variantId: variantId,
                 packId: variantId || productId, // For CartPage compatibility
                 gst: Number(itemBase.gst ?? itemBase.selectedVariant?.gst) || 0,
-                quantity: qty,
-                qty: qty // For CartPage compatibility
+                quantity: finalQty,
+                qty: finalQty // For CartPage compatibility
             }];
         });
         showNotification("Added to bag");
@@ -486,7 +528,12 @@ export const ShopProvider = ({ children }) => {
             const itemVariantKey = item.variantId || item.packId || null;
             const targetVariantKey = variantId || null;
             if (item.id === productId && (targetVariantKey === null || itemVariantKey === targetVariantKey)) {
-                const newQuantity = Math.max(1, item.quantity + amount);
+                const maxStock = resolveAvailableStock(item, itemVariantKey);
+                const requestedQuantity = Math.max(1, item.quantity + amount);
+                const newQuantity = maxStock !== null ? Math.min(requestedQuantity, maxStock) : requestedQuantity;
+                if (maxStock !== null && requestedQuantity > maxStock) {
+                    toast.error(`Only ${maxStock} units available`);
+                }
                 return { ...item, quantity: newQuantity, qty: newQuantity };
             }
             return item;
@@ -497,7 +544,13 @@ export const ShopProvider = ({ children }) => {
     const updateCartQty = (userId, packId, newQty) => {
         setCart(prev => prev.map(item => {
             if (item.packId === packId || item.id === packId || item.variantId === packId) {
-                return { ...item, quantity: Math.max(1, newQty), qty: Math.max(1, newQty) };
+                const normalizedQty = Math.max(1, Number(newQty) || 1);
+                const maxStock = resolveAvailableStock(item, item.variantId || item.packId || null);
+                const finalQty = maxStock !== null ? Math.min(normalizedQty, maxStock) : normalizedQty;
+                if (maxStock !== null && normalizedQty > maxStock) {
+                    toast.error(`Only ${maxStock} units available`);
+                }
+                return { ...item, quantity: finalQty, qty: finalQty };
             }
             return item;
         }));
@@ -663,7 +716,8 @@ export const ShopProvider = ({ children }) => {
     };
 
     const deleteAccount = () => {
-        setUser(null);
+        // User state is owned by AuthContext; we just clear dependent state here.
+        authLogout();
         setOrders([]);
         setAddresses([]);
         setCart([]);
@@ -722,13 +776,16 @@ export const ShopProvider = ({ children }) => {
     const validateCoupon = async (code, cartTotal, items) => {
         try {
             // Format items for backend: { productId, variantId, quantity, price, categoryId }
-            const formattedItems = items.map(item => ({
-                productId: item.productId || item.id,
-                variantId: item.variantId || item.id,
-                quantity: item.qty || item.quantity,
-                price: item.price,
-                categoryId: item.categoryId || ''
-            }));
+            const formattedItems = (Array.isArray(items) ? items : []).map(item => {
+                const rawCategory = item.categoryId || item.category?._id || item.category?.id || item.categories?.[0]?._id || item.categories?.[0]?.id || '';
+                return {
+                    productId: item.productId || item.id || item._id,
+                    variantId: item.variantId || item.selectedVariant?.id || item.selectedVariant?._id || item.id,
+                    quantity: item.qty || item.quantity || 1,
+                    price: Number(item.price || 0),
+                    categoryId: rawCategory ? String(rawCategory) : ''
+                };
+            });
 
             const res = await api.post('/user/coupons/validate', {
                 code,
@@ -793,68 +850,11 @@ export const ShopProvider = ({ children }) => {
     }, []);
 
     // Product & Bulk Management
-    const updateProduct = (id, updatedData) => {
-        setProducts(prev => prev.map(p => p.id === id ? { ...p, ...updatedData } : p));
-    };
-
-    const bulkUpdatePrices = (config) => {
-        const { type, value, category, productIds } = config;
-        const numValue = parseFloat(value);
-        if (isNaN(numValue)) return;
-
-        setProducts(prev => prev.map(product => {
-            // Filter logic
-            const matchCategory = !category || category === 'all' || product.category === category;
-            const matchIds = !productIds || productIds.includes(product.id);
-
-            if (matchCategory && matchIds) {
-                // Products in mockData have variants. We need to update prices in variants.
-                const updatedVariants = (product.variants || []).map(variant => {
-                    let newPrice = variant.price;
-                    let newMrp = variant.mrp;
-
-                    switch (type) {
-                        case 'increase_amount':
-                            newPrice += numValue;
-                            newMrp += numValue;
-                            break;
-                        case 'decrease_amount':
-                            newPrice = Math.max(0, newPrice - numValue);
-                            newMrp = Math.max(0, newMrp - numValue);
-                            break;
-                        case 'increase_percent':
-                            newPrice = Math.round(newPrice * (1 + numValue / 100));
-                            newMrp = Math.round(newMrp * (1 + numValue / 100));
-                            break;
-                        case 'decrease_percent':
-                            newPrice = Math.round(newPrice * (1 - numValue / 100));
-                            newMrp = Math.round(newMrp * (1 - numValue / 100));
-                            break;
-                        case 'set_price':
-                            newPrice = numValue;
-                            break;
-                        default:
-                            break;
-                    }
-
-                    return {
-                        ...variant,
-                        price: newPrice,
-                        mrp: newMrp,
-                        discount: newMrp > 0 ? `${Math.round(((newMrp - newPrice) / newMrp) * 100)}%off` : '0%off'
-                    };
-                });
-
-                return { ...product, variants: updatedVariants };
-            }
-            return product;
-        }));
-
-        showNotification("Bulk price update completed successfully!");
-    };
+    // `products` comes from `useCatalogue()` (read-only). Admin/Seller updates are handled
+    // through their own modules; the user shop doesn't mutate this list directly.
 
     const getActiveCoupons = () => {
-        return coupons.filter(c => c.active);
+        return (coupons || []).filter(c => c?.active !== false);
     };
 
     // Persist Notifications
@@ -884,8 +884,8 @@ export const ShopProvider = ({ children }) => {
             pincode, updatePincode,
             activeMetal, updateActiveMetal,
 
-            products, updateProduct, bulkUpdatePrices,
-            categories, banners, isLoading: isCatalogueLoading,
+            products,
+            categories, isLoading: isCatalogueLoading,
 
             // Homepage Sections Management
             homepageSections,

@@ -12,7 +12,6 @@ const CategoryPage = () => {
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedMetal, setSelectedMetal] = useState('all');
     const [statusFilter, setStatusFilter] = useState('all');
 
     useEffect(() => {
@@ -143,8 +142,7 @@ const CategoryPage = () => {
         }
     ];
 
-    const filteredByMetal = categories.filter(c => c.metal?.toLowerCase() === selectedMetal?.toLowerCase());
-    const baseList = selectedMetal === 'all' ? categories : filteredByMetal;
+    const baseList = categories;
     const normalizedSearch = searchTerm.trim().toLowerCase();
     const filteredData = baseList.filter(cat => {
         const matchesSearch = !normalizedSearch || cat.name?.toLowerCase().includes(normalizedSearch);
@@ -156,21 +154,21 @@ const CategoryPage = () => {
     const stats = [
         {
             label: 'Total Categories',
-            value: selectedMetal === 'all' ? categories.length : filteredByMetal.length,
+            value: categories.length,
             icon: Box,
             color: 'text-blue-600',
             bgColor: 'bg-blue-50'
         },
         {
             label: 'Active Categories',
-            value: (selectedMetal === 'all' ? categories : filteredByMetal).filter(c => c.isActive !== false).length,
+            value: categories.filter(c => c.isActive !== false).length,
             icon: CheckCircle,
             color: 'text-green-600',
             bgColor: 'bg-green-50'
         },
         {
             label: 'Hidden Categories',
-            value: (selectedMetal === 'all' ? categories : filteredByMetal).filter(c => c.isActive === false).length,
+            value: categories.filter(c => c.isActive === false).length,
             icon: EyeOff,
             color: 'text-orange-600',
             bgColor: 'bg-orange-50'

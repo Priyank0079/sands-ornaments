@@ -18,9 +18,10 @@ const CategoryNav = ({ showMetalToggle = true }) => {
         { id: 'him', name: 'Gifts for Him', path: '/category/men', hasChevron: false },
         { id: 'her', name: 'Gifts for Her', path: '/category/women', hasChevron: false },
         { id: 'family', name: 'Gifts for Family', path: '/category/family', hasChevron: false },
-        { id: 'card', name: 'SANDS Gift Card', path: '/shop?purity=card', hasChevron: false },
-        { id: 'store', name: 'Gift Store', path: '/shop?filter=gift', hasChevron: false },
-        { id: 'exclusive', name: 'Exclusive Collections', path: '/shop?filter=exclusive', hasChevron: false },
+        // Legacy filter tags were removed from product placement. Keep these links functional via search.
+        { id: 'card', name: 'SANDS Gift Card', path: '/shop?search=gift%20card', hasChevron: false },
+        { id: 'store', name: 'Gift Store', path: '/shop?search=gift', hasChevron: false },
+        { id: 'exclusive', name: 'Exclusive Collections', path: '/shop?search=exclusive', hasChevron: false },
         { id: 'more', name: 'More at SANDS', path: '/about', hasChevron: false },
     ];
 

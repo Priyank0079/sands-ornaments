@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ScanLine, Search, AlertCircle, CheckCircle2, Box, ArrowLeft } from 'lucide-react';
-import { sellerProductService } from '../services/sellerProductService';
+import { sellerDirectSaleService } from '../services/sellerDirectSaleService';
 
 const OfflineSale = () => {
     const navigate = useNavigate();
     const [scannedCode, setScannedCode] = useState('');
     const [result, setResult] = useState(null);
+    const [preview, setPreview] = useState(null);
     const [loading, setLoading] = useState(false);
-
-    const [isScanning, setIsScanning] = useState(false);
-    const [scanAnimation, setScanAnimation] = useState(false);
+    const [confirming, setConfirming] = useState(false);
 
     const handleScan = (e) => {
         if (e) e.preventDefault();
@@ -18,28 +17,21 @@ const OfflineSale = () => {
         
         setLoading(true);
         setResult(null);
-        setIsScanning(false);
+        setPreview(null);
 
-        // Simulation delay
-        setTimeout(() => {
-            sellerProductService.sellByBarcode(scannedCode.toUpperCase(), false).then(res => {
-                setLoading(false);
+        sellerDirectSaleService.preview({ serialCode: scannedCode.toUpperCase() }).then(res => {
+            setLoading(false);
+            if (res?.success) {
+                setPreview(res.data || res);
+            } else {
                 setResult(res);
-                if (res.success) {
-                    setScannedCode('');
-                }
-            });
-        }, 800);
+            }
+        });
     };
 
     const startScanner = () => {
-        setIsScanning(true);
-        setScanAnimation(true);
-        // Simulate a successful scan after 2 seconds
-        setTimeout(() => {
-            setScannedCode('GOLD001');
-            setScanAnimation(false);
-        }, 2000);
+        // Use the real camera scanner page (barcode/QR) instead of simulation.
+        navigate('/seller/qr-scanner');
     };
 
     return (
@@ -63,38 +55,22 @@ const OfflineSale = () => {
                         
                         {/* Scanner Icon/Feed Area */}
                         <div className="relative group">
-                            <div className={`w-24 h-24 rounded-full flex items-center justify-center border-2 transition-all duration-500 ${
-                                isScanning ? 'bg-blue-600/20 border-blue-500 animate-pulse scale-110 shadow-2xl shadow-blue-500/20' : 'bg-blue-500/10 border-blue-500/20 group-hover:bg-blue-500/20 group-hover:border-blue-500/40'
-                            }`}>
-                                <ScanLine className={`w-12 h-12 transition-all duration-500 ${isScanning ? 'text-blue-400 scale-125' : 'text-blue-500'}`} />
+                            <div className="w-24 h-24 rounded-full flex items-center justify-center border-2 transition-all duration-500 bg-blue-500/10 border-blue-500/20 group-hover:bg-blue-500/20 group-hover:border-blue-500/40">
+                                <ScanLine className="w-12 h-12 transition-all duration-500 text-blue-500" />
                             </div>
                             
-                            {!isScanning && (
-                                <button 
-                                    onClick={startScanner}
-                                    className="absolute -bottom-2 -right-2 bg-blue-600 p-2.5 rounded-xl shadow-lg hover:bg-blue-700 transition-all border border-blue-400/30"
-                                >
-                                    <ScanLine className="w-4 h-4 text-white" />
-                                </button>
-                            )}
+                            <button 
+                                onClick={startScanner}
+                                className="absolute -bottom-2 -right-2 bg-blue-600 p-2.5 rounded-xl shadow-lg hover:bg-blue-700 transition-all border border-blue-400/30"
+                            >
+                                <ScanLine className="w-4 h-4 text-white" />
+                            </button>
                         </div>
                         
                         <div>
                              <h2 className="text-white text-xl font-black uppercase tracking-[0.2em]">Inventory Reconciliation</h2>
                              <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mt-2 opacity-60">Scan or enter a serialized unit code for direct fulfillment</p>
                         </div>
-
-                        {/* Scanner Overlay Simulation */}
-                        {isScanning && (
-                            <div className="w-full aspect-video bg-black/40 rounded-2xl border border-blue-500/30 relative overflow-hidden flex items-center justify-center">
-                                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-500/10 to-transparent animate-scan"></div>
-                                <div className="z-10 text-blue-400 text-[10px] font-black uppercase tracking-widest animate-pulse">Initializing Vision Engine...</div>
-                                <div className="absolute top-4 right-4 flex gap-1">
-                                    <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
-                                    <span className="text-[9px] text-red-500 font-bold uppercase">REC</span>
-                                </div>
-                            </div>
-                        )}
 
                         <form onSubmit={handleScan} className="w-full space-y-6">
                             <div className="relative group">
@@ -109,7 +85,7 @@ const OfflineSale = () => {
 
                             <button 
                                 type="submit"
-                                disabled={loading || isScanning}
+                                disabled={loading}
                                 className="w-full bg-blue-600 hover:bg-blue-700 text-white py-5 rounded-[1.25rem] font-black uppercase tracking-[0.3em] text-xs transition-all shadow-xl shadow-blue-500/20 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3 group"
                             >
                                 {loading ? (
@@ -123,12 +99,46 @@ const OfflineSale = () => {
                             </button>
                         </form>
 
+                        {preview && (
+                            <div className="w-full p-4 rounded-2xl flex items-center gap-4 border animate-in zoom-in-95 duration-300 bg-white/5 border-white/10 text-white">
+                                <Box className="w-6 h-6 shrink-0 text-blue-300" />
+                                <div className="text-left flex-1">
+                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300">
+                                        {preview.available ? 'READY TO CONFIRM' : 'NOT AVAILABLE'}
+                                    </p>
+                                    <p className="text-xs font-bold">
+                                        {preview.product?.name} ({preview.variant?.name || 'Standard'}) • ₹{preview.variant?.price || 0}
+                                    </p>
+                                    <p className="text-[10px] font-bold text-gray-400 italic">
+                                        Serial: {preview.serialCode} • Stock: {preview.variant?.stock ?? 0}
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={async () => {
+                                        setConfirming(true);
+                                        try {
+                                            const res = await sellerDirectSaleService.confirm({ serialCode: preview.serialCode, paymentMethod: 'cash' });
+                                            setResult(res);
+                                            setPreview(null);
+                                            if (res?.success) setScannedCode('');
+                                        } finally {
+                                            setConfirming(false);
+                                        }
+                                    }}
+                                    disabled={confirming || preview.available === false}
+                                    className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {confirming ? 'Saving...' : (preview.available ? 'Confirm' : 'N/A')}
+                                </button>
+                            </div>
+                        )}
+
                         {result && (
                             <div className={`w-full p-4 rounded-2xl flex items-center gap-4 border animate-in zoom-in-95 duration-300 ${result.success ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
                                 {result.success ? <CheckCircle2 className="w-6 h-6 shrink-0" /> : <AlertCircle className="w-6 h-6 shrink-0" />}
                                 <div className="text-left">
                                     <p className="text-[10px] font-black uppercase tracking-[0.2em]">{result.success ? 'SUCCESS' : 'ERROR'}</p>
-                                    <p className="text-xs font-bold">{result.success ? 'Product marked as SOLD OFFLINE. Stock updated.' : result.message}</p>
+                                    <p className="text-xs font-bold">{result.success ? 'Direct sale recorded. Stock updated.' : result.message}</p>
                                 </div>
                             </div>
                         )}

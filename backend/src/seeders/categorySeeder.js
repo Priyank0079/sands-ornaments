@@ -66,8 +66,7 @@ const seedData = async () => {
                 description: `Elegant collection of ${cat.name}`,
                 isActive: true,
                 showInNavbar: true,
-                showInCollection: true,
-                metal: 'silver'
+                showInCollection: true
             });
 
             const subcategoryIds = [];

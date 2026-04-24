@@ -1,7 +1,9 @@
 const Replacement = require("../../../models/Replacement");
+const Return = require("../../../models/Return");
 const Order = require("../../../models/Order");
 const { generateReplacementId } = require("../../../utils/generateId");
 const { success, error } = require("../../../utils/apiResponse");
+const { createSellerNotification } = require("../../../services/sellerNotificationService");
 
 exports.requestReplacement = async (req, res) => {
   try {
@@ -20,6 +22,10 @@ exports.requestReplacement = async (req, res) => {
 
     const existing = await Replacement.findOne({ orderId, "originalItems.variantId": item.variantId });
     if (existing) return error(res, "Replacement already requested", 409);
+
+    // Prevent parallel replacement + return for the same variant
+    const returnExists = await Return.findOne({ orderId, "items.variantId": item.variantId });
+    if (returnExists) return error(res, "Return already requested for this item. Please complete that flow first.", 409);
 
     const images = req.files ? req.files.map(f => f.path) : [];
 
@@ -49,6 +55,18 @@ exports.requestReplacement = async (req, res) => {
       date: new Date()
     });
     await order.save();
+
+    // Notify seller (if this item belongs to a seller listing).
+    if (item?.sellerId) {
+      await createSellerNotification({
+        sellerId: item.sellerId,
+        title: "Replacement requested",
+        message: `Replacement requested for order ${order.orderId || order._id}. Item: ${item.name || "Order item"}.`,
+        type: "REPLACEMENT",
+        priority: "High",
+        link: `/seller/replacement-details/${replacement._id}`
+      });
+    }
 
     return success(res, { replacement }, "Replacement requested successfully", 201);
   } catch (err) { return error(res, err.message); }

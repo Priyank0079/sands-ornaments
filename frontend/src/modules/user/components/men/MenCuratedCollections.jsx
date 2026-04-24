@@ -1,14 +1,15 @@
-import React, { useRef } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { buildMenShopPath } from '../../utils/menNavigation';
+import { resolveLegacyCmsAsset } from '../../utils/legacyCmsAssets';
 
 // Import existing assets from global and local folders
-import men1 from '../../../../assets/luxury_ring_men.png';
-import men2 from '../../../../assets/luxury_pendant_men.png';
-import men3 from '../../../../assets/luxury_gifts_men.png';
-import men4 from '../../../../assets/men/style_bracelets.png';
+import men1 from '@assets/luxury_ring_men.png';
+import men2 from '@assets/luxury_pendant_men.png';
+import men3 from '@assets/luxury_gifts_men.png';
+import men4 from '@assets/men/style_bracelets.png';
 
 const collections = [
     { id: 1, title: "SHOP SILVER FOR HIM", image: men1, link: buildMenShopPath({ metal: 'silver' }), type: 'image' },
@@ -19,9 +20,36 @@ const collections = [
     { id: 6, title: "925 SILVER SHOP", image: men4, link: buildMenShopPath({ metal: 'silver', silverType: '925 sterling silver' }), type: 'image' }
 ];
 
-const MenCuratedCollections = () => {
+const MenCuratedCollections = ({ sectionData }) => {
     const navigate = useNavigate();
     const scrollRef = useRef(null);
+
+    const resolvedSettings = useMemo(() => ({
+        badge: sectionData?.settings?.badge || 'More Gifts for Him',
+        title: sectionData?.settings?.title || 'Curated Collections',
+        subtitle: sectionData?.settings?.subtitle || 'Clean, easy-to-browse picks for gifting and everyday style.'
+    }), [sectionData]);
+
+    const resolvedCollections = useMemo(() => {
+        const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
+        const normalizedConfigured = configuredItems
+            .filter((item) => item?.image)
+            .map((item, index) => {
+                const fallbackCollection = collections[index];
+                return {
+                    id: item.itemId || item.id || `men-curated-${index}`,
+                    title: item.name || item.label || fallbackCollection?.title || '',
+                    image: resolveLegacyCmsAsset(item.image, fallbackCollection?.image || ''),
+                    link: item.categoryId
+                        ? buildMenShopPath({ category: item.categoryId })
+                        : (item.path || fallbackCollection?.link || buildMenShopPath()),
+                    type: 'image'
+                };
+            })
+            .filter((item) => item.title && item.image && item.link);
+
+        return normalizedConfigured.length > 0 ? normalizedConfigured : collections;
+    }, [sectionData]);
 
     const scroll = (direction) => {
         if (scrollRef.current) {
@@ -42,13 +70,13 @@ const MenCuratedCollections = () => {
                 {/* Header */}
                 <div className="text-center mb-3 md:mb-7 px-4">
                     <span className="inline-flex items-center rounded-full border border-black/10 bg-[#F8F3F4] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-black/60">
-                        More Gifts for Him
+                        {resolvedSettings.badge}
                     </span>
                     <h2 className="mt-2 text-xl md:text-3xl font-medium text-black tracking-tight" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                        Curated Collections
+                        {resolvedSettings.title}
                     </h2>
                     <p className="mt-1.5 text-[12px] md:text-base text-black/55 max-w-2xl mx-auto">
-                        Clean, easy-to-browse picks for gifting and everyday style.
+                        {resolvedSettings.subtitle}
                     </p>
                 </div>
 
@@ -75,7 +103,7 @@ const MenCuratedCollections = () => {
                         ref={scrollRef}
                         className="flex overflow-x-auto gap-2 md:gap-4 pb-3 md:pb-10 hide-scrollbar scroll-smooth snap-x snap-mandatory px-4"
                     >
-                        {collections.map((item, idx) => (
+                        {resolvedCollections.map((item, idx) => (
                             <motion.div 
                                 key={item.id}
                                 initial={{ opacity: 0, y: 20 }}
@@ -125,3 +153,4 @@ const MenCuratedCollections = () => {
 };
 
 export default MenCuratedCollections;
+

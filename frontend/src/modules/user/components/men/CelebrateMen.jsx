@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { buildMenShopPath } from '../../utils/menNavigation';
+import { resolveLegacyCmsAsset } from '../../utils/legacyCmsAssets';
 
 // Correct path to assets (4 levels up from src/modules/user/components/men/)
-import giftBrothers from '../../../../assets/gift_brothers.png';
-import giftHusbands from '../../../../assets/gift_husbands.png';
-import giftCouples from '../../../../assets/gift_couples.png';
-import giftBoyfriends from '../../../../assets/gift_boyfriends.png';
+import giftBrothers from '@assets/gift_brothers.png';
+import giftHusbands from '@assets/gift_husbands.png';
+import giftCouples from '@assets/gift_couples.png';
+import giftBoyfriends from '@assets/gift_boyfriends.png';
 
 const guides = [
     { id: 1, title: 'Brothers', image: giftBrothers, link: buildMenShopPath({ filter: 'brothers' }) },
@@ -16,8 +17,37 @@ const guides = [
     { id: 4, title: 'Boyfriends', image: giftBoyfriends, link: buildMenShopPath({ filter: 'boyfriends' }) }
 ];
 
-const CelebrateMen = () => {
+const CelebrateMen = ({ sectionData }) => {
     const navigate = useNavigate();
+
+    const resolvedTitle = sectionData?.settings?.title || 'Celebrate Men';
+    const resolvedSubtitle = sectionData?.settings?.subtitle || 'A Gifting Guide For Them';
+    const resolvedGuides = useMemo(() => {
+        const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
+        const normalizedConfigured = configuredItems
+            .filter((item) => item?.image)
+            .map((item, index) => {
+                const fallbackGuide = guides[index];
+                const celebrateKey = String(item.celebrateKey || '').trim();
+                const pathFilter = String(item.path || '').includes('filter=')
+                    ? String(item.path).split('filter=')[1]?.split('&')[0]
+                    : '';
+                const fallbackFilter = fallbackGuide?.link?.includes('filter=')
+                    ? fallbackGuide.link.split('filter=')[1]?.split('&')[0]
+                    : '';
+                const filter = celebrateKey || pathFilter || fallbackFilter || 'men';
+
+                return {
+                    id: item.itemId || item.id || `celebrate-men-${index}`,
+                    title: item.name || fallbackGuide?.title || '',
+                    image: resolveLegacyCmsAsset(item.image, fallbackGuide?.image || ''),
+                    link: buildMenShopPath({ filter })
+                };
+            })
+            .filter((item) => item.title && item.image && item.link);
+
+        return normalizedConfigured.length > 0 ? normalizedConfigured : guides;
+    }, [sectionData]);
 
     return (
         <section className="py-3 md:py-9 bg-[#F2E8E1]">
@@ -26,17 +56,17 @@ const CelebrateMen = () => {
                 {/* Header Section */}
                 <div className="text-center mb-4 md:mb-8">
                     <h2 className="text-3xl md:text-[42px] font-bold text-[#4A2D1F] mb-2 font-serif">
-                        Celebrate Men
+                        {resolvedTitle}
                     </h2>
                     <p className="text-[#6B4F3F] text-xs md:text-base font-medium tracking-[0.22em] uppercase opacity-80">
-                        A Gifting Guide For Them
+                        {resolvedSubtitle}
                     </p>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-x-3 gap-y-6 md:gap-4 lg:gap-5 px-1 md:px-0">
-                    {guides.map((guide, idx) => (
+                    {resolvedGuides.map((guide, idx) => (
                         <motion.div
-                            key={guide.id}
+                            key={guide.id || guide.title}
                             initial={{ opacity: 0, y: 30 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
@@ -70,3 +100,4 @@ const CelebrateMen = () => {
 };
 
 export default CelebrateMen;
+

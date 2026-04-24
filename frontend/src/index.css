@@ -138,6 +138,19 @@ body {
     animation: scan 2s linear infinite;
 }
 
+@keyframes loader-pulse {
+    0%, 100% {
+        transform: scale(0.9);
+        opacity: 0.7;
+        filter: drop-shadow(0 0 0px rgba(156, 91, 97, 0));
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+        filter: drop-shadow(0 0 20px rgba(156, 91, 97, 0.3));
+    }
+}
+
 .mens-section,
 .mens-section :where(h1, h2, h3, h4, h5, h6, p, span, a, button, label, input, textarea, select, option, li) {
     font-family: var(--font-serif) !important;

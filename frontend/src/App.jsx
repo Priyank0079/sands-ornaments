@@ -17,8 +17,6 @@ import CategoryPage from './modules/admin/pages/categories/CategoryPage';
 import CategoryEditor from './modules/admin/pages/categories/CategoryEditor';
 
 import ProductManagement from './modules/admin/pages/ProductManagement';
-import ProductView from './modules/admin/pages/ProductView';
-import ItemEditor from './modules/admin/pages/ItemEditor';
 import AdminProductEditor from './modules/admin/pages/AdminProductEditor';
 import OrderListPage from './modules/admin/pages/OrderListPage';
 import OrderDetailPage from './modules/admin/pages/OrderDetailPage';
@@ -36,7 +34,6 @@ import UserView from './modules/admin/pages/UserView';
 import ReviewModeration from './modules/admin/pages/ReviewModeration';
 import SupportManagement from './modules/admin/pages/SupportManagement';
 import ContactInquiries from './modules/admin/pages/ContactInquiries';
-import BannerManagement from './modules/admin/pages/BannerManagement';
 import GlobalNotificationManager from './modules/admin/pages/GlobalNotificationManager';
 import AddNotification from './modules/admin/pages/AddNotification';
 import FAQManagement from './modules/admin/pages/FAQManagement';
@@ -93,11 +90,9 @@ const BondCollectionPage = lazy(() => import('./modules/user/pages/BondCollectio
 const BestStylesPage = lazy(() => import('./modules/user/pages/BestStylesPage'));
 const AdminDashboard = lazy(() => import('./modules/admin/pages/Dashboard'));
 
-const LoadingFallback = () => (
-  <div className="min-h-[60vh] flex items-center justify-center">
-    <div className="w-8 h-8 border-4 border-[#7A2E3A] border-t-transparent rounded-full animate-spin"></div>
-  </div>
-);
+import Loader from './modules/shared/components/Loader';
+
+const LoadingFallback = () => <Loader fullPage={false} />;
 
 const AppContent = () => {
   const location = useLocation();
@@ -203,7 +198,6 @@ const AppContent = () => {
                   <Route path="/reviews" element={<ReviewModeration />} />
                   <Route path="/support" element={<SupportManagement />} />
                   <Route path="/support/inquiries" element={<ContactInquiries />} />
-                  <Route path="/banners" element={<BannerManagement />} />
                   <Route path="/notifications" element={<AdminNotifications />} />
                   <Route path="/broadcasts" element={<GlobalNotificationManager />} />
                   <Route path="/notifications/add" element={<AddNotification />} />

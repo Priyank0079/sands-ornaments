@@ -7,7 +7,7 @@ import ProductCard from '../components/ProductCard';
 import { COLLECTION_MOCK_PRODUCTS } from '../data/mockCollectionData';
 
 // Placeholder Banner (since image generation is unavailable)
-import bannerHero from '../assets/banner_party.png'; 
+import bannerHero from '@assets/banner_party.png'; 
 
 const BestStylesPage = () => {
     const { products } = useShop();
@@ -116,3 +116,4 @@ const BestStylesPage = () => {
 };
 
 export default BestStylesPage;
+

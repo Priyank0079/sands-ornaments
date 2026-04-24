@@ -4,12 +4,13 @@ import { motion } from 'framer-motion';
 import { useShop } from '../../../context/ShopContext';
 
 // Import images
-import newEarrings from '../assets/new_launch_earrings.png';
-import newChains from '../assets/new_launch_chains.png';
-import newStuds from '../assets/new_launch_studs.png';
-import newBracelets from '../assets/new_launch_bracelets.png';
-import newAnklets from '../assets/new_launch_anklets.png';
+import newEarrings from '@assets/new_launch_earrings.png';
+import newChains from '@assets/new_launch_chains.png';
+import newStuds from '@assets/new_launch_studs.png';
+import newBracelets from '@assets/new_launch_bracelets.png';
+import newAnklets from '@assets/new_launch_anklets.png';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
+import { ensureSilverHomePath } from '../utils/silverHomePaths';
 
 const newLaunches = [
     { id: 'earrings', name: "Earrings", image: newEarrings, path: "/shop" },
@@ -22,10 +23,10 @@ const newLaunches = [
 const resolveLaunchPath = (item, fallbackPath = '/shop') => {
     const categoryId = item?.categoryId;
     if (categoryId) {
-        return `/shop?category=${categoryId}`;
+        return ensureSilverHomePath(`/shop?category=${categoryId}`);
     }
-    if (item?.path) return item.path;
-    return fallbackPath;
+    if (item?.path) return ensureSilverHomePath(item.path);
+    return ensureSilverHomePath(fallbackPath);
 };
 
 const NewLaunchSection = () => {
@@ -62,13 +63,13 @@ const NewLaunchSection = () => {
     useEffect(() => {
         const updateDims = () => {
             if (window.innerWidth < 480) {
-                setRadius(400);
-                setCardWidth(140);
-                setCardHeight(200);
+                setRadius(500); // Increased from 400 to spread cards more
+                setCardWidth(150);
+                setCardHeight(220);
             } else if (window.innerWidth < 768) {
-                setRadius(600);
-                setCardWidth(180);
-                setCardHeight(260);
+                setRadius(700);
+                setCardWidth(200);
+                setCardHeight(280);
             } else if (window.innerWidth < 1024) {
                 setRadius(900);
                 setCardWidth(240);
@@ -101,20 +102,19 @@ const NewLaunchSection = () => {
                     100% { transform: translateZ(calc(var(--radius) * -1)) rotateY(-360deg); }
                 }
                 .scene {
-                    perspective: 4000px; /* Massive perspective for a flatter, natural look */
+                    perspective: 4000px;
                     width: 100%;
                     height: var(--cardH);
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    margin-top: 1.5rem;
+                    margin-top: 2rem;
                 }
                 .rotator {
                     width: var(--cardW);
                     height: var(--cardH);
                     position: relative;
                     transform-style: preserve-3d;
-                    /* Super smooth slow continuous horizontal scroll */
                     animation: spinShallowCylinder 80s infinite linear;
                 }
                 .rotator:hover {
@@ -144,7 +144,7 @@ const NewLaunchSection = () => {
                     <div className="inline-block bg-[#722F37] text-white px-5 py-1 font-serif tracking-[0.2em] text-[10px] uppercase rounded-full shadow-sm mb-4">
                         New Launch
                     </div>
-                    <h3 className="font-serif text-[#1F1F1F] text-4xl md:text-6xl font-light tracking-tight uppercase">
+                    <h3 className="font-serif text-[#1F1F1F] text-2xl md:text-6xl font-light tracking-tight uppercase">
                         {sectionData?.label || "Limited Edition"}
                     </h3>
                 </motion.div>
@@ -172,16 +172,16 @@ const NewLaunchSection = () => {
                                             <img
                                                 src={item.image}
                                                 alt={itemLabel}
-                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                                className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110"
                                             />
                                         </div>
 
                                         {/* Classic Gradient Overlay */}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent transition-opacity duration-500 group-hover:opacity-80"></div>
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent transition-opacity duration-500 group-hover:opacity-80"></div>
 
                                         {/* Text Section overlay at bottom */}
-                                        <div className="absolute bottom-0 left-0 right-0 p-8 flex flex-col items-center justify-end text-center z-10 transition-transform duration-500 group-hover:-translate-y-2">
-                                            <h4 className="font-serif font-medium text-2xl lg:text-[1.75rem] text-white tracking-[0.1em] mb-4 drop-shadow-lg uppercase">
+                                        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 flex flex-col items-center justify-end text-center z-10">
+                                            <h4 className="font-serif font-medium text-lg md:text-[1.75rem] text-white tracking-[0.15em] mb-2 md:mb-4 drop-shadow-lg uppercase">
                                                 {itemLabel}
                                             </h4>
                                             
@@ -210,3 +210,4 @@ const NewLaunchSection = () => {
 };
 
 export default NewLaunchSection;
+

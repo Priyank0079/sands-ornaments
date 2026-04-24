@@ -8,14 +8,21 @@ import ProductCard from '../components/ProductCard';
 import WhyChooseUs from '../components/WhyChooseUs';
 import { Heart, ShoppingBag, Star, Share2, Plus, Minus, Truck, ShieldCheck, Smile, Gift, ChevronDown, SlidersHorizontal, X, Camera, Check, ArrowLeft, ArrowRight, Droplets, Sparkles, Play } from 'lucide-react';
 import { COLLECTION_MOCK_PRODUCTS } from '../data/mockCollectionData';
-import BrandVideo from '../assets/Screen Recording 2026-04-03 142555.mp4';
+// Product video is backend-driven (optional) via `product.videoUrl`.
+import Loader from '../../shared/components/Loader';
 
 // Import model shots (angle 2) for maximum hover impact
-import latestRing from '../assets/latest_drop_ring.png';
-import latestBracelet from '../assets/latest_drop_bracelet.png';
-import latestNecklace from '../assets/latest_drop_necklace.png';
-import latestEarrings from '../assets/latest_drop_earrings.png';
-import newAnklets from '../assets/new_launch_anklets.png';
+import latestRing from '@assets/latest_drop_ring.png';
+import latestBracelet from '@assets/latest_drop_bracelet.png';
+import latestNecklace from '@assets/latest_drop_necklace.png';
+import latestEarrings from '@assets/latest_drop_earrings.png';
+import newAnklets from '@assets/new_launch_anklets.png';
+
+// Import Men Category Images
+import menRings from '@assets/images/men-categories/rings.png';
+import menPendants from '@assets/images/men-categories/pendants.png';
+import menBracelets from '@assets/images/men-categories/bracelets.png';
+import menChains from '@assets/images/men-categories/chains.png';
 
 const fallbackModelMap = {
     ring: latestRing,
@@ -70,7 +77,7 @@ const ProductDetails = () => {
                 name: "Silver Fibonacci Flow Ring For Him",
                 price: 2899,
                 originalPrice: 4699,
-                image: "/images/men-categories/rings.png",
+                image: menRings,
                 category: "Rings",
                 metal: "925 Sterling Silver",
                 purity: "Pure Silver",
@@ -83,7 +90,7 @@ const ProductDetails = () => {
                 name: "Silver Anjaneya Pendant With Box Chain",
                 price: 3799,
                 originalPrice: 6199,
-                image: "/images/men-categories/pendants.png",
+                image: menPendants,
                 category: "Pendants",
                 metal: "925 Sterling Silver",
                 purity: "Pure Silver",
@@ -96,7 +103,7 @@ const ProductDetails = () => {
                 name: "Silver Trooper Bracelet For Him",
                 price: 4199,
                 originalPrice: 6999,
-                image: "/images/men-categories/bracelets.png",
+                image: menBracelets,
                 category: "Bracelets",
                 metal: "925 Sterling Silver",
                 purity: "Pure Silver",
@@ -109,7 +116,7 @@ const ProductDetails = () => {
                 name: "Silver Statement Link Chain",
                 price: 6599,
                 originalPrice: 9999,
-                image: "/images/men-categories/chains.png",
+                image: menChains,
                 category: "Chains",
                 metal: "925 Sterling Silver",
                 purity: "Pure Silver",
@@ -306,6 +313,9 @@ const ProductDetails = () => {
     const variantPrice = selectedVariant?.price ?? product?.price;
     const variantMrp = selectedVariant?.mrp ?? product?.originalPrice;
     const variantDiscount = variantMrp > variantPrice ? Math.round(((variantMrp - variantPrice) / variantMrp) * 100) : 0;
+    const selectedVariantStock = Number(selectedVariant?.stock);
+    const availableStock = Number.isFinite(selectedVariantStock) ? Math.max(0, selectedVariantStock) : null;
+    const canAddToCart = availableStock === null || availableStock > 0;
 
     // Compute primary image with robust fallback
     const primaryImage = useMemo(() => {
@@ -337,6 +347,10 @@ const ProductDetails = () => {
 
     // Handlers for Animation
     const handleAddToCart = () => {
+        if (!canAddToCart) {
+            toast.error("This variant is out of stock");
+            return;
+        }
 
         // Add to cart with specific size
         setFlyingType('cart');
@@ -371,11 +385,7 @@ const ProductDetails = () => {
 
 
     if (isLoading || detailLoading) {
-        return (
-            <div className="bg-white min-h-screen flex items-center justify-center">
-                <div className="w-12 h-12 border-4 border-[#D39A9F] border-t-transparent rounded-full animate-spin"></div>
-            </div>
-        );
+        return <Loader />;
     }
 
     if (!product) {
@@ -485,9 +495,10 @@ const ProductDetails = () => {
                         {/* Action Button */}
                         <button
                             onClick={handleAddToCart}
-                            className="bg-[#8E2424] hover:bg-black text-white px-14 py-5 rounded-full font-bold text-xs tracking-widest uppercase transition-all shadow-xl shadow-[#8E2424]/20 active:scale-95"
+                            disabled={!canAddToCart}
+                            className={`px-14 py-5 rounded-full font-bold text-xs tracking-widest uppercase transition-all shadow-xl active:scale-95 ${canAddToCart ? 'bg-[#8E2424] hover:bg-black text-white shadow-[#8E2424]/20' : 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-gray-200'}`}
                         >
-                            Add to Cart
+                            {canAddToCart ? 'Add to Cart' : 'Out of Stock'}
                         </button>
                     </div>
                 </div>
@@ -496,18 +507,27 @@ const ProductDetails = () => {
                     {/* Left: Product Lookbook (Split: Video & Image) */}
                     <div className="relative space-y-4">
                         <div className="h-[400px] lg:h-[520px] w-full bg-white rounded-2xl overflow-hidden shadow-sm relative flex flex-col md:flex-row gap-[1px] border border-gray-100">
-                            {/* Video Pane */}
-                            <div className="w-full md:w-1/2 relative h-1/2 md:h-full group overflow-hidden border-r border-white/10">
-                                <video 
-                                    src={BrandVideo} 
-                                    autoPlay 
-                                    muted 
-                                    loop 
-                                    playsInline
-                                    className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
-                                />
-                                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/5 transition-colors" />
-                                
+                            {/* Video Pane (optional, product-specific) */}
+                            <div className="w-full md:w-1/2 relative h-1/2 md:h-full group overflow-hidden border-r border-white/10 bg-black">
+                                {product?.videoUrl ? (
+                                    <>
+                                        <video 
+                                            src={product.videoUrl} 
+                                            autoPlay 
+                                            muted 
+                                            loop 
+                                            playsInline
+                                            controls
+                                            className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
+                                        />
+                                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/5 transition-colors" />
+                                    </>
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-[#111]">
+                                        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/60">No product video</p>
+                                    </div>
+                                )}
+
                                 {/* Experience Sticker Layer (Subtle) */}
                                 <div className="absolute bottom-4 right-4 z-30 scale-75 md:scale-[0.85]">
                                     <div className="relative w-24 h-24 flex items-center justify-center animate-[spin_10s_linear_infinite]">
@@ -673,34 +693,6 @@ const ProductDetails = () => {
                             <p className="text-xs text-gray-500 font-medium">Inclusive of all taxes</p>
                         </div>
 
-                        {false && (
-                            <div className="border-b border-gray-100 pb-6">
-                                <div className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-3">Price Breakdown</div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                                    <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
-                                        <span className="text-gray-600">Metal Price</span>
-                                        <span className="font-semibold text-gray-900">{currencyText(pricingBreakdown.metalPrice || 0)}</span>
-                                    </div>
-                                    <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
-                                        <span className="text-gray-600">Making Charge</span>
-                                        <span className="font-semibold text-gray-900">{currencyText(pricingBreakdown.makingCharge || 0)}</span>
-                                    </div>
-                                    <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
-                                        <span className="text-gray-600">Diamond Price</span>
-                                        <span className="font-semibold text-gray-900">{currencyText(pricingBreakdown.diamondPrice || 0)}</span>
-                                    </div>
-                                    <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
-                                        <span className="text-gray-600">GST ({gstPercent}%)</span>
-                                        <span className="font-semibold text-gray-900">{currencyText(pricingBreakdown.gst || 0)}</span>
-                                    </div>
-                                </div>
-                                <div className="mt-4 flex items-center justify-between border-t border-gray-200 pt-4">
-                                    <span className="text-sm font-bold uppercase tracking-widest text-gray-500">Final Price</span>
-                                    <span className="text-lg font-bold text-black">{currencyText(pricingBreakdown.finalPrice || variantPrice || 0)}</span>
-                                </div>
-                            </div>
-                        )}
-
                         <div className="border-b border-gray-100 pb-6">
                             <div className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-3">Price Breakdown</div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
@@ -756,9 +748,13 @@ const ProductDetails = () => {
                                 </div>
                             )}
 
-                            <div className="flex items-center gap-2 text-emerald-700 text-sm font-medium">
+                            <div className={`flex items-center gap-2 text-sm font-medium ${canAddToCart ? 'text-emerald-700' : 'text-red-600'}`}>
                                 <ShieldCheck className="w-4 h-4" />
-                                <span>In stock - ready to ship from Sands Royal</span>
+                                <span>
+                                    {canAddToCart
+                                        ? `In stock${availableStock !== null ? ` - ${availableStock} left` : ''} - ready to ship from Sands Royal`
+                                        : 'Out of stock - this variant is currently unavailable'}
+                                </span>
                             </div>
 
 
@@ -770,9 +766,10 @@ const ProductDetails = () => {
                                 </div>
                                 <button
                                     onClick={handleAddToCart}
-                                    className="flex-1 bg-[#8E2424] text-white rounded-full h-14 font-bold uppercase tracking-widest text-[11px] flex items-center justify-center gap-2 active:scale-95 transition-all shadow-xl shadow-[#8E2424]/20"
+                                    disabled={!canAddToCart}
+                                    className={`flex-1 rounded-full h-14 font-bold uppercase tracking-widest text-[11px] flex items-center justify-center gap-2 active:scale-95 transition-all shadow-xl ${canAddToCart ? 'bg-[#8E2424] text-white shadow-[#8E2424]/20' : 'bg-gray-300 text-gray-500 shadow-gray-200 cursor-not-allowed'}`}
                                 >
-                                    Add to Cart
+                                    {canAddToCart ? 'Add to Cart' : 'Out of Stock'}
                                 </button>
                             </div>
                         </div>
@@ -1269,4 +1266,5 @@ const ProductDetails = () => {
 };
 
 export default ProductDetails;
+
 

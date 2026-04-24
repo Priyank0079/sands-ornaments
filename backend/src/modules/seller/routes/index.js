@@ -7,6 +7,9 @@ router.use("/profile",   require("./profile.routes"));
 router.use("/analytics", require("./analytics.routes"));
 router.use("/customers", require("./customer.routes"));
 router.use("/returns",   require("./return.routes"));
+router.use("/replacements", require("./replacement.routes"));
 router.use("/inventory", require("./inventory.routes"));
+router.use("/direct-sales", require("./directSale.routes"));
+router.use("/notifications", require("./notification.routes"));
 
 module.exports = router;

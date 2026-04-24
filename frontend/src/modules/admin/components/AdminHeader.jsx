@@ -2,6 +2,7 @@ import React from 'react';
 import { Bell, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
+import { adminService } from '../services/adminService';
 
 const AdminHeader = () => {
     const { user } = useAuth();
@@ -9,20 +10,27 @@ const AdminHeader = () => {
     const [counts, setCounts] = React.useState({ sellers: 0, customers: 0, notifications: 0 });
 
     React.useEffect(() => {
-        const updateCounts = () => {
-            const sellers = JSON.parse(localStorage.getItem('seller_data') || '[]');
+        let isMounted = true;
+
+        const updateCounts = async () => {
+            const sellers = await adminService.getSellers({ status: 'PENDING' });
             const users = JSON.parse(localStorage.getItem('users_data') || '[]');
             const notifs = JSON.parse(localStorage.getItem('admin_notifications') || '[]');
             
-            const pendingSellers = sellers.filter(s => s.status === 'PENDING').length;
+            const pendingSellers = Array.isArray(sellers) ? sellers.length : 0;
             const pendingUsers = users.filter(u => u.status === 'Pending' && (u.type === 'retailer' || u.type === 'horeca')).length;
             const unreadNotifs = notifs.filter(n => n.unread || !n.isRead).length;
-            
-            setCounts({ sellers: pendingSellers, customers: pendingUsers, notifications: unreadNotifs });
+
+            if (isMounted) {
+                setCounts({ sellers: pendingSellers, customers: pendingUsers, notifications: unreadNotifs });
+            }
         };
         updateCounts();
-        const interval = setInterval(updateCounts, 5000);
-        return () => clearInterval(interval);
+        const interval = setInterval(updateCounts, 15000);
+        return () => {
+            isMounted = false;
+            clearInterval(interval);
+        };
     }, []);
 
     const totalPending = counts.sellers + counts.customers + counts.notifications;

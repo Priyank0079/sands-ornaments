@@ -1,42 +1,55 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { buildFamilyCollectionPath } from '../../utils/familyNavigation';
+import { resolveLegacyCmsAsset } from '../../utils/legacyCmsAssets';
 
 // Import images
-import motherImg from '../../assets/family_3d_mother.png';
-import fatherImg from '../../assets/family_3d_father.png';
-import sisterImg from '../../assets/family_3d_sister.png';
-import brotherImg from '../../assets/family_3d_brother.png';
-import spouseImg from '../../assets/family_3d_spouse.png';
-import daughterImg from '../../assets/family_3d_daughter.png';
-import babyImg from '../../assets/family_3d_baby.png';
-import gmImg from '../../assets/family_3d_grandmother.png';
-import gfImg from '../../assets/family_3d_grandfather.png';
-import coupleImg from '../../assets/family_3d_couple.png';
+import motherImg from '@assets/family_3d_mother.png';
+import fatherImg from '@assets/family_3d_father.png';
+import sisterImg from '@assets/family_3d_sister.png';
+import brotherImg from '@assets/family_3d_brother.png';
+import spouseImg from '@assets/family_3d_spouse.png';
+import daughterImg from '@assets/family_3d_daughter.png';
+import babyImg from '@assets/family_3d_baby.png';
+import gmImg from '@assets/family_3d_grandmother.png';
+import gfImg from '@assets/family_3d_grandfather.png';
+import coupleImg from '@assets/family_3d_couple.png';
 
-const familyPicks = [
-    { id: '1', name: "For Mother", image: motherImg, path: buildFamilyCollectionPath('mother-picks') },
-    { id: '2', name: "For Father", image: fatherImg, path: buildFamilyCollectionPath('father-picks') },
-    { id: '3', name: "For Sister", image: sisterImg, path: buildFamilyCollectionPath('sister-picks') },
-    { id: '4', name: "For Brother", image: brotherImg, path: buildFamilyCollectionPath('brother-picks') },
-    { id: '5', name: "For Spouse", image: spouseImg, path: buildFamilyCollectionPath('spouse-picks') },
-    { id: '6', name: "For Daughter", image: daughterImg, path: buildFamilyCollectionPath('daughter-picks') },
-    { id: '7', name: "For Baby", image: babyImg, path: buildFamilyCollectionPath('baby-picks') },
-    { id: '8', name: "Grandmother", image: gmImg, path: buildFamilyCollectionPath('grandmother-picks') },
-    { id: '9', name: "Grandfather", image: gfImg, path: buildFamilyCollectionPath('grandfather-picks') },
-    { id: '10', name: "For Couple", image: coupleImg, path: buildFamilyCollectionPath('couple-picks') }
+const familyPicksFallback = [
+    { id: 'family-memory-1', name: "For Mother", image: motherImg, path: '/shop?source=family&filter=family' },
+    { id: 'family-memory-2', name: "For Father", image: fatherImg, path: '/shop?source=family&filter=family' },
+    { id: 'family-memory-3', name: "For Sister", image: sisterImg, path: '/shop?source=family&filter=family' },
+    { id: 'family-memory-4', name: "For Brother", image: brotherImg, path: '/shop?source=family&filter=family' },
+    { id: 'family-memory-5', name: "For Spouse", image: spouseImg, path: '/shop?source=family&filter=family' },
+    { id: 'family-memory-6', name: "For Daughter", image: daughterImg, path: '/shop?source=family&filter=family' },
+    { id: 'family-memory-7', name: "For Baby", image: babyImg, path: '/shop?source=family&filter=family' },
+    { id: 'family-memory-8', name: "Grandmother", image: gmImg, path: '/shop?source=family&filter=family' },
+    { id: 'family-memory-9', name: "Grandfather", image: gfImg, path: '/shop?source=family&filter=family' },
+    { id: 'family-memory-10', name: "For Couple", image: coupleImg, path: '/shop?source=family&filter=family' }
 ];
 
-const Family3DCarousel = () => {
+const Family3DCarousel = ({ sectionData }) => {
+    const baseItems = useMemo(() => {
+        const configured = Array.isArray(sectionData?.items) ? sectionData.items : [];
+        const normalized = configured
+            .map((item, index) => ({
+                id: item.itemId || item.id || `family-memory-${index + 1}`,
+                name: String(item.name || item.label || '').trim() || `Gift ${index + 1}`,
+                image: resolveLegacyCmsAsset(item.image, familyPicksFallback[index % familyPicksFallback.length]?.image || ''),
+                path: item.path || '/shop?source=family&filter=family'
+            }))
+            .filter((item) => Boolean(item.name) && Boolean(item.image) && Boolean(item.path));
+        return normalized.length > 0 ? normalized : familyPicksFallback;
+    }, [sectionData]);
+
     // 20 items to perfectly close the gap on the massive C-curve radius
     const cylinderItems = useMemo(() => {
         const items = [];
         while(items.length < 20) {
-            items.push(...familyPicks);
+            items.push(...baseItems);
         }
         return items.slice(0, 20);
-    }, []);
+    }, [baseItems]);
 
     // Responsive measurements for the shallow C-curve (large radius, compact cards)
     const [radius, setRadius] = useState(850);
@@ -126,10 +139,10 @@ const Family3DCarousel = () => {
                     className="relative hidden md:flex flex-col items-center justify-center mb-2 md:mb-8 text-center"
                 >
                     <div className="inline-block bg-[#8E2B45] text-white px-4 py-1 font-sans font-black tracking-[0.2em] text-[9px] uppercase rounded-none shadow-sm mb-3">
-                        Curated Picks
+                        {String(sectionData?.settings?.eyebrow || 'Curated Picks').trim() || 'Curated Picks'}
                     </div>
                     <h3 className="font-serif text-[#4A3B3F] text-2xl md:text-4xl font-medium tracking-tight uppercase">
-                        Gifts to Remember
+                        {String(sectionData?.settings?.title || sectionData?.label || 'Gifts to Remember').trim() || 'Gifts to Remember'}
                     </h3>
                 </motion.div>
 
@@ -192,3 +205,4 @@ const Family3DCarousel = () => {
 };
 
 export default Family3DCarousel;
+

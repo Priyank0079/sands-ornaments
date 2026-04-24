@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Facebook, Twitter, Instagram, Youtube, Truck, Mail, Phone, MapPin, Heart, ShieldCheck, Star } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import logo from '../assets/sands-logo.png'; // Using the official logo
+import logo from '@assets/sands-logo.png'; // Using the official logo
 import { normalizeExternalLink, normalizeFooterLink } from '../utils/navigation';
 
 const Footer = () => {
@@ -226,3 +226,4 @@ const Footer = () => {
 };
 
 export default Footer;
+

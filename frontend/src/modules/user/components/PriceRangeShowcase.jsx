@@ -3,18 +3,17 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useShop } from '../../../context/ShopContext';
 
-// Import images
-import price999 from '../assets/price_under_999.png';
-import price1999 from '../assets/price_under_1999.png';
-import price2999 from '../assets/price_under_2999.png';
-import price3999 from '../assets/price_under_3999.png';
+import price999 from '@assets/price_under_999.png';
+import price1999 from '@assets/price_under_1999.png';
+import price2999 from '@assets/price_under_2999.png';
+import price3999 from '@assets/price_under_3999.png';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 
 const priceRanges = [
-    { id: 'under-999', name: "Under INR 999", priceMax: 999, image: price999, path: "/shop?price_max=999" },
-    { id: 'under-1999', name: "Under INR 1999", priceMax: 1999, image: price1999, path: "/shop?price_max=1999" },
-    { id: 'under-2999', name: "Under INR 2999", priceMax: 2999, image: price2999, path: "/shop?price_max=2999" },
-    { id: 'under-3999', name: "Under INR 3999", priceMax: 3999, image: price3999, path: "/shop?price_max=3999" }
+    { id: 'under-999', name: 'Under INR 999', priceMax: 999, image: price999, path: '/shop?price_max=999' },
+    { id: 'under-1999', name: 'Under INR 1999', priceMax: 1999, image: price1999, path: '/shop?price_max=1999' },
+    { id: 'under-2999', name: 'Under INR 2999', priceMax: 2999, image: price2999, path: '/shop?price_max=2999' },
+    { id: 'under-3999', name: 'Under INR 3999', priceMax: 3999, image: price3999, path: '/shop?price_max=3999' }
 ];
 
 const PriceRangeShowcase = () => {
@@ -72,11 +71,9 @@ const PriceRangeShowcase = () => {
     return (
         <section className="py-8 md:py-10 bg-white overflow-hidden">
             <div className="container mx-auto px-4 md:px-6">
-                
-                {/* Clean Professional Header */}
                 <div className="text-center mb-8 md:mb-10">
                     <h2 className="font-sans text-2xl md:text-3xl text-[#111111] font-semibold mb-3 tracking-wide uppercase">
-                        {sectionData?.label || "Curated Selection"}
+                        {sectionData?.label || 'LUXURY IN RANGE'}
                     </h2>
                     <div className="w-12 h-1 bg-[#FFD6DB] mx-auto rounded-full"></div>
                 </div>
@@ -101,7 +98,6 @@ const PriceRangeShowcase = () => {
                                     to={itemPath || '/shop'}
                                     className="group flex flex-col h-full bg-white rounded-md border border-gray-100/80 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden"
                                 >
-                                    {/* Image Section - Compacted Aspect Ratio */}
                                     <div className="relative w-full aspect-square bg-white overflow-hidden">
                                         <img
                                             src={resolveLegacyCmsAsset(item.image, price999)}
@@ -110,9 +106,7 @@ const PriceRangeShowcase = () => {
                                         />
                                     </div>
 
-                                    {/* Clean Text Content matching the screenshot layout */}
                                     <div className="p-3 md:p-4 flex flex-col flex-grow justify-between bg-white text-left">
-                                        
                                         <div className="mb-3">
                                             <h3 className="text-[#1A1A1A] font-sans font-bold text-base md:text-lg tracking-wide uppercase">
                                                 {itemLabel}
@@ -122,7 +116,6 @@ const PriceRangeShowcase = () => {
                                             </p>
                                         </div>
 
-                                        {/* Pink Action Button at the absolute bottom */}
                                         <div className="mt-auto w-full bg-[#FFD6DB] text-[#222222] font-bold text-xs md:text-sm text-center py-2.5 rounded-sm group-hover:bg-[#FFC2C9] transition-colors duration-300 uppercase tracking-wider">
                                             Shop Now
                                         </div>
@@ -138,3 +131,4 @@ const PriceRangeShowcase = () => {
 };
 
 export default PriceRangeShowcase;
+

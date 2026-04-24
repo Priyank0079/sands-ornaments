@@ -88,3 +88,53 @@ exports.getHomepageData = async (req, res) => {
     return success(res, { banners, sections: normalized });
   } catch (err) { return error(res, err.message); }
 };
+
+exports.getPageData = async (req, res) => {
+  try {
+    const requestedPageKey = String(req.params.pageKey || "").trim();
+    const allowedPageKeys = new Set(["home", "shop-men", "shop-women", "shop-family", "gold-collection"]);
+
+    if (!allowedPageKeys.has(requestedPageKey)) {
+      return error(res, "Invalid page key", 400);
+    }
+
+    const query = requestedPageKey === "home"
+      ? {
+          isActive: true,
+          $or: [
+            { pageKey: "home" },
+            { pageKey: { $exists: false } },
+            { pageKey: null }
+          ]
+        }
+      : {
+          isActive: true,
+          pageKey: requestedPageKey
+        };
+
+    const sections = await HomepageSection.find(query)
+      .populate({
+        path: "items.productId",
+        select: "name slug productCode brand images variants rating tags status active weight weightUnit",
+        match: { status: "Active", active: { $ne: false } }
+      })
+      .sort({ sortOrder: 1, createdAt: 1 });
+
+    const normalized = sections.map((section) => {
+      const raw = section.toObject();
+      const items = (raw.items || []).filter((item) => {
+        if (item.productId) return Boolean(item.productId);
+        return true;
+      }).map((item) => (
+        item.productId
+          ? { ...item, productId: normalizeProductForResponse(item.productId) }
+          : item
+      ));
+      return { ...raw, items };
+    });
+
+    return success(res, { pageKey: requestedPageKey, sections: normalized });
+  } catch (err) {
+    return error(res, err.message);
+  }
+};

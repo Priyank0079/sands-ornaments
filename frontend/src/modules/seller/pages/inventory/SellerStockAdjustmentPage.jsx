@@ -50,24 +50,35 @@ const SellerStockAdjustmentPage = () => {
         setSaving(true);
         try {
             const entries = Object.entries(adjustments);
+            const payload = [];
             for (const [variantId, delta] of entries) {
                 const item = products.find(p => p.variantId === variantId);
                 if (!item) continue;
-                const newStock = item.stock + delta;
+                const newStock = (Number(item.stock) || 0) + (Number(delta) || 0);
                 if (newStock < 0) {
                     throw new Error(`Stock cannot go below zero for ${item.name}`);
                 }
-
-                const response = await sellerInventoryService.adjustStock({
+                payload.push({
                     productId: item.productId,
                     variantId,
                     newStock,
                     reason: "Manual adjustment by Seller"
                 });
+            }
 
-                if (!response?.success) {
-                    throw new Error(response?.message || `Failed to update ${item.name}`);
-                }
+            if (payload.length === 0) {
+                toast.error("No valid changes to save");
+                return;
+            }
+
+            const response = await sellerInventoryService.adjustStock({ adjustments: payload });
+            if (!response?.success) {
+                throw new Error(response?.message || "Failed to update inventory");
+            }
+
+            const failures = response?.data?.failures || [];
+            if (failures.length > 0) {
+                toast.error(`Saved with ${failures.length} issue(s). Some variants were not updated.`);
             }
             toast.success("Inventory updated");
             setAdjustments({});

@@ -1,16 +1,17 @@
-import React, { useRef } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { buildMenShopPath } from '../../utils/menNavigation';
+import { resolveLegacyCmsAsset } from '../../utils/legacyCmsAssets';
 
 // Asset imports
-import edgeBanner from '../../../../assets/explore/edge_banner.png';
-import classicsBanner from '../../../../assets/explore/classics_banner.png';
-import iykykBanner from '../../../../assets/explore/iykyk_banner.png';
-import thumbRing from '../../../../assets/explore/thumb_ring.png';
-import thumbChain from '../../../../assets/explore/thumb_chain.png';
-import thumbPendant from '../../../../assets/explore/thumb_pendant.png';
+import edgeBanner from '@assets/explore/edge_banner.png';
+import classicsBanner from '@assets/explore/classics_banner.png';
+import iykykBanner from '@assets/explore/iykyk_banner.png';
+import thumbRing from '@assets/explore/thumb_ring.png';
+import thumbChain from '@assets/explore/thumb_chain.png';
+import thumbPendant from '@assets/explore/thumb_pendant.png';
 
 const exploreCollections = [
     {
@@ -39,9 +40,40 @@ const exploreCollections = [
     }
 ];
 
-const MenExploreCollections = () => {
+const MenExploreCollections = ({ sectionData }) => {
     const navigate = useNavigate();
     const scrollRef = useRef(null);
+
+    const resolvedTitle = sectionData?.settings?.title || 'Explore Collections';
+    const resolvedCollections = useMemo(() => {
+        const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
+        const normalizedConfigured = configuredItems
+            .filter((item) => item?.image)
+            .map((item, index) => {
+                const fallbackItem = exploreCollections[index];
+                return {
+                    id: item.itemId || item.id || `men-explore-${index}`,
+                    title: item.name || item.label || fallbackItem?.title || '',
+                    description: item.subtitle || item.description || fallbackItem?.description || '',
+                    image: resolveLegacyCmsAsset(item.image, fallbackItem?.image || ''),
+                    link: item.categoryId
+                        ? buildMenShopPath({ category: item.categoryId })
+                        : (item.path || fallbackItem?.link || buildMenShopPath()),
+                    items: (() => {
+                        const configuredThumbs = Array.isArray(item.extraImages) ? item.extraImages : [];
+                        if (configuredThumbs.length > 0) {
+                            return configuredThumbs.map((thumb, thumbIndex) => (
+                                resolveLegacyCmsAsset(thumb, fallbackItem?.items?.[thumbIndex] || '')
+                            )).filter(Boolean);
+                        }
+                        return fallbackItem?.items || [];
+                    })()
+                };
+            })
+            .filter((item) => item.title && item.image && item.link);
+
+        return normalizedConfigured.length > 0 ? normalizedConfigured : exploreCollections;
+    }, [sectionData]);
 
     const scroll = (direction) => {
         if (scrollRef.current) {
@@ -62,7 +94,7 @@ const MenExploreCollections = () => {
                 {/* Header */}
                 <div className="text-center mb-4 md:mb-6">
                     <h2 className="text-xl md:text-[28px] font-bold text-gray-900 tracking-tight uppercase" style={{ fontFamily: "'Inter', sans-serif" }}>
-                        Explore Collections
+                        {resolvedTitle}
                     </h2>
                 </div>
 
@@ -87,7 +119,7 @@ const MenExploreCollections = () => {
                         ref={scrollRef}
                         className="flex overflow-x-auto gap-4 md:gap-10 pb-10 md:pb-16 hide-scrollbar scroll-smooth snap-x snap-mandatory px-[7.5vw] md:px-12"
                     >
-                        {exploreCollections.map((col, idx) => (
+                        {resolvedCollections.map((col, idx) => (
                             <div key={col.id} className="flex-shrink-0 w-[85vw] md:w-[650px] lg:w-[700px] snap-center relative">
                                 {/* Main Banner Card */}
                                 <motion.div 
@@ -158,3 +190,4 @@ const MenExploreCollections = () => {
 };
 
 export default MenExploreCollections;
+

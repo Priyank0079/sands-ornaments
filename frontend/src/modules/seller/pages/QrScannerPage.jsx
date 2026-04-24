@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Html5Qrcode } from 'html5-qrcode';
 import { X, QrCode, ArrowLeft, CheckCircle2 as SuccessIcon, Package, Zap, ZapOff, Loader2 } from 'lucide-react';
-import { sellerProductService } from '../services/sellerProductService';
+import { sellerDirectSaleService } from '../services/sellerDirectSaleService';
 import toast from 'react-hot-toast';
 
 const QrScannerPage = () => {
@@ -10,6 +10,7 @@ const QrScannerPage = () => {
     const [scanResult, setScanResult] = useState(null);
     const [loading, setLoading] = useState(false);
     const [scannedProduct, setScannedProduct] = useState(null);
+    const [confirming, setConfirming] = useState(false);
     const [isFlashOn, setIsFlashOn] = useState(false);
     const [scannerReady, setScannerReady] = useState(false);
     const scannerRef = useRef(null);
@@ -76,20 +77,47 @@ const QrScannerPage = () => {
             if (window.navigator?.vibrate) {
                 window.navigator.vibrate(200);
             }
-        } catch (e) {}
+        } catch (_e) {
+            // Ignore sound/vibration failures (common on some browsers/devices).
+        }
     };
 
     const handleProductScan = async (code) => {
         setLoading(true);
         try {
-            const response = await sellerProductService.scanProduct(code);
-            setScannedProduct(response);
-            toast.success("Identity Verified: Product Recognized");
+            const response = await sellerDirectSaleService.preview({ serialCode: code });
+            if (!response?.success) throw new Error(response?.message || "Failed to preview");
+            const data = response?.data || response;
+            setScannedProduct({
+                name: data.product?.name,
+                stock: data.variant?.stock,
+                price: data.variant?.price,
+                serialCode: data.serialCode,
+                available: data.available,
+                status: data.status
+            });
+            toast.success(data.available ? "Identity Verified: Unit Available" : "Unit Not Available");
         } catch (err) {
             toast.error(err.response?.data?.message || "Critical: Decrypted data mismatch");
             setScanResult(null); // Reset to allow retry
         } finally {
             setLoading(false);
+        }
+    };
+
+    const confirmDirectSale = async () => {
+        if (!scannedProduct?.serialCode) return;
+        setConfirming(true);
+        try {
+            const res = await sellerDirectSaleService.confirm({ serialCode: scannedProduct.serialCode, paymentMethod: 'cash' });
+            if (!res?.success) throw new Error(res?.message || "Failed to record sale");
+            toast.success("Direct sale recorded");
+            setScannedProduct(null);
+            setScanResult(null);
+        } catch (err) {
+            toast.error(err?.message || "Failed to record sale");
+        } finally {
+            setConfirming(false);
         }
     };
 
@@ -182,16 +210,24 @@ const QrScannerPage = () => {
                                  <p className="text-lg font-black text-[#3E2723]">₹{scannedProduct.price || 0}</p>
                              </div>
                              <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                 <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Assigned ID</p>
-                                 <p className="text-lg font-mono font-black text-[#8D6E63]">{scanResult}</p>
+                                <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Assigned ID</p>
+                                <p className="text-lg font-mono font-black text-[#8D6E63]">{scanResult}</p>
                              </div>
                         </div>
 
                         <button 
-                            onClick={() => { setScannedProduct(null); setScanResult(null); }}
-                            className="w-full py-5 bg-[#3E2723] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs shadow-xl shadow-[#3E2723]/30 active:scale-95 transition-all"
+                            onClick={confirmDirectSale}
+                            disabled={confirming || scannedProduct.available === false}
+                            className="w-full py-5 bg-[#3E2723] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs shadow-xl shadow-[#3E2723]/30 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            Log Another Transaction
+                            {confirming ? 'Recording...' : (scannedProduct.available === false ? 'Not Available' : 'Confirm Direct Sale')}
+                        </button>
+
+                        <button
+                            onClick={() => { setScannedProduct(null); setScanResult(null); }}
+                            className="w-full py-4 bg-gray-50 text-gray-700 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] border border-gray-200 active:scale-95 transition-all"
+                        >
+                            Cancel / Scan Again
                         </button>
                     </div>
                 </div>

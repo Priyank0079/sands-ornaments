@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useShop } from '../../../context/ShopContext';
 import PriceRangeShowcase from '../components/PriceRangeShowcase';
 import PerfectGift from '../components/PerfectGift';
 import NewLaunchSection from '../components/NewLaunchSection';
@@ -12,7 +13,6 @@ import AutoBannerSection from '../components/AutoBannerSection';
 import ShopByColour from '../components/ShopByColour';
 import StyleItYourWay from '../components/StyleItYourWay';
 import OccasionalSpecial from '../components/OccasionalSpecial';
-import DiamondStoryBanner from '../components/DiamondStoryBanner';
 import AllJewellery from '../components/AllJewellery';
 import Testimonials from '../components/Testimonials';
 import BrandPromises from '../components/BrandPromises';
@@ -21,7 +21,7 @@ import ChitChatSection from '../components/ChitChatSection';
 import SilverNewLaunchGrid from '../components/SilverNewLaunchGrid';
 import SilverCollectionSection from '../components/SilverCollectionSection';
 import SilverCuratedShowcase from '../components/SilverCuratedShowcase';
-import { useShop } from '../../../context/ShopContext';
+import Loader from '../../shared/components/Loader';
 
 const Home = () => {
     const { isLoading } = useShop();
@@ -30,15 +30,8 @@ const Home = () => {
         document.title = "Sands Ornaments | Pure 925 Silver Jewellery - Timeless Elegance";
     }, []);
 
-    // Hero logic moved to PromoSlider component for better modularity and premium layout.
-    // Carousel state handled within PromoSlider component.
-
     if (isLoading) {
-        return (
-            <div className="bg-white min-h-screen flex items-center justify-center">
-                <div className="w-12 h-12 border-4 border-[#4A1015] border-t-transparent rounded-full animate-spin"></div>
-            </div>
-        );
+        return <Loader />;
     }
 
     return (
@@ -76,7 +69,6 @@ const Home = () => {
             <NewLaunchSection />
             <StyleItYourWay />
             <OccasionalSpecial />
-            <DiamondStoryBanner />
             <AllJewellery />
             <SilverCollectionSection />
             <SilverCuratedShowcase />

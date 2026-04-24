@@ -30,7 +30,7 @@ const StockHistoryPage = () => {
                         ? `Admin (${log.adminId.name})`
                         : (log.sellerId?.shopName || log.sellerId?.fullName
                             ? `Seller (${log.sellerId.shopName || log.sellerId.fullName})`
-                            : 'System'),
+                            : (log.userId?.name ? `Customer (${log.userId.name})` : 'System')),
                     reason: log.reason || ''
                 }));
                 setHistory(normalized);

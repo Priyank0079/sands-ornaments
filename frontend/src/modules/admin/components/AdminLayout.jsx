@@ -8,8 +8,9 @@ import {
     AlertTriangle, FileBarChart, Store
 } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
-import logo from '../assets/sands-logo.png';
-import logoName from '../assets/sands-logoname.png';
+import { adminService } from '../services/adminService';
+import logo from '@assets/sands-logo.png';
+import logoName from '@assets/sands-logoname.png';
 
 const AdminLayout = ({ children }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 1024);
@@ -65,14 +66,14 @@ const AdminLayout = ({ children }) => {
         { name: 'Sellers', icon: Store, path: '/admin/sellers' },
         { name: 'Users', icon: Users, path: '/admin/users' },
         { name: 'Reviews', icon: Star, path: '/admin/reviews' },
-        { name: 'Banners', icon: ImageIcon, path: '/admin/banners' },
         {
             name: 'Notifications',
             icon: Bell,
             path: '/admin/notifications',
             subItems: [
                 { name: 'Create Notification', path: '/admin/notifications/add', icon: Plus },
-                { name: 'Notification List', path: '/admin/notifications', icon: List }
+                { name: 'Notification List', path: '/admin/notifications', icon: List },
+                { name: 'Global Broadcasts', path: '/admin/broadcasts', icon: Bell }
             ]
         },
         {
@@ -117,34 +118,41 @@ const AdminLayout = ({ children }) => {
     const prevCountRef = React.useRef(0);
 
     React.useEffect(() => {
-        const checkNotifications = () => {
-            const allNotifs = JSON.parse(localStorage.getItem('admin_notifications') || '[]');
-            const unreadCount = allNotifs.filter(n => n.unread).length;
+        let mounted = true;
+        let hideTimer = null;
+
+        const checkNotifications = async () => {
+            const allNotifs = await adminService.getAdminNotifications({ limit: 100 });
+            if (!mounted) return;
+
+            const safeNotifications = Array.isArray(allNotifs) ? allNotifs : [];
+            const unreadItems = safeNotifications.filter((n) => !n?.isRead);
+            const unreadCount = unreadItems.length;
 
             if (unreadCount > prevCountRef.current) {
-                // New notification arrived
-                const newest = allNotifs.find(n => n.unread);
+                const newest = unreadItems[0];
                 if (newest) {
                     setLatestNotif(newest);
                     setShowPopup(true);
-                    setTimeout(() => setShowPopup(false), 8000);
+                    if (hideTimer) clearTimeout(hideTimer);
+                    hideTimer = setTimeout(() => setShowPopup(false), 8000);
                 }
             }
+
             prevCountRef.current = unreadCount;
-            setNotifications(allNotifs);
+            setNotifications(safeNotifications);
         };
 
         checkNotifications();
-        const interval = setInterval(checkNotifications, 3000); // Poll every 3 seconds
-
-        window.addEventListener('storage', checkNotifications);
+        const interval = setInterval(checkNotifications, 10000);
         return () => {
+            mounted = false;
             clearInterval(interval);
-            window.removeEventListener('storage', checkNotifications);
+            if (hideTimer) clearTimeout(hideTimer);
         };
     }, []);
 
-    const unreadCount = notifications.filter(n => n.unread).length;
+    const unreadCount = notifications.filter((n) => !n?.isRead).length;
 
     // State for expanded menus
     const [expandedMenu, setExpandedMenu] = useState(() => {
@@ -385,3 +393,4 @@ const AdminLayout = ({ children }) => {
 };
 
 export default AdminLayout;
+

@@ -1,5 +1,5 @@
 const Notification = require("../../../models/Notification");
-const User = require("../../../models/User");
+const mongoose = require("mongoose");
 const { success, error } = require("../../../utils/apiResponse");
 
 // ── User: My Notifications ───────────────────────────────────────────────────
@@ -22,10 +22,20 @@ exports.getMyNotifications = async (req, res) => {
 exports.markAsRead = async (req, res) => {
   try {
     const { id } = req.params;
+    const userId = req.user.userId;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return error(res, "Invalid notification id", 400);
+    }
     const notification = await Notification.findById(id);
     if (!notification) return error(res, "Notification not found", 404);
 
-    notification.read = true;
+    const canAccess =
+      notification.isBroadcast ||
+      String(notification.userId || "") === String(userId);
+
+    if (!canAccess) return error(res, "Notification not found", 404);
+
+    notification.isRead = true;
     await notification.save();
 
     return success(res, {}, "Marked as read");

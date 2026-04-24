@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Calendar } from 'lucide-react';
 import api from '../../../services/api';
-import blogFallback from '../assets/trending_heritage.png';
+import blogFallback from '@assets/trending_heritage.png';
+import Loader from '../../shared/components/Loader';
 
 const blogFallbackImage = blogFallback;
 
@@ -38,14 +39,7 @@ const BlogDetailPage = () => {
     document.title = blog?.title ? `${blog.title} | Sands Ornaments` : 'Blog | Sands Ornaments';
   }, [blog]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDF5F6]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3E2723]"></div>
-        <p className="mt-4 text-gray-500 font-medium">Loading article...</p>
-      </div>
-    );
-  }
+  if (loading) return <Loader />;
 
   if (!blog) {
     return (

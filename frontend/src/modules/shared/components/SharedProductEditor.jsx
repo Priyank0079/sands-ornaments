@@ -23,7 +23,8 @@ const quillModules = {
 const quillFormats = [
     'header',
     'bold', 'italic', 'underline', 'strike',
-    'list', 'bullet',
+    // Quill only needs `list` here; "bullet" is a list value, not a format.
+    'list',
     'link'
 ];
 
@@ -50,10 +51,11 @@ const SharedProductEditor = ({
     const [previewImages, setPreviewImages] = useState([]);
     const [variantImageFiles, setVariantImageFiles] = useState({});
     const [variantImagePreviews, setVariantImagePreviews] = useState({});
+    const [videoFile, setVideoFile] = useState(null);
+    const [videoPreview, setVideoPreview] = useState('');
+    const [removeVideo, setRemoveVideo] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [errors, setErrors] = useState({});
-    const [navGiftOptions, setNavGiftOptions] = useState([]);
-    const [navOccasionOptions, setNavOccasionOptions] = useState([]);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [createdProductData, setCreatedProductData] = useState(null);
     const serialBarcodeRefs = useRef({});
@@ -210,14 +212,39 @@ const SharedProductEditor = ({
         return roundCurrency(weight * getMetalRate(variant));
     };
 
+    const getPaymentGatewayChargePercent = () => (
+        String(formData.paymentGatewayChargeBearer || 'seller').toLowerCase() === 'user' ? 2 : 0
+    );
+
     const getPricingForVariant = (variant) => {
         const metalPrice = getMetalPrice(variant);
         const makingCharge = Number(variant.makingCharge) || 0;
-        const diamondPrice = Number(variant.diamondPrice) || 0;
-        const subtotal = roundCurrency(metalPrice + makingCharge + diamondPrice);
-        const gstValue = roundCurrency((subtotal * (Number(gstRate) || 0)) / 100);
-        const finalPrice = roundCurrency(subtotal + gstValue);
-        return { metalPrice, subtotal, gstValue, finalPrice };
+        const hallmarkingCharge = Number(variant.hallmarkingCharge) || 0;
+        const diamondCertificateCharge = Number(
+            variant.diamondCertificateCharge !== undefined && variant.diamondCertificateCharge !== null
+                ? variant.diamondCertificateCharge
+                : variant.diamondPrice
+        ) || 0;
+        const hiddenCharge = roundCurrency(hallmarkingCharge + diamondCertificateCharge);
+        const subtotalBeforeTax = roundCurrency(metalPrice + makingCharge + hiddenCharge);
+        const gstValue = roundCurrency((subtotalBeforeTax * (Number(gstRate) || 0)) / 100);
+        const priceAfterTax = roundCurrency(subtotalBeforeTax + gstValue);
+        const pgChargePercent = getPaymentGatewayChargePercent();
+        const pgChargeAmount = roundCurrency((priceAfterTax * pgChargePercent) / 100);
+        const finalPrice = roundCurrency(priceAfterTax + pgChargeAmount);
+        return {
+            metalPrice,
+            makingCharge,
+            hallmarkingCharge,
+            diamondCertificateCharge,
+            hiddenCharge,
+            subtotalBeforeTax,
+            gstValue,
+            priceAfterTax,
+            pgChargePercent,
+            pgChargeAmount,
+            finalPrice
+        };
     };
 
     const generateSerialCode = (existingSet, variantIndex, prefixOverride) => {
@@ -257,33 +284,6 @@ const SharedProductEditor = ({
         };
     };
 
-    const toSlugValue = (label) => {
-        return String(label || '')
-            .trim()
-            .toLowerCase()
-            .replace(/['"]/g, '')
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/^-+|-+$/g, '');
-    };
-
-    const getQueryParamValue = (path, key) => {
-        if (!path || !path.includes('?')) return '';
-        const query = path.split('?')[1] || '';
-        const params = new URLSearchParams(query);
-        return params.get(key) || '';
-    };
-
-    const buildNavOptions = (section, key, fallback) => {
-        if (section?.items?.length) {
-            return section.items.map(item => {
-                const label = item.name || item.label || '';
-                const value = getQueryParamValue(item.path, key) || toSlugValue(label);
-                return { label, value };
-            }).filter(opt => opt.value);
-        }
-        return fallback.map(label => ({ label, value: toSlugValue(label) }));
-    };
-
     const [metalRates, setMetalRates] = useState({
         goldPerGram: 0,
         goldPerMilligram: 0,
@@ -311,26 +311,52 @@ const SharedProductEditor = ({
         cardBadge: '',
         huid: '',
         material: 'Silver',
+        audience: ['unisex'],
         weight: '',
         weightUnit: 'Grams',
         specifications: '',
         supplierInfo: '',
+        paymentGatewayChargeBearer: 'seller',
         categories: [{ category: '' }],
         tags: {
             isNewArrival: false,
             isMostGifted: false,
             isNewLaunch: false
         },
-        navGiftsFor: [],
-        navOccasions: [],
         variants: [
-            { id: Date.now(), name: 'Standard', weight: '', weightUnit: 'Grams', makingCharge: '0', diamondPrice: '0', mrp: '0', price: '', stock: 0, serialCodes: [], metalPrice: 0, gst: 0, finalPrice: 0, variantCode: '', variantImages: [], variantFaqs: [] }
+            {
+                id: Date.now(),
+                name: 'Standard',
+                weight: '',
+                weightUnit: 'Grams',
+                makingCharge: '0',
+                hallmarkingCharge: '0',
+                diamondCertificateCharge: '0',
+                diamondPrice: '0',
+                mrp: '0',
+                price: '',
+                stock: 0,
+                serialCodes: [],
+                metalPrice: 0,
+                hiddenCharge: 0,
+                subtotalBeforeTax: 0,
+                gstAmount: 0,
+                priceAfterTax: 0,
+                pgChargePercent: 0,
+                pgChargeAmount: 0,
+                gst: 0,
+                finalPrice: 0,
+                variantCode: '',
+                variantImages: [],
+                variantFaqs: []
+            }
         ],
         faqs: [],
         deletedImages: [],
         silverCategory: '', // New Field for silver purity
         goldCategory: '', // New Field for gold purity
         careTips: '', // New Field for caring tips
+        videoUrl: '',
         isSerialized: true,
         productCodes: []
     });
@@ -367,20 +393,11 @@ const SharedProductEditor = ({
     useEffect(() => {
         const loadCategories = async () => {
             try {
-                const [categoryResult, cmsRes] = await Promise.all([
-                    categoryApi ? categoryApi() : Promise.resolve([]),
-                    api.get('public/cms/homepage').catch(() => null)
-                ]);
+                const categoryResult = await (categoryApi ? categoryApi() : Promise.resolve([]));
                 const list = Array.isArray(categoryResult)
                     ? categoryResult
                     : (categoryResult?.data?.data?.categories || categoryResult?.data?.categories || []);
                 setCategories(list.filter(cat => cat.isActive !== false));
-
-                const sections = cmsRes?.data?.data?.sections || [];
-                const giftSection = sections.find(sec => sec.sectionId === 'nav-gifts-for');
-                const occasionSection = sections.find(sec => sec.sectionId === 'nav-occasions');
-                setNavGiftOptions(buildNavOptions(giftSection, 'filter', ['Womens', 'Girls', 'Mens', 'Couple', 'Kids']));
-                setNavOccasionOptions(buildNavOptions(occasionSection, 'occasion', ['Birthday', 'Anniversary', 'Wedding', "Mother's Day", 'Valentine Day']));
             } catch (err) {
                 toast.error("Failed to load categories");
             }
@@ -409,6 +426,15 @@ const SharedProductEditor = ({
         loadPricing();
     }, []);
 
+    // Clean up object URLs for selected local video files.
+    useEffect(() => {
+        return () => {
+            if (videoPreview && String(videoPreview).startsWith('blob:')) {
+                try { URL.revokeObjectURL(videoPreview); } catch (e) { /* noop */ }
+            }
+        };
+    }, [videoPreview]);
+
     // Auto-generate Product Code Logic
     useEffect(() => {
         if (!isEditMode && formData.name.length >= 3 && !formData.productCode) {
@@ -428,12 +454,18 @@ const SharedProductEditor = ({
                     mrp: pricing.finalPrice.toString(),
                     price: pricing.finalPrice.toString(),
                     metalPrice: pricing.metalPrice,
+                    hiddenCharge: pricing.hiddenCharge,
+                    subtotalBeforeTax: pricing.subtotalBeforeTax,
+                    gstAmount: pricing.gstValue,
+                    priceAfterTax: pricing.priceAfterTax,
+                    pgChargePercent: pricing.pgChargePercent,
+                    pgChargeAmount: pricing.pgChargeAmount,
                     gst: pricing.gstValue,
                     finalPrice: pricing.finalPrice
                 };
             })
         }));
-    }, [formData.material, formData.weight, formData.weightUnit, gstRate, metalRates]);
+    }, [formData.material, formData.weight, formData.weightUnit, formData.paymentGatewayChargeBearer, gstRate, metalRates]);
 
     useEffect(() => {
         const loadProduct = async () => {
@@ -472,11 +504,11 @@ const SharedProductEditor = ({
                         ...prev,
                         ...restData,
                         material: data.material || data.metal || 'Silver',
+                        audience: Array.isArray(data.audience) && data.audience.length > 0 ? data.audience : ['unisex'],
                         weight: data.weight || '',
                         weightUnit: data.weightUnit || 'Grams',
+                        paymentGatewayChargeBearer: data.paymentGatewayChargeBearer || 'seller',
                         categories: normalizedCategories.slice(0, 1),
-                        navGiftsFor: Array.isArray(data.navGiftsFor) ? data.navGiftsFor : [],
-                        navOccasions: Array.isArray(data.navOccasions) ? data.navOccasions : [],
                         variants: data.variants?.map((v, index) => {
                             const serialCodes = normalizeSerialCodes(v.serialCodes || []);
                             const prefix = String(data.name || '').toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 4) || 'ITEM';
@@ -492,6 +524,12 @@ const SharedProductEditor = ({
                                 weight: v.weight ?? data.weight ?? '',
                                 weightUnit: v.weightUnit || data.weightUnit || 'Grams',
                                 makingCharge: (v.makingCharge || 0).toString(),
+                                hallmarkingCharge: (v.hallmarkingCharge || 0).toString(),
+                                diamondCertificateCharge: (
+                                    v.diamondCertificateCharge !== undefined && v.diamondCertificateCharge !== null
+                                        ? v.diamondCertificateCharge
+                                        : (v.diamondPrice || 0)
+                                ).toString(),
                                 diamondPrice: (v.diamondPrice || 0).toString(),
                                 serialCodes: ensured.serialCodes,
                                 stock: ensured.stock,
@@ -504,12 +542,17 @@ const SharedProductEditor = ({
                         silverCategory: data.silverCategory || '',
                         goldCategory: data.goldCategory || '',
                         careTips: data.careTips || '',
+                        videoUrl: data.videoUrl || '',
                         isSerialized: true,
                         productCodes: []
                     }));
                     if (data.images) {
                         setPreviewImages(data.images);
                     }
+                    // Video is optional. Preview comes from backend URL (if any).
+                    setVideoFile(null);
+                    setRemoveVideo(false);
+                    setVideoPreview(data.videoUrl || '');
                     setVariantImageFiles({});
                     setVariantImagePreviews({});
                 }
@@ -522,12 +565,39 @@ const SharedProductEditor = ({
         loadProduct();
     }, [id, isEditMode, isViewMode]);
 
+    const handleVideoUpload = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setVideoFile(file);
+        setRemoveVideo(false);
+        setVideoPreview(URL.createObjectURL(file));
+    };
+
+    const handleRemoveVideo = () => {
+        setVideoFile(null);
+        setVideoPreview('');
+        setRemoveVideo(true);
+        setFormData(prev => ({ ...prev, videoUrl: '' }));
+    };
+
     const handleImageUpload = (e) => {
         const files = Array.from(e.target.files);
         const newFiles = files.slice(0, 5 - imageFiles.length);
         const previews = newFiles.map(file => URL.createObjectURL(file));
         setImageFiles(prev => [...prev, ...newFiles]);
         setPreviewImages(prev => [...prev, ...previews].slice(0, 5));
+    };
+
+    const handleHoverImageUpload = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (previewImages.length >= 5) {
+            toast.error('You can upload up to 5 images.');
+            return;
+        }
+        const preview = URL.createObjectURL(file);
+        setImageFiles(prev => [...prev, file]);
+        setPreviewImages(prev => [...prev, preview].slice(0, 5));
     };
 
     const handleVariantImageUpload = (variantId, filesList) => {
@@ -629,11 +699,20 @@ const SharedProductEditor = ({
                 if (v.id === vid) {
                     const updated = { ...v, [field]: value };
                     
-                    if (['makingCharge', 'diamondPrice', 'weight', 'weightUnit'].includes(field)) {
+                    if (['makingCharge', 'hallmarkingCharge', 'diamondCertificateCharge', 'diamondPrice', 'weight', 'weightUnit'].includes(field)) {
+                        if (field === 'diamondCertificateCharge') {
+                            updated.diamondPrice = value;
+                        }
                         const pricing = getPricingForVariant(updated);
                         updated.mrp = pricing.finalPrice.toString();
                         updated.price = pricing.finalPrice.toString();
                         updated.metalPrice = pricing.metalPrice;
+                        updated.hiddenCharge = pricing.hiddenCharge;
+                        updated.subtotalBeforeTax = pricing.subtotalBeforeTax;
+                        updated.gstAmount = pricing.gstValue;
+                        updated.priceAfterTax = pricing.priceAfterTax;
+                        updated.pgChargePercent = pricing.pgChargePercent;
+                        updated.pgChargeAmount = pricing.pgChargeAmount;
                         updated.gst = pricing.gstValue;
                         updated.finalPrice = pricing.finalPrice;
                     }
@@ -653,11 +732,19 @@ const SharedProductEditor = ({
                 weight: prev.weight || '',
                 weightUnit: prev.weightUnit || 'Grams',
                 makingCharge: '0', 
+                hallmarkingCharge: '0',
+                diamondCertificateCharge: '0',
                 diamondPrice: '0', 
                 mrp: '0', 
                 price: '', 
                 stock: 0,
                 serialCodes: [],
+                hiddenCharge: 0,
+                subtotalBeforeTax: 0,
+                gstAmount: 0,
+                priceAfterTax: 0,
+                pgChargePercent: 0,
+                pgChargeAmount: 0,
                 variantCode: '',
                 variantImages: [],
                 variantFaqs: []
@@ -739,15 +826,6 @@ const SharedProductEditor = ({
 
     const handleCategoryChange = (value) => {
         setFormData(prev => ({ ...prev, categories: [{ category: value }] }));
-    };
-
-    const toggleNavValue = (field, value) => {
-        setFormData(prev => {
-            const current = Array.isArray(prev[field]) ? prev[field] : [];
-            const exists = current.includes(value);
-            const updated = exists ? current.filter(v => v !== value) : [...current, value];
-            return { ...prev, [field]: updated };
-        });
     };
 
     const addFaq = () => {
@@ -840,12 +918,12 @@ const SharedProductEditor = ({
                 'categories',
                 'tags',
                 'deletedImages',
-                'navGiftsFor',
-                'navOccasions',
                 'navShopByCategory',
+                'audience',
                 'faqs',
                 'isSerialized',
                 'productCodes',
+                'videoUrl',
                 'image',
                 '_id',
                 'id',
@@ -874,6 +952,7 @@ const SharedProductEditor = ({
             });
 
             productForm.append('categories', JSON.stringify([formData.categories[0].category]));
+            productForm.append('audience', JSON.stringify(Array.isArray(formData.audience) && formData.audience.length > 0 ? formData.audience : ['unisex']));
             const normalizedVariants = formData.variants.map((variantItem) => {
                 const serialCodes = normalizeSerialCodes(variantItem.serialCodes || []);
                 const availableCount = serialCodes.filter(code => (code.status || 'AVAILABLE') === 'AVAILABLE').length;
@@ -898,7 +977,15 @@ const SharedProductEditor = ({
             productForm.append('variants', JSON.stringify(normalizedVariants.map(({ id, _id, sold, ...rest }) => ({
                 ...rest,
                 makingCharge: parseFloat(rest.makingCharge) || 0,
+                hallmarkingCharge: parseFloat(rest.hallmarkingCharge) || 0,
+                diamondCertificateCharge: parseFloat(rest.diamondCertificateCharge) || 0,
                 diamondPrice: parseFloat(rest.diamondPrice) || 0,
+                hiddenCharge: parseFloat(rest.hiddenCharge) || 0,
+                subtotalBeforeTax: parseFloat(rest.subtotalBeforeTax) || 0,
+                gstAmount: parseFloat(rest.gstAmount) || 0,
+                priceAfterTax: parseFloat(rest.priceAfterTax) || 0,
+                pgChargePercent: parseFloat(rest.pgChargePercent) || 0,
+                pgChargeAmount: parseFloat(rest.pgChargeAmount) || 0,
                 mrp: parseFloat(rest.mrp) || 0,
                 price: parseFloat(rest.price) || 0,
                 stock: parseInt(rest.stock) || 0,
@@ -909,10 +996,6 @@ const SharedProductEditor = ({
             productForm.append('faqs', JSON.stringify((formData.faqs || []).map(({ _id, ...rest }) => ({
                 ...rest
             }))));
-            const normalizedGifts = (formData.navGiftsFor || []).map(toSlugValue);
-            const normalizedOccasions = (formData.navOccasions || []).map(toSlugValue);
-            productForm.append('navGiftsFor', JSON.stringify(normalizedGifts));
-            productForm.append('navOccasions', JSON.stringify(normalizedOccasions));
             productForm.append('deletedImages', JSON.stringify(formData.deletedImages || []));
             
             productForm.append('isSerialized', 'true');
@@ -922,6 +1005,13 @@ const SharedProductEditor = ({
                 const uploadFiles = variantImageFiles[variantItem.id] || [];
                 uploadFiles.forEach((file) => productForm.append(`variantImages_${index}`, file));
             });
+
+            if (removeVideo) {
+                productForm.append('removeVideo', 'true');
+            }
+            if (videoFile) {
+                productForm.append('video', videoFile);
+            }
 
             if (isEditMode) {
                 const res = await resolvedProductApi.updateProduct(id, productForm);
@@ -959,10 +1049,27 @@ const SharedProductEditor = ({
                     <div className="lg:col-span-4 space-y-6">
                         <FormSection title="Images">
                             <div className="space-y-4">
+                                <div className="rounded-xl border border-gray-100 bg-white p-3">
+                                    <p className="text-[11px] font-black uppercase tracking-widest text-gray-600">Card Image Rules</p>
+                                    <p className="text-[11px] text-gray-500 mt-1">
+                                        Image 1 is the main card image. Image 2 (optional) is used for the hover effect. Upload at least 2 images to enable hover.
+                                    </p>
+                                </div>
+
                                 <div className="grid grid-cols-2 gap-3">
                                     {previewImages.map((img, idx) => (
                                         <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-gray-200">
                                             <img src={img} alt="" className="w-full h-full object-cover" />
+                                            {idx === 0 && (
+                                                <div className="absolute bottom-2 left-2 px-2 py-1 rounded-full bg-black/70 text-white text-[9px] font-black uppercase tracking-widest">
+                                                    Main
+                                                </div>
+                                            )}
+                                            {idx === 1 && (
+                                                <div className="absolute bottom-2 left-2 px-2 py-1 rounded-full bg-black/70 text-white text-[9px] font-black uppercase tracking-widest">
+                                                    Hover
+                                                </div>
+                                            )}
                                             {!isViewMode && (
                                                 <button
                                                     type="button"
@@ -990,6 +1097,14 @@ const SharedProductEditor = ({
                                             <Upload size={14} /> Upload Image
                                             <input type="file" multiple className="hidden" onChange={handleImageUpload} accept="image/*" />
                                         </label>
+
+                                        {/* Quick affordance: when there is exactly 1 image, let admin/seller add the hover image explicitly. */}
+                                        {previewImages.length === 1 && previewImages.length < 5 && (
+                                            <label className="flex-[4] py-3.5 bg-white border border-gray-200 text-gray-700 rounded-xl text-[9px] font-black uppercase tracking-widest text-center cursor-pointer hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
+                                                <ImagePlus size={14} /> Upload Hover
+                                                <input type="file" className="hidden" onChange={handleHoverImageUpload} accept="image/*" />
+                                            </label>
+                                        )}
                                         
                                         <div className="flex-[6] relative group">
                                             <button 
@@ -1029,6 +1144,51 @@ const SharedProductEditor = ({
                             </div>
                         </FormSection>
 
+                        <FormSection title="Product Video (Optional)">
+                            <div className="space-y-3">
+                                {removeVideo ? (
+                                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+                                        <p className="text-xs font-semibold text-amber-900">Video will be removed after you save.</p>
+                                        <p className="text-[11px] text-amber-800 mt-1">Upload a new video before saving to replace it.</p>
+                                    </div>
+                                ) : videoPreview ? (
+                                    <div className="rounded-lg overflow-hidden border border-gray-200 bg-black">
+                                        <video
+                                            src={videoPreview}
+                                            controls
+                                            playsInline
+                                            className="w-full h-[220px] object-cover"
+                                        />
+                                    </div>
+                                ) : (
+                                    <div className="rounded-lg border border-dashed border-gray-200 p-6 text-center">
+                                        <p className="text-[11px] text-gray-500 font-semibold uppercase tracking-widest">No video</p>
+                                        <p className="text-[11px] text-gray-400 mt-2">Optional. Supported: mp4, mov, webm.</p>
+                                    </div>
+                                )}
+
+                                {!isViewMode && (
+                                    <div className="flex items-center gap-2">
+                                        <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 cursor-pointer text-xs font-semibold">
+                                            <Upload size={14} className="text-gray-500" />
+                                            Upload Video
+                                            <input type="file" accept="video/*" className="hidden" onChange={handleVideoUpload} />
+                                        </label>
+                                        {(videoPreview || formData.videoUrl) && !removeVideo && (
+                                            <button
+                                                type="button"
+                                                onClick={handleRemoveVideo}
+                                                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 text-xs font-semibold text-red-700"
+                                            >
+                                                <Trash2 size={14} />
+                                                Remove
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </FormSection>
+
                         <FormSection title="Display Labels">
                             <Input
                                 label="Card Label"
@@ -1055,6 +1215,34 @@ const SharedProductEditor = ({
                                 ]}
                                 disabled={isViewMode}
                             />
+                            <div className="space-y-2">
+                                <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Audience</p>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {['unisex', 'men', 'women', 'family'].map((key) => {
+                                        const checked = Array.isArray(formData.audience) && formData.audience.includes(key);
+                                        return (
+                                            <label key={key} className="flex items-center gap-2 text-xs text-gray-700">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={checked}
+                                                    disabled={isViewMode}
+                                                    onChange={(e) => {
+                                                        const next = new Set(Array.isArray(formData.audience) ? formData.audience : []);
+                                                        if (e.target.checked) next.add(key);
+                                                        else next.delete(key);
+                                                        const normalized = Array.from(next);
+                                                        setFormData({ ...formData, audience: normalized.length > 0 ? normalized : ['unisex'] });
+                                                    }}
+                                                />
+                                                <span className="capitalize">{key}</span>
+                                            </label>
+                                        );
+                                    })}
+                                </div>
+                                <p className="text-[10px] text-gray-400">
+                                    Used to keep Men/Women pages clean. “Unisex” products can appear on both.
+                                </p>
+                            </div>
                             {formData.material === 'Silver' && (
                                 <Select
                                     label="Silver Purity Categorization"
@@ -1096,6 +1284,19 @@ const SharedProductEditor = ({
                                 onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
                                 disabled={isViewMode}
                             />
+                            <Select
+                                label="Payment Gateway Charges Borne By"
+                                value={formData.paymentGatewayChargeBearer || 'seller'}
+                                onChange={(e) => setFormData({ ...formData, paymentGatewayChargeBearer: e.target.value })}
+                                options={[
+                                    { label: 'Seller / Admin', value: 'seller' },
+                                    { label: 'User', value: 'user' }
+                                ]}
+                                disabled={isViewMode}
+                            />
+                            <p className="text-[10px] text-gray-400 -mt-2">
+                                If user bears the payment gateway charge, an additional 2% is added after GST.
+                            </p>
                             <Select
                                 label="Default Weight Unit"
                                 value={formData.weightUnit}
@@ -1269,74 +1470,6 @@ const SharedProductEditor = ({
                             </div>
                         </FormSection>
 
-                        <FormSection title="Navigation Placement">
-                            <div className="space-y-6">
-                                <div className="space-y-3">
-                                    <div className="flex items-center justify-between">
-                                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Gifts For</label>
-                                        <span className="text-[10px] text-gray-400">Optional</span>
-                                    </div>
-                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                        {(navGiftOptions || []).map(opt => {
-                                            const checked = (formData.navGiftsFor || []).includes(opt.value);
-                                            return (
-                                                <label
-                                                    key={opt.value}
-                                                    className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold transition-all ${
-                                                        checked ? 'border-[#3E2723] bg-[#3E2723]/5 text-[#3E2723]' : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                                                    } ${isViewMode ? 'pointer-events-none opacity-70' : ''}`}
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        className="h-3.5 w-3.5 rounded border-gray-300 text-[#3E2723] focus:ring-[#3E2723]"
-                                                        checked={checked}
-                                                        onChange={() => toggleNavValue('navGiftsFor', opt.value)}
-                                                        disabled={isViewMode}
-                                                    />
-                                                    <span>{opt.label}</span>
-                                                </label>
-                                            );
-                                        })}
-                                        {navGiftOptions.length === 0 && (
-                                            <div className="text-xs text-gray-400">No gifts configured.</div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div className="space-y-3">
-                                    <div className="flex items-center justify-between">
-                                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Occasions</label>
-                                        <span className="text-[10px] text-gray-400">Optional</span>
-                                    </div>
-                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                        {(navOccasionOptions || []).map(opt => {
-                                            const checked = (formData.navOccasions || []).includes(opt.value);
-                                            return (
-                                                <label
-                                                    key={opt.value}
-                                                    className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold transition-all ${
-                                                        checked ? 'border-[#3E2723] bg-[#3E2723]/5 text-[#3E2723]' : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                                                    } ${isViewMode ? 'pointer-events-none opacity-70' : ''}`}
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        className="h-3.5 w-3.5 rounded border-gray-300 text-[#3E2723] focus:ring-[#3E2723]"
-                                                        checked={checked}
-                                                        onChange={() => toggleNavValue('navOccasions', opt.value)}
-                                                        disabled={isViewMode}
-                                                    />
-                                                    <span>{opt.label}</span>
-                                                </label>
-                                            );
-                                        })}
-                                        {navOccasionOptions.length === 0 && (
-                                            <div className="text-xs text-gray-400">No occasions configured.</div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </FormSection>
-
                         <FormSection title="Inventory Strategy">
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between p-4 bg-amber-50 rounded-2xl border border-amber-100">
@@ -1363,7 +1496,7 @@ const SharedProductEditor = ({
                                         <ReactQuill
                                             theme="snow"
                                             value={formData.description}
-                                            onChange={(value) => setFormData({ ...formData, description: value })}
+                                            onChange={(value) => setFormData((prev) => ({ ...prev, description: value }))}
                                             readOnly={isViewMode}
                                             modules={quillModules}
                                             formats={quillFormats}
@@ -1378,7 +1511,7 @@ const SharedProductEditor = ({
                                         <ReactQuill
                                             theme="snow"
                                             value={formData.stylingTips}
-                                            onChange={(value) => setFormData({ ...formData, stylingTips: value })}
+                                            onChange={(value) => setFormData((prev) => ({ ...prev, stylingTips: value }))}
                                             readOnly={isViewMode}
                                             modules={quillModules}
                                             formats={quillFormats}
@@ -1404,7 +1537,7 @@ const SharedProductEditor = ({
                                         <ReactQuill
                                             theme="snow"
                                             value={formData.careTips}
-                                            onChange={(value) => setFormData({ ...formData, careTips: value })}
+                                            onChange={(value) => setFormData((prev) => ({ ...prev, careTips: value }))}
                                             readOnly={isViewMode}
                                             modules={quillModules}
                                             formats={quillFormats}
@@ -1448,7 +1581,7 @@ const SharedProductEditor = ({
                                                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em]">Variant Details</p>
                                                 <p className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">Step 1</p>
                                             </div>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-5 gap-4 xl:gap-6">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-6 gap-4 xl:gap-6">
                                             <div className="space-y-2">
                                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Variant Name</label>
                                                 <input 
@@ -1497,21 +1630,35 @@ const SharedProductEditor = ({
                                                         className="w-full bg-white border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723]/30 transition-all shadow-sm" 
                                                         placeholder="0" 
                                                     />
-                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
+                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">Rs</span>
                                                 </div>
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Diamond Price</label>
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Hallmarking Charge</label>
                                                 <div className="relative group/field">
                                                     <input 
                                                         type="number" 
-                                                        value={v.diamondPrice} 
-                                                        onChange={(e) => handleVariantChange(v.id, 'diamondPrice', e.target.value)} 
+                                                        value={v.hallmarkingCharge ?? '0'} 
+                                                        onChange={(e) => handleVariantChange(v.id, 'hallmarkingCharge', e.target.value)} 
                                                         disabled={isViewMode} 
                                                         className="w-full bg-white border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723]/30 transition-all shadow-sm" 
                                                         placeholder="0" 
                                                     />
-                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 font-bold group-focus-within/field:text-[#3E2723]">₹</span>
+                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 font-bold group-focus-within/field:text-[#3E2723]">Rs</span>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Diamond Certificate Charge</label>
+                                                <div className="relative group/field">
+                                                    <input 
+                                                        type="number" 
+                                                        value={v.diamondCertificateCharge ?? '0'} 
+                                                        onChange={(e) => handleVariantChange(v.id, 'diamondCertificateCharge', e.target.value)} 
+                                                        disabled={isViewMode} 
+                                                        className="w-full bg-white border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723]/30 transition-all shadow-sm" 
+                                                        placeholder="0" 
+                                                    />
+                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 font-bold group-focus-within/field:text-[#3E2723]">Rs</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -1534,21 +1681,35 @@ const SharedProductEditor = ({
                                                         className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-black text-gray-700 outline-none shadow-sm" 
                                                         placeholder="0" 
                                                     />
-                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
+                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">Rs</span>
                                                 </div>
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Subtotal (Auto)</label>
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Hidden Charge (Auto)</label>
                                                 <div className="relative group/field">
                                                     <input 
                                                         type="number" 
-                                                        value={pricing.subtotal.toFixed(2)} 
+                                                        value={pricing.hiddenCharge.toFixed(2)} 
                                                         readOnly
                                                         disabled={isViewMode} 
                                                         className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-700 outline-none shadow-sm" 
                                                         placeholder="0" 
                                                     />
-                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">â‚¹</span>
+                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">Rs</span>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Subtotal Before GST (Auto)</label>
+                                                <div className="relative group/field">
+                                                    <input 
+                                                        type="number" 
+                                                        value={pricing.subtotalBeforeTax.toFixed(2)} 
+                                                        readOnly
+                                                        disabled={isViewMode} 
+                                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-700 outline-none shadow-sm" 
+                                                        placeholder="0" 
+                                                    />
+                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">Rs</span>
                                                 </div>
                                             </div>
                                             <div className="space-y-2">
@@ -1562,7 +1723,35 @@ const SharedProductEditor = ({
                                                         className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-700 outline-none shadow-sm" 
                                                         placeholder="0" 
                                                     />
-                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
+                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">Rs</span>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Price After GST (Auto)</label>
+                                                <div className="relative group/field">
+                                                    <input 
+                                                        type="number" 
+                                                        value={pricing.priceAfterTax.toFixed(2)} 
+                                                        readOnly
+                                                        disabled={isViewMode} 
+                                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-700 outline-none shadow-sm" 
+                                                        placeholder="0" 
+                                                    />
+                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">Rs</span>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">PG Charge ({pricing.pgChargePercent}% {String(formData.paymentGatewayChargeBearer || 'seller').toLowerCase() === 'user' ? 'User' : 'Seller'})</label>
+                                                <div className="relative group/field">
+                                                    <input 
+                                                        type="number" 
+                                                        value={pricing.pgChargeAmount.toFixed(2)} 
+                                                        readOnly
+                                                        disabled={isViewMode} 
+                                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-700 outline-none shadow-sm" 
+                                                        placeholder="0" 
+                                                    />
+                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">Rs</span>
                                                 </div>
                                             </div>
                                             <div className="space-y-2">
@@ -1576,7 +1765,7 @@ const SharedProductEditor = ({
                                                         className="w-full bg-amber-50/20 border border-amber-100/30 rounded-2xl py-4 pl-12 pr-6 text-sm font-black text-[#3E2723] outline-none shadow-sm" 
                                                         placeholder="Final Price" 
                                                     />
-                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-amber-600 font-bold">₹</span>
+                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-amber-600 font-bold">Rs</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -2195,3 +2384,4 @@ const SharedProductEditor = ({
 };
 
 export default SharedProductEditor;
+

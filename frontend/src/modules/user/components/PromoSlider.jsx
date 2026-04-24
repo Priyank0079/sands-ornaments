@@ -6,11 +6,11 @@ import { useShop } from '../../../context/ShopContext';
 
 // Import Assets
 // Import Assets
-import heroRings from '../../../assets/hero/hero_rings.png';
-import heroBracelets from '../../../assets/hero/hero_bracelets.png';
-import heroPendants from '../../../assets/categories/pendants.png';
-import heroEarrings from '../../../assets/categories/earrings.png';
-import heroMasterpiece from '../../../assets/hero/hero_masterpiece.png';
+import heroRings from '@assets/hero/hero_rings.png';
+import heroBracelets from '@assets/hero/hero_bracelets.png';
+import heroPendants from '@assets/categories/pendants.png';
+import heroEarrings from '@assets/categories/earrings.png';
+import heroMasterpiece from '@assets/hero/hero_masterpiece.png';
 
 const SLIDES = [
     {
@@ -56,8 +56,23 @@ const SLIDES = [
 ];
 
 const PromoSlider = () => {
-    const slides = SLIDES;
-    const autoplayMs = 4000;
+    const { homepageSections } = useShop();
+    const sectionData = homepageSections?.['hero-banners'];
+    const dynamicSlides = Array.isArray(sectionData?.items)
+        ? sectionData.items
+            .filter((item) => Boolean(item?.image && item?.label))
+            .map((item, index) => ({
+                id: item.itemId || item.id || `hero-slide-${index + 1}`,
+                image: item.image,
+                title: item.label,
+                subtitle: item.subtitle || '',
+                tag: item.tag || item.name || '',
+                link: item.path || '/shop',
+                ctaLabel: item.ctaLabel || 'Shop Collection'
+            }))
+        : [];
+    const slides = dynamicSlides.length > 0 ? dynamicSlides : SLIDES;
+    const autoplayMs = Number(sectionData?.settings?.autoplayMs) || 4000;
     const extendedSlides = [slides[slides.length - 1], ...slides, slides[0]];
     const [currentIndex, setCurrentIndex] = useState(1);
     const [isTransitioning, setIsTransitioning] = useState(false);
@@ -196,3 +211,4 @@ const PromoSlider = () => {
 };
 
 export default PromoSlider;
+

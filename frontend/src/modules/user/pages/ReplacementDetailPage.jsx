@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, CheckCircle, Clock, RefreshCw, Truck, XCircle, AlertCircle, Package } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Clock, RefreshCw, Truck, XCircle, AlertCircle, Package, Video } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
 
 const resolveImageSrc = (...values) => values.find((value) => typeof value === 'string' && value.trim()) || null;
@@ -51,6 +51,7 @@ const ReplacementDetailPage = () => {
     }));
 
     const evidenceImages = Array.isArray(replacementRequest.images) ? replacementRequest.images : [];
+    const evidenceVideo = replacementRequest.video || replacementRequest.evidenceVideo || '';
     const originalItems = Array.isArray(replacementRequest.items) ? replacementRequest.items : [];
 
     return (
@@ -150,7 +151,7 @@ const ReplacementDetailPage = () => {
                                 )}
                             </div>
 
-                            {evidenceImages.length > 0 && (
+                            {(evidenceImages.length > 0 || evidenceVideo) && (
                                 <div className="space-y-3">
                                     <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Evidence Images</p>
                                     <div className="grid grid-cols-3 gap-3">
@@ -162,6 +163,16 @@ const ReplacementDetailPage = () => {
                                                 className="w-full aspect-square rounded-xl object-cover"
                                             />
                                         ))}
+                                        {evidenceVideo && (
+                                            <a
+                                                href={evidenceVideo}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="w-full aspect-square rounded-xl border border-gray-200 bg-gray-100 flex items-center justify-center"
+                                            >
+                                                <Video size={18} className="text-gray-500" />
+                                            </a>
+                                        )}
                                     </div>
                                 </div>
                             )}

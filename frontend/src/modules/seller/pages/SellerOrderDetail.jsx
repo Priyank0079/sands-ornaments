@@ -23,6 +23,8 @@ const SellerOrderDetail = () => {
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
     const [note, setNote] = useState('');
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [pendingStatus, setPendingStatus] = useState('');
     const [shippingForm, setShippingForm] = useState({
         carrier: '',
         trackingId: '',
@@ -56,14 +58,32 @@ const SellerOrderDetail = () => {
     }, [order]);
 
     const handleStatusUpdate = async (status, customNote = note) => {
-        const res = await sellerOrderService.updateOrderStatus(id, status, customNote, shippingForm);
-        if (!res.success) {
-            toast.error(res.message || 'Unable to update order status.');
+        if (isUpdating) return;
+
+        const target = String(status || '').trim();
+        const carrier = String(shippingForm.carrier || '').trim();
+
+        // Frontend guard to match backend rule (carrier required for Shipped/Delivered)
+        if (['Shipped', 'Delivered'].includes(target) && !carrier) {
+            toast.error('Carrier is required before marking this order as shipped/delivered.');
             return;
         }
-        toast.success(res.message || 'Order updated');
-        if (res.order) setOrder(res.order);
-        setNote('');
+
+        setIsUpdating(true);
+        setPendingStatus(target);
+        try {
+            const res = await sellerOrderService.updateOrderStatus(id, status, customNote, shippingForm);
+            if (!res.success) {
+                toast.error(res.message || 'Unable to update order status.');
+                return;
+            }
+            toast.success(res.message || 'Order updated');
+            if (res.order) setOrder(res.order);
+            setNote('');
+        } finally {
+            setIsUpdating(false);
+            setPendingStatus('');
+        }
     };
 
     const primaryItem = useMemo(() => order?.primaryItem || order?.sellerItems?.[0] || null, [order]);
@@ -104,40 +124,45 @@ const SellerOrderDetail = () => {
                         <>
                             <button
                                 onClick={() => handleStatusUpdate('Cancelled')}
+                                disabled={isUpdating}
                                 className="px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest border border-red-100 text-red-600 hover:bg-red-50 transition-all flex items-center gap-2"
                             >
                                 <XCircle size={16} /> Cancel
                             </button>
                             <button
                                 onClick={() => handleStatusUpdate('Confirmed')}
+                                disabled={isUpdating}
                                 className="px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest bg-[#3E2723] text-white shadow-xl shadow-[#3E2723]/20 hover:bg-[#2D1B18] transition-all flex items-center gap-2"
                             >
-                                <CheckCircle size={16} /> Confirm
+                                <CheckCircle size={16} /> {isUpdating && pendingStatus === 'Confirmed' ? 'Confirming...' : 'Confirm'}
                             </button>
                         </>
                     )}
                     {canManage && currentStatus === 'Confirmed' && (
                         <button
                             onClick={() => handleStatusUpdate('Packed')}
+                            disabled={isUpdating}
                             className="px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest bg-violet-600 text-white shadow-xl shadow-violet-600/20 hover:bg-violet-700 transition-all flex items-center gap-2"
                         >
-                            <PackageCheck size={16} /> Mark Packed
+                            <PackageCheck size={16} /> {isUpdating && pendingStatus === 'Packed' ? 'Packing...' : 'Mark Packed'}
                         </button>
                     )}
                     {canManage && currentStatus === 'Packed' && (
                         <button
                             onClick={() => handleStatusUpdate('Shipped')}
+                            disabled={isUpdating}
                             className="px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest bg-emerald-600 text-white shadow-xl shadow-emerald-600/20 hover:bg-emerald-700 transition-all flex items-center gap-2"
                         >
-                            <Truck size={16} /> Mark Shipped
+                            <Truck size={16} /> {isUpdating && pendingStatus === 'Shipped' ? 'Shipping...' : 'Mark Shipped'}
                         </button>
                     )}
                     {canManage && currentStatus === 'Shipped' && (
                         <button
                             onClick={() => handleStatusUpdate('Delivered')}
+                            disabled={isUpdating}
                             className="px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest bg-blue-600 text-white shadow-xl shadow-blue-600/20 hover:bg-blue-700 transition-all flex items-center gap-2"
                         >
-                            <PackageCheck size={16} /> Mark Delivered
+                            <PackageCheck size={16} /> {isUpdating && pendingStatus === 'Delivered' ? 'Delivering...' : 'Mark Delivered'}
                         </button>
                     )}
                 </div>
@@ -185,9 +210,14 @@ const SellerOrderDetail = () => {
                                 <span className="text-gray-900">{order.sellerItemCount}</span>
                             </div>
                             <div className="pt-4 border-t border-gray-100 flex justify-between">
-                                <span className="text-[10px] font-black text-[#3E2723] uppercase tracking-[0.2em]">Order Total</span>
-                                <span className="text-xl font-black text-gray-900 tracking-tighter">{formatCurrency(order.totalAmount || 0)}</span>
+                                <span className="text-[10px] font-black text-[#3E2723] uppercase tracking-[0.2em]">Your Total</span>
+                                <span className="text-xl font-black text-gray-900 tracking-tighter">{formatCurrency(order.sellerSubtotal || 0)}</span>
                             </div>
+                            {!order.allItemsOwnedBySeller && (
+                                <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">
+                                    Multi-seller order: only your subtotal is shown here.
+                                </p>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -254,9 +284,10 @@ const SellerOrderDetail = () => {
                             {canEditShipping ? (
                                 <button
                                     onClick={() => handleStatusUpdate(currentStatus, note)}
+                                    disabled={isUpdating}
                                     className="px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest border border-[#3E2723]/20 text-[#3E2723] hover:bg-[#3E2723]/5 transition-all"
                                 >
-                                    Save Shipping Info
+                                    {isUpdating && pendingStatus === String(currentStatus) ? 'Saving...' : 'Save Shipping Info'}
                                 </button>
                             ) : (
                                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">

@@ -2,8 +2,10 @@ const crypto = require("crypto");
 const razorpay = require("../../../config/razorpay");
 const Order = require("../../../models/Order");
 const Coupon = require("../../../models/Coupon");
+const Notification = require("../../../models/Notification");
 const { _deductStockForOrder } = require("./order.controller");
 const { success, error } = require("../../../utils/apiResponse");
+const mongoose = require("mongoose");
 
 // POST /api/user/payment/razorpay-order
 exports.createRazorpayOrder = async (req, res) => {
@@ -13,6 +15,9 @@ exports.createRazorpayOrder = async (req, res) => {
     }
 
     const { orderId } = req.body;
+    if (!mongoose.Types.ObjectId.isValid(orderId)) {
+      return error(res, "Invalid order id", 400);
+    }
 
     // BUG-03 FIX: Ensure the order belongs to the requesting user
     const order = await Order.findOne({ _id: orderId, userId: req.user.userId });
@@ -42,6 +47,9 @@ exports.verifyPayment = async (req, res) => {
     }
 
     const { orderId, razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
+    if (!mongoose.Types.ObjectId.isValid(orderId)) {
+      return error(res, "Invalid order id", 400);
+    }
 
     // BUG-03 FIX: Only the order owner can verify payment
     const order = await Order.findOne({ _id: orderId, userId: req.user.userId });
@@ -85,6 +93,29 @@ exports.verifyPayment = async (req, res) => {
     order.timeline.push({ status: "Processing", note: "Payment verified successfully" });
 
     await order.save();
+
+    // Notify sellers that payment is confirmed (Razorpay only).
+    const sellerCounts = new Map();
+    for (const item of order.items || []) {
+      const sid = item?.sellerId ? String(item.sellerId) : "";
+      if (!sid) continue;
+      sellerCounts.set(sid, (sellerCounts.get(sid) || 0) + (Number(item.quantity) || 0));
+    }
+    if (sellerCounts.size > 0) {
+      const sellerOrderLink = `/seller/order-details/${order._id}`;
+      const docs = Array.from(sellerCounts.entries()).map(([sid, qty]) => ({
+        sellerId: sid,
+        title: "Payment confirmed",
+        message: `Payment received for order ${order.orderId} (${qty} item${qty === 1 ? "" : "s"}).`,
+        type: "ORDER",
+        priority: "High",
+        link: sellerOrderLink,
+        isBroadcast: false,
+        isRead: false
+      }));
+      try { await Notification.insertMany(docs); } catch (e) { /* ignore */ }
+    }
+
     return success(res, { order }, "Payment verified successfully");
 
   } catch (err) { return error(res, err.message); }

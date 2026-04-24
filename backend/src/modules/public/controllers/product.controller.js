@@ -1,8 +1,26 @@
 const Product = require("../../../models/Product");
 const Category = require("../../../models/Category");
+const Seller = require("../../../models/Seller");
 const mongoose = require("mongoose");
 const { success, error } = require("../../../utils/apiResponse");
 const { normalizeProductForResponse } = require("../../../utils/productCompatibility");
+
+const getApprovedSellerScope = async () => {
+  const approvedSellers = await Seller.find({ status: "APPROVED" }).select("_id").lean();
+  const approvedSellerIds = approvedSellers.map((seller) => seller._id);
+
+  return approvedSellerIds.length
+    ? {
+        $or: [
+          { sellerId: null },
+          { sellerId: { $exists: false } },
+          { sellerId: { $in: approvedSellerIds } }
+        ]
+      }
+    : {
+        $or: [{ sellerId: null }, { sellerId: { $exists: false } }]
+      };
+};
 
 /**
  * GET /api/products
@@ -12,18 +30,21 @@ exports.getProducts = async (req, res) => {
   try {
     const { 
       search, category, minPrice, maxPrice, 
-      tags, sort, page = 1, limit = 20 
+      tags, sort, inStockOnly = "false", page = 1, limit = 20 
     } = req.query;
 
     const query = { status: "Active", active: { $ne: false } };
+    const andFilters = [await getApprovedSellerScope()];
 
     // 1. Text Search
     if (search) {
-      query.$or = [
+      andFilters.push({
+        $or: [
         { name: { $regex: search, $options: "i" } },
         { brand: { $regex: search, $options: "i" } },
         { description: { $regex: search, $options: "i" } }
-      ];
+        ]
+      });
     }
 
     // 2. Category Filter
@@ -56,6 +77,10 @@ exports.getProducts = async (req, res) => {
       });
     }
 
+    if (String(inStockOnly).toLowerCase() === "true") {
+      query["variants.stock"] = { $gt: 0 };
+    }
+
     // 5. Sorting
     let sortOption = { createdAt: -1 }; // Default: Newest
     if (sort) {
@@ -67,10 +92,14 @@ exports.getProducts = async (req, res) => {
       }
     }
 
+    if (andFilters.length) {
+      query.$and = andFilters;
+    }
+
     // 6. Execute Query with Pagination
     const products = await Product.find(query)
-      .select("name slug productCode brand images variants tags rating reviewCount categories category categorySlug categoryId navShopByCategory navGiftsFor navOccasions weight weightUnit goldCategory silverCategory material")
-      .populate("categories", "name slug metal")
+      .select("name slug productCode brand images videoUrl variants tags rating reviewCount categories category categorySlug categoryId navShopByCategory weight weightUnit goldCategory silverCategory material audience")
+      .populate("categories", "name slug")
       .sort(sortOption)
       .limit(limit * 1)
       .skip((page - 1) * limit);
@@ -98,18 +127,77 @@ exports.getProductDetail = async (req, res) => {
   try {
     const identifier = req.params.slug;
     const baseQuery = { status: "Active", active: { $ne: false } };
+    const inStockOnly = String(req.query?.inStockOnly || "false").toLowerCase() === "true";
     const lookup = mongoose.isValidObjectId(identifier)
       ? { ...baseQuery, _id: identifier }
       : { ...baseQuery, slug: identifier };
 
     const product = await Product.findOne(lookup)
-      .populate("categories", "name slug metal")
+      .populate("categories", "name slug")
       .populate("sellerId", "shopName");
 
     if (!product) return error(res, "Product not found", 404);
 
+    if (product.sellerId) {
+      const seller = await Seller.findById(product.sellerId).select("status").lean();
+      if (!seller || seller.status !== "APPROVED") {
+        return error(res, "Product not found", 404);
+      }
+    }
+
+    if (inStockOnly) {
+      const hasStock = (product.variants || []).some((variant) => Number(variant?.stock || 0) > 0);
+      if (!hasStock) return error(res, "Product not found", 404);
+    }
+
     return success(res, { product: normalizeProductForResponse(product) }, "Product details retrieved");
   } catch (err) { return error(res, err.message); }
+};
+
+/**
+ * GET /api/public/products/by-ids?ids=a,b,c&inStockOnly=false
+ * Returns products in the same order as requested ids (when possible).
+ * Use this for pinned CMS sections so they don't disappear due to catalogue paging.
+ */
+exports.getProductsByIds = async (req, res) => {
+  try {
+    const idsParam = String(req.query?.ids || "").trim();
+    if (!idsParam) return success(res, { products: [] });
+
+    const ids = idsParam
+      .split(",")
+      .map((id) => String(id || "").trim())
+      .filter((id) => mongoose.isValidObjectId(id));
+
+    if (ids.length === 0) return success(res, { products: [] });
+
+    const approvedScope = await getApprovedSellerScope();
+    const query = {
+      status: "Active",
+      active: { $ne: false },
+      _id: { $in: ids },
+      ...approvedScope
+    };
+
+    const inStockOnly = String(req.query?.inStockOnly || "false").toLowerCase() === "true";
+    if (inStockOnly) {
+      query["variants.stock"] = { $gt: 0 };
+    }
+
+    const found = await Product.find(query)
+      .select("name slug productCode brand images videoUrl variants tags rating reviewCount categories category categorySlug categoryId navShopByCategory weight weightUnit goldCategory silverCategory material audience")
+      .populate("categories", "name slug")
+      .lean();
+
+    const foundMap = new Map(found.map((p) => [String(p._id), p]));
+    const ordered = ids.map((id) => foundMap.get(String(id))).filter(Boolean);
+
+    return success(res, {
+      products: ordered.map((product) => normalizeProductForResponse(product))
+    });
+  } catch (err) {
+    return error(res, err.message);
+  }
 };
 
 /**
@@ -121,10 +209,12 @@ exports.searchProducts = async (req, res) => {
     const { q } = req.query;
     if (!q) return success(res, { suggestions: [] });
 
-    const suggestions = await Product.find({ 
+    const approvedSellerScope = await getApprovedSellerScope();
+    const suggestions = await Product.find({
       status: "Active",
       active: { $ne: false },
-      name: { $regex: q, $options: "i" } 
+      name: { $regex: q, $options: "i" },
+      ...approvedSellerScope
     })
     .select("name slug images")
     .limit(10);

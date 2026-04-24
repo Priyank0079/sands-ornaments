@@ -1,18 +1,46 @@
 import React, { useState } from 'react';
-import { Send, MessageSquare, Users, Bell } from 'lucide-react';
+import { Send, Users, Bell } from 'lucide-react';
 import PageHeader from '../components/common/PageHeader';
+import { adminService } from '../services/adminService';
+import toast from 'react-hot-toast';
 
 const AddNotification = () => {
     const [formData, setFormData] = useState({
         title: '',
         message: '',
-        audience: 'Send to All Users'
+        audience: 'Send to All Users',
+        type: 'GENERAL',
+        priority: 'Medium',
+        link: ''
     });
+    const [submitting, setSubmitting] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        alert('Notification Blast Sent Successfully!');
-        setFormData({ title: '', message: '', audience: 'Send to All Users' });
+        setSubmitting(true);
+        const response = await adminService.broadcastAdminNotification({
+            title: formData.title,
+            message: formData.message,
+            type: formData.type,
+            priority: formData.priority,
+            link: formData.link
+        });
+        setSubmitting(false);
+
+        if (response?.success) {
+            toast.success(response.message || 'Notification blast sent successfully!');
+            setFormData({
+                title: '',
+                message: '',
+                audience: 'Send to All Users',
+                type: 'GENERAL',
+                priority: 'Medium',
+                link: ''
+            });
+            return;
+        }
+
+        toast.error(response?.message || 'Failed to send notification');
     };
 
     return (
@@ -74,6 +102,48 @@ const AddNotification = () => {
                             </div>
                         </div>
 
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-1">Type</label>
+                                <select
+                                    className="w-full p-3 bg-white border-2 border-gray-100 rounded-lg text-sm font-bold text-gray-900 focus:outline-none focus:border-black transition-all"
+                                    value={formData.type}
+                                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                                >
+                                    <option value="GENERAL">General</option>
+                                    <option value="ORDER">Order</option>
+                                    <option value="RETURN">Return</option>
+                                    <option value="REPLACEMENT">Replacement</option>
+                                    <option value="COUPON">Coupon</option>
+                                    <option value="SELLER_REQUEST">Seller Request</option>
+                                </select>
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-1">Priority</label>
+                                <select
+                                    className="w-full p-3 bg-white border-2 border-gray-100 rounded-lg text-sm font-bold text-gray-900 focus:outline-none focus:border-black transition-all"
+                                    value={formData.priority}
+                                    onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                                >
+                                    <option value="Low">Low</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="High">High</option>
+                                    <option value="Urgent">Urgent</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-1">Link (Optional)</label>
+                            <input
+                                type="text"
+                                placeholder="/shop or /admin/seller-details/..."
+                                className="w-full p-3 bg-white border-2 border-gray-100 rounded-lg text-sm font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-300"
+                                value={formData.link}
+                                onChange={(e) => setFormData({ ...formData, link: e.target.value })}
+                            />
+                        </div>
+
                         {/* Preview Box - Optional Visual Aid */}
                         <div className="p-4 bg-gray-50 rounded-lg border border-gray-100 flex items-start gap-3">
                             <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center shrink-0">
@@ -92,10 +162,11 @@ const AddNotification = () => {
                         {/* Submit Button */}
                         <button
                             type="submit"
-                            className="w-full bg-black text-white py-3.5 rounded-lg font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-gray-800 active:scale-[0.99] transition-all"
+                            disabled={submitting}
+                            className={`w-full text-white py-3.5 rounded-lg font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${submitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-black hover:bg-gray-800 active:scale-[0.99]'}`}
                         >
                             <Send className="w-3.5 h-3.5" />
-                            Send Notification
+                            {submitting ? 'Sending...' : 'Send Notification'}
                         </button>
                     </form>
                 </div>

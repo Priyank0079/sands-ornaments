@@ -1,72 +1,85 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-    Bell, Settings, Send, Tag, ShoppingBag,
-    Eye, EyeOff, Trash2, Filter, AlertCircle,
-    CheckCircle2, Clock, Smartphone, Globe, Shield,
-    Layout, ChevronRight, X, Plus
+    Bell, Send, Tag, ShoppingBag, Eye, Trash2, Clock, ChevronRight, X, Plus
 } from 'lucide-react';
 import PageHeader from '../components/common/PageHeader';
+import { adminService } from '../services/adminService';
+import toast from 'react-hot-toast';
 
 const GlobalNotificationManager = () => {
-    // Mock for System-wide notifications (Announcements/Offers)
-    const [systemNotifications, setSystemNotifications] = useState([
-        {
-            id: 'SN-001',
-            type: 'Offer',
-            title: 'Flat 20% Off - Weekend Special',
-            message: 'Use code WEEKEND20 on all silver jewelry. Valid till Sunday midnight!',
-            status: 'Enabled',
-            target: 'All Platforms',
-            timestamp: 'Created: Oct 24, 2024'
-        },
-        {
-            id: 'SN-002',
-            type: 'System',
-            title: 'New Collection Live',
-            message: 'Our "Heritage Series" is now available. Explore 50+ new designs.',
-            status: 'Disabled',
-            target: 'App Only',
-            timestamp: 'Created: Oct 20, 2024'
-        }
-    ]);
-
+    const [notifications, setNotifications] = useState([]);
+    const [loading, setLoading] = useState(false);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [saving, setSaving] = useState(false);
     const [newNotif, setNewNotif] = useState({
-        type: 'Offer',
+        type: 'GENERAL',
         title: '',
         message: '',
-        target: 'All Platforms'
+        priority: 'Medium',
+        link: ''
     });
 
-    const toggleNotifStatus = (id) => {
-        setSystemNotifications(prev => prev.map(n =>
-            n.id === id ? { ...n, status: n.status === 'Enabled' ? 'Disabled' : 'Enabled' } : n
-        ));
+    const loadNotifications = async () => {
+        setLoading(true);
+        const list = await adminService.getAdminNotifications();
+        setNotifications(Array.isArray(list) ? list : []);
+        setLoading(false);
     };
 
-    const deleteNotif = (id) => {
-        if (window.confirm('Delete this system notification?')) {
-            setSystemNotifications(prev => prev.filter(n => n.id !== id));
+    useEffect(() => {
+        loadNotifications();
+    }, []);
+
+    const markAsRead = async (id) => {
+        const ok = await adminService.markAdminNotificationRead(id);
+        if (!ok) {
+            toast.error('Failed to update notification');
+            return;
         }
+        setNotifications((prev) => prev.map((item) => (
+            item._id === id ? { ...item, isRead: true } : item
+        )));
     };
 
-    const handleCreate = (e) => {
+    const deleteNotif = async (id) => {
+        const ok = await adminService.deleteAdminNotification(id);
+        if (!ok) {
+            toast.error('Failed to delete notification');
+            return;
+        }
+        setNotifications((prev) => prev.filter((item) => item._id !== id));
+    };
+
+    const handleCreate = async (e) => {
         e.preventDefault();
-        const created = {
-            ...newNotif,
-            id: `SN-00${systemNotifications.length + 1}`,
-            status: 'Enabled',
-            timestamp: `Created: ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-        };
-        setSystemNotifications([created, ...systemNotifications]);
+        setSaving(true);
+        const result = await adminService.broadcastAdminNotification(newNotif);
+        setSaving(false);
+
+        if (!result?.success) {
+            toast.error(result?.message || 'Failed to create notification');
+            return;
+        }
+
+        toast.success(result.message || 'Notification created');
         setIsCreateModalOpen(false);
-        setNewNotif({ type: 'Offer', title: '', message: '', target: 'All Platforms' });
+        setNewNotif({
+            type: 'GENERAL',
+            title: '',
+            message: '',
+            priority: 'Medium',
+            link: ''
+        });
+        await loadNotifications();
     };
 
     const typeIcons = {
-        'Offer': <Tag className="w-4 h-4 text-amber-600" />,
-        'System': <Settings className="w-4 h-4 text-gray-600" />,
-        'Order Update': <ShoppingBag className="w-4 h-4 text-blue-600" />
+        ORDER: <ShoppingBag className="w-4 h-4 text-blue-600" />,
+        RETURN: <Tag className="w-4 h-4 text-amber-600" />,
+        REPLACEMENT: <Tag className="w-4 h-4 text-indigo-600" />,
+        COUPON: <Tag className="w-4 h-4 text-emerald-600" />,
+        SELLER_REQUEST: <Tag className="w-4 h-4 text-purple-600" />,
+        GENERAL: <Bell className="w-4 h-4 text-gray-600" />
     };
 
     return (
@@ -85,7 +98,6 @@ const GlobalNotificationManager = () => {
                 </button>
             </div>
 
-            {/* Notifications Table */}
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
@@ -93,64 +105,61 @@ const GlobalNotificationManager = () => {
                             <tr className="bg-white text-black uppercase tracking-widest text-[9px] md:text-[11px] font-bold border-b border-gray-100">
                                 <th className="px-4 md:px-6 py-3 md:py-4 text-center w-16">Type</th>
                                 <th className="px-4 md:px-6 py-3 md:py-4">Notification Details</th>
-                                <th className="px-4 md:px-6 py-3 md:py-4">Target</th>
+                                <th className="px-4 md:px-6 py-3 md:py-4">Priority</th>
                                 <th className="px-4 md:px-6 py-3 md:py-4">Date</th>
                                 <th className="px-4 md:px-6 py-3 md:py-4 text-center">Status</th>
                                 <th className="px-4 md:px-6 py-3 md:py-4 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50 uppercase tracking-tighter text-[10px] md:text-sm">
-                            {systemNotifications.map((notif) => (
-                                <tr
-                                    key={notif.id}
-                                    className={`hover:bg-gray-50/50 transition-colors group ${notif.status === 'Disabled' ? 'bg-gray-50/30' : ''}`}
-                                >
+                            {loading ? (
+                                <tr>
+                                    <td colSpan="6" className="p-12 text-center text-xs font-bold uppercase tracking-widest text-gray-400">
+                                        Loading notifications...
+                                    </td>
+                                </tr>
+                            ) : notifications.map((notif) => (
+                                <tr key={notif._id} className={`hover:bg-gray-50/50 transition-colors group ${notif.isRead ? 'bg-gray-50/20' : ''}`}>
                                     <td className="px-4 md:px-6 py-3 md:py-4 text-center align-top pt-5">
                                         <div className="bg-white p-2 rounded-lg border border-gray-100 shadow-sm inline-flex items-center justify-center">
-                                            {typeIcons[notif.type] || <Bell className="w-4 h-4 text-gray-400" />}
+                                            {typeIcons[notif.type] || typeIcons.GENERAL}
                                         </div>
                                     </td>
                                     <td className="px-4 md:px-6 py-3 md:py-4 align-top pt-5">
                                         <div className="space-y-1">
-                                            <h4 className="text-sm font-bold text-gray-900">
-                                                {notif.title}
-                                            </h4>
-                                            <p className="text-[10px] md:text-xs text-gray-400 font-bold lowercase tracking-normal leading-relaxed max-w-lg">
+                                            <h4 className="text-sm font-bold text-gray-900">{notif.title}</h4>
+                                            <p className="text-[10px] md:text-xs text-gray-500 font-bold lowercase tracking-normal leading-relaxed max-w-lg">
                                                 {notif.message}
                                             </p>
                                         </div>
                                     </td>
                                     <td className="px-4 md:px-6 py-3 md:py-4 align-top pt-5">
-                                        <div className="flex items-center gap-1.5 font-bold text-gray-500">
-                                            <Smartphone className="w-3.5 h-3.5" />
-                                            <span>{notif.target}</span>
-                                        </div>
+                                        <span className="text-xs font-bold text-gray-700">{notif.priority || 'Medium'}</span>
                                     </td>
                                     <td className="px-4 md:px-6 py-3 md:py-4 align-top pt-5">
                                         <div className="flex items-center gap-1.5 font-bold text-gray-500">
                                             <Clock className="w-3.5 h-3.5" />
-                                            <span>{notif.timestamp.replace('Created: ', '')}</span>
+                                            <span>{notif.createdAt ? new Date(notif.createdAt).toLocaleString() : '--'}</span>
                                         </div>
                                     </td>
                                     <td className="px-4 md:px-6 py-3 md:py-4 text-center align-top pt-5">
-                                        <span className={`px-2.5 py-1 rounded text-[10px] md:text-[11px] font-bold border ${notif.status === 'Enabled'
-                                                ? 'bg-green-50 text-green-600 border-green-100'
-                                                : 'bg-gray-100 text-gray-500 border-gray-200'
-                                            }`}>
-                                            {notif.status}
+                                        <span className={`px-2.5 py-1 rounded text-[10px] md:text-[11px] font-bold border ${notif.isRead ? 'bg-gray-100 text-gray-500 border-gray-200' : 'bg-green-50 text-green-600 border-green-100'}`}>
+                                            {notif.isRead ? 'Read' : 'New'}
                                         </span>
                                     </td>
                                     <td className="px-4 md:px-6 py-3 md:py-4 text-right align-top pt-5">
                                         <div className="flex items-center justify-end gap-2 transition-opacity">
+                                            {!notif.isRead && (
+                                                <button
+                                                    onClick={() => markAsRead(notif._id)}
+                                                    className="p-2 bg-white border border-gray-200 rounded-lg text-gray-400 hover:text-black hover:border-black transition-all shadow-sm"
+                                                    title="Mark as read"
+                                                >
+                                                    <Eye className="w-4 h-4" />
+                                                </button>
+                                            )}
                                             <button
-                                                onClick={() => toggleNotifStatus(notif.id)}
-                                                className="p-2 bg-white border border-gray-200 rounded-lg text-gray-400 hover:text-black hover:border-black transition-all shadow-sm"
-                                                title={notif.status === 'Enabled' ? 'Disable' : 'Enable'}
-                                            >
-                                                {notif.status === 'Enabled' ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                            </button>
-                                            <button
-                                                onClick={() => deleteNotif(notif.id)}
+                                                onClick={() => deleteNotif(notif._id)}
                                                 className="p-2 bg-white border border-gray-200 rounded-lg text-gray-400 hover:text-red-600 hover:border-red-200 transition-all shadow-sm"
                                                 title="Delete"
                                             >
@@ -164,7 +173,7 @@ const GlobalNotificationManager = () => {
                     </table>
                 </div>
 
-                {systemNotifications.length === 0 && (
+                {notifications.length === 0 && !loading && (
                     <div className="p-20 text-center">
                         <div className="bg-gray-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                             <Bell className="w-6 h-6 text-gray-300" />
@@ -175,7 +184,6 @@ const GlobalNotificationManager = () => {
                 )}
             </div>
 
-            {/* Create Modal */}
             {isCreateModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
                     <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
@@ -194,22 +202,26 @@ const GlobalNotificationManager = () => {
                                         value={newNotif.type}
                                         onChange={(e) => setNewNotif({ ...newNotif, type: e.target.value })}
                                     >
-                                        <option>Offer</option>
-                                        <option>Order Update</option>
-                                        <option>System</option>
+                                        <option value="GENERAL">General</option>
+                                        <option value="ORDER">Order</option>
+                                        <option value="RETURN">Return</option>
+                                        <option value="REPLACEMENT">Replacement</option>
+                                        <option value="COUPON">Coupon</option>
+                                        <option value="SELLER_REQUEST">Seller Request</option>
                                     </select>
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-1">Target Platform</label>
+                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-1">Priority</label>
                                     <div className="relative">
                                         <select
                                             className="w-full p-3 bg-white border-2 border-gray-100 rounded-lg text-xs font-bold focus:outline-none focus:border-black transition-all appearance-none"
-                                            value={newNotif.target}
-                                            onChange={(e) => setNewNotif({ ...newNotif, target: e.target.value })}
+                                            value={newNotif.priority}
+                                            onChange={(e) => setNewNotif({ ...newNotif, priority: e.target.value })}
                                         >
-                                            <option value="All Platforms">All Platforms</option>
-                                            <option value="App Only">App Only</option>
-                                            <option value="Web Only">Web Only</option>
+                                            <option value="Low">Low</option>
+                                            <option value="Medium">Medium</option>
+                                            <option value="High">High</option>
+                                            <option value="Urgent">Urgent</option>
                                         </select>
                                         <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
                                             <ChevronRight className="w-4 h-4 rotate-90" />
@@ -221,7 +233,7 @@ const GlobalNotificationManager = () => {
                                 <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-1">Headline</label>
                                 <input
                                     type="text"
-                                    placeholder="e.g. Flash Sale Live! ⚡"
+                                    placeholder="e.g. Flash Sale Live!"
                                     className="w-full p-3 bg-white border-2 border-gray-100 rounded-lg text-sm font-bold focus:outline-none focus:border-black transition-all"
                                     value={newNotif.title}
                                     onChange={(e) => setNewNotif({ ...newNotif, title: e.target.value })}
@@ -238,6 +250,16 @@ const GlobalNotificationManager = () => {
                                     required
                                 />
                             </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-1">Link (Optional)</label>
+                                <input
+                                    type="text"
+                                    placeholder="/shop"
+                                    className="w-full p-3 bg-white border-2 border-gray-100 rounded-lg text-sm font-medium focus:outline-none focus:border-black transition-all"
+                                    value={newNotif.link}
+                                    onChange={(e) => setNewNotif({ ...newNotif, link: e.target.value })}
+                                />
+                            </div>
                             <div className="flex gap-3 pt-2">
                                 <button
                                     type="button"
@@ -248,10 +270,11 @@ const GlobalNotificationManager = () => {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-1 px-4 py-3.5 bg-black text-white rounded-lg text-xs font-black uppercase tracking-widest shadow-lg hover:bg-gray-800 transition-all flex items-center justify-center gap-2"
+                                    disabled={saving}
+                                    className={`flex-1 px-4 py-3.5 text-white rounded-lg text-xs font-black uppercase tracking-widest shadow-lg transition-all flex items-center justify-center gap-2 ${saving ? 'bg-gray-400 cursor-not-allowed' : 'bg-black hover:bg-gray-800'}`}
                                 >
                                     <Send className="w-3.5 h-3.5" />
-                                    Launch Alert
+                                    {saving ? 'Creating...' : 'Launch Alert'}
                                 </button>
                             </div>
                         </form>

@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import FamilyProductsCatalog from '../components/family/FamilyProductsCatalog';
 import { normalizeFamilyRecipient } from '../utils/familyNavigation';
+import api from '../../../services/api';
 
 const recipientLabels = {
     all: 'Family Collections',
@@ -16,11 +17,35 @@ const recipientLabels = {
 const FamilyRecipientProductsPage = () => {
     const { recipient } = useParams();
     const selectedRecipient = normalizeFamilyRecipient(recipient);
+    const [sections, setSections] = useState([]);
 
     useEffect(() => {
         document.title = `${recipientLabels[selectedRecipient] || 'Family Collections'} | Sands Ornaments`;
         window.scrollTo(0, 0);
     }, [selectedRecipient]);
+
+    useEffect(() => {
+        const fetchSections = async () => {
+            try {
+                const res = await api.get('public/cms/pages/shop-family', {
+                    params: { _t: Date.now() }
+                });
+                if (!res?.data?.success) return;
+                setSections(Array.isArray(res.data?.data?.sections) ? res.data.data.sections : []);
+            } catch (err) {
+                console.error('Failed to fetch family sections for recipient page:', err);
+            }
+        };
+        fetchSections();
+    }, []);
+
+    const sectionMap = useMemo(() => (
+        (sections || []).reduce((acc, section) => {
+            const key = section.sectionKey || section.sectionId;
+            if (key) acc[key] = section;
+            return acc;
+        }, {})
+    ), [sections]);
 
     return (
         <div className="bg-white min-h-screen text-black font-sans overflow-x-hidden">
@@ -44,7 +69,10 @@ const FamilyRecipientProductsPage = () => {
                 </div>
             </div>
 
-            <FamilyProductsCatalog selectedRecipient={selectedRecipient} />
+            <FamilyProductsCatalog
+                selectedRecipient={selectedRecipient}
+                sectionData={sectionMap['products-listing']}
+            />
         </div>
     );
 };

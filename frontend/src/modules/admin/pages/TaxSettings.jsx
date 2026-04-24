@@ -49,6 +49,10 @@ const TaxSettings = () => {
       toast.error('GST percentage cannot be negative');
       return;
     }
+    if (Number(gstRate) > 100) {
+      toast.error('GST percentage cannot be greater than 100');
+      return;
+    }
 
     setSaving(true);
     const payload = { gstRate: Number(gstRate) || 0 };
@@ -87,7 +91,7 @@ const TaxSettings = () => {
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-6">
         <div className="rounded-2xl border border-amber-100 bg-amber-50 p-4 text-sm text-amber-900">
           GST is managed only by admin. When this percentage changes, the system recalculates every product using:
-          Metal Price + Making Charge + Diamond Price, then applies GST on that subtotal.
+          Metal Price + Making Charge + Hidden Charge, then applies GST on that subtotal. Hidden Charge includes hallmarking and diamond certificate charges. If a product is configured to pass payment gateway charges to the user, that extra 2% is added after GST.
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -104,7 +108,7 @@ const TaxSettings = () => {
                 disabled={loading}
               />
               <p className="text-xs text-gray-500">
-                Example: if subtotal is Rs 1000 and GST is 3%, the GST amount becomes Rs 30 and final price becomes Rs 1030.
+                Example: if subtotal before GST is Rs 1000 and GST is 3%, the GST amount becomes Rs 30 and the price after GST becomes Rs 1030. Any user-borne payment gateway charge is added after that.
               </p>
             </div>
           </div>

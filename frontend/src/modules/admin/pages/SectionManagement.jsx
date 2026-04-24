@@ -18,8 +18,20 @@ const SectionManagement = () => {
         setLoading(true);
         try {
             const defaultsForPage = getSectionDefaultsForPage(activePageKey);
+            const allowedSectionKeys = new Set(defaultsForPage.map(section => section.sectionKey || section.sectionId));
             const data = await adminService.getSections(activePageKey);
-            const filteredSections = (data || []).filter(section => !['nav-shop-by-category', 'chit-chat'].includes(section.sectionId || section.sectionKey));
+            const filteredSections = (data || [])
+                .filter(section => allowedSectionKeys.has(section.sectionKey || section.sectionId))
+                .map(section => {
+                    const defaultSection = defaultsForPage.find(def => 
+                        def.sectionKey === (section.sectionId || section.sectionKey)
+                    );
+                    return {
+                        ...section,
+                        sortOrder: section.sortOrder || defaultSection?.sortOrder || 99
+                    };
+                })
+                .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
             setSections(filteredSections);
             const existingIds = new Set(filteredSections.map(section => section.sectionId));
             const missingDefaults = defaultsForPage.filter(def => !existingIds.has(def.sectionId) && !existingIds.has(def.sectionKey));
@@ -28,7 +40,18 @@ const SectionManagement = () => {
                 const seedRes = await adminService.bulkUpsertSections(seedPayload, activePageKey);
                 if (seedRes.success !== false) {
                     const seeded = await adminService.getSections(activePageKey);
-                    const filteredSeeded = (seeded || []).filter(section => !['nav-shop-by-category', 'chit-chat'].includes(section.sectionId || section.sectionKey));
+                    const filteredSeeded = (seeded || [])
+                        .filter(section => allowedSectionKeys.has(section.sectionKey || section.sectionId))
+                        .map(section => {
+                            const defaultSection = defaultsForPage.find(def => 
+                                def.sectionKey === (section.sectionId || section.sectionKey)
+                            );
+                            return {
+                                ...section,
+                                sortOrder: section.sortOrder || defaultSection?.sortOrder || 99
+                            };
+                        })
+                        .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
                     setSections(filteredSeeded);
                 }
             }

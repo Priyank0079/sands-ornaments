@@ -2,6 +2,7 @@ const Return = require("../../../models/Return");
 const Order = require("../../../models/Order");
 const Product = require("../../../models/Product");
 const StockLog = require("../../../models/StockLog");
+const User = require("../../../models/User");
 const { success, error } = require("../../../utils/apiResponse");
 const { isSerializedVariant, restockSerializedUnits } = require("../../../utils/inventorySync");
 
@@ -60,13 +61,88 @@ const buildOrderStatusFromReturnStatus = (currentStatus, nextStatus) => {
 
 exports.getAllReturns = async (req, res) => {
   try {
-    const { status } = req.query;
-    const query = status ? { status } : {};
+    const {
+      status,
+      search = "",
+      page = 1,
+      limit = 20,
+      sortBy = "createdAt",
+      sortOrder = "desc"
+    } = req.query;
+
+    if (status && !VALID_STATUSES.includes(status)) {
+      return error(res, `Invalid status. Must be one of: ${VALID_STATUSES.join(", ")}`, 400);
+    }
+
+    const safePage = Math.max(1, Number.parseInt(page, 10) || 1);
+    const safeLimit = Math.min(100, Math.max(1, Number.parseInt(limit, 10) || 20));
+    const trimmedSearch = String(search || "").trim();
+
+    const query = {};
+    if (status) {
+      query.status = status;
+    }
+
+    const allowedSortFields = new Set(["createdAt", "updatedAt", "requestDate", "status", "returnId"]);
+    const safeSortBy = allowedSortFields.has(String(sortBy)) ? String(sortBy) : "createdAt";
+    const safeSortOrder = String(sortOrder).toLowerCase() === "asc" ? 1 : -1;
+
+    if (trimmedSearch) {
+      const escapedSearch = trimmedSearch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const searchRegex = new RegExp(escapedSearch, "i");
+
+      const [matchedUsers, matchedOrders] = await Promise.all([
+        User.find({
+          $or: [
+            { name: searchRegex },
+            { email: searchRegex },
+            { phone: searchRegex }
+          ]
+        }).select("_id").lean(),
+        Order.find({ orderId: searchRegex }).select("_id").lean()
+      ]);
+
+      const matchedUserIds = matchedUsers.map((user) => user._id);
+      const matchedOrderIds = matchedOrders.map((order) => order._id);
+
+      query.$or = [
+        { returnId: searchRegex },
+        { "evidence.reason": searchRegex },
+        { "items.name": searchRegex },
+        { "items.sku": searchRegex }
+      ];
+
+      if (matchedUserIds.length > 0) {
+        query.$or.push({ userId: { $in: matchedUserIds } });
+      }
+      if (matchedOrderIds.length > 0) {
+        query.$or.push({ orderId: { $in: matchedOrderIds } });
+      }
+    }
+
+    const total = await Return.countDocuments(query);
     const returns = await Return.find(query)
-      .populate("userId", "name phone")
-      .populate("orderId", "orderId")
-      .sort({ createdAt: -1 });
-    return success(res, { returns }, "Returns retrieved");
+      .populate("userId", "name email phone")
+      .populate("orderId", "orderId paymentStatus total")
+      .sort({ [safeSortBy]: safeSortOrder })
+      .skip((safePage - 1) * safeLimit)
+      .limit(safeLimit);
+
+    return success(res, {
+      returns,
+      pagination: {
+        total,
+        page: safePage,
+        limit: safeLimit,
+        pages: Math.max(1, Math.ceil(total / safeLimit))
+      },
+      filters: {
+        status: status || null,
+        search: trimmedSearch,
+        sortBy: safeSortBy,
+        sortOrder: safeSortOrder === 1 ? "asc" : "desc"
+      }
+    }, "Returns retrieved");
   } catch (err) { return error(res, err.message); }
 };
 

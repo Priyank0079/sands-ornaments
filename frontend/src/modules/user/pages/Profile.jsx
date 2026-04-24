@@ -268,10 +268,15 @@ const OrderCard = ({ order, isExpanded, onToggle }) => {
     const subtotal = items.reduce((acc, i) => acc + ((i.price || 0) * (i.quantity || 0)), 0);
     const shipping = order.total - subtotal;
     const tax = order.total * 0.03;
+    const canRaiseRequest = String(order.status || order.orderStatus || '').trim() === 'Delivered';
     const orderDisplayId = order.displayId || order.orderId || order.id || order._id;
     const orderDisplayShort = String(orderDisplayId || '').replace('ORD-', '');
 
     const openAction = (type) => {
+        if (!canRaiseRequest) {
+            toast.error('Return/Exchange is available only after delivery.');
+            return;
+        }
         setActionType(type);
         setActionModalOpen(true);
     };
@@ -365,10 +370,18 @@ const OrderCard = ({ order, isExpanded, onToggle }) => {
                             <button className="flex-1 bg-[#FAFAFA] text-[#3E2723] py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest border border-gray-100 active:scale-95 transition-transform" onClick={() => setShowDetails(!showDetails)}>
                                 {showDetails ? 'Close' : 'Details'}
                             </button>
-                            <button onClick={() => openAction('return')} className="flex-1 bg-[#FAFAFA] text-[#3E2723] py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest border border-gray-100 active:scale-95 transition-transform">
+                            <button
+                                onClick={() => openAction('return')}
+                                disabled={!canRaiseRequest}
+                                className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest border active:scale-95 transition-transform ${canRaiseRequest ? 'bg-[#FAFAFA] text-[#3E2723] border-gray-100' : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'}`}
+                            >
                                 Return
                             </button>
-                            <button onClick={() => openAction('exchange')} className="flex-1 bg-[#FAFAFA] text-[#3E2723] py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest border border-gray-100 active:scale-95 transition-transform">
+                            <button
+                                onClick={() => openAction('exchange')}
+                                disabled={!canRaiseRequest}
+                                className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest border active:scale-95 transition-transform ${canRaiseRequest ? 'bg-[#FAFAFA] text-[#3E2723] border-gray-100' : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'}`}
+                            >
                                 Exchange
                             </button>
                             <Link to={`/order-tracking/${order.id}`} className="flex-1 bg-black text-white py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-center shadow-md shadow-black/5 active:scale-95 transition-transform hover:bg-[#D39A9F]">
@@ -455,10 +468,18 @@ const OrderCard = ({ order, isExpanded, onToggle }) => {
                     </div>
                 ) : (
                     <div className="flex flex-wrap justify-end gap-3 p-3 md:p-4 bg-white">
-                        <button onClick={() => openAction('return')} className="px-4 md:px-6 py-2 text-[10px] md:text-sm font-bold text-[#8D6E63] border border-[#EFEBE9] rounded-lg uppercase tracking-wider hover:bg-[#FDFBF7] hover:border-[#D7CCC8] transition-colors">
+                        <button
+                            onClick={() => openAction('return')}
+                            disabled={!canRaiseRequest}
+                            className={`px-4 md:px-6 py-2 text-[10px] md:text-sm font-bold border rounded-lg uppercase tracking-wider transition-colors ${canRaiseRequest ? 'text-[#8D6E63] border-[#EFEBE9] hover:bg-[#FDFBF7] hover:border-[#D7CCC8]' : 'text-gray-400 border-gray-200 bg-gray-100 cursor-not-allowed'}`}
+                        >
                             Return
                         </button>
-                        <button onClick={() => openAction('exchange')} className="px-4 md:px-6 py-2 text-[10px] md:text-sm font-bold text-[#8D6E63] border border-[#EFEBE9] rounded-lg uppercase tracking-wider hover:bg-[#FDFBF7] hover:border-[#D7CCC8] transition-colors">
+                        <button
+                            onClick={() => openAction('exchange')}
+                            disabled={!canRaiseRequest}
+                            className={`px-4 md:px-6 py-2 text-[10px] md:text-sm font-bold border rounded-lg uppercase tracking-wider transition-colors ${canRaiseRequest ? 'text-[#8D6E63] border-[#EFEBE9] hover:bg-[#FDFBF7] hover:border-[#D7CCC8]' : 'text-gray-400 border-gray-200 bg-gray-100 cursor-not-allowed'}`}
+                        >
                             Exchange
                         </button>
                         <Link to={`/order-tracking/${order.id}`} className="bg-[#3E2723] text-white px-6 md:px-8 py-2 text-[10px] md:text-sm font-bold rounded-lg uppercase tracking-wider hover:bg-[#5D4037] transition-all shadow-sm flex items-center justify-center">
@@ -531,7 +552,7 @@ const Profile = () => {
     const safeOrders = Array.isArray(orders) ? orders : [];
     const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
     const safeAddresses = Array.isArray(addresses) ? addresses : [];
-    const availableCoupons = Array.isArray(coupons) ? coupons.filter(c => c.active) : [];
+    const availableCoupons = Array.isArray(coupons) ? coupons.filter(c => c?.active !== false) : [];
     const { activeTab: tabParam, subId } = useParams();
     const activeTab = tabParam || 'profile';
     const navigate = useNavigate();

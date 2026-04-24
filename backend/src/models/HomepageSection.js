@@ -13,6 +13,10 @@ const homepageItemSchema = new mongoose.Schema({
   description: String,
   image: String,
   hoverImage: String,
+  relationKey: String,
+  recipient: String,
+  bondKey: String,
+  celebrateKey: String,
   iconKey: String,
   path: String,
   tag: String,
@@ -29,7 +33,7 @@ const homepageSectionSchema = new mongoose.Schema({
   sectionId: { type: String, required: true, unique: true, index: true },
   pageKey: {
     type: String,
-    enum: ["home", "shop-men", "shop-women", "shop-family"],
+    enum: ["home", "shop-men", "shop-women", "shop-family", "gold-collection"],
     default: "home",
     index: true
   },

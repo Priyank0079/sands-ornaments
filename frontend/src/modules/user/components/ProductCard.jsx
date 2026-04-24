@@ -7,17 +7,17 @@ import toast from 'react-hot-toast';
 import { getMenLoginRedirect, storeMenPendingCartItem } from '../utils/menNavigation';
 import { getWomenLoginRedirect, storeWomenPendingCartItem } from '../utils/womenNavigation';
 
-import latestRing from '../assets/latest_drop_ring.png';
-import latestBracelet from '../assets/latest_drop_bracelet.png';
-import latestNecklace from '../assets/latest_drop_necklace.png';
-import latestEarrings from '../assets/latest_drop_earrings.png';
-import newAnklets from '../assets/new_launch_anklets.png';
+import latestRing from '@assets/latest_drop_ring.png';
+import latestBracelet from '@assets/latest_drop_bracelet.png';
+import latestNecklace from '@assets/latest_drop_necklace.png';
+import latestEarrings from '@assets/latest_drop_earrings.png';
+import newAnklets from '@assets/new_launch_anklets.png';
 
 // Import high-end generated product shots for missing DB images
-import premiumRingProduct from '../assets/premium_ring_product.png';
-import premiumBraceletProduct from '../assets/premium_bracelet_product.png';
-import premiumPendantProduct from '../assets/premium_pendant_product.png';
-import premiumNecklaceProduct from '../assets/premium_necklace_product.png';
+import premiumRingProduct from '@assets/premium_ring_product.png';
+import premiumBraceletProduct from '@assets/premium_bracelet_product.png';
+import premiumPendantProduct from '@assets/premium_pendant_product.png';
+import premiumNecklaceProduct from '@assets/premium_necklace_product.png';
 
 const fallbackProductMap = {
     ring: premiumRingProduct,
@@ -47,21 +47,26 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
     const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
     const isWishlisted = safeWishlist.some(item => item.id === product.id);
 
-    // Dynamic Image Resolution - Support DB images or Fallback Model Shots (Unique Only)
-    const allUniqueImages = Array.from(new Set([
-        product.image,
-        product.img,
+    // Dynamic Image Resolution - Prefer DB images; only use hardcoded fallbacks when DB has none.
+    // Build a "real images" list first (DB-backed images), and only fall back to legacy fields if needed.
+    // This avoids mixing a legacy/hardcoded `product.image` with DB images (which looks like 2 sources).
+    const dbImages = [
         ...(product.images || []),
         ...(product.variants || []).flatMap(v => v.variantImages || [])
-    ].filter(Boolean)));
+    ].filter(Boolean);
+
+    const legacyImages = [product.image, product.img].filter(Boolean);
+
+    const allUniqueImages = Array.from(new Set([
+        ...dbImages,
+        ...legacyImages
+    ]));
 
     const resolvePrimaryImage = () => {
-        // 1. For Mock/Lead products with specific high-fidelity URLs, use them directly
-        if (product.id && (String(product.id).startsWith('mock') || String(product.id).startsWith('lp'))) {
-            if (allUniqueImages[0]) return allUniqueImages[0];
-        }
+        // 1) Use DB image when available.
+        if (dbImages[0]) return dbImages[0];
 
-        // 2. Otherwise, use high-end signature product shots for the "Boutique" look if it's a generic DB item
+        // 2) Only if DB has no images, use hardcoded premium fallbacks.
         const categoryData = product.category;
         const categoryName = (typeof categoryData === 'object' ? categoryData?.name : categoryData) || '';
         const searchStr = String(categoryName + ' ' + (product.name || '')).toLowerCase();
@@ -71,33 +76,31 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
         if (searchStr.includes('pendant') || searchStr.includes('chain')) return fallbackProductMap.pendant;
         if (searchStr.includes('bracelet')) return fallbackProductMap.bracelet;
 
-        // 3. FALLBACK: If no boutique shot matches, use DB image
-        if (allUniqueImages[0]) return allUniqueImages[0];
-
         return null;
     };
 
     const primaryImage = resolvePrimaryImage();
 
     const resolveSecondaryImage = () => {
-        // 1. PRIORITIZE: Use DB image (or secondary DB image) for the hover effect (model shot)
-        const dbImage = allUniqueImages.find(img => img !== primaryImage) || allUniqueImages[0];
-        if (dbImage && dbImage !== primaryImage) return dbImage;
+        // 1) If DB has 2+ images, use 2nd image for hover.
+        const dbHover = dbImages.find(img => img && img !== primaryImage);
+        if (dbHover) return dbHover;
 
-        // 2. Otherwise, use a themed model shot fallback
-        const categoryData = product.category;
-        const categoryName = (typeof categoryData === 'object' ? categoryData?.name : categoryData) || '';
-        const searchStr = String(categoryName + ' ' + (product.name || '')).toLowerCase();
+        // 2) If DB had no images and we are using hardcoded fallbacks, allow a hover fallback too.
+        if (!dbImages[0]) {
+            const categoryData = product.category;
+            const categoryName = (typeof categoryData === 'object' ? categoryData?.name : categoryData) || '';
+            const searchStr = String(categoryName + ' ' + (product.name || '')).toLowerCase();
 
-        if (searchStr.includes('ring')) return fallbackModelMap.ring;
-        if (searchStr.includes('necklace') || searchStr.includes('choker') || searchStr.includes('set')) return fallbackModelMap.pendant; // Necklaces usually use pendant/necklace model shots
-        if (searchStr.includes('pendant') || searchStr.includes('chain')) return fallbackModelMap.pendant;
-        if (searchStr.includes('earring')) return fallbackModelMap.earring;
-        if (searchStr.includes('bracelet')) return fallbackModelMap.bracelet;
-        if (searchStr.includes('anklet')) return fallbackModelMap.anklet;
+            if (searchStr.includes('ring')) return fallbackModelMap.ring;
+            if (searchStr.includes('necklace') || searchStr.includes('choker') || searchStr.includes('set')) return fallbackModelMap.pendant;
+            if (searchStr.includes('pendant') || searchStr.includes('chain')) return fallbackModelMap.pendant;
+            if (searchStr.includes('earring')) return fallbackModelMap.earring;
+            if (searchStr.includes('bracelet')) return fallbackModelMap.bracelet;
+            if (searchStr.includes('anklet')) return fallbackModelMap.anklet;
+        }
 
-        // 3. Last resort: use primary image again if nothing else
-        return dbImage || null;
+        return null;
     };
     const secondaryImage = resolveSecondaryImage();
 
@@ -296,3 +299,4 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
 };
 
 export default ProductCard;
+

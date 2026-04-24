@@ -6,6 +6,7 @@ const { success, error } = require("../../../utils/apiResponse");
 const { sendEmail } = require("../../../services/emailService");
 
 const escapeRegex = (value = "") => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const isValidObjectId = (value) => mongoose.Types.ObjectId.isValid(String(value || ""));
 
 const buildSellerMetrics = async (sellerIds = []) => {
   const normalizedIds = sellerIds
@@ -153,6 +154,10 @@ exports.getSellers = async (req, res) => {
 
 exports.getSellerDetail = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return error(res, "Invalid seller id", 400);
+    }
+
     const seller = await Seller.findById(req.params.id).select("-password").lean();
     if (!seller) return error(res, "Seller not found", 404);
 
@@ -189,6 +194,10 @@ exports.updateSellerStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status, rejectionReason } = req.body;
+
+    if (!isValidObjectId(id)) {
+      return error(res, "Invalid seller id", 400);
+    }
 
     if (!["APPROVED", "REJECTED"].includes(status)) {
       return error(res, "Invalid status", 400);

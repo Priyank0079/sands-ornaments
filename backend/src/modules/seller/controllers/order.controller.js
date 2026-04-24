@@ -1,9 +1,11 @@
 const Order = require("../../../models/Order");
 const { success, error } = require("../../../utils/apiResponse");
+const mongoose = require("mongoose");
 
 const normalizeOrderStatus = (value = "") => String(value || "").trim();
 
 const allowedTransitions = {
+  Pending: [],
   Processing: ["Confirmed", "Cancelled"],
   Confirmed: ["Packed"],
   Packed: ["Shipped"],
@@ -24,12 +26,23 @@ const buildSellerOrderSummary = (order, sellerId) => {
   const sellerSubtotal = sellerItems.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0);
   const allItemsOwnedBySeller = sellerItems.length > 0 && sellerItems.length === (order.items || []).length;
 
+  const user = order.userId || {};
+  const address = order.shippingAddress || {};
+  const fallbackCustomerName =
+    order.customerName ||
+    user.fullName ||
+    user.name ||
+    [address.firstName, address.lastName].filter(Boolean).join(" ") ||
+    "Customer";
+  const fallbackCustomerEmail = order.customerEmail || user.email || address.email || "";
+  const fallbackCustomerPhone = order.customerPhone || user.mobileNumber || address.phone || "";
+
   return {
     _id: order._id,
     orderId: order.orderId,
-    customerName: order.customerName,
-    customerEmail: order.customerEmail,
-    customerPhone: order.customerPhone,
+    customerName: fallbackCustomerName,
+    customerEmail: fallbackCustomerEmail,
+    customerPhone: fallbackCustomerPhone,
     userId: order.userId,
     status: order.status,
     paymentMethod: order.paymentMethod,
@@ -55,22 +68,63 @@ exports.getMyOrders = async (req, res) => {
   try {
     const sellerId = req.user.userId;
 
-    const orders = await Order.find({ "items.sellerId": sellerId })
-      .populate("userId", "fullName email mobileNumber")
-      .populate("items.productId", "name images image")
-      .sort({ createdAt: -1 });
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(Number(req.query.limit) || 10, 100);
+    const { status, paymentStatus, search } = req.query;
+
+    const query = { "items.sellerId": sellerId };
+    if (status) {
+      query.status = String(status);
+    }
+    if (paymentStatus) {
+      query.paymentStatus = String(paymentStatus);
+    }
+    if (search) {
+      const escaped = String(search).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      query.$or = [
+        { orderId: { $regex: escaped, $options: "i" } },
+        { customerName: { $regex: escaped, $options: "i" } },
+        { customerEmail: { $regex: escaped, $options: "i" } },
+        { customerPhone: { $regex: escaped, $options: "i" } }
+      ];
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [orders, total] = await Promise.all([
+      Order.find(query)
+        .populate("userId", "fullName email mobileNumber")
+        .populate("items.productId", "name images image")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Order.countDocuments(query)
+    ]);
 
     const sellerOrders = orders
       .map((order) => buildSellerOrderSummary(order, sellerId))
       .filter((order) => order.sellerItemCount > 0);
 
-    return success(res, { orders: sellerOrders }, "Seller orders retrieved");
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+
+    return success(res, {
+      orders: sellerOrders,
+      pagination: {
+        page,
+        limit,
+        totalItems: total,
+        totalPages
+      }
+    }, "Seller orders retrieved");
   } catch (err) { return error(res, err.message); }
 };
 
 exports.getMyOrderDetail = async (req, res) => {
   try {
     const sellerId = req.user.userId;
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return error(res, "Invalid order id", 400);
+    }
     const order = await Order.findOne({ _id: req.params.id, "items.sellerId": sellerId })
       .populate("userId", "fullName email mobileNumber")
       .populate("items.productId", "name images image");
@@ -88,6 +142,9 @@ exports.updateOrderStatus = async (req, res) => {
     const { status, note, shippingInfo } = req.body;
     const sellerId = req.user.userId;
     const nextStatus = normalizeOrderStatus(status);
+    if (!mongoose.Types.ObjectId.isValid(orderId)) {
+      return error(res, "Invalid order id", 400);
+    }
 
     if (!nextStatus) return error(res, "Status is required", 400);
 

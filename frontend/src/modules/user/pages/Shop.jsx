@@ -1,21 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
 import ProductCard from '../components/ProductCard';
 import ProductSkeleton from '../components/ProductSkeleton';
+import Loader from '../../shared/components/Loader';
+import api from '../../../services/api';
 import {
     Filter, ChevronDown, ShoppingBag, SlidersHorizontal,
     ArrowLeft, ArrowUpDown
 } from 'lucide-react';
 
-import menRing from '../assets/men_prod_ring.png';
-import menPendant from '../assets/men_prod_pendant.png';
-import menBracelet from '../assets/men_prod_bracelet.png';
-import menChain from '../assets/men_prod_chain.png';
+import menRing from '@assets/men_prod_ring.png';
+import menPendant from '@assets/men_prod_pendant.png';
+import menBracelet from '@assets/men_prod_bracelet.png';
+import menChain from '@assets/men_prod_chain.png';
 
-import womenEarrings from '../assets/cat_earrings.png';
-import womenPendant from '../assets/trending_modern.png';
-import womenRing from '../assets/prod_ring_main.png';
+import womenEarrings from '@assets/cat_earrings.png';
+import womenPendant from '@assets/trending_modern.png';
+import womenRing from '@assets/prod_ring_main.png';
 
 const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
 
@@ -36,15 +38,12 @@ const Shop = () => {
     const [isSortOpen, setIsSortOpen] = useState(false);
     const [isWebSortOpen, setIsWebSortOpen] = useState(false);
     const [sortBy, setSortBy] = useState('Newest');
-    const [priceRange, setPriceRange] = useState(50000); 
+    const [priceRange, setPriceRange] = useState(50000);
     const [filteredProducts, setFilteredProducts] = useState(products || []);
     const [pageTitle, setPageTitle] = useState('All Jewellery');
     const queryParams = new URLSearchParams(location.search);
     const isComingSoonQuery = queryParams.get('status') === 'coming-soon';
-    const filterQuery = queryParams.get('filter');
-    const giftsQuery = queryParams.get('gifts');
     const sourceQuery = queryParams.get('source');
-    const occasionQuery = queryParams.get('occasion');
     const priceMaxQuery = queryParams.get('price_max');   // upper bound — e.g. price_max=3000
     const priceMinQuery = queryParams.get('price_min');   // lower bound — e.g. price_min=1500
     const productsQuery = queryParams.get('products');
@@ -53,9 +52,57 @@ const Shop = () => {
     const searchQuery = queryParams.get('search');
     const karatQuery = queryParams.get('karat');
     const silverTypeQuery = queryParams.get('silver_type');
-    const effectiveFilterQuery = filterQuery || giftsQuery;
+    // Backwards compatibility for older links (e.g. All Type mega menu used `purity`)
+    const purityQuery = queryParams.get('purity');
     const isMenFlow = sourceQuery === 'men';
     const isWomenFlow = sourceQuery === 'women';
+
+    const [pinnedProducts, setPinnedProducts] = useState([]);
+    const [isPinnedLoading, setIsPinnedLoading] = useState(false);
+
+    const requestedPinnedIds = useMemo(() => {
+        if (!productsQuery) return [];
+        return String(productsQuery)
+            .split(',')
+            .map((id) => id.trim())
+            .filter(Boolean);
+    }, [productsQuery]);
+
+    useEffect(() => {
+        const loadPinned = async () => {
+            if (!productsQuery) {
+                setPinnedProducts([]);
+                return;
+            }
+
+            const validIds = requestedPinnedIds.filter((id) => /^[a-f\\d]{24}$/i.test(id));
+            if (validIds.length === 0) {
+                setPinnedProducts([]);
+                return;
+            }
+
+            setIsPinnedLoading(true);
+            try {
+                const res = await api.get('public/products/by-ids', {
+                    params: {
+                        ids: validIds.join(','),
+                        // Pinned CMS should not silently disappear if stock is 0.
+                        inStockOnly: false,
+                        _t: Date.now()
+                    }
+                });
+                const list = res?.data?.data?.products || [];
+                setPinnedProducts(Array.isArray(list) ? list : []);
+            } catch (err) {
+                console.error('Failed to fetch pinned products:', err);
+                setPinnedProducts([]);
+            } finally {
+                setIsPinnedLoading(false);
+            }
+        };
+
+        loadPinned();
+    }, [productsQuery, requestedPinnedIds]);
 
     useEffect(() => {
         const categoryQuery = queryParams.get('category');
@@ -98,6 +145,21 @@ const Shop = () => {
         }
     }, [location.search, location.pathname, categories]);
 
+    const normalizeAudience = (value) => String(value || '').trim().toLowerCase();
+    const getProductAudience = (product) => {
+        const list = Array.isArray(product?.audience) ? product.audience : [];
+        if (list.length === 0) return ['unisex'];
+        return list.map(normalizeAudience).filter(Boolean);
+    };
+    const matchesAudienceScope = (product) => {
+        if (!isMenFlow && !isWomenFlow) return true;
+        const audience = getProductAudience(product);
+        if (audience.includes('unisex')) return true;
+        if (isMenFlow) return audience.includes('men');
+        if (isWomenFlow) return audience.includes('women');
+        return true;
+    };
+
     const updateShopQuery = (updates = {}, pathOverride = location.pathname) => {
         const params = new URLSearchParams(location.search);
 
@@ -124,7 +186,7 @@ const Shop = () => {
         const path = location.pathname;
         const categoryQuery = queryParams.get('category');
         const metalQuery = queryParams.get('metal');
-        
+
         let baseProducts = products;
         let title = 'All Jewellery';
 
@@ -211,22 +273,43 @@ const Shop = () => {
         const getProductMetal = (product) => {
             const material = String(product?.material || '').trim();
             if (material) return material;
-            const catId = product.categoryId || product.category_id || '';
-            const cat = categories.find(c => String(c._id || c.id) === String(catId));
-            return cat?.metal || product.metal;
+            return product.metal;
         };
         const normalizeSilverTier = (value) => {
             const normalized = String(value || '').trim().toLowerCase();
-            if (!normalized) return 'silver';
-            if (normalized === '925 sterling silver') return '925 sterling silver';
-            return 'silver';
+            if (!normalized) return null;
+            if (normalized === '925' || normalized.startsWith('925 ') || normalized.includes('sterling')) return 'sterling';
+            if (normalized.includes('fine')) return 'fine';
+            // Treat all other silver categories (800/835/958/970/990/999 etc) as fine for filtering.
+            return 'fine';
         };
+        const normalizeGoldKarat = (value) => {
+            const normalized = String(value || '').trim().toLowerCase();
+            if (!normalized) return null;
+            // Accept: "24", "24k", "24 k", etc.
+            const digits = normalized.replace(/[^0-9]/g, '');
+            return digits || null;
+        };
+
+        const effectiveKarat = normalizeGoldKarat(karatQuery || (purityQuery && String(purityQuery).toLowerCase().includes('k') ? purityQuery : ''));
+        const effectiveSilverType = (() => {
+            if (silverTypeQuery) return normalizeSilverTier(silverTypeQuery);
+            if (!purityQuery) return null;
+            const normalized = String(purityQuery).trim().toLowerCase();
+            if (normalized === '925' || normalized.includes('sterling')) return 'sterling';
+            if (normalized.includes('fine')) return 'fine';
+            return null;
+        })();
+
         const matchesPurityTier = (product) => {
-            if (metalQuery?.toLowerCase() === 'gold' && karatQuery) {
-                return String(product.goldCategory || '') === String(karatQuery);
+            if (metalQuery?.toLowerCase() === 'gold' && effectiveKarat) {
+                return String(product.goldCategory || '') === String(effectiveKarat);
             }
-            if (metalQuery?.toLowerCase() === 'silver' && silverTypeQuery) {
-                return normalizeSilverTier(product.silverCategory) === normalizeSilverTier(silverTypeQuery);
+            if (metalQuery?.toLowerCase() === 'silver' && effectiveSilverType) {
+                const productTier = normalizeSilverTier(product.silverCategory) || 'fine';
+                if (effectiveSilverType === 'sterling') return productTier === 'sterling';
+                if (effectiveSilverType === 'fine') return productTier !== 'sterling';
+                return true;
             }
             return true;
         };
@@ -244,24 +327,20 @@ const Shop = () => {
                 const metal = getProductMetal(p);
                 return metal?.toLowerCase() === metalQuery.toLowerCase();
             });
-            if (karatQuery) {
-                title = `${metalQuery.toUpperCase()} ${karatQuery} Karat`;
-            } else if (silverTypeQuery) {
+            if (metalQuery?.toLowerCase() === 'gold' && effectiveKarat) {
+                title = `${effectiveKarat}K Gold`;
+            } else if (metalQuery?.toLowerCase() === 'silver' && effectiveSilverType) {
                 title = metalQuery.toLowerCase() === 'silver'
-                    ? (normalizeSilverTier(silverTypeQuery) === '925 sterling silver' ? '925 Sterling Silver' : 'Silver')
+                    ? (effectiveSilverType === 'sterling' ? '925 Sterling Silver' : 'Fine Silver')
                     : title;
             }
         } else if (category) {
             const currentCat = categories.find(c => c.path === category || c.slug === category);
             title = currentCat ? currentCat.name : category.charAt(0).toUpperCase() + category.slice(1);
             baseProducts = products.filter(p => matchesCategory(p, category, currentCat));
-        } else if (effectiveFilterQuery) {
-            title = `Gifts for ${effectiveFilterQuery.charAt(0).toUpperCase() + effectiveFilterQuery.slice(1)}`;
-        } else if (occasionQuery) {
-            title = `${occasionQuery.charAt(0).toUpperCase() + occasionQuery.slice(1)} Picks`;
         }
 
-        if (metalQuery && (karatQuery || silverTypeQuery)) {
+        if (metalQuery && (effectiveKarat || effectiveSilverType)) {
             baseProducts = baseProducts.filter(matchesPurityTier);
         }
 
@@ -281,13 +360,18 @@ const Shop = () => {
             title = `Above ₹${parsedMin.toLocaleString('en-IN')}`;
         }
         if (productsQuery) {
-            const ids = String(productsQuery)
-                .split(',')
-                .map(id => id.trim())
-                .filter(Boolean);
-            if (ids.length > 0) {
-                baseProducts = baseProducts.filter(p => ids.includes(String(p._id || p.id)));
+            if (pinnedProducts.length > 0) {
+                baseProducts = pinnedProducts;
                 title = 'Perfect Gift';
+            } else {
+                const ids = String(productsQuery)
+                    .split(',')
+                    .map(id => id.trim())
+                    .filter(Boolean);
+                if (ids.length > 0) {
+                    baseProducts = baseProducts.filter(p => ids.includes(String(p._id || p.id)));
+                    title = 'Perfect Gift';
+                }
             }
         }
         if (sortQuery === 'latest') {
@@ -316,31 +400,13 @@ const Shop = () => {
 
         let result = baseProducts;
 
+        // Enforce men/women audience scope when coming from those landing pages.
+        result = result.filter(matchesAudienceScope);
+
         // 2. Apply Local Category Filter (if selected)
         if (selectedCategory !== 'All') {
             const selectedCat = categories.find(c => c.name === selectedCategory || c.slug === selectedCategory || c.path === selectedCategory);
             result = result.filter(p => matchesCategory(p, selectedCategory, selectedCat));
-        }
-
-        // 2.1 Apply Audience/Occasion Text Filters (if present)
-        const filterTerm = effectiveFilterQuery || occasionQuery;
-        if (filterTerm) {
-            const normalize = (value) => String(value || '')
-                .trim()
-                .toLowerCase()
-                .replace(/['"]/g, '')
-                .replace(/[^a-z0-9]+/g, '-')
-                .replace(/^-+|-+$/g, '');
-            const term = normalize(filterTerm);
-            const matchesNavTags = (product) => {
-                const giftTags = (product.navGiftsFor || []).map(t => normalize(t));
-                const occasionTags = (product.navOccasions || []).map(t => normalize(t));
-                if (effectiveFilterQuery) return giftTags.includes(term);
-                if (occasionQuery) return occasionTags.includes(term);
-                return false;
-            };
-
-            result = result.filter(matchesNavTags);
         }
 
         if (searchQuery) {
@@ -353,8 +419,6 @@ const Shop = () => {
                     product.category,
                     product.categorySlug,
                     ...(product.tags || []),
-                    ...(product.navGiftsFor || []),
-                    ...(product.navOccasions || []),
                     ...(product.variants || []).map((variant) => variant.name)
                 ]
                     .filter(Boolean)
@@ -472,7 +536,7 @@ const Shop = () => {
                 variants: [{ id: 'p5-v1', price: 6599, mrp: 9999 }]
             }
         ];
-        
+
         const womenDummyProducts = [
             {
                 id: 'w1',
@@ -530,18 +594,18 @@ const Shop = () => {
         }
 
         // 6. Inject Dummy Products for Men/Women Categories if empty
-        const isMenCategory = category?.toLowerCase() === 'men' || 
-                             selectedCategory?.toLowerCase() === 'men' ||
-                             sourceQuery === 'men' ||
-                             location.pathname.includes('/men') ||
-                             menDummyProducts.some(p => p.categorySlug === category || p.categorySlug === selectedCategory?.toLowerCase());
+        const isMenCategory = category?.toLowerCase() === 'men' ||
+            selectedCategory?.toLowerCase() === 'men' ||
+            sourceQuery === 'men' ||
+            location.pathname.includes('/men') ||
+            menDummyProducts.some(p => p.categorySlug === category || p.categorySlug === selectedCategory?.toLowerCase());
 
-        const isWomenCategory = category?.toLowerCase() === 'women' || 
-                               category?.toLowerCase() === 'womens' ||
-                               selectedCategory?.toLowerCase() === 'women' ||
-                               sourceQuery === 'women' ||
-                               location.pathname.includes('/women') ||
-                               womenDummyProducts.some(p => p.categorySlug === category || p.categorySlug === selectedCategory?.toLowerCase());
+        const isWomenCategory = category?.toLowerCase() === 'women' ||
+            category?.toLowerCase() === 'womens' ||
+            selectedCategory?.toLowerCase() === 'women' ||
+            sourceQuery === 'women' ||
+            location.pathname.includes('/women') ||
+            womenDummyProducts.some(p => p.categorySlug === category || p.categorySlug === selectedCategory?.toLowerCase());
 
         if (result.length === 0 && isMenCategory) {
             result = menDummyProducts;
@@ -690,11 +754,9 @@ const Shop = () => {
 
 
                 {/* Product Grid */}
-                {isLoading ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8 gap-y-8 md:gap-y-12">
-                        {[...Array(8)].map((_, i) => (
-                            <ProductSkeleton key={i} />
-                        ))}
+                {(isLoading || isPinnedLoading) ? (
+                    <div className="flex items-center justify-center py-20">
+                        <Loader fullPage={false} />
                     </div>
                 ) : (() => {
                     const isComingSoon = isComingSoonQuery || (selectedCategory !== 'All' && filteredProducts.length === 0);
@@ -709,7 +771,7 @@ const Shop = () => {
                                 <p className="text-gray-500 max-w-md mx-auto mb-8">
                                     We're currently handcrafting new exquisite designs for <span className="text-black font-semibold">{selectedCategory}</span>. Stay tuned!
                                 </p>
-                                <button 
+                                <button
                                     onClick={clearAllFilters}
                                     className="bg-black text-white px-8 py-3 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-[#D39A9F] transition-all shadow-lg"
                                 >
@@ -738,8 +800,8 @@ const Shop = () => {
                         <div className="flex flex-col items-center justify-center py-20 text-center">
                             <h3 className="text-2xl font-serif text-black mb-2">No products found</h3>
                             <p className="text-gray-500">Try adjusting your filters to find your perfect match.</p>
-                            <button 
-                                onClick={clearAllFilters} 
+                            <button
+                                onClick={clearAllFilters}
                                 className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#D39A9F] hover:underline"
                             >
                                 <SlidersHorizontal className="w-4 h-4" /> Clear all filters
@@ -768,7 +830,7 @@ const Shop = () => {
                         <Filter className="w-3 h-3" /> Filter
                     </span>
                     <span className="text-[10px] text-gray-600 font-medium mt-0.5">
-                        {(selectedCategory !== 'All' || filterNewArrivals || filterTrending || priceRange < 50000 || !!searchQuery || !!effectiveFilterQuery || !!occasionQuery) ? 'Filters applied' : 'No filter applied'}
+                        {(selectedCategory !== 'All' || filterNewArrivals || filterTrending || priceRange < 50000 || !!searchQuery) ? 'Filters applied' : 'No filter applied'}
                     </span>
                 </button>
             </div>
@@ -931,3 +993,4 @@ const Shop = () => {
 };
 
 export default Shop;
+

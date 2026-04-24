@@ -4,10 +4,10 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
 // Import existing images from project assets
-import dailyPackImg from '../../../assets/banner_daily.png';
-import familyPackImg from '../../../assets/banner_office.png';
-import partyPackImg from '../../../assets/banner_party.png';
-import fitnessPackImg from '../../../assets/cat_all_premium.png';
+import dailyPackImg from '@assets/banner_daily.png';
+import familyPackImg from '@assets/banner_office.png';
+import partyPackImg from '@assets/banner_party.png';
+import fitnessPackImg from '@assets/cat_all_premium.png';
 
 const packs = [
     {
@@ -133,3 +133,4 @@ const ShopByPacks = () => {
 };
 
 export default ShopByPacks;
+

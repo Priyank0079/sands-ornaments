@@ -1,130 +1,361 @@
 const Product = require("../../../models/Product");
 const StockLog = require("../../../models/StockLog");
+const mongoose = require("mongoose");
 const { success, error } = require("../../../utils/apiResponse");
 const { isSerializedVariant, setSerializedVariantStock } = require("../../../utils/inventorySync");
+const { notifySellerLowStock, DEFAULT_LOW_STOCK_THRESHOLD } = require("../../../services/sellerNotificationService");
+
+const parsePositiveInt = (value, fallback) => {
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+  return parsed;
+};
+
+const toRegex = (value = "") => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const isValidObjectId = (value) => mongoose.Types.ObjectId.isValid(String(value || ""));
 
 exports.getInventory = async (req, res) => {
   try {
-    const { search, category, lowStock } = req.query;
+    const {
+      search,
+      category,
+      lowStock,
+      threshold,
+      sortBy = "updatedAt",
+      sortOrder = "desc",
+      page = 1,
+      limit = 500
+    } = req.query;
+
     const query = { sellerId: req.user.userId };
+    const currentPage = parsePositiveInt(page, 1);
+    const pageLimit = Math.min(parsePositiveInt(limit, 500), 1000);
 
     if (search) {
-      const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const escaped = toRegex(search);
       query.name = { $regex: escaped, $options: "i" };
     }
-    if (category) query.categories = category;
-    if (lowStock === "true") query["variants.stock"] = { $lte: 10 };
+    if (category) {
+      if (!isValidObjectId(category)) return error(res, "Invalid category id", 400);
+      query.categories = new mongoose.Types.ObjectId(category);
+    }
+    if (lowStock === "true") {
+      const lowStockThreshold = parsePositiveInt(threshold, 10);
+      query["variants.stock"] = { $lte: lowStockThreshold };
+    }
+
+    const sortableFields = new Set(["name", "createdAt", "updatedAt"]);
+    const safeSortBy = sortableFields.has(sortBy) ? sortBy : "updatedAt";
+    const safeSortOrder = String(sortOrder).toLowerCase() === "asc" ? 1 : -1;
+    const total = await Product.countDocuments(query);
 
     const products = await Product.find(query)
       .select("name images variants categories sellerId")
-      .populate("categories", "name");
+      .populate("categories", "name")
+      .sort({ [safeSortBy]: safeSortOrder })
+      .skip((currentPage - 1) * pageLimit)
+      .limit(pageLimit);
 
-    return success(res, { inventory: products }, "Inventory retrieved");
+    return success(res, {
+      inventory: products,
+      pagination: {
+        total,
+        page: currentPage,
+        limit: pageLimit,
+        pages: Math.ceil(total / pageLimit) || 1
+      }
+    }, "Inventory retrieved");
   } catch (err) { return error(res, err.message); }
+};
+
+const parseStockInt = (value) => {
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isFinite(parsed)) return null;
+  return parsed;
 };
 
 exports.adjustStock = async (req, res) => {
   try {
-    const { productId, variantId, newStock, reason } = req.body;
-    if (newStock === undefined || newStock === null || Number.isNaN(Number(newStock))) {
-      return error(res, "Invalid stock value", 400);
+    const sellerId = req.user.userId;
+    const rawAdjustments = Array.isArray(req.body.adjustments) ? req.body.adjustments : [req.body];
+
+    const adjustments = rawAdjustments
+      .map((entry = {}) => ({
+        productId: entry.productId,
+        variantId: entry.variantId,
+        newStock: entry.newStock,
+        reason: entry.reason
+      }))
+      .filter((entry) => entry.productId && entry.variantId);
+
+    if (adjustments.length === 0) {
+      return error(res, "No valid stock adjustments provided", 400);
     }
 
-    const product = await Product.findOne({ _id: productId, sellerId: req.user.userId });
-    if (!product) return error(res, "Product not found", 404);
+    for (const entry of adjustments) {
+      if (!isValidObjectId(entry.productId)) return error(res, "Invalid product id", 400);
+      if (!isValidObjectId(entry.variantId)) return error(res, "Invalid variant id", 400);
 
-    const variant = product.variants.id(variantId);
-    if (!variant) return error(res, "Variant not found", 404);
-
-    const nextStock = Number(newStock);
-    if (nextStock < 0) {
-      return error(res, "Stock cannot be negative", 400);
+      const parsed = parseStockInt(entry.newStock);
+      if (parsed === null) return error(res, "Invalid stock value", 400);
+      if (parsed < 0) return error(res, "Stock cannot be negative", 400);
+      entry.newStock = parsed;
     }
 
-    const previousStock = Number(variant.stock) || 0;
-    const variantIndex = product.variants.findIndex(v => String(v._id) === String(variantId));
-
-    if (isSerializedVariant(product, variant)) {
-      setSerializedVariantStock({
-        product,
-        variant,
-        desiredStock: nextStock,
-        variantIndex
-      });
-    } else {
-      variant.stock = nextStock;
-    }
-
-    await product.save();
-
-    await StockLog.create({
-      productId,
-      variantId,
-      changeType: "adjustment",
-      previousStock,
-      newStock: variant.stock,
-      change: variant.stock - previousStock,
-      reason: reason || "Manual adjustment by Seller",
-      sellerId: req.user.userId
+    const productIds = [...new Set(adjustments.map((a) => String(a.productId)))];
+    const products = await Product.find({
+      _id: { $in: productIds },
+      sellerId
     });
 
-    return success(res, { product }, "Stock adjusted successfully");
+    if (products.length === 0) return error(res, "No matching products found", 404);
+
+    const productsById = new Map(products.map((p) => [String(p._id), p]));
+    const logs = [];
+    const failures = [];
+
+    // Apply all adjustments in-memory first, then save each product once.
+    for (const entry of adjustments) {
+      const product = productsById.get(String(entry.productId));
+      if (!product) {
+        failures.push({ productId: entry.productId, variantId: entry.variantId, message: "Product not found" });
+        continue;
+      }
+
+      const variant = product.variants.id(entry.variantId);
+      if (!variant) {
+        failures.push({ productId: entry.productId, variantId: entry.variantId, message: "Variant not found" });
+        continue;
+      }
+
+      const previousStock = Number(variant.stock) || 0;
+      const variantIndex = product.variants.findIndex(v => String(v._id) === String(entry.variantId));
+
+      try {
+        if (isSerializedVariant(product, variant)) {
+          setSerializedVariantStock({
+            product,
+            variant,
+            desiredStock: entry.newStock,
+            variantIndex
+          });
+        } else {
+          variant.stock = entry.newStock;
+        }
+      } catch (err) {
+        failures.push({ productId: entry.productId, variantId: entry.variantId, message: err.message || "Failed to adjust stock" });
+        continue;
+      }
+
+      logs.push({
+        productId: product._id,
+        variantId: variant._id,
+        changeType: "adjustment",
+        previousStock,
+        newStock: Number(variant.stock) || 0,
+        change: (Number(variant.stock) || 0) - previousStock,
+        reason: entry.reason || "Manual adjustment by Seller",
+        sellerId
+      });
+
+      // Low stock alert (best-effort, de-duped).
+      await notifySellerLowStock({
+        sellerId,
+        productId: product._id,
+        variantId: variant._id,
+        productName: product.name,
+        variantName: variant.name,
+        currentStock: Number(variant.stock) || 0,
+        threshold: DEFAULT_LOW_STOCK_THRESHOLD
+      });
+    }
+
+    // Save all touched products.
+    const touchedIds = new Set(logs.map((l) => String(l.productId)));
+    for (const product of products) {
+      if (!touchedIds.has(String(product._id))) continue;
+      await product.save();
+    }
+
+    if (logs.length > 0) {
+      await StockLog.insertMany(logs);
+    }
+
+    const message = failures.length > 0
+      ? `Stock adjusted with ${failures.length} issue(s)`
+      : "Stock adjusted successfully";
+
+    return success(res, {
+      updated: logs.length,
+      failures
+    }, message);
   } catch (err) { return error(res, err.message); }
 };
 
 exports.getStockHistory = async (req, res) => {
   try {
-    const { productId, variantId } = req.query;
+    const {
+      productId,
+      variantId,
+      changeType,
+      actorType,
+      search,
+      startDate,
+      endDate,
+      page = 1,
+      limit = 500
+    } = req.query;
+
+    const currentPage = parsePositiveInt(page, 1);
+    const pageLimit = Math.min(parsePositiveInt(limit, 500), 1000);
     const productQuery = { sellerId: req.user.userId };
-    if (productId) productQuery._id = productId;
+    if (productId) {
+      if (!isValidObjectId(productId)) return error(res, "Invalid product id", 400);
+      productQuery._id = productId;
+    }
 
-    const products = await Product.find(productQuery).select("_id");
-    const productIds = products.map(p => p._id);
-    if (productIds.length === 0) return success(res, { logs: [] }, "Stock history retrieved");
+    const productsAll = await Product.find(productQuery).select("_id name");
+    const productIdsAll = productsAll.map(p => p._id);
+    if (productIdsAll.length === 0) {
+      return success(res, {
+        logs: [],
+        pagination: { total: 0, page: currentPage, limit: pageLimit, pages: 1 }
+      }, "Stock history retrieved");
+    }
 
-    const query = { productId: { $in: productIds } };
-    if (variantId) query.variantId = variantId;
+    const query = { productId: { $in: productIdsAll } };
+    if (variantId) {
+      if (!isValidObjectId(variantId)) return error(res, "Invalid variant id", 400);
+      query.variantId = variantId;
+    }
+    if (changeType) query.changeType = changeType;
+
+    if (actorType === "admin") query.adminId = { $exists: true, $ne: null };
+    if (actorType === "seller") query.sellerId = { $exists: true, $ne: null };
+    if (actorType === "user") query.userId = { $exists: true, $ne: null };
+
+    if (search) {
+      const escaped = toRegex(search);
+      const byName = productsAll
+        .filter((p) => new RegExp(escaped, "i").test(String(p.name || "")))
+        .map((p) => p._id);
+
+      query.$or = [
+        { reason: { $regex: escaped, $options: "i" } },
+        { productId: { $in: byName } }
+      ];
+    }
+
+    if (startDate || endDate) {
+      query.createdAt = {};
+      if (startDate) query.createdAt.$gte = new Date(startDate);
+      if (endDate) query.createdAt.$lte = new Date(endDate);
+    }
+
+    const total = await StockLog.countDocuments(query);
 
     const logs = await StockLog.find(query)
-      .populate("productId", "name images")
+      .populate("productId", "name images sellerId")
+      .populate({ path: "productId", populate: { path: "sellerId", select: "fullName shopName" } })
       .populate("adminId", "name")
-      .populate("sellerId", "fullName")
+      .populate("sellerId", "fullName shopName")
+      .populate("userId", "name")
       .sort({ createdAt: -1 })
-      .limit(50);
+      .skip((currentPage - 1) * pageLimit)
+      .limit(pageLimit);
 
-    return success(res, { logs }, "Stock history retrieved");
+    return success(res, {
+      logs,
+      pagination: {
+        total,
+        page: currentPage,
+        limit: pageLimit,
+        pages: Math.ceil(total / pageLimit) || 1
+      }
+    }, "Stock history retrieved");
   } catch (err) { return error(res, err.message); }
 };
 
 exports.getLowStockAlerts = async (req, res) => {
   try {
-    const threshold = Number(req.query.threshold) || 5;
-    const products = await Product.find({
-      sellerId: req.user.userId,
-      "variants.stock": { $lte: threshold }
-    })
-      .select("name images categories variants")
-      .populate("categories", "name");
+    const {
+      threshold = 5,
+      search,
+      category,
+      sortBy = "currentStock",
+      sortOrder = "asc",
+      page = 1,
+      limit = 500
+    } = req.query;
 
-    const alerts = [];
-    products.forEach(p => {
-      p.variants.forEach(v => {
-        if (v.stock <= threshold) {
-          alerts.push({
-            productId: p._id,
-            productName: p.name,
-            productImage: p.images?.[0] || '',
-            categoryName: p.categories?.[0]?.name || 'Uncategorized',
-            variantId: v._id,
-            variantName: v.name,
-            currentStock: v.stock,
-            threshold
-          });
+    const currentPage = parsePositiveInt(page, 1);
+    const pageLimit = Math.min(parsePositiveInt(limit, 500), 1000);
+    const lowStockThreshold = parsePositiveInt(threshold, 5);
+
+    const productMatch = { sellerId: new mongoose.Types.ObjectId(req.user.userId) };
+    if (search) productMatch.name = { $regex: toRegex(search), $options: "i" };
+    if (category) {
+      if (!mongoose.Types.ObjectId.isValid(category)) {
+        return error(res, "Invalid category id", 400);
+      }
+      productMatch.categories = new mongoose.Types.ObjectId(category);
+    }
+
+    const sortableFields = new Set(["currentStock", "productName", "variantName"]);
+    const safeSortBy = sortableFields.has(sortBy) ? sortBy : "currentStock";
+    const safeSortOrder = String(sortOrder).toLowerCase() === "desc" ? -1 : 1;
+
+    const basePipeline = [
+      { $match: productMatch },
+      { $unwind: "$variants" },
+      { $match: { "variants.stock": { $lte: lowStockThreshold } } },
+      {
+        $lookup: {
+          from: "categories",
+          localField: "categories",
+          foreignField: "_id",
+          as: "categoryDocs"
         }
-      });
-    });
+      },
+      {
+        $project: {
+          _id: 0,
+          productId: "$_id",
+          productName: "$name",
+          productImage: { $ifNull: [{ $arrayElemAt: ["$images", 0] }, ""] },
+          categoryName: {
+            $ifNull: [{ $arrayElemAt: ["$categoryDocs.name", 0] }, "Uncategorized"]
+          },
+          variantId: "$variants._id",
+          variantName: "$variants.name",
+          currentStock: "$variants.stock",
+          threshold: { $literal: lowStockThreshold }
+        }
+      }
+    ];
 
-    return success(res, { alerts }, "Low stock alerts retrieved");
+    const countResult = await Product.aggregate([
+      ...basePipeline,
+      { $count: "total" }
+    ]);
+    const total = countResult[0]?.total || 0;
+
+    const alerts = await Product.aggregate([
+      ...basePipeline,
+      { $sort: { [safeSortBy]: safeSortOrder, productName: 1 } },
+      { $skip: (currentPage - 1) * pageLimit },
+      { $limit: pageLimit }
+    ]);
+
+    return success(res, {
+      alerts,
+      pagination: {
+        total,
+        page: currentPage,
+        limit: pageLimit,
+        pages: Math.ceil(total / pageLimit) || 1
+      }
+    }, "Low stock alerts retrieved");
   } catch (err) { return error(res, err.message); }
 };
 

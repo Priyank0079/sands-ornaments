@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react';
-import loginBg from '../assets/admin-login-bg.png';
-import logoName from '../assets/sands-logoname.png';
+import loginBg from '@assets/admin-login-bg.png';
+import logoName from '@assets/sands-logoname.png';
 
 const AdminLogin = () => {
     const [email, setEmail] = useState('');
@@ -156,3 +156,4 @@ const AdminLogin = () => {
 };
 
 export default AdminLogin;
+

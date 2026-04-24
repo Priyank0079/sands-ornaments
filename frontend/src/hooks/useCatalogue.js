@@ -15,7 +15,6 @@ export const useCatalogue = () => {
                 slug: cat.slug,
                 path: cat.slug,
                 image: cat.image,
-                metal: cat.metal,
                 showInNavbar: cat.showInNavbar,
                 showInCollection: cat.showInCollection,
                 isActive: cat.isActive,
@@ -34,14 +33,18 @@ export const useCatalogue = () => {
     const productsQuery = useQuery({
         queryKey: ['products'],
         queryFn: async () => {
-            const res = await api.get('public/products');
+            const res = await api.get('public/products', {
+                params: {
+                    inStockOnly: true,
+                    limit: 200
+                }
+            });
             const data = res.data.data.products || [];
             return data.map(prod => {
                 const rawCategory = Array.isArray(prod.categories) ? prod.categories[0] : null;
                 const rawCategoryId = rawCategory?._id || (typeof rawCategory === 'string' ? rawCategory : '');
                 const rawCategoryName = typeof rawCategory === 'string' ? rawCategory : (rawCategory?.name || '');
                 const rawCategorySlug = rawCategory?.slug || '';
-                const rawCategoryMetal = rawCategory?.metal || '';
 
                 return ({
                 id: prod._id,
@@ -61,11 +64,10 @@ export const useCatalogue = () => {
                 category: rawCategoryName || '', // Updated for flat populate + legacy string fallback
                 categoryId: rawCategoryId || '',
                 categorySlug: rawCategorySlug || '',
-                metal: rawCategoryMetal || '',
-                material: prod.material || rawCategoryMetal || '',
+                material: prod.material || '',
+                videoUrl: prod.videoUrl || '',
+                audience: Array.isArray(prod.audience) && prod.audience.length > 0 ? prod.audience : ['unisex'],
                 navShopByCategory: prod.navShopByCategory || [],
-                navGiftsFor: prod.navGiftsFor || [],
-                navOccasions: prod.navOccasions || [],
                 faqs: prod.faqs || [], // Added FAQs
                 goldCategory: prod.goldCategory || '',
                 silverCategory: prod.silverCategory || '',
@@ -79,15 +81,6 @@ export const useCatalogue = () => {
         staleTime: 5 * 60 * 1000,
     });
 
-    // Fetch Banners
-    const bannersQuery = useQuery({
-        queryKey: ['banners'],
-        queryFn: async () => {
-            const res = await api.get('public/banners');
-            return res.data.data.banners || [];
-        },
-        staleTime: 10 * 60 * 1000,
-    });
 
     // Fetch Coupons
     const couponsQuery = useQuery({
@@ -102,14 +95,12 @@ export const useCatalogue = () => {
     return {
         categories: categoriesQuery.data || [],
         products: productsQuery.data || [],
-        banners: bannersQuery.data || [],
         coupons: couponsQuery.data || [],
-        isLoading: categoriesQuery.isLoading || productsQuery.isLoading || bannersQuery.isLoading || couponsQuery.isLoading,
-        isError: categoriesQuery.isError || productsQuery.isError || bannersQuery.isError || couponsQuery.isError,
+        isLoading: categoriesQuery.isLoading || productsQuery.isLoading || couponsQuery.isLoading,
+        isError: categoriesQuery.isError || productsQuery.isError || couponsQuery.isError,
         refetch: () => {
             categoriesQuery.refetch();
             productsQuery.refetch();
-            bannersQuery.refetch();
             couponsQuery.refetch();
         }
     };

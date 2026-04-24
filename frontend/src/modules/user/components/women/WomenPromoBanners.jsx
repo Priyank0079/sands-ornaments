@@ -1,33 +1,53 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { buildWomenShopPath } from '../../utils/womenNavigation';
+import { resolveLegacyCmsAsset } from '../../utils/legacyCmsAssets';
 
-import CoupleRingsImg from '../../../../assets/promos/DarkCoupleRings.png';
-import PremiumGiftsImg from '../../../../assets/promos/DarkPremiumGifts.png';
+import CoupleRingsImg from '@assets/promos/DarkCoupleRings.png';
+import PremiumGiftsImg from '@assets/promos/DarkPremiumGifts.png';
 
-const banners = [
+const fallbackBanners = [
     {
-        id: 1,
+        id: 'women-promo-1',
         title: "Couple Rings",
         subtitle: "Eternal Bonds in Silver",
         image: CoupleRingsImg,
         link: buildWomenShopPath({ category: 'rings' }),
-        color: "rose"
+        badge: 'Exclusive',
+        ctaLabel: 'Shop Now'
     },
     {
-        id: 2,
+        id: 'women-promo-2',
         title: "Premium Gifts",
         subtitle: "Luxury for your Loved Ones",
         image: PremiumGiftsImg,
-        link: buildWomenShopPath({ products: 'w1,w2,w3', limit: 3, sort: 'random' }),
-        color: "amber"
+        link: buildWomenShopPath({ filter: 'womens', category: 'pendants' }),
+        badge: 'Exclusive',
+        ctaLabel: 'Shop Now'
     }
 ];
 
-const WomenPromoBanners = () => {
+const WomenPromoBanners = ({ sectionData }) => {
     const navigate = useNavigate();
+    const banners = useMemo(() => {
+        const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
+        const normalized = configuredItems
+            .map((item, index) => ({
+                id: item.itemId || item.id || `women-promo-${index + 1}`,
+                title: item.name || item.label || `Banner ${index + 1}`,
+                subtitle: item.subtitle || item.description || fallbackBanners[index]?.subtitle || '',
+                image: resolveLegacyCmsAsset(item.image, fallbackBanners[index]?.image || ''),
+                link: item.path || fallbackBanners[index]?.link || buildWomenShopPath({ filter: 'womens' }),
+                badge: item.tag || fallbackBanners[index]?.badge || 'Exclusive',
+                ctaLabel: item.ctaLabel || fallbackBanners[index]?.ctaLabel || 'Shop Now'
+            }))
+            .filter((item) => Boolean(item.title) && Boolean(item.subtitle) && Boolean(item.image) && Boolean(item.link))
+            .slice(0, 2);
+
+        return normalized.length === 2 ? normalized : fallbackBanners;
+    }, [sectionData]);
 
     return (
         <section className="pt-0 pb-6 md:pb-10 bg-white px-4 sm:px-6">
@@ -60,7 +80,7 @@ const WomenPromoBanners = () => {
                                 transition={{ delay: 0.5 }}
                             >
                                 <span className="inline-block px-2.5 py-0.5 md:px-3 md:py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] text-white mb-2 md:mb-3 shadow-sm">
-                                    Exclusive
+                                    {banner.badge}
                                 </span>
                                 <h3 className="text-xl sm:text-2xl md:text-4xl font-serif text-white tracking-tight leading-none mb-1 md:mb-2 transition-colors">
                                     {banner.title}
@@ -76,7 +96,7 @@ const WomenPromoBanners = () => {
                                             <ArrowRight className="w-3.5 h-3.5 md:w-4 md:h-4" />
                                         </div>
                                         <span className="opacity-0 group-hover:opacity-100 ml-5 text-[10px] font-bold uppercase tracking-widest transition-opacity duration-300">
-                                            Shop Now
+                                            {banner.ctaLabel}
                                         </span>
                                     </div>
                                 </div>
@@ -93,3 +113,4 @@ const WomenPromoBanners = () => {
 };
 
 export default WomenPromoBanners;
+

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ShoppingBag } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
 import ProductCard from './ProductCard';
+import { matchesRequestedMetal } from '../utils/productMetal';
 
 const AllJewellery = () => {
     const { products = [], homepageSections } = useShop();
@@ -16,7 +17,10 @@ const AllJewellery = () => {
         : [];
 
     const displayProducts = useMemo(() => {
-        const validProducts = [...products].filter((product) => product?.id && product?.name);
+        // Home (/) is the Silver Jewellery landing page. Keep this section silver-safe.
+        const validProducts = [...products]
+            .filter((product) => product?.id && product?.name)
+            .filter((product) => matchesRequestedMetal(product, 'silver'));
 
         // If CMS has curated product IDs, attempt to use them
         if (curatedProductIds.length > 0) {

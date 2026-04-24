@@ -1,42 +1,55 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { buildFamilyCollectionPath } from '../../utils/familyNavigation';
+import { resolveLegacyCmsAsset } from '../../utils/legacyCmsAssets';
 
 // Import all 10 curated images
-import img1 from '../../assets/family_trend_1.png';
-import img2 from '../../assets/family_trend_2.png';
-import img3 from '../../assets/family_trend_3.png';
-import img4 from '../../assets/family_trend_4.png';
-import img5 from '../../assets/family_trend_5.png';
-import img6 from '../../assets/family_trend_6.png';
-import img7 from '../../assets/family_trend_7.png';
-import img8 from '../../assets/family_trend_8.png';
-import img9 from '../../assets/family_trend_9.png';
-import img10 from '../../assets/family_trend_10.png';
+import img1 from '@assets/family_trend_1.png';
+import img2 from '@assets/family_trend_2.png';
+import img3 from '@assets/family_trend_3.png';
+import img4 from '@assets/family_trend_4.png';
+import img5 from '@assets/family_trend_5.png';
+import img6 from '@assets/family_trend_6.png';
+import img7 from '@assets/family_trend_7.png';
+import img8 from '@assets/family_trend_8.png';
+import img9 from '@assets/family_trend_9.png';
+import img10 from '@assets/family_trend_10.png';
 
-const trendingCollections = [
-    { id: 1, title: "Matching Sets", image: img1, path: buildFamilyCollectionPath('matching-sets') },
-    { id: 2, title: "Heirloom Pieces", image: img2, path: buildFamilyCollectionPath('heirloom-pieces') },
-    { id: 3, title: "Mom & Me", image: img3, path: buildFamilyCollectionPath('mom-and-me') },
-    { id: 4, title: "Generations", image: img4, path: buildFamilyCollectionPath('generations') },
-    { id: 5, title: "Everyday Wear", image: img5, path: buildFamilyCollectionPath('everyday-wear') },
-    { id: 6, title: "Festive Joy", image: img6, path: buildFamilyCollectionPath('festive-joy') },
-    { id: 7, title: "Minimalist Luxe", image: img7, path: buildFamilyCollectionPath('minimalist-luxe') },
-    { id: 8, title: "Statement Picks", image: img8, path: buildFamilyCollectionPath('statement-picks') },
-    { id: 9, title: "Traditional", image: img9, path: buildFamilyCollectionPath('traditional') },
-    { id: 10, title: "Modern Staples", image: img10, path: buildFamilyCollectionPath('modern-staples') }
+const trendingFallback = [
+    { id: 'family-trend-1', title: "Matching Sets", image: img1, path: '/shop?source=family&filter=family' },
+    { id: 'family-trend-2', title: "Heirloom Pieces", image: img2, path: '/shop?source=family&filter=family' },
+    { id: 'family-trend-3', title: "Mom & Me", image: img3, path: '/shop?source=family&filter=family' },
+    { id: 'family-trend-4', title: "Generations", image: img4, path: '/shop?source=family&filter=family' },
+    { id: 'family-trend-5', title: "Everyday Wear", image: img5, path: '/shop?source=family&filter=family' },
+    { id: 'family-trend-6', title: "Festive Joy", image: img6, path: '/shop?source=family&filter=family' },
+    { id: 'family-trend-7', title: "Minimalist Luxe", image: img7, path: '/shop?source=family&filter=family' },
+    { id: 'family-trend-8', title: "Statement Picks", image: img8, path: '/shop?source=family&filter=family' },
+    { id: 'family-trend-9', title: "Traditional", image: img9, path: '/shop?source=family&filter=family' },
+    { id: 'family-trend-10', title: "Modern Staples", image: img10, path: '/shop?source=family&filter=family' }
 ];
 
-const FamilyTrendingNearYou = () => {
+const FamilyTrendingNearYou = ({ sectionData }) => {
+    const baseItems = useMemo(() => {
+        const configured = Array.isArray(sectionData?.items) ? sectionData.items : [];
+        const normalized = configured
+            .map((item, index) => ({
+                id: item.itemId || item.id || `family-trend-${index + 1}`,
+                title: String(item.name || item.label || '').trim() || `Collection ${index + 1}`,
+                image: resolveLegacyCmsAsset(item.image, trendingFallback[index % trendingFallback.length]?.image || ''),
+                path: item.path || '/shop?source=family&filter=family'
+            }))
+            .filter((item) => Boolean(item.title) && Boolean(item.path) && Boolean(item.image));
+
+        return normalized.length > 0 ? normalized : trendingFallback;
+    }, [sectionData]);
+
     // 20 items to perfectly close the gap on the massive C-curve radius
     const cylinderItems = useMemo(() => {
         const items = [];
-        while(items.length < 20) {
-            items.push(...trendingCollections);
+        while (items.length < 20) {
+            items.push(...baseItems);
         }
         return items.slice(0, 20);
-    }, []);
+    }, [baseItems]);
 
     // Responsive measurements for the shallow C-curve
     const [radius, setRadius] = useState(850);
@@ -121,7 +134,7 @@ const FamilyTrendingNearYou = () => {
                 {/* Header Area */}
                 <div className="text-center mb-2 md:mb-8">
                     <h2 className="text-3xl md:text-5xl font-serif font-medium text-[#4A3B3F] tracking-tight">
-                        Trending Near You
+                        {String(sectionData?.settings?.title || sectionData?.label || 'Trending Near You').trim() || 'Trending Near You'}
                     </h2>
                 </div>
 
@@ -174,3 +187,4 @@ const FamilyTrendingNearYou = () => {
 };
 
 export default FamilyTrendingNearYou;
+

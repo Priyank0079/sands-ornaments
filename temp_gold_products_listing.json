@@ -1,0 +1,1269 @@
+﻿{
+    "_id":  "69e5b987192b4ac9c050a455",
+    "__v":  0,
+    "createdAt":  "2026-04-20T05:28:36.912Z",
+    "isActive":  true,
+    "items":  [
+                  {
+                      "itemId":  "gold-featured-1",
+                      "type":  "product",
+                      "productId":  {
+                                        "tags":  {
+                                                     "isNewArrival":  false,
+                                                     "isTrending":  false,
+                                                     "isMostGifted":  false,
+                                                     "isNewLaunch":  false,
+                                                     "isPremium":  false
+                                                 },
+                                        "_id":  "69d3551805006d413dafe7b4",
+                                        "name":  "Celestial Sun Pendant",
+                                        "slug":  "celestial-sun-pendant-0.43817520512569286",
+                                        "brand":  "SANDS",
+                                        "weightUnit":  "Grams",
+                                        "images":  [
+                                                       "https://images.unsplash.com/photo-1611652022419-a9419f74343d?q=80\u0026w=800"
+                                                   ],
+                                        "variants":  [
+                                                         {
+                                                             "name":  "Default Silver",
+                                                             "weightUnit":  "Grams",
+                                                             "variantImages":  [
+
+                                                                               ],
+                                                             "makingCharge":  0,
+                                                             "diamondPrice":  0,
+                                                             "mrp":  2999,
+                                                             "price":  1899,
+                                                             "metalPrice":  0,
+                                                             "gst":  0,
+                                                             "finalPrice":  1899,
+                                                             "stock":  50,
+                                                             "sold":  8,
+                                                             "_id":  "69d3551805006d413dafe7b5",
+                                                             "variantFaqs":  [
+
+                                                                             ],
+                                                             "serialCodes":  [
+
+                                                                             ],
+                                                             "variantCode":  "VAR-PRDLEGACY3DAFE7B4-01",
+                                                             "weight":  0
+                                                         }
+                                                     ],
+                                        "rating":  0,
+                                        "status":  "Active",
+                                        "active":  true,
+                                        "productCode":  "PRD-LEGACY-3DAFE7B4"
+                                    },
+                      "productIds":  [
+
+                                     ],
+                      "path":  "/shop?metal=gold",
+                      "extraImages":  [
+
+                                      ],
+                      "sortOrder":  0
+                  },
+                  {
+                      "itemId":  "gold-featured-2",
+                      "type":  "product",
+                      "productId":  {
+                                        "tags":  {
+                                                     "isNewArrival":  false,
+                                                     "isTrending":  true,
+                                                     "isMostGifted":  false,
+                                                     "isNewLaunch":  false,
+                                                     "isPremium":  false
+                                                 },
+                                        "_id":  "69d3551805006d413dafe7ab",
+                                        "name":  "Rose Gold Plated Tennis Bracelet",
+                                        "slug":  "rose-gold-tennis-bracelet-0.19391260575937053",
+                                        "brand":  "SANDS",
+                                        "weightUnit":  "Grams",
+                                        "images":  [
+                                                       "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?q=80\u0026w=800"
+                                                   ],
+                                        "variants":  [
+                                                         {
+                                                             "name":  "Default Silver",
+                                                             "weightUnit":  "Grams",
+                                                             "variantImages":  [
+
+                                                                               ],
+                                                             "makingCharge":  0,
+                                                             "diamondPrice":  0,
+                                                             "mrp":  8999,
+                                                             "price":  5499,
+                                                             "metalPrice":  0,
+                                                             "gst":  0,
+                                                             "finalPrice":  5499,
+                                                             "stock":  50,
+                                                             "sold":  0,
+                                                             "_id":  "69d3551805006d413dafe7ac",
+                                                             "variantFaqs":  [
+
+                                                                             ],
+                                                             "serialCodes":  [
+
+                                                                             ],
+                                                             "variantCode":  "VAR-PRDLEGACY3DAFE7AB-01",
+                                                             "weight":  0
+                                                         }
+                                                     ],
+                                        "rating":  0,
+                                        "status":  "Active",
+                                        "active":  true,
+                                        "productCode":  "PRD-LEGACY-3DAFE7AB"
+                                    },
+                      "productIds":  [
+
+                                     ],
+                      "path":  "/shop?metal=gold",
+                      "extraImages":  [
+
+                                      ],
+                      "sortOrder":  1
+                  },
+                  {
+                      "itemId":  "gold-featured-3",
+                      "type":  "product",
+                      "productId":  {
+                                        "tags":  {
+                                                     "isNewArrival":  false,
+                                                     "isMostGifted":  false,
+                                                     "isNewLaunch":  false,
+                                                     "isTrending":  false,
+                                                     "isPremium":  false
+                                                 },
+                                        "_id":  "69cf873bf6d081ff975c65df",
+                                        "name":  "seller product",
+                                        "slug":  "seller-product",
+                                        "productCode":  "SEL386",
+                                        "brand":  "SANDS",
+                                        "weightUnit":  "Grams",
+                                        "images":  [
+                                                       "https://res.cloudinary.com/quizcloud/image/upload/v1775208252/sands-ornaments/products/dtgqzd9ze1duzjvzrxfm.jpg"
+                                                   ],
+                                        "variants":  [
+                                                         {
+                                                             "name":  "Standard",
+                                                             "variantCode":  "VAR-SEL386-01",
+                                                             "weight":  30,
+                                                             "weightUnit":  "Grams",
+                                                             "variantImages":  [
+                                                                                   "https://res.cloudinary.com/quizcloud/image/upload/v1775208251/sands-ornaments/products/epz2vm0sbd8x0czaxppi.jpg"
+                                                                               ],
+                                                             "variantFaqs":  [
+                                                                                 {
+                                                                                     "question":  "seller product q 1",
+                                                                                     "answer":  "seller product a 1",
+                                                                                     "_id":  "69cf873bf6d081ff975c65e1"
+                                                                                 }
+                                                                             ],
+                                                             "makingCharge":  30,
+                                                             "diamondPrice":  30,
+                                                             "mrp":  247.2,
+                                                             "price":  247.2,
+                                                             "metalPrice":  180,
+                                                             "gst":  7.2,
+                                                             "finalPrice":  247.2,
+                                                             "discount":  0,
+                                                             "stock":  30,
+                                                             "sold":  0,
+                                                             "serialCodes":  [
+                                                                                 {
+                                                                                     "code":  "SELL014713129",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c65e2"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL014713200",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c65e3"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL014713043",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c65e4"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL014713724",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c65e5"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL014713393",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c65e6"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL014713100",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c65e7"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL014713662",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c65e8"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL014713283",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c65e9"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL014713241",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c65ea"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL014713511",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c65eb"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL014713116",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c65ec"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL014713356",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c65ed"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL014713657",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c65ee"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL014713638",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c65ef"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL014713459",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c65f0"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL014713183",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c65f1"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL014713639",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c65f2"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL014713485",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c65f3"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL014713269",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c65f4"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL014713559",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c65f5"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL014713626",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c65f6"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL014713243",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c65f7"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL014713612",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c65f8"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL014713412",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c65f9"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL014713620",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c65fa"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL014713339",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c65fb"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL014713226",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c65fc"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL014713027",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c65fd"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL014713733",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c65fe"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL014713378",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c65ff"
+                                                                                 }
+                                                                             ],
+                                                             "_id":  "69cf873bf6d081ff975c65e0"
+                                                         },
+                                                         {
+                                                             "name":  "premium",
+                                                             "variantCode":  "VAR-SEL386-02",
+                                                             "weight":  50,
+                                                             "weightUnit":  "Grams",
+                                                             "variantImages":  [
+                                                                                   "https://res.cloudinary.com/quizcloud/image/upload/v1775208251/sands-ornaments/products/khnzcnwwqz21zfi6chvm.jpg"
+                                                                               ],
+                                                             "variantFaqs":  [
+                                                                                 {
+                                                                                     "question":  "seller product q2",
+                                                                                     "answer":  "seller product a2",
+                                                                                     "_id":  "69cf873bf6d081ff975c6601"
+                                                                                 }
+                                                                             ],
+                                                             "makingCharge":  50,
+                                                             "diamondPrice":  50,
+                                                             "mrp":  412,
+                                                             "price":  412,
+                                                             "metalPrice":  300,
+                                                             "gst":  12,
+                                                             "finalPrice":  412,
+                                                             "discount":  0,
+                                                             "stock":  50,
+                                                             "sold":  0,
+                                                             "serialCodes":  [
+                                                                                 {
+                                                                                     "code":  "SELL028081827",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6602"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081118",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6603"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081207",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6604"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081423",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6605"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081777",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6606"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081736",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6607"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081290",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6608"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081341",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6609"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081209",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c660a"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081624",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c660b"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081844",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c660c"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081726",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c660d"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081692",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c660e"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081348",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c660f"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081671",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6610"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081120",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6611"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081024",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6612"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081277",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6613"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081007",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6614"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081646",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6615"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081685",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6616"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081663",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6617"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081657",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6618"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081488",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6619"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081504",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c661a"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081762",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c661b"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081194",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c661c"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081092",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c661d"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081577",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c661e"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081254",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c661f"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081721",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6620"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081345",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6621"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081174",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6622"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081025",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6623"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081725",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6624"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081508",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6625"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081745",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6626"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081356",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6627"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081684",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6628"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081666",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6629"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081733",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c662a"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081093",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c662b"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081706",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c662c"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081795",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c662d"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081415",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c662e"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081516",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c662f"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081778",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6630"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081533",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6631"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081056",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6632"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL028081146",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf873bf6d081ff975c6633"
+                                                                                 }
+                                                                             ],
+                                                             "_id":  "69cf873bf6d081ff975c6600"
+                                                         }
+                                                     ],
+                                        "rating":  0,
+                                        "status":  "Active",
+                                        "active":  true,
+                                        "image":  "https://res.cloudinary.com/quizcloud/image/upload/v1775208251/sands-ornaments/products/epz2vm0sbd8x0czaxppi.jpg"
+                                    },
+                      "productIds":  [
+
+                                     ],
+                      "path":  "/shop?metal=gold",
+                      "extraImages":  [
+
+                                      ],
+                      "sortOrder":  2
+                  },
+                  {
+                      "itemId":  "gold-featured-4",
+                      "type":  "product",
+                      "productId":  {
+                                        "tags":  {
+                                                     "isNewArrival":  false,
+                                                     "isMostGifted":  false,
+                                                     "isNewLaunch":  false,
+                                                     "isTrending":  false,
+                                                     "isPremium":  false
+                                                 },
+                                        "_id":  "69cf70224e03585e6ff30295",
+                                        "name":  "seller bracelet",
+                                        "slug":  "seller-bracelet",
+                                        "productCode":  "SEL930",
+                                        "brand":  "SANDS",
+                                        "weightUnit":  "Grams",
+                                        "images":  [
+                                                       "https://res.cloudinary.com/quizcloud/image/upload/v1775202338/sands-ornaments/products/iwiqmnpym1yghsokzsj5.jpg"
+                                                   ],
+                                        "variants":  [
+                                                         {
+                                                             "name":  "Standard",
+                                                             "variantCode":  "VAR-SEL930-01",
+                                                             "weight":  400,
+                                                             "weightUnit":  "Grams",
+                                                             "variantImages":  [
+
+                                                                               ],
+                                                             "variantFaqs":  [
+
+                                                                             ],
+                                                             "makingCharge":  4000,
+                                                             "diamondPrice":  0,
+                                                             "mrp":  5768,
+                                                             "price":  5768,
+                                                             "metalPrice":  1600,
+                                                             "gst":  168,
+                                                             "finalPrice":  5768,
+                                                             "discount":  0,
+                                                             "stock":  40,
+                                                             "sold":  0,
+                                                             "serialCodes":  [
+                                                                                 {
+                                                                                     "code":  "SELL018080039",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff30297"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018080482",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff30298"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018080241",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff30299"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018080521",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff3029a"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018080826",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff3029b"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018080866",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff3029c"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018080656",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff3029d"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018080386",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff3029e"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018080477",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff3029f"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018080889",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302a0"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018080695",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302a1"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018080214",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302a2"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018081785",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302a3"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018081871",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302a4"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018081734",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302a5"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018081770",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302a6"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018081662",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302a7"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018081081",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302a8"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018081621",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302a9"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018081082",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302aa"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018081574",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302ab"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018081534",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302ac"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018081530",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302ad"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018081483",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302ae"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018081355",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302af"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018081351",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302b0"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018081151",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302b1"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018081433",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302b2"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018081837",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302b3"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018081494",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302b4"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018081194",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302b5"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018081126",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302b6"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018081181",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302b7"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018081281",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302b8"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018081732",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302b9"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018081701",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302ba"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018081786",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302bb"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018081326",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302bc"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018081526",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302bd"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "SELL018081415",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cf70224e03585e6ff302be"
+                                                                                 }
+                                                                             ],
+                                                             "_id":  "69cf70224e03585e6ff30296"
+                                                         }
+                                                     ],
+                                        "rating":  0,
+                                        "status":  "Active",
+                                        "active":  true
+                                    },
+                      "productIds":  [
+
+                                     ],
+                      "path":  "/shop?metal=gold",
+                      "extraImages":  [
+
+                                      ],
+                      "sortOrder":  3
+                  },
+                  {
+                      "itemId":  "gold-featured-5",
+                      "type":  "product",
+                      "productId":  {
+                                        "tags":  {
+                                                     "isNewArrival":  false,
+                                                     "isMostGifted":  false,
+                                                     "isNewLaunch":  false,
+                                                     "isTrending":  false,
+                                                     "isPremium":  false
+                                                 },
+                                        "_id":  "69cf6f524e03585e6ff30202",
+                                        "name":  "seller pendent ",
+                                        "slug":  "seller-pendent",
+                                        "productCode":  "PEN713",
+                                        "brand":  "SANDS",
+                                        "weightUnit":  "Grams",
+                                        "images":  [
+                                                       "https://res.cloudinary.com/quizcloud/image/upload/v1775202130/sands-ornaments/products/k4ir9nuylyjtmc1czqok.jpg"
+                                                   ],
+                                        "variants":  [
+                                                         {
+                                                             "name":  "Standard",
+                                                             "variantCode":  "VAR-PEN713-01",
+                                                             "weight":  39,
+                                                             "weightUnit":  "Grams",
+                                                             "variantImages":  [
+                                                                                   "https://res.cloudinary.com/quizcloud/image/upload/v1775202128/sands-ornaments/products/ywszzrcarlrfsusd63ad.jpg"
+                                                                               ],
+                                                             "variantFaqs":  [
+
+                                                                             ],
+                                                             "makingCharge":  0,
+                                                             "diamondPrice":  0,
+                                                             "mrp":  200.85,
+                                                             "price":  200.85,
+                                                             "metalPrice":  195,
+                                                             "gst":  5.85,
+                                                             "finalPrice":  200.85,
+                                                             "discount":  0,
+                                                             "stock":  0,
+                                                             "sold":  0,
+                                                             "serialCodes":  [
+
+                                                                             ],
+                                                             "_id":  "69cf6f524e03585e6ff30203"
+                                                         }
+                                                     ],
+                                        "rating":  0,
+                                        "status":  "Active",
+                                        "active":  true,
+                                        "image":  "https://res.cloudinary.com/quizcloud/image/upload/v1775202128/sands-ornaments/products/ywszzrcarlrfsusd63ad.jpg"
+                                    },
+                      "productIds":  [
+
+                                     ],
+                      "path":  "/shop?metal=gold",
+                      "extraImages":  [
+
+                                      ],
+                      "sortOrder":  4
+                  },
+                  {
+                      "itemId":  "gold-featured-6",
+                      "type":  "product",
+                      "productId":  {
+                                        "tags":  {
+                                                     "isNewArrival":  false,
+                                                     "isMostGifted":  false,
+                                                     "isNewLaunch":  false,
+                                                     "isTrending":  false,
+                                                     "isPremium":  false
+                                                 },
+                                        "_id":  "69cd002378f4c392cdfc2ab9",
+                                        "name":  "admin bracelet ",
+                                        "slug":  "admin-bracelet",
+                                        "productCode":  "BRA706",
+                                        "brand":  "SANDS",
+                                        "weightUnit":  "Grams",
+                                        "images":  [
+                                                       "https://res.cloudinary.com/quizcloud/image/upload/v1775042595/sands-ornaments/products/ldqyyz6k5h7kvdec74q7.jpg"
+                                                   ],
+                                        "variants":  [
+                                                         {
+                                                             "name":  "Standard",
+                                                             "variantCode":  "VAR-BRA706-01",
+                                                             "weight":  50,
+                                                             "weightUnit":  "Grams",
+                                                             "variantImages":  [
+                                                                                   "https://res.cloudinary.com/quizcloud/image/upload/v1775042628/sands-ornaments/products/ikaohjq0rwwqcexuazmd.jpg"
+                                                                               ],
+                                                             "variantFaqs":  [
+
+                                                                             ],
+                                                             "makingCharge":  50,
+                                                             "diamondPrice":  50,
+                                                             "mrp":  412,
+                                                             "price":  412,
+                                                             "metalPrice":  300,
+                                                             "gst":  12,
+                                                             "finalPrice":  412,
+                                                             "discount":  0,
+                                                             "stock":  49,
+                                                             "sold":  1,
+                                                             "serialCodes":  [
+                                                                                 {
+                                                                                     "code":  "ADMI012990178",
+                                                                                     "status":  "SOLD_ONLINE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f2f"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990787",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f30"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990700",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f31"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990385",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f32"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990462",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f33"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990666",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f34"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990245",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f35"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990204",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f36"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990149",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f37"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990471",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f38"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990579",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f39"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990728",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f3a"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990238",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f3b"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990563",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f3c"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990779",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f3d"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990361",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f3e"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990857",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f3f"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990413",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f40"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990580",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f41"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990572",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f42"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990777",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f43"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990472",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f44"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990687",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f45"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990395",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f46"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990209",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f47"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990617",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f48"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990585",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f49"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990034",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f4a"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990371",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f4b"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990702",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f4c"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990420",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f4d"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990470",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f4e"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990738",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f4f"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990871",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f50"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990084",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f51"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990223",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f52"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990570",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f53"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990535",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f54"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990134",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f55"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990721",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f56"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990844",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f57"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990211",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f58"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990847",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f59"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990219",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f5a"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990024",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f5b"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990009",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f5c"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990834",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f5d"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990381",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f5e"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990156",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f5f"
+                                                                                 },
+                                                                                 {
+                                                                                     "code":  "ADMI012990713",
+                                                                                     "status":  "AVAILABLE",
+                                                                                     "_id":  "69cd00a478f4c392cdfc2f60"
+                                                                                 }
+                                                                             ],
+                                                             "_id":  "69cd004378f4c392cdfc2c4c"
+                                                         }
+                                                     ],
+                                        "rating":  0,
+                                        "status":  "Active",
+                                        "active":  true,
+                                        "image":  "https://res.cloudinary.com/quizcloud/image/upload/v1775042628/sands-ornaments/products/ikaohjq0rwwqcexuazmd.jpg"
+                                    },
+                      "productIds":  [
+
+                                     ],
+                      "path":  "/shop?metal=gold",
+                      "extraImages":  [
+
+                                      ],
+                      "sortOrder":  5
+                  }
+              ],
+    "label":  "Products Listing",
+    "pageKey":  "gold-collection",
+    "sectionId":  "gold-collection:gold-products-listing",
+    "sectionKey":  "gold-products-listing",
+    "sectionType":  "product-carousel",
+    "settings":  {
+                     "title":  "All Jewellery",
+                     "eyebrow":  "Our Collection",
+                     "productLimit":  6,
+                     "sourceMode":  "manual",
+                     "categoryId":  null
+                 },
+    "sortOrder":  0,
+    "updatedAt":  "2026-04-20T11:01:59.992Z"
+}

@@ -1,21 +1,73 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { buildMenShopPath } from '../../utils/menNavigation';
 
+import ringsImg from '@assets/images/men-categories/rings.png';
+import cufflinksImg from '@assets/images/men-categories/cufflinks.png';
+import chainsImg from '@assets/images/men-categories/chains.png';
+import spiritualImg from '@assets/images/men-categories/spiritual.png';
+import pendantsImg from '@assets/images/men-categories/pendants.png';
+import braceletsImg from '@assets/images/men-categories/bracelets.png';
+import setsImg from '@assets/images/men-categories/sets.png';
+import customImg from '@assets/images/men-categories/custom.png';
+
 const categories = [
-    { title: 'Rings', image: '/images/men-categories/rings.png', link: buildMenShopPath({ category: 'rings' }) },
-    { title: 'Cufflinks', image: '/images/men-categories/cufflinks.png', link: buildMenShopPath({ category: 'cufflinks' }) },
-    { title: 'Chains', image: '/images/men-categories/chains.png', link: buildMenShopPath({ category: 'chains' }) },
-    { title: 'Spiritual Picks', image: '/images/men-categories/spiritual.png', link: buildMenShopPath({ search: 'spiritual' }) },
-    { title: 'Pendants', image: '/images/men-categories/pendants.png', link: buildMenShopPath({ category: 'pendants' }) },
-    { title: 'Bracelets', image: '/images/men-categories/bracelets.png', link: buildMenShopPath({ category: 'bracelets' }) },
-    { title: 'Sets', image: '/images/men-categories/sets.png', link: buildMenShopPath({ category: 'sets' }) },
-    { title: 'Personalised', image: '/images/men-categories/custom.png', link: buildMenShopPath({ category: 'personalised' }) }
+    { title: 'Rings', image: ringsImg, link: buildMenShopPath({ category: 'rings' }) },
+    { title: 'Cufflinks', image: cufflinksImg, link: buildMenShopPath({ category: 'cufflinks' }) },
+    { title: 'Chains', image: chainsImg, link: buildMenShopPath({ category: 'chains' }) },
+    { title: 'Spiritual Picks', image: spiritualImg, link: buildMenShopPath({ search: 'spiritual' }) },
+    { title: 'Pendants', image: pendantsImg, link: buildMenShopPath({ category: 'pendants' }) },
+    { title: 'Bracelets', image: braceletsImg, link: buildMenShopPath({ category: 'bracelets' }) },
+    { title: 'Sets', image: setsImg, link: buildMenShopPath({ category: 'sets' }) },
+    { title: 'Personalised', image: customImg, link: buildMenShopPath({ category: 'personalised' }) }
 ];
 
-const MenCategoriesGrid = () => {
+const normalizeCategorySlug = (value) =>
+    String(value || '')
+        .trim()
+        .toLowerCase()
+        .replace(/^\/category\//, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+
+const buildMenCategoryLink = (path, fallbackTitle) => {
+    const sourcePath = String(path || '').trim();
+    if (!sourcePath) return buildMenShopPath({ category: normalizeCategorySlug(fallbackTitle) });
+
+    if (sourcePath.startsWith('/shop?')) {
+        return sourcePath;
+    }
+
+    if (sourcePath.startsWith('/category/')) {
+        return buildMenShopPath({ category: normalizeCategorySlug(sourcePath) });
+    }
+
+    if (sourcePath.includes('category=')) {
+        const categoryValue = sourcePath.split('category=')[1]?.split('&')[0];
+        return buildMenShopPath({ category: normalizeCategorySlug(categoryValue || fallbackTitle) });
+    }
+
+    return buildMenShopPath({ category: normalizeCategorySlug(fallbackTitle) });
+};
+
+const MenCategoriesGrid = ({ sectionData }) => {
     const navigate = useNavigate();
+
+    const resolvedCategories = useMemo(() => {
+        const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
+        const normalizedConfigured = configuredItems
+            .filter((item) => item?.image)
+            .map((item, index) => ({
+                id: item.itemId || item.id || `men-category-${index}`,
+                title: item.label || item.name || categories[index]?.title || '',
+                image: item.image,
+                link: buildMenCategoryLink(item.path, item.label || item.name || categories[index]?.title || '')
+            }))
+            .filter((item) => item.title && item.image && item.link);
+
+        return normalizedConfigured.length > 0 ? normalizedConfigured : categories;
+    }, [sectionData]);
 
     return (
         <section className="pt-2 pb-2 md:pt-8 md:pb-4 bg-white">
@@ -31,9 +83,9 @@ const MenCategoriesGrid = () => {
                 </div>
 
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4">
-                    {categories.map((cat, idx) => (
+                    {resolvedCategories.map((cat, idx) => (
                         <motion.div
-                            key={cat.title}
+                            key={cat.id || cat.title}
                             initial={{ opacity: 0, scale: 0.95 }}
                             whileInView={{ opacity: 1, scale: 1 }}
                             viewport={{ once: true }}

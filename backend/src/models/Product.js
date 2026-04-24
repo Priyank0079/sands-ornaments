@@ -14,6 +14,11 @@ const productSchema = new mongoose.Schema({
   description: { type: String },
   stylingTips: { type: String },
   material: { type: String, default: 'Silver' },
+  audience: [{
+    type: String,
+    enum: ["men", "women", "family", "unisex"],
+    default: "unisex"
+  }],
   silverCategory: {
       type: String,
       enum: ['800', '835', '925', '925 sterling silver', '958', '970', '990', '999', '']
@@ -30,6 +35,13 @@ const productSchema = new mongoose.Schema({
   cardLabel: { type: String },
   cardBadge: { type: String },
   images: [{ type: String }],
+  // Optional product-specific video used on Product Details. Admin/Seller can upload it.
+  videoUrl: { type: String, default: "" },
+  paymentGatewayChargeBearer: {
+    type: String,
+    enum: ["seller", "user"],
+    default: "seller"
+  },
   variants: [{
     name: { type: String, required: true },
     variantCode: { type: String, trim: true },
@@ -42,6 +54,14 @@ const productSchema = new mongoose.Schema({
     }],
     makingCharge: { type: Number, default: 0 },
     diamondPrice: { type: Number, default: 0 },
+    hallmarkingCharge: { type: Number, default: 0 },
+    diamondCertificateCharge: { type: Number, default: 0 },
+    hiddenCharge: { type: Number, default: 0 },
+    subtotalBeforeTax: { type: Number, default: 0 },
+    gstAmount: { type: Number, default: 0 },
+    priceAfterTax: { type: Number, default: 0 },
+    pgChargePercent: { type: Number, default: 0 },
+    pgChargeAmount: { type: Number, default: 0 },
     mrp: { type: Number, required: true },
     price: { type: Number, required: true },
     metalPrice: { type: Number, default: 0 },
@@ -70,8 +90,6 @@ const productSchema = new mongoose.Schema({
   active: { type: Boolean, default: true },
   sellerId: { type: mongoose.Schema.Types.ObjectId, ref: "Seller", default: null },
   navShopByCategory: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" }],
-  navGiftsFor: [{ type: String }],
-  navOccasions: [{ type: String }],
   faqs: [{
     question: { type: String, trim: true },
     answer: { type: String, trim: true }

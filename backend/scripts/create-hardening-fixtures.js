@@ -193,9 +193,47 @@ const ensureOrder = async ({ orderId, userId, product, sellerId, status, timelin
 
 const ensureReturn = async ({ userId, order, product }) => {
   let returnReq = await Return.findOne({ returnId: FIXTURE_RETURN_ID });
-  if (returnReq) return returnReq;
-
   const item = buildOrderItem(product, product.sellerId);
+
+  // If the fixture already exists (from older runs), keep its _id stable but repair
+  // any stale product/variant refs so seller-scoped queries work reliably.
+  if (returnReq) {
+    const existing = returnReq.items?.[0] || {};
+    const needsRepair =
+      !existing.productId ||
+      String(existing.productId) !== String(item.productId) ||
+      !existing.variantId ||
+      String(existing.variantId) !== String(item.variantId) ||
+      String(returnReq.orderId) !== String(order._id) ||
+      String(returnReq.userId) !== String(userId);
+
+    if (needsRepair) {
+      await Return.updateOne(
+        { _id: returnReq._id },
+        {
+          $set: {
+            orderId: order._id,
+            userId,
+            items: [{
+              productId: item.productId,
+              variantId: item.variantId,
+              name: item.name,
+              sku: item.sku,
+              qty: item.quantity,
+              price: item.price,
+              reason: "Hardening verification return request",
+            }],
+            status: "Pending",
+            updatedAt: new Date(),
+          }
+        }
+      );
+    }
+
+    returnReq = await Return.findOne({ returnId: FIXTURE_RETURN_ID });
+    return returnReq;
+  }
+
   const now = new Date();
   await Return.collection.insertOne({
     returnId: FIXTURE_RETURN_ID,
@@ -244,9 +282,59 @@ const ensureReturn = async ({ userId, order, product }) => {
 
 const ensureReplacement = async ({ userId, order, product }) => {
   let replacement = await Replacement.findOne({ replacementId: FIXTURE_REPLACEMENT_ID });
-  if (replacement) return replacement;
-
   const item = buildOrderItem(product, product.sellerId);
+
+  // If the fixture already exists (from older runs), repair stale product/variant refs so
+  // inventory restock tests (and seller scoping) remain deterministic.
+  if (replacement) {
+    const existingOriginal = replacement.originalItems?.[0] || {};
+    const existingReplacement = replacement.replacementItems?.[0] || {};
+
+    const needsRepair =
+      !existingOriginal.productId ||
+      String(existingOriginal.productId) !== String(item.productId) ||
+      !existingOriginal.variantId ||
+      String(existingOriginal.variantId) !== String(item.variantId) ||
+      !existingReplacement.productId ||
+      String(existingReplacement.productId) !== String(item.productId) ||
+      !existingReplacement.variantId ||
+      String(existingReplacement.variantId) !== String(item.variantId) ||
+      String(replacement.orderId) !== String(order._id) ||
+      String(replacement.userId) !== String(userId);
+
+    if (needsRepair) {
+      await Replacement.updateOne(
+        { _id: replacement._id },
+        {
+          $set: {
+            orderId: order._id,
+            userId,
+            originalItems: [{
+              productId: item.productId,
+              variantId: item.variantId,
+              name: item.name,
+              sku: item.sku,
+              qty: item.quantity,
+              price: item.price,
+              reason: "Hardening verification replacement request",
+            }],
+            replacementItems: [{
+              productId: item.productId,
+              variantId: item.variantId,
+              name: item.name,
+              sku: item.sku,
+              qty: item.quantity,
+            }],
+            updatedAt: new Date(),
+          }
+        }
+      );
+    }
+
+    replacement = await Replacement.findOne({ replacementId: FIXTURE_REPLACEMENT_ID });
+    return replacement;
+  }
+
   replacement = await Replacement.create({
     replacementId: FIXTURE_REPLACEMENT_ID,
     orderId: order._id,

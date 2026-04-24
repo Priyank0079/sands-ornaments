@@ -1,56 +1,75 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
-import { buildFamilyCollectionPath } from '../../utils/familyNavigation';
+import { resolveLegacyCmsAsset } from '../../utils/legacyCmsAssets';
 
-import classicsImg from '../../assets/family_curated_classics.png';
-import sistersImg from '../../assets/family_curated_sisters.png';
-import astraImg from '../../assets/family_astra.png';
-import bohoImg from '../../assets/family_boho.png';
-import signatureImg from '../../assets/premium_necklace_product.png'; // Reusing premium asset for new card
-import bridalImg from '../../assets/latest_drop_earrings.png'; // Reusing premium asset for new card
+import classicsImg from '@assets/family_curated_classics.png';
+import sistersImg from '@assets/family_curated_sisters.png';
+import astraImg from '@assets/family_astra.png';
+import bohoImg from '@assets/family_boho.png';
+import signatureImg from '@assets/premium_necklace_product.png'; // Reusing premium asset for new card
+import bridalImg from '@assets/latest_drop_earrings.png'; // Reusing premium asset for new card
 
-const collections = [
+const fallbackCollections = [
     {
         id: 'classics',
         title: '925 SILVER CLASSICS',
         image: classicsImg, 
-        path: buildFamilyCollectionPath('classics')
+        path: '/shop?source=family&filter=family'
     },
     {
         id: 'astra',
         title: 'ASTRA EDITION',
         image: astraImg,
-        path: buildFamilyCollectionPath('astra')
+        path: '/shop?source=family&filter=family'
     },
     {
         id: 'signature',
         title: 'SIGNATURE SETS',
         image: signatureImg,
-        path: buildFamilyCollectionPath('signature')
+        path: '/shop?source=family&filter=family'
     },
     {
         id: 'boho',
         title: 'BOHO ANKLETS',
         image: bohoImg,
-        path: buildFamilyCollectionPath('boho')
+        path: '/shop?source=family&filter=family'
     },
     {
         id: 'bridal',
         title: 'BRIDAL EDIT',
         image: bridalImg,
-        path: buildFamilyCollectionPath('bridal')
+        path: '/shop?source=family&filter=family'
     },
     {
         id: 'gifts',
         title: 'GIFTS FOR HER',
         image: sistersImg,
-        path: buildFamilyCollectionPath('gifts')
+        path: '/shop?source=family&filter=family'
     }
 ];
 
-const FamilyCuratedCollections = () => {
+const FamilyCuratedCollections = ({ sectionData }) => {
+    const collections = useMemo(() => {
+        const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
+        const normalizedConfigured = configuredItems
+            .map((item, index) => {
+                const fallback = fallbackCollections[index % fallbackCollections.length];
+                const categoryPath = item.categoryId
+                    ? `/shop?source=family&filter=family&category=${encodeURIComponent(item.categoryId)}`
+                    : '';
+                return {
+                    id: item.itemId || item.id || `family-curated-${index + 1}`,
+                    title: String(item.name || item.label || fallback.title).trim() || fallback.title,
+                    image: resolveLegacyCmsAsset(item.image, fallback.image),
+                    path: item.path || categoryPath || fallback.path
+                };
+            })
+            .filter((item) => Boolean(item.title) && Boolean(item.image) && Boolean(item.path));
+
+        return normalizedConfigured.length > 0 ? normalizedConfigured : fallbackCollections;
+    }, [sectionData]);
+
     return (
         <section className="py-4 md:py-8 bg-white overflow-hidden">
             <div className="container mx-auto px-4 md:px-12">
@@ -121,3 +140,4 @@ const FamilyCuratedCollections = () => {
 };
 
 export default FamilyCuratedCollections;
+

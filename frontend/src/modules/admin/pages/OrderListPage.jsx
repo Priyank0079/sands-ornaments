@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     Search,
     Download,
@@ -20,14 +20,40 @@ const OrderListPage = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [pagination, setPagination] = useState({ total: 0, page: 1, limit: 10, pages: 1 });
+    const [summaryStats, setSummaryStats] = useState({ total: 0, pending: 0, delivered: 0, cancelled: 0, returned: 0 });
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
-    React.useEffect(() => {
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchTerm.trim());
+            setCurrentPage(1);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
+
+    useEffect(() => {
+        const fetchSummary = async () => {
+            const summary = await adminService.getOrderSummary();
+            setSummaryStats(summary);
+        };
+        fetchSummary();
+    }, []);
+
+    useEffect(() => {
         const fetchOrders = async () => {
             try {
-                const data = await adminService.getOrders();
-                setOrders(data);
+                setLoading(true);
+                const response = await adminService.getOrders({
+                    page: currentPage,
+                    limit: itemsPerPage,
+                    status: statusParam !== 'all' ? statusParam : undefined,
+                    search: debouncedSearch || undefined
+                });
+                setOrders(response.orders || []);
+                setPagination(response.pagination || { total: 0, page: 1, limit: itemsPerPage, pages: 1 });
             } catch (err) {
                 toast.error("Failed to load orders");
             } finally {
@@ -35,46 +61,14 @@ const OrderListPage = () => {
             }
         };
         fetchOrders();
-    }, []);
-
-    // Filter Logic
-    const filteredOrders = useMemo(() => {
-        return orders.filter(order => {
-            // Text Search
-            const customerName = (order.customerName || order.user?.fullName || order.shippingAddress?.firstName || 'Customer').toLowerCase();
-            const orderId = (order.orderId || '').toLowerCase();
-            const matchesSearch =
-                orderId.includes(searchTerm.toLowerCase()) ||
-                customerName.includes(searchTerm.toLowerCase());
-
-            // Status Filter matches (Tabs)
-            let matchesStatus = true;
-            if (statusParam !== 'all') {
-                const status = (order.status || order.orderStatus || '').toLowerCase();
-                if (statusParam === 'pending') {
-                    matchesStatus = status === 'pending' || status === 'processing';
-                } else {
-                    matchesStatus = status === statusParam;
-                }
-            }
-
-            return matchesSearch && matchesStatus;
-        });
-    }, [orders, searchTerm, statusParam]);
-
-    // Pagination Logic
-    const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
-    const paginatedOrders = filteredOrders.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-    );
+    }, [currentPage, statusParam, debouncedSearch]);
 
     // Stats Logic
-    const stats = {
-        total: orders.length,
-        pending: orders.filter(o => (o.status || o.orderStatus) === 'Pending' || (o.status || o.orderStatus) === 'Processing').length,
-        completed: orders.filter(o => (o.status || o.orderStatus) === 'Delivered').length
-    };
+    const stats = useMemo(() => ({
+        total: Number(summaryStats.total || pagination.total || 0),
+        pending: Number(summaryStats.pending || 0),
+        completed: Number(summaryStats.delivered || 0)
+    }), [summaryStats, pagination.total]);
 
     const handleFilterChange = (status) => {
         setSearchParams({ status });
@@ -185,7 +179,7 @@ const OrderListPage = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 uppercase tracking-tighter text-[10px] md:text-[11px] text-gray-900">
-                            {paginatedOrders.map((order, idx) => (
+                            {orders.map((order, idx) => (
                                 <tr key={idx} className="hover:bg-gray-50/80 transition-colors group">
                                     <td className="px-6 py-5 text-center text-xs font-bold text-gray-400">
                                         {(currentPage - 1) * itemsPerPage + idx + 1}
@@ -240,7 +234,7 @@ const OrderListPage = () => {
                                     </td>
                                 </tr>
                             ))}
-                            {filteredOrders.length === 0 && (
+                            {!loading && orders.length === 0 && (
                                 <tr>
                                     <td colSpan="10" className="px-6 py-20 text-center">
                                         <div className="flex flex-col items-center justify-center opacity-50">
@@ -258,12 +252,12 @@ const OrderListPage = () => {
             {/* Pagination Component */}
             <Pagination
                 currentPage={currentPage}
-                totalPages={totalPages}
+                totalPages={Math.max(1, Number(pagination.pages || 1))}
                 onPageChange={(page) => {
                     setCurrentPage(page);
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
-                totalItems={filteredOrders.length}
+                totalItems={Number(pagination.total || 0)}
                 itemsPerPage={itemsPerPage}
             />
         </div>

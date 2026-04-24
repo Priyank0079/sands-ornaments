@@ -3,6 +3,14 @@ import api from '../../../services/api';
 const isFormData = (payload) =>
   typeof FormData !== 'undefined' && payload instanceof FormData;
 
+const appendCacheBuster = (url) => {
+  const source = String(url || '').trim();
+  if (!source) return null;
+  if (source.startsWith('data:') || source.startsWith('blob:')) return source;
+  const stamp = Date.now();
+  return source.includes('?') ? `${source}&v=${stamp}` : `${source}?v=${stamp}`;
+};
+
 const getAdminOrderCustomerName = (order = {}) =>
   order.customerName ||
   order.userId?.name ||
@@ -520,7 +528,7 @@ export const adminService = {
       const res = await api.post('admin/sections/upload-image', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      return res.data?.data?.url || null;
+      return appendCacheBuster(res.data?.data?.url || null);
     } catch (err) {
       console.error("Admin section image upload failed:", err);
       return null;
@@ -537,14 +545,42 @@ export const adminService = {
   },
 
   // Order Management
+  getOrderSummary: async () => {
+    try {
+      const res = await api.get('admin/orders/summary');
+      const summary = res.data.data?.summary || res.data.summary || {};
+      return {
+        total: Number(summary.total || 0),
+        pending: Number(summary.pending || 0),
+        delivered: Number(summary.delivered || 0),
+        cancelled: Number(summary.cancelled || 0),
+        returned: Number(summary.returned || 0)
+      };
+    } catch (err) {
+      console.error("Admin fetch order summary failed:", err);
+      return { total: 0, pending: 0, delivered: 0, cancelled: 0, returned: 0 };
+    }
+  },
   getOrders: async (params = {}) => {
     try {
       const res = await api.get('admin/orders', { params });
       const orders = res.data.data?.orders || res.data.orders || [];
-      return orders.map(normalizeAdminOrder).filter(Boolean);
+      const pagination = res.data.data?.pagination || res.data.pagination || {
+        total: orders.length,
+        page: Number(params.page) || 1,
+        limit: Number(params.limit) || orders.length || 20,
+        pages: 1
+      };
+      return {
+        orders: orders.map(normalizeAdminOrder).filter(Boolean),
+        pagination
+      };
     } catch (err) {
       console.error("Admin fetch orders failed:", err);
-      return [];
+      return {
+        orders: [],
+        pagination: { total: 0, page: 1, limit: Number(params.limit) || 20, pages: 1 }
+      };
     }
   },
   getOrderDetails: async (id) => {
@@ -575,9 +611,9 @@ export const adminService = {
   },
 
   // Return Management (RMA)
-  getReturns: async () => {
+  getReturns: async (params = {}) => {
     try {
-      const res = await api.get('admin/returns');
+      const res = await api.get('admin/returns', { params });
       const returns = res.data.data?.returns || res.data.returns || [];
       return returns.map(normalizeAdminReturn).filter(Boolean);
     } catch (err) {
@@ -611,9 +647,9 @@ export const adminService = {
       };
     }
   },
-  getReplacements: async () => {
+  getReplacements: async (params = {}) => {
     try {
-      const res = await api.get('admin/replacements');
+      const res = await api.get('admin/replacements', { params });
       const replacements = res.data.data?.replacements || res.data.replacements || [];
       return replacements.map(normalizeAdminReplacement).filter(Boolean);
     } catch (err) {
@@ -834,9 +870,9 @@ export const adminService = {
   },
 
   // Admin Notifications
-  getAdminNotifications: async () => {
+  getAdminNotifications: async (params = {}) => {
     try {
-      const res = await api.get('admin/notifications');
+      const res = await api.get('admin/notifications', { params });
       return res.data.data?.notifications || res.data.notifications || [];
     } catch (err) {
       console.error("Admin fetch notifications failed:", err);
@@ -868,6 +904,23 @@ export const adminService = {
     } catch (err) {
       console.error("Admin delete notification failed:", err);
       return false;
+    }
+  },
+  broadcastAdminNotification: async (payload = {}) => {
+    try {
+      const res = await api.post('admin/notifications/broadcast', payload);
+      return {
+        success: !!res.data?.success,
+        notification: res.data?.data?.notification || res.data?.notification || null,
+        message: res.data?.message || "Notification broadcasted successfully"
+      };
+    } catch (err) {
+      console.error("Admin broadcast notification failed:", err);
+      return {
+        success: false,
+        notification: null,
+        message: err.response?.data?.message || "Failed to broadcast notification"
+      };
     }
   }
 };

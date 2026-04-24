@@ -16,8 +16,15 @@
     "test:ops-errors": "node scripts/ops-error-tests.js",
     "migrate:product-variant-pricing:dry": "node scripts/migrate-product-variant-pricing.js",
     "migrate:product-variant-pricing": "node scripts/migrate-product-variant-pricing.js --apply",
+    "migrate:product-pricing-formula:dry": "node scripts/migrate-product-pricing-formula.js",
+    "migrate:product-pricing-formula": "node scripts/migrate-product-pricing-formula.js --apply",
     "migrate:product-purity:dry": "node scripts/migrate-product-purity.js",
-    "migrate:product-purity": "node scripts/migrate-product-purity.js --apply"
+    "migrate:product-purity": "node scripts/migrate-product-purity.js --apply",
+    "backup:categories": "node scripts/backup-categories.js",
+    "migrate:remove-category-metal:dry": "node scripts/migrate-remove-category-metal.js",
+    "migrate:remove-category-metal": "node scripts/migrate-remove-category-metal.js --apply",
+    "migrate:review-unique-index:dry": "node scripts/migrate-review-unique-index.js",
+    "migrate:review-unique-index": "node scripts/migrate-review-unique-index.js --apply"
   },
   "dependencies": {
     "@fluidjs/multer-cloudinary": "^1.0.4",

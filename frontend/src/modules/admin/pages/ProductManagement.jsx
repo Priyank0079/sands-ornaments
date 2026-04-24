@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Edit2, Trash2, Eye, Package, TrendingUp, Check, Plus } from 'lucide-react';
 import PageHeader from '../components/common/PageHeader';
 import DataTable from '../components/common/DataTable';
-import { useShop } from '../../../context/ShopContext';
 import BulkUpdateModal from '../components/BulkUpdateModal';
 import { adminService } from '../services/adminService';
 import toast from 'react-hot-toast';
@@ -74,12 +73,10 @@ const ProductManagement = () => {
     useEffect(() => {
         const loadCategories = async () => {
             const cats = await adminService.getCategories();
-            const sorted = [...cats].sort((a, b) => {
-                const metalA = (a.metal || '').toLowerCase();
-                const metalB = (b.metal || '').toLowerCase();
-                if (metalA !== metalB) return metalA.localeCompare(metalB);
-                return (a.name || '').localeCompare(b.name || '');
-            });
+            const sorted = [...cats].sort((a, b) =>
+                Number(a?.sortOrder ?? 0) - Number(b?.sortOrder ?? 0)
+                || (a.name || '').localeCompare(b.name || '')
+            );
             const map = sorted.reduce((acc, cat) => {
                 acc[String(cat._id)] = cat.name;
                 return acc;
@@ -129,26 +126,6 @@ const ProductManagement = () => {
         }
     };
 
-    const formatNavLabel = (value) => {
-        return String(value || '')
-            .replace(/-/g, ' ')
-            .replace(/\b\w/g, (c) => c.toUpperCase());
-    };
-
-    const renderNavBadges = (label, values) => {
-        if (!values || values.length === 0) return null;
-        return (
-            <div className="flex flex-wrap items-center gap-1">
-                <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400">{label}</span>
-                {values.map((val) => (
-                    <span key={`${label}-${val}`} className="px-2 py-0.5 rounded-full bg-[#F8F1F1] text-[10px] font-semibold text-[#3E2723] border border-[#EBCDD0]">
-                        {formatNavLabel(val)}
-                    </span>
-                ))}
-            </div>
-        );
-    };
-
     const columns = [
         ...(isSelectMode ? [{
             header: '',
@@ -176,24 +153,6 @@ const ProductManagement = () => {
                 return (
                     <div className="min-w-[140px] flex flex-col justify-center">
                         <span className="font-medium text-gray-900 text-xs">{primary.name || primary.category || 'Uncategorized'}</span>
-                    </div>
-                );
-            }
-        },
-        {
-            header: 'Placement',
-            render: (item) => {
-                const gifts = item.navGiftsFor || [];
-                const occasions = item.navOccasions || [];
-
-                if (gifts.length === 0 && occasions.length === 0) {
-                    return <span className="text-gray-400 text-xs font-semibold">-</span>;
-                }
-
-                return (
-                    <div className="flex flex-col gap-1.5 min-w-[180px]">
-                        {renderNavBadges('Gifts', gifts)}
-                        {renderNavBadges('Occasion', occasions)}
                     </div>
                 );
             }

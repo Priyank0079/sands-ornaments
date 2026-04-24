@@ -14,6 +14,7 @@ import toast from 'react-hot-toast';
 import { adminService } from '../services/adminService';
 
 const STATUS_STYLES = {
+    Pending: 'bg-yellow-50 text-yellow-700 border-yellow-100',
     Processing: 'bg-amber-50 text-amber-700 border-amber-100',
     Confirmed: 'bg-blue-50 text-blue-700 border-blue-100',
     Packed: 'bg-violet-50 text-violet-700 border-violet-100',
@@ -26,6 +27,7 @@ const STATUS_STYLES = {
 };
 
 const ALLOWED_TRANSITIONS = {
+    Pending: [],
     Processing: ['Confirmed', 'Cancelled'],
     Confirmed: ['Packed', 'Cancelled'],
     Packed: ['Shipped', 'Cancelled'],

@@ -1,59 +1,67 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { buildWomenShopPath } from '../../utils/womenNavigation';
+import { resolveLegacyCmsAsset } from '../../utils/legacyCmsAssets';
 
 // Import local images
-import TempleDateImg from '../../../../assets/occasions/TempleDate.png';
-import GirlOutingImg from '../../../../assets/occasions/GirlOuting.png';
-import DateNightImg from '../../../../assets/occasions/DateNight.png';
-import PartyGlamImg from '../../../../assets/occasions/PartyGlam.png';
-import GotHitchedImg from '../../../../assets/occasions/GotHitched.png';
+import TempleDateImg from '@assets/occasions/TempleDate.png';
+import GirlOutingImg from '@assets/occasions/GirlOuting.png';
+import DateNightImg from '@assets/occasions/DateNight.png';
+import PartyGlamImg from '@assets/occasions/PartyGlam.png';
+import GotHitchedImg from '@assets/occasions/GotHitched.png';
 
-const occasions = [
+const fallbackOccasions = [
     {
-        id: 1,
+        id: 'women-occasion-1',
         title: "Temple Date",
         image: TempleDateImg,
-        path: buildWomenShopPath({ occasion: 'temple-date' }),
-        height: "h-[350px] md:h-[450px]"
+        path: buildWomenShopPath({ filter: 'womens', category: 'pendants' })
     },
     {
-        id: 2,
+        id: 'women-occasion-2',
         title: "Girl Outing",
         image: GirlOutingImg,
-        path: buildWomenShopPath({ occasion: 'girl-outing' }),
-        height: "h-[400px] md:h-[500px]"
+        path: buildWomenShopPath({ filter: 'womens', category: 'earrings' })
     },
     {
-        id: 3,
+        id: 'women-occasion-3',
         title: "Date Night",
         image: DateNightImg,
-        path: buildWomenShopPath({ occasion: 'date-night' }),
-        height: "h-[450px] md:h-[550px]",
-        featured: true
+        path: buildWomenShopPath({ filter: 'womens', category: 'sets' })
     },
     {
-        id: 4,
+        id: 'women-occasion-4',
         title: "Party Glam",
         image: PartyGlamImg,
-        path: buildWomenShopPath({ occasion: 'party-glam' }),
-        height: "h-[400px] md:h-[500px]"
+        path: buildWomenShopPath({ filter: 'womens', category: 'chains' })
     },
     {
-        id: 5,
+        id: 'women-occasion-5',
         title: "Got Hitched",
         image: GotHitchedImg,
-        path: buildWomenShopPath({ occasion: 'wedding' }),
-        height: "h-[350px] md:h-[450px]"
+        path: buildWomenShopPath({ filter: 'womens', category: 'anklets' })
     }
 ];
 
-const WomenOccasionCarousel = () => {
+const WomenOccasionCarousel = ({ sectionData }) => {
     const navigate = useNavigate();
-    const [activeIndex, setActiveIndex] = useState(2);
     const [isMobile, setIsMobile] = useState(false);
+    const occasions = useMemo(() => {
+        const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
+        const normalized = configuredItems
+            .map((item, index) => ({
+                id: item.itemId || item.id || `women-occasion-${index + 1}`,
+                title: item.name || item.label || `Occasion ${index + 1}`,
+                image: resolveLegacyCmsAsset(item.image, fallbackOccasions[index]?.image || ''),
+                path: item.path || fallbackOccasions[index]?.path || buildWomenShopPath({ filter: 'womens' })
+            }))
+            .filter((item) => Boolean(item.title) && Boolean(item.image) && Boolean(item.path));
+        return normalized.length > 0 ? normalized : fallbackOccasions;
+    }, [sectionData]);
+    const focusIndex = useMemo(() => Math.floor((Math.max(occasions.length, 1) - 1) / 2), [occasions.length]);
+    const [activeIndex, setActiveIndex] = useState(focusIndex);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -62,18 +70,28 @@ const WomenOccasionCarousel = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    useEffect(() => {
+        setActiveIndex((prev) => {
+            if (occasions.length <= 0) return 0;
+            if (prev >= occasions.length) return focusIndex;
+            return prev;
+        });
+    }, [focusIndex, occasions.length]);
+
     const cardWidth = isMobile ? 120 : 180;
     const gap = isMobile ? 8 : 12;
 
     const next = () => setActiveIndex((prev) => (prev + 1) % occasions.length);
     const prev = () => setActiveIndex((prev) => (prev - 1 + occasions.length) % occasions.length);
 
+    if (occasions.length === 0) return null;
+
     return (
         <section className="py-6 md:py-10 bg-[#FBF0F2] overflow-hidden select-none">
             <div className="container mx-auto px-4 max-w-[1200px]">
                 <div className="text-center mb-6 md:mb-10">
                     <h3 className="text-2xl md:text-3xl font-bold text-[#333] tracking-tight font-serif italic" style={{ fontFamily: "'Cinzel', serif" }}>
-                        Shop by Occasion
+                        {sectionData?.label || 'Shop by Occasion'}
                     </h3>
                 </div>
 
@@ -89,7 +107,7 @@ const WomenOccasionCarousel = () => {
                     <div className="w-full flex justify-center">
                         <motion.div 
                             className="flex items-center gap-2 md:gap-3"
-                            animate={{ x: (2 - activeIndex) * (cardWidth + gap) }}
+                            animate={{ x: (focusIndex - activeIndex) * (cardWidth + gap) }}
                             transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
                         >
                             {occasions.map((item, idx) => {
@@ -143,3 +161,4 @@ const WomenOccasionCarousel = () => {
 };
 
 export default WomenOccasionCarousel;
+

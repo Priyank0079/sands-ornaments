@@ -8,6 +8,35 @@ const Setting = require("../../../models/Setting");
 const { applyMetalPricingToProduct } = require("../../../utils/metalPricing");
 const { generateUniqueProductCode, generateVariantCode } = require("../../../utils/productIdentity");
 const { normalizeProductForResponse } = require("../../../utils/productCompatibility");
+const { consumeSerializedStock, isSerializedVariant } = require("../../../utils/inventorySync");
+
+// Seller update whitelist: prevent field injection (e.g., active/status toggles) via API.
+// Sellers can edit product content + variants + pricing inputs; lifecycle flags are admin-controlled.
+const SELLER_UPDATE_WHITELIST = [
+  "name",
+  "slug",
+  "description",
+  "stylingTips",
+  "careTips",
+  "material",
+  "audience",
+  "categories",
+  "variants",
+  "tags",
+  "faqs",
+  "weight",
+  "weightUnit",
+  "specifications",
+  "supplierInfo",
+  "cardLabel",
+  "cardBadge",
+  "silverCategory",
+  "goldCategory",
+  "paymentGatewayChargeBearer",
+  "huid",
+  "sizes",
+  "isSerialized"
+];
 
 const normalizeCategories = (categories) => {
   if (!categories) return [];
@@ -51,6 +80,18 @@ const sanitizeVariants = (variants, fallback = {}) => {
     weightUnit: v.weightUnit || fallbackWeightUnit,
     makingCharge: Number(v.makingCharge) || 0,
     diamondPrice: Number(v.diamondPrice) || 0,
+    hallmarkingCharge: Number(v.hallmarkingCharge) || 0,
+    diamondCertificateCharge: Number(
+      v.diamondCertificateCharge !== undefined && v.diamondCertificateCharge !== null
+        ? v.diamondCertificateCharge
+        : v.diamondPrice
+    ) || 0,
+    hiddenCharge: Number(v.hiddenCharge) || 0,
+    subtotalBeforeTax: Number(v.subtotalBeforeTax) || 0,
+    gstAmount: Number(v.gstAmount) || 0,
+    priceAfterTax: Number(v.priceAfterTax) || 0,
+    pgChargePercent: Number(v.pgChargePercent) || 0,
+    pgChargeAmount: Number(v.pgChargeAmount) || 0,
     metalPrice: Number(v.metalPrice) || 0,
     gst: Number(v.gst) || 0,
     finalPrice: Number(v.finalPrice) || 0,
@@ -120,6 +161,15 @@ const collectReferencedImageUrls = (productLike = {}) => {
   return new Set([...productImages, ...variantImages]);
 };
 
+const normalizeAudience = (value) => {
+  const raw = Array.isArray(value) ? value : (value ? [value] : []);
+  const allowed = new Set(["men", "women", "family", "unisex"]);
+  const normalized = raw
+    .map((entry) => String(entry || "").trim().toLowerCase())
+    .filter((entry) => allowed.has(entry));
+  return normalized.length > 0 ? [...new Set(normalized)] : ["unisex"];
+};
+
 exports.createProduct = async (req, res) => {
   try {
     const data = { ...req.body };
@@ -139,9 +189,8 @@ exports.createProduct = async (req, res) => {
     });
     const tags = tryParse(data.tags) || {};
     const faqs = tryParse(data.faqs) || [];
-    const navGiftsFor = tryParse(data.navGiftsFor) || [];
-    const navOccasions = tryParse(data.navOccasions) || [];
     const material = normalizeMaterial(data);
+    const audience = normalizeAudience(tryParse(data.audience));
     const baseSlug = data.slug ? slugify(data.slug) : slugify(data.name);
 
     // Sanitize unique fields to prevent duplicate "" key errors
@@ -158,9 +207,8 @@ exports.createProduct = async (req, res) => {
     data.variants = variants;
     data.tags = tags;
     data.faqs = faqs;
-    data.navGiftsFor = navGiftsFor;
-    data.navOccasions = navOccasions;
     data.isSerialized = true;
+    data.audience = audience;
     
     // Ensure slug is clean
     data.slug = baseSlug;
@@ -175,6 +223,10 @@ exports.createProduct = async (req, res) => {
       images = tryParse(data.images);
       if (!Array.isArray(images)) images = [data.images].filter(Boolean);
     }
+
+    const uploadedVideo = (Array.isArray(req.files) ? req.files : [])
+      .find((file) => file?.fieldname === "video");
+    const videoUrl = uploadedVideo?.path || (typeof data.videoUrl === "string" ? data.videoUrl.trim() : "");
 
     const existing = await Product.findOne({ slug: baseSlug });
     const finalSlug = existing ? `${baseSlug}-${Math.floor(1000 + Math.random() * 9000)}` : baseSlug;
@@ -215,6 +267,7 @@ exports.createProduct = async (req, res) => {
       sellerId,
       slug: finalSlug,
       images,
+      videoUrl,
       categories,
       material,
       productCode: data.productCode,
@@ -248,10 +301,47 @@ exports.createProduct = async (req, res) => {
 
 exports.getMyProducts = async (req, res) => {
   try {
-    const products = await Product.find({ sellerId: req.user.userId })
-      .populate("categories", "name slug")
-      .sort({ createdAt: -1 });
-    return success(res, { products: products.map((product) => normalizeProductForResponse(product)) });
+    const sellerId = req.user.userId;
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(Number(req.query.limit) || 10, 100);
+    const { search, category, status, active } = req.query;
+
+    const query = { sellerId };
+    if (search) {
+      const escaped = String(search).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      query.name = { $regex: escaped, $options: "i" };
+    }
+    if (category) {
+      query.categories = category;
+    }
+    if (status) {
+      query.status = status;
+    }
+    if (active === "true") query.active = true;
+    if (active === "false") query.active = false;
+
+    const skip = (page - 1) * limit;
+
+    const [products, total] = await Promise.all([
+      Product.find(query)
+        .populate("categories", "name slug")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Product.countDocuments(query)
+    ]);
+
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+
+    return success(res, {
+      products: products.map((product) => normalizeProductForResponse(product)),
+      pagination: {
+        page,
+        limit,
+        totalItems: total,
+        totalPages
+      }
+    });
   } catch (err) { return error(res, err.message); }
 };
 
@@ -288,6 +378,24 @@ exports.updateProduct = async (req, res) => {
       product.images = [...product.images, ...productImages];
     }
 
+    const removeVideo = String(data.removeVideo || "").toLowerCase() === "true";
+    const uploadedVideo = (Array.isArray(req.files) ? req.files : [])
+      .find((file) => file?.fieldname === "video");
+
+    if (removeVideo && product.videoUrl) {
+      const previous = product.videoUrl;
+      product.videoUrl = "";
+      await Promise.allSettled([deleteFromCloudinary(previous)]);
+    }
+
+    if (uploadedVideo?.path) {
+      const previous = product.videoUrl;
+      product.videoUrl = uploadedVideo.path;
+      if (previous) {
+        await Promise.allSettled([deleteFromCloudinary(previous)]);
+      }
+    }
+
     const deletedImages = Array.isArray(data.deletedImages) ? data.deletedImages.filter(Boolean) : [];
     if (deletedImages.length > 0) {
       product.images = (product.images || []).filter((img) => !deletedImages.includes(img));
@@ -301,6 +409,11 @@ exports.updateProduct = async (req, res) => {
     delete safeData.updatedAt;
     delete safeData.__v;
     delete safeData.deletedImages;
+    // Seller cannot update lifecycle/visibility flags directly.
+    delete safeData.status;
+    delete safeData.active;
+    delete safeData.showInNavbar;
+    delete safeData.showInCollection;
 
     // Sanitize unique fields to prevent duplicate "" key errors
     if (!safeData.productCode) delete safeData.productCode;
@@ -316,10 +429,18 @@ exports.updateProduct = async (req, res) => {
     if (safeData.categories !== undefined) {
       safeData.categories = normalizeCategories(safeData.categories);
     }
+    if (safeData.audience !== undefined) {
+      safeData.audience = normalizeAudience(safeData.audience);
+    }
     if (safeData.material !== undefined || safeData.metal !== undefined || safeData.metalType !== undefined) {
       safeData.material = normalizeMaterial(safeData);
     }
-    Object.assign(product, safeData);
+    // Apply only explicitly allowed fields.
+    SELLER_UPDATE_WHITELIST.forEach((key) => {
+      if (safeData[key] !== undefined) {
+        product[key] = safeData[key];
+      }
+    });
     if (Array.isArray(product.variants)) {
       product.variants = sanitizeVariants(product.variants, {
         weight: product.weight,
@@ -364,6 +485,15 @@ exports.deleteProduct = async (req, res) => {
   try {
     const product = await Product.findOneAndDelete({ _id: req.params.id, sellerId: req.user.userId });
     if (!product) return error(res, "Product not found", 404);
+
+    const mediaToRemove = [
+      ...(Array.isArray(product.images) ? product.images : []),
+      product.videoUrl
+    ].filter(Boolean);
+
+    if (mediaToRemove.length > 0) {
+      await Promise.allSettled(mediaToRemove.map((url) => deleteFromCloudinary(url)));
+    }
     return success(res, {}, "Product deleted");
   } catch (err) { return error(res, err.message); }
 };
@@ -391,9 +521,21 @@ exports.scanProduct = async (req, res) => {
       return error(res, "Product already sold", 400);
     }
 
-    const previousStock = variant.stock || 0;
-    codeEntry.status = "SOLD_OFFLINE";
-    variant.stock = Math.max(0, previousStock - 1);
+    const previousStock = Number(variant.stock) || 0;
+    if (isSerializedVariant(product, variant)) {
+      const variantIndex = product.variants.findIndex((v) => String(v._id) === String(variant._id));
+      consumeSerializedStock({
+        product,
+        variant,
+        quantity: 1,
+        variantIndex,
+        saleStatus: "SOLD_OFFLINE"
+      });
+    } else {
+      // Fallback: treat it as a single unit decrement.
+      codeEntry.status = "SOLD_OFFLINE";
+      variant.stock = Math.max(0, previousStock - 1);
+    }
 
     await product.save();
 

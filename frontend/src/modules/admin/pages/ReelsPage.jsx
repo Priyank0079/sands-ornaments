@@ -48,32 +48,6 @@ const ReelsPage = () => {
         }
     };
 
-    const handleSave = () => {
-        // We'll implemented a bulk update function in context or loop through updates
-        // For simplicity in this step, let's assume we replace the whole list
-        // Since useShop might not have a setReels function yet, we might need to add one.
-        // Assuming we will add 'setAllReels' to context.
-        // For now, let's just log or alert if function missing, but we will add it next.
-        if (window.confirm('Save all changes to Reels?')) {
-            /* 
-               We need to implement setAllReels in ShopContext or 
-               manually sync. Since we are creating this page, 
-               we will ensure ShopContext supports it.
-            */
-            // Using a hypothetical setAllReels function that we will add immediately after
-            const { setAllReels } = require('../../../context/ShopContext').useShop();
-            if (setAllReels) {
-                setAllReels(localReels);
-                alert('Reels updated successfully!');
-                setIsDirty(false);
-            } else {
-                console.error("setAllReels not found in context");
-            }
-        }
-    };
-
-    // Need to access context to call setAllReels, but can't require inside component easily without hook.
-    // So let's just use the hook properly.
     const { setAllReels } = useShop();
 
     const handleSaveClick = () => {

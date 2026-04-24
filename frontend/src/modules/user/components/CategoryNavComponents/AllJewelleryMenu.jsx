@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useShop } from '../../../../context/ShopContext';
 
 const AllJewelleryMenu = ({ resetMenu }) => {
-    const { activeMetal } = useShop();
+    const { categories } = useShop();
     const [hoveredCategory, setHoveredCategory] = useState('All');
 
-    const mainCategories = [
+    const fallbackMainCategories = [
         { id: 'all',       name: 'All',                   path: '/shop' },
         { id: 'rings',     name: 'Rings',                 path: '/category/rings',     hasSub: true },
         { id: 'necklaces', name: 'Necklaces & Pendants',  path: '/category/necklaces', hasSub: true },
@@ -17,8 +17,7 @@ const AllJewelleryMenu = ({ resetMenu }) => {
         { id: 'others',    name: 'Other Categories',      path: '/collections',         hasSub: true },
     ];
 
-    // Sub-category quick links shown in the "All Jewellery" panel
-    const allJewelleryLinks = [
+    const fallbackAllJewelleryLinks = [
         { id: 'sets',          name: 'Jewellery Sets',   path: '/category/sets' },
         { id: 'personalised',  name: 'Personalised',     path: '/category/personalised' },
         { id: 'watch-charms',  name: 'Watch Charms',     path: '/category/watch-charms' },
@@ -28,6 +27,44 @@ const AllJewelleryMenu = ({ resetMenu }) => {
         { id: 'nose-pins',     name: 'Nose Pins',        path: '/category/nose-pins' },
         { id: 'kids',          name: 'Kids',             path: '/category/kids' },
     ];
+
+    const mainCategories = useMemo(() => {
+        const navbarCategories = (categories || [])
+            .filter((cat) => cat?.isActive !== false && cat?.showInNavbar !== false)
+            .sort((a, b) => Number(a?.sortOrder ?? 0) - Number(b?.sortOrder ?? 0)
+                || String(a?.name || '').localeCompare(String(b?.name || '')))
+            .map((cat) => {
+                const slug = String(cat?.slug || cat?.path || '').trim();
+                return {
+                    id: cat?._id || cat?.id || slug || cat?.name,
+                    name: cat?.name || '',
+                    path: slug ? `/category/${slug}` : '/shop',
+                    hasSub: true
+                };
+            })
+            .filter((cat) => Boolean(cat.name));
+
+        if (navbarCategories.length === 0) {
+            return fallbackMainCategories;
+        }
+
+        return [
+            { id: 'all', name: 'All', path: '/shop' },
+            ...navbarCategories
+        ];
+    }, [categories]);
+
+    const allJewelleryLinks = useMemo(() => {
+        const dynamicLinks = mainCategories
+            .filter((cat) => cat.id !== 'all')
+            .map((cat) => ({
+                id: cat.id,
+                name: cat.name,
+                path: cat.path
+            }));
+
+        return dynamicLinks.length > 0 ? dynamicLinks : fallbackAllJewelleryLinks;
+    }, [mainCategories]);
 
     // ─── FIXED: all URLs now use params that Shop.jsx actually reads ────────────
     const filterGroups = [
@@ -65,7 +102,7 @@ const AllJewelleryMenu = ({ resetMenu }) => {
                 // Map style to the sort param Shop.jsx supports
                 { name: 'Everyday',  path: '/shop?sort=most-sold' },
                 { name: 'Festive',   path: '/shop?search=festive' },
-                { name: 'Gifting',   path: '/shop?filter=gift' },
+                { name: 'Gifting',   path: '/shop?search=gift' },
                 { name: 'Minimalist',path: '/shop?search=minimalist' },
             ]
         }
@@ -73,8 +110,9 @@ const AllJewelleryMenu = ({ resetMenu }) => {
 
     // Per-category filter groups (shown when a category like Rings is hovered)
     const getCategoryFilters = (categoryName) => {
-        const catSlug = categoryName.toLowerCase().replace(/\s+/g, '-');
-        const catPath = `/category/${catSlug.replace('necklaces-&-pendants', 'necklaces')}`;
+        const matchedCategory = mainCategories.find((cat) => cat.name === categoryName);
+        const fallbackSlug = categoryName.toLowerCase().replace(/\s+/g, '-').replace('necklaces-&-pendants', 'necklaces');
+        const catPath = matchedCategory?.path || `/category/${fallbackSlug}`;
         return [
             {
                 title: 'Shop by Price',

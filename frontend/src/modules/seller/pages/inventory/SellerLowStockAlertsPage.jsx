@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { AlertTriangle, Zap, Ban, ArrowRight, Clock, Package } from 'lucide-react';
+import { AlertTriangle, Zap, Ban, ArrowRight, Clock, Package, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AdminStatsCard from '../../../admin/components/AdminStatsCard';
 import { sellerInventoryService } from '../../services/sellerInventoryService';
@@ -9,21 +9,37 @@ const SellerLowStockAlertsPage = () => {
     const navigate = useNavigate();
     const [alerts, setAlerts] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [threshold, setThreshold] = useState(5);
+    const [page, setPage] = useState(1);
+    const [limit] = useState(25);
+    const [pagination, setPagination] = useState(null);
 
     useEffect(() => {
         const loadAlerts = async () => {
             setLoading(true);
             try {
-                const data = await sellerInventoryService.getLowStockAlerts();
-                setAlerts(data || []);
+                const result = await sellerInventoryService.getLowStockAlertsPaged({
+                    page,
+                    limit,
+                    threshold,
+                    ...(searchTerm ? { search: searchTerm } : {})
+                });
+                setAlerts(result?.alerts || []);
+                setPagination(result?.pagination || null);
             } catch (err) {
                 toast.error("Failed to load low stock alerts");
             } finally {
                 setLoading(false);
             }
         };
-        loadAlerts();
-    }, []);
+        const t = setTimeout(loadAlerts, 250);
+        return () => clearTimeout(t);
+    }, [page, limit, threshold, searchTerm]);
+
+    useEffect(() => {
+        setPage(1);
+    }, [threshold, searchTerm]);
 
     const outOfStockCount = useMemo(() => alerts.filter(a => a.currentStock === 0).length, [alerts]);
     const lowStockCount = useMemo(() => alerts.filter(a => a.currentStock > 0 && a.currentStock <= a.threshold).length, [alerts]);
@@ -65,6 +81,29 @@ const SellerLowStockAlertsPage = () => {
                     color="text-orange-600"
                     bgColor="bg-orange-50"
                 />
+            </div>
+
+            <div className="bg-white p-2 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="relative flex-1 max-w-md w-full ml-2">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" size={16} />
+                    <input
+                        type="text"
+                        placeholder="Search by product..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 bg-gray-50 rounded-xl border-none text-xs font-bold text-gray-900 focus:ring-0 placeholder:text-gray-400"
+                    />
+                </div>
+                <div className="flex items-center gap-3 px-3">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Threshold</p>
+                    <input
+                        type="number"
+                        min={1}
+                        value={threshold}
+                        onChange={(e) => setThreshold(Number.parseInt(e.target.value || '5', 10) || 5)}
+                        className="w-24 px-3 py-2 bg-gray-50 rounded-xl border-none text-xs font-black text-gray-900 focus:ring-0"
+                    />
+                </div>
             </div>
 
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -146,6 +185,30 @@ const SellerLowStockAlertsPage = () => {
                     </table>
                 </div>
             </div>
+
+            {pagination?.pages > 1 && (
+                <div className="flex items-center justify-between gap-3">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                        Page {pagination.page} of {pagination.pages} ({pagination.total} alerts)
+                    </p>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => setPage((p) => Math.max(1, p - 1))}
+                            disabled={page <= 1 || loading}
+                            className="px-3 py-2 rounded-lg border border-gray-200 bg-white text-gray-600 text-[10px] font-black uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Prev
+                        </button>
+                        <button
+                            onClick={() => setPage((p) => Math.min(pagination.pages, p + 1))}
+                            disabled={page >= pagination.pages || loading}
+                            className="px-3 py-2 rounded-lg border border-gray-200 bg-white text-gray-600 text-[10px] font-black uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Next
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

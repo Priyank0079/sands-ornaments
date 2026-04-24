@@ -3,14 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 // Import assets
-import valentineBanner from '../../../../assets/latest_collections/valentine_banner.png';
-import glowBanner from '../../../../assets/latest_collections/glow_banner.png';
-import thumb1 from '../../../../assets/latest_collections/thumb_1.png';
-import thumb2 from '../../../../assets/latest_collections/thumb_2.png';
-import thumb3 from '../../../../assets/latest_collections/thumb_3.png';
-import thumb4 from '../../../../assets/latest_collections/thumb_4.png';
-import thumb5 from '../../../../assets/latest_collections/thumb_5.png';
-import thumb6 from '../../../../assets/latest_collections/thumb_6.png';
+import valentineBanner from '@assets/latest_collections/valentine_banner.png';
+import glowBanner from '@assets/latest_collections/glow_banner.png';
+import thumb1 from '@assets/latest_collections/thumb_1.png';
+import thumb2 from '@assets/latest_collections/thumb_2.png';
+import thumb3 from '@assets/latest_collections/thumb_3.png';
+import thumb4 from '@assets/latest_collections/thumb_4.png';
+import thumb5 from '@assets/latest_collections/thumb_5.png';
+import thumb6 from '@assets/latest_collections/thumb_6.png';
 
 const collections = [
     {
@@ -122,3 +122,4 @@ const WomenLatestCollections = () => {
 };
 
 export default WomenLatestCollections;
+

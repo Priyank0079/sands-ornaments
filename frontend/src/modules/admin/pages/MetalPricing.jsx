@@ -138,7 +138,7 @@ const MetalPricing = () => {
 
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-6">
         <div className="rounded-2xl border border-amber-100 bg-amber-50 p-4 text-sm text-amber-900">
-          Set admin metal pricing per 10 grams. These rates apply only to admin-owned products. Seller products continue using seller-specific metal rates from the seller module. Global GST is managed separately in Tax Settings.
+          Set admin metal pricing per 10 grams. These rates apply only to admin-owned products. Seller products continue using seller-specific metal rates from the seller module. Global GST is managed separately in Tax Settings, and final product prices still include making charge, hidden charge, GST, and optional payment gateway charge based on each product configuration.
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -228,7 +228,7 @@ const MetalPricing = () => {
         </div>
 
         <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 text-xs text-gray-600">
-          Per milligram values are derived automatically from the per‑10g rates: for example, 10g ÷ 10 ÷ 1000.
+          Per milligram values are derived automatically from the per-10g rates: for example, 10g / 10 / 1000.
           Current example: 18K per milligram is {formatCurrency(toPerMilligram(metalRates.gold10g?.k18))}.
         </div>
 
@@ -246,3 +246,4 @@ const MetalPricing = () => {
 };
 
 export default MetalPricing;
+

@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import FamilyProductsCatalog from '../components/family/FamilyProductsCatalog';
 import { normalizeFamilyCollection } from '../utils/familyNavigation';
+import api from '../../../services/api';
 
 const collectionMeta = {
     classics: {
@@ -184,11 +185,35 @@ const FamilyCollectionProductsPage = () => {
     const { collectionId } = useParams();
     const normalizedCollection = normalizeFamilyCollection(collectionId);
     const meta = collectionMeta[normalizedCollection] || collectionMeta['under-2999'];
+    const [sections, setSections] = useState([]);
 
     useEffect(() => {
         document.title = `${meta.title} | Sands Ornaments`;
         window.scrollTo(0, 0);
     }, [meta.title]);
+
+    useEffect(() => {
+        const fetchSections = async () => {
+            try {
+                const res = await api.get('public/cms/pages/shop-family', {
+                    params: { _t: Date.now() }
+                });
+                if (!res?.data?.success) return;
+                setSections(Array.isArray(res.data?.data?.sections) ? res.data.data.sections : []);
+            } catch (err) {
+                console.error('Failed to fetch family sections for collection page:', err);
+            }
+        };
+        fetchSections();
+    }, []);
+
+    const sectionMap = useMemo(() => (
+        (sections || []).reduce((acc, section) => {
+            const key = section.sectionKey || section.sectionId;
+            if (key) acc[key] = section;
+            return acc;
+        }, {})
+    ), [sections]);
 
     return (
         <div className="bg-white min-h-screen text-black font-sans overflow-x-hidden">
@@ -222,6 +247,7 @@ const FamilyCollectionProductsPage = () => {
                 subtitleOverride={meta.subtitle}
                 allowedProductIds={meta.allowedProductIds}
                 hideRecipientFilters
+                sectionData={sectionMap['products-listing']}
             />
         </div>
     );
