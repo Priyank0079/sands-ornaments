@@ -15,6 +15,8 @@ import GoldLifestyleGrid from '../components/GoldLifestyleGrid';
 import GoldShopByColour from '../components/GoldShopByColour';
 import GoldLuxuryWithinReach from '../components/GoldLuxuryWithinReach';
 import GoldDirectProducts from '../components/GoldDirectProducts';
+import GoldTrustStrip from '../components/GoldTrustStrip';
+import HeerCustomisationBanner from '../components/HeerCustomisationBanner';
 import Loader from '../../shared/components/Loader';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 import { usePublicCmsPage } from '../hooks/usePublicCmsPage';
@@ -193,6 +195,7 @@ const GoldJewelleryPage = () => {
             </div>
 
             <GoldCategoryGrid sectionData={sectionMap['gold-category-grid']} />
+            <HeerCustomisationBanner />
             <GoldExploreCollections sectionData={sectionMap['gold-explore-collections']} />
             <BestStylesSection sectionData={sectionMap['best-styles']} />
 
@@ -232,12 +235,14 @@ const GoldJewelleryPage = () => {
             <GoldNewLaunchBanner sectionData={sectionMap['gold-new-launch-banner']} />
             <GoldExclusiveLaunch sectionData={sectionMap['gold-exclusive-launch']} />
             <GoldRingCarousel sectionData={sectionMap['gold-ring-carousel']} />
+            <HeerCustomisationBanner />
             <GoldShopByColour sectionData={sectionMap['gold-shop-by-colour']} />
             <GoldLuxuryWithinReach sectionData={sectionMap['gold-luxury-within-reach']} />
             <GoldTestimonials sectionData={sectionMap['gold-testimonials']} />
             <CuratedForEveryBond sectionData={sectionMap['gold-curated-bond']} />
             <GoldCuratedShowcase sectionData={sectionMap['gold-curated-showcase']} />
             <GoldLifestyleGrid sectionData={sectionMap['gold-lifestyle-grid']} />
+            <GoldTrustStrip />
             <GoldDirectProducts sectionData={sectionMap['gold-products-listing']} />
         </div>
     );
