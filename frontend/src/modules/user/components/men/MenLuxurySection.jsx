@@ -67,26 +67,26 @@ const MenLuxurySection = ({ sectionData }) => {
     }, [sectionData]);
 
     return (
-        <section className="pt-0 pb-2 md:pt-1 md:pb-6 bg-white">
+        <section className="pt-0 pb-2 md:pt-1 md:pb-6 bg-white overflow-hidden">
             <div className="container mx-auto px-4 max-w-[950px]">
-                <h2 className="text-2xl md:text-4xl font-bold text-[#101828] text-center mb-5 md:mb-10 tracking-tight font-serif">
+                <h2 className="text-lg md:text-4xl font-bold text-[#101828] text-center mb-2 md:mb-10 tracking-tight font-serif">
                     {resolvedSectionTitle}
                 </h2>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-8 items-center">
+                <div className="flex flex-row overflow-x-auto md:grid md:grid-cols-3 gap-3 md:gap-8 items-center no-scrollbar pb-2 -mx-4 px-4 md:mx-0 md:px-0">
                     {resolvedOffers.map((offer, idx) => (
                         <motion.div
                             key={`${offer.title}-${idx}`}
-                            initial={{ opacity: 0, y: 30, scale: idx === 1 ? 1 : 0.9 }}
+                            initial={{ opacity: 0, y: 15, scale: 0.95 }}
                             whileInView={{
                                 opacity: 1,
                                 y: 0,
-                                scale: idx === 1 ? 1.05 : 0.95
+                                scale: 1
                             }}
                             viewport={{ once: true }}
-                            transition={{ duration: 0.8, delay: idx * 0.1 }}
+                            transition={{ duration: 0.5, delay: idx * 0.1 }}
                             onClick={() => navigate(offer.link)}
-                            className={`relative group flex-1 cursor-pointer overflow-hidden rounded-2xl md:rounded-[40px] border border-[#D4AF37]/30 md:border-[1.5px] aspect-[0.92/1] shadow-lg hover:shadow-2xl transition-all duration-500 ${idx === 1 ? 'z-10 shadow-xl' : 'z-0'}`}
+                            className={`relative group shrink-0 w-[145px] md:w-auto md:flex-1 cursor-pointer overflow-hidden rounded-xl md:rounded-[40px] border border-[#D4AF37]/30 md:border-[1.5px] aspect-square md:aspect-[0.92/1] shadow-md md:shadow-lg hover:shadow-xl transition-all duration-500 ${idx === 1 ? 'md:z-10 md:shadow-xl' : 'z-0'}`}
                         >
                             <img
                                 src={offer.image}
@@ -98,15 +98,15 @@ const MenLuxurySection = ({ sectionData }) => {
                                 <div className="text-white flex flex-col md:flex-row items-center md:items-baseline justify-center gap-0 md:gap-1 font-display">
                                     {offer.title.toLowerCase().startsWith('under inr ') ? (
                                         <>
-                                            <span className="font-light uppercase text-[7px] md:text-xs tracking-[0.1em] md:tracking-[0.2em] opacity-80 mt-1 md:mt-0">Under</span>
-                                            <span className="text-[11px] md:text-3xl font-bold tracking-tight">
+                                            <span className="font-light uppercase text-[6px] md:text-xs tracking-[0.1em] md:tracking-[0.2em] opacity-80 mt-1 md:mt-0">Under</span>
+                                            <span className="text-[10px] md:text-3xl font-bold tracking-tight">
                                                 INR {offer.title.replace(/^Under INR\s+/i, '')}
                                             </span>
                                         </>
                                     ) : (
                                         <>
-                                            <span className="font-light uppercase text-[7px] md:text-xs tracking-[0.1em] md:tracking-[0.2em] opacity-80 mt-1 md:mt-0">Premium</span>
-                                            <span className="text-[11px] md:text-3xl font-bold uppercase tracking-widest">GIFTS</span>
+                                            <span className="font-light uppercase text-[6px] md:text-xs tracking-[0.1em] md:tracking-[0.2em] opacity-80 mt-1 md:mt-0">Premium</span>
+                                            <span className="text-[10px] md:text-3xl font-bold uppercase tracking-widest">GIFTS</span>
                                         </>
                                     )}
                                 </div>

@@ -163,24 +163,24 @@ const AllJewelleryMenu = ({ resetMenu }) => {
         : getCategoryFilters(hoveredCategory);
 
     return (
-        <div className="flex bg-white h-[420px] w-full max-w-[850px] shadow-[0_15px_40px_rgba(0,0,0,0.12)] overflow-hidden border border-gray-100 rounded-b-lg font-sans">
+        <div className="flex bg-white h-[480px] w-[950px] shadow-[0_25px_60px_rgba(0,0,0,0.18)] overflow-hidden border border-gray-100 rounded-b-2xl font-sans">
 
             {/* ── Left Sidebar: Category list (Compact & Scrollable) ─────────────────────────────── */}
-            <div className="w-[220px] bg-[#fcfcfc] border-r border-gray-100 py-2 shrink-0 overflow-y-auto custom-scrollbar">
-                <ul className="flex flex-col">
+            <div className="w-[220px] bg-[#F9FAFB] border-r border-gray-100 py-6 shrink-0 overflow-y-auto custom-scrollbar">
+                <ul className="flex flex-col gap-1">
                     {mainCategories.map((cat) => (
                         <li key={cat.id}>
                             <Link
                                 to={cat.path}
                                 onMouseEnter={() => setHoveredCategory(cat.name)}
                                 onClick={resetMenu}
-                                className={`flex items-center px-5 py-2 text-[13px] transition-all duration-200 border-l-2 ${
+                                className={`flex items-center px-6 py-2.5 text-[14px] transition-all duration-200 border-l-[3px] ${
                                     hoveredCategory === cat.name
                                         ? 'text-[#8E2B45] font-bold bg-white border-[#8E2B45]'
-                                        : 'text-gray-500 font-normal border-transparent hover:text-gray-800 hover:bg-gray-50'
+                                        : 'text-gray-500 font-medium border-transparent hover:text-gray-900 hover:bg-white/50'
                                 }`}
                             >
-                                <span className="tracking-normal whitespace-nowrap">{cat.name}</span>
+                                <span className="tracking-tight whitespace-nowrap">{cat.name}</span>
                             </Link>
                         </li>
                     ))}
@@ -188,58 +188,56 @@ const AllJewelleryMenu = ({ resetMenu }) => {
             </div>
 
             {/* ── Right Content: Dynamic (Compact & Scrollable) ─────────── */}
-            <div className="flex-1 bg-white py-6 px-8 overflow-y-auto custom-scrollbar">
+            <div className="flex-1 bg-white py-6 px-10 overflow-y-auto custom-scrollbar min-w-[600px]">
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={hoveredCategory}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.1 }}
+                        initial={{ opacity: 0, x: 10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10 }}
+                        transition={{ duration: 0.2 }}
                     >
-                        {/* Heading - Smaller & Cleaner */}
-                        <div className="flex items-center justify-between mb-5 border-b border-gray-50 pb-3">
-                            <h3 className="text-[16px] font-bold text-gray-900 tracking-tight">
-                                {hoveredCategory === 'All' ? 'All Jewellery' : hoveredCategory}
-                            </h3>
+                        {/* Compact View All Button - Requested by USER */}
+                        <div className="flex justify-end mb-4 border-b border-gray-100 pb-2.5">
                             <Link
                                 to={mainCategories.find(c => c.name === hoveredCategory)?.path || '/shop'}
                                 onClick={resetMenu}
-                                className="text-[11px] font-bold text-[#8E2B45] hover:underline uppercase tracking-wider"
+                                className="inline-flex items-center text-[10px] font-black text-[#8E2B45] hover:text-[#B33B58] transition-all uppercase tracking-[0.2em] bg-[#FDF5F6] px-4 py-1.5 rounded-full border border-[#EBCDD0]/40 hover:shadow-sm active:scale-95 whitespace-nowrap"
                             >
-                                View All →
+                                {hoveredCategory === 'All' ? 'Explore All Jewellery' : `View All ${hoveredCategory}`} →
                             </Link>
                         </div>
 
                         {hoveredCategory === 'All' ? (
-                            /* All Jewellery: high-density grid */
-                            <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                            /* All Jewellery: 3-column breathable grid */
+                            <div className="grid grid-cols-3 gap-x-12 gap-y-2">
                                 {allJewelleryLinks.map((sub) => (
                                     <Link
                                         key={sub.id}
                                         to={sub.path}
                                         onClick={resetMenu}
-                                        className="text-[13.5px] font-normal text-gray-600 hover:text-[#8E2B45] transition-colors py-0.5"
+                                        className="text-[13px] font-medium text-gray-600 hover:text-[#8E2B45] transition-all hover:translate-x-1.5 duration-200 py-0.5 block truncate"
+                                        title={sub.name}
                                     >
                                         {sub.name}
                                     </Link>
                                 ))}
                             </div>
                         ) : (
-                            /* Category-specific: Price, Metal, Colour filter columns */
-                            <div className="flex flex-wrap gap-x-10 gap-y-8">
+                            /* Category-specific: Refined filter columns */
+                            <div className="flex flex-wrap gap-x-16 gap-y-12">
                                 {currentFilters.map((group) => (
-                                    <div key={group.title} className="flex flex-col gap-3" style={{ minWidth: '130px' }}>
-                                        <h4 className="text-[10px] font-black text-gray-400 tracking-[0.1em] uppercase whitespace-nowrap border-b border-gray-50 pb-1.5">
+                                    <div key={group.title} className="flex flex-col gap-4" style={{ minWidth: '150px' }}>
+                                        <h4 className="text-[11px] font-black text-gray-400 tracking-[0.2em] uppercase whitespace-nowrap pb-1 border-b border-gray-50">
                                             {group.title}
                                         </h4>
-                                        <div className="flex flex-col gap-2">
+                                        <div className="flex flex-col gap-3">
                                             {group.items.map((item) => (
                                                 <Link
                                                     key={item.name}
                                                     to={item.path}
                                                     onClick={resetMenu}
-                                                    className="text-[13px] text-gray-600 hover:text-[#8E2B45] transition-colors w-fit font-normal"
+                                                    className="text-[13px] font-medium text-gray-600 hover:text-[#8E2B45] transition-all hover:translate-x-1.5 duration-200 w-fit"
                                                 >
                                                     {item.name}
                                                 </Link>
@@ -254,17 +252,17 @@ const AllJewelleryMenu = ({ resetMenu }) => {
             </div>
             <style jsx>{`
                 .custom-scrollbar::-webkit-scrollbar {
-                    width: 3px;
+                    width: 5px;
                 }
                 .custom-scrollbar::-webkit-scrollbar-track {
                     background: transparent;
                 }
                 .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: #eee;
+                    background: #F1F1F1;
                     border-radius: 10px;
                 }
                 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                    background: #ddd;
+                    background: #E5E5E5;
                 }
             `}</style>
         </div>

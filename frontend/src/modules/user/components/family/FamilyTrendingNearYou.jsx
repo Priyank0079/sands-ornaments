@@ -67,9 +67,9 @@ const FamilyTrendingNearYou = ({ sectionData }) => {
                  setCardWidth(180);
                  setCardHeight(260);
              } else if (window.innerWidth < 1024) {
-                 setRadius(750);
-                 setCardWidth(200);
-                 setCardHeight(280);
+                 setRadius(650);
+                 setCardWidth(170);
+                 setCardHeight(240);
              } else {
                  setRadius(1200);
                  setCardWidth(240);
@@ -87,7 +87,8 @@ const FamilyTrendingNearYou = ({ sectionData }) => {
             style={{
                 '--radius': `${radius}px`,
                 '--cardW': `${cardWidth}px`,
-                '--cardH': `${cardHeight}px`
+                '--cardH': `${cardHeight}px`,
+                '--gap': window.innerWidth < 1024 ? '10px' : '15px'
             }}
         >
             {/* Inline styles for the 3D Cylinder Animation (Left to Right) */}
@@ -95,7 +96,7 @@ const FamilyTrendingNearYou = ({ sectionData }) => {
                 {`
                 @keyframes spinTrendingCurveLr {
                     0% { transform: translateZ(calc(var(--radius) * -1)) rotateY(0deg); }
-                    100% { transform: translateZ(calc(var(--radius) * -1)) rotateY(360deg); } /* Positive 360deg moves Left-to-Right */
+                    100% { transform: translateZ(calc(var(--radius) * -1)) rotateY(360deg); }
                 }
                 .scene-trending {
                     perspective: 4000px;
@@ -111,7 +112,6 @@ const FamilyTrendingNearYou = ({ sectionData }) => {
                     height: var(--cardH);
                     position: relative;
                     transform-style: preserve-3d;
-                    /* Continuous scrolling LEFT TO RIGHT */
                     animation: spinTrendingCurveLr 60s infinite linear;
                 }
                 .rotator-trending:hover {
@@ -124,7 +124,7 @@ const FamilyTrendingNearYou = ({ sectionData }) => {
                     width: 100%;
                     height: 100%;
                     backface-visibility: hidden;
-                    border-radius: 1.2rem;
+                    padding: 0 var(--gap); /* Creates the "difference" between cards */
                 }
                 `}
             </style>
@@ -147,33 +147,33 @@ const FamilyTrendingNearYou = ({ sectionData }) => {
                             return (
                                 <div
                                     key={`trend-curv-${index}`}
-                                    className="cylinder-card-trending shadow-xl group"
+                                    className="cylinder-card-trending group"
                                     style={{
                                         transform: `rotateY(${angle}deg) translateZ(var(--radius))`,
                                     }}
                                 >
-                                    <Link to={item.path} className="block w-full h-full relative isolate rounded-[1.2rem] overflow-hidden cursor-pointer bg-white">
+                                    <Link to={item.path} className="block w-full h-full relative isolate rounded-[1.2rem] overflow-hidden cursor-pointer bg-white shadow-xl border border-[#8E2B45]/5">
                                         {/* Image */}
                                         <div className="absolute inset-0 bg-transparent">
                                             <img
                                                 src={item.image}
                                                 alt={item.title}
-                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                             />
                                         </div>
 
                                         {/* Classic Gradient Overlay */}
-                                        <div className="absolute inset-x-0 bottom-0 top-1/2 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none"></div>
+                                        <div className="absolute inset-x-0 bottom-0 top-1/2 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none"></div>
 
                                         {/* Text Overlay */}
-                                        <div className="absolute bottom-4 left-0 right-0 px-4 flex flex-col items-center justify-end text-center z-10">
-                                            <h4 className="font-serif font-medium text-lg lg:text-xl text-white tracking-wide drop-shadow-md">
+                                        <div className="absolute bottom-4 left-0 right-0 px-3 flex flex-col items-center justify-end text-center z-10">
+                                            <h4 className="font-serif font-medium text-sm md:text-lg lg:text-xl text-white tracking-wide drop-shadow-lg leading-tight">
                                                 {item.title}
                                             </h4>
                                         </div>
 
                                         {/* Border Glow on Hover */}
-                                        <div className="absolute inset-0 border-[2px] border-transparent group-hover:border-[#8E2B45]/50 rounded-[1.2rem] transition-colors duration-500 pointer-events-none"></div>
+                                        <div className="absolute inset-0 border-[2px] border-transparent group-hover:border-[#8E2B45]/30 rounded-[1.2rem] transition-colors duration-500 pointer-events-none"></div>
                                     </Link>
                                 </div>
                             );

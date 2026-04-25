@@ -67,9 +67,9 @@ const Family3DCarousel = ({ sectionData }) => {
                  setCardWidth(180);
                  setCardHeight(260);
              } else if (window.innerWidth < 1024) {
-                 setRadius(750);
-                 setCardWidth(200);
-                 setCardHeight(280);
+                 setRadius(650);
+                 setCardWidth(170);
+                 setCardHeight(240);
              } else {
                  setRadius(1200);
                  setCardWidth(240);
@@ -87,7 +87,8 @@ const Family3DCarousel = ({ sectionData }) => {
             style={{
                 '--radius': `${radius}px`,
                 '--cardW': `${cardWidth}px`,
-                '--cardH': `${cardHeight}px`
+                '--cardH': `${cardHeight}px`,
+                '--gap': window.innerWidth < 1024 ? '10px' : '15px'
             }}
         >
             {/* Inline styles for the 3D Cylinder Animation */}
@@ -98,7 +99,7 @@ const Family3DCarousel = ({ sectionData }) => {
                     100% { transform: translateZ(calc(var(--radius) * -1)) rotateY(-360deg); }
                 }
                 .scene-family {
-                    perspective: 4000px; /* High perspective for flatter curve */
+                    perspective: 4000px;
                     width: 100%;
                     height: var(--cardH);
                     display: flex;
@@ -111,7 +112,6 @@ const Family3DCarousel = ({ sectionData }) => {
                     height: var(--cardH);
                     position: relative;
                     transform-style: preserve-3d;
-                    /* Super smooth continuous scrolling right to left */
                     animation: spinFamilyCurve 60s infinite linear;
                 }
                 .rotator-family:hover {
@@ -124,7 +124,7 @@ const Family3DCarousel = ({ sectionData }) => {
                     width: 100%;
                     height: 100%;
                     backface-visibility: hidden;
-                    border-radius: 1.2rem;
+                    padding: 0 var(--gap); /* Same spacing as trending section */
                 }
                 `}
             </style>
@@ -150,48 +150,47 @@ const Family3DCarousel = ({ sectionData }) => {
                 <div className="scene-family mt-2 md:mt-8">
                     <div className="rotator-family">
                         {cylinderItems.map((item, index) => {
-                            // Calculate proper angle for 20 items (360 / 20 = 18)
                             const angle = index * 18;
 
                             return (
                                 <div
                                     key={`fam-curv-${index}`}
-                                    className="cylinder-card-family shadow-xl group"
+                                    className="cylinder-card-family group"
                                     style={{
                                         transform: `rotateY(${angle}deg) translateZ(var(--radius))`,
                                     }}
                                 >
-                                    <Link to={item.path} className="block w-full h-full relative isolate rounded-[1.2rem] overflow-hidden cursor-pointer bg-white">
+                                    <Link to={item.path} className="block w-full h-full relative isolate rounded-[1.2rem] overflow-hidden cursor-pointer bg-white shadow-xl border border-[#8E2B45]/5">
                                         {/* Image */}
                                         <div className="absolute inset-0 bg-[#FFD9E0]/10">
                                             <img
                                                 src={item.image}
                                                 alt={item.name}
-                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                             />
                                         </div>
 
                                         {/* Classic Gradient Overlay */}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-[#4a0d1d]/90 via-[#4a0d1d]/20 to-transparent"></div>
+                                        <div className="absolute inset-0 bg-gradient-to-t from-[#4a0d1d]/95 via-[#4a0d1d]/30 to-transparent"></div>
 
                                         {/* Text Section overlay at bottom */}
                                         <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 flex flex-col items-center justify-end text-center z-10">
-                                            <h4 className="font-serif font-medium text-lg lg:text-xl text-white tracking-wide mb-2 transform transition-transform duration-300 group-hover:-translate-y-1 drop-shadow-md">
+                                            <h4 className="font-serif font-medium text-lg lg:text-xl text-white tracking-wide mb-1 transform transition-transform duration-300 group-hover:-translate-y-1 drop-shadow-md">
                                                 {item.name}
                                             </h4>
                                             
                                             {/* Discover/Animated Arrow */}
-                                            <div className="flex items-center gap-2 text-[#FFD9E0] opacity-0 translate-y-3 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 delay-75">
-                                                <div className="h-[1px] w-4 bg-[#FFD9E0]"></div>
-                                                <span className="text-[9px] font-black uppercase tracking-[0.2em]">
+                                            <div className="flex items-center gap-2 text-[#FFD9E0] opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 delay-75">
+                                                <div className="h-[1px] w-3 bg-[#FFD9E0]/60"></div>
+                                                <span className="text-[8px] font-black uppercase tracking-[0.2em]">
                                                     Explore
                                                 </span>
-                                                <div className="h-[1px] w-4 bg-[#FFD9E0]"></div>
+                                                <div className="h-[1px] w-3 bg-[#FFD9E0]/60"></div>
                                             </div>
                                         </div>
 
                                         {/* Border Glow on Hover */}
-                                        <div className="absolute inset-0 border-[2px] border-transparent group-hover:border-[#8E2B45]/50 rounded-[1.2rem] transition-colors duration-500 pointer-events-none"></div>
+                                        <div className="absolute inset-0 border-[2px] border-transparent group-hover:border-[#8E2B45]/30 rounded-[1.2rem] transition-colors duration-500 pointer-events-none"></div>
                                     </Link>
                                 </div>
                             );
