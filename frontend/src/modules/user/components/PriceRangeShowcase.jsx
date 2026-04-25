@@ -1,12 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-<<<<<<< HEAD
-import { useHomepageCms } from '../hooks/useHomepageCms';
-=======
 import { Heart, Star } from 'lucide-react';
-import { useShop } from '../../../context/ShopContext';
->>>>>>> 16abbb8bcc77e3f2fb21162d32fe5fa3881b9b3d
+import { useHomepageCms } from '../hooks/useHomepageCms';
 
 import price999 from '@assets/price_under_999.png';
 import price1999 from '@assets/price_under_1999.png';

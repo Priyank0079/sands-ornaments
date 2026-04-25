@@ -1,12 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-<<<<<<< HEAD
-import { Star, Quote } from 'lucide-react';
 import { useHomepageCms } from '../hooks/useHomepageCms';
-=======
-import { Star } from 'lucide-react';
-import { useShop } from '../../../context/ShopContext';
->>>>>>> 16abbb8bcc77e3f2fb21162d32fe5fa3881b9b3d
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 
 // Import local high-end customer portraits
