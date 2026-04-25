@@ -9,6 +9,7 @@ import AppErrorBoundary from './components/AppErrorBoundary';
 import CategoryNav from './modules/user/components/CategoryNav';
 import AnnouncementBar from './modules/user/components/AnnouncementBar';
 import PincodeModal from './modules/user/components/PincodeModal';
+import WhatsAppFloating from './modules/user/components/WhatsAppFloating';
 
 // Admin Imports
 import AdminLogin from './modules/admin/pages/Login';
@@ -229,7 +230,12 @@ const AppContent = () => {
         </Routes>
       </Suspense>
       </main>
-      {!isAdminPath && !isSellerPath && !isScannerPath && <Footer />}
+      {!isAdminPath && !isSellerPath && !isScannerPath && (
+        <>
+          <Footer />
+          <WhatsAppFloating />
+        </>
+      )}
     </div>
   );
 };

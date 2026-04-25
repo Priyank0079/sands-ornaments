@@ -1,7 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+<<<<<<< HEAD
 import { useHomepageCms } from '../hooks/useHomepageCms';
+=======
+import { Heart, Star } from 'lucide-react';
+import { useShop } from '../../../context/ShopContext';
+>>>>>>> 16abbb8bcc77e3f2fb21162d32fe5fa3881b9b3d
 
 import price999 from '@assets/price_under_999.png';
 import price1999 from '@assets/price_under_1999.png';
@@ -69,7 +74,7 @@ const PriceRangeShowcase = () => {
     const displayItems = normalizedConfiguredItems.length > 0 ? normalizedConfiguredItems : priceRanges;
 
     return (
-        <section className="py-8 md:py-10 bg-white overflow-hidden">
+        <section className="pt-8 pb-2 md:pt-10 md:pb-4 bg-white overflow-hidden">
             <div className="container mx-auto px-4 md:px-6">
                 <div className="text-center mb-8 md:mb-10">
                     <h2 className="font-sans text-2xl md:text-3xl text-[#111111] font-semibold mb-3 tracking-wide uppercase">
@@ -85,6 +90,11 @@ const PriceRangeShowcase = () => {
                         const itemPath = priceMax ? `/shop?price_max=${priceMax}` : item.path;
                         const key = item.itemId || item._id || item.id || itemLabel || index;
 
+                        // Synthetic rating and original price for visual consistency with ProductCard
+                        const rating = 4.8;
+                        const reviews = 500 + (index * 123);
+                        const originalPrice = priceMax ? Math.round(priceMax * 1.5) : null;
+
                         return (
                             <motion.div
                                 key={key}
@@ -96,28 +106,59 @@ const PriceRangeShowcase = () => {
                             >
                                 <Link
                                     to={itemPath || '/shop'}
-                                    className="group flex flex-col h-full bg-white rounded-md border border-gray-100/80 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden"
+                                    className="group/card relative flex flex-col h-full bg-white transition-all duration-300 overflow-hidden cursor-pointer"
                                 >
-                                    <div className="relative w-full aspect-square bg-white overflow-hidden">
+                                    {/* Image Container - Square & Sharp (Mimicking ProductCard) */}
+                                    <div className="relative aspect-square overflow-hidden bg-gray-50 rounded-none mb-3">
                                         <img
                                             src={resolveLegacyCmsAsset(item.image, price999)}
                                             alt={itemLabel}
-                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                            className="w-full h-full object-cover transition-transform duration-[1.5s] group-hover/card:scale-105"
                                         />
-                                    </div>
-
-                                    <div className="p-3 md:p-4 flex flex-col flex-grow justify-between bg-white text-left">
-                                        <div className="mb-3">
-                                            <h3 className="text-[#1A1A1A] font-sans font-bold text-base md:text-lg tracking-wide uppercase">
-                                                {itemLabel}
-                                            </h3>
-                                            <p className="text-[#6D6D6D] text-[10px] md:text-xs mt-0.5 font-medium uppercase tracking-tight">
-                                                Discover collection
-                                            </p>
+                                        
+                                        {/* Bestseller Badge */}
+                                        <div className="absolute top-0 left-0 bg-[#E89BA8] text-white text-[9px] font-bold px-2 py-1 z-10 uppercase tracking-widest">
+                                            Bestseller
                                         </div>
 
-                                        <div className="mt-auto w-full bg-[#FFD6DB] text-[#222222] font-bold text-xs md:text-sm text-center py-2.5 rounded-sm group-hover:bg-[#FFC2C9] transition-colors duration-300 uppercase tracking-wider">
-                                            Shop Now
+                                        {/* Heart Icon */}
+                                        <div className="absolute top-2 right-2 z-20 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm text-gray-400">
+                                            <Heart className="w-4 h-4" />
+                                        </div>
+
+                                        {/* Rating Badge Overlay */}
+                                        <div className="absolute bottom-2 left-2 z-10 bg-white/95 px-1.5 py-0.5 rounded-sm flex items-center gap-1 shadow-sm border border-gray-100">
+                                            <span className="text-[10px] font-bold text-gray-800">{rating}</span>
+                                            <Star className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
+                                            <div className="w-px h-2.5 bg-gray-300 mx-0.5" />
+                                            <span className="text-[10px] text-gray-500">{reviews}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Content Container (Mimicking ProductCard) */}
+                                    <div className="flex flex-col h-[115px] px-0">
+                                        <div className="flex items-baseline gap-2 mb-1">
+                                            <span className="text-[15px] font-bold text-gray-900">₹{priceMax?.toLocaleString('en-IN') || '0'}</span>
+                                            {originalPrice && (
+                                                <span className="text-[12px] text-gray-400 line-through font-medium">₹{originalPrice.toLocaleString('en-IN')}</span>
+                                            )}
+                                        </div>
+                                        
+                                        <h3 className="text-[12px] text-gray-700 line-clamp-1 h-[18px] group-hover/card:text-black transition-colors uppercase tracking-tight font-medium overflow-hidden mb-1">
+                                            {itemLabel}
+                                        </h3>
+
+                                        <div className="h-[15px] mb-2">
+                                            <p className="text-[9px] font-bold text-blue-600 uppercase tracking-wider">
+                                                PRICE DROP!
+                                            </p>
+                                        </div>
+                                        
+                                        {/* Action Button */}
+                                        <div className="mt-auto">
+                                            <div className="w-full bg-[#FFD9E0] text-[#8E2B45] font-bold text-[11px] py-2.5 rounded-none hover:bg-[#ffc2cd] transition-all duration-300 uppercase tracking-widest text-center">
+                                                Shop Now
+                                            </div>
                                         </div>
                                     </div>
                                 </Link>
@@ -131,4 +172,5 @@ const PriceRangeShowcase = () => {
 };
 
 export default PriceRangeShowcase;
+
 

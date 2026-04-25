@@ -6,6 +6,7 @@ import Navbar from '../components/Navbar';
 import CategoryNav from '../components/CategoryNav';
 import OfferStrip from '../components/OfferStrip';
 import Footer from '../components/Footer';
+import WhatsAppFloating from '../components/WhatsAppFloating';
 
 const UserLayout = () => {
     return (
@@ -20,6 +21,7 @@ const UserLayout = () => {
                 <Outlet />
             </main>
             <Footer />
+            <WhatsAppFloating />
         </div>
     );
 };

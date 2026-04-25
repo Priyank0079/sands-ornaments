@@ -384,22 +384,22 @@ const homeSections = [
       {
         id: 'diamond-story',
         name: 'Diamond Story',
-        label: 'Discover Your Unique Story in Diamonds',
-        subtitle: 'Timeless pieces for your most memorable moments.',
+        label: 'Celestial Silver Masterpieces',
+        subtitle: 'Artisan Crafted Jewels for Timeless Stories',
         image: heroMasterpieceDefault,
         path: '/shop',
         tag: '',
-        ctaLabel: 'Explore Collection'
+        ctaLabel: 'Discover Now'
       },
       {
         id: 'bridal-story',
         name: 'Bridal Story',
-        label: 'Exquisite Bridal Collection',
-        subtitle: 'Crafted for Elegance and Eternal Love',
+        label: 'The Royal Bridal Heritage',
+        subtitle: 'Ethereal Grace for Your Eternal Vows',
         image: familyHeroDefault,
         path: '/shop',
         tag: '',
-        ctaLabel: 'Explore Collection'
+        ctaLabel: 'Explore Bridal'
       }
     ]
   },
