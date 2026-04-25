@@ -6,7 +6,7 @@ import api from '../../../services/api';
 import toast from 'react-hot-toast';
 import ProductCard from '../components/ProductCard';
 import WhyChooseUs from '../components/WhyChooseUs';
-import { Heart, ShoppingBag, Star, Share2, Plus, Minus, Truck, ShieldCheck, Smile, Gift, ChevronDown, SlidersHorizontal, X, Camera, Check, ArrowLeft, ArrowRight, Droplets, Sparkles, Play } from 'lucide-react';
+import { Heart, ShoppingBag, Star, Share2, Plus, Minus, Truck, ShieldCheck, Smile, Gift, ChevronDown, SlidersHorizontal, X, Camera, Check, ArrowLeft, ArrowRight, Droplets, Sparkles, Play, Globe, Zap, Users } from 'lucide-react';
 import { COLLECTION_MOCK_PRODUCTS } from '../data/mockCollectionData';
 // Product video is backend-driven (optional) via `product.videoUrl`.
 import Loader from '../../shared/components/Loader';
@@ -238,6 +238,7 @@ const ProductDetails = () => {
     const [reviews, setReviews] = useState([]);
     const [reviewTitle, setReviewTitle] = useState('');
     const [reviewComment, setReviewComment] = useState('');
+    const [isLabGrownModalOpen, setIsLabGrownModalOpen] = useState(false);
     const sortedReviews = useMemo(() => {
         const parseReviewDate = (value) => {
             if (!value) return 0;
@@ -407,6 +408,8 @@ const ProductDetails = () => {
     // Derived State
     const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
     const isWishlisted = safeWishlist.some(item => item.id === product?.id);
+    const isLabGrown = product?.isLabGrown || product?.description?.toLowerCase().includes('lab grown') || id === '69e9eb6ea8370c07631e8161';
+
     const toggleSection = (section) => {
         setOpenSection(openSection === section ? null : section);
     };
@@ -758,7 +761,6 @@ const ProductDetails = () => {
                             </div>
 
 
-                            {/* Mobile Sticky Action Bar */}
                             <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-gray-100 p-4 z-[110] md:hidden flex gap-4 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] pb-safe">
                                 <div className="flex flex-col justify-center min-w-[110px]">
                                     <span className="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-0.5 leading-none">Price</span>
@@ -772,6 +774,21 @@ const ProductDetails = () => {
                                     {canAddToCart ? 'Add to Cart' : 'Out of Stock'}
                                 </button>
                             </div>
+
+                            {/* Lab Grown Diamond Info Link */}
+                            {isLabGrown && (
+                                <div className="pt-4">
+                                    <button 
+                                        onClick={() => setIsLabGrownModalOpen(true)}
+                                        className="w-full bg-[#FDF5F6] border border-[#EBCDD0]/40 rounded-2xl p-4 flex items-center justify-center gap-3 group transition-all hover:bg-white hover:shadow-md hover:border-[#EBCDD0]"
+                                    >
+                                        <Sparkles className="w-5 h-5 text-[#D39A9F]" />
+                                        <span className="text-[13px] font-bold text-gray-800 underline decoration-[#D39A9F]/30 underline-offset-4 group-hover:text-[#D39A9F] transition-colors">
+                                            All You Want to Know About the Lab Grown Diamonds
+                                        </span>
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                     </div>
@@ -1257,6 +1274,86 @@ const ProductDetails = () => {
                                     </div>
                                 </div>
                             )}
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Lab Grown Diamond Information Modal */}
+            {isLabGrownModalOpen && (
+                <div className="fixed inset-0 bg-black/60 z-[200] flex items-center justify-center p-4 backdrop-blur-md animate-in fade-in duration-300">
+                    <div className="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300 max-h-[90vh] flex flex-col">
+                        {/* Modal Header */}
+                        <div className="p-6 bg-[#FEF9F0] border-b border-[#F5E6CC] flex items-center justify-between sticky top-0 z-10">
+                            <div className="flex flex-col">
+                                <h3 className="font-display font-black text-xl text-[#5D4037] uppercase tracking-tight">All about Lab grown diamonds</h3>
+                            </div>
+                            <button 
+                                onClick={() => setIsLabGrownModalOpen(false)} 
+                                className="bg-white/80 hover:bg-white text-gray-500 hover:text-black rounded-full p-2 shadow-sm transition-all"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="p-8 overflow-y-auto space-y-10 custom-scrollbar">
+                            {/* Definition Section */}
+                            <div className="space-y-4">
+                                <h4 className="text-2xl font-bold text-gray-900 leading-tight">What are Lab grown diamonds?</h4>
+                                <p className="text-gray-600 leading-relaxed text-base font-sans">
+                                    <strong className="text-gray-900">Lab grown diamonds</strong>, also known as cultured diamonds, are <strong className="text-gray-900">real diamonds</strong> created in a controlled laboratory environment. They are identical to mined diamonds and share the same physical, chemical, and optical attributes.
+                                </p>
+                                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 flex items-start gap-3">
+                                    <div className="w-5 h-5 rounded-full bg-[#D39A9F]/20 flex items-center justify-center mt-0.5 shrink-0">
+                                        <Check className="w-3 h-3 text-[#D39A9F]" />
+                                    </div>
+                                    <p className="text-[13px] text-gray-500 font-medium">Same chemical, physical, and optical attributes as mined diamonds.</p>
+                                </div>
+                            </div>
+
+                            {/* Why Choose Section */}
+                            <div className="space-y-6">
+                                <h4 className="text-2xl font-bold text-gray-900 leading-tight">Why Choose Sands Lab-Grown Diamonds?</h4>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    {[
+                                        { icon: <Droplets className="w-6 h-6" />, title: "Saves Water", value: "408 litres", color: "bg-blue-50 text-blue-500" },
+                                        { icon: <Globe className="w-6 h-6" />, title: "Saves Environment", value: "100% Conflict Free", color: "bg-emerald-50 text-emerald-500" },
+                                        { icon: <Zap className="w-6 h-6" />, title: "Saves Energy", value: "288 MJ", color: "bg-amber-50 text-amber-500" },
+                                        { icon: <Users className="w-6 h-6" />, title: "Saves Human life", value: "Ethically Sourced", color: "bg-rose-50 text-rose-500" }
+                                    ].map((item, idx) => (
+                                        <div key={idx} className="flex flex-col items-center text-center p-4 rounded-2xl bg-white border border-gray-100 shadow-sm transition-transform hover:-translate-y-1">
+                                            <div className={`w-14 h-14 rounded-full ${item.color} flex items-center justify-center mb-4 shadow-inner`}>
+                                                {item.icon}
+                                            </div>
+                                            <h5 className="text-[11px] font-black text-gray-900 uppercase tracking-wider mb-1 leading-tight">{item.title}</h5>
+                                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">{item.value}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Final Assurance */}
+                            <div className="bg-[#FDF5F6] rounded-2xl p-6 border border-[#EBCDD0]/30 flex flex-col md:flex-row items-center gap-6">
+                                <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-sm shrink-0 border border-[#EBCDD0]/20">
+                                    <Sparkles className="w-10 h-10 text-[#D39A9F]" />
+                                </div>
+                                <div className="space-y-2">
+                                    <h5 className="font-bold text-gray-900">Brilliance without compromise.</h5>
+                                    <p className="text-[13px] text-gray-600 leading-relaxed font-sans">
+                                        Choosing lab-grown doesn't mean compromising on quality. It means choosing a future that is sustainable, ethical, and equally brilliant.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="p-6 border-t border-gray-100 bg-white">
+                            <button 
+                                onClick={() => setIsLabGrownModalOpen(false)}
+                                className="w-full bg-black text-white py-4 rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-[#8E2424] transition-all active:scale-95"
+                            >
+                                Close & Continue
+                            </button>
                         </div>
                     </div>
                 </div>

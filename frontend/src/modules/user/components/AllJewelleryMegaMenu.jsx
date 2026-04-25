@@ -87,31 +87,33 @@ const AllJewelleryMegaMenu = ({ resetMenu, initialView = 'main' }) => {
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 20 }}
-                        className="p-8"
+                        className="p-10 bg-[#FFFDF7]"
                     >
                         <button 
                             onClick={() => setView('main')}
-                            className="flex items-center gap-3 text-[#9C3D5E] font-bold text-[13px] uppercase tracking-widest mb-10 hover:translate-x-[-4px] transition-transform"
+                            className="flex items-center gap-3 text-[#B88B4A] font-bold text-[12px] uppercase tracking-[0.2em] mb-10 hover:translate-x-[-4px] transition-transform"
                         >
-                            <div className="w-8 h-8 rounded-full bg-[#FFF0F4] flex items-center justify-center">
+                            <div className="w-9 h-9 rounded-full bg-[#B88B4A]/10 flex items-center justify-center">
                                 <ArrowLeft className="w-4 h-4" />
                             </div>
                             Gold Purities
                         </button>
 
-                        <div className="grid grid-cols-4 gap-6">
+                        <div className="grid grid-cols-4 gap-8">
                             {goldPurities.map((item) => (
                                 <Link 
                                     key={item.id} 
                                     to={item.path} 
                                     onClick={resetMenu}
-                                    className="group flex flex-col items-center bg-white rounded-2xl border border-gray-100 p-2 pb-6 hover:shadow-2xl hover:border-[#9C3D5E]/20 transition-all duration-500"
+                                    className="group flex flex-col bg-white rounded-[2rem] overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-700 border border-[#B88B4A]/5"
                                 >
-                                    <div className="w-full aspect-square rounded-xl overflow-hidden mb-5 bg-[#FAF3F0]">
-                                        <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                    <div className="w-full aspect-[4/5] overflow-hidden bg-[#FAF3F0]">
+                                        <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
                                     </div>
-                                    <h4 className="text-[15px] font-black text-gray-950 mb-1">{item.name}</h4>
-                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{item.sub}</p>
+                                    <div className="p-6 text-center">
+                                        <h4 className="text-[14px] font-black text-gray-900 mb-1 uppercase tracking-wider">{item.name}</h4>
+                                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{item.sub}</p>
+                                    </div>
                                 </Link>
                             ))}
                         </div>
@@ -124,31 +126,33 @@ const AllJewelleryMegaMenu = ({ resetMenu, initialView = 'main' }) => {
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 20 }}
-                        className="p-8"
+                        className="p-10 bg-[#F9FAFB]"
                     >
                         <button 
                             onClick={() => setView('main')}
-                            className="flex items-center gap-3 text-[#9C3D5E] font-bold text-[13px] uppercase tracking-widest mb-10 hover:translate-x-[-4px] transition-transform"
+                            className="flex items-center gap-3 text-[#64748B] font-bold text-[12px] uppercase tracking-[0.2em] mb-10 hover:translate-x-[-4px] transition-transform"
                         >
-                            <div className="w-8 h-8 rounded-full bg-[#FFF0F4] flex items-center justify-center">
+                            <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center">
                                 <ArrowLeft className="w-4 h-4" />
                             </div>
                             Silver Purities
                         </button>
 
-                        <div className="grid grid-cols-2 gap-8 max-w-[600px] mx-auto">
+                        <div className="grid grid-cols-2 gap-10 max-w-[640px] mx-auto">
                             {silverPurities.map((item) => (
                                 <Link 
                                     key={item.id} 
                                     to={item.path} 
                                     onClick={resetMenu}
-                                    className="group flex flex-col items-center bg-white rounded-2xl border border-gray-100 p-2 pb-6 hover:shadow-2xl hover:border-[#9C3D5E]/20 transition-all duration-500"
+                                    className="group flex flex-col bg-white rounded-[2.5rem] overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-700 border border-gray-100"
                                 >
-                                    <div className="w-full aspect-square rounded-xl overflow-hidden mb-5 bg-[#FAF3F0]">
-                                        <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                    <div className="w-full aspect-[4/5] overflow-hidden bg-[#F3F4F6]">
+                                        <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
                                     </div>
-                                    <h4 className="text-[15px] font-black text-gray-950 mb-1">{item.name}</h4>
-                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{item.sub}</p>
+                                    <div className="p-8 text-center">
+                                        <h4 className="text-[16px] font-black text-gray-900 mb-1 uppercase tracking-widest">{item.name}</h4>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">{item.sub}</p>
+                                    </div>
                                 </Link>
                             ))}
                         </div>
