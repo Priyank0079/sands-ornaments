@@ -1,7 +1,7 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useShop } from '../../../context/ShopContext';
+import { useHomepageCms } from '../hooks/useHomepageCms';
 
 // Import images
 import newEarrings from '@assets/new_launch_earrings.png';
@@ -30,7 +30,7 @@ const resolveLaunchPath = (item, fallbackPath = '/shop') => {
 };
 
 const NewLaunchSection = () => {
-    const { homepageSections } = useShop();
+    const { data: homepageSections = {} } = useHomepageCms();
 
     const sectionData = homepageSections?.['new-launch'];
     const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];

@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useShop } from '../../../context/ShopContext';
+import { useHomepageCms } from '../hooks/useHomepageCms';
 
 // Importing assets for Banners (using available hero/trending assets)
 import bannerDaily from '@assets/banner_daily.png';
@@ -24,7 +24,7 @@ import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 import { ensureSilverHomePath } from '../utils/silverHomePaths';
 
 const StyleItYourWay = () => {
-    const { homepageSections } = useShop();
+    const { data: homepageSections = {} } = useHomepageCms();
     const sectionData = homepageSections?.['style-it-your-way'];
 
     const scrollRef = useRef(null);

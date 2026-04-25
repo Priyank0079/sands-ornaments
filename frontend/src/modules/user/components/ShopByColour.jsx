@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { useShop } from '../../../context/ShopContext';
+import { useHomepageCms } from '../hooks/useHomepageCms';
 
 import silverHeartImg from '@assets/categories/gold_pendants.png';
 import goldRingImg from '@assets/categories/rings.png';
@@ -62,7 +62,7 @@ const DEFAULT_COLOUR_CATEGORIES = [
 ];
 
 const ShopByColour = () => {
-    const { homepageSections } = useShop();
+    const { data: homepageSections = {} } = useHomepageCms();
     const sectionData = homepageSections?.['shop-by-colour'];
 
     const cards = useMemo(() => {

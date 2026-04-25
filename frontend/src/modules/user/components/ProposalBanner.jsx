@@ -2,12 +2,14 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
+import { useHomepageCms } from '../hooks/useHomepageCms';
 import bannerImgDefault from '@assets/proposal_banner_premium.png';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 import { ensureSilverHomePath } from '../utils/silverHomePaths';
 
 const ProposalBanner = () => {
-    const { homepageSections, categories } = useShop();
+    const { categories } = useShop();
+    const { data: homepageSections = {} } = useHomepageCms();
     const sectionData = homepageSections?.['proposal-rings'];
     const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
     const normalizedConfiguredItems = configuredItems

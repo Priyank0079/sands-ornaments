@@ -1,27 +1,27 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
 import ProductCard from '../components/ProductCard';
 import ProductSkeleton from '../components/ProductSkeleton';
 import Loader from '../../shared/components/Loader';
 import api from '../../../services/api';
+import { usePublicProductsQuery } from '../hooks/usePublicProductsQuery';
 import {
     Filter, ChevronDown, ShoppingBag, SlidersHorizontal,
     ArrowLeft, ArrowUpDown
 } from 'lucide-react';
 
-import menRing from '@assets/men_prod_ring.png';
-import menPendant from '@assets/men_prod_pendant.png';
-import menBracelet from '@assets/men_prod_bracelet.png';
-import menChain from '@assets/men_prod_chain.png';
 
-import womenEarrings from '@assets/cat_earrings.png';
-import womenPendant from '@assets/trending_modern.png';
-import womenRing from '@assets/prod_ring_main.png';
 
-const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
+const currencyText = (value) => `â‚¹${Number(value || 0).toLocaleString('en-IN')}`;
 
-const currencyText = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
+const stableKeyFromParams = (params) => {
+    const entries = Object.entries(params || {})
+        .filter(([, v]) => v !== undefined && v !== null && String(v) !== '')
+        .map(([k, v]) => [k, String(v)]);
+    entries.sort((a, b) => a[0].localeCompare(b[0]));
+    return entries.map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&');
+};
 
 const Shop = () => {
     const { products, categories, isLoading } = useShop();
@@ -44,8 +44,8 @@ const Shop = () => {
     const queryParams = new URLSearchParams(location.search);
     const isComingSoonQuery = queryParams.get('status') === 'coming-soon';
     const sourceQuery = queryParams.get('source');
-    const priceMaxQuery = queryParams.get('price_max');   // upper bound — e.g. price_max=3000
-    const priceMinQuery = queryParams.get('price_min');   // lower bound — e.g. price_min=1500
+    const priceMaxQuery = queryParams.get('price_max');   // upper bound â€” e.g. price_max=3000
+    const priceMinQuery = queryParams.get('price_min');   // lower bound â€” e.g. price_min=1500
     const productsQuery = queryParams.get('products');
     const limitQuery = queryParams.get('limit');
     const sortQuery = queryParams.get('sort');
@@ -88,7 +88,6 @@ const Shop = () => {
                         ids: validIds.join(','),
                         // Pinned CMS should not silently disappear if stock is 0.
                         inStockOnly: false,
-                        _t: Date.now()
                     }
                 });
                 const list = res?.data?.data?.products || [];
@@ -103,6 +102,125 @@ const Shop = () => {
 
         loadPinned();
     }, [productsQuery, requestedPinnedIds]);
+
+    const serverQueryParams = useMemo(() => {
+        if (productsQuery) return null; // pinned-products mode uses /by-ids
+
+        const qp = new URLSearchParams(location.search);
+        const metal = qp.get('metal');
+        const effectiveKarat = karatQuery || purityQuery || '';
+        const effectiveCategory = qp.get('category') || '';
+
+        const categorySlugParam = String(category || '').trim();
+        const isAudienceSlug = ['men', 'women', 'family'].includes(categorySlugParam.toLowerCase());
+        const categoryParam = effectiveCategory || (!isAudienceSlug ? categorySlugParam : '');
+
+        const isNewArrivalsRoute = location.pathname.includes('/new-arrivals');
+        const isTrendingRoute = location.pathname.includes('/trending');
+        const explicitTags = qp.get('tags');
+        const resolvedTags = explicitTags
+            || (isNewArrivalsRoute ? 'isNewArrival' : '')
+            || (isTrendingRoute ? 'isTrending' : '');
+
+        const audienceParam = ['men', 'women', 'family'].includes(String(sourceQuery || '').toLowerCase())
+            ? String(sourceQuery || '').toLowerCase()
+            : '';
+
+        const sortParam = sortQuery || '';
+
+        const priceMin = priceMinQuery || qp.get('minPrice') || qp.get('priceMin') || '';
+        const priceMax = priceMaxQuery || qp.get('maxPrice') || qp.get('priceMax') || '';
+
+        const resolvedLimit = Number(String(limitQuery || '').replace(/[^0-9]/g, '')) || 60;
+        const resolvedPage = Number(String(qp.get('page') || '').replace(/[^0-9]/g, '')) || 1;
+
+        return {
+            ...(searchQuery ? { search: searchQuery } : {}),
+            ...(categoryParam ? { category: categoryParam } : {}),
+            ...(metal ? { metal } : {}),
+            ...(effectiveKarat ? { karat: effectiveKarat } : {}),
+            ...(silverTypeQuery ? { silver_type: silverTypeQuery } : {}),
+            ...(resolvedTags ? { tags: resolvedTags } : {}),
+            ...(audienceParam ? { audience: audienceParam } : {}),
+            ...(priceMin ? { price_min: priceMin } : {}),
+            ...(priceMax ? { price_max: priceMax } : {}),
+            ...(sortParam ? { sort: sortParam } : {}),
+            inStockOnly: true,
+            page: resolvedPage,
+            limit: resolvedLimit,
+        };
+    }, [
+        productsQuery,
+        location.search,
+        category,
+        karatQuery,
+        purityQuery,
+        silverTypeQuery,
+        sourceQuery,
+        sortQuery,
+        searchQuery,
+        priceMinQuery,
+        priceMaxQuery,
+        limitQuery,
+        location.pathname,
+    ]);
+
+    const {
+        data: serverProductsPayload,
+        isLoading: isServerProductsLoading,
+        isError: isServerProductsError,
+        error: serverProductsError,
+        refetch: refetchServerProducts,
+    } = usePublicProductsQuery(serverQueryParams || {}, { enabled: Boolean(serverQueryParams) });
+ 
+    const serverProducts = serverProductsPayload?.products || [];
+    const canUseServerProducts = Boolean(serverQueryParams) && !isServerProductsLoading && !isServerProductsError;
+    const serverPagination = serverProductsPayload?.pagination || null;
+    const serverModeEnabled = Boolean(serverQueryParams) && !productsQuery;
+    const currentServerPage = Number(String(queryParams.get('page') || '1').replace(/[^0-9]/g, '')) || 1;
+    const [serverAccumulatedProducts, setServerAccumulatedProducts] = useState([]);
+
+    const serverFilterKey = useMemo(() => {
+        if (!serverQueryParams) return '';
+        const { page: _page, ...rest } = serverQueryParams;
+        return stableKeyFromParams(rest);
+    }, [serverQueryParams]);
+
+    useEffect(() => {
+        if (!serverModeEnabled) return;
+        setServerAccumulatedProducts([]);
+        if (currentServerPage !== 1) {
+            updateShopQuery({ page: 1 });
+        }
+        // Intentionally ignore updateShopQuery in deps to avoid loop.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [serverFilterKey, serverModeEnabled]);
+
+    useEffect(() => {
+        if (!serverModeEnabled) return;
+        if (!canUseServerProducts) return;
+
+        setServerAccumulatedProducts((prev) => {
+            const incoming = Array.isArray(serverProducts) ? serverProducts : [];
+            if (currentServerPage <= 1) return incoming;
+
+            const map = new Map((prev || []).map((p) => [String(p?.id || p?._id), p]));
+            incoming.forEach((p) => {
+                const key = String(p?.id || p?._id);
+                if (key && !map.has(key)) map.set(key, p);
+            });
+            return Array.from(map.values());
+        });
+    }, [serverModeEnabled, canUseServerProducts, serverProducts, currentServerPage]);
+
+    const productsToRender = useMemo(() => {
+        if (productsQuery) return pinnedProducts;
+        if (serverModeEnabled) {
+            if (serverAccumulatedProducts.length > 0) return serverAccumulatedProducts;
+            return serverProducts;
+        }
+        return filteredProducts;
+    }, [productsQuery, pinnedProducts, serverModeEnabled, serverAccumulatedProducts, serverProducts, filteredProducts]);
 
     useEffect(() => {
         const categoryQuery = queryParams.get('category');
@@ -351,13 +469,13 @@ const Shop = () => {
         if (priceMaxQuery && priceMinQuery) {
             const parsedMin = Number(String(priceMinQuery).replace(/[^0-9]/g, ''));
             const parsedMax = Number(String(priceMaxQuery).replace(/[^0-9]/g, ''));
-            title = `₹${parsedMin.toLocaleString('en-IN')} – ₹${parsedMax.toLocaleString('en-IN')}`;
+            title = `â‚¹${parsedMin.toLocaleString('en-IN')} â€“ â‚¹${parsedMax.toLocaleString('en-IN')}`;
         } else if (priceMaxQuery) {
             const parsedPrice = Number(String(priceMaxQuery).replace(/[^0-9]/g, ''));
-            title = `Under ₹${parsedPrice.toLocaleString('en-IN')}`;
+            title = `Under â‚¹${parsedPrice.toLocaleString('en-IN')}`;
         } else if (priceMinQuery) {
             const parsedMin = Number(String(priceMinQuery).replace(/[^0-9]/g, ''));
-            title = `Above ₹${parsedMin.toLocaleString('en-IN')}`;
+            title = `Above â‚¹${parsedMin.toLocaleString('en-IN')}`;
         }
         if (productsQuery) {
             if (pinnedProducts.length > 0) {
@@ -397,6 +515,11 @@ const Shop = () => {
         }
 
         setPageTitle(title);
+
+        if (canUseServerProducts) {
+            setFilteredProducts([...serverProducts]);
+            return;
+        }
 
         let result = baseProducts;
 
@@ -474,117 +597,6 @@ const Shop = () => {
             });
         }
 
-        const menDummyProducts = [
-            {
-                id: 'p1',
-                name: "Silver Fibonacci Flow Ring For Him",
-                price: 2899,
-                originalPrice: 4699,
-                discountPrice: 1739,
-                image: menRing,
-                rating: 4.6,
-                reviews: 107,
-                isNew: true,
-                category: "Rings",
-                categorySlug: "rings",
-                metal: "silver",
-                variants: [{ id: 'p1-v1', price: 2899, mrp: 4699 }]
-            },
-            {
-                id: 'p2',
-                name: "Silver Anjaneya Pendant With Box Chain",
-                price: 3799,
-                originalPrice: 6199,
-                discountPrice: 2279,
-                image: menPendant,
-                rating: 4.6,
-                reviews: 100,
-                isNew: false,
-                category: "Pendants",
-                categorySlug: "pendants",
-                metal: "silver",
-                variants: [{ id: 'p2-v1', price: 3799, mrp: 6199 }]
-            },
-            {
-                id: 'p4',
-                name: "Silver Trooper Bracelet For Him",
-                price: 4199,
-                originalPrice: 6999,
-                discountPrice: 2519,
-                image: menBracelet,
-                rating: 4.9,
-                reviews: 215,
-                isNew: true,
-                category: "Bracelets",
-                categorySlug: "bracelets",
-                metal: "silver",
-                variants: [{ id: 'p4-v1', price: 4199, mrp: 6999 }]
-            },
-            {
-                id: 'p5',
-                name: "Silver Statement Link Chain",
-                price: 6599,
-                originalPrice: 9999,
-                discountPrice: 3959,
-                image: menChain,
-                rating: 4.8,
-                reviews: 84,
-                isNew: false,
-                category: "Chains",
-                categorySlug: "chains",
-                metal: "silver",
-                variants: [{ id: 'p5-v1', price: 6599, mrp: 9999 }]
-            }
-        ];
-
-        const womenDummyProducts = [
-            {
-                id: 'w1',
-                name: "Rose Glow Sterling Drop Earrings",
-                price: 1899,
-                originalPrice: 3299,
-                discountPrice: 1699,
-                image: womenEarrings,
-                rating: 4.8,
-                reviews: 245,
-                isNew: true,
-                category: "Earrings",
-                categorySlug: "earrings",
-                metal: "silver",
-                variants: [{ id: 'w1-v1', price: 1899, mrp: 3299 }]
-            },
-            {
-                id: 'w2',
-                name: "Eternal Blossom Pendant Necklace",
-                price: 2499,
-                originalPrice: 4199,
-                discountPrice: 2249,
-                image: womenPendant,
-                rating: 4.9,
-                reviews: 180,
-                isNew: false,
-                category: "Pendants",
-                categorySlug: "pendants",
-                metal: "silver",
-                variants: [{ id: 'w2-v1', price: 2499, mrp: 4199 }]
-            },
-            {
-                id: 'w3',
-                name: "Infinite Love Stackable Silver Ring",
-                price: 1299,
-                originalPrice: 2499,
-                discountPrice: 1169,
-                image: womenRing,
-                rating: 4.6,
-                reviews: 92,
-                isNew: true,
-                category: "Rings",
-                categorySlug: "rings",
-                metal: "silver",
-                variants: [{ id: 'w3-v1', price: 1299, mrp: 2499 }]
-            }
-        ];
-
         // 5. Apply Limit (query)
         if (limitQuery) {
             const parsedLimit = Number(String(limitQuery).replace(/[^0-9]/g, ''));
@@ -593,41 +605,22 @@ const Shop = () => {
             }
         }
 
-        // 6. Inject Dummy Products for Men/Women Categories if empty
-        const isMenCategory = category?.toLowerCase() === 'men' ||
-            selectedCategory?.toLowerCase() === 'men' ||
-            sourceQuery === 'men' ||
-            location.pathname.includes('/men') ||
-            menDummyProducts.some(p => p.categorySlug === category || p.categorySlug === selectedCategory?.toLowerCase());
-
-        const isWomenCategory = category?.toLowerCase() === 'women' ||
-            category?.toLowerCase() === 'womens' ||
-            selectedCategory?.toLowerCase() === 'women' ||
-            sourceQuery === 'women' ||
-            location.pathname.includes('/women') ||
-            womenDummyProducts.some(p => p.categorySlug === category || p.categorySlug === selectedCategory?.toLowerCase());
-
-        if (result.length === 0 && isMenCategory) {
-            result = menDummyProducts;
-            if (category && category !== 'men') {
-                result = result.filter(p => p.categorySlug === category);
-            } else if (selectedCategory && selectedCategory !== 'All' && selectedCategory !== 'Men') {
-                result = result.filter(p => p.category.toLowerCase() === selectedCategory.toLowerCase());
-            }
-            if (result.length === 0) result = menDummyProducts.slice(0, 2);
-        } else if (result.length === 0 && isWomenCategory) {
-            result = womenDummyProducts;
-            if (category && category !== 'women' && category !== 'womens') {
-                result = result.filter(p => p.categorySlug === category);
-            } else if (selectedCategory && selectedCategory !== 'All' && selectedCategory !== 'Women') {
-                result = result.filter(p => p.category.toLowerCase() === selectedCategory.toLowerCase());
-            }
-            if (result.length === 0) result = womenDummyProducts.slice(0, 3);
-        }
-
         setFilteredProducts([...result]); // Create new array to force re-render
 
-    }, [location, category, selectedCategory, priceRange, filterNewArrivals, filterTrending, sortBy, categories, products]);
+    }, [
+        location,
+        category,
+        selectedCategory,
+        priceRange,
+        filterNewArrivals,
+        filterTrending,
+        sortBy,
+        categories,
+        products,
+        canUseServerProducts,
+        serverProducts,
+        productsQuery,
+    ]);
 
     useEffect(() => {
         document.title = `${pageTitle} | Sands Ornaments - Pure 925 Silver Jewellery`;
@@ -647,8 +640,8 @@ const Shop = () => {
         const sortMap = {
             'Newest': 'latest',
             'Best Selling': 'most-sold',
-            'Price: Low to High': 'price-asc',
-            'Price: High to Low': 'price-desc'
+            'Price: Low to High': 'priceLtoH',
+            'Price: High to Low': 'priceHtoL'
         };
         updateShopQuery({ sort: sortMap[option] || null });
     };
@@ -695,6 +688,25 @@ const Shop = () => {
 
     return (
         <div className="bg-white min-h-screen relative">
+            {!productsQuery && isServerProductsError && (
+                <div className="mx-auto max-w-[1450px] px-4 pt-4">
+                    <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] text-amber-900 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <div>
+                            <span className="font-bold">Product list is using cached fallback data.</span>{' '}
+                            <span className="opacity-80">
+                                {serverProductsError?.response?.data?.message || serverProductsError?.message || ''}
+                            </span>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => refetchServerProducts()}
+                            className="shrink-0 rounded-lg bg-[#3E2723] px-4 py-2 text-[11px] font-black uppercase tracking-widest text-white hover:opacity-95"
+                        >
+                            Retry
+                        </button>
+                    </div>
+                </div>
+            )}
             <div className="container mx-auto px-4 pt-6">
                 <button
                     onClick={() => navigate(-1)}
@@ -710,7 +722,9 @@ const Shop = () => {
                 <div className="sticky top-[50px] md:top-[141px] z-30 bg-white pt-2 md:pt-4 flex flex-row justify-between items-center mb-4 md:mb-10 pb-2 md:pb-6 border-b border-[#EBCDD0] gap-4 transition-all duration-300">
                     <div className="text-left shrink-0">
                         <h1 className="text-2xl md:text-4xl lg:text-5xl font-serif font-medium text-black">{pageTitle}</h1>
-                        <p className="text-black mt-1 md:mt-2 text-xs md:text-base font-medium">{filteredProducts.length} Products Found</p>
+                        <p className="text-black mt-1 md:mt-2 text-xs md:text-base font-medium">
+                            {(serverModeEnabled && serverPagination?.total ? serverPagination.total : productsToRender.length)} Products Found
+                        </p>
                     </div>
 
                     <div className="hidden md:flex items-center gap-2 md:gap-4 shrink-0">
@@ -754,13 +768,13 @@ const Shop = () => {
 
 
                 {/* Product Grid */}
-                {(isLoading || isPinnedLoading) ? (
+                {(isLoading || isPinnedLoading || (!productsQuery && isServerProductsLoading && productsToRender.length === 0)) ? (
                     <div className="flex items-center justify-center py-20">
                         <Loader fullPage={false} />
                     </div>
                 ) : (() => {
-                    const isComingSoon = isComingSoonQuery || (selectedCategory !== 'All' && filteredProducts.length === 0);
-
+                    const isComingSoon = isComingSoonQuery;
+ 
                     if (isComingSoon) {
                         return (
                             <div className="flex flex-col items-center justify-center py-24 text-center animate-in fade-in zoom-in duration-500">
@@ -781,17 +795,32 @@ const Shop = () => {
                         );
                     }
 
-                    if (filteredProducts.length > 0) {
+                    if (productsToRender.length > 0) {
                         return (
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8 gap-y-8 md:gap-y-12">
-                                {filteredProducts.map((product) => (
-                                    <ProductCard
-                                        key={product.id}
-                                        product={product}
-                                        requireLogin={isMenFlow || isWomenFlow}
-                                        loginSource={isWomenFlow ? 'women' : 'men'}
-                                    />
-                                ))}
+                            <div>
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8 gap-y-8 md:gap-y-12">
+                                    {productsToRender.map((product) => (
+                                        <ProductCard
+                                            key={product.id || product._id}
+                                            product={product}
+                                            requireLogin={isMenFlow || isWomenFlow}
+                                            loginSource={isWomenFlow ? 'women' : 'men'}
+                                        />
+                                    ))}
+                                </div>
+
+                                {serverModeEnabled && serverPagination && Number(serverPagination.page) < Number(serverPagination.pages) && (
+                                    <div className="mt-10 flex justify-center">
+                                        <button
+                                            type="button"
+                                            onClick={() => updateShopQuery({ page: currentServerPage + 1 })}
+                                            disabled={isServerProductsLoading}
+                                            className="rounded-full bg-black text-white px-8 py-3 text-xs font-black uppercase tracking-widest hover:bg-[#D39A9F] transition-all shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
+                                        >
+                                            {isServerProductsLoading ? 'Loading...' : 'Load More'}
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         );
                     }

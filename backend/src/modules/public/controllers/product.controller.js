@@ -22,19 +22,65 @@ const getApprovedSellerScope = async () => {
       };
 };
 
+const clampInt = (value, fallback, { min, max } = {}) => {
+  const parsed = Number.parseInt(String(value ?? ""), 10);
+  const n = Number.isFinite(parsed) ? parsed : fallback;
+  const withMin = typeof min === "number" ? Math.max(min, n) : n;
+  return typeof max === "number" ? Math.min(max, withMin) : withMin;
+};
+
+const normalizeGoldKarat = (value) => {
+  const digits = String(value || "").replace(/[^0-9]/g, "");
+  return digits || "";
+};
+
+const normalizeSilverTier = (value) => {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (!normalized) return "";
+  if (normalized === "sterling" || normalized === "925" || normalized.includes("sterling")) return "sterling";
+  if (normalized === "fine" || normalized.includes("fine")) return "fine";
+  return "";
+};
+
 /**
  * GET /api/products
- * Query Params: search, category, subcategory, minPrice, maxPrice, tags, sort, page, limit
+ * Query Params:
+ * - search
+ * - category (id/slug/name)
+ * - metal (matches Product.material)
+ * - karat (gold purity: 14/18/22/24)
+ * - silver_type (fine|sterling)
+ * - price_min/price_max (aliases for minPrice/maxPrice)
+ * - minPrice/maxPrice
+ * - audience (men,women,family,unisex)
+ * - tags (isTrending,isNewArrival,...)
+ * - sort (priceLtoH,priceHtoL,rating,newest,latest,most-sold,random)
+ * - page, limit
  */
 exports.getProducts = async (req, res) => {
   try {
     const { 
-      search, category, minPrice, maxPrice, 
-      tags, sort, inStockOnly = "false", page = 1, limit = 20 
+      search,
+      category,
+      metal,
+      karat,
+      silver_type,
+      audience,
+      tags,
+      sort,
+      inStockOnly = "false",
+      page = 1,
+      limit = 20
     } = req.query;
 
     const query = { status: "Active", active: { $ne: false } };
     const andFilters = [await getApprovedSellerScope()];
+
+    const effectiveMinPrice = req.query.minPrice ?? req.query.price_min ?? req.query.priceMin ?? null;
+    const effectiveMaxPrice = req.query.maxPrice ?? req.query.price_max ?? req.query.priceMax ?? null;
+
+    const resolvedPage = clampInt(page, 1, { min: 1, max: 100000 });
+    const resolvedLimit = clampInt(limit, 20, { min: 1, max: 60 });
 
     // 1. Text Search
     if (search) {
@@ -61,10 +107,46 @@ exports.getProducts = async (req, res) => {
     }
 
     // 3. Price Range Filter (matches any variant price)
-    if (minPrice || maxPrice) {
+    if (effectiveMinPrice || effectiveMaxPrice) {
       query["variants.price"] = {};
-      if (minPrice) query["variants.price"].$gte = Number(minPrice);
-      if (maxPrice) query["variants.price"].$lte = Number(maxPrice);
+      if (effectiveMinPrice) query["variants.price"].$gte = Number(effectiveMinPrice);
+      if (effectiveMaxPrice) query["variants.price"].$lte = Number(effectiveMaxPrice);
+    }
+
+    // 3.1 Metal + purity filters
+    if (metal) {
+      const normalized = String(metal || "").trim().toLowerCase();
+      // material is stored like "Silver" / "Gold" / etc. Keep this case-insensitive exact match.
+      query.material = { $regex: `^${normalized}$`, $options: "i" };
+
+      const normalizedKarat = normalizeGoldKarat(karat);
+      if (normalized === "gold" && normalizedKarat) {
+        query.goldCategory = String(normalizedKarat);
+      }
+
+      const tier = normalizeSilverTier(silver_type);
+      if (normalized === "silver" && tier) {
+        if (tier === "sterling") {
+          query.silverCategory = { $regex: "^(925|925\\s+sterling\\s+silver)$", $options: "i" };
+        } else if (tier === "fine") {
+          // Treat all other silver categories as fine (including empty), but exclude sterling.
+          query.silverCategory = { $not: { $regex: "^(925|925\\s+sterling\\s+silver)$", $options: "i" } };
+        }
+      }
+    }
+
+    // 3.2 Audience scope (men/women/family/unisex). Include unisex by default.
+    if (audience) {
+      const requested = String(audience || "")
+        .split(",")
+        .map((v) => String(v || "").trim().toLowerCase())
+        .filter(Boolean);
+      if (requested.length > 0) {
+        // If requesting men/women, include unisex too (matches frontend logic).
+        const expanded = new Set(requested);
+        expanded.add("unisex");
+        query.audience = { $in: Array.from(expanded) };
+      }
     }
 
     // 4. Tags Filter (e.g. tags=isTrending,isNewArrival)
@@ -85,10 +167,15 @@ exports.getProducts = async (req, res) => {
     let sortOption = { createdAt: -1 }; // Default: Newest
     if (sort) {
       switch (sort) {
+        case "price-asc": sortOption = { "variants.0.price": 1 }; break;   // legacy frontend links
+        case "price-desc": sortOption = { "variants.0.price": -1 }; break; // legacy frontend links
         case "priceLtoH": sortOption = { "variants.0.price": 1 }; break;
         case "priceHtoL": sortOption = { "variants.0.price": -1 }; break;
         case "rating":    sortOption = { rating: -1 }; break;
         case "newest":    sortOption = { createdAt: -1 }; break;
+        case "latest":    sortOption = { createdAt: -1 }; break;
+        case "most-sold": sortOption = { sold: -1, createdAt: -1 }; break;
+        case "random":    sortOption = null; break;
       }
     }
 
@@ -97,12 +184,21 @@ exports.getProducts = async (req, res) => {
     }
 
     // 6. Execute Query with Pagination
-    const products = await Product.find(query)
-      .select("name slug productCode brand images videoUrl variants tags rating reviewCount categories category categorySlug categoryId navShopByCategory weight weightUnit goldCategory silverCategory material audience")
-      .populate("categories", "name slug")
-      .sort(sortOption)
-      .limit(limit * 1)
-      .skip((page - 1) * limit);
+    let products = [];
+    if (sortOption) {
+      products = await Product.find(query)
+        .select("name slug productCode brand images videoUrl variants tags rating reviewCount categories category categorySlug categoryId navShopByCategory weight weightUnit goldCategory silverCategory material audience sold createdAt updatedAt")
+        .populate("categories", "name slug")
+        .sort(sortOption)
+        .limit(resolvedLimit)
+        .skip((resolvedPage - 1) * resolvedLimit);
+    } else {
+      // random: sample results (pagination is not deterministic; we return a random page-1 slice).
+      products = await Product.aggregate([
+        { $match: query },
+        { $sample: { size: resolvedLimit } },
+      ]);
+    }
 
     const total = await Product.countDocuments(query);
 
@@ -110,9 +206,9 @@ exports.getProducts = async (req, res) => {
       products: products.map((product) => normalizeProductForResponse(product)),
       pagination: {
         total,
-        page: Number(page),
-        limit: Number(limit),
-        pages: Math.ceil(total / limit)
+        page: Number(resolvedPage),
+        limit: Number(resolvedLimit),
+        pages: Math.ceil(total / resolvedLimit)
       }
     }, "Products retrieved successfully");
 

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, ChevronRight, ChevronLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
+import { useHomepageCms } from '../hooks/useHomepageCms';
 import ProductCard from './ProductCard';
 import { COLLECTION_MOCK_PRODUCTS } from '../data/mockCollectionData';
 import bannerModel from '@assets/gift_wife_silver.png';
@@ -19,7 +20,8 @@ const defaultHeroItem = {
 };
 
 const MostGifted = () => {
-    const { homepageSections, products } = useShop();
+    const { products } = useShop();
+    const { data: homepageSections = {} } = useHomepageCms();
     const scrollRef = React.useRef(null);
 
     const sectionData = homepageSections?.['most-gifted'];

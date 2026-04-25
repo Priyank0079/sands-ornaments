@@ -2,7 +2,7 @@ import React, { useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
-import { useShop } from '../../../context/ShopContext';
+import { useHomepageCms } from '../hooks/useHomepageCms';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 
 import ringsImg from '@assets/categories/rings.png';
@@ -28,7 +28,7 @@ const LAUNCH_CATEGORIES = [
 
 const SilverNewLaunchGrid = () => {
     const scrollRef = useRef(null);
-    const { homepageSections } = useShop();
+    const { data: homepageSections = {} } = useHomepageCms();
     const sectionData = homepageSections?.['silver-new-launch-grid'];
     const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Star, Quote } from 'lucide-react';
-import { useShop } from '../../../context/ShopContext';
+import { useHomepageCms } from '../hooks/useHomepageCms';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 
 // Import local high-end customer portraits
@@ -40,7 +40,7 @@ const TESTIMONIALS = [
 ];
 
 const Testimonials = () => {
-    const { homepageSections } = useShop();
+    const { data: homepageSections = {} } = useHomepageCms();
     const sectionData = homepageSections?.testimonials;
     const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
     const displayItems = configuredItems.length > 0

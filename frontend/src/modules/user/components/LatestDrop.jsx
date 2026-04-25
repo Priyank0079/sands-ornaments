@@ -2,11 +2,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
+import { useHomepageCms } from '../hooks/useHomepageCms';
 import ProductCard from './ProductCard';
 import { COLLECTION_MOCK_PRODUCTS } from '../data/mockCollectionData';
 
 const LatestDrop = () => {
-    const { homepageSections, products } = useShop();
+    const { products } = useShop();
+    const { data: homepageSections = {} } = useHomepageCms();
     const scrollRef = React.useRef(null);
 
     const sectionData = homepageSections?.['latest-drop'];

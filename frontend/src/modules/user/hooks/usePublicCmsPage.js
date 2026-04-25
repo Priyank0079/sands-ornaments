@@ -18,8 +18,5 @@ export const usePublicCmsPage = (pageKey) => {
     // Keep content reasonably fresh without spamming.
     staleTime: 30 * 1000,
     retry: 1,
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
   });
 };
-

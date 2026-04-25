@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Gem, RotateCcw, Truck, FileText, Shield, Gift, Sparkles, Lock, CreditCard } from 'lucide-react';
-import { useShop } from '../../../context/ShopContext';
+import { useHomepageCms } from '../hooks/useHomepageCms';
 
 const iconMap = {
     gem: Gem,
@@ -47,7 +47,7 @@ const FALLBACK_PROMISES = [
 ];
 
 const BrandPromises = () => {
-    const { homepageSections } = useShop();
+    const { data: homepageSections = {} } = useHomepageCms();
     const sectionData = homepageSections?.['brand-promises'];
 
     const promises = Array.isArray(sectionData?.items) && sectionData.items.length > 0

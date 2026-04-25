@@ -2,7 +2,7 @@ import React, { useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
-import { useShop } from '../../../context/ShopContext';
+import { useHomepageCms } from '../hooks/useHomepageCms';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 
 // Import thematic assets
@@ -92,7 +92,7 @@ const SILVER_STYLE_CATEGORIES = [
 const SilverCollectionSection = () => {
     const navigate = useNavigate();
     const scrollRef = useRef(null);
-    const { homepageSections } = useShop();
+    const { data: homepageSections = {} } = useHomepageCms();
     const sectionData = homepageSections?.['silver-collection'];
 
     const bannerData = {

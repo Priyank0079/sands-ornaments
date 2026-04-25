@@ -1,7 +1,7 @@
 import React, { useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useShop } from '../../../context/ShopContext';
+import { useHomepageCms } from '../hooks/useHomepageCms';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 import { homeCategoryGridDefaults } from '../utils/homeCategoryGridDefaults';
 
@@ -17,7 +17,7 @@ const normalizeItems = (items = []) => items
 
 const CategoryGrid = () => {
     const scrollRef = useRef(null);
-    const { homepageSections } = useShop();
+    const { data: homepageSections = {} } = useHomepageCms();
     const sectionData = homepageSections?.['category-grid'];
 
     const categories = useMemo(() => {

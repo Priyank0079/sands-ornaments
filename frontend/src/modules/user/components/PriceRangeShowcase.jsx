@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useShop } from '../../../context/ShopContext';
+import { useHomepageCms } from '../hooks/useHomepageCms';
 
 import price999 from '@assets/price_under_999.png';
 import price1999 from '@assets/price_under_1999.png';
@@ -17,7 +17,7 @@ const priceRanges = [
 ];
 
 const PriceRangeShowcase = () => {
-    const { homepageSections } = useShop();
+    const { data: homepageSections = {} } = useHomepageCms();
 
     const sectionData = homepageSections?.['price-range-showcase'];
 

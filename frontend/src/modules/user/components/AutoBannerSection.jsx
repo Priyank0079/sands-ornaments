@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { useShop } from '../../../context/ShopContext';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
+import { useHomepageCms } from '../hooks/useHomepageCms';
 
 import bannerMasterpiece from '@assets/hero/hero_masterpiece.png';
 import bannerBridal from '@assets/hero/bridal_royal.png';
@@ -23,7 +23,7 @@ const banners = [
 ];
 
 const AutoBannerSection = () => {
-    const { homepageSections } = useShop();
+    const { data: homepageSections = {} } = useHomepageCms();
     const sectionData = homepageSections?.['auto-banner-section'];
     const dynamicBanners = useMemo(() => {
         const items = Array.isArray(sectionData?.items) ? sectionData.items : [];
