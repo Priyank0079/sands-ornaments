@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useShop } from '../../../context/ShopContext';
+import { useHomepageCms } from '../hooks/useHomepageCms';
 import haldiImgDefault from '@assets/home_occasions/home_haldi.png';
 import sangeetImgDefault from '@assets/home_occasions/home_sangeet.png';
 import receptionImgDefault from '@assets/home_occasions/home_reception.png';
@@ -10,7 +10,7 @@ import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 import { ensureSilverHomePath } from '../utils/silverHomePaths';
 
 const OccasionalSpecial = () => {
-    const { homepageSections } = useShop();
+    const { data: homepageSections = {} } = useHomepageCms();
     const sectionData = homepageSections?.['curated-for-you'];
 
     // Default categories if none managed

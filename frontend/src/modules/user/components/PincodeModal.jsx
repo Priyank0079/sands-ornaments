@@ -37,11 +37,10 @@ const PincodeModal = () => {
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 toast.dismiss();
-                // In a real app, we would reverse geocode the lat/lng to get a pincode
-                // For now, let's just simulate finding a pincode or setting a 'detected' state
-                updatePincode('400001'); // Mumbai placeholder
-                setIsPincodeModalOpen(false);
-                toast.success("Location detected successfully!");
+                // Production-safe behavior: we don't guess a pincode without reverse geocoding.
+                // If/when we add a real geocode provider, we can auto-fill.
+                console.log('Geolocation detected:', position?.coords);
+                toast.success("Location detected. Please enter your pincode.");
             },
             (error) => {
                 toast.dismiss();

@@ -2,6 +2,7 @@ import React, { useMemo, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
+import { useHomepageCms } from '../hooks/useHomepageCms';
 
 import ProductCard from './ProductCard';
 
@@ -15,7 +16,8 @@ const ensureGoldPath = (rawPath = '') => {
 
 const BestStylesSection = ({ sectionData = null }) => {
     const scrollRef = useRef(null);
-    const { products, activeMetal, homepageSections } = useShop();
+    const { products, activeMetal } = useShop();
+    const { data: homepageSections = {} } = useHomepageCms();
     const section = sectionData || homepageSections?.['best-styles'];
     const settings = section?.settings || {};
     const isGoldSection = section?.pageKey === 'gold-collection' || String(section?.sectionId || '').startsWith('gold-collection:');

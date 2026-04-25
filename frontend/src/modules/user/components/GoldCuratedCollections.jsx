@@ -24,7 +24,8 @@ const collections = [
         id: 2, 
         title: "24KT Gold Essence", 
         video: "/Screen Recording 2026-04-11 150529.mp4", 
-        link: "/shop?purity=24k", 
+        // Ensure gold-only filtering: backend applies karat only when metal=gold.
+        link: "/shop?metal=gold&karat=24", 
         type: 'video' 
     },
     { 

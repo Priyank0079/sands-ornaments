@@ -1,218 +1,98 @@
-import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, ArrowLeft, Heart, ShoppingBag, Star } from 'lucide-react';
+import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useShop } from '../../../context/ShopContext';
-import { COLLECTION_MOCK_PRODUCTS } from '../data/mockCollectionData.js';
-
-// Import diverse assets for categories
-import goldBanner from '@assets/banner_party.png'; 
-import silverBanner from '@assets/banner_office.png';
-
-// Sub-category images (Gold)
-import img24k from '@assets/cat_pendant.png';
-import img22k from '@assets/cat_rings.png';
-import img18k from '@assets/cat_bracelets.png';
-import img14k from '@assets/cat_earrings.png';
-
-// Sub-category images (Silver)
-import imgSterling from '@assets/silver_earrings_product.png';
-import imgSilver from '@assets/cat_anklets.png';
-
 import Loader from '../../shared/components/Loader';
 
+import fallbackCategoryImage from '@assets/cat_all_premium.png';
+
+const toSlug = (value) => String(value || '').trim();
+
 const JewelleryCollectionsPage = () => {
-    const { products, categories, activeMetal } = useShop();
-    const [viewLevel, setViewLevel] = useState('CATEGORIES');
-    const [selectedCategory, setSelectedCategory] = useState(null);
-    const [loading, setLoading] = useState(true);
+  const { categories = [], isLoading } = useShop();
 
-    React.useEffect(() => {
-        const timer = setTimeout(() => setLoading(false), 800);
-        return () => clearTimeout(timer);
-    }, [activeMetal]);
+  const visibleCategories = useMemo(() => {
+    return (categories || [])
+      .filter((cat) => cat?.isActive !== false && cat?.showInCollection !== false)
+      .sort((a, b) => Number(a?.sortOrder ?? 0) - Number(b?.sortOrder ?? 0)
+        || String(a?.name || '').localeCompare(String(b?.name || '')));
+  }, [categories]);
 
-    const goldSubCategories = [
-        { id: '24k', name: '24K Gold', description: 'Pure 99.9% Gold', purity: '24k', image: img24k },
-        { id: '22k', name: '22K Gold', description: 'Premium Hallmarked', purity: '22k', image: img22k },
-        { id: '18k', name: '18K Gold', description: 'Luxury Design', purity: '18k', image: img18k },
-        { id: '14k', name: '14K Gold', description: 'Daily Elegance', purity: '14k', image: img14k },
-    ];
+  if (isLoading) return <Loader />;
 
-    const silverSubCategories = [
-        { id: 'sterling', name: 'Sterling Silver', description: '925 Hallmarked', purity: 'sterling', image: imgSterling },
-        { id: 'silver', name: 'Fine Silver', description: 'Pure & Simple', purity: 'pure', image: imgSilver },
-    ];
-
-    const handleCategoryClick = (category) => {
-        setSelectedCategory(category);
-        setViewLevel('PRODUCTS');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    const goBack = () => {
-        if (viewLevel === 'PRODUCTS') {
-            setViewLevel('CATEGORIES');
-            setSelectedCategory(null);
-        }
-    };
-
-    const filteredProducts = useMemo(() => {
-        let list = products.filter(p => {
-            const metalMatch = String(p.metal || '').toLowerCase() === String(activeMetal || '').toLowerCase();
-            const purityMatch = String(p.purity || '').toLowerCase().includes(String(selectedCategory?.purity || '').toLowerCase());
-            return metalMatch && (selectedCategory?.purity ? purityMatch : true);
-        }).map(p => ({
-            ...p,
-            id: p._id || p.id,
-            displayPrice: p.salePrice || p.price || 0,
-            displayImage: p.images?.[0] || p.image || null
-        }));
-
-        if (selectedCategory?.purity) {
-            const mocks = COLLECTION_MOCK_PRODUCTS[selectedCategory.purity] || [];
-            const processedMocks = mocks.map(m => ({
-                id: m.id,
-                name: m.name,
-                displayPrice: m.price,
-                displayImage: m.img,
-                isMock: true
-            }));
-            
-            list = [...processedMocks, ...list];
-        }
-
-        if (list.length === 0 && activeMetal) {
-             list = products.filter(p => String(p.metal || '').toLowerCase() === String(activeMetal || '').toLowerCase()).map(p => ({
-                ...p,
-                id: p._id || p.id,
-                displayPrice: p.salePrice || p.price || 0,
-                displayImage: p.images?.[0] || p.image || null
-            }));
-        }
-        
-        return list.slice(0, 12); 
-    }, [products, selectedCategory, activeMetal]);
-
-    const containerVariants = {
-        hidden: { opacity: 0 },
-        visible: { 
-            opacity: 1,
-            transition: { staggerChildren: 0.05 }
-        }
-    };
-
-    const itemVariants = {
-        hidden: { y: 10, opacity: 0 },
-        visible: { y: 0, opacity: 1 }
-    };
-
-    return (
-        <div className="min-h-screen bg-[#FDF5F6] pt-8 pb-20 px-4 md:px-8 font-sans">
-            <div className="container mx-auto max-w-6xl">
-                
-                {/* Clean Header with Back Button */}
-                <div className="flex items-center gap-5 mb-12">
-                    <button 
-                        onClick={goBack}
-                        className="w-10 h-10 flex items-center justify-center bg-[#FFF0F3] rounded-full text-[#8E2B45] hover:bg-[#FFE0E6] transition-colors"
-                    >
-                        <ArrowLeft className="w-5 h-5" />
-                    </button>
-                    <h1 className="text-[16px] md:text-[18px] font-medium text-[#8E2B45] uppercase tracking-[0.4em]">
-                        {viewLevel === 'CATEGORIES' ? `${activeMetal} Purities`.toUpperCase() : `${selectedCategory.name}`.toUpperCase()}
-                    </h1>
-                </div>
-
-                <AnimatePresence mode="wait">
-                    {viewLevel === 'CATEGORIES' && (
-                        <motion.div 
-                            key="categories"
-                            variants={containerVariants}
-                            initial={{ opacity: 0, y: 15 }}
-                            animate="visible"
-                            exit={{ opacity: 0, y: -15 }}
-                            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10"
-                        >
-                            {(activeMetal === 'gold' ? goldSubCategories : silverSubCategories).map((cat) => (
-                                <motion.div
-                                    key={cat.id}
-                                    variants={itemVariants}
-                                    onClick={() => handleCategoryClick(cat)}
-                                    className="group relative aspect-[1/1.2] rounded-[24px] overflow-hidden cursor-pointer shadow-md hover:shadow-2xl transition-all duration-700"
-                                >
-                                    {/* Full-Bleed Image with Slow Zoom */}
-                                    <img 
-                                        src={cat.image} 
-                                        alt={cat.name} 
-                                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-110"
-                                    />
-                                    
-                                    {/* Cinematic Bottom Gradient */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500" />
-
-                                    {/* Simple, Elegant Content Overlay */}
-                                    <div className="absolute bottom-0 left-0 right-0 p-8 flex flex-col items-start">
-                                        <h3 className="text-white text-xl md:text-2xl font-medium tracking-tight mb-3">
-                                            {cat.name}
-                                        </h3>
-                                        
-                                        <div className="flex items-center gap-4">
-                                            <span className="text-white/80 text-[10px] md:text-[11px] uppercase font-bold tracking-[0.2em]">
-                                                {cat.description}
-                                            </span>
-                                            <div className="h-[1px] w-0 bg-white/50 group-hover:w-12 transition-all duration-700 ease-out" />
-                                        </div>
-                                    </div>
-
-                                    {/* Subtle Overlay Border */}
-                                    <div className="absolute inset-0 border border-white/10 rounded-[24px] pointer-events-none" />
-                                </motion.div>
-                            ))}
-                        </motion.div>
-                    )}
-
-                    {viewLevel === 'PRODUCTS' && (
-                        <motion.div 
-                            key="products"
-                            variants={containerVariants}
-                            initial={{ opacity: 0, scale: 0.98 }}
-                            animate="visible"
-                            exit={{ opacity: 0 }}
-                            className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10"
-                        >
-                            {filteredProducts.map((p) => (
-                                <motion.div
-                                    key={p.id}
-                                    variants={itemVariants}
-                                    className="flex flex-col items-center text-center group"
-                                >
-                                    <Link to={`/product/${p.id}`} className="flex flex-col items-center w-full">
-                                        <div className="relative mb-4">
-                                            <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-white shadow-md group-hover:shadow-lg transition-all duration-300 group-hover:-translate-y-1">
-                                                <img src={p.displayImage || 'https://via.placeholder.com/300'} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                                            </div>
-                                        </div>
-                                        <h4 className="text-[10px] md:text-xs font-bold text-black uppercase tracking-wide line-clamp-1 group-hover:text-[#9C5B61] transition-colors">{p.name}</h4>
-                                        <p className="text-[9px] md:text-[10px] font-bold text-[#9C5B61] mt-1 tracking-widest">₹ {p.displayPrice?.toLocaleString()}</p>
-                                    </Link>
-                                </motion.div>
-                            ))}
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-
-            </div>
-
-            {/* Custom Styles to match Navbar */}
-            <style dangerouslySetInnerHTML={{ __html: `
-                .font-body {
-                    font-family: 'Lato', sans-serif;
-                }
-            `}} />
+  return (
+    <div className="min-h-screen bg-[#FDF5F6] pt-10 pb-20 px-4 md:px-8 font-sans">
+      <div className="container mx-auto max-w-6xl">
+        <div className="text-center mb-12 md:mb-16">
+          <h1 className="font-serif text-3xl md:text-5xl text-[#8E4A50] mb-4 tracking-tight">
+            Shop by Category
+          </h1>
+          <p className="text-gray-500 text-sm md:text-base max-w-2xl mx-auto font-light leading-relaxed">
+            Explore our catalogue by category. Each card takes you to the filtered shop page.
+          </p>
+          <div className="w-12 h-[1px] bg-[#D39A9F] mx-auto mt-6 opacity-60" />
         </div>
-    );
+
+        {visibleCategories.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center shadow-sm">
+            <h2 className="text-xl font-serif text-gray-900 mb-2">No categories available</h2>
+            <p className="text-sm text-gray-500">
+              Please check back later.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 md:gap-8">
+            {visibleCategories.map((cat, idx) => {
+              let slug = toSlug(cat?.slug || cat?.path);
+              slug = slug.replace(/^\/+/, '');
+              if (slug.toLowerCase().startsWith('category/')) {
+                slug = slug.slice('category/'.length);
+              }
+              const href = slug
+                ? `/category/${slug}`
+                : (cat?._id ? `/shop?category=${encodeURIComponent(String(cat._id))}` : '/shop');
+              const image = cat?.image || fallbackCategoryImage;
+
+              return (
+                <motion.div
+                  key={cat?._id || cat?.id || slug || cat?.name || idx}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: idx * 0.05 }}
+                >
+                  <Link to={href} className="group block text-center">
+                    <div className="relative aspect-square mb-4 transition-all duration-700">
+                      <div className="w-full h-full rounded-[2rem] overflow-hidden border border-gray-100/50 shadow-sm relative group-hover:shadow-[0_20px_40px_rgba(142,74,80,0.15)] group-hover:-translate-y-2 transition-all duration-500">
+                        <img
+                          src={image}
+                          alt={cat?.name || 'Category'}
+                          className="w-full h-full object-cover transition-transform duration-[1200ms] group-hover:scale-110"
+                        />
+
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#4A1015]/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                        <div className="absolute inset-0 border-0 group-hover:border-[8px] border-white/10 transition-all duration-500 rounded-[2rem] pointer-events-none" />
+                      </div>
+
+                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-500 z-20">
+                        <span className="bg-white text-[#8E4A50] px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-xl whitespace-nowrap">
+                          Explore
+                        </span>
+                      </div>
+                    </div>
+
+                    <h3 className="font-serif text-base md:text-lg text-[#111] group-hover:text-[#8E4A50] transition-colors duration-300 tracking-wide font-medium">
+                      {cat?.name || 'Category'}
+                    </h3>
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default JewelleryCollectionsPage;
-

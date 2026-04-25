@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Plus, Minus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useShop } from '../../../context/ShopContext';
+import { useHomepageCms } from '../hooks/useHomepageCms';
 
 const FAQSection = () => {
-    const { homepageSections } = useShop();
+    const { data: homepageSections = {} } = useHomepageCms();
     const [activeFaq, setActiveFaq] = useState(null);
 
     const FALLBACK_FAQS = [

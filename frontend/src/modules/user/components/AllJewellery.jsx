@@ -4,9 +4,11 @@ import { ShoppingBag } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
 import ProductCard from './ProductCard';
 import { matchesRequestedMetal } from '../utils/productMetal';
+import { useHomepageCms } from '../hooks/useHomepageCms';
 
 const AllJewellery = () => {
-    const { products = [], homepageSections } = useShop();
+    const { products = [] } = useShop();
+    const { data: homepageSections = {} } = useHomepageCms();
     const sectionData = homepageSections?.['all-jewellery'];
     const settings = sectionData?.settings || {};
     const productLimit = Number(settings.productLimit) > 0 ? Number(settings.productLimit) : 16;

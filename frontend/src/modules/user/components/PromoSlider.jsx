@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useShop } from '../../../context/ShopContext';
+import { useHomepageCms } from '../hooks/useHomepageCms';
 
 // Import Assets
 // Import Assets
@@ -56,7 +56,7 @@ const SLIDES = [
 ];
 
 const PromoSlider = () => {
-    const { homepageSections } = useShop();
+    const { data: homepageSections = {} } = useHomepageCms();
     const sectionData = homepageSections?.['hero-banners'];
     const dynamicSlides = Array.isArray(sectionData?.items)
         ? sectionData.items

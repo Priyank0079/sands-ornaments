@@ -28,7 +28,7 @@ const ChitChatSection = () => {
 
         setSubmitting(true);
         try {
-            const res = await api.post('/public/contact', {
+            const res = await api.post('public/contact', {
                 ...formData,
                 source: 'Homepage Chit Chat Form'
             });

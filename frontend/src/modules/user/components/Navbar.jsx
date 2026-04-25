@@ -31,6 +31,27 @@ const Navbar = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    // Sync the header toggle state with the current route/query, same as CategoryNav.
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const metalParam = String(params.get('metal') || '').trim().toLowerCase();
+        const karatParam = String(params.get('karat') || params.get('purity') || '').trim();
+        const silverTypeParam = String(params.get('silver_type') || '').trim();
+        const isGoldRoute = location.pathname.startsWith('/gold');
+        const desiredMetal = (
+            metalParam === 'gold'
+            || isGoldRoute
+            || (!metalParam && Boolean(karatParam))
+        ) ? 'gold' : (
+            metalParam === 'silver'
+            || (!metalParam && Boolean(silverTypeParam))
+        ) ? 'silver' : 'silver';
+
+        if (desiredMetal && desiredMetal !== activeMetal) {
+            updateActiveMetal(desiredMetal);
+        }
+    }, [activeMetal, location.pathname, location.search, updateActiveMetal]);
+
     const placeholders = useMemo(() => [
         "Search 'Rings'",
         "Search 'Pendants'",
@@ -97,7 +118,7 @@ const Navbar = () => {
                                 <span className="text-[11px] font-bold text-black leading-tight uppercase tracking-tight">Where to Deliver?</span>
                                 <div className="flex items-center gap-1.5 mt-0.5">
                                     <span className="text-[12px] text-gray-900 font-semibold">
-                                        {pincode ? `Deliver to ${pincode}` : 'Deliver to 454001'}
+                                        {pincode ? `Deliver to ${pincode}` : 'Enter Pincode'}
                                     </span>
                                     <ChevronDown className="w-3.5 h-3.5 text-gray-700" />
                                 </div>

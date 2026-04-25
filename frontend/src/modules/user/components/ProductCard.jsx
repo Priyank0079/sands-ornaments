@@ -50,17 +50,12 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
     // Dynamic Image Resolution - Prefer DB images; only use hardcoded fallbacks when DB has none.
     // Build a "real images" list first (DB-backed images), and only fall back to legacy fields if needed.
     // This avoids mixing a legacy/hardcoded `product.image` with DB images (which looks like 2 sources).
-    const dbImages = [
-        ...(product.images || []),
-        ...(product.variants || []).flatMap(v => v.variantImages || [])
-    ].filter(Boolean);
+    const productImages = Array.isArray(product.images) ? product.images.filter(Boolean) : [];
+    const variantImages = Array.isArray(product.variants)
+        ? product.variants.flatMap((v) => (Array.isArray(v?.variantImages) ? v.variantImages : [])).filter(Boolean)
+        : [];
 
-    const legacyImages = [product.image, product.img].filter(Boolean);
-
-    const allUniqueImages = Array.from(new Set([
-        ...dbImages,
-        ...legacyImages
-    ]));
+    const dbImages = productImages.length > 0 ? productImages : variantImages;
 
     const resolvePrimaryImage = () => {
         // 1) Use DB image when available.
@@ -82,9 +77,16 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
     const primaryImage = resolvePrimaryImage();
 
     const resolveSecondaryImage = () => {
-        // 1) If DB has 2+ images, use 2nd image for hover.
-        const dbHover = dbImages.find(img => img && img !== primaryImage);
-        if (dbHover) return dbHover;
+        // 1) Prefer product-level image #2 for hover (admin/seller-controlled).
+        if (productImages.length >= 2) {
+            return productImages[1];
+        }
+
+        // 2) If product images are missing, allow variants to provide a hover image.
+        if (productImages.length === 0) {
+            const variantHover = variantImages.find((img) => img && img !== primaryImage);
+            if (variantHover) return variantHover;
+        }
 
         // 2) If DB had no images and we are using hardcoded fallbacks, allow a hover fallback too.
         if (!dbImages[0]) {
@@ -120,7 +122,8 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
     // UI Label logic
     const categoryData = product.category;
     const categoryLabel = typeof categoryData === 'object' ? categoryData?.name : categoryData || '';
-    const metalLabel = product.metal?.toLowerCase() === 'gold' ? 'Gold' : 'Silver';
+    const materialLower = String(product?.material || product?.metal || '').trim().toLowerCase();
+    const metalLabel = materialLower === 'gold' ? 'Gold' : 'Silver';
     const collectionLabel = categoryLabel
         ? `925 ${metalLabel} ${categoryLabel}`
         : `925 ${metalLabel} Jewellery`;

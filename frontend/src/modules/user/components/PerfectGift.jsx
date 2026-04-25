@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
+import { useHomepageCms } from '../hooks/useHomepageCms';
 import ProductCard from './ProductCard';
 import bondWife from '@assets/bond_wife.png';
 import bondHusband from '@assets/bond_husband.png';
@@ -29,7 +30,8 @@ const FALLBACK_RECIPIENTS = [
 ];
 
 const PerfectGift = () => {
-    const { products, homepageSections } = useShop();
+    const { products } = useShop();
+    const { data: homepageSections = {} } = useHomepageCms();
     
     // Config for Top categories
     const bondSection = homepageSections?.['shop-by-bond'];

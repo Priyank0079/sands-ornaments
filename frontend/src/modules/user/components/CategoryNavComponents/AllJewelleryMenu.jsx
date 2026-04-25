@@ -7,6 +7,13 @@ const AllJewelleryMenu = ({ resetMenu }) => {
     const { categories } = useShop();
     const [hoveredCategory, setHoveredCategory] = useState('All');
 
+    const withQuery = (basePath, queryString) => {
+        const base = String(basePath || '').trim() || '/shop';
+        const qs = String(queryString || '').trim();
+        if (!qs) return base;
+        return `${base}${base.includes('?') ? '&' : '?'}${qs}`;
+    };
+
     const fallbackMainCategories = [
         { id: 'all',       name: 'All',                   path: '/shop' },
         { id: 'rings',     name: 'Rings',                 path: '/category/rings',     hasSub: true },
@@ -34,11 +41,19 @@ const AllJewelleryMenu = ({ resetMenu }) => {
             .sort((a, b) => Number(a?.sortOrder ?? 0) - Number(b?.sortOrder ?? 0)
                 || String(a?.name || '').localeCompare(String(b?.name || '')))
             .map((cat) => {
-                const slug = String(cat?.slug || cat?.path || '').trim();
+                let slug = String(cat?.slug || cat?.path || '').trim();
+                slug = slug.replace(/^\/+/, '');
+                if (slug.toLowerCase().startsWith('category/')) {
+                    slug = slug.slice('category/'.length);
+                }
+                const id = cat?._id || cat?.id || '';
+                const safePath = slug
+                    ? `/category/${slug}`
+                    : (id ? `/shop?category=${encodeURIComponent(String(id))}` : '/shop');
                 return {
-                    id: cat?._id || cat?.id || slug || cat?.name,
+                    id: id || slug || cat?.name,
                     name: cat?.name || '',
-                    path: slug ? `/category/${slug}` : '/shop',
+                    path: safePath,
                     hasSub: true
                 };
             })
@@ -81,9 +96,9 @@ const AllJewelleryMenu = ({ resetMenu }) => {
         {
             title: 'Shop by Metal',
             items: [
-                // Shop.jsx reads `metal` param — these were already correct
-                { name: '925 Silver', path: '/shop?metal=silver' },
-                { name: 'Pure Gold',  path: '/shop?metal=gold' },
+                // Align with purity behavior: 925 = sterling-only, pure gold = 24K.
+                { name: '925 Silver', path: '/shop?metal=silver&silver_type=sterling' },
+                { name: 'Pure Gold',  path: '/shop?metal=gold&karat=24' },
             ]
         },
         {
@@ -117,26 +132,27 @@ const AllJewelleryMenu = ({ resetMenu }) => {
             {
                 title: 'Shop by Price',
                 items: [
-                    { name: 'Under ₹1,500',    path: `${catPath}?price_max=1500` },
-                    { name: '₹1,500 – ₹3,000', path: `${catPath}?price_min=1500&price_max=3000` },
-                    { name: '₹3,000 – ₹5,000', path: `${catPath}?price_min=3000&price_max=5000` },
-                    { name: 'Above ₹5,000',    path: `${catPath}?price_min=5000` },
+                    { name: 'Under ₹1,500',    path: withQuery(catPath, 'price_max=1500') },
+                    { name: '₹1,500 – ₹3,000', path: withQuery(catPath, 'price_min=1500&price_max=3000') },
+                    { name: '₹3,000 – ₹5,000', path: withQuery(catPath, 'price_min=3000&price_max=5000') },
+                    { name: 'Above ₹5,000',    path: withQuery(catPath, 'price_min=5000') },
                 ]
             },
             {
                 title: 'Shop by Metal',
                 items: [
-                    { name: '925 Silver', path: `${catPath}?metal=silver` },
-                    { name: 'Pure Gold',  path: `${catPath}?metal=gold` },
+                    // Keep consistent with the ALL TYPE purity behavior.
+                    { name: '925 Silver', path: withQuery(catPath, 'metal=silver&silver_type=sterling') },
+                    { name: 'Pure Gold',  path: withQuery(catPath, 'metal=gold&karat=24') },
                 ]
             },
             {
                 title: 'Colours',
                 items: [
-                    { name: 'Silver',      path: `${catPath}?metal=silver` },
-                    { name: 'Gold Plated', path: `${catPath}?metal=gold` },
-                    { name: 'Rose Gold',   path: `${catPath}?search=rose+gold` },
-                    { name: 'Oxidised',    path: `${catPath}?search=oxidised` },
+                    { name: 'Silver',      path: withQuery(catPath, 'metal=silver') },
+                    { name: 'Gold Plated', path: withQuery(catPath, 'metal=gold') },
+                    { name: 'Rose Gold',   path: withQuery(catPath, 'search=rose+gold') },
+                    { name: 'Oxidised',    path: withQuery(catPath, 'search=oxidised') },
                 ]
             },
         ];

@@ -83,7 +83,7 @@ const ReplacementRequestPage = () => {
             formData.append('description', comments);
             selectedFiles.forEach((file) => formData.append('evidence', file));
 
-            await api.post('/user/replacements', formData, {
+            await api.post('user/replacements', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 

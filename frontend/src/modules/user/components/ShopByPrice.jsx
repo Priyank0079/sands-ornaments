@@ -1,14 +1,14 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useShop } from '../../../context/ShopContext';
+import { useHomepageCms } from '../hooks/useHomepageCms';
 
 import budgetEarrings from '../../../assets/promos/budget_earrings.png';
 import budgetPendant from '../../../assets/promos/budget_pendant.png';
 
 const ShopByPrice = () => {
     const navigate = useNavigate();
-    const { homepageSections } = useShop();
+    const { data: homepageSections = {} } = useHomepageCms();
     const sectionData = homepageSections?.['luxury-within-reach'];
 
     // Using the user's specific labels from the reference design
