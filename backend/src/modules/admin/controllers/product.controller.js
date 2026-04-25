@@ -22,6 +22,7 @@ const PRODUCT_UPDATE_WHITELIST = [
   "cardLabel", "cardBadge", "careTips", "silverCategory",
   "goldCategory", "weightUnit", "specifications", "supplierInfo",
   "huid", "sizes", "isSerialized", "paymentGatewayChargeBearer", "audience",
+  "diamondType",
   "videoUrl"
 ];
 
@@ -41,6 +42,12 @@ const normalizeSerialCodes = (codes = []) => {
 const countAvailableCodes = (codes = []) =>
   codes.filter(c => (c.status || "AVAILABLE") === "AVAILABLE").length;
 
+const normalizeDiamondType = (value) => {
+  const raw = String(value || "").trim().toLowerCase();
+  if (raw === "lab_grown" || raw === "natural" || raw === "none") return raw;
+  return "none";
+};
+
 const normalizeVariantFields = (variants = [], fallback = {}) => {
   const fallbackWeight = fallback.weight !== undefined && fallback.weight !== null
     ? Number(fallback.weight) || 0
@@ -49,6 +56,7 @@ const normalizeVariantFields = (variants = [], fallback = {}) => {
   return variants.map((variant) => ({
     ...variant,
     variantCode: variant.variantCode || "",
+    diamondType: normalizeDiamondType(variant.diamondType),
     variantImages: Array.isArray(variant.variantImages)
       ? variant.variantImages.filter(Boolean)
       : [],

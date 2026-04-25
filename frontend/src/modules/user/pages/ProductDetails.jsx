@@ -459,7 +459,13 @@ const ProductDetails = () => {
     // Derived State
     const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
     const isWishlisted = safeWishlist.some(item => item.id === product?.id);
-    const isLabGrown = product?.isLabGrown || product?.description?.toLowerCase().includes('lab grown') || id === '69e9eb6ea8370c07631e8161';
+
+    const currentVariant = selectedVariant || product?.variants?.[0] || {};
+    const diamondType = String(currentVariant?.diamondType || product?.diamondType || 'none').trim().toLowerCase();
+    const hasDiamonds =
+        Number(currentVariant?.diamondPrice || 0) > 0 ||
+        Number(currentVariant?.diamondCertificateCharge || 0) > 0;
+    const isLabGrown = diamondType === 'lab_grown' && hasDiamonds;
 
     const toggleSection = (section) => {
         setOpenSection(openSection === section ? null : section);

@@ -14,6 +14,7 @@
     "test:ops-integrity": "node scripts/ops-integrity-tests.js",
     "test:ops-e2e": "node scripts/ops-e2e-tests.js",
     "test:ops-errors": "node scripts/ops-error-tests.js",
+    "test:user-ui-api-smoke": "node scripts/user-ui-api-smoke.js",
     "migrate:product-variant-pricing:dry": "node scripts/migrate-product-variant-pricing.js",
     "migrate:product-variant-pricing": "node scripts/migrate-product-variant-pricing.js --apply",
     "migrate:product-pricing-formula:dry": "node scripts/migrate-product-pricing-formula.js",

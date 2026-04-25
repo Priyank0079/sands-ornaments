@@ -317,6 +317,7 @@ const SharedProductEditor = ({
         specifications: '',
         supplierInfo: '',
         paymentGatewayChargeBearer: 'seller',
+        diamondType: 'none',
         categories: [{ category: '' }],
         tags: {
             isNewArrival: false,
@@ -333,6 +334,7 @@ const SharedProductEditor = ({
                 hallmarkingCharge: '0',
                 diamondCertificateCharge: '0',
                 diamondPrice: '0',
+                diamondType: 'none',
                 mrp: '0',
                 price: '',
                 stock: 0,
@@ -508,6 +510,7 @@ const SharedProductEditor = ({
                         weight: data.weight || '',
                         weightUnit: data.weightUnit || 'Grams',
                         paymentGatewayChargeBearer: data.paymentGatewayChargeBearer || 'seller',
+                        diamondType: data.diamondType || 'none',
                         categories: normalizedCategories.slice(0, 1),
                         variants: data.variants?.map((v, index) => {
                             const serialCodes = normalizeSerialCodes(v.serialCodes || []);
@@ -531,6 +534,7 @@ const SharedProductEditor = ({
                                         : (v.diamondPrice || 0)
                                 ).toString(),
                                 diamondPrice: (v.diamondPrice || 0).toString(),
+                                diamondType: v.diamondType || data.diamondType || 'none',
                                 serialCodes: ensured.serialCodes,
                                 stock: ensured.stock,
                                 variantImages: Array.isArray(v.variantImages) ? v.variantImages : [],
@@ -735,6 +739,7 @@ const SharedProductEditor = ({
                 hallmarkingCharge: '0',
                 diamondCertificateCharge: '0',
                 diamondPrice: '0', 
+                diamondType: prev.diamondType || 'none',
                 mrp: '0', 
                 price: '', 
                 stock: 0,
@@ -1215,6 +1220,32 @@ const SharedProductEditor = ({
                                 ]}
                                 disabled={isViewMode}
                             />
+                            <Select
+                                label="Diamond Type (Default)"
+                                value={formData.diamondType || 'none'}
+                                onChange={(e) => {
+                                    const nextType = e.target.value;
+                                    setFormData((prev) => ({
+                                        ...prev,
+                                        diamondType: nextType,
+                                        // If a variant didn't explicitly choose a type, keep it in sync with the default.
+                                        variants: (prev.variants || []).map((v) => {
+                                            const vType = String(v?.diamondType || 'none').trim().toLowerCase();
+                                            if (vType !== 'none') return v;
+                                            return { ...v, diamondType: nextType };
+                                        })
+                                    }));
+                                }}
+                                options={[
+                                    { label: 'No Diamonds', value: 'none' },
+                                    { label: 'Lab Grown Diamonds', value: 'lab_grown' },
+                                    { label: 'Natural / Mined Diamonds', value: 'natural' }
+                                ]}
+                                disabled={isViewMode}
+                            />
+                            <p className="text-[10px] text-gray-400 -mt-2">
+                                Used by Product Details to show the correct diamond information. Variants can override this.
+                            </p>
                             <div className="space-y-2">
                                 <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Audience</p>
                                 <div className="grid grid-cols-2 gap-2">
@@ -1592,6 +1623,19 @@ const SharedProductEditor = ({
                                                     placeholder="Standard" 
                                                 />
                                                 {errors[`variant_${idx}_name`] && <div className="text-[10px] text-red-500 mt-1 ml-1">{errors[`variant_${idx}_name`]}</div>}
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Diamond Type</label>
+                                                <select
+                                                    value={v.diamondType || formData.diamondType || 'none'}
+                                                    onChange={(e) => handleVariantChange(v.id, 'diamondType', e.target.value)}
+                                                    disabled={isViewMode}
+                                                    className="w-full bg-white border border-gray-100 rounded-2xl py-4 px-6 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723]/30 transition-all shadow-sm"
+                                                >
+                                                    <option value="none">No Diamonds</option>
+                                                    <option value="lab_grown">Lab Grown</option>
+                                                    <option value="natural">Natural</option>
+                                                </select>
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Variant Weight</label>

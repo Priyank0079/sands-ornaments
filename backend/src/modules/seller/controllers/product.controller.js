@@ -32,6 +32,7 @@ const SELLER_UPDATE_WHITELIST = [
   "cardBadge",
   "silverCategory",
   "goldCategory",
+  "diamondType",
   "paymentGatewayChargeBearer",
   "huid",
   "sizes",
@@ -51,6 +52,12 @@ const normalizeMaterial = (data) => {
   return data.material;
 };
 
+const normalizeDiamondType = (value) => {
+  const raw = String(value || "").trim().toLowerCase();
+  if (raw === "lab_grown" || raw === "natural" || raw === "none") return raw;
+  return "none";
+};
+
 const sanitizeVariants = (variants, fallback = {}) => {
   if (!Array.isArray(variants)) return [];
   const fallbackWeight = fallback.weight !== undefined && fallback.weight !== null
@@ -61,6 +68,7 @@ const sanitizeVariants = (variants, fallback = {}) => {
   return variants.map(v => ({
     name: v.name || "Standard",
     variantCode: v.variantCode || "",
+    diamondType: normalizeDiamondType(v.diamondType),
     variantImages: Array.isArray(v.variantImages)
       ? v.variantImages.filter(Boolean)
       : [],

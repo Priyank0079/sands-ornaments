@@ -35,6 +35,13 @@ const productSchema = new mongoose.Schema({
   cardLabel: { type: String },
   cardBadge: { type: String },
   images: [{ type: String }],
+  // Diamond origin can be specified at product-level (default) and overridden per variant.
+  // Values: none | lab_grown | natural
+  diamondType: {
+    type: String,
+    enum: ["none", "lab_grown", "natural"],
+    default: "none"
+  },
   // Optional product-specific video used on Product Details. Admin/Seller can upload it.
   videoUrl: { type: String, default: "" },
   paymentGatewayChargeBearer: {
@@ -54,6 +61,11 @@ const productSchema = new mongoose.Schema({
     }],
     makingCharge: { type: Number, default: 0 },
     diamondPrice: { type: Number, default: 0 },
+    diamondType: {
+      type: String,
+      enum: ["none", "lab_grown", "natural"],
+      default: "none"
+    },
     hallmarkingCharge: { type: Number, default: 0 },
     diamondCertificateCharge: { type: Number, default: 0 },
     hiddenCharge: { type: Number, default: 0 },
