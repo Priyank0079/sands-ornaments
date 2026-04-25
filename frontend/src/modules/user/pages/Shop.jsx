@@ -57,6 +57,18 @@ const Shop = () => {
     const isMenFlow = sourceQuery === 'men';
     const isWomenFlow = sourceQuery === 'women';
 
+    const normalizeCategoryToken = (value) => {
+        // Accept ids, slugs, or legacy values like "/category/rings" and normalize to "rings".
+        let token = String(value || '').trim();
+        if (!token) return '';
+        token = token.replace(/^\/+/, '');
+        if (token.toLowerCase().startsWith('category/')) {
+            token = token.slice('category/'.length);
+        }
+        // Don't decode object ids or plain slugs; just return the cleaned token.
+        return token;
+    };
+
     const [pinnedProducts, setPinnedProducts] = useState([]);
     const [isPinnedLoading, setIsPinnedLoading] = useState(false);
 
@@ -109,11 +121,11 @@ const Shop = () => {
         const qp = new URLSearchParams(location.search);
         const metal = qp.get('metal');
         const effectiveKarat = karatQuery || purityQuery || '';
-        const effectiveCategory = qp.get('category') || '';
+        const effectiveCategory = normalizeCategoryToken(qp.get('category') || '');
 
         const categorySlugParam = String(category || '').trim();
         const isAudienceSlug = ['men', 'women', 'family'].includes(categorySlugParam.toLowerCase());
-        const categoryParam = effectiveCategory || (!isAudienceSlug ? categorySlugParam : '');
+        const categoryParam = effectiveCategory || (!isAudienceSlug ? normalizeCategoryToken(categorySlugParam) : '');
 
         const isNewArrivalsRoute = location.pathname.includes('/new-arrivals');
         const isTrendingRoute = location.pathname.includes('/trending');
@@ -623,15 +635,26 @@ const Shop = () => {
     ]);
 
     useEffect(() => {
-        document.title = `${pageTitle} | Sands Ornaments - Pure 925 Silver Jewellery`;
+        const metal = String(queryParams.get('metal') || '').trim().toLowerCase();
+        const suffix = metal === 'gold'
+            ? 'Gold Jewellery'
+            : metal === 'silver'
+                ? 'Silver Jewellery'
+                : 'Jewellery';
+        document.title = `${pageTitle} | Sands Ornaments - ${suffix}`;
     }, [pageTitle]);
 
     // Handle Category Change
     const handleCategoryChange = (val) => {
         setSelectedCategory(val);
         const selectedCat = categories.find((cat) => cat.name === val);
+        const normalizedFromCat = normalizeCategoryToken(selectedCat?.slug || selectedCat?.path || '');
+        const nextCategoryValue = selectedCat?._id
+            || selectedCat?.id
+            || normalizedFromCat
+            || normalizeCategoryToken(val);
         updateShopQuery({
-            category: val === 'All' ? null : (selectedCat?._id || selectedCat?.id || selectedCat?.slug || selectedCat?.path || val)
+            category: val === 'All' ? null : nextCategoryValue
         });
     };
 

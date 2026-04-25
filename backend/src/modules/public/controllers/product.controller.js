@@ -114,8 +114,15 @@ exports.getProducts = async (req, res) => {
     }
 
     // 3.1 Metal + purity filters
-    if (metal) {
-      const normalized = String(metal || "").trim().toLowerCase();
+    // Backwards-compat: older links may pass karat/silver_type without metal.
+    // In that case, infer metal from the purity param to avoid silently returning all products.
+    const inferredMetal = !metal
+      ? (karat ? "gold" : (silver_type ? "silver" : ""))
+      : "";
+
+    const effectiveMetal = metal || inferredMetal;
+    if (effectiveMetal) {
+      const normalized = String(effectiveMetal || "").trim().toLowerCase();
       // material is stored like "Silver" / "Gold" / etc. Keep this case-insensitive exact match.
       query.material = { $regex: `^${normalized}$`, $options: "i" };
 

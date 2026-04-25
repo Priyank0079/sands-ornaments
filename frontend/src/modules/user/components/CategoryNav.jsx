@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
 import AllJewelleryMegaMenu from './AllJewelleryMegaMenu';
@@ -8,6 +8,7 @@ import FamilyMegaMenu from './FamilyMegaMenu';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const CategoryNav = ({ showMetalToggle = true }) => {
+    const location = useLocation();
     const navigate = useNavigate();
     const { activeMetal, updateActiveMetal } = useShop();
     const [hoveredItem, setHoveredItem] = useState(null);
@@ -28,6 +29,28 @@ const CategoryNav = ({ showMetalToggle = true }) => {
     const resetMenu = () => {
         setHoveredItem(null);
     };
+
+    // Keep the metal toggle consistent with the current route/query.
+    // This prevents confusing UI states when a user lands directly on a gold page or a gold-filtered shop URL.
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const metalParam = String(params.get('metal') || '').trim().toLowerCase();
+        const karatParam = String(params.get('karat') || params.get('purity') || '').trim();
+        const silverTypeParam = String(params.get('silver_type') || '').trim();
+        const isGoldRoute = location.pathname.startsWith('/gold');
+        const desiredMetal = (
+            metalParam === 'gold'
+            || isGoldRoute
+            || (!metalParam && Boolean(karatParam))
+        ) ? 'gold' : (
+            metalParam === 'silver'
+            || (!metalParam && Boolean(silverTypeParam))
+        ) ? 'silver' : 'silver';
+
+        if (desiredMetal && desiredMetal !== activeMetal) {
+            updateActiveMetal(desiredMetal);
+        }
+    }, [activeMetal, location.pathname, location.search, updateActiveMetal]);
 
     return (
         <div className="bg-white border-b border-gray-100 hidden md:block w-full">

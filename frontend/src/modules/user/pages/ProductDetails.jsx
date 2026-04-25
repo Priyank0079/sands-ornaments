@@ -66,7 +66,7 @@ const ProductDetails = () => {
         setLocalPincode(pincode);
     }, [pincode]);
 
-    // Find in mock collection if not in database
+    // Find in mock collection as a fallback (only if real product fetch + catalogue lookup fail).
     const mockProduct = useMemo(() => {
         if (!id) return null;
 
@@ -136,7 +136,7 @@ const ProductDetails = () => {
             };
         }
 
-        if (!id.startsWith('m') && !id.startsWith('lp') && !id.startsWith('mock') && !id.startsWith('best')) return null;
+        // Legacy mock catalogue entries (used only as fallback).
         for (const cat in COLLECTION_MOCK_PRODUCTS) {
             const found = COLLECTION_MOCK_PRODUCTS[cat].find(p => p.id === id);
             if (found) {
@@ -160,16 +160,15 @@ const ProductDetails = () => {
     const [detailProduct, setDetailProduct] = useState(null);
     const [detailLoading, setDetailLoading] = useState(false);
 
-    // Prioritize mock product for IDs starting with 'm', otherwise use API or catalogue data
+    // Production-safe priority: API detail -> catalogue -> mock fallback.
     const product = useMemo(() => {
-        if (id && (String(id).startsWith('m') || String(id).startsWith('lp') || String(id).startsWith('mock') || String(id).startsWith('best'))) return mockProduct;
-        return detailProduct || catalogueProduct || null;
+        return detailProduct || catalogueProduct || mockProduct || null;
     }, [id, mockProduct, detailProduct, catalogueProduct]);
 
     useEffect(() => {
         let ignore = false;
         const loadDetail = async () => {
-            if (!id || id.startsWith('m') || id.startsWith('lp') || id.startsWith('mock') || id.startsWith('best')) return; // Don't fetch for mock products
+            if (!id) return;
             setDetailLoading(true);
             try {
                 const res = await api.get(`public/products/${id}`);
@@ -181,7 +180,8 @@ const ProductDetails = () => {
                     });
                 }
             } catch (err) {
-                // fall back to catalogue data
+                // fall back to catalogue or mock data
+                if (!ignore) setDetailProduct(null);
             } finally {
                 if (!ignore) setDetailLoading(false);
             }
@@ -194,7 +194,13 @@ const ProductDetails = () => {
 
     useEffect(() => {
         if (product) {
-            document.title = `${product.name} | Sands Ornaments - Pure 925 Silver Jewellery`;
+            const materialLower = String(product?.material || product?.metal || '').trim().toLowerCase();
+            const suffix = materialLower === 'gold'
+                ? 'Gold Jewellery'
+                : materialLower === 'silver'
+                    ? 'Silver Jewellery'
+                    : 'Jewellery';
+            document.title = `${product.name} | Sands Ornaments - ${suffix}`;
         }
     }, [product]);
 
@@ -294,9 +300,10 @@ const ProductDetails = () => {
 
     useEffect(() => {
         if (product) {
-            setSelectedImage(product.image || product.images?.[0] || null);
             const firstVariant = product.variants?.[0];
             setSelectedVariantId(firstVariant?.id || firstVariant?._id || null);
+            // Defer image selection to the unified galleryImages logic below (variant images > product images).
+            setSelectedImage(null);
         }
         setOpenSection(window.location.hash === '#care' ? 'care' : 'description'); // Reset sections
     }, [product, id]);
@@ -317,10 +324,54 @@ const ProductDetails = () => {
     const availableStock = Number.isFinite(selectedVariantStock) ? Math.max(0, selectedVariantStock) : null;
     const canAddToCart = availableStock === null || availableStock > 0;
 
+    const galleryImages = useMemo(() => {
+        const productImages = Array.isArray(product?.images) ? product.images.filter(Boolean) : [];
+        const variantImages = Array.isArray(selectedVariant?.variantImages) ? selectedVariant.variantImages.filter(Boolean) : [];
+        const legacy = product?.image ? [product.image] : [];
+
+        const chosen = variantImages.length > 0
+            ? variantImages
+            : (productImages.length > 0 ? productImages : legacy);
+
+        // Keep order, remove duplicates.
+        const seen = new Set();
+        return chosen.filter((img) => {
+            if (!img) return false;
+            if (seen.has(img)) return false;
+            seen.add(img);
+            return true;
+        });
+    }, [product, selectedVariant]);
+
+    useEffect(() => {
+        if (galleryImages.length === 0) return;
+        if (!selectedImage || !galleryImages.includes(selectedImage)) {
+            setSelectedImage(galleryImages[0]);
+        }
+        // Intentionally ignore setSelectedImage in deps.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [galleryImages, selectedVariantId, product?.id, product?._id]);
+
     // Compute primary image with robust fallback
     const primaryImage = useMemo(() => {
-        return selectedImage || product?.image || product?.images?.[0] || null;
-    }, [selectedImage, product]);
+        return selectedImage || galleryImages[0] || null;
+    }, [selectedImage, galleryImages]);
+
+    const hoverPaneImage = useMemo(() => {
+        const candidate = galleryImages.find((img) => img && img !== primaryImage);
+        if (candidate) return candidate;
+
+        const categoryData = product?.category;
+        const categoryName = typeof categoryData === 'object' ? categoryData?.name : categoryData;
+        const searchStr = String(categoryName || product?.name || '').toLowerCase();
+
+        if (searchStr.includes('ring')) return fallbackModelMap.ring;
+        if (searchStr.includes('pendant') || searchStr.includes('necklace')) return fallbackModelMap.pendant;
+        if (searchStr.includes('earring')) return fallbackModelMap.earring;
+        if (searchStr.includes('bracelet')) return fallbackModelMap.bracelet;
+        if (searchStr.includes('anklet')) return fallbackModelMap.anklet;
+        return null;
+    }, [galleryImages, primaryImage, product]);
 
     const reviewCount = product?.reviewCount ?? reviews.length ?? 0;
     const averageRating = Number(product?.rating || 0);
@@ -557,34 +608,14 @@ const ProductDetails = () => {
                                             className="absolute inset-0 w-full h-full object-cover z-0" 
                                         />
                                         
-                                        {/* Hover Image (Next DB image or Fallback Model Look) */}
-                                        {(() => {
-                                            const dbImages = [
-                                                ...(product?.images || []),
-                                                ...(product?.variants || []).flatMap(v => v.variantImages || [])
-                                            ].filter(img => img !== primaryImage);
-                                            
-                                            const categoryData = product.category;
-                                            const categoryName = typeof categoryData === 'object' ? categoryData?.name : categoryData;
-                                            const searchStr = String(categoryName || product.name || '').toLowerCase();
-                                            
-                                            let fallback = dbImages[0] || null;
-                                            if (!fallback) {
-                                                if (searchStr.includes('ring')) fallback = fallbackModelMap.ring;
-                                                else if (searchStr.includes('pendant') || searchStr.includes('necklace')) fallback = fallbackModelMap.pendant;
-                                                else if (searchStr.includes('earring')) fallback = fallbackModelMap.earring;
-                                                else if (searchStr.includes('bracelet')) fallback = fallbackModelMap.bracelet;
-                                                else if (searchStr.includes('anklet')) fallback = fallbackModelMap.anklet;
-                                            }
-
-                                            return fallback ? (
-                                                <img 
-                                                    src={fallback} 
-                                                    alt={`${product.name} look`} 
-                                                    className="absolute inset-0 w-full h-full object-cover z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-[1200ms] ease-in-out" 
-                                                />
-                                            ) : null;
-                                        })()}
+                                        {/* Hover Image (2nd gallery image when available; otherwise model fallback) */}
+                                        {hoverPaneImage ? (
+                                            <img
+                                                src={hoverPaneImage}
+                                                alt={`${product.name} look`}
+                                                className="absolute inset-0 w-full h-full object-cover z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-[1200ms] ease-in-out"
+                                            />
+                                        ) : null}
                                     </>
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-[#B88B90] text-[10px] font-bold uppercase tracking-widest">
@@ -610,9 +641,9 @@ const ProductDetails = () => {
                         </div>
 
                         {/* Thumbnails Row */}
-                        {product.images && product.images.length > 1 && (
+                        {galleryImages.length > 1 && (
                             <div className="flex gap-4 overflow-x-auto pb-2 px-1 scrollbar-hide">
-                                {product.images.map((img, idx) => (
+                                {galleryImages.map((img, idx) => (
                                     <button
                                         key={idx}
                                         onClick={() => setSelectedImage(img)}
@@ -625,19 +656,19 @@ const ProductDetails = () => {
                             </div>
                         )}
 
-                        {/* Style Gallery: 4 Perspective Images - Requested by USER */}
-                        {product.images && product.images.length > 0 && (
+                        {/* Style Gallery: show only when product truly has enough distinct images (no duplication). */}
+                        {galleryImages.length >= 4 && (
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 pt-4">
-                                {(product.images.length >= 4 ? product.images.slice(0, 4) : [...product.images, ...Array(4 - product.images.length).fill(product.images[0])]).map((img, idx) => (
-                                    <div 
-                                        key={idx} 
+                                {galleryImages.slice(0, 4).map((img, idx) => (
+                                    <div
+                                        key={idx}
                                         className="aspect-square rounded-[1.5rem] overflow-hidden border border-gray-100 group cursor-pointer shadow-sm relative"
                                         onClick={() => setSelectedImage(img)}
                                     >
-                                        <img 
-                                            src={img} 
-                                            alt={`Style Detail ${idx + 1}`} 
-                                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-[1.12]" 
+                                        <img
+                                            src={img}
+                                            alt={`Style Detail ${idx + 1}`}
+                                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-[1.12]"
                                         />
                                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
                                     </div>
