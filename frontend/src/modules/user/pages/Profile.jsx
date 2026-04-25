@@ -91,9 +91,9 @@ const ReturnActionModal = ({ isOpen, onClose, type, order, onSuccess }) => {
                     description: comment
                 };
                 if (type === 'return') {
-                    await api.post('/user/returns', payload);
+                    await api.post('user/returns', payload);
                 } else {
-                    await api.post('/user/replacements', payload);
+                    await api.post('user/replacements', payload);
                 }
             }
             showNotification(`${type === 'return' ? 'Return' : 'Exchange'} request initiated for ${selectedItems.length} items.`);

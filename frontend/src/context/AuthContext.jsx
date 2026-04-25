@@ -119,11 +119,13 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const logout = () => {
+    const logout = (options = {}) => {
         setUser(null);
         localStorage.removeItem('sands_token');
         localStorage.removeItem('sands_current_user');
-        toast.success("Logged out successfully");
+        if (!options?.silent) {
+            toast.success("Logged out successfully");
+        }
     };
 
     return (

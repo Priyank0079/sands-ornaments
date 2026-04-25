@@ -59,6 +59,7 @@ const resolveAvailableStock = (product = {}, variantId = null) => {
 export const ShopProvider = ({ children }) => {
     const { user, logout: authLogout } = useAuth();
     const isUserRole = user?.role === 'user';
+    const hasAuthToken = () => Boolean(localStorage.getItem('sands_token'));
     // Initialize from LocalStorage if available
     const [cart, setCart] = useState(() => {
         const saved = localStorage.getItem('cart');
@@ -146,11 +147,16 @@ export const ShopProvider = ({ children }) => {
     };
 
     const deleteUserNotification = async (id) => {
-        if (!isUserRole) return;
+        if (!isUserRole || !hasAuthToken()) return;
         try {
-            await api.patch(`/user/notifications/${id}/read`);
+            await api.patch(`user/notifications/${id}/read`);
             await fetchNotifications();
         } catch (err) {
+            const status = err?.response?.status;
+            if (status === 401 || status === 403) {
+                authLogout({ silent: true });
+                return;
+            }
             setUserNotifications(prev => prev.filter(n => (n._id || n.id) !== id));
         }
     };
@@ -168,6 +174,11 @@ export const ShopProvider = ({ children }) => {
         // These endpoints are user-only. When logged in as admin/seller, calling them
         // will correctly return 403, but we don't want console noise or wasted requests.
         if (isUserRole) {
+            // If user state exists but token is missing/cleared, do a silent logout to avoid 403 spam.
+            if (!hasAuthToken()) {
+                authLogout({ silent: true });
+                return;
+            }
             fetchAddresses();
             fetchWishlist();
             fetchOrders();
@@ -187,7 +198,7 @@ export const ShopProvider = ({ children }) => {
     }, [user]);
 
     const fetchAddresses = async () => {
-        if (!isUserRole) return;
+        if (!isUserRole || !hasAuthToken()) return;
         try {
             const res = await api.get('user/addresses');
             if (res.data.success) {
@@ -197,11 +208,18 @@ export const ShopProvider = ({ children }) => {
                 const defaultAddr = normalized.find(a => a.isDefault);
                 if (defaultAddr) setDefaultAddressId(defaultAddr._id);
             }
-        } catch (err) { console.error("Fetch addresses failed", err); }
+        } catch (err) {
+            const status = err?.response?.status;
+            if (status === 401 || status === 403) {
+                authLogout({ silent: true });
+                return;
+            }
+            console.error("Fetch addresses failed", err);
+        }
     };
 
     const fetchWishlist = async () => {
-        if (!isUserRole) return;
+        if (!isUserRole || !hasAuthToken()) return;
         try {
             const res = await api.get('user/wishlist');
             if (res.data.success) {
@@ -237,22 +255,36 @@ export const ShopProvider = ({ children }) => {
                 });
                 setWishlist(normalized);
             }
-        } catch (err) { console.error("Fetch wishlist failed", err); }
+        } catch (err) {
+            const status = err?.response?.status;
+            if (status === 401 || status === 403) {
+                authLogout({ silent: true });
+                return;
+            }
+            console.error("Fetch wishlist failed", err);
+        }
     };
 
     const fetchOrders = async () => {
-        if (!isUserRole) return;
+        if (!isUserRole || !hasAuthToken()) return;
         try {
             const res = await api.get('user/orders');
             if (res.data.success) {
                 const list = res.data.data?.orders || res.data.orders || [];
                 setOrders(list.map(order => ({ ...order, id: order._id || order.id, displayId: order.orderId || order._id })));
             }
-        } catch (err) { console.error("Fetch orders failed", err); }
+        } catch (err) {
+            const status = err?.response?.status;
+            if (status === 401 || status === 403) {
+                authLogout({ silent: true });
+                return;
+            }
+            console.error("Fetch orders failed", err);
+        }
     };
 
     const fetchReturns = async () => {
-        if (!isUserRole) return;
+        if (!isUserRole || !hasAuthToken()) return;
         try {
             const res = await api.get('user/returns');
             if (res.data.success) {
@@ -268,11 +300,18 @@ export const ShopProvider = ({ children }) => {
                     type: 'refund'
                 })));
             }
-        } catch (err) { console.error("Fetch returns failed", err); }
+        } catch (err) {
+            const status = err?.response?.status;
+            if (status === 401 || status === 403) {
+                authLogout({ silent: true });
+                return;
+            }
+            console.error("Fetch returns failed", err);
+        }
     };
 
     const fetchReplacements = async () => {
-        if (!isUserRole) return;
+        if (!isUserRole || !hasAuthToken()) return;
         try {
             const res = await api.get('user/replacements');
             if (res.data.success) {
@@ -291,29 +330,50 @@ export const ShopProvider = ({ children }) => {
                     type: 'replacement'
                 })));
             }
-        } catch (err) { console.error("Fetch replacements failed", err); }
+        } catch (err) {
+            const status = err?.response?.status;
+            if (status === 401 || status === 403) {
+                authLogout({ silent: true });
+                return;
+            }
+            console.error("Fetch replacements failed", err);
+        }
     };
 
     const fetchSupportTickets = async () => {
-        if (!isUserRole) return;
+        if (!isUserRole || !hasAuthToken()) return;
         try {
             const res = await api.get('user/support');
             if (res.data.success) {
                 const list = res.data.data?.tickets || res.data.tickets || [];
                 setSupportTickets(list.map(ticket => ({ ...ticket, id: ticket._id || ticket.id || ticket.ticketId })));
             }
-        } catch (err) { console.error("Fetch support tickets failed", err); }
+        } catch (err) {
+            const status = err?.response?.status;
+            if (status === 401 || status === 403) {
+                authLogout({ silent: true });
+                return;
+            }
+            console.error("Fetch support tickets failed", err);
+        }
     };
 
     const fetchNotifications = async () => {
-        if (!isUserRole) return;
+        if (!isUserRole || !hasAuthToken()) return;
         try {
             const res = await api.get('user/notifications');
             if (res.data.success) {
                 const list = res.data.data?.notifications || res.data.notifications || [];
                 setUserNotifications(list.map(note => ({ ...note, id: note._id || note.id })));
             }
-        } catch (err) { console.error("Fetch notifications failed", err); }
+        } catch (err) {
+            const status = err?.response?.status;
+            if (status === 401 || status === 403) {
+                authLogout({ silent: true });
+                return;
+            }
+            console.error("Fetch notifications failed", err);
+        }
     };
 
     const refreshOrders = () => fetchOrders();
@@ -367,20 +427,68 @@ export const ShopProvider = ({ children }) => {
         clearAppliedCoupon();
     };
 
+    const normalizeShippingAddress = (address, currentUser) => {
+        const raw = address || {};
+
+        const fullName = String(raw.name || raw.fullName || '').trim();
+        const firstName = String(raw.firstName || fullName.split(/\s+/)[0] || '').trim();
+        const lastName = String(raw.lastName || fullName.split(/\s+/).slice(1).join(' ') || '').trim();
+        const email = String(raw.email || currentUser?.email || '').trim();
+
+        // Accept phone from address or user profile; keep only digits.
+        const phone = String(raw.phone || currentUser?.phone || '').replace(/[^\d]/g, '');
+
+        return {
+            firstName,
+            lastName,
+            email,
+            phone,
+            flatNo: String(raw.flatNo || raw.flat || raw.houseNo || '').trim(),
+            area: String(raw.area || raw.locality || '').trim(),
+            city: String(raw.city || '').trim(),
+            district: String(raw.district || '').trim(),
+            state: String(raw.state || '').trim(),
+            pincode: String(raw.pincode || '').replace(/[^\d]/g, '').trim(),
+        };
+    };
+
     const placeOrder = async (orderDetails) => {
         try {
             const { items, shippingAddress, paymentMethod, couponCode, addressId } = orderDetails;
             const resolvedAddress = shippingAddress || addresses.find(a => a._id === addressId);
+            const normalizedAddress = normalizeShippingAddress(resolvedAddress, user);
+
+            // Backend validator requires these fields; fail fast for a cleaner UX.
+            if (!normalizedAddress.firstName || !normalizedAddress.lastName || !normalizedAddress.email) {
+                toast.error("Please complete your name and email in the shipping address.");
+                return null;
+            }
+            if (!normalizedAddress.phone || normalizedAddress.phone.length !== 10) {
+                toast.error("Please enter a valid 10-digit phone number.");
+                return null;
+            }
+            if (!normalizedAddress.flatNo || !normalizedAddress.area || !normalizedAddress.city || !normalizedAddress.state || normalizedAddress.pincode.length !== 6) {
+                toast.error("Please complete your shipping address (flat, area, city, state, pincode).");
+                return null;
+            }
 
             // 1. Create order on backend
             // Note: backend expects { items: [{productId, variantId, quantity}], shippingAddress, paymentMethod, couponCode }
-            const res = await api.post('/user/orders/place', {
-                items: (items || cart).map(item => ({
-                    productId: item.id || item._id,
-                    variantId: item.variantId || item.variants?.[0]?.id || item.variants?.[0]?._id,
-                    quantity: item.qty || item.quantity
-                })),
-                shippingAddress: resolvedAddress,
+            const formattedItems = (items || cart).map(item => ({
+                productId: item.productId || item.id || item._id,
+                variantId: item.variantId || item.packId || item.selectedVariant?.id || item.selectedVariant?._id || item.variants?.[0]?.id || item.variants?.[0]?._id,
+                quantity: item.qty || item.quantity
+            }));
+
+            const missingIds = formattedItems.some(it => !it.productId || !it.variantId);
+            if (missingIds) {
+                toast.error("Some cart items are missing variant information. Please remove and re-add them, then try again.");
+                return null;
+            }
+
+            const res = await api.post('user/orders/place', {
+                items: formattedItems,
+                shippingAddress: normalizedAddress,
                 paymentMethod,
                 couponCode
             });
@@ -429,7 +537,7 @@ export const ShopProvider = ({ children }) => {
                 order_id: razorpayOrderId,
                 handler: async (response) => {
                     try {
-                        const verifyRes = await api.post('/user/payments/verify', {
+                        const verifyRes = await api.post('user/payments/verify', {
                             orderId: backendOrder._id,
                             razorpay_order_id: response.razorpay_order_id,
                             razorpay_payment_id: response.razorpay_payment_id,
@@ -587,7 +695,7 @@ export const ShopProvider = ({ children }) => {
             return;
         }
         try {
-            const res = await api.post('/user/wishlist', { productId: product.id || product._id });
+            const res = await api.post('user/wishlist', { productId: product.id || product._id });
             if (res.data.success) {
                 fetchWishlist();
                 showNotification("Wishlist updated");
@@ -621,7 +729,7 @@ export const ShopProvider = ({ children }) => {
 
     const removeFromWishlist = async (productId) => {
         try {
-            const res = await api.delete(`/user/wishlist/${productId}`);
+            const res = await api.delete(`user/wishlist/${productId}`);
             if (res.data.success) {
                 fetchWishlist();
                 showNotification("Removed from wishlist");
@@ -651,7 +759,7 @@ export const ShopProvider = ({ children }) => {
 
     const addAddress = async (address) => {
         try {
-            const res = await api.post('/user/addresses', address);
+            const res = await api.post('user/addresses', address);
             if (res.data.success) {
                 fetchAddresses();
                 showNotification("Address added successfully");
@@ -661,7 +769,7 @@ export const ShopProvider = ({ children }) => {
 
     const setDefaultAddress = async (addressId) => {
         try {
-            const res = await api.patch(`/user/addresses/${addressId}/set-default`);
+            const res = await api.patch(`user/addresses/${addressId}/set-default`);
             if (res.data.success) {
                 fetchAddresses();
                 showNotification("Marked as default address");
@@ -671,7 +779,7 @@ export const ShopProvider = ({ children }) => {
 
     const removeAddress = async (addressId) => {
         try {
-            const res = await api.delete(`/user/addresses/${addressId}`);
+            const res = await api.delete(`user/addresses/${addressId}`);
             if (res.data.success) {
                 fetchAddresses();
                 showNotification("Address removed");
@@ -681,7 +789,7 @@ export const ShopProvider = ({ children }) => {
 
     const updateAddress = async (updatedAddress) => {
         try {
-            const res = await api.patch(`/user/addresses/${updatedAddress.id || updatedAddress._id}`, updatedAddress);
+            const res = await api.patch(`user/addresses/${updatedAddress.id || updatedAddress._id}`, updatedAddress);
             if (res.data.success) {
                 fetchAddresses();
                 showNotification("Address updated");
@@ -691,7 +799,7 @@ export const ShopProvider = ({ children }) => {
 
     const createTicket = async (ticketData) => {
         try {
-            const res = await api.post('/user/support', ticketData);
+            const res = await api.post('user/support', ticketData);
             if (res.data.success) {
                 await fetchSupportTickets();
                 showNotification("Support ticket created. We will get back to you soon!");
@@ -706,7 +814,7 @@ export const ShopProvider = ({ children }) => {
 
     const addTicketReply = async (ticketId, reply) => {
         try {
-            const res = await api.post(`/user/support/${ticketId}/reply`, { message: reply.text || reply.message || '' });
+            const res = await api.post(`user/support/${ticketId}/reply`, { message: reply.text || reply.message || '' });
             if (res.data.success) {
                 await fetchSupportTickets();
                 showNotification("Reply sent");
@@ -796,7 +904,7 @@ export const ShopProvider = ({ children }) => {
                 };
             });
 
-            const res = await api.post('/user/coupons/validate', {
+            const res = await api.post('user/coupons/validate', {
                 code,
                 cartTotal,
                 items: formattedItems

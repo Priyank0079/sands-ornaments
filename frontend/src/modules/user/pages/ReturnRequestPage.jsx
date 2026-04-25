@@ -85,7 +85,7 @@ const ReturnRequestPage = () => {
             formData.append('description', comments);
             selectedFiles.forEach((file) => formData.append('evidence', file));
 
-            await api.post('/user/returns', formData, {
+            await api.post('user/returns', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
