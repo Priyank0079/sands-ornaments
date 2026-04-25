@@ -97,59 +97,51 @@ const FamilyPricePoints = ({ sectionData }) => {
     }, [sectionData]);
 
     return (
-        <section className="bg-[linear-gradient(180deg,#fff_0%,#fff8fa_48%,#fff_100%)] py-6 md:py-8">
-            <div className="container mx-auto px-4 md:px-12">
-                <div className="mx-auto max-w-4xl rounded-[28px] border border-[#f4d5dc] bg-white/95 px-4 py-5 shadow-[0_18px_50px_rgba(142,43,69,0.07)] md:px-6 md:py-6">
-                    <div className="mb-4 text-center md:mb-6">
-                        <span className="inline-flex items-center rounded-full border border-[#f1c7d2] bg-[#fff3f6] px-3 py-1 text-[9px] font-black uppercase tracking-[0.32em] text-[#8E2B45]">
-                            {sectionAccent}
-                        </span>
-                        <h2 className="mt-2 font-serif text-xl tracking-tight text-[#2D060F] md:text-3xl">
-                            {sectionTitle}
-                        </h2>
-                    </div>
+        <section className="bg-white py-4 md:py-8">
+            <div className="container mx-auto px-4 max-w-6xl">
+                <div className="text-center mb-6">
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#8E2B45] opacity-60">
+                        {sectionAccent}
+                    </span>
+                    <h2 className="mt-1 font-serif text-2xl text-[#2D060F]">
+                        {sectionTitle}
+                    </h2>
+                </div>
 
-                    <div className="grid gap-3 md:grid-cols-3 md:items-start">
-                        {points.map((point) => (
-                            <motion.div
-                                key={point.id}
-                                initial={{ opacity: 0, y: 18 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true, amount: 0.25 }}
-                                transition={{ duration: 0.45, delay: point.delay }}
-                                whileHover={{ y: -4 }}
-                                className="group"
+                <div className="flex flex-row overflow-x-auto gap-3 md:gap-6 px-4 md:px-0 pb-6 md:pb-0 no-scrollbar snap-x snap-mandatory">
+                    {points.map((point) => (
+                        <motion.div
+                            key={point.id}
+                            initial={{ opacity: 0, x: 20 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.4, delay: point.delay }}
+                            className="min-w-[160px] w-[160px] md:min-w-0 md:flex-1 snap-center group"
+                        >
+                            <Link
+                                to={point.link}
+                                className="block relative overflow-hidden rounded-2xl md:rounded-[32px] border border-gray-100 bg-white hover:shadow-2xl hover:shadow-[#8E2B45]/10 transition-all duration-500"
                             >
-                                <Link
-                                    to={point.link}
-                                    className="block overflow-hidden rounded-[22px] border border-[#f3d8df] bg-white shadow-[0_16px_34px_rgba(142,43,69,0.1)] transition-all duration-300 hover:border-[#e7a8b9] hover:shadow-[0_20px_40px_rgba(142,43,69,0.14)]"
-                                >
-                                    <div className="relative p-3 pb-0">
-                                        <div className="absolute left-5 top-5 z-10 rounded-full bg-white/92 px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.2em] text-[#8E2B45] shadow-sm">
-                                            {point.accent}
-                                        </div>
-                                        <img
-                                            src={point.image}
-                                            alt={point.title}
-                                            className="w-full rounded-[18px] object-cover object-top transition-transform duration-500 group-hover:scale-[1.02] aspect-[1.15]"
-                                        />
-                                    </div>
+                                <div className="aspect-square relative overflow-hidden">
+                                    <img
+                                        src={point.image}
+                                        alt={point.title}
+                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 md:group-hover:opacity-100 transition-opacity duration-300" />
+                                </div>
 
-                                    <div className="px-4 pb-4 pt-3 text-center md:px-5">
-                                        <h3 className="font-serif text-lg text-[#2D060F] md:text-[1.65rem]">
-                                            {point.title}
-                                        </h3>
-                                        <p className="mx-auto mt-1.5 max-w-[22ch] text-sm leading-relaxed text-[#7b5f67]">
-                                            {point.caption}
-                                        </p>
-                                        <div className="mt-3 inline-flex items-center rounded-full bg-[#8E2B45] px-3.5 py-2 text-[9px] font-black uppercase tracking-[0.24em] text-white transition-colors duration-300 group-hover:bg-[#a93f5d]">
-                                            {point.ctaLabel || 'Explore Edit'}
-                                        </div>
-                                    </div>
-                                </Link>
-                            </motion.div>
-                        ))}
-                    </div>
+                                <div className="p-3 md:p-6 text-center">
+                                    <h3 className="font-serif text-[13px] md:text-xl text-[#2D060F] tracking-tight font-medium">
+                                        {point.title}
+                                    </h3>
+                                    <p className="hidden md:block mt-1.5 text-[11px] text-gray-400 font-medium leading-relaxed">
+                                        {point.caption}
+                                    </p>
+                                </div>
+                            </Link>
+                        </motion.div>
+                    ))}
                 </div>
             </div>
         </section>

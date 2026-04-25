@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, ChevronLeft } from 'lucide-react';
 import menImg from '@assets/collections/cat_men_nobg.png';
 import womenImg from '@assets/collections/cat_women_nobg.png';
 
@@ -59,12 +59,16 @@ const PremiumCategoryCards = () => {
                                 ${item.layout === 'left' ? 'left-[2%]' : 'right-[2%]'}`}
                             >
                                 {/* Shop Now Button inside maroon box */}
-                                <div className="flex items-center gap-3 md:gap-4">
+                                <div className={`flex items-center gap-3 md:gap-4 ${item.layout === 'right' ? 'flex-row-reverse' : ''}`}>
                                     <span className="text-white text-[15px] md:text-[22px] font-semibold tracking-[0.1em] font-sans drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)] group-hover:tracking-[0.15em] transition-all duration-700">
                                         {item.title}
                                     </span>
                                     <div className="w-6 h-6 md:w-9 md:h-9 rounded-full bg-white flex items-center justify-center text-[#9C5B61] group-hover:bg-[#C9A24D] group-hover:text-white transition-all duration-500 shadow-lg border border-white/10">
-                                        <ChevronRight className="w-3.5 h-3.5 md:w-5 md:h-5" />
+                                        {item.layout === 'left' ? (
+                                            <ChevronRight className="w-3.5 h-3.5 md:w-5 md:h-5" />
+                                        ) : (
+                                            <ChevronLeft className="w-3.5 h-3.5 md:w-5 md:h-5" />
+                                        )}
                                     </div>
                                 </div>
                             </div>
