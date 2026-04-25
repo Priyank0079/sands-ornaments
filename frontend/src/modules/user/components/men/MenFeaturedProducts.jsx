@@ -7,13 +7,7 @@ import { useAuth } from '../../../../context/AuthContext';
 import { buildMenShopPath, getMenLoginRedirect, storeMenPendingCartItem } from '../../utils/menNavigation';
 import toast from 'react-hot-toast';
 
-// Reusing existing assets that fit the white-background minimalist theme
-import prodRing from '@assets/men_prod_ring.png';
-import prodPendant from '@assets/men_prod_pendant.png';
-import prodBracelet from '@assets/men_prod_bracelet.png';
-import prodChain from '@assets/men_prod_chain.png';
-import prodStud from '@assets/men_prod_stud.png';
-import premiumRing from '@assets/premium_ring_product.png';
+// Backend-driven featured products for men
 
 const normalizeToken = (value = '') => String(value || '')
     .trim()
@@ -285,4 +279,3 @@ const MenFeaturedProducts = ({ sectionData }) => {
 };
 
 export default MenFeaturedProducts;
-

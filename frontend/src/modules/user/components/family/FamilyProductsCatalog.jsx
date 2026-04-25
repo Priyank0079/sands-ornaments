@@ -5,12 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { buildFamilyShopPath, normalizeFamilyRecipient } from '../../utils/familyNavigation';
 import { ShopContext } from '../../../../context/ShopContext';
 import ProductCard from '../ProductCard';
-import giftMother from '@assets/gift_mother_silver.png';
-import giftFather from '@assets/gift_husband_silver.png';
-import giftBrother from '@assets/gift_brother_silver.png';
-import giftSister from '@assets/gift_sister_silver.png';
-import giftHusband from '@assets/gift_husband_silver.png';
-import giftWife from '@assets/gift_wife_silver.png';
 
 const defaultRecipientLabels = {
     all: 'All Family Collections',
@@ -23,21 +17,6 @@ const defaultRecipientLabels = {
 };
 
 const FAMILY_TABS = ['all', 'mother', 'father', 'brother', 'sister', 'husband', 'wife'];
-
-const FALLBACK_PRODUCTS = [
-    { id: 'f1', recipient: 'mother', name: 'Grace Bloom Silver Pendant for Mother', price: '2,499', originalPrice: '3,699', image: giftMother, rating: 4.7, reviews: 132, badge: "Mother's Pick" },
-    { id: 'f2', recipient: 'mother', name: 'Heritage Silver Gift Set for Mother', price: '4,299', originalPrice: '6,299', image: giftMother, rating: 4.9, reviews: 208, badge: 'Limited Edition' },
-    { id: 'f3', recipient: 'father', name: 'Classic Crest Silver Ring for Father', price: '3,199', originalPrice: '4,699', image: giftFather, rating: 4.9, reviews: 341, badge: 'Bestseller' },
-    { id: 'f4', recipient: 'father', name: 'Signature Link Bracelet for Father', price: '3,899', originalPrice: '5,500', image: giftFather, rating: 4.6, reviews: 79, badge: 'Gift Ready' },
-    { id: 'f5', recipient: 'brother', name: 'Bold Chain Bracelet for Brother', price: '2,799', originalPrice: '4,099', image: giftBrother, rating: 4.5, reviews: 55, badge: 'Top Pick' },
-    { id: 'f6', recipient: 'brother', name: 'Minimal Silver Ring for Brother', price: '1,999', originalPrice: '3,099', image: giftBrother, rating: 4.8, reviews: 91, badge: 'Essentials' },
-    { id: 'f7', recipient: 'sister', name: 'Rose Glow Earrings for Sister', price: '2,199', originalPrice: '3,199', image: giftSister, rating: 4.7, reviews: 114, badge: "Sister's Fave" },
-    { id: 'f8', recipient: 'sister', name: 'Heart Charm Pendant for Sister', price: '2,899', originalPrice: '4,099', image: giftSister, rating: 4.8, reviews: 176, badge: 'New Arrival' },
-    { id: 'f9', recipient: 'husband', name: 'Modern Silver Band for Husband', price: '3,499', originalPrice: '5,099', image: giftHusband, rating: 4.8, reviews: 124, badge: 'Top Rated' },
-    { id: 'f10', recipient: 'husband', name: 'Statement Pendant for Husband', price: '4,099', originalPrice: '5,999', image: giftHusband, rating: 4.6, reviews: 88, badge: 'Premium Pick' },
-    { id: 'f11', recipient: 'wife', name: 'Moonlight Silver Necklace for Wife', price: '4,699', originalPrice: '6,899', image: giftWife, rating: 4.9, reviews: 243, badge: 'Most Loved' },
-    { id: 'f12', recipient: 'wife', name: 'Sparkle Drop Earrings for Wife', price: '2,599', originalPrice: '3,799', image: giftWife, rating: 4.7, reviews: 167, badge: 'Gift Ready' }
-];
 
 const normalizeToken = (value = '') => String(value || '')
     .trim()
@@ -107,24 +86,6 @@ const matchesRecipientAudience = (_product = {}, _recipient = 'all') => {
     // Legacy "navGiftsFor/navOccasions" tags are retired. Family tabs are driven by CMS
     // category selection (or manual pinned products), so we no longer filter by audience tags.
     return true;
-};
-
-const toFallbackProductCard = (product) => {
-    const price = parseMoney(product.price);
-    const originalPrice = parseMoney(product.originalPrice);
-    return {
-        id: product.id,
-        _id: product.id,
-        name: product.name,
-        image: product.image,
-        price,
-        originalPrice,
-        rating: product.rating,
-        reviews: product.reviews,
-        isTrending: String(product.badge || '').toLowerCase().includes('bestseller'),
-        priceDrop: originalPrice > price,
-        variants: [{ id: `${product.id}-v1`, price, mrp: originalPrice }]
-    };
 };
 
 const toProductCard = (product) => {
@@ -236,13 +197,6 @@ const FamilyProductsCatalog = ({
     }, {});
 
     const visibleProductCards = useMemo(() => {
-        if (sortedProducts.length === 0) {
-            const fallbackVisible = FALLBACK_PRODUCTS.filter((product) => (
-                effectiveTab === 'all' || product.recipient === effectiveTab
-            ));
-            return fallbackVisible.map(toFallbackProductCard);
-        }
-
         let selected = [];
         if (runtimeTabConfig.sourceMode === 'manual') {
             const pinnedMap = new Map(sortedProducts.map((product) => [String(product.id || product._id), product]));

@@ -11,23 +11,32 @@ const ShopByPrice = () => {
     const { data: homepageSections = {} } = useHomepageCms();
     const sectionData = homepageSections?.['luxury-within-reach'];
 
-    // Using the user's specific labels from the reference design
-    const displayItems = [
-        {
-            id: 'soulitaire',
-            title: 'SOULitaire',
-            subtitle: 'Under ₹999',
-            image: budgetEarrings,
-            path: '/shop?price_max=999'
-        },
-        {
-            id: 'beyond-bold',
-            title: 'Beyond Bold',
-            subtitle: 'Under ₹1999',
-            image: budgetPendant,
-            path: '/shop?price_max=1999'
-        }
-    ];
+    // Preferred CMS-driven items, falling back to designer-curated defaults for safety
+    const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
+    const displayItems = configuredItems.length > 0
+        ? configuredItems.map((item, index) => ({
+            id: item.itemId || item._id || item.id || `price-${index}`,
+            title: item.name || item.label || 'Luxury Item',
+            subtitle: item.subtitle || (item.priceMax ? `Under ₹${item.priceMax}` : 'Boutique Collection'),
+            image: item.image,
+            path: item.path || (item.priceMax ? `/shop?price_max=${item.priceMax}` : '/shop')
+        }))
+        : [
+            {
+                id: 'soulitaire',
+                title: 'SOULitaire',
+                subtitle: 'Under ₹999',
+                image: budgetEarrings,
+                path: '/shop?price_max=999'
+            },
+            {
+                id: 'beyond-bold',
+                title: 'Beyond Bold',
+                subtitle: 'Under ₹1999',
+                image: budgetPendant,
+                path: '/shop?price_max=1999'
+            }
+        ];
 
     return (
         <section className="py-4 md:py-8 bg-[#FDF8F8]">

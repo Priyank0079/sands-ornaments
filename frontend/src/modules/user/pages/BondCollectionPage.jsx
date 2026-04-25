@@ -3,7 +3,6 @@ import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, ChevronRight, ShieldCheck, RefreshCw, RotateCcw, Star } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
-import { COLLECTION_MOCK_PRODUCTS } from '../data/mockCollectionData';
 import ProductCard from '../components/ProductCard';
 import { matchesRequestedMetal } from '../utils/productMetal';
 
@@ -72,15 +71,6 @@ const BONDS_CONFIG = {
     }
 };
 
-const MOCKS_FOR_BONDS = {
-    wife: (COLLECTION_MOCK_PRODUCTS.bond || []).filter(p => p.id.startsWith('mock-w')),
-    husband: (COLLECTION_MOCK_PRODUCTS.bond || []).filter(p => p.id.startsWith('mock-h')),
-    mother: (COLLECTION_MOCK_PRODUCTS.bond || []).filter(p => p.id.startsWith('mock-m')),
-    brothers: (COLLECTION_MOCK_PRODUCTS.bond || []).filter(p => p.id.startsWith('mock-b')),
-    sister: (COLLECTION_MOCK_PRODUCTS.bond || []).filter(p => p.id.startsWith('mock-s')),
-    friends: (COLLECTION_MOCK_PRODUCTS.bond || []).filter(p => p.id.startsWith('mock-f'))
-};
-
 const BondCollectionPage = () => {
     const { bondId } = useParams();
     const { products } = useShop();
@@ -99,11 +89,8 @@ const BondCollectionPage = () => {
             const metalMatch = matchesRequestedMetal(p, metalQuery);
             return bondMatch && metalMatch;
         });
-        
-        const mocks = (!metalQuery || metalQuery.toLowerCase() === 'silver')
-            ? (MOCKS_FOR_BONDS[bondId] || MOCKS_FOR_BONDS.wife)
-            : [];
-        return [...real, ...mocks].slice(0, 16);
+
+        return real.slice(0, 16);
     }, [products, bondId, metalQuery]);
 
     useEffect(() => {

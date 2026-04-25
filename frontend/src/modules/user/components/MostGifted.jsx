@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
 import { useHomepageCms } from '../hooks/useHomepageCms';
 import ProductCard from './ProductCard';
-import { COLLECTION_MOCK_PRODUCTS } from '../data/mockCollectionData';
+import { matchesRequestedMetal } from '../utils/productMetal';
 import bannerModel from '@assets/gift_wife_silver.png';
 
 const defaultHeroItem = {
@@ -28,12 +28,19 @@ const MostGifted = () => {
     
     // Normalize products for display
     const displayProducts = React.useMemo(() => {
-        // Use 'sterling' or 'pure' collection for gifts
-        const mockGifts = COLLECTION_MOCK_PRODUCTS.sterling || [];
-        const trendingProducts = products.filter(p => p.reviewCount > 20).slice(0, 10);
-        
-        const combined = [...mockGifts, ...trendingProducts.filter(p => !mockGifts.some(m => m.id === p.id))];
-        return combined.slice(0, 12);
+        const list = Array.isArray(products) ? products : [];
+        const valid = list.filter((p) => (p?.id || p?._id) && p?.name);
+
+        // Home (/) is the Silver landing page. Keep this section silver-safe.
+        const silverOnly = valid.filter((product) => matchesRequestedMetal(product, 'silver'));
+
+        return [...silverOnly]
+            .sort((a, b) => {
+                const aScore = Number(a?.reviewCount || a?.reviews || 0) + (Number(a?.rating || 0) * 10);
+                const bScore = Number(b?.reviewCount || b?.reviews || 0) + (Number(b?.rating || 0) * 10);
+                return bScore - aScore;
+            })
+            .slice(0, 12);
     }, [products]);
 
     const heroItem = {

@@ -13,13 +13,6 @@ import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 import { ensureSilverHomePath } from '../utils/silverHomePaths';
 import { matchesRequestedMetal } from '../utils/productMetal';
 
-const LEAD_PRODUCTS = [
-    { id: 'lp1', name: "Soulmate Silver Band", price: 3499, originalPrice: 4899, image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&q=80&w=800", rating: 4.5, reviewCount: 12 },
-    { id: 'lp2', name: "Amara Delicate Necklace", price: 4200, originalPrice: 5880, image: "https://images.unsplash.com/photo-1515562141207-7a18b5ce7142?auto=format&fit=crop&q=80&w=800", rating: 4.8, reviewCount: 8 },
-    { id: 'lp3', name: "Zaya Crystal Earrings", price: 2800, originalPrice: 3920, image: "https://images.unsplash.com/photo-1635767798638-3e25273a8256?auto=format&fit=crop&q=80&w=800", rating: 4.2, reviewCount: 15 },
-    { id: 'lp4', name: "Mens Curb Bracelet", price: 5999, originalPrice: 8399, image: "https://images.unsplash.com/photo-1611085583191-a3b1a6a939db?auto=format&fit=crop&q=80&w=800", rating: 4.7, reviewCount: 22 },
-];
-
 const FALLBACK_RECIPIENTS = [
     { id: 'wife', name: 'Wife', image: bondWife, path: ensureSilverHomePath('/collection/bond/wife') },
     { id: 'husband', name: 'Husband', image: bondHusband, path: ensureSilverHomePath('/collection/bond/husband') },
@@ -42,8 +35,17 @@ const PerfectGift = () => {
     const giftSettings = giftSection?.settings || {};
     const giftProductLimit = Math.max(1, Number(giftSettings.productLimit) || 4);
 
+    const curatedGiftIds = React.useMemo(() => {
+        return Array.isArray(giftSection?.items)
+            ? giftSection.items
+                .flatMap((item) => [item?.productId, item?.id, item?._id])
+                .filter(Boolean)
+                .map((id) => String(id))
+            : [];
+    }, [giftSection?.items]);
+
     const featuredGifts = React.useMemo(() => {
-        if (!products || products.length === 0) return LEAD_PRODUCTS.slice(0, giftProductLimit);
+        if (!products || products.length === 0) return [];
 
         // Keep this strip silver-safe on Silver Home.
         const validProducts = products.filter((product) =>
@@ -52,6 +54,16 @@ const PerfectGift = () => {
             && (product.stockStatus !== 'out_of_stock')
             && matchesRequestedMetal(product, 'silver')
         );
+
+        // If CMS has curated product IDs, attempt to use them first.
+        if (curatedGiftIds.length > 0) {
+            const productMap = new Map(validProducts.map((product) => [String(product.id || product._id), product]));
+            const curated = curatedGiftIds
+                .map((pid) => productMap.get(String(pid)))
+                .filter(Boolean)
+                .slice(0, giftProductLimit);
+            if (curated.length > 0) return curated;
+        }
 
         // Sorting rule:
         // 1. Gift/Set keyword in Name
@@ -75,8 +87,8 @@ const PerfectGift = () => {
         });
 
         const sliced = sorted.slice(0, giftProductLimit);
-        return sliced.length > 0 ? sliced : LEAD_PRODUCTS.slice(0, giftProductLimit);
-    }, [products, giftProductLimit]);
+        return sliced;
+    }, [curatedGiftIds, products, giftProductLimit]);
 
     const recipients = (bondSection?.items?.length ? bondSection.items : FALLBACK_RECIPIENTS).map((item, index) => {
         if (!bondSection?.items?.length) return item;
@@ -128,6 +140,7 @@ const PerfectGift = () => {
                 </div>
 
                 {/* Featured Products Sub-section */}
+                {featuredGifts.length > 0 && (
                 <div className="mt-4 md:mt-8 pt-4 md:pt-8 border-t border-gray-100">
                     <div className="flex items-center justify-between mb-4 md:mb-8">
                         <div>
@@ -149,6 +162,7 @@ const PerfectGift = () => {
                         ))}
                     </div>
                 </div>
+                )}
 
             </div>
         </section>

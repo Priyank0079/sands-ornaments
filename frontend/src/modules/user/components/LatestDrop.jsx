@@ -4,7 +4,7 @@ import { ArrowRight } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
 import { useHomepageCms } from '../hooks/useHomepageCms';
 import ProductCard from './ProductCard';
-import { COLLECTION_MOCK_PRODUCTS } from '../data/mockCollectionData';
+import { matchesRequestedMetal } from '../utils/productMetal';
 
 const LatestDrop = () => {
     const { products } = useShop();
@@ -14,13 +14,15 @@ const LatestDrop = () => {
     const sectionData = homepageSections?.['latest-drop'];
     
     const displayProducts = React.useMemo(() => {
-        // Use the 'lp' (lead products) from mocks, or find recent products from the context
-        const mockLatest = COLLECTION_MOCK_PRODUCTS.lp || [];
-        const contextLatest = products.slice(-8); // Get last 8 from context if available
+        const list = Array.isArray(products) ? products : [];
+        const valid = list.filter((p) => (p?.id || p?._id) && p?.name);
         
-        // Remove duplicates if any
-        const combined = [...mockLatest, ...contextLatest.filter(p => !mockLatest.some(m => m.name === p.name))];
-        return combined.slice(0, 12);
+        // Home (/) is the Silver landing page. Keep this section silver-safe.
+        const silverOnly = valid.filter((product) => matchesRequestedMetal(product, 'silver'));
+
+        return [...silverOnly]
+            .sort((a, b) => new Date(b.createdAt || b.updatedAt || 0) - new Date(a.createdAt || a.updatedAt || 0))
+            .slice(0, 12);
     }, [products]);
 
     const scroll = (direction) => {

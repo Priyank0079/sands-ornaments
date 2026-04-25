@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Star } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
 import ProductCard from '../components/ProductCard';
-import { COLLECTION_MOCK_PRODUCTS } from '../data/mockCollectionData';
 
 // Placeholder Banner (since image generation is unavailable)
 import bannerHero from '@assets/banner_party.png'; 
@@ -15,12 +14,18 @@ const BestStylesPage = () => {
     const navigate = useNavigate();
 
     const filteredProducts = useMemo(() => {
-        const mockBest = COLLECTION_MOCK_PRODUCTS.home || [];
-        const realBest = products.filter(p => p.rating >= 4.8 || p.isTrending);
-        
-        // Combine and limit
-        const combined = [...mockBest, ...realBest.filter(p => !mockBest.some(m => m.name === p.name))];
-        return combined.slice(0, 20);
+        const list = Array.isArray(products) ? products : [];
+        const valid = list.filter((p) => (p?.id || p?._id) && p?.name);
+
+        const score = (p) => {
+            const trending = (p?.isTrending || p?.tags?.isTrending) ? 1000 : 0;
+            const rating = Number(p?.rating || 0) * 100;
+            const reviews = Number(p?.reviewCount || p?.reviews || 0);
+            const ts = new Date(p?.createdAt || p?.updatedAt || 0).getTime() || 0;
+            return trending + rating + Math.min(reviews, 999) + (ts / 1e12);
+        };
+
+        return [...valid].sort((a, b) => score(b) - score(a)).slice(0, 20);
     }, [products]);
 
     useEffect(() => {
@@ -100,7 +105,7 @@ const BestStylesPage = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
                     {filteredProducts.map((product, idx) => (
                         <motion.div
-                            key={product.id}
+                            key={product.id || product._id || `best-style-${idx}`}
                             initial={{ opacity: 0, y: 30 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8, delay: (idx % 4) * 0.1 }}

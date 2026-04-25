@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useShop } from '../../../context/ShopContext';
 import ProductCard from './ProductCard';
-import { COLLECTION_MOCK_PRODUCTS } from '../data/mockCollectionData.js';
 
 const parsePositiveNumber = (value, fallback = 4) => {
     const parsed = Number(value);
@@ -128,26 +127,7 @@ const GoldDirectProducts = ({ sectionData = null }) => {
             return filtered.slice(0, resolvedSettings.productLimit);
         }
 
-        const goldMocks = [
-            ...COLLECTION_MOCK_PRODUCTS['24k'],
-            ...COLLECTION_MOCK_PRODUCTS['22k']
-        ];
-
-        return goldMocks.slice(0, resolvedSettings.productLimit).map((m) => ({
-            id: m.id,
-            _id: m.id,
-            name: m.name,
-            price: m.price,
-            img: m.img,
-            image: m.img,
-            images: [m.img],
-            isTrending: true,
-            rating: 4.5,
-            reviewCount: 0,
-            originalPrice: m.price * 1.5,
-            priceDrop: true,
-            metal: 'gold'
-        }));
+        return [];
     }, [products, sectionData, resolvedSettings]);
 
     if (displayProducts.length === 0) return null;

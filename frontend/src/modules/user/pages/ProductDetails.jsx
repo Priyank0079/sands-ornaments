@@ -7,7 +7,6 @@ import toast from 'react-hot-toast';
 import ProductCard from '../components/ProductCard';
 import WhyChooseUs from '../components/WhyChooseUs';
 import { Heart, ShoppingBag, Star, Share2, Plus, Minus, Truck, ShieldCheck, Smile, Gift, ChevronDown, SlidersHorizontal, X, Camera, Check, ArrowLeft, ArrowRight, Droplets, Sparkles, Play, Globe, Zap, Users } from 'lucide-react';
-import { COLLECTION_MOCK_PRODUCTS } from '../data/mockCollectionData';
 // Product video is backend-driven (optional) via `product.videoUrl`.
 import Loader from '../../shared/components/Loader';
 
@@ -18,11 +17,6 @@ import latestNecklace from '@assets/latest_drop_necklace.png';
 import latestEarrings from '@assets/latest_drop_earrings.png';
 import newAnklets from '@assets/new_launch_anklets.png';
 
-// Import Men Category Images
-import menRings from '@assets/images/men-categories/rings.png';
-import menPendants from '@assets/images/men-categories/pendants.png';
-import menBracelets from '@assets/images/men-categories/bracelets.png';
-import menChains from '@assets/images/men-categories/chains.png';
 
 const fallbackModelMap = {
     ring: latestRing,
@@ -66,104 +60,14 @@ const ProductDetails = () => {
         setLocalPincode(pincode);
     }, [pincode]);
 
-    // Find in mock collection as a fallback (only if real product fetch + catalogue lookup fail).
-    const mockProduct = useMemo(() => {
-        if (!id) return null;
-
-        // Check for Men's Dummy Products
-        const menDummies = {
-            'p1': {
-                id: 'p1',
-                name: "Silver Fibonacci Flow Ring For Him",
-                price: 2899,
-                originalPrice: 4699,
-                image: menRings,
-                category: "Rings",
-                metal: "925 Sterling Silver",
-                purity: "Pure Silver",
-                description: "Inspired by the mathematical perfection of nature, the Fibonacci Flow Ring features a continuous, swirling pattern that symbolizes eternal growth and harmony. Hand-finished for a premium mirror polish.",
-                specifications: "Material: 925 Sterling Silver<br/>Finish: Hi-Shine Rhodium Plating<br/>Weight: Approx 6.5g<br/>Style: Contemporary Minimalist",
-                careTips: "Clean with a dry microfibre cloth.<br/>Avoid contact with perfumes and sweat.<br/>Store in the provided Sands Royal box."
-            },
-            'p2': {
-                id: 'p2',
-                name: "Silver Anjaneya Pendant With Box Chain",
-                price: 3799,
-                originalPrice: 6199,
-                image: menPendants,
-                category: "Pendants",
-                metal: "925 Sterling Silver",
-                purity: "Pure Silver",
-                description: "A powerful symbol of devotion and strength, the Anjaneya Pendant captures the essence of Lord Hanuman in exquisite detail. Comes with a sturdy silver box chain for a complete look.",
-                specifications: "Material: 925 Sterling Silver<br/>Pendant Height: 25mm<br/>Chain Length: 20-22 inches adjustable<br/>Weight: Approx 12g",
-                careTips: "Remove before showering.<br/>Store separately to avoid scratches.<br/>Wipe with a soft cloth after wearing."
-            },
-            'p4': {
-                id: 'p4',
-                name: "Silver Trooper Bracelet For Him",
-                price: 4199,
-                originalPrice: 6999,
-                image: menBracelets,
-                category: "Bracelets",
-                metal: "925 Sterling Silver",
-                purity: "Pure Silver",
-                description: "Bold, rugged, and undeniably masculine. The Trooper Bracelet features heavy-duty links and a secure industrial clasp, designed for the man who leads with confidence.",
-                specifications: "Material: 925 Sterling Silver<br/>Link Width: 8mm<br/>Length: 8.5 inches<br/>Weight: Approx 18g",
-                careTips: "Rinse with lukewarm water if exposed to salt.<br/>Dry completely before storing.<br/>Keep in an airtight bag when not in use."
-            },
-            'p5': {
-                id: 'p5',
-                name: "Silver Statement Link Chain",
-                price: 6599,
-                originalPrice: 9999,
-                image: menChains,
-                category: "Chains",
-                metal: "925 Sterling Silver",
-                purity: "Pure Silver",
-                description: "The ultimate statement piece. This classic link chain offers a substantial feel and a brilliant luster that commands attention. A staple for any modern wardrobe.",
-                specifications: "Material: 925 Sterling Silver<br/>Thickness: 5mm<br/>Length: 24 inches<br/>Weight: Approx 25g",
-                careTips: "Lay flat when storing to avoid kinks.<br/>Professional cleaning recommended every 6 months.<br/>Always put on last after grooming."
-            }
-        };
-
-        if (menDummies[id]) {
-            const found = menDummies[id];
-            return {
-                ...found,
-                images: [found.image],
-                variants: [{ id: `${found.id}-v1`, name: 'Standard', weight: '7-25', weightUnit: 'g', price: found.price, mrp: found.originalPrice }],
-                brand: 'SANDS ROYAL'
-            };
-        }
-
-        // Legacy mock catalogue entries (used only as fallback).
-        for (const cat in COLLECTION_MOCK_PRODUCTS) {
-            const found = COLLECTION_MOCK_PRODUCTS[cat].find(p => p.id === id);
-            if (found) {
-                return {
-                    ...found,
-                    image: found.img,
-                    images: [found.img],
-                    description: found.description || `Experience the luxury of our ${found.name}. Handcrafted to perfection, this ${found.metal} ${found.purity} piece represents the pinnacle of jewellery craftsmanship. Exclusive to Sands Ornaments.`,
-                    variants: found.variants || [{ id: `${found.id}-v1`, name: found.purity || 'Standard', price: found.price, mrp: found.price * 1.2 }],
-                    category: found.category || found.metal,
-                    brand: 'SANDS ROYAL',
-                    specifications: `Material: ${found.metal}<br/>Purity: ${found.purity}<br/>Weight: Approx 12g<br/>Certification: Hallmarked`,
-                    careTips: `Keep away from moisture.<br/>Store in an airtight container.<br/>Clean with a soft cloth after use.`
-                };
-            }
-        }
-        return null;
-    }, [id]);
-
     const catalogueProduct = useMemo(() => (products || []).find(p => String(p.id || p._id) === String(id)), [products, id]);
     const [detailProduct, setDetailProduct] = useState(null);
     const [detailLoading, setDetailLoading] = useState(false);
 
-    // Production-safe priority: API detail -> catalogue -> mock fallback.
+    // Production-safe priority: API detail -> catalogue.
     const product = useMemo(() => {
-        return detailProduct || catalogueProduct || mockProduct || null;
-    }, [id, mockProduct, detailProduct, catalogueProduct]);
+        return detailProduct || catalogueProduct || null;
+    }, [detailProduct, catalogueProduct]);
 
     useEffect(() => {
         let ignore = false;
@@ -180,7 +84,7 @@ const ProductDetails = () => {
                     });
                 }
             } catch (err) {
-                // fall back to catalogue or mock data
+                // fall back to catalogue (if already in context)
                 if (!ignore) setDetailProduct(null);
             } finally {
                 if (!ignore) setDetailLoading(false);
