@@ -6,6 +6,7 @@ import ProductSkeleton from '../components/ProductSkeleton';
 import Loader from '../../shared/components/Loader';
 import api from '../../../services/api';
 import { usePublicProductsQuery } from '../hooks/usePublicProductsQuery';
+import CategoryHeroBanner from '../components/CategoryHeroBanner';
 import {
     Filter, ChevronDown, ShoppingBag, SlidersHorizontal,
     ArrowLeft, ArrowUpDown
@@ -71,6 +72,32 @@ const Shop = () => {
 
     const [pinnedProducts, setPinnedProducts] = useState([]);
     const [isPinnedLoading, setIsPinnedLoading] = useState(false);
+
+    const activeCategoryHint = useMemo(() => {
+        const qp = new URLSearchParams(location.search);
+        const fromQuery = normalizeCategoryToken(qp.get('category') || '');
+        if (fromQuery) return fromQuery;
+
+        const categorySlugParam = String(category || '').trim();
+        const isAudienceSlug = ['men', 'women', 'family'].includes(categorySlugParam.toLowerCase());
+        if (!isAudienceSlug && categorySlugParam) return normalizeCategoryToken(categorySlugParam);
+
+        return '';
+    }, [location.search, category]);
+
+    const activeCategory = useMemo(() => {
+        if (!activeCategoryHint) return null;
+        if (!Array.isArray(categories) || categories.length === 0) return null;
+
+        const raw = String(activeCategoryHint).trim();
+        const byId = categories.find((c) => String(c?._id) === raw);
+        if (byId) return byId;
+        const lowered = raw.toLowerCase();
+        const bySlug = categories.find((c) => String(c?.slug || '').toLowerCase() === lowered);
+        if (bySlug) return bySlug;
+        const byName = categories.find((c) => String(c?.name || '').toLowerCase() === lowered);
+        return byName || null;
+    }, [activeCategoryHint, categories]);
 
     const requestedPinnedIds = useMemo(() => {
         if (!productsQuery) return [];
@@ -740,6 +767,9 @@ const Shop = () => {
                 </button>
             </div>
             <div className="container mx-auto px-4 md:px-6 pt-4 pb-32 md:pb-8">
+                {activeCategory && (
+                    <CategoryHeroBanner category={activeCategory} />
+                )}
                 {/* Header Section - Single Row: Title Left, Filter Button Right */}
                 {/* Header Section - Compact Mobile */}
                 <div className="sticky top-[50px] md:top-[141px] z-30 bg-white pt-2 md:pt-4 flex flex-row justify-between items-center mb-4 md:mb-10 pb-2 md:pb-6 border-b border-[#EBCDD0] gap-4 transition-all duration-300">

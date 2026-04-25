@@ -10,14 +10,20 @@ router.get("/:id", categoryController.getCategoryById);
 
 router.post(
   "/",
-  categoryUpload.single("image"),
+  categoryUpload.fields([
+    { name: "image", maxCount: 1 },
+    { name: "bannerImage", maxCount: 1 }
+  ]),
   validate(createCategorySchema),
   categoryController.createCategory
 );
 
 router.put(
   "/:id",
-  categoryUpload.single("image"),
+  categoryUpload.fields([
+    { name: "image", maxCount: 1 },
+    { name: "bannerImage", maxCount: 1 }
+  ]),
   validate(updateCategorySchema),
   categoryController.updateCategory
 );

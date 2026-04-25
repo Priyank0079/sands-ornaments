@@ -25,7 +25,7 @@ const parseNumber = (value) => {
 
 exports.createCategory = async (req, res) => {
   try {
-    const { name, slug, description, showInNavbar, showInCollection, sortOrder, isActive } = req.body;
+    const { name, slug, description, bannerTitle, bannerSubtitle, showInNavbar, showInCollection, sortOrder, isActive } = req.body;
     
     // Auto-generate slug if not provided
     const categorySlug = slug ? slugify(slug) : slugify(name);
@@ -38,15 +38,22 @@ exports.createCategory = async (req, res) => {
       return error(res, `Category slug "${categorySlug}" is already taken. Please use a different name.`, 400);
     }
 
+    const files = req.files || {};
+    const imageFile = Array.isArray(files.image) ? files.image[0] : null;
+    const bannerImageFile = Array.isArray(files.bannerImage) ? files.bannerImage[0] : null;
+
     const category = await Category.create({
       name,
       slug: categorySlug,
       description,
+      bannerTitle: String(bannerTitle || "").trim(),
+      bannerSubtitle: String(bannerSubtitle || "").trim(),
       showInNavbar: parseBoolean(showInNavbar) ?? true,
       showInCollection: parseBoolean(showInCollection) ?? true,
       sortOrder: parseNumber(sortOrder) ?? 0,
       isActive: parseBoolean(isActive) ?? true,
-      image: req.file ? req.file.path : null, // Cloudinary URL
+      image: imageFile?.path || req.file?.path || null, // backwards compatible
+      bannerImage: bannerImageFile?.path || null,
     });
 
     console.log(`[Admin] Category created: ${category.name} (${category._id})`);
@@ -94,7 +101,7 @@ exports.getCategoryById = async (req, res) => {
 exports.updateCategory = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, slug, description, showInNavbar, showInCollection, sortOrder, isActive } = req.body;
+    const { name, slug, description, bannerTitle, bannerSubtitle, showInNavbar, showInCollection, sortOrder, isActive } = req.body;
 
     const category = await Category.findById(id);
     if (!category) return error(res, "Category not found", 404);
@@ -110,6 +117,8 @@ exports.updateCategory = async (req, res) => {
 
     if (name) category.name = name;
     if (description !== undefined) category.description = description;
+    if (bannerTitle !== undefined) category.bannerTitle = String(bannerTitle || "").trim();
+    if (bannerSubtitle !== undefined) category.bannerSubtitle = String(bannerSubtitle || "").trim();
     if (showInNavbar !== undefined) category.showInNavbar = parseBoolean(showInNavbar);
     if (showInCollection !== undefined) category.showInCollection = parseBoolean(showInCollection);
     if (sortOrder !== undefined) category.sortOrder = parseNumber(sortOrder) ?? category.sortOrder;
@@ -120,6 +129,13 @@ exports.updateCategory = async (req, res) => {
       : (() => {
           if (!req.body.deletedImages) return [];
           try { return JSON.parse(req.body.deletedImages); } catch (e) { return []; }
+        })();
+
+    const bannerDeletedImages = Array.isArray(req.body.bannerDeletedImages)
+      ? req.body.bannerDeletedImages
+      : (() => {
+          if (!req.body.bannerDeletedImages) return [];
+          try { return JSON.parse(req.body.bannerDeletedImages); } catch (e) { return []; }
         })();
 
     if (deletedImages.length > 0) {
@@ -135,8 +151,33 @@ exports.updateCategory = async (req, res) => {
       }
     }
 
-    if (req.file) {
+    if (bannerDeletedImages.length > 0) {
+      for (const imageUrl of bannerDeletedImages) {
+        try {
+          await deleteFromCloudinary(imageUrl);
+        } catch (err) {
+          console.error(`Failed to delete category banner image ${imageUrl}:`, err);
+        }
+      }
+      if (category.bannerImage && bannerDeletedImages.includes(category.bannerImage)) {
+        category.bannerImage = "";
+      }
+    }
+
+    const files = req.files || {};
+    const imageFile = Array.isArray(files.image) ? files.image[0] : null;
+    const bannerImageFile = Array.isArray(files.bannerImage) ? files.bannerImage[0] : null;
+
+    // Backwards compatibility if older route still provides req.file
+    if (req.file?.path && !imageFile?.path) {
       category.image = req.file.path;
+    }
+
+    if (imageFile?.path) {
+      category.image = imageFile.path;
+    }
+    if (bannerImageFile?.path) {
+      category.bannerImage = bannerImageFile.path;
     }
 
     await category.save();
@@ -167,6 +208,14 @@ exports.deleteCategory = async (req, res) => {
         await deleteFromCloudinary(category.image);
       } catch (err) {
         console.error(`Failed to delete category image ${category.image}:`, err);
+      }
+    }
+
+    if (category.bannerImage) {
+      try {
+        await deleteFromCloudinary(category.bannerImage);
+      } catch (err) {
+        console.error(`Failed to delete category banner image ${category.bannerImage}:`, err);
       }
     }
 

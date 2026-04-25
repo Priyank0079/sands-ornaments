@@ -5,6 +5,10 @@ const categorySchema = new mongoose.Schema({
   slug: { type: String, required: true, unique: true, index: true },
   description: { type: String },
   image: { type: String },
+  // Optional hero/banner fields used on user Shop category view.
+  bannerTitle: { type: String, default: "" },
+  bannerSubtitle: { type: String, default: "" },
+  bannerImage: { type: String, default: "" },
   showInNavbar: { type: Boolean, default: true },
   showInCollection: { type: Boolean, default: true },
   sortOrder: { type: Number, default: 0 },

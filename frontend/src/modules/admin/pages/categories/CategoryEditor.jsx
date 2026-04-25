@@ -14,6 +14,8 @@ const CategoryEditor = () => {
     const [loading, setLoading] = useState(isEditMode);
     const [imageFile, setImageFile] = useState(null);
     const [previewImage, setPreviewImage] = useState('');
+    const [bannerImageFile, setBannerImageFile] = useState(null);
+    const [bannerPreviewImage, setBannerPreviewImage] = useState('');
     const [errors, setErrors] = useState({});
     const [allCategories, setAllCategories] = useState([]);
 
@@ -21,11 +23,14 @@ const CategoryEditor = () => {
         name: '',
         slug: '',
         description: '',
+        bannerTitle: '',
+        bannerSubtitle: '',
         sortOrder: 0,
         showInNavbar: true,
         showInCollection: true,
         isActive: true,
-        deletedImages: []
+        deletedImages: [],
+        bannerDeletedImages: []
     });
 
     useEffect(() => {
@@ -51,13 +56,17 @@ const CategoryEditor = () => {
                         name: data.name || '',
                         slug: data.slug || '',
                         description: data.description || '',
+                        bannerTitle: data.bannerTitle || '',
+                        bannerSubtitle: data.bannerSubtitle || '',
                         sortOrder: data.sortOrder ?? 0,
                         showInNavbar: data.showInNavbar !== false,
                         showInCollection: data.showInCollection !== false,
                         isActive: data.isActive !== false,
-                        deletedImages: []
+                        deletedImages: [],
+                        bannerDeletedImages: []
                     }));
                     setPreviewImage(data.image || '');
+                    setBannerPreviewImage(data.bannerImage || '');
                 }
             } catch (err) {
                 toast.error("Failed to load category");
@@ -102,6 +111,21 @@ const CategoryEditor = () => {
         setPreviewImage('');
     };
 
+    const handleBannerImageUpload = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setBannerImageFile(file);
+        setBannerPreviewImage(URL.createObjectURL(file));
+    };
+
+    const handleRemoveBannerImage = () => {
+        setBannerImageFile(null);
+        if (bannerPreviewImage && !bannerPreviewImage.startsWith('blob:')) {
+            setFormData(prev => ({ ...prev, bannerDeletedImages: [bannerPreviewImage] }));
+        }
+        setBannerPreviewImage('');
+    };
+
     const validate = () => {
         const nextErrors = {};
         if (!formData.name.trim()) nextErrors.name = 'Category name is required';
@@ -137,6 +161,8 @@ const CategoryEditor = () => {
             data.append('name', formData.name.trim());
             if (formData.slug?.trim()) data.append('slug', formData.slug.trim());
             data.append('description', formData.description || '');
+            data.append('bannerTitle', formData.bannerTitle || '');
+            data.append('bannerSubtitle', formData.bannerSubtitle || '');
             data.append('sortOrder', Number(formData.sortOrder) || 0);
             data.append('showInNavbar', formData.showInNavbar);
             data.append('showInCollection', formData.showInCollection);
@@ -145,9 +171,15 @@ const CategoryEditor = () => {
             if (formData.deletedImages?.length) {
                 data.append('deletedImages', JSON.stringify(formData.deletedImages));
             }
+            if (formData.bannerDeletedImages?.length) {
+                data.append('bannerDeletedImages', JSON.stringify(formData.bannerDeletedImages));
+            }
 
             if (imageFile) {
                 data.append('image', imageFile);
+            }
+            if (bannerImageFile) {
+                data.append('bannerImage', bannerImageFile);
             }
 
             const res = isEditMode
@@ -220,6 +252,58 @@ const CategoryEditor = () => {
                         placeholder="Short category description"
                         rows={4}
                     />
+                </FormSection>
+
+                <FormSection title="Shop Page Banner">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <Input
+                            label="Banner Title (Optional)"
+                            name="bannerTitle"
+                            value={formData.bannerTitle}
+                            onChange={handleChange}
+                            placeholder="Defaults to category name"
+                        />
+                        <Input
+                            label="Banner Subtitle (Optional)"
+                            name="bannerSubtitle"
+                            value={formData.bannerSubtitle}
+                            onChange={handleChange}
+                            placeholder="Defaults to category description"
+                        />
+                    </div>
+                    <p className="text-xs text-gray-400 mt-2">
+                        This banner appears at the top of the user Shop page when the category filter is active.
+                    </p>
+
+                    <div className="mt-6 flex flex-col md:flex-row gap-6 items-start">
+                        <div className="w-full md:w-72 h-48 bg-gray-50 border border-dashed border-gray-300 rounded-xl flex items-center justify-center overflow-hidden">
+                            {bannerPreviewImage ? (
+                                <img src={bannerPreviewImage} alt="Banner Preview" className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="text-center text-gray-400">
+                                    <ImagePlus className="w-10 h-10 mx-auto mb-2" />
+                                    <p className="text-xs font-semibold">Upload banner image</p>
+                                </div>
+                            )}
+                        </div>
+                        <div className="space-y-3">
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleBannerImageUpload}
+                                className="block text-xs text-gray-600"
+                            />
+                            {bannerPreviewImage && (
+                                <button
+                                    type="button"
+                                    onClick={handleRemoveBannerImage}
+                                    className="inline-flex items-center gap-2 text-xs font-bold text-red-600 hover:text-red-700"
+                                >
+                                    <X className="w-4 h-4" /> Remove Banner Image
+                                </button>
+                            )}
+                        </div>
+                    </div>
                 </FormSection>
 
                 <FormSection title="Visibility & Status">
