@@ -17,7 +17,7 @@ const WhatsAppFloating = () => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             whileHover={{ scale: 1.1, y: -5 }}
             whileTap={{ scale: 0.9 }}
-            className="fixed bottom-6 right-6 z-[9999] flex items-center justify-center w-14 h-14 md:w-16 md:h-16 bg-[#25D366] text-white rounded-full shadow-[0_10px_25px_rgba(37,211,102,0.4)] transition-all duration-300 group"
+            className="whatsapp-floating fixed bottom-6 right-6 z-[9999] flex items-center justify-center w-14 h-14 md:w-16 md:h-16 bg-[#25D366] text-white rounded-full shadow-[0_10px_25px_rgba(37,211,102,0.4)] transition-all duration-300 group"
             aria-label="Contact us on WhatsApp"
         >
             {/* Pulsing Ring Animation - Using Brand Maroon for 'Amazing' Look */}

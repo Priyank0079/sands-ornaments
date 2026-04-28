@@ -61,7 +61,7 @@ const GoldTrustStrip = () => {
 
     return (
         <section className="w-full bg-gradient-to-r from-[#F0FFFD] via-white to-[#F0FFFD] py-8 md:py-12 border-y border-[#E0F2F1]">
-            <div className="container mx-auto px-4 max-w-[1300px]">
+            <div className="container mx-auto px-4 max-w-[1500px]">
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
                     {badges.map((badge) => (
                         <motion.div 

@@ -29,20 +29,20 @@ const fallbackModelMap = {
 const AccordionItem = ({ title, children, isOpen, onClick }) => (
     <div className="border-b border-[#EBCDD0]/50">
         <button
-            className="w-full py-4 flex items-center justify-between text-left focus:outline-none group"
+            className="w-full py-5 flex items-center justify-center md:justify-between text-center md:text-left focus:outline-none group relative"
             onClick={onClick}
         >
             <span className={`font-sans text-lg font-semibold transition-colors ${isOpen ? 'text-black' : 'text-gray-800 group-hover:text-black'}`}>
                 {title}
             </span>
-            <span className={`transform transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>
+            <span className={`md:static absolute right-0 transform transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>
                 <ChevronDown className={`w-5 h-5 ${isOpen ? 'text-[#D39A9F]' : 'text-gray-400 group-hover:text-[#D39A9F]'}`} />
             </span>
         </button>
         <div
-            className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 opacity-100 pb-4' : 'max-h-0 opacity-0'}`}
+            className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[1000px] opacity-100 pb-4' : 'max-h-0 opacity-0'}`}
         >
-            <div className="text-sm text-black leading-relaxed font-sans">
+            <div className="text-sm text-black leading-relaxed font-sans text-center md:text-left">
                 {children}
             </div>
         </div>
@@ -137,6 +137,7 @@ const ProductDetails = () => {
     // State for UI Sections
     const [openSection, setOpenSection] = useState('description');
     const [activeTab, setActiveTab] = useState('related');
+    const [activeDetailTab, setActiveDetailTab] = useState('details');
 
     // State for Reviews
     const [isWriteReviewOpen, setIsWriteReviewOpen] = useState(false);
@@ -365,11 +366,9 @@ const ProductDetails = () => {
     const isWishlisted = safeWishlist.some(item => item.id === product?.id);
 
     const currentVariant = selectedVariant || product?.variants?.[0] || {};
-    const diamondType = String(currentVariant?.diamondType || product?.diamondType || 'none').trim().toLowerCase();
-    const hasDiamonds =
-        Number(currentVariant?.diamondPrice || 0) > 0 ||
-        Number(currentVariant?.diamondCertificateCharge || 0) > 0;
-    const isLabGrown = diamondType === 'lab_grown' && hasDiamonds;
+    const hasDiamonds = !!(product?.diamondWeight || product?.diamondCount || currentVariant?.diamondWeight || currentVariant?.diamondCount || Number(currentVariant?.diamondPrice || 0) > 0);
+    const diamondType = product?.diamondType || currentVariant?.diamondType || (hasDiamonds ? 'Natural' : 'None');
+    const isLabGrown = String(diamondType).toLowerCase().includes('lab_grown');
 
     const toggleSection = (section) => {
         setOpenSection(openSection === section ? null : section);
@@ -591,10 +590,10 @@ const ProductDetails = () => {
                     </div>
 
                     {/* Right: Product Info */}
-                    <div className="space-y-6 pt-2">
+                    <div className="space-y-8 pt-2 flex flex-col items-center text-center">
                         <div>
                             <h1 className="text-2xl md:text-3xl font-display font-bold text-black mb-2 md:mb-4 leading-tight">{product.name}</h1>
-                            <div className="flex items-center gap-4 text-sm px-1">
+                            <div className="flex items-center justify-center gap-4 text-sm px-1">
                                 <div className="flex items-center text-[#D39A9F]">
                                     {[...Array(5)].map((_, i) => (
                                         <Star key={i} className={`w-3.5 h-3.5 ${i < Math.round(averageRating) ? 'fill-current' : 'text-gray-300'} `} />
@@ -610,7 +609,7 @@ const ProductDetails = () => {
                                     Sold by <span className="text-gray-700 font-bold">{supplierName}</span>
                                 </div>
                             )}
-                            <div className="mt-3 flex flex-wrap gap-2">
+                            <div className="mt-4 flex flex-wrap justify-center gap-2">
                                 {product?.huid && (
                                     <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-gray-600">
                                         HUID: {product.huid}
@@ -625,42 +624,16 @@ const ProductDetails = () => {
                         </div>
 
                         <div className="border-b border-gray-100 pb-6">
-                            <div className="flex items-baseline gap-3 mb-1">
-                                <span className="text-2xl md:text-3xl font-bold md:font-semibold text-black">{currencyText(variantPrice)}</span>
+                            <div className="flex items-baseline justify-center gap-3 mb-1">
+                                <span className="text-3xl md:text-4xl font-bold text-black">{currencyText(variantPrice)}</span>
                                 {variantMrp > variantPrice && (
                                     <>
-                                        <span className="text-base md:text-lg text-gray-400 line-through font-medium">{currencyText(variantMrp)}</span>
+                                        <span className="text-lg md:text-xl text-gray-400 line-through font-medium">{currencyText(variantMrp)}</span>
                                         <span className="bg-[#9C5B61] text-white text-[10px] font-bold px-2 py-1 rounded-sm tracking-wider">SAVE {variantDiscount}%</span>
                                     </>
                                 )}
                             </div>
                             <p className="text-xs text-gray-500 font-medium">Inclusive of all taxes</p>
-                        </div>
-
-                        <div className="border-b border-gray-100 pb-6">
-                            <div className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-3">Price Breakdown</div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                                <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
-                                    <span className="text-gray-600">Metal Price</span>
-                                    <span className="font-semibold text-gray-900">{currencyText(pricingBreakdown.metalPrice)}</span>
-                                </div>
-                                <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
-                                    <span className="text-gray-600">Making Charge</span>
-                                    <span className="font-semibold text-gray-900">{currencyText(pricingBreakdown.makingCharge)}</span>
-                                </div>
-                                <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
-                                    <span className="text-gray-600">Diamond Price</span>
-                                    <span className="font-semibold text-gray-900">{currencyText(pricingBreakdown.diamondPrice)}</span>
-                                </div>
-                                <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
-                                    <span className="text-gray-600">GST ({gstPercent}%)</span>
-                                    <span className="font-semibold text-gray-900">{currencyText(pricingBreakdown.gst)}</span>
-                                </div>
-                            </div>
-                            <div className="mt-4 flex items-center justify-between border-t border-gray-200 pt-4">
-                                <span className="text-sm font-bold uppercase tracking-widest text-gray-500">Final Price</span>
-                                <span className="text-lg font-bold text-black">{currencyText(pricingBreakdown.finalPrice || variantPrice || 0)}</span>
-                            </div>
                         </div>
 
                         <div className="space-y-4 pb-2 md:pb-6">
@@ -670,7 +643,7 @@ const ProductDetails = () => {
                                         <span className="text-xs font-bold uppercase tracking-widest text-gray-500">Variants</span>
                                         <span className="text-[10px] text-gray-400">Select one</span>
                                     </div>
-                                    <div className="flex flex-wrap gap-2">
+                                    <div className="flex flex-wrap justify-center gap-2">
                                         {product.variants.map((variant) => {
                                             const variantId = variant.id || variant._id;
                                             const isSelected = String(variantId) === String(selectedVariantId);
@@ -692,7 +665,7 @@ const ProductDetails = () => {
                                 </div>
                             )}
 
-                            <div className={`flex items-center gap-2 text-sm font-medium ${canAddToCart ? 'text-emerald-700' : 'text-red-600'}`}>
+                            <div className={`flex items-center justify-center gap-2 text-sm font-medium ${canAddToCart ? 'text-emerald-700' : 'text-red-600'}`}>
                                 <ShieldCheck className="w-4 h-4" />
                                 <span>
                                     {canAddToCart
@@ -702,19 +675,36 @@ const ProductDetails = () => {
                             </div>
 
 
-                            <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-gray-100 p-4 z-[110] md:hidden flex gap-4 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] pb-safe">
-                                <div className="flex flex-col justify-center min-w-[110px]">
-                                    <span className="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-0.5 leading-none">Price</span>
+                            {/* Mobile Sticky Bottom Action Bar - Refined for better reach and visibility */}
+                            <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 p-4 z-[150] md:hidden flex gap-3 shadow-[0_-10px_30px_rgba(0,0,0,0.08)] pb-safe">
+                                <div className="flex flex-col justify-center min-w-[100px]">
+                                    <span className="text-[9px] uppercase tracking-wider text-gray-500 font-bold mb-0.5 leading-none">Total Price</span>
                                     <span className="text-xl font-bold text-black leading-none">{currencyText(variantPrice)}</span>
                                 </div>
                                 <button
                                     onClick={handleAddToCart}
                                     disabled={!canAddToCart}
-                                    className={`flex-1 rounded-full h-14 font-bold uppercase tracking-widest text-[11px] flex items-center justify-center gap-2 active:scale-95 transition-all shadow-xl ${canAddToCart ? 'bg-[#8E2424] text-white shadow-[#8E2424]/20' : 'bg-gray-300 text-gray-500 shadow-gray-200 cursor-not-allowed'}`}
+                                    className={`flex-1 rounded-xl h-14 font-bold uppercase tracking-widest text-[11px] flex items-center justify-center gap-2 active:scale-[0.98] transition-all ${canAddToCart ? 'bg-[#8E2424] text-white shadow-lg shadow-[#8E2424]/20' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
                                 >
-                                    {canAddToCart ? 'Add to Cart' : 'Out of Stock'}
+                                    {canAddToCart ? (
+                                        <>
+                                            <ShoppingBag className="w-4 h-4" />
+                                            Add to Cart
+                                        </>
+                                    ) : 'Out of Stock'}
                                 </button>
                             </div>
+
+                            {/* Push WhatsApp button up on mobile to avoid overlap with sticky bar */}
+                            <style>
+                                {`
+                                    @media (max-width: 768px) {
+                                        .whatsapp-floating {
+                                            bottom: 85px !important;
+                                        }
+                                    }
+                                `}
+                            </style>
 
                             {/* Lab Grown Diamond Info Link */}
                             {isLabGrown && (
@@ -731,50 +721,155 @@ const ProductDetails = () => {
                                 </div>
                             )}
                         </div>
+                    </div>
+                </div>
+            </div>
 
+            {/* JEWELLERY DETAILS TABBED SECTION - Moved to center below product area */}
+            <div className="container mx-auto px-4 md:px-6 mt-16 max-w-4xl">
+                <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.04)] p-8 md:p-12">
+                    <h2 className="text-3xl md:text-4xl font-display font-bold text-center text-black mb-10 tracking-tight uppercase">Jewellery Details</h2>
+                    
+                    {/* Tab Switcher */}
+                    <div className="bg-gray-50/80 border border-gray-100 rounded-full p-1.5 flex mb-12 max-w-md mx-auto shadow-inner">
+                        <button 
+                            onClick={() => setActiveDetailTab('details')}
+                            className={`flex-1 py-4 rounded-full text-[13px] font-bold uppercase tracking-widest transition-all duration-500 ${activeDetailTab === 'details' ? 'bg-[#8E2424] text-white shadow-xl shadow-[#8E2424]/25' : 'text-gray-400 hover:text-black'}`}
+                        >
+                            Product Details
+                        </button>
+                        <button 
+                            onClick={() => setActiveDetailTab('price')}
+                            className={`flex-1 py-4 rounded-full text-[13px] font-bold uppercase tracking-widest transition-all duration-500 ${activeDetailTab === 'price' ? 'bg-[#8E2424] text-white shadow-xl shadow-[#8E2424]/25' : 'text-gray-400 hover:text-black'}`}
+                        >
+                            Price Breakup
+                        </button>
                     </div>
 
-                    <div className="mt-2 hidden lg:block">
-                        <div className="flex items-center justify-between mb-4">
-                            <span className="text-sm font-bold text-black font-display">Check Availability & Delivery</span>
-                        </div>
+                    {/* Tab Content */}
+                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        {activeDetailTab === 'details' ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {hasDiamonds && (
+                                    <div className="bg-[#FDF5F6]/40 rounded-3xl p-8 border border-[#EBCDD0]/20 flex flex-col items-center text-center">
+                                        <div className="w-12 h-12 rounded-full bg-[#D39A9F]/10 flex items-center justify-center mb-6">
+                                            <Sparkles className="w-6 h-6 text-[#D39A9F]" />
+                                        </div>
+                                        <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-[#D39A9F] mb-8">Diamond & Setting</h4>
+                                        <div className="grid grid-cols-2 gap-y-8 gap-x-12 w-full">
+                                            <div className="space-y-1">
+                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Type</span>
+                                                <span className="text-sm font-semibold text-gray-900 block capitalize">{String(diamondType).replace('_', ' ')}</span>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Weight</span>
+                                                <span className="text-sm font-semibold text-gray-900 block">{product.diamondWeight || currentVariant?.diamondWeight || '---'} cts</span>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Diamonds</span>
+                                                <span className="text-sm font-semibold text-gray-900 block">{product.diamondCount || currentVariant?.diamondCount || '---'}</span>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Clarity</span>
+                                                <span className="text-sm font-semibold text-gray-900 block">{product.diamondClarity || currentVariant?.diamondClarity || '---'}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
 
-                        <div className="flex gap-2 mb-6">
-                            <input
-                                type="text"
-                                placeholder="Enter your pincode"
-                                value={localPincode}
-                                onChange={(e) => setLocalPincode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                className="flex-1 border border-gray-300 rounded px-4 py-2.5 text-sm focus:outline-none focus:border-[#9C5B61] transition-colors"
-                            />
-                            <button 
-                                onClick={() => {
-                                    if (localPincode.length === 6) {
-                                        updatePincode(localPincode);
-                                        toast.success("Pincode applied!");
-                                    } else {
-                                        toast.error("Please enter a 6-digit pincode");
-                                    }
-                                }}
-                                className="bg-[#9C5B61] text-white px-8 py-2.5 rounded font-medium text-sm hover:bg-[#834d52] transition-colors"
-                            >
-                                Check
-                            </button>
-                        </div>
+                                <div className={`${hasDiamonds ? '' : 'md:col-span-2 max-w-lg mx-auto w-full'} bg-gray-50/50 rounded-3xl p-8 border border-gray-100 flex flex-col items-center text-center`}>
+                                    <div className="w-12 h-12 rounded-full bg-[#9C5B61]/10 flex items-center justify-center mb-6">
+                                        <ShieldCheck className="w-6 h-6 text-[#9C5B61]" />
+                                    </div>
+                                    <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-[#9C5B61] mb-8">Metal & Authentication</h4>
+                                    <div className="grid grid-cols-2 gap-y-8 gap-x-12 w-full">
+                                        <div className="space-y-1">
+                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Metal</span>
+                                            <span className="text-sm font-semibold text-gray-900 block">{product.material || product.metal || '925 Silver'}</span>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Purity</span>
+                                            <span className="text-sm font-semibold text-gray-900 block">{product.silverCategory || product.purity || '---'}</span>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Weight</span>
+                                            <span className="text-sm font-semibold text-gray-900 block">{selectedVariantWeight || product.weight || '---'} {selectedVariantWeightUnit || product.weightUnit || 'g'}</span>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Certificate</span>
+                                            <span className="text-sm font-semibold text-emerald-700 block">{product.certificate || 'Sands Authenticated'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="max-w-2xl mx-auto space-y-6">
+                                <div className="grid grid-cols-1 gap-4 text-sm">
+                                    {[
+                                        { label: 'Metal Price', value: pricingBreakdown.metalPrice },
+                                        { label: 'Making Charge', value: pricingBreakdown.makingCharge },
+                                        { label: 'Diamond Price', value: pricingBreakdown.diamondPrice },
+                                        { label: `GST (${gstPercent}%)`, value: pricingBreakdown.gst }
+                                    ].map((item, idx) => (
+                                        <div key={idx} className="flex items-center justify-between bg-gray-50/50 rounded-2xl px-8 py-5 border border-gray-100 hover:bg-white hover:shadow-sm transition-all">
+                                            <span className="text-gray-500 font-bold uppercase tracking-widest text-[10px]">{item.label}</span>
+                                            <span className="font-bold text-gray-900 text-base">{currencyText(item.value)}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="mt-8 flex items-center justify-between bg-[#8E2424]/[0.02] border border-[#8E2424]/10 rounded-2xl p-8">
+                                    <span className="text-xs font-bold uppercase tracking-[0.3em] text-gray-400">Total Price</span>
+                                    <span className="text-3xl font-display font-bold text-black">{currencyText(pricingBreakdown.finalPrice || variantPrice || 0)}</span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
 
-                        <div className="grid grid-cols-3 gap-0 border border-gray-200 rounded-sm overflow-hidden bg-white">
-                            <div className="flex flex-col items-center justify-center p-3 border-r border-gray-200 hover:bg-gray-50 transition-colors">
-                                <Truck className="w-4 h-4 text-gray-400 mb-1" />
-                                <span className="text-[10px] text-gray-700 font-medium text-center">Fast Delivery</span>
-                            </div>
-                            <div className="flex flex-col items-center justify-center p-3 border-r border-gray-200 hover:bg-gray-50 transition-colors">
-                                <ShieldCheck className="w-4 h-4 text-gray-400 mb-1" />
-                                <span className="text-[10px] text-gray-700 font-medium text-center">925 Silver</span>
-                            </div>
-                            <div className="flex flex-col items-center justify-center p-3 hover:bg-gray-50 transition-colors">
-                                <Gift className="w-4 h-4 text-gray-400 mb-1" />
-                                <span className="text-[10px] text-gray-700 font-medium text-center">Gift Wrap</span>
-                            </div>
+            {/* CHECK AVAILABILITY SECTION - Full Width and Compact */}
+            <div className="container mx-auto px-4 mt-8 mb-16 max-w-4xl">
+                <div className="bg-white rounded-[1.5rem] md:rounded-full border border-gray-100 shadow-sm p-4 md:px-10 md:py-3 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-4">
+                    <div className="flex items-center gap-3">
+                        <Truck className="w-4 h-4 text-[#9C5B61]" />
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-black hidden lg:block whitespace-nowrap">Check Delivery</span>
+                    </div>
+                    
+                    <div className="flex w-full md:max-w-xs gap-2">
+                        <input
+                            type="text"
+                            placeholder="Pincode"
+                            value={localPincode}
+                            onChange={(e) => setLocalPincode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                            className="flex-1 bg-gray-50 border-none rounded-full px-5 py-2.5 text-xs focus:ring-2 focus:ring-[#9C5B61]/20 transition-all placeholder:text-gray-400"
+                        />
+                        <button 
+                            onClick={() => {
+                                if (localPincode.length === 6) {
+                                    updatePincode(localPincode);
+                                    toast.success("Pincode applied!");
+                                } else {
+                                    toast.error("Please enter a 6-digit pincode");
+                                }
+                            }}
+                            className="bg-[#9C5B61] text-white px-6 py-2.5 rounded-full font-bold text-[10px] uppercase tracking-widest hover:bg-[#834d52] transition-all active:scale-95 shadow-sm"
+                        >
+                            Check
+                        </button>
+                    </div>
+
+                    <div className="flex items-center gap-8 md:gap-10">
+                        <div className="flex items-center gap-2 group">
+                            <Truck className="w-3.5 h-3.5 text-gray-400 group-hover:text-[#9C5B61] transition-colors" />
+                            <span className="text-[9px] text-gray-500 font-bold uppercase tracking-tighter">Fast Delivery</span>
+                        </div>
+                        <div className="flex items-center gap-2 group">
+                            <ShieldCheck className="w-3.5 h-3.5 text-gray-400 group-hover:text-[#9C5B61] transition-colors" />
+                            <span className="text-[9px] text-gray-500 font-bold uppercase tracking-tighter">925 Silver</span>
+                        </div>
+                        <div className="flex items-center gap-2 group">
+                            <Gift className="w-3.5 h-3.5 text-gray-400 group-hover:text-[#9C5B61] transition-colors" />
+                            <span className="text-[9px] text-gray-500 font-bold uppercase tracking-tighter">Gift Wrap</span>
                         </div>
                     </div>
                 </div>
@@ -837,16 +932,89 @@ const ProductDetails = () => {
                             </AccordionItem>
 
                             <AccordionItem title="Specifications" isOpen={openSection === 'specifications'} onClick={() => toggleSection('specifications')}>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 text-gray-700">
-                                    {product.material && <div><span className="text-[10px] font-bold uppercase text-gray-400 block mb-0.5">Material</span> <span className="font-semibold">{product.material}</span></div>}
-                                    {product.silverCategory && <div><span className="text-[10px] font-bold uppercase text-gray-400 block mb-0.5">Purity</span> <span className="font-semibold">{product.silverCategory}</span></div>}
-                                    {(selectedVariantWeight || selectedVariantWeight === 0) && <div><span className="text-[10px] font-bold uppercase text-gray-400 block mb-0.5">Weight</span> <span className="font-semibold">{selectedVariantWeight} {selectedVariantWeightUnit}</span></div>}
-                                    {product.huid && <div><span className="text-[10px] font-bold uppercase text-gray-400 block mb-0.5">HUID</span> <span className="font-semibold">{product.huid}</span></div>}
-                                    {selectedVariant?.variantCode && <div><span className="text-[10px] font-bold uppercase text-gray-400 block mb-0.5">Variant ID</span> <span className="font-mono text-xs">{selectedVariant.variantCode}</span></div>}
+                                <div className="space-y-8 py-2">
+                                    {/* Diamond & Setting Section */}
+                                    {(hasDiamonds || product.diamondWeight || product.diamondCount) && (
+                                        <div className="bg-gray-50/50 rounded-2xl p-5 md:p-6 border border-gray-100">
+                                            <div className="flex items-center gap-3 mb-6">
+                                                <div className="w-8 h-8 rounded-full bg-[#D39A9F]/10 flex items-center justify-center">
+                                                    <Sparkles className="w-4 h-4 text-[#D39A9F]" />
+                                                </div>
+                                                <h4 className="text-sm font-bold uppercase tracking-widest text-black">Diamond & Setting</h4>
+                                            </div>
+                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-4">
+                                                <div className="space-y-1">
+                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Type</span>
+                                                    <span className="text-sm font-semibold text-gray-900 capitalize">{String(diamondType).replace('_', ' ') || 'Natural'}</span>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Weight</span>
+                                                    <span className="text-sm font-semibold text-gray-900">{product.diamondWeight || currentVariant?.diamondWeight || '---'} carats</span>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">No. of Diamonds</span>
+                                                    <span className="text-sm font-semibold text-gray-900">{product.diamondCount || currentVariant?.diamondCount || '---'}</span>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Shape</span>
+                                                    <span className="text-sm font-semibold text-gray-900">{product.diamondShape || currentVariant?.diamondShape || 'Round'}</span>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Color/Clarity</span>
+                                                    <span className="text-sm font-semibold text-gray-900">{product.diamondClarity || currentVariant?.diamondClarity || '---'}</span>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Setting</span>
+                                                    <span className="text-sm font-semibold text-gray-900">{product.diamondSetting || currentVariant?.diamondSetting || 'Prong'}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Metal & Authentication Section */}
+                                    <div className="bg-gray-50/50 rounded-2xl p-5 md:p-6 border border-gray-100">
+                                        <div className="flex items-center gap-3 mb-6">
+                                            <div className="w-8 h-8 rounded-full bg-[#D39A9F]/10 flex items-center justify-center">
+                                                <ShieldCheck className="w-4 h-4 text-[#D39A9F]" />
+                                            </div>
+                                            <h4 className="text-sm font-bold uppercase tracking-widest text-black">Metal & Authentication</h4>
+                                        </div>
+                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-4">
+                                            <div className="space-y-1">
+                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Metal</span>
+                                                <span className="text-sm font-semibold text-gray-900">{product.material || product.metal || '925 Silver'}</span>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Purity</span>
+                                                <span className="text-sm font-semibold text-gray-900">{product.silverCategory || product.purity || '---'}</span>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Metal Weight</span>
+                                                <span className="text-sm font-semibold text-gray-900">{selectedVariantWeight || product.weight || '---'} {selectedVariantWeightUnit || product.weightUnit || 'g'}</span>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Certificate</span>
+                                                <span className="text-sm font-semibold text-gray-900">{product.certificate || 'Sands Authenticated'}</span>
+                                            </div>
+                                            {product.huid && (
+                                                <div className="space-y-1">
+                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">HUID</span>
+                                                    <span className="text-sm font-semibold text-gray-900">{product.huid}</span>
+                                                </div>
+                                            )}
+                                            {selectedVariant?.variantCode && (
+                                                <div className="space-y-1">
+                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Variant ID</span>
+                                                    <span className="text-sm font-mono text-gray-600 truncate">{selectedVariant.variantCode}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {product.specifications && (
+                                        <div className="mt-6 pt-6 border-t border-gray-100 prose prose-sm max-w-none text-gray-600 font-sans leading-relaxed" dangerouslySetInnerHTML={{ __html: product.specifications }} />
+                                    )}
                                 </div>
-                                {product.specifications && (
-                                    <div className="mt-4 pt-4 border-t border-gray-50 prose prose-sm max-w-none text-gray-600" dangerouslySetInnerHTML={{ __html: product.specifications }} />
-                                )}
                             </AccordionItem>
 
                             <AccordionItem title="Styling Tips" isOpen={openSection === 'styling'} onClick={() => toggleSection('styling')}>
@@ -963,16 +1131,16 @@ const ProductDetails = () => {
 
                 <WhyChooseUs />
 
-                <div className="flex gap-10 border-b border-gray-100 mb-6">
+                <div className="flex gap-4 md:gap-10 border-b border-gray-100 mb-8 overflow-x-auto no-scrollbar">
                     <button
-                        className={`pb-4 text-sm md:text-base font-bold uppercase tracking-[0.15em] transition-all relative ${activeTab === 'related' ? 'text-black' : 'text-gray-400 hover:text-gray-600'}`}
+                        className={`pb-4 text-xs md:text-base font-bold uppercase tracking-[0.2em] transition-all relative whitespace-nowrap px-1 ${activeTab === 'related' ? 'text-black' : 'text-gray-400 hover:text-gray-600'}`}
                         onClick={() => setActiveTab('related')}
                     >
-                        Related products
+                        Related pieces
                         {activeTab === 'related' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-black animate-in fade-in slide-in-from-left-2 duration-300"></span>}
                     </button>
                     <button
-                        className={`pb-4 text-sm md:text-base font-bold uppercase tracking-[0.15em] transition-all relative ${activeTab === 'recent' ? 'text-black' : 'text-gray-400 hover:text-gray-600'}`}
+                        className={`pb-4 text-xs md:text-base font-bold uppercase tracking-[0.2em] transition-all relative whitespace-nowrap px-1 ${activeTab === 'recent' ? 'text-black' : 'text-gray-400 hover:text-gray-600'}`}
                         onClick={() => setActiveTab('recent')}
                     >
                         More to explore
@@ -987,17 +1155,20 @@ const ProductDetails = () => {
 
                     if (displayList.length === 0) {
                         return (
-                            <div className="flex flex-col items-center justify-center py-12 text-gray-400 bg-gray-50 rounded-lg border border-dashed border-gray-200">
-                                <ShoppingBag className="w-8 h-8 mb-2 opacity-50" />
-                                <p className="text-sm font-medium">No {activeTab} products found</p>
+                            <div className="flex flex-col items-center justify-center py-16 px-6 text-gray-400 bg-gray-50/50 rounded-2xl border-2 border-dashed border-gray-100">
+                                <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mb-4 shadow-sm">
+                                    <ShoppingBag className="w-8 h-8 opacity-30" />
+                                </div>
+                                <p className="text-sm font-bold text-gray-600 uppercase tracking-widest">No {activeTab} pieces found</p>
+                                <p className="text-[11px] text-gray-400 mt-1 max-w-xs text-center">We're updating our collection daily. Check back soon for more exquisite designs.</p>
                             </div>
                         );
                     }
 
                     return (
-                        <div className="flex overflow-x-auto gap-3 md:gap-6 pb-4 snap-x scrollbar-hide">
+                        <div className="flex overflow-x-auto gap-3 md:gap-6 pb-6 snap-x no-scrollbar">
                             {displayList.map((product) => (
-                                <div key={product.id} className="min-w-[140px] w-[140px] md:min-w-[280px] md:w-[280px] snap-center">
+                                <div key={product.id} className="min-w-[160px] w-[160px] md:min-w-[280px] md:w-[280px] snap-center">
                                     <ProductCard product={product} />
                                 </div>
                             ))}
@@ -1007,18 +1178,17 @@ const ProductDetails = () => {
             </div>
 
             {/* 2. Reviews Section (Second) - With Filters & Modal */}
-            {/* 2. Reviews Section (Second) - With Filters & Modal */}
-            <div className="mt-4 border-t border-gray-200 pt-8 animate-in fade-in slide-in-from-bottom-8 duration-700 relative pb-24 md:pb-0">
-                <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 md:mb-8 gap-4">
-                    <div className="flex items-center gap-2">
+            <div className="mt-8 border-t border-gray-200 pt-10 animate-in fade-in slide-in-from-bottom-8 duration-700 relative pb-32 md:pb-0">
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 md:mb-12 gap-6">
+                    <div className="flex items-center gap-3">
                         <div className="flex text-[#D39A9F]">
                             {[...Array(5)].map((_, i) => (
-                                <Star key={i} className="w-5 h-5 fill-current" />
+                                <Star key={i} className="w-6 h-6 fill-current" />
                             ))}
                         </div>
-                        <span className="text-lg font-medium text-gray-800 flex items-center gap-1">
+                        <span className="text-xl font-bold text-black flex items-center gap-1">
                             {hasReviews ? `${reviewCount} Reviews` : 'No reviews yet'}
-                            <ChevronDown className="w-4 h-4 text-gray-500" />
+                            <ChevronDown className="w-5 h-5 text-gray-400" />
                         </span>
                     </div>
                     <div className="flex gap-3 relative w-full md:w-auto">
@@ -1033,32 +1203,32 @@ const ProductDetails = () => {
                                 setIsWriteReviewOpen(true);
                                 setReviewStep(1);
                             }}
-                            className="flex-1 md:flex-none border border-gray-300 px-4 py-2.5 rounded text-sm font-bold uppercase tracking-widest text-black hover:border-black hover:bg-black hover:text-white transition-colors text-center"
+                            className="flex-1 md:flex-none bg-white border border-black px-8 py-4 rounded-xl text-xs font-bold uppercase tracking-[0.2em] text-black hover:bg-black hover:text-white transition-all duration-300 shadow-sm active:scale-95"
                         >
                             Write a review
                         </button>
                         <button
                             onClick={() => setIsReviewFilterOpen(!isReviewFilterOpen)}
-                            className={`border border-gray-300 p-2.5 rounded text-black hover:border-black hover:bg-black hover:text-white transition-colors ${isReviewFilterOpen ? 'bg-black text-white' : ''}`}
+                            className={`border border-gray-200 p-4 rounded-xl text-black hover:border-black transition-all duration-300 ${isReviewFilterOpen ? 'bg-black text-white' : 'bg-white shadow-sm'}`}
                         >
                             <SlidersHorizontal className="w-5 h-5" />
                         </button>
 
                         {/* Filter Dropdown */}
                         {isReviewFilterOpen && (
-                            <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-xl z-30 p-2 animate-in fade-in zoom-in-95 duration-200">
-                                <div className="px-3 py-2 border-b border-gray-100 mb-1">
-                                    <span className="font-bold text-gray-900">Sort by</span>
+                            <div className="absolute right-0 top-full mt-3 w-64 bg-white border border-gray-100 rounded-2xl shadow-2xl z-30 p-2 animate-in fade-in zoom-in-95 duration-200">
+                                <div className="px-4 py-3 border-b border-gray-50 mb-1">
+                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Sort Reviews By</span>
                                 </div>
                                 <div className="space-y-1">
                                     {['Featured', 'Newest', 'Highest Ratings', 'Lowest Ratings'].map((option) => (
                                         <button
                                             key={option}
                                             onClick={() => { setSortBy(option); setIsReviewFilterOpen(false); }}
-                                            className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded flex justify-between items-center"
+                                            className={`w-full text-left px-4 py-3 text-sm rounded-xl flex justify-between items-center transition-colors ${sortBy === option ? 'bg-[#FDF5F6] text-[#9C5B61] font-bold' : 'text-gray-700 hover:bg-gray-50'}`}
                                         >
                                             {option}
-                                            {sortBy === option && <Check className="w-4 h-4 text-black" />}
+                                            {sortBy === option && <Check className="w-4 h-4" />}
                                         </button>
                                     ))}
                                 </div>
@@ -1067,22 +1237,22 @@ const ProductDetails = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                     {sortedReviews.map((review, idx) => (
-                        <div key={idx} className="bg-white p-4 md:p-6 rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                            <div className="flex justify-between items-start mb-2">
+                        <div key={idx} className="bg-[#FDFBF7]/30 p-6 md:p-8 rounded-[2rem] border border-gray-100/50 shadow-sm hover:shadow-md transition-all duration-500">
+                            <div className="flex justify-between items-start mb-4">
                                 <div>
-                                    <h4 className="font-bold text-gray-900">{review.name}</h4>
-                                    <span className="text-xs text-gray-400">{review.date}</span>
+                                    <h4 className="font-bold text-gray-900 font-display">{review.name}</h4>
+                                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{review.date}</span>
                                 </div>
                                 <div className="flex text-[#D39A9F]">
                                     {[...Array(5)].map((_, i) => (
-                                        <Star key={i} className={`w-3 h-3 ${i < review.rating ? 'fill-current' : 'text-gray-200'} `} />
+                                        <Star key={i} className={`w-4 h-4 ${i < review.rating ? 'fill-current' : 'text-gray-200'} `} />
                                     ))}
                                 </div>
                             </div>
-                            <h5 className="font-medium text-sm text-gray-800 mt-2">{review.title}</h5>
-                            <p className="text-gray-600 text-sm mt-1">{review.comment}</p>
+                            <h5 className="font-bold text-sm text-gray-800 mt-4 leading-tight">{review.title}</h5>
+                            <p className="text-gray-600 text-sm mt-2 leading-relaxed font-sans">{review.comment}</p>
                         </div>
                     ))}
                 </div>
