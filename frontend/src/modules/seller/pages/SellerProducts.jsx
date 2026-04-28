@@ -274,7 +274,7 @@ const SellerProducts = () => {
                     <div className="flex gap-2 items-center">
                         <button
                             onClick={() => navigate('/seller/inventory/adjust')}
-                            className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-bold text-gray-600 hover:bg-[#3E2723] hover:text-white hover:border-[#3E2723] transition-all flex items-center gap-2 shrink-0"
+                            className="h-10 bg-white border border-gray-200 rounded-full px-4 text-xs font-semibold text-gray-700 hover:bg-[#3E2723] hover:text-white hover:border-[#3E2723] transition-all flex items-center gap-2 shrink-0 shadow-sm"
                             title="Adjust Stock"
                         >
                             <TrendingUp size={14} />
@@ -283,7 +283,7 @@ const SellerProducts = () => {
                         </button>
                         <button
                             onClick={() => navigate('/seller/offline-sale')}
-                            className="bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2 text-xs font-bold text-emerald-700 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all flex items-center gap-2 shrink-0"
+                            className="h-10 bg-emerald-50 border border-emerald-200 rounded-full px-4 text-xs font-semibold text-emerald-700 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all flex items-center gap-2 shrink-0 shadow-sm"
                             title="Offline Sale"
                         >
                             <ScanLine size={14} />
