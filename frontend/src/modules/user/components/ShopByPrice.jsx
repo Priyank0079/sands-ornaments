@@ -99,7 +99,7 @@ const ShopByPrice = () => {
                 </div>
             </div>
 
-            <style jsx>{`
+            <style>{`
                 .shadow-glow {
                     box-shadow: 0 0 10px rgba(201, 162, 77, 0.5);
                 }

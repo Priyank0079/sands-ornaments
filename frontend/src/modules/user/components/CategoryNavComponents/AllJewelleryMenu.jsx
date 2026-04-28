@@ -250,7 +250,7 @@ const AllJewelleryMenu = ({ resetMenu }) => {
                     </motion.div>
                 </AnimatePresence>
             </div>
-            <style jsx>{`
+            <style>{`
                 .custom-scrollbar::-webkit-scrollbar {
                     width: 5px;
                 }
