@@ -22,6 +22,12 @@ body {
     -webkit-text-size-adjust: 100%;
     overflow-x: hidden;
     width: 100%;
+    min-height: 100%;
+    overflow-y: auto;
+}
+
+#root {
+    min-height: 100%;
 }
 
 html.lenis,

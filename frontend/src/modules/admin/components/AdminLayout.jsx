@@ -185,18 +185,27 @@ const AdminLayout = ({ children }) => {
                 .admin-font-reset, .admin-font-reset * {
                     font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
                 }
+                .sidebar-scroll {
+                    scrollbar-width: none;
+                    -ms-overflow-style: none;
+                }
                 .sidebar-scroll::-webkit-scrollbar {
-                    width: 6px;
+                    width: 0;
+                    height: 0;
                 }
                 .sidebar-scroll::-webkit-scrollbar-track {
-                    background: rgba(255, 255, 255, 0.05);
+                    background: transparent;
                 }
                 .sidebar-scroll::-webkit-scrollbar-thumb {
-                    background: rgba(255, 255, 255, 0.2);
-                    border-radius: 10px;
+                    background: transparent;
                 }
                 .sidebar-scroll::-webkit-scrollbar-thumb:hover {
-                    background: rgba(255, 255, 255, 0.4);
+                    background: transparent;
+                }
+                .sidebar-scroll::-webkit-scrollbar-button {
+                    display: none;
+                    width: 0;
+                    height: 0;
                 }
             `}</style>
             {/* Sidebar Backdrop (Mobile only) */}
@@ -305,7 +314,7 @@ const AdminLayout = ({ children }) => {
             </aside>
 
             {/* Main Content Area */}
-            <main className={`flex-grow flex flex-col h-screen overflow-hidden transition-all duration-500 ease-in-out ${isSidebarOpen ? 'lg:ml-80' : 'lg:ml-20'
+            <main className={`flex-grow flex flex-col min-h-screen min-w-0 transition-all duration-500 ease-in-out ${isSidebarOpen ? 'lg:ml-80' : 'lg:ml-20'
                 }`}>
                 {/* Topbar */}
                 <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-40 shrink-0 shadow-sm">
@@ -350,7 +359,7 @@ const AdminLayout = ({ children }) => {
                 </header>
 
                 {/* Scrollable Page Content */}
-                <div className="flex-grow overflow-y-auto bg-gray-50 p-4 lg:p-8 space-y-6 relative">
+                <div className="flex-grow min-h-0 bg-gray-50 p-4 lg:p-8 space-y-6 relative">
                     {/* Floating Notification Popup */}
                     {showPopup && latestNotif && (
                         <div className="fixed top-20 right-8 z-[200] w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 animate-in slide-in-from-right-8 fade-in duration-500 overflow-hidden">
@@ -379,7 +388,7 @@ const AdminLayout = ({ children }) => {
                         </div>
                     )}
 
-                    <div className="max-w-[1600px] mx-auto animate-in fade-in duration-500">
+                    <div className="max-w-[1600px] mx-auto w-full min-w-0 animate-in fade-in duration-500 pb-10 lg:pb-14">
                         {children}
                     </div>
                 </div>
