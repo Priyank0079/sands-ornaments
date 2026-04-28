@@ -22,7 +22,12 @@ export default defineConfig({
         manualChunks(id) {
           if (!id.includes('node_modules')) return undefined;
 
-          if (id.includes('react-dom') || id.includes('react-router-dom') || id.includes('react/')) {
+          if (
+            id.includes('react-dom') ||
+            id.includes('react-router-dom') ||
+            id.includes('react/') ||
+            id.includes('scheduler')
+          ) {
             return 'react-vendor';
           }
 
