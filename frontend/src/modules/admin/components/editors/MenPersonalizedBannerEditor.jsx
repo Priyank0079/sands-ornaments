@@ -46,6 +46,8 @@ const resolveCategoryId = (hint, categories = []) => {
     return '';
 };
 
+const RECOMMENDED_IMAGE_SIZE = '1600 x 700 px';
+
 const MenPersonalizedBannerEditor = ({ sectionData, onSave, defaultSection = {} }) => {
     const [categories, setCategories] = useState([]);
     const [saving, setSaving] = useState(false);
@@ -165,6 +167,9 @@ const MenPersonalizedBannerEditor = ({ sectionData, onSave, defaultSection = {} 
                                 </div>
                             )}
                         </div>
+                        <p className="text-[11px] leading-4 text-gray-500">
+                            Recommended size: {RECOMMENDED_IMAGE_SIZE}
+                        </p>
                         <label className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#3E2723] px-4 py-3 text-xs font-bold uppercase tracking-widest text-white hover:bg-[#2D1B18] transition-all cursor-pointer">
                             <ImageIcon size={14} />
                             Change Image

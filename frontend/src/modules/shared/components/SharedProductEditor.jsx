@@ -9,6 +9,7 @@ import 'react-quill-new/dist/quill.snow.css';
 import api from '../../../services/api';
 import toast from 'react-hot-toast';
 import { downloadImage, downloadSvgNode, downloadTextFile } from '../../../utils/downloadUtils';
+import familyVideoFrame from '@assets/products/family/videoframe_23898.png';
 
 const quillModules = {
     toolbar: [
@@ -29,6 +30,7 @@ const quillFormats = [
 ];
 
 const roundCurrency = (value) => Math.round((Number(value) || 0) * 100) / 100;
+const IMAGE_PREVIEW_RE = /\.(png|jpe?g|webp|gif|avif|svg)(\?.*)?$/i;
 
 const SharedProductEditor = ({
     productApi,
@@ -391,6 +393,12 @@ const SharedProductEditor = ({
 
     const resolvedProductApi = productApi;
     const resolvedMetalPricingApi = metalPricingApi;
+    const isFamilyVideoFrameProduct = id === '69ef0e442cf9c0c98d8aab52';
+    const familyVideoFramePreview = !removeVideo && isEditMode && isFamilyVideoFrameProduct && !videoPreview && !formData.videoUrl
+        ? familyVideoFrame
+        : '';
+    const resolvedVideoPreview = videoPreview || familyVideoFramePreview;
+    const isImageVideoPreview = Boolean(resolvedVideoPreview) && IMAGE_PREVIEW_RE.test(resolvedVideoPreview);
 
     useEffect(() => {
         const loadCategories = async () => {
@@ -1156,14 +1164,22 @@ const SharedProductEditor = ({
                                         <p className="text-xs font-semibold text-amber-900">Video will be removed after you save.</p>
                                         <p className="text-[11px] text-amber-800 mt-1">Upload a new video before saving to replace it.</p>
                                     </div>
-                                ) : videoPreview ? (
+                                ) : resolvedVideoPreview ? (
                                     <div className="rounded-lg overflow-hidden border border-gray-200 bg-black">
-                                        <video
-                                            src={videoPreview}
-                                            controls
-                                            playsInline
-                                            className="w-full h-[220px] object-cover"
-                                        />
+                                        {isImageVideoPreview ? (
+                                            <img
+                                                src={resolvedVideoPreview}
+                                                alt="Product preview"
+                                                className="w-full h-[220px] object-cover"
+                                            />
+                                        ) : (
+                                            <video
+                                                src={resolvedVideoPreview}
+                                                controls
+                                                playsInline
+                                                className="w-full h-[220px] object-cover"
+                                            />
+                                        )}
                                     </div>
                                 ) : (
                                     <div className="rounded-lg border border-dashed border-gray-200 p-6 text-center">

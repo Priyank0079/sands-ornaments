@@ -26,6 +26,8 @@ const fallbackModelMap = {
     anklet: newAnklets
 };
 
+const isImageMedia = (src = '') => /\.(png|jpe?g|webp|gif|avif|svg)(\?.*)?$/i.test(String(src));
+
 const AccordionItem = ({ title, children, isOpen, onClick }) => (
     <div className="border-b border-[#EBCDD0]/50">
         <button
@@ -473,18 +475,29 @@ const ProductDetails = () => {
                             {/* Video Pane (optional, product-specific) */}
                             <div className="w-full md:w-1/2 relative h-1/2 md:h-full group overflow-hidden border-r border-white/10 bg-black">
                                 {product?.videoUrl ? (
-                                    <>
-                                        <video 
-                                            src={product.videoUrl} 
-                                            autoPlay 
-                                            muted 
-                                            loop 
-                                            playsInline
-                                            controls
-                                            className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
-                                        />
-                                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/5 transition-colors" />
-                                    </>
+                                    isImageMedia(product.videoUrl) ? (
+                                        <>
+                                            <img
+                                                src={product.videoUrl}
+                                                alt={product.name}
+                                                className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
+                                            />
+                                            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/5 transition-colors" />
+                                        </>
+                                    ) : (
+                                        <>
+                                            <video 
+                                                src={product.videoUrl} 
+                                                autoPlay 
+                                                muted 
+                                                loop 
+                                                playsInline
+                                                controls
+                                                className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
+                                            />
+                                            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/5 transition-colors" />
+                                        </>
+                                    )
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center bg-[#111]">
                                         <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/60">No product video</p>

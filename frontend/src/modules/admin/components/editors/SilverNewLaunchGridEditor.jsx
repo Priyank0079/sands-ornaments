@@ -64,6 +64,8 @@ const canPreserveLegacyLaunchCard = (item) => {
     return hasLegacyCategoryPath && hasUsableContent;
 };
 
+const RECOMMENDED_IMAGE_SIZE = '1000 x 1000 px';
+
 const SilverNewLaunchGridEditor = ({ sectionData, onSave, defaultSection = {} }) => {
     const [categories, setCategories] = useState([]);
 
@@ -239,9 +241,12 @@ const SilverNewLaunchGridEditor = ({ sectionData, onSave, defaultSection = {} })
                                                 <ImageIcon size={20} />
                                             </div>
                                             <p className="text-[11px] font-bold uppercase tracking-widest">Upload Image</p>
-                                        </div>
-                                    )}
-                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                <p className="text-[11px] leading-4 text-gray-500">
+                                    Recommended size: {RECOMMENDED_IMAGE_SIZE}
+                                </p>
                                 <label className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#3E2723] px-4 py-3 text-xs font-bold uppercase tracking-widest text-white hover:bg-[#2D1B18] transition-all cursor-pointer">
                                     <ImageIcon size={14} />
                                     Change Image

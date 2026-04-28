@@ -217,6 +217,9 @@ const MenStyleGuideEditor = ({ sectionData, onSave, defaultSection = {} }) => {
                                         </div>
                                     )}
                                 </div>
+                                <p className="text-[11px] leading-4 text-gray-500">
+                                    Recommended size: 1200 x 1500 px
+                                </p>
                                 <label className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#3E2723] px-4 py-3 text-xs font-bold uppercase tracking-widest text-white hover:bg-[#2D1B18] transition-all cursor-pointer">
                                     <ImageIcon size={14} />
                                     Change Image

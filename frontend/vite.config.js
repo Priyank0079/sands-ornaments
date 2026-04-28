@@ -16,6 +16,33 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src')
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined;
+
+          if (id.includes('react-dom') || id.includes('react-router-dom') || id.includes('react/')) {
+            return 'react-vendor';
+          }
+
+          if (id.includes('@tanstack/react-query')) {
+            return 'query-vendor';
+          }
+
+          if (id.includes('framer-motion') || id.includes('gsap') || id.includes('@studio-freight/lenis')) {
+            return 'motion-vendor';
+          }
+
+          if (id.includes('lucide-react') || id.includes('react-hot-toast')) {
+            return 'ui-vendor';
+          }
+
+          return 'vendor';
+        },
+      },
+    },
+  },
   server: {
     port: 3000,
   },
