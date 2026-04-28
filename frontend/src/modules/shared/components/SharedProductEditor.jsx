@@ -9,7 +9,7 @@ import 'react-quill-new/dist/quill.snow.css';
 import api from '../../../services/api';
 import toast from 'react-hot-toast';
 import { downloadImage, downloadSvgNode, downloadTextFile } from '../../../utils/downloadUtils';
-import familyVideoFrame from '@assets/products/family/videoframe_23898.png';
+import familyVideoFrame from '@/assets/products/family/videoframe_23898.png';
 
 const quillModules = {
     toolbar: [
