@@ -287,7 +287,7 @@ const FamilyProductsCatalog = ({
                 </div>
 
                 {!hideRecipientFilters && (
-                    <div className="grid grid-cols-2 gap-2 max-w-[560px] mx-auto md:flex md:flex-wrap md:justify-center md:gap-3 mb-4 md:mb-10">
+                    <div className="grid grid-cols-2 gap-2 max-w-[560px] mx-auto lg:max-w-none lg:flex lg:flex-nowrap lg:justify-center lg:gap-3 lg:overflow-x-auto lg:pb-1 mb-4 md:mb-10">
                         {Object.entries(runtimeLabels).map(([recipientId, label], index, entries) => {
                             const isActive = recipientId === effectiveTab;
                             const isLastOdd = entries.length % 2 === 1 && index === entries.length - 1;
@@ -296,7 +296,7 @@ const FamilyProductsCatalog = ({
                                     key={recipientId}
                                     type="button"
                                     onClick={() => handleSelectRecipient(recipientId)}
-                                    className={`w-full md:w-auto px-3 py-1.5 md:px-4 md:py-2 rounded-none text-[8px] md:text-[10px] font-black uppercase tracking-[0.15em] transition-all border leading-none ${isLastOdd ? 'col-span-2' : ''}`}
+                                    className={`w-full lg:flex-none lg:w-auto px-3 py-1.5 md:px-4 md:py-2 rounded-none text-[8px] md:text-[10px] font-black uppercase tracking-[0.15em] whitespace-nowrap transition-all border leading-none ${isLastOdd ? 'col-span-2 lg:col-span-1' : ''}`}
                                     style={{
                                         background: isActive ? PINK_LIGHT : '#fff',
                                         color: isActive ? MAROON : '#444',
