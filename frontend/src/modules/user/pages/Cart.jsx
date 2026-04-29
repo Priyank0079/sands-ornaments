@@ -253,7 +253,7 @@ const Cart = () => {
 
                                 <Link
                                     to="/checkout"
-                                    className="w-full bg-[#E77382] text-white py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] hover:bg-[#8E2B45] transition-all flex items-center justify-center gap-3 shadow-xl shadow-[#E77382]/20 active:scale-95 group"
+                                    className="w-full bg-[#8E2B45] text-white py-3.5 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] hover:bg-[#5B1E26] transition-all flex items-center justify-center gap-3 shadow-xl shadow-[#8E2B45]/20 active:scale-95 group"
                                 >
                                     <Lock className="w-4 h-4" />
                                     Checkout Securely

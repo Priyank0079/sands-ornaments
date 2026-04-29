@@ -461,7 +461,7 @@ const ProductDetails = () => {
                         <button
                             onClick={handleAddToCart}
                             disabled={!canAddToCart}
-                            className={`px-8 py-3 rounded-full font-medium text-[10px] tracking-widest uppercase transition-all active:scale-95 ${canAddToCart ? 'bg-black hover:bg-gray-800 text-white shadow-sm' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
+                            className={`px-8 py-3 rounded-full font-medium text-[10px] tracking-widest uppercase transition-all active:scale-95 ${canAddToCart ? 'bg-[#8E2B45] hover:bg-[#5B1E26] text-white shadow-sm' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
                         >
                             {canAddToCart ? 'Add to Bag' : 'Out of Stock'}
                         </button>
@@ -581,43 +581,25 @@ const ProductDetails = () => {
                             </div>
                         )}
 
-                        {/* Style Gallery: show only when product truly has enough distinct images (no duplication). */}
-                        {false && (
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 pt-4">
-                                {galleryImages.slice(0, 4).map((img, idx) => (
-                                    <div
-                                        key={idx}
-                                        className="aspect-square rounded-[1.5rem] overflow-hidden border border-gray-100 group cursor-pointer shadow-sm relative"
-                                        onClick={() => setSelectedImage(img)}
-                                    >
-                                        <img
-                                            src={img}
-                                            alt={`Style Detail ${idx + 1}`}
-                                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-[1.12]"
-                                        />
-                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+
                     </div>
 
                     {/* JEWELLERY DETAILS TABBED SECTION - Moved to center below product area */}
-                    <div className="h-[400px] lg:h-[520px] w-full bg-white rounded-[2rem] border border-gray-100 p-6 md:p-10 shadow-sm relative flex flex-col overflow-hidden">
-                        <div className="flex-1 flex flex-col justify-center overflow-y-auto no-scrollbar">
+                    <div className="h-[400px] lg:h-[520px] w-full bg-white rounded-[2rem] border border-gray-100 p-6 md:p-10 shadow-sm relative flex flex-col">
+                        <div className="flex-1 flex flex-col justify-start pt-4 overflow-y-auto no-scrollbar">
                             <h2 className="text-xl font-bold text-center text-gray-900 mb-6 tracking-tight">Jewellery Details</h2>
                             
                             {/* Tab Switcher */}
-                            <div className="bg-[#F8F9FA] border border-gray-200/50 rounded-full p-1.5 grid grid-cols-2 mb-10 max-w-[440px] mx-auto shadow-sm">
+                            <div className="bg-white border border-gray-100 rounded-full p-1 grid grid-cols-2 mt-4 mb-10 max-w-[540px] mx-auto shadow-md">
                                 <button 
                                     onClick={() => setActiveDetailTab('details')}
-                                    className={`py-3 rounded-full text-[10px] font-bold uppercase tracking-[0.12em] transition-all duration-500 whitespace-nowrap px-2 ${activeDetailTab === 'details' ? 'bg-black text-white shadow-xl' : 'text-gray-400 hover:text-gray-600'}`}
+                                    className={`py-3 rounded-full text-[13px] font-medium transition-all duration-500 whitespace-nowrap px-10 ${activeDetailTab === 'details' ? 'bg-[#8E2B45] text-white shadow-lg' : 'text-gray-900 hover:text-[#8E2B45]'}`}
                                 >
                                     Product Details
                                 </button>
                                 <button 
                                     onClick={() => setActiveDetailTab('price')}
-                                    className={`py-3 rounded-full text-[10px] font-bold uppercase tracking-[0.12em] transition-all duration-500 whitespace-nowrap px-2 ${activeDetailTab === 'price' ? 'bg-black text-white shadow-xl' : 'text-gray-400 hover:text-gray-600'}`}
+                                    className={`py-3 rounded-full text-[13px] font-medium transition-all duration-500 whitespace-nowrap px-10 ${activeDetailTab === 'price' ? 'bg-[#8E2B45] text-white shadow-lg' : 'text-gray-900 hover:text-[#8E2B45]'}`}
                                 >
                                     Price Breakup
                                 </button>
@@ -768,7 +750,7 @@ const ProductDetails = () => {
                                                 type="button"
                                                 onClick={() => setSelectedVariantId(variantId)}
                                                 className={`px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest border transition-all duration-300 ${isSelected
-                                                    ? 'border-black bg-black text-white shadow-md'
+                                                    ? 'border-[#8E2B45] bg-[#8E2B45] text-white shadow-md'
                                                     : 'border-gray-100 text-gray-400 hover:border-gray-300 bg-gray-50/30'
                                                     }`}
                                             >
@@ -787,7 +769,7 @@ const ProductDetails = () => {
                                 disabled={!canAddToCart}
                                 className={`w-full max-w-md py-5 rounded-xl font-bold uppercase tracking-[0.2em] text-[11px] transition-all duration-500 relative overflow-hidden group ${
                                     canAddToCart 
-                                    ? 'bg-black text-white hover:bg-gray-900 shadow-lg hover:-translate-y-0.5' 
+                                    ? 'bg-[#8E2B45] text-white hover:bg-[#5B1E26] shadow-lg hover:-translate-y-0.5' 
                                     : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                                 }`}
                             >
@@ -843,17 +825,17 @@ const ProductDetails = () => {
                 )}
 
             {/* Mobile Sticky Bottom Action Bar - Always functional */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 p-4 z-[150] md:hidden flex gap-3 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] pb-safe animate-in slide-in-from-bottom duration-500">
+            <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 p-3 z-[150] md:hidden flex gap-3 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] pb-safe animate-in slide-in-from-bottom duration-500">
                 <div className="flex flex-col justify-center px-2">
-                    <span className="text-[9px] uppercase tracking-wider text-gray-400 font-bold mb-0.5">Total</span>
-                    <span className="text-xl font-bold text-black tracking-tight">{currencyText(variantPrice)}</span>
+                    <span className="text-[8px] uppercase tracking-wider text-gray-400 font-bold mb-0.5">Total</span>
+                    <span className="text-lg font-bold text-black tracking-tight">{currencyText(variantPrice)}</span>
                 </div>
                 <button
                     onClick={handleAddToCart}
                     disabled={!canAddToCart}
-                    className={`flex-1 rounded-xl h-14 font-bold uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-2 active:scale-[0.98] transition-all ${
+                    className={`flex-1 rounded-xl h-11 font-bold uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-xl ${
                         canAddToCart 
-                        ? 'bg-black text-white shadow-lg' 
+                        ? 'bg-[#8E2B45] text-white shadow-[#8E2B45]/20 hover:bg-[#5B1E26]' 
                         : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                     }`}
                 >
@@ -908,7 +890,7 @@ const ProductDetails = () => {
                                     toast.error("Please enter a 6-digit pincode");
                                 }
                             }}
-                            className="bg-black text-white px-4 py-1.5 rounded-md font-medium text-[9px] uppercase tracking-wider hover:bg-gray-800 transition-all"
+                            className="bg-[#8E2B45] text-white px-4 py-1.5 rounded-md font-medium text-[9px] uppercase tracking-wider hover:bg-[#5B1E26] transition-all"
                         >
                             Check
                         </button>
@@ -1129,35 +1111,38 @@ const ProductDetails = () => {
                 </div>
             </div>
 
-                {/* STYLE GALLERY - Refined to be more compact and organized */}
-                {galleryImages.length >= 4 && (
+                {/* STYLE GALLERY - Refined to show always with fallbacks */}
+                {galleryImages.length > 0 && (
                     <div className="mt-12 mb-20 px-4 max-w-6xl mx-auto">
                         <div className="flex flex-col items-center mb-10">
                             <span className="text-[9px] font-bold text-[#D39A9F] uppercase tracking-[0.4em] mb-2">Style Showcase</span>
                             <h2 className="text-2xl font-display font-bold text-black tracking-tight">Capturing the Brilliance</h2>
                         </div>
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                            {galleryImages.slice(0, 4).map((img, idx) => (
-                                <div
-                                    key={idx}
-                                    className="aspect-square rounded-[2rem] overflow-hidden border border-gray-100 group cursor-pointer shadow-md hover:shadow-xl transition-all duration-700 relative bg-white"
-                                    onClick={() => setSelectedImage(img)}
-                                >
-                                    <img
-                                        src={img}
-                                        alt={`Style Detail ${idx + 1}`}
-                                        className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110"
-                                    />
-                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
-                                    
-                                    {/* Subtle Overlay on Hover */}
-                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 backdrop-blur-[2px]">
-                                        <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform duration-500">
-                                            <Sparkles className="w-5 h-5 text-[#D39A9F]" />
+                            {Array.from({ length: 4 }).map((_, idx) => {
+                                const img = galleryImages[idx] || galleryImages[0];
+                                return (
+                                    <div
+                                        key={idx}
+                                        className="aspect-square rounded-[2rem] overflow-hidden border border-gray-100 group cursor-pointer shadow-md hover:shadow-xl transition-all duration-700 relative bg-white"
+                                        onClick={() => setSelectedImage(img)}
+                                    >
+                                        <img
+                                            src={img}
+                                            alt={`Style Detail ${idx + 1}`}
+                                            className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110"
+                                        />
+                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
+                                        
+                                        {/* Subtle Overlay on Hover */}
+                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 backdrop-blur-[2px]">
+                                            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform duration-500">
+                                                <Sparkles className="w-5 h-5 text-[#D39A9F]" />
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 )}
