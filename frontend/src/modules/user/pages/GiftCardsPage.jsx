@@ -74,9 +74,9 @@ const GiftCardsPage = () => {
                                 <span className="text-[10px] font-bold text-[#8E2B45] uppercase tracking-[0.2em]">The Perfect Surprise</span>
                             </div>
                             
-                            <h1 className="text-4xl md:text-6xl font-display font-bold text-black leading-tight tracking-tight">
+                            <h1 className="text-4xl md:text-6xl font-display font-semibold text-gray-900 leading-tight tracking-tight">
                                 Give the gift of <br />
-                                <span className="text-[#8E2B45]">Infinite Choice</span>
+                                <span className="text-[#8E2B45] font-bold">Infinite Choice</span>
                             </h1>
                             
                             <p className="text-gray-600 text-lg leading-relaxed max-w-lg">
@@ -85,17 +85,17 @@ const GiftCardsPage = () => {
 
                             <div className="flex flex-wrap gap-8 items-center pt-4">
                                 <div className="flex flex-col">
-                                    <span className="text-2xl font-bold text-black">Instant</span>
+                                    <span className="text-2xl font-semibold text-gray-900 tracking-tight">Instant</span>
                                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Email Delivery</span>
                                 </div>
                                 <div className="w-px h-10 bg-gray-100" />
                                 <div className="flex flex-col">
-                                    <span className="text-2xl font-bold text-black">No Expiry</span>
+                                    <span className="text-2xl font-semibold text-gray-900 tracking-tight">No Expiry</span>
                                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Lifetime Validity</span>
                                 </div>
                                 <div className="w-px h-10 bg-gray-100" />
                                 <div className="flex flex-col">
-                                    <span className="text-2xl font-bold text-black">Secure</span>
+                                    <span className="text-2xl font-semibold text-gray-900 tracking-tight">Secure</span>
                                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">100% Protected</span>
                                 </div>
                             </div>
@@ -143,8 +143,8 @@ const GiftCardsPage = () => {
                         {/* Amount Selection */}
                         <div className="space-y-6">
                             <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center font-bold">1</div>
-                                <h3 className="text-2xl font-bold text-black tracking-tight">Select Amount</h3>
+                                <div className="w-10 h-10 rounded-full bg-gray-900 text-white flex items-center justify-center font-semibold">1</div>
+                                <h3 className="text-2xl font-semibold text-gray-900 tracking-tight">Select Amount</h3>
                             </div>
                             
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -161,7 +161,7 @@ const GiftCardsPage = () => {
                                             : 'border-white bg-white hover:border-gray-200'
                                         }`}
                                     >
-                                        <span className={`text-2xl font-black ${!isCustomAmount && selectedAmount === amt ? 'text-[#8E2B45]' : 'text-gray-900'}`}>
+                                        <span className={`text-2xl font-semibold tracking-tight ${!isCustomAmount && selectedAmount === amt ? 'text-[#8E2B45]' : 'text-gray-900'}`}>
                                             ₹{amt.toLocaleString('en-IN')}
                                         </span>
                                         <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Gift Card</span>
@@ -178,18 +178,18 @@ const GiftCardsPage = () => {
                                     <span className={`text-[11px] font-bold uppercase tracking-widest ${isCustomAmount ? 'text-[#8E2B45]' : 'text-gray-400'}`}>Custom</span>
                                     {isCustomAmount ? (
                                         <div className="mt-2 flex items-center border-b border-[#8E2B45]">
-                                            <span className="text-xl font-bold text-[#8E2B45]">₹</span>
+                                            <span className="text-xl font-semibold text-[#8E2B45]">₹</span>
                                             <input 
                                                 type="number" 
                                                 autoFocus
                                                 value={customAmount}
                                                 onChange={(e) => setCustomAmount(e.target.value)}
-                                                className="w-24 bg-transparent border-none text-xl font-black text-[#8E2B45] focus:ring-0 p-1"
+                                                className="w-24 bg-transparent border-none text-xl font-semibold text-[#8E2B45] focus:ring-0 p-1"
                                                 placeholder="500+"
                                             />
                                         </div>
                                     ) : (
-                                        <span className="text-2xl font-black text-gray-300">₹ ???</span>
+                                        <span className="text-2xl font-semibold text-gray-300 tracking-tight">₹ ???</span>
                                     )}
                                 </button>
                             </div>
@@ -198,8 +198,8 @@ const GiftCardsPage = () => {
                         {/* Personalization */}
                         <div className="space-y-6">
                             <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center font-bold">2</div>
-                                <h3 className="text-2xl font-bold text-black tracking-tight">Personalize Your Gift</h3>
+                                <div className="w-10 h-10 rounded-full bg-gray-900 text-white flex items-center justify-center font-semibold">2</div>
+                                <h3 className="text-2xl font-semibold text-gray-900 tracking-tight">Personalize Your Gift</h3>
                             </div>
 
                             <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm space-y-6">
@@ -262,13 +262,13 @@ const GiftCardsPage = () => {
                                 
                                 <div className="text-center space-y-2 relative z-10">
                                     <span className="text-[10px] font-bold text-[#8E2B45] uppercase tracking-[0.4em]">Order Summary</span>
-                                    <h4 className="text-xl font-bold text-black">Gift Card Details</h4>
+                                    <h4 className="text-xl font-semibold text-gray-900 tracking-tight">Gift Card Details</h4>
                                 </div>
 
                                 <div className="space-y-4 pt-6 border-t border-gray-50">
                                     <div className="flex justify-between items-center">
                                         <span className="text-gray-400 text-sm font-medium">Gift Card Value</span>
-                                        <span className="text-xl font-black text-black">₹{finalAmount.toLocaleString('en-IN')}</span>
+                                        <span className="text-xl font-semibold text-gray-900 tracking-tight">₹{finalAmount.toLocaleString('en-IN')}</span>
                                     </div>
                                     <div className="flex justify-between items-center text-emerald-600">
                                         <span className="text-sm font-medium">Delivery Fee</span>
@@ -284,13 +284,13 @@ const GiftCardsPage = () => {
                                     <div className="flex justify-between items-end mb-8">
                                         <div className="flex flex-col">
                                             <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Total to Pay</span>
-                                            <span className="text-4xl font-black text-[#8E2B45]">₹{finalAmount.toLocaleString('en-IN')}</span>
+                                            <span className="text-4xl font-semibold text-[#8E2B45] tracking-tighter">₹{finalAmount.toLocaleString('en-IN')}</span>
                                         </div>
                                     </div>
 
                                     <button 
                                         onClick={handleBuyNow}
-                                        className="w-full bg-[#8E2B45] text-white py-5 rounded-2xl font-bold uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 shadow-xl shadow-[#8E2B45]/20 hover:bg-[#5B1E26] hover:-translate-y-1 transition-all active:scale-95 group"
+                                        className="w-full bg-[#8E2B45] text-white py-5 rounded-2xl font-semibold uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 shadow-xl shadow-[#8E2B45]/20 hover:bg-[#5B1E26] hover:-translate-y-1 transition-all active:scale-95 group"
                                     >
                                         <Send className="w-4 h-4 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
                                         Add to Bag

@@ -486,11 +486,11 @@ const ProductDetails = () => {
                                         </>
                                     ) : (
                                         <>
-                                            <video 
-                                                src={product.videoUrl} 
-                                                autoPlay 
-                                                muted 
-                                                loop 
+                                            <video
+                                                src={product.videoUrl}
+                                                autoPlay
+                                                muted
+                                                loop
                                                 playsInline
                                                 controls
                                                 className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
@@ -527,12 +527,12 @@ const ProductDetails = () => {
                                 {primaryImage ? (
                                     <>
                                         {/* Main State Image (Thumbnail selected or default) */}
-                                        <img 
-                                            src={primaryImage} 
-                                            alt={product.name} 
-                                            className="absolute inset-0 w-full h-full object-cover z-0" 
+                                        <img
+                                            src={primaryImage}
+                                            alt={product.name}
+                                            className="absolute inset-0 w-full h-full object-cover z-0"
                                         />
-                                        
+
                                         {/* Hover Image (2nd gallery image when available; otherwise model fallback) */}
                                         {hoverPaneImage ? (
                                             <img
@@ -588,16 +588,16 @@ const ProductDetails = () => {
                     <div className="h-[400px] lg:h-[520px] w-full bg-white rounded-[2rem] border border-gray-100 p-6 md:p-10 shadow-sm relative flex flex-col">
                         <div className="flex-1 flex flex-col justify-start pt-4 overflow-y-auto no-scrollbar">
                             <h2 className="text-xl font-bold text-center text-gray-900 mb-6 tracking-tight">Jewellery Details</h2>
-                            
+
                             {/* Tab Switcher */}
                             <div className="bg-white border border-gray-100 rounded-full p-1 grid grid-cols-2 mt-4 mb-10 max-w-[540px] mx-auto shadow-md">
-                                <button 
+                                <button
                                     onClick={() => setActiveDetailTab('details')}
                                     className={`py-3 rounded-full text-[13px] font-medium transition-all duration-500 whitespace-nowrap px-10 ${activeDetailTab === 'details' ? 'bg-[#8E2B45] text-white shadow-lg' : 'text-gray-900 hover:text-[#8E2B45]'}`}
                                 >
                                     Product Details
                                 </button>
-                                <button 
+                                <button
                                     onClick={() => setActiveDetailTab('price')}
                                     className={`py-3 rounded-full text-[13px] font-medium transition-all duration-500 whitespace-nowrap px-10 ${activeDetailTab === 'price' ? 'bg-[#8E2B45] text-white shadow-lg' : 'text-gray-900 hover:text-[#8E2B45]'}`}
                                 >
@@ -707,7 +707,7 @@ const ProductDetails = () => {
                                     {hasReviews ? `${reviewCount} Reviews` : 'Authentic Collection'}
                                 </span>
                             </div>
-                            
+
                             {supplierName && (
                                 <div className="text-[9px] uppercase tracking-[0.2em] text-gray-400 font-bold">
                                     By <span className="text-gray-900">{supplierName}</span>
@@ -767,11 +767,10 @@ const ProductDetails = () => {
                             <button
                                 onClick={handleAddToCart}
                                 disabled={!canAddToCart}
-                                className={`w-full max-w-md py-5 rounded-xl font-bold uppercase tracking-[0.2em] text-[11px] transition-all duration-500 relative overflow-hidden group ${
-                                    canAddToCart 
-                                    ? 'bg-[#8E2B45] text-white hover:bg-[#5B1E26] shadow-lg hover:-translate-y-0.5' 
-                                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                }`}
+                                className={`w-full max-w-md py-5 rounded-xl font-bold uppercase tracking-[0.2em] text-[11px] transition-all duration-500 relative overflow-hidden group ${canAddToCart
+                                        ? 'bg-[#8E2B45] text-white hover:bg-[#5B1E26] shadow-lg hover:-translate-y-0.5'
+                                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                    }`}
                             >
                                 <span className="relative z-10 flex items-center justify-center gap-3">
                                     {canAddToCart ? (
@@ -782,7 +781,7 @@ const ProductDetails = () => {
                                     ) : 'Out of Stock'}
                                 </span>
                             </button>
-                            
+
                             <div className="flex items-center justify-center gap-8 text-[9px] font-bold uppercase tracking-widest text-gray-400 opacity-60">
                                 <span className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5 text-emerald-500" /> Authentic</span>
                                 <span className="flex items-center gap-1.5"><Truck className="w-3.5 h-3.5 text-blue-500" /> Free Global Shipping</span>
@@ -795,7 +794,7 @@ const ProductDetails = () => {
                                 <div className={`w-1 h-1 rounded-full ${canAddToCart ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
                                 {canAddToCart ? 'Ready to Ship' : 'Sold Out'}
                             </div>
-                            
+
                             <div className="flex gap-4 opacity-30">
                                 {product?.huid && (
                                     <span className="text-[8px] font-bold uppercase tracking-widest text-gray-500">HUID {product.huid}</span>
@@ -809,20 +808,20 @@ const ProductDetails = () => {
                 </div>
             </div>
 
-                {/* Lab Grown Diamond Info Link - Integrated more smoothly */}
-                {isLabGrown && (
-                    <div className="mt-8 flex justify-center">
-                        <button 
-                            onClick={() => setIsLabGrownModalOpen(true)}
-                            className="group flex items-center gap-4 bg-emerald-50/30 border border-emerald-100/50 hover:bg-emerald-50 hover:border-emerald-200 transition-all px-8 py-4 rounded-2xl"
-                        >
-                            <Sparkles className="w-5 h-5 text-emerald-600 animate-pulse" />
-                            <span className="text-xs font-bold text-emerald-900 uppercase tracking-[0.15em] border-b border-emerald-200 pb-0.5">
-                                Conscious Luxury: Lab Grown Diamond Guide
-                            </span>
-                        </button>
-                    </div>
-                )}
+            {/* Lab Grown Diamond Info Link - Integrated more smoothly */}
+            {isLabGrown && (
+                <div className="mt-8 flex justify-center">
+                    <button
+                        onClick={() => setIsLabGrownModalOpen(true)}
+                        className="group flex items-center gap-4 bg-emerald-50/30 border border-emerald-100/50 hover:bg-emerald-50 hover:border-emerald-200 transition-all px-8 py-4 rounded-2xl"
+                    >
+                        <Sparkles className="w-5 h-5 text-emerald-600 animate-pulse" />
+                        <span className="text-xs font-bold text-emerald-900 uppercase tracking-[0.15em] border-b border-emerald-200 pb-0.5">
+                            Conscious Luxury: Lab Grown Diamond Guide
+                        </span>
+                    </button>
+                </div>
+            )}
 
             {/* Mobile Sticky Bottom Action Bar - Always functional */}
             <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 p-3 z-[150] md:hidden flex gap-3 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] pb-safe animate-in slide-in-from-bottom duration-500">
@@ -833,11 +832,10 @@ const ProductDetails = () => {
                 <button
                     onClick={handleAddToCart}
                     disabled={!canAddToCart}
-                    className={`flex-1 rounded-xl h-11 font-bold uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-xl ${
-                        canAddToCart 
-                        ? 'bg-[#8E2B45] text-white shadow-[#8E2B45]/20 hover:bg-[#5B1E26]' 
-                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    }`}
+                    className={`flex-1 rounded-xl h-11 font-bold uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-xl ${canAddToCart
+                            ? 'bg-[#8E2B45] text-white shadow-[#8E2B45]/20 hover:bg-[#5B1E26]'
+                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        }`}
                 >
                     {canAddToCart ? (
                         <>
@@ -872,7 +870,7 @@ const ProductDetails = () => {
                         <Truck className="w-4 h-4 text-gray-400" />
                         <span className="text-[9px] font-semibold uppercase tracking-widest text-gray-500 hidden lg:block whitespace-nowrap">Check Delivery</span>
                     </div>
-                    
+
                     <div className="flex w-full md:max-w-xs gap-1.5 bg-gray-50 rounded-lg p-1">
                         <input
                             type="text"
@@ -881,7 +879,7 @@ const ProductDetails = () => {
                             onChange={(e) => setLocalPincode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                             className="flex-1 bg-transparent border-none px-3 py-1 text-xs focus:ring-0 transition-all placeholder:text-gray-300 font-medium"
                         />
-                        <button 
+                        <button
                             onClick={() => {
                                 if (localPincode.length === 6) {
                                     updatePincode(localPincode);
@@ -1091,7 +1089,7 @@ const ProductDetails = () => {
                                                 <p className="text-[11px] text-gray-500 leading-relaxed font-medium">7-day hassle-free returns on all unused and authentic products. See our returns policy for details.</p>
                                             </div>
                                         </div>
-                                        
+
                                         {product.faqs && product.faqs.length > 0 && (
                                             <div className="pt-6 border-t border-gray-50 space-y-4">
                                                 <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Common Questions</h4>
@@ -1111,41 +1109,41 @@ const ProductDetails = () => {
                 </div>
             </div>
 
-                {/* STYLE GALLERY - Refined to show always with fallbacks */}
-                {galleryImages.length > 0 && (
-                    <div className="mt-12 mb-20 px-4 max-w-6xl mx-auto">
-                        <div className="flex flex-col items-center mb-10">
-                            <span className="text-[9px] font-bold text-[#D39A9F] uppercase tracking-[0.4em] mb-2">Style Showcase</span>
-                            <h2 className="text-2xl font-display font-bold text-black tracking-tight">Capturing the Brilliance</h2>
-                        </div>
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                            {Array.from({ length: 4 }).map((_, idx) => {
-                                const img = galleryImages[idx] || galleryImages[0];
-                                return (
-                                    <div
-                                        key={idx}
-                                        className="aspect-square rounded-[2rem] overflow-hidden border border-gray-100 group cursor-pointer shadow-md hover:shadow-xl transition-all duration-700 relative bg-white"
-                                        onClick={() => setSelectedImage(img)}
-                                    >
-                                        <img
-                                            src={img}
-                                            alt={`Style Detail ${idx + 1}`}
-                                            className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110"
-                                        />
-                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
-                                        
-                                        {/* Subtle Overlay on Hover */}
-                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 backdrop-blur-[2px]">
-                                            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform duration-500">
-                                                <Sparkles className="w-5 h-5 text-[#D39A9F]" />
-                                            </div>
+            {/* STYLE GALLERY - Refined to show always with fallbacks */}
+            {galleryImages.length > 0 && (
+                <div className="mt-12 mb-20 px-4 max-w-6xl mx-auto">
+                    <div className="flex flex-col items-center mb-10">
+                        <span className="text-[9px] font-bold text-[#D39A9F] uppercase tracking-[0.4em] mb-2">Style Showcase</span>
+                        <h2 className="text-2xl font-display font-bold text-black tracking-tight">Capturing the Brilliance</h2>
+                    </div>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                        {Array.from({ length: 4 }).map((_, idx) => {
+                            const img = galleryImages[idx] || galleryImages[0];
+                            return (
+                                <div
+                                    key={idx}
+                                    className="aspect-square rounded-[2rem] overflow-hidden border border-gray-100 group cursor-pointer shadow-md hover:shadow-xl transition-all duration-700 relative bg-white"
+                                    onClick={() => setSelectedImage(img)}
+                                >
+                                    <img
+                                        src={img}
+                                        alt={`Style Detail ${idx + 1}`}
+                                        className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110"
+                                    />
+                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
+
+                                    {/* Subtle Overlay on Hover */}
+                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 backdrop-blur-[2px]">
+                                        <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform duration-500">
+                                            <Sparkles className="w-5 h-5 text-[#D39A9F]" />
                                         </div>
                                     </div>
-                                );
-                            })}
-                        </div>
+                                </div>
+                            );
+                        })}
                     </div>
-                )}
+                </div>
+            )}
 
             {/* ================= REORDERED SECTIONS ================= */}
 
@@ -1473,8 +1471,8 @@ const ProductDetails = () => {
                             <div className="flex flex-col">
                                 <h3 className="font-display font-black text-xl text-[#5D4037] uppercase tracking-tight">All about Lab grown diamonds</h3>
                             </div>
-                            <button 
-                                onClick={() => setIsLabGrownModalOpen(false)} 
+                            <button
+                                onClick={() => setIsLabGrownModalOpen(false)}
                                 className="bg-white/80 hover:bg-white text-gray-500 hover:text-black rounded-full p-2 shadow-sm transition-all"
                             >
                                 <X className="w-5 h-5" />
@@ -1534,7 +1532,7 @@ const ProductDetails = () => {
 
                         {/* Modal Footer */}
                         <div className="p-6 border-t border-gray-100 bg-white">
-                            <button 
+                            <button
                                 onClick={() => setIsLabGrownModalOpen(false)}
                                 className="w-full bg-black text-white py-4 rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-[#8E2424] transition-all active:scale-95"
                             >
