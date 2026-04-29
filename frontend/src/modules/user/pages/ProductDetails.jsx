@@ -5,7 +5,7 @@ import { useAuth } from '../../../context/AuthContext';
 import api from '../../../services/api';
 import toast from 'react-hot-toast';
 import ProductCard from '../components/ProductCard';
-import WhyChooseUs from '../components/WhyChooseUs';
+
 import { Heart, ShoppingBag, Star, Share2, Plus, Minus, Truck, ShieldCheck, Smile, Gift, ChevronDown, SlidersHorizontal, X, Camera, Check, ArrowLeft, ArrowRight, Droplets, Sparkles, Play, Globe, Zap, Users } from 'lucide-react';
 // Product video is backend-driven (optional) via `product.videoUrl`.
 import Loader from '../../shared/components/Loader';
@@ -426,25 +426,25 @@ const ProductDetails = () => {
             <div className="container mx-auto px-4 md:px-6">
                 {/* STICKY CENTRE ACTION BAR - Requested by USER (Theme Rewritten) */}
                 <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[150] hidden md:flex pointer-events-none w-full max-w-fit px-4">
-                    <div className="pointer-events-auto flex items-center bg-white/95 backdrop-blur-2xl border border-[#D39A9F]/20 rounded-full p-2 pl-10 shadow-[0_30px_80px_rgba(142,36,36,0.15)] transition-all hover:border-[#D39A9F]/40 hover:-translate-y-1 animate-in fade-in slide-in-from-bottom-10 duration-700">
+                    <div className="pointer-events-auto flex items-center bg-white border border-gray-100 rounded-full p-1.5 shadow-md transition-all animate-in fade-in slide-in-from-bottom-6 duration-500">
                         {/* Price Section */}
-                        <div className="flex flex-col items-start pr-10 border-r border-[#D39A9F]/10">
-                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none mb-1">Final Amount</span>
-                            <span className="text-3xl font-serif text-black tracking-tight">
+                        <div className="flex flex-col items-start px-6 border-r border-gray-100">
+                            <span className="text-[9px] text-gray-400 font-medium uppercase tracking-widest mb-0.5">Price</span>
+                            <span className="text-xl font-semibold text-gray-900 tracking-tight">
                                 {currencyText(variantPrice)}
                             </span>
                         </div>
 
                         {/* Weight Selector Pill */}
-                        <div className="mx-8 min-w-[200px]">
-                            <div className="flex items-center gap-3 bg-[#D39A9F]/5 hover:bg-[#D39A9F]/10 transition-colors px-6 py-3 rounded-full cursor-pointer group relative">
-                                <SlidersHorizontal className="w-4 h-4 text-[#D39A9F]" />
-                                <div className="flex-1 flex items-center gap-2 text-sm text-gray-800">
-                                    <span className="text-gray-400 font-medium">Weight:</span>
+                        <div className="px-6 min-w-[160px]">
+                            <div className="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-full cursor-pointer group relative">
+                                <SlidersHorizontal className="w-3.5 h-3.5 text-gray-400" />
+                                <div className="flex-1 flex items-center gap-1.5 text-[13px] text-gray-600">
+                                    <span className="text-gray-400 font-medium">Size:</span>
                                     <select
                                         value={selectedVariantId}
                                         onChange={(e) => setSelectedVariantId(e.target.value)}
-                                        className="bg-transparent border-none outline-none font-bold text-black cursor-pointer appearance-none pr-8 relative z-10"
+                                        className="bg-transparent border-none outline-none font-medium text-black cursor-pointer appearance-none pr-6 relative z-10"
                                     >
                                         {product.variants?.map(v => (
                                             <option key={v.id || v._id} value={v.id || v._id}>
@@ -453,7 +453,7 @@ const ProductDetails = () => {
                                         ))}
                                     </select>
                                 </div>
-                                <ChevronDown className="w-4 h-4 text-[#D39A9F]/60 absolute right-6 group-hover:text-black transition-colors" />
+                                <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-4" />
                             </div>
                         </div>
 
@@ -461,9 +461,9 @@ const ProductDetails = () => {
                         <button
                             onClick={handleAddToCart}
                             disabled={!canAddToCart}
-                            className={`px-14 py-5 rounded-full font-bold text-xs tracking-widest uppercase transition-all shadow-xl active:scale-95 ${canAddToCart ? 'bg-[#8E2424] hover:bg-black text-white shadow-[#8E2424]/20' : 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-gray-200'}`}
+                            className={`px-8 py-3 rounded-full font-medium text-[10px] tracking-widest uppercase transition-all active:scale-95 ${canAddToCart ? 'bg-black hover:bg-gray-800 text-white shadow-sm' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
                         >
-                            {canAddToCart ? 'Add to Cart' : 'Out of Stock'}
+                            {canAddToCart ? 'Add to Bag' : 'Out of Stock'}
                         </button>
                     </div>
                 </div>
@@ -567,7 +567,7 @@ const ProductDetails = () => {
 
                         {/* Thumbnails Row */}
                         {galleryImages.length > 1 && (
-                            <div className="flex gap-4 overflow-x-auto pb-2 px-1 scrollbar-hide">
+                            <div className="flex gap-4 overflow-x-auto pb-4 px-1 scrollbar-hide justify-center">
                                 {galleryImages.map((img, idx) => (
                                     <button
                                         key={idx}
@@ -582,7 +582,7 @@ const ProductDetails = () => {
                         )}
 
                         {/* Style Gallery: show only when product truly has enough distinct images (no duplication). */}
-                        {galleryImages.length >= 4 && (
+                        {false && (
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 pt-4">
                                 {galleryImages.slice(0, 4).map((img, idx) => (
                                     <div
@@ -602,259 +602,302 @@ const ProductDetails = () => {
                         )}
                     </div>
 
-                    {/* Right: Product Info */}
-                    <div className="space-y-8 pt-2 flex flex-col items-center text-center">
-                        <div>
-                            <h1 className="text-2xl md:text-3xl font-display font-bold text-black mb-2 md:mb-4 leading-tight">{product.name}</h1>
-                            <div className="flex items-center justify-center gap-4 text-sm px-1">
-                                <div className="flex items-center text-[#D39A9F]">
-                                    {[...Array(5)].map((_, i) => (
-                                        <Star key={i} className={`w-3.5 h-3.5 ${i < Math.round(averageRating) ? 'fill-current' : 'text-gray-300'} `} />
-                                    ))}
-                                    <span className="ml-2 text-gray-500 font-medium">
-                                        {hasReviews ? `(${reviewCount} Reviews)` : '(No reviews yet)'}
-                                    </span>
-                                </div>
-
-                            </div>
-                            {supplierName && (
-                                <div className="mt-2 text-xs uppercase tracking-widest text-gray-400 font-semibold">
-                                    Sold by <span className="text-gray-700 font-bold">{supplierName}</span>
-                                </div>
-                            )}
-                            <div className="mt-4 flex flex-wrap justify-center gap-2">
-                                {product?.huid && (
-                                    <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-gray-600">
-                                        HUID: {product.huid}
-                                    </span>
-                                )}
-                                {selectedVariant?.variantCode && (
-                                    <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-gray-600">
-                                        Variant Code: {selectedVariant.variantCode}
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="border-b border-gray-100 pb-6">
-                            <div className="flex items-baseline justify-center gap-3 mb-1">
-                                <span className="text-3xl md:text-4xl font-bold text-black">{currencyText(variantPrice)}</span>
-                                {variantMrp > variantPrice && (
-                                    <>
-                                        <span className="text-lg md:text-xl text-gray-400 line-through font-medium">{currencyText(variantMrp)}</span>
-                                        <span className="bg-[#9C5B61] text-white text-[10px] font-bold px-2 py-1 rounded-sm tracking-wider">SAVE {variantDiscount}%</span>
-                                    </>
-                                )}
-                            </div>
-                            <p className="text-xs text-gray-500 font-medium">Inclusive of all taxes</p>
-                        </div>
-
-                        <div className="space-y-4 pb-2 md:pb-6">
-                            {product.variants && product.variants.length > 1 && (
-                                <div className="space-y-3">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-xs font-bold uppercase tracking-widest text-gray-500">Variants</span>
-                                        <span className="text-[10px] text-gray-400">Select one</span>
-                                    </div>
-                                    <div className="flex flex-wrap justify-center gap-2">
-                                        {product.variants.map((variant) => {
-                                            const variantId = variant.id || variant._id;
-                                            const isSelected = String(variantId) === String(selectedVariantId);
-                                            return (
-                                                <button
-                                                    key={variantId}
-                                                    type="button"
-                                                    onClick={() => setSelectedVariantId(variantId)}
-                                                    className={`px-3 py-2 rounded-full text-xs font-semibold border transition-all ${isSelected
-                                                        ? 'border-[#3E2723] bg-[#3E2723]/10 text-[#3E2723]'
-                                                        : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                                                        }`}
-                                                >
-                                                    {variant.name || 'Variant'}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className={`flex items-center justify-center gap-2 text-sm font-medium ${canAddToCart ? 'text-emerald-700' : 'text-red-600'}`}>
-                                <ShieldCheck className="w-4 h-4" />
-                                <span>
-                                    {canAddToCart
-                                        ? `In stock${availableStock !== null ? ` - ${availableStock} left` : ''} - ready to ship from Sands Royal`
-                                        : 'Out of stock - this variant is currently unavailable'}
-                                </span>
-                            </div>
-
-
-                            {/* Mobile Sticky Bottom Action Bar - Refined for better reach and visibility */}
-                            <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 p-4 z-[150] md:hidden flex gap-3 shadow-[0_-10px_30px_rgba(0,0,0,0.08)] pb-safe">
-                                <div className="flex flex-col justify-center min-w-[100px]">
-                                    <span className="text-[9px] uppercase tracking-wider text-gray-500 font-bold mb-0.5 leading-none">Total Price</span>
-                                    <span className="text-xl font-bold text-black leading-none">{currencyText(variantPrice)}</span>
-                                </div>
-                                <button
-                                    onClick={handleAddToCart}
-                                    disabled={!canAddToCart}
-                                    className={`flex-1 rounded-xl h-14 font-bold uppercase tracking-widest text-[11px] flex items-center justify-center gap-2 active:scale-[0.98] transition-all ${canAddToCart ? 'bg-[#8E2424] text-white shadow-lg shadow-[#8E2424]/20' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+                    {/* JEWELLERY DETAILS TABBED SECTION - Moved to center below product area */}
+                    <div className="h-[400px] lg:h-[520px] w-full bg-white rounded-[2rem] border border-gray-100 p-6 md:p-10 shadow-sm relative flex flex-col overflow-hidden">
+                        <div className="flex-1 flex flex-col justify-center overflow-y-auto no-scrollbar">
+                            <h2 className="text-xl font-bold text-center text-gray-900 mb-6 tracking-tight">Jewellery Details</h2>
+                            
+                            {/* Tab Switcher */}
+                            <div className="bg-[#F8F9FA] border border-gray-200/50 rounded-full p-1.5 grid grid-cols-2 mb-10 max-w-[440px] mx-auto shadow-sm">
+                                <button 
+                                    onClick={() => setActiveDetailTab('details')}
+                                    className={`py-3 rounded-full text-[10px] font-bold uppercase tracking-[0.12em] transition-all duration-500 whitespace-nowrap px-2 ${activeDetailTab === 'details' ? 'bg-black text-white shadow-xl' : 'text-gray-400 hover:text-gray-600'}`}
                                 >
-                                    {canAddToCart ? (
-                                        <>
-                                            <ShoppingBag className="w-4 h-4" />
-                                            Add to Cart
-                                        </>
-                                    ) : 'Out of Stock'}
+                                    Product Details
+                                </button>
+                                <button 
+                                    onClick={() => setActiveDetailTab('price')}
+                                    className={`py-3 rounded-full text-[10px] font-bold uppercase tracking-[0.12em] transition-all duration-500 whitespace-nowrap px-2 ${activeDetailTab === 'price' ? 'bg-black text-white shadow-xl' : 'text-gray-400 hover:text-gray-600'}`}
+                                >
+                                    Price Breakup
                                 </button>
                             </div>
 
-                            {/* Push WhatsApp button up on mobile to avoid overlap with sticky bar */}
-                            <style>
-                                {`
-                                    @media (max-width: 768px) {
-                                        .whatsapp-floating {
-                                            bottom: 85px !important;
-                                        }
-                                    }
-                                `}
-                            </style>
+                            {/* Tab Content */}
+                            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                                {activeDetailTab === 'details' ? (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        {hasDiamonds && (
+                                            <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 flex flex-col items-center text-center">
+                                                <div className="w-12 h-12 rounded-full bg-[#D39A9F]/10 flex items-center justify-center mb-6">
+                                                    <Sparkles className="w-6 h-6 text-[#D39A9F]" />
+                                                </div>
+                                                <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-8">Diamond & Setting</h4>
+                                                <div className="grid grid-cols-2 gap-y-8 gap-x-12 w-full">
+                                                    <div className="space-y-1">
+                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Type</span>
+                                                        <span className="text-sm font-semibold text-gray-900 block capitalize">{String(diamondType).replace('_', ' ')}</span>
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Weight</span>
+                                                        <span className="text-sm font-semibold text-gray-900 block">{product.diamondWeight || currentVariant?.diamondWeight || '---'} cts</span>
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Diamonds</span>
+                                                        <span className="text-sm font-semibold text-gray-900 block">{product.diamondCount || currentVariant?.diamondCount || '---'}</span>
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Clarity</span>
+                                                        <span className="text-sm font-semibold text-gray-900 block">{product.diamondClarity || currentVariant?.diamondClarity || '---'}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
 
-                            {/* Lab Grown Diamond Info Link */}
-                            {isLabGrown && (
-                                <div className="pt-4">
-                                    <button 
-                                        onClick={() => setIsLabGrownModalOpen(true)}
-                                        className="w-full bg-[#FDF5F6] border border-[#EBCDD0]/40 rounded-2xl p-4 flex items-center justify-center gap-3 group transition-all hover:bg-white hover:shadow-md hover:border-[#EBCDD0]"
-                                    >
-                                        <Sparkles className="w-5 h-5 text-[#D39A9F]" />
-                                        <span className="text-[13px] font-bold text-gray-800 underline decoration-[#D39A9F]/30 underline-offset-4 group-hover:text-[#D39A9F] transition-colors">
-                                            All You Want to Know About the Lab Grown Diamonds
-                                        </span>
-                                    </button>
-                                </div>
-                            )}
+                                        <div className={`${hasDiamonds ? '' : 'md:col-span-2 max-w-lg mx-auto w-full'} bg-gray-50 rounded-2xl p-6 border border-gray-100 flex flex-col items-center text-center`}>
+                                            <div className="w-12 h-12 rounded-full bg-[#9C5B61]/10 flex items-center justify-center mb-6">
+                                                <ShieldCheck className="w-6 h-6 text-[#9C5B61]" />
+                                            </div>
+                                            <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-8">Metal & Authentication</h4>
+                                            <div className="grid grid-cols-2 gap-y-8 gap-x-12 w-full">
+                                                <div className="space-y-1">
+                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Metal</span>
+                                                    <span className="text-sm font-semibold text-gray-900 block">{product.material || product.metal || '925 Silver'}</span>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Purity</span>
+                                                    <span className="text-sm font-semibold text-gray-900 block">{product.silverCategory || product.purity || '---'}</span>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Weight</span>
+                                                    <span className="text-sm font-semibold text-gray-900 block">{selectedVariantWeight || product.weight || '---'} {selectedVariantWeightUnit || product.weightUnit || 'g'}</span>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Certificate</span>
+                                                    <span className="text-sm font-semibold text-emerald-700 block">{product.certificate || 'Sands Authenticated'}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="max-w-2xl mx-auto space-y-6">
+                                        <div className="grid grid-cols-1 gap-4 text-sm">
+                                            {[
+                                                { label: 'Metal Price', value: pricingBreakdown.metalPrice },
+                                                { label: 'Making Charge', value: pricingBreakdown.makingCharge },
+                                                { label: 'Diamond Price', value: pricingBreakdown.diamondPrice },
+                                                { label: `GST (${gstPercent}%)`, value: pricingBreakdown.gst }
+                                            ].map((item, idx) => (
+                                                <div key={idx} className="flex items-center justify-between py-4 border-b border-gray-50 last:border-0">
+                                                    <span className="text-gray-500 font-bold uppercase tracking-widest text-[10px]">{item.label}</span>
+                                                    <span className="font-semibold text-gray-900 text-sm">{currencyText(item.value)}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="mt-8 flex items-center justify-between border-t border-gray-200 pt-8">
+                                            <span className="text-xs font-bold uppercase tracking-[0.3em] text-gray-400">Total Price</span>
+                                            <span className="text-2xl font-bold text-gray-900">{currencyText(pricingBreakdown.finalPrice || variantPrice || 0)}</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* JEWELLERY DETAILS TABBED SECTION - Moved to center below product area */}
-            <div className="container mx-auto px-4 md:px-6 mt-16 max-w-4xl">
-                <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.04)] p-8 md:p-12">
-                    <h2 className="text-3xl md:text-4xl font-display font-bold text-center text-black mb-10 tracking-tight uppercase">Jewellery Details</h2>
-                    
-                    {/* Tab Switcher */}
-                    <div className="bg-gray-50/80 border border-gray-100 rounded-full p-1.5 flex mb-12 max-w-md mx-auto shadow-inner">
-                        <button 
-                            onClick={() => setActiveDetailTab('details')}
-                            className={`flex-1 py-4 rounded-full text-[13px] font-bold uppercase tracking-widest transition-all duration-500 ${activeDetailTab === 'details' ? 'bg-[#8E2424] text-white shadow-xl shadow-[#8E2424]/25' : 'text-gray-400 hover:text-black'}`}
-                        >
-                            Product Details
-                        </button>
-                        <button 
-                            onClick={() => setActiveDetailTab('price')}
-                            className={`flex-1 py-4 rounded-full text-[13px] font-bold uppercase tracking-widest transition-all duration-500 ${activeDetailTab === 'price' ? 'bg-[#8E2424] text-white shadow-xl shadow-[#8E2424]/25' : 'text-gray-400 hover:text-black'}`}
-                        >
-                            Price Breakup
-                        </button>
-                    </div>
-
-                    {/* Tab Content */}
-                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-                        {activeDetailTab === 'details' ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                {hasDiamonds && (
-                                    <div className="bg-[#FDF5F6]/40 rounded-3xl p-8 border border-[#EBCDD0]/20 flex flex-col items-center text-center">
-                                        <div className="w-12 h-12 rounded-full bg-[#D39A9F]/10 flex items-center justify-center mb-6">
-                                            <Sparkles className="w-6 h-6 text-[#D39A9F]" />
-                                        </div>
-                                        <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-[#D39A9F] mb-8">Diamond & Setting</h4>
-                                        <div className="grid grid-cols-2 gap-y-8 gap-x-12 w-full">
-                                            <div className="space-y-1">
-                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Type</span>
-                                                <span className="text-sm font-semibold text-gray-900 block capitalize">{String(diamondType).replace('_', ' ')}</span>
-                                            </div>
-                                            <div className="space-y-1">
-                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Weight</span>
-                                                <span className="text-sm font-semibold text-gray-900 block">{product.diamondWeight || currentVariant?.diamondWeight || '---'} cts</span>
-                                            </div>
-                                            <div className="space-y-1">
-                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Diamonds</span>
-                                                <span className="text-sm font-semibold text-gray-900 block">{product.diamondCount || currentVariant?.diamondCount || '---'}</span>
-                                            </div>
-                                            <div className="space-y-1">
-                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Clarity</span>
-                                                <span className="text-sm font-semibold text-gray-900 block">{product.diamondClarity || currentVariant?.diamondClarity || '---'}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                <div className={`${hasDiamonds ? '' : 'md:col-span-2 max-w-lg mx-auto w-full'} bg-gray-50/50 rounded-3xl p-8 border border-gray-100 flex flex-col items-center text-center`}>
-                                    <div className="w-12 h-12 rounded-full bg-[#9C5B61]/10 flex items-center justify-center mb-6">
-                                        <ShieldCheck className="w-6 h-6 text-[#9C5B61]" />
-                                    </div>
-                                    <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-[#9C5B61] mb-8">Metal & Authentication</h4>
-                                    <div className="grid grid-cols-2 gap-y-8 gap-x-12 w-full">
-                                        <div className="space-y-1">
-                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Metal</span>
-                                            <span className="text-sm font-semibold text-gray-900 block">{product.material || product.metal || '925 Silver'}</span>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Purity</span>
-                                            <span className="text-sm font-semibold text-gray-900 block">{product.silverCategory || product.purity || '---'}</span>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Weight</span>
-                                            <span className="text-sm font-semibold text-gray-900 block">{selectedVariantWeight || product.weight || '---'} {selectedVariantWeightUnit || product.weightUnit || 'g'}</span>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Certificate</span>
-                                            <span className="text-sm font-semibold text-emerald-700 block">{product.certificate || 'Sands Authenticated'}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="max-w-2xl mx-auto space-y-6">
-                                <div className="grid grid-cols-1 gap-4 text-sm">
-                                    {[
-                                        { label: 'Metal Price', value: pricingBreakdown.metalPrice },
-                                        { label: 'Making Charge', value: pricingBreakdown.makingCharge },
-                                        { label: 'Diamond Price', value: pricingBreakdown.diamondPrice },
-                                        { label: `GST (${gstPercent}%)`, value: pricingBreakdown.gst }
-                                    ].map((item, idx) => (
-                                        <div key={idx} className="flex items-center justify-between bg-gray-50/50 rounded-2xl px-8 py-5 border border-gray-100 hover:bg-white hover:shadow-sm transition-all">
-                                            <span className="text-gray-500 font-bold uppercase tracking-widest text-[10px]">{item.label}</span>
-                                            <span className="font-bold text-gray-900 text-base">{currencyText(item.value)}</span>
-                                        </div>
+            {/* Right: Product Info */}
+            <div className="w-full mt-8 mb-12 px-0">
+                <div className="bg-white border-y border-gray-100 p-6 md:p-12 flex flex-col items-center text-center">
+                    {/* Header: Title & Rating */}
+                    <div className="max-w-4xl mx-auto mb-6">
+                        <h1 className="text-2xl md:text-4xl font-sans font-bold text-black mb-4 tracking-tight uppercase">
+                            {product.name}
+                        </h1>
+                        <div className="flex flex-wrap items-center justify-center gap-3">
+                            <div className="flex items-center text-[#D39A9F] bg-[#FDF5F6] px-3 py-1 rounded-full border border-[#EBCDD0]/20">
+                                <div className="flex gap-0.5">
+                                    {[...Array(5)].map((_, i) => (
+                                        <Star key={i} className={`w-3 h-3 ${i < Math.round(averageRating) ? 'fill-current' : 'text-gray-200'} `} />
                                     ))}
                                 </div>
-                                <div className="mt-8 flex items-center justify-between bg-[#8E2424]/[0.02] border border-[#8E2424]/10 rounded-2xl p-8">
-                                    <span className="text-xs font-bold uppercase tracking-[0.3em] text-gray-400">Total Price</span>
-                                    <span className="text-3xl font-display font-bold text-black">{currencyText(pricingBreakdown.finalPrice || variantPrice || 0)}</span>
+                                <span className="ml-2 text-[9px] font-bold uppercase tracking-widest text-gray-500">
+                                    {hasReviews ? `${reviewCount} Reviews` : 'Authentic Collection'}
+                                </span>
+                            </div>
+                            
+                            {supplierName && (
+                                <div className="text-[9px] uppercase tracking-[0.2em] text-gray-400 font-bold">
+                                    By <span className="text-gray-900">{supplierName}</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Pricing Section - Compact */}
+                    <div className="mb-8">
+                        <div className="flex items-baseline justify-center gap-3">
+                            <span className="text-3xl md:text-5xl font-bold text-black tracking-tighter">
+                                {currencyText(variantPrice)}
+                            </span>
+                            {variantMrp > variantPrice && (
+                                <div className="flex items-center gap-2">
+                                    <span className="text-base md:text-lg text-gray-300 line-through font-medium">
+                                        {currencyText(variantMrp)}
+                                    </span>
+                                    <span className="text-[9px] font-bold text-[#9C5B61] uppercase tracking-widest bg-rose-50 px-2 py-0.5 rounded">
+                                        -{variantDiscount}%
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+                        <p className="text-[9px] text-gray-400 font-bold uppercase tracking-[0.2em] mt-1">Inclusive of all taxes & shipping</p>
+                    </div>
+
+                    {/* Variant & Action Section - Tightened */}
+                    <div className="w-full max-w-xl space-y-8">
+                        {product.variants && product.variants.length > 1 && (
+                            <div className="space-y-3">
+                                <div className="flex flex-wrap justify-center gap-2">
+                                    {product.variants.map((variant) => {
+                                        const variantId = variant.id || variant._id;
+                                        const isSelected = String(variantId) === String(selectedVariantId);
+                                        return (
+                                            <button
+                                                key={variantId}
+                                                type="button"
+                                                onClick={() => setSelectedVariantId(variantId)}
+                                                className={`px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest border transition-all duration-300 ${isSelected
+                                                    ? 'border-black bg-black text-white shadow-md'
+                                                    : 'border-gray-100 text-gray-400 hover:border-gray-300 bg-gray-50/30'
+                                                    }`}
+                                            >
+                                                {variant.name}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         )}
+
+                        {/* DESKTOP ACTION BUTTONS */}
+                        <div className="hidden md:flex flex-col items-center gap-4">
+                            <button
+                                onClick={handleAddToCart}
+                                disabled={!canAddToCart}
+                                className={`w-full max-w-md py-5 rounded-xl font-bold uppercase tracking-[0.2em] text-[11px] transition-all duration-500 relative overflow-hidden group ${
+                                    canAddToCart 
+                                    ? 'bg-black text-white hover:bg-gray-900 shadow-lg hover:-translate-y-0.5' 
+                                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                }`}
+                            >
+                                <span className="relative z-10 flex items-center justify-center gap-3">
+                                    {canAddToCart ? (
+                                        <>
+                                            <ShoppingBag className="w-4 h-4" />
+                                            Add to Bag
+                                        </>
+                                    ) : 'Out of Stock'}
+                                </span>
+                            </button>
+                            
+                            <div className="flex items-center justify-center gap-8 text-[9px] font-bold uppercase tracking-widest text-gray-400 opacity-60">
+                                <span className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5 text-emerald-500" /> Authentic</span>
+                                <span className="flex items-center gap-1.5"><Truck className="w-3.5 h-3.5 text-blue-500" /> Free Global Shipping</span>
+                            </div>
+                        </div>
+
+                        {/* Stock & Codes */}
+                        <div className="flex flex-col items-center gap-3 pt-4 border-t border-gray-50">
+                            <div className={`flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest ${canAddToCart ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                <div className={`w-1 h-1 rounded-full ${canAddToCart ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
+                                {canAddToCart ? 'Ready to Ship' : 'Sold Out'}
+                            </div>
+                            
+                            <div className="flex gap-4 opacity-30">
+                                {product?.huid && (
+                                    <span className="text-[8px] font-bold uppercase tracking-widest text-gray-500">HUID {product.huid}</span>
+                                )}
+                                {selectedVariant?.variantCode && (
+                                    <span className="text-[8px] font-bold uppercase tracking-widest text-gray-500">REF {selectedVariant.variantCode}</span>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* CHECK AVAILABILITY SECTION - Full Width and Compact */}
-            <div className="container mx-auto px-4 mt-8 mb-16 max-w-4xl">
-                <div className="bg-white rounded-[1.5rem] md:rounded-full border border-gray-100 shadow-sm p-4 md:px-10 md:py-3 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-4">
-                    <div className="flex items-center gap-3">
-                        <Truck className="w-4 h-4 text-[#9C5B61]" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-black hidden lg:block whitespace-nowrap">Check Delivery</span>
+                {/* Lab Grown Diamond Info Link - Integrated more smoothly */}
+                {isLabGrown && (
+                    <div className="mt-8 flex justify-center">
+                        <button 
+                            onClick={() => setIsLabGrownModalOpen(true)}
+                            className="group flex items-center gap-4 bg-emerald-50/30 border border-emerald-100/50 hover:bg-emerald-50 hover:border-emerald-200 transition-all px-8 py-4 rounded-2xl"
+                        >
+                            <Sparkles className="w-5 h-5 text-emerald-600 animate-pulse" />
+                            <span className="text-xs font-bold text-emerald-900 uppercase tracking-[0.15em] border-b border-emerald-200 pb-0.5">
+                                Conscious Luxury: Lab Grown Diamond Guide
+                            </span>
+                        </button>
+                    </div>
+                )}
+
+            {/* Mobile Sticky Bottom Action Bar - Always functional */}
+            <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 p-4 z-[150] md:hidden flex gap-3 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] pb-safe animate-in slide-in-from-bottom duration-500">
+                <div className="flex flex-col justify-center px-2">
+                    <span className="text-[9px] uppercase tracking-wider text-gray-400 font-bold mb-0.5">Total</span>
+                    <span className="text-xl font-bold text-black tracking-tight">{currencyText(variantPrice)}</span>
+                </div>
+                <button
+                    onClick={handleAddToCart}
+                    disabled={!canAddToCart}
+                    className={`flex-1 rounded-xl h-14 font-bold uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-2 active:scale-[0.98] transition-all ${
+                        canAddToCart 
+                        ? 'bg-black text-white shadow-lg' 
+                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    }`}
+                >
+                    {canAddToCart ? (
+                        <>
+                            <ShoppingBag className="w-4 h-4" />
+                            Add to Bag
+                        </>
+                    ) : 'Out of Stock'}
+                </button>
+            </div>
+
+            <style>
+                {`
+                    @keyframes shimmer {
+                        0% { transform: translateX(-100%); }
+                        100% { transform: translateX(100%); }
+                    }
+                    .animate-shimmer {
+                        animation: shimmer 2s infinite;
+                    }
+                    @media (max-width: 768px) {
+                        .whatsapp-floating {
+                            bottom: 90px !important;
+                        }
+                    }
+                `}
+            </style>
+
+            {/* CHECK AVAILABILITY SECTION - Ultra Compact */}
+            <div className="container mx-auto px-4 mt-4 mb-10 max-w-4xl">
+                <div className="bg-white border border-gray-100 rounded-xl p-3 flex flex-col md:flex-row items-center gap-4 shadow-sm">
+                    <div className="flex items-center gap-2 pl-2">
+                        <Truck className="w-4 h-4 text-gray-400" />
+                        <span className="text-[9px] font-semibold uppercase tracking-widest text-gray-500 hidden lg:block whitespace-nowrap">Check Delivery</span>
                     </div>
                     
-                    <div className="flex w-full md:max-w-xs gap-2">
+                    <div className="flex w-full md:max-w-xs gap-1.5 bg-gray-50 rounded-lg p-1">
                         <input
                             type="text"
-                            placeholder="Pincode"
+                            placeholder="Enter Pincode"
                             value={localPincode}
                             onChange={(e) => setLocalPincode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                            className="flex-1 bg-gray-50 border-none rounded-full px-5 py-2.5 text-xs focus:ring-2 focus:ring-[#9C5B61]/20 transition-all placeholder:text-gray-400"
+                            className="flex-1 bg-transparent border-none px-3 py-1 text-xs focus:ring-0 transition-all placeholder:text-gray-300 font-medium"
                         />
                         <button 
                             onClick={() => {
@@ -865,225 +908,259 @@ const ProductDetails = () => {
                                     toast.error("Please enter a 6-digit pincode");
                                 }
                             }}
-                            className="bg-[#9C5B61] text-white px-6 py-2.5 rounded-full font-bold text-[10px] uppercase tracking-widest hover:bg-[#834d52] transition-all active:scale-95 shadow-sm"
+                            className="bg-black text-white px-4 py-1.5 rounded-md font-medium text-[9px] uppercase tracking-wider hover:bg-gray-800 transition-all"
                         >
                             Check
                         </button>
                     </div>
 
-                    <div className="flex items-center gap-8 md:gap-10">
-                        <div className="flex items-center gap-2 group">
-                            <Truck className="w-3.5 h-3.5 text-gray-400 group-hover:text-[#9C5B61] transition-colors" />
-                            <span className="text-[9px] text-gray-500 font-bold uppercase tracking-tighter">Fast Delivery</span>
-                        </div>
-                        <div className="flex items-center gap-2 group">
-                            <ShieldCheck className="w-3.5 h-3.5 text-gray-400 group-hover:text-[#9C5B61] transition-colors" />
-                            <span className="text-[9px] text-gray-500 font-bold uppercase tracking-tighter">925 Silver</span>
-                        </div>
-                        <div className="flex items-center gap-2 group">
-                            <Gift className="w-3.5 h-3.5 text-gray-400 group-hover:text-[#9C5B61] transition-colors" />
-                            <span className="text-[9px] text-gray-500 font-bold uppercase tracking-tighter">Gift Wrap</span>
-                        </div>
+                    <div className="flex items-center gap-6 md:ml-auto md:border-l md:border-gray-100 md:pl-6 pr-2">
+                        {[
+                            { icon: <Truck className="w-3.5 h-3.5" />, label: "Fast Shipping" },
+                            { icon: <ShieldCheck className="w-3.5 h-3.5" />, label: "925 Certified" },
+                            { icon: <Gift className="w-3.5 h-3.5" />, label: "Luxury Gift Box" }
+                        ].map((badge, i) => (
+                            <div key={i} className="flex items-center gap-2 text-gray-400">
+                                {badge.icon}
+                                <span className="text-[8px] font-bold uppercase tracking-widest whitespace-nowrap">{badge.label}</span>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
 
             {/* ================= LOWER CONTENT SECTION (ACCORDIONS) ================= */}
-            <div className="max-w-6xl mx-auto mt-16 border-t border-gray-100 pt-12">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-                    {/* Left: Product Badges / USP */}
-                    <div className="lg:col-span-4 space-y-6">
-                        <div className="bg-[#FDF5F6]/50 rounded-2xl p-6 border border-[#EBCDD0]/30">
-                            <h3 className="text-lg font-display font-bold text-black mb-6 flex items-center gap-2">
-                                <Sparkles className="w-5 h-5 text-[#9C5B61]" />
-                                The Sands Guarantee
-                            </h3>
-                            <div className="space-y-6">
-                                <div className="flex items-start gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-white flex-shrink-0 flex items-center justify-center shadow-sm border border-[#EBCDD0]/20">
-                                        <ShieldCheck className="w-5 h-5 text-[#9C5B61]" />
+            <div className="w-full mt-24 border-y border-gray-100 bg-white">
+                <div className="max-w-[1440px] mx-auto py-20 px-6 md:px-12">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
+                        {/* Left: Product Badges / USP - Clean & Modern */}
+                        <div className="lg:col-span-4 space-y-10">
+                            <div>
+                                <h3 className="text-2xl font-sans font-bold text-black mb-2 flex items-center gap-3">
+                                    <Sparkles className="w-6 h-6 text-[#9C5B61]" />
+                                    The Sands Promise
+                                </h3>
+                                <p className="text-gray-400 text-xs font-bold uppercase tracking-[0.2em]">Our commitment to excellence</p>
+                            </div>
+
+                            <div className="space-y-8">
+                                <div className="flex items-start gap-5 group">
+                                    <div className="w-12 h-12 rounded-full bg-gray-50 flex-shrink-0 flex items-center justify-center border border-gray-100 transition-colors group-hover:bg-[#FDF5F6] group-hover:border-[#EBCDD0]/30">
+                                        <ShieldCheck className="w-6 h-6 text-[#9C5B61]" />
                                     </div>
                                     <div>
-                                        <h4 className="text-xs font-bold uppercase tracking-wider text-black mb-1">Authentic 925 Silver</h4>
-                                        <p className="text-[11px] text-gray-500 leading-relaxed font-sans">Every piece comes with a certificate of authenticity and 925 hallmark.</p>
+                                        <h4 className="text-[11px] font-bold uppercase tracking-widest text-black mb-1">Authentic 925 Silver</h4>
+                                        <p className="text-[11px] text-gray-500 leading-relaxed font-medium">Certified 925 Sterling Silver with official hallmarking on every single piece.</p>
                                     </div>
                                 </div>
-                                <div className="flex items-start gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-white flex-shrink-0 flex items-center justify-center shadow-sm border border-[#EBCDD0]/20">
-                                        <Smile className="w-5 h-5 text-[#9C5B61]" />
+
+                                <div className="flex items-start gap-5 group">
+                                    <div className="w-12 h-12 rounded-full bg-gray-50 flex-shrink-0 flex items-center justify-center border border-gray-100 transition-colors group-hover:bg-[#FDF5F6] group-hover:border-[#EBCDD0]/30">
+                                        <Smile className="w-6 h-6 text-[#9C5B61]" />
                                     </div>
                                     <div>
-                                        <h4 className="text-xs font-bold uppercase tracking-wider text-black mb-1">Skin Friendly</h4>
-                                        <p className="text-[11px] text-gray-500 leading-relaxed font-sans">Nickel and Lead free, designed for comfort and long-term wear.</p>
+                                        <h4 className="text-[11px] font-bold uppercase tracking-widest text-black mb-1">Skin Safe Luxury</h4>
+                                        <p className="text-[11px] text-gray-500 leading-relaxed font-medium">Hypoallergenic, Nickel and Lead-free materials designed for sensitive skin.</p>
                                     </div>
                                 </div>
-                                <div className="flex items-start gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-white flex-shrink-0 flex items-center justify-center shadow-sm border border-[#EBCDD0]/20">
-                                        <Gift className="w-5 h-5 text-[#9C5B61]" />
+
+                                <div className="flex items-start gap-5 group">
+                                    <div className="w-12 h-12 rounded-full bg-gray-50 flex-shrink-0 flex items-center justify-center border border-gray-100 transition-colors group-hover:bg-[#FDF5F6] group-hover:border-[#EBCDD0]/30">
+                                        <Gift className="w-6 h-6 text-[#9C5B61]" />
                                     </div>
                                     <div>
-                                        <h4 className="text-xs font-bold uppercase tracking-wider text-black mb-1">Premium Packaging</h4>
-                                        <p className="text-[11px] text-gray-500 leading-relaxed font-sans">Gift-ready luxury boxes that protect your jewellery forever.</p>
+                                        <h4 className="text-[11px] font-bold uppercase tracking-widest text-black mb-1">Signature Packaging</h4>
+                                        <p className="text-[11px] text-gray-500 leading-relaxed font-medium">Arrives in our signature velvet-lined box, perfect for gifting and safekeeping.</p>
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Trust Badge */}
+                            <div className="pt-8 border-t border-gray-50">
+                                <div className="bg-[#F8F9FA] rounded-2xl p-6 flex flex-col items-center text-center">
+                                    <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center mb-4">
+                                        <ShieldCheck className="w-5 h-5 text-emerald-500" />
+                                    </div>
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-900 mb-1">Secure Purchase</span>
+                                    <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">100% Insured Shipping</p>
+                                </div>
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Right: Detailed Product Info Accordion */}
-                    <div className="lg:col-span-8">
-                        <div className="divide-y divide-gray-100">
-                            <AccordionItem title="Description" isOpen={openSection === 'description'} onClick={() => toggleSection('description')}>
-                                {product.description ? (
-                                    <div className="prose prose-sm max-w-none text-gray-700" dangerouslySetInnerHTML={{ __html: product.description }} />
-                                ) : (
-                                    <>
-                                        <p className="mb-4">Elegance meets craftsmanship in this stunning {product.name}. Handcrafted with precision from 925 Sterling Silver, this piece is designed to be a timeless addition to your collection.</p>
-                                        <p>Whether you're dressing up for a special occasion or adding a touch of sparkle to your daily look, this piece versatile enough to complement any style.</p>
-                                    </>
-                                )}
-                            </AccordionItem>
-
-                            <AccordionItem title="Specifications" isOpen={openSection === 'specifications'} onClick={() => toggleSection('specifications')}>
-                                <div className="space-y-8 py-2">
-                                    {/* Diamond & Setting Section */}
-                                    {(hasDiamonds || product.diamondWeight || product.diamondCount) && (
-                                        <div className="bg-gray-50/50 rounded-2xl p-5 md:p-6 border border-gray-100">
-                                            <div className="flex items-center gap-3 mb-6">
-                                                <div className="w-8 h-8 rounded-full bg-[#D39A9F]/10 flex items-center justify-center">
-                                                    <Sparkles className="w-4 h-4 text-[#D39A9F]" />
-                                                </div>
-                                                <h4 className="text-sm font-bold uppercase tracking-widest text-black">Diamond & Setting</h4>
+                        {/* Right: Detailed Product Info Accordion - Professional & Minimal */}
+                        <div className="lg:col-span-8">
+                            <div className="divide-y divide-gray-100">
+                                <AccordionItem title="Product Story" isOpen={openSection === 'description'} onClick={() => toggleSection('description')}>
+                                    <div className="py-2">
+                                        {product.description ? (
+                                            <div className="prose prose-sm max-w-none text-gray-600 font-medium leading-relaxed" dangerouslySetInnerHTML={{ __html: product.description }} />
+                                        ) : (
+                                            <div className="text-gray-600 font-medium leading-relaxed space-y-4">
+                                                <p>Elegance meets craftsmanship in this stunning {product.name}. Handcrafted with precision from 925 Sterling Silver, this piece is designed to be a timeless addition to your collection.</p>
+                                                <p>Whether you're dressing up for a special occasion or adding a touch of sparkle to your daily look, this piece is versatile enough to complement any style.</p>
                                             </div>
-                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-4">
-                                                <div className="space-y-1">
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Type</span>
-                                                    <span className="text-sm font-semibold text-gray-900 capitalize">{String(diamondType).replace('_', ' ') || 'Natural'}</span>
+                                        )}
+                                    </div>
+                                </AccordionItem>
+
+                                <AccordionItem title="Full Specifications" isOpen={openSection === 'specifications'} onClick={() => toggleSection('specifications')}>
+                                    <div className="space-y-8 py-4">
+                                        {/* Diamond Section */}
+                                        {(hasDiamonds || product.diamondWeight || product.diamondCount) && (
+                                            <div className="bg-gray-50/50 rounded-2xl p-8 border border-gray-100">
+                                                <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#9C5B61] mb-8 flex items-center gap-2">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-[#9C5B61]" />
+                                                    Diamond & Setting
+                                                </h4>
+                                                <div className="grid grid-cols-2 md:grid-cols-3 gap-y-10 gap-x-8">
+                                                    {[
+                                                        { label: 'Type', value: String(diamondType).replace('_', ' ') || 'Natural' },
+                                                        { label: 'Total Weight', value: `${product.diamondWeight || currentVariant?.diamondWeight || '---'} cts` },
+                                                        { label: 'Count', value: product.diamondCount || currentVariant?.diamondCount || '---' },
+                                                        { label: 'Shape', value: product.diamondShape || currentVariant?.diamondShape || 'Round' },
+                                                        { label: 'Color/Clarity', value: product.diamondClarity || currentVariant?.diamondClarity || '---' },
+                                                        { label: 'Setting', value: product.diamondSetting || currentVariant?.diamondSetting || 'Prong' }
+                                                    ].map((spec, i) => (
+                                                        <div key={i} className="space-y-1.5">
+                                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">{spec.label}</span>
+                                                            <span className="text-sm font-bold text-gray-900 block">{spec.value}</span>
+                                                        </div>
+                                                    ))}
                                                 </div>
-                                                <div className="space-y-1">
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Weight</span>
-                                                    <span className="text-sm font-semibold text-gray-900">{product.diamondWeight || currentVariant?.diamondWeight || '---'} carats</span>
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">No. of Diamonds</span>
-                                                    <span className="text-sm font-semibold text-gray-900">{product.diamondCount || currentVariant?.diamondCount || '---'}</span>
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Shape</span>
-                                                    <span className="text-sm font-semibold text-gray-900">{product.diamondShape || currentVariant?.diamondShape || 'Round'}</span>
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Color/Clarity</span>
-                                                    <span className="text-sm font-semibold text-gray-900">{product.diamondClarity || currentVariant?.diamondClarity || '---'}</span>
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Setting</span>
-                                                    <span className="text-sm font-semibold text-gray-900">{product.diamondSetting || currentVariant?.diamondSetting || 'Prong'}</span>
-                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Metal Section */}
+                                        <div className="bg-gray-50/50 rounded-2xl p-8 border border-gray-100">
+                                            <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#9C5B61] mb-8 flex items-center gap-2">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-[#9C5B61]" />
+                                                Material & Authenticity
+                                            </h4>
+                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-y-10 gap-x-8">
+                                                {[
+                                                    { label: 'Metal', value: product.material || product.metal || '925 Silver' },
+                                                    { label: 'Purity', value: product.silverCategory || product.purity || '---' },
+                                                    { label: 'Weight', value: `${selectedVariantWeight || product.weight || '---'} ${selectedVariantWeightUnit || product.weightUnit || 'g'}` },
+                                                    { label: 'Certificate', value: product.certificate || 'Sands Authenticated' },
+                                                    { label: 'HUID', value: product.huid || '---' },
+                                                    { label: 'Reference', value: selectedVariant?.variantCode || '---' }
+                                                ].map((spec, i) => (
+                                                    <div key={i} className="space-y-1.5">
+                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">{spec.label}</span>
+                                                        <span className="text-sm font-bold text-gray-900 block">{spec.value}</span>
+                                                    </div>
+                                                ))}
                                             </div>
                                         </div>
-                                    )}
 
-                                    {/* Metal & Authentication Section */}
-                                    <div className="bg-gray-50/50 rounded-2xl p-5 md:p-6 border border-gray-100">
-                                        <div className="flex items-center gap-3 mb-6">
-                                            <div className="w-8 h-8 rounded-full bg-[#D39A9F]/10 flex items-center justify-center">
-                                                <ShieldCheck className="w-4 h-4 text-[#D39A9F]" />
-                                            </div>
-                                            <h4 className="text-sm font-bold uppercase tracking-widest text-black">Metal & Authentication</h4>
-                                        </div>
-                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-4">
-                                            <div className="space-y-1">
-                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Metal</span>
-                                                <span className="text-sm font-semibold text-gray-900">{product.material || product.metal || '925 Silver'}</span>
-                                            </div>
-                                            <div className="space-y-1">
-                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Purity</span>
-                                                <span className="text-sm font-semibold text-gray-900">{product.silverCategory || product.purity || '---'}</span>
-                                            </div>
-                                            <div className="space-y-1">
-                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Metal Weight</span>
-                                                <span className="text-sm font-semibold text-gray-900">{selectedVariantWeight || product.weight || '---'} {selectedVariantWeightUnit || product.weightUnit || 'g'}</span>
-                                            </div>
-                                            <div className="space-y-1">
-                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Certificate</span>
-                                                <span className="text-sm font-semibold text-gray-900">{product.certificate || 'Sands Authenticated'}</span>
-                                            </div>
-                                            {product.huid && (
-                                                <div className="space-y-1">
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">HUID</span>
-                                                    <span className="text-sm font-semibold text-gray-900">{product.huid}</span>
+                                        {product.specifications && (
+                                            <div className="mt-6 p-6 bg-gray-50/30 rounded-2xl border border-gray-100 prose prose-sm max-w-none text-gray-600 font-medium" dangerouslySetInnerHTML={{ __html: product.specifications }} />
+                                        )}
+                                    </div>
+                                </AccordionItem>
+
+                                <AccordionItem title="Styling & Tips" isOpen={openSection === 'styling'} onClick={() => toggleSection('styling')}>
+                                    <div className="py-4">
+                                        {product.stylingTips ? (
+                                            <div className="prose prose-sm max-w-none text-gray-600 font-medium" dangerouslySetInnerHTML={{ __html: product.stylingTips }} />
+                                        ) : (
+                                            <p className="text-gray-600 font-medium leading-relaxed">Pair this versatile {product.category || 'jewellery'} with both western and ethnic wear to elevate your look. It's designed to be lightweight enough for daily wear yet sophisticated enough for evening gala events.</p>
+                                        )}
+                                    </div>
+                                </AccordionItem>
+
+                                <AccordionItem title="Care Instructions" isOpen={openSection === 'care'} onClick={() => toggleSection('care')}>
+                                    <div className="py-4 space-y-6">
+                                        <p className="text-gray-500 font-medium">To maintain the brilliance of your silver jewellery, we recommend:</p>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            {[
+                                                { icon: <Droplets className="w-4 h-4" />, title: "Stay Dry", desc: "Remove before showering or swimming" },
+                                                { icon: <Sparkles className="w-4 h-4" />, title: "Apply First", desc: "Wear after lotions and perfumes" },
+                                                { icon: <ShieldCheck className="w-4 h-4" />, title: "Safe Box", desc: "Store in an airtight container" },
+                                                { icon: <Smile className="w-4 h-4" />, title: "Polish", desc: "Use a soft micro-fibre cloth" }
+                                            ].map((item, idx) => (
+                                                <div key={idx} className="flex items-center gap-4 p-4 rounded-xl border border-gray-50 bg-gray-50/30 hover:bg-white hover:shadow-sm transition-all">
+                                                    <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#9C5B61] border border-gray-100">{item.icon}</div>
+                                                    <div>
+                                                        <h5 className="text-[10px] font-bold text-black uppercase tracking-widest">{item.title}</h5>
+                                                        <p className="text-[10px] text-gray-400 font-medium">{item.desc}</p>
+                                                    </div>
                                                 </div>
-                                            )}
-                                            {selectedVariant?.variantCode && (
-                                                <div className="space-y-1">
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Variant ID</span>
-                                                    <span className="text-sm font-mono text-gray-600 truncate">{selectedVariant.variantCode}</span>
-                                                </div>
-                                            )}
+                                            ))}
                                         </div>
                                     </div>
+                                </AccordionItem>
 
-                                    {product.specifications && (
-                                        <div className="mt-6 pt-6 border-t border-gray-100 prose prose-sm max-w-none text-gray-600 font-sans leading-relaxed" dangerouslySetInnerHTML={{ __html: product.specifications }} />
-                                    )}
-                                </div>
-                            </AccordionItem>
-
-                            <AccordionItem title="Styling Tips" isOpen={openSection === 'styling'} onClick={() => toggleSection('styling')}>
-                                {product.stylingTips ? (
-                                    <div className="prose prose-sm max-w-none text-gray-600 font-sans" dangerouslySetInnerHTML={{ __html: product.stylingTips }} />
-                                ) : (
-                                    <p>Pair this versatile {product.category || 'jewellery'} with both western and ethnic wear to elevate your look.</p>
-                                )}
-                            </AccordionItem>
-
-                            <AccordionItem title="Jewelry Care Guide" isOpen={openSection === 'care'} onClick={() => toggleSection('care')}>
-                                <div className="space-y-4">
-                                    <p className="text-gray-600 italic">Follow these tips to keep your {product.name} shining forever:</p>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-2">
-                                        {[
-                                            { icon: <Droplets className="w-4 h-4" />, title: "Keep Dry", desc: "Remove before swimming or bathing" },
-                                            { icon: <Sparkles className="w-4 h-4" />, title: "Apply First", desc: "Put on jewelry after makeup/perfume" },
-                                            { icon: <ShieldCheck className="w-4 h-4" />, title: "Safe Storage", desc: "Store in a cool, dry airtight box" },
-                                            { icon: <Smile className="w-4 h-4" />, title: "Clean Softly", desc: "Wipe with a soft polishing cloth" }
-                                        ].map((item, idx) => (
-                                            <div key={idx} className="bg-[#FDFBF7]/50 p-4 rounded-xl border border-[#EBCDD0]/20 flex items-center gap-4 transition-all hover:bg-white hover:shadow-sm">
-                                                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#9C5B61] shadow-sm border border-[#EBCDD0]/30 flex-shrink-0">
-                                                    {item.icon}
-                                                </div>
-                                                <div>
-                                                    <h5 className="text-[11px] font-bold text-black uppercase tracking-wider">{item.title}</h5>
-                                                    <p className="text-[10px] text-gray-500 font-medium">{item.desc}</p>
-                                                </div>
+                                <AccordionItem title="Shipping & Returns" isOpen={openSection === 'faqs'} onClick={() => toggleSection('faqs')}>
+                                    <div className="py-4 space-y-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-2">
+                                                <h4 className="text-xs font-bold text-black uppercase tracking-widest flex items-center gap-2">
+                                                    <Truck className="w-4 h-4 text-[#9C5B61]" />
+                                                    Free Shipping
+                                                </h4>
+                                                <p className="text-[11px] text-gray-500 leading-relaxed font-medium">We offer complimentary express shipping worldwide. Domestic orders arrive within 3-5 business days.</p>
                                             </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </AccordionItem>
-
-                            <AccordionItem title="Frequently Asked Questions" isOpen={openSection === 'faqs'} onClick={() => toggleSection('faqs')}>
-                                {product.faqs && product.faqs.length > 0 ? (
-                                    <div className="space-y-4 pt-2">
-                                        {product.faqs.map((faq, idx) => (
-                                            <div key={`${faq.question}-${idx}`} className="bg-gray-50/50 rounded-xl p-4 transition-colors hover:bg-gray-50">
-                                                <p className="font-bold text-sm text-gray-900 flex items-start gap-2">
-                                                    <span className="text-[#9C5B61]">Q.</span> {faq.question}
-                                                </p>
-                                                <p className="text-gray-600 mt-2 text-sm leading-relaxed pl-6">
-                                                    {faq.answer}
-                                                </p>
+                                            <div className="space-y-2">
+                                                <h4 className="text-xs font-bold text-black uppercase tracking-widest flex items-center gap-2">
+                                                    <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                                                    Returns
+                                                </h4>
+                                                <p className="text-[11px] text-gray-500 leading-relaxed font-medium">7-day hassle-free returns on all unused and authentic products. See our returns policy for details.</p>
                                             </div>
-                                        ))}
+                                        </div>
+                                        
+                                        {product.faqs && product.faqs.length > 0 && (
+                                            <div className="pt-6 border-t border-gray-50 space-y-4">
+                                                <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Common Questions</h4>
+                                                {product.faqs.map((faq, idx) => (
+                                                    <div key={idx} className="space-y-1">
+                                                        <p className="font-bold text-xs text-gray-900">{faq.question}</p>
+                                                        <p className="text-[11px] text-gray-500 leading-relaxed">{faq.answer}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
-                                ) : (
-                                    <p className="text-gray-500 italic">No FAQs available for this specific product yet. Contact our support for any queries.</p>
-                                )}
-                            </AccordionItem>
+                                </AccordionItem>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+                {/* STYLE GALLERY - Refined to be more compact and organized */}
+                {galleryImages.length >= 4 && (
+                    <div className="mt-12 mb-20 px-4 max-w-6xl mx-auto">
+                        <div className="flex flex-col items-center mb-10">
+                            <span className="text-[9px] font-bold text-[#D39A9F] uppercase tracking-[0.4em] mb-2">Style Showcase</span>
+                            <h2 className="text-2xl font-display font-bold text-black tracking-tight">Capturing the Brilliance</h2>
+                        </div>
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                            {galleryImages.slice(0, 4).map((img, idx) => (
+                                <div
+                                    key={idx}
+                                    className="aspect-square rounded-[2rem] overflow-hidden border border-gray-100 group cursor-pointer shadow-md hover:shadow-xl transition-all duration-700 relative bg-white"
+                                    onClick={() => setSelectedImage(img)}
+                                >
+                                    <img
+                                        src={img}
+                                        alt={`Style Detail ${idx + 1}`}
+                                        className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110"
+                                    />
+                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
+                                    
+                                    {/* Subtle Overlay on Hover */}
+                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 backdrop-blur-[2px]">
+                                        <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform duration-500">
+                                            <Sparkles className="w-5 h-5 text-[#D39A9F]" />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
             {/* ================= REORDERED SECTIONS ================= */}
 
@@ -1142,7 +1219,7 @@ const ProductDetails = () => {
                     </div>
                 </div>
 
-                <WhyChooseUs />
+
 
                 <div className="flex gap-4 md:gap-10 border-b border-gray-100 mb-8 overflow-x-auto no-scrollbar">
                     <button
