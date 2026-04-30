@@ -105,14 +105,15 @@ const AllJewelleryMegaMenu = ({ resetMenu, initialView = 'main' }) => {
                                     key={item.id} 
                                     to={item.path} 
                                     onClick={resetMenu}
-                                    className="group flex flex-col bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-700 border border-[#B88B4A]/5"
+                                    className="group flex flex-col bg-white overflow-hidden transition-all duration-300 shadow-sm border border-gray-50 h-full"
                                 >
                                     <div className="w-full aspect-square overflow-hidden bg-[#FAF3F0]">
-                                        <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
+                                        <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                                     </div>
-                                    <div className="p-4 text-center">
-                                        <h4 className="text-[12px] font-black text-gray-900 mb-0.5 uppercase tracking-wider">{item.name}</h4>
-                                        <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">{item.sub}</p>
+                                    <div className="p-3 mt-auto">
+                                        <div className="w-full bg-[#B88B4A] text-white py-2 text-center text-[9px] font-bold uppercase tracking-widest transition-colors group-hover:bg-[#96713A]">
+                                            {item.name}
+                                        </div>
                                     </div>
                                 </Link>
                             ))}
@@ -144,14 +145,15 @@ const AllJewelleryMegaMenu = ({ resetMenu, initialView = 'main' }) => {
                                     key={item.id} 
                                     to={item.path} 
                                     onClick={resetMenu}
-                                    className="group flex flex-col bg-white rounded-[1.5rem] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-700 border border-gray-100"
+                                    className="group flex flex-col bg-white overflow-hidden transition-all duration-300 shadow-sm border border-gray-50 h-full"
                                 >
                                     <div className="w-full aspect-square overflow-hidden bg-[#F3F4F6]">
-                                        <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
+                                        <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                                     </div>
-                                    <div className="p-6 text-center">
-                                        <h4 className="text-[14px] font-black text-gray-900 mb-0.5 uppercase tracking-widest">{item.name}</h4>
-                                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-[0.2em]">{item.sub}</p>
+                                    <div className="p-4 mt-auto">
+                                        <div className="w-full bg-[#64748B] text-white py-3 text-center text-[11px] font-bold uppercase tracking-widest transition-colors group-hover:bg-[#475569]">
+                                            {item.name}
+                                        </div>
                                     </div>
                                 </Link>
                             ))}

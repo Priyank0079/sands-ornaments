@@ -76,12 +76,12 @@ const Testimonials = () => {
                             <p className="text-gray-800 font-sans text-sm md:text-base leading-relaxed line-clamp-4">
                                 {testimonial.text}
                             </p>
-                            
+
                             {/* Portrait Photo - Absolute positioned at the bottom center, overlapping outside */}
                             <div className="absolute bottom-0 translate-y-1/2 left-1/2 -translate-x-1/2 w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-4 border-white shadow-lg z-10">
-                                <img 
-                                    src={testimonial.image} 
-                                    alt={testimonial.name} 
+                                <img
+                                    src={testimonial.image}
+                                    alt={testimonial.name}
                                     className="w-full h-full object-cover"
                                 />
                             </div>

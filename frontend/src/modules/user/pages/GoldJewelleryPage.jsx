@@ -26,7 +26,7 @@ import heroGold from '@assets/hero/bridal_royal.png';
 const TRUST_BADGES = [
     { id: 1, icon: ShieldCheck, title: '100% Certified Lab', subtitle: 'Grown Diamonds' },
     { id: 2, icon: RefreshCw, title: 'Lifetime Exchange', subtitle: '& Buyback' },
-    { id: 3, icon: RotateCcw, title: 'Easy 30', subtitle: 'Days Return' },
+    { id: 3, icon: RotateCcw, title: 'Easy 15', subtitle: 'Days Return' },
     { id: 4, icon: Star, title: 'B I S', subtitle: 'Hallmark' },
 ];
 
@@ -208,7 +208,7 @@ const GoldJewelleryPage = () => {
                                 initial={{ opacity: 0, y: 15 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: idx * 0.1 }}
-                                className="flex items-center gap-5 bg-[#F9F8EF] rounded-[24px] p-2 pr-4 md:pr-6 shadow-sm hover:shadow-md transition-shadow duration-300"
+                                className={`flex items-center gap-5 bg-[#F9F8EF] rounded-[24px] p-2 pr-4 md:pr-6 shadow-sm hover:shadow-md transition-all duration-300 ${idx % 2 === 0 ? 'mx-6 sm:mx-0 scale-[0.92] sm:scale-100' : 'mx-0 scale-100'}`}
                             >
                                 <div className="w-[70px] h-[70px] md:w-[85px] md:h-[85px] bg-white rounded-[20px] flex items-center justify-center shrink-0 shadow-sm border border-[#E8D8A0]/30 overflow-hidden">
                                     {badge.image ? (
@@ -223,7 +223,7 @@ const GoldJewelleryPage = () => {
                                         {badge.title}
                                     </h4>
                                     <p className="text-[#333] text-[15px] md:text-[17px] font-medium leading-tight">
-                                        {badge.subtitle}
+                                        {idx === 2 ? 'Days Return' : badge.subtitle}
                                     </p>
                                 </div>
                             </motion.div>

@@ -44,6 +44,7 @@ const UserReplacementRequestPage = lazy(() => import('./modules/user/pages/Repla
 const JewelleryCollectionsPage = lazy(() => import('./modules/user/pages/JewelleryCollectionsPage'));
 const BondCollectionPage = lazy(() => import('./modules/user/pages/BondCollectionPage'));
 const BestStylesPage = lazy(() => import('./modules/user/pages/BestStylesPage'));
+const GiftCardsPage = lazy(() => import('./modules/user/pages/GiftCardsPage'));
 const AdminLogin = lazy(() => import('./modules/admin/pages/Login'));
 const AdminLayout = lazy(() => import('./modules/admin/components/AdminLayout'));
 const AdminProtectedRoute = lazy(() => import('./modules/admin/components/AdminProtectedRoute'));
@@ -161,6 +162,7 @@ const AppContent = () => {
           <Route path="/collections" element={<JewelleryCollectionsPage />} />
           <Route path="/blogs" element={<BlogsPage />} />
           <Route path="/blogs/:slug" element={<BlogDetailPage />} />
+          <Route path="/gift-cards" element={<GiftCardsPage />} />
 
           {/* Admin Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />

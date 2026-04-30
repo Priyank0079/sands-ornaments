@@ -635,10 +635,16 @@ const Checkout = () => {
                             )}
                         </div>
 
-                        <div className="border-t border-[#EBCDD0] pt-4 mb-6">
-                            <div className="flex justify-between items-center">
-                                <span className="font-bold text-lg text-black font-display uppercase tracking-wide">Total</span>
-                                <span className="font-bold text-2xl text-black font-sans">{currencyText(total)}</span>
+                        <div className="border-t border-[#EBCDD0] pt-6 mb-6">
+                            <div className="flex justify-between items-end">
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] text-gray-400 font-black uppercase tracking-[0.15em] mb-1">Final Amount</span>
+                                    <span className="font-black text-3xl text-gray-900 tracking-tight">{currencyText(total)}</span>
+                                </div>
+                                <div className="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">
+                                    <Lock size={12} className="text-emerald-600" />
+                                    <span className="text-[10px] text-emerald-700 font-bold uppercase tracking-wider">Secure</span>
+                                </div>
                             </div>
                             {/* <p className="text-[10px] text-gray-400 mt-1 text-right font-medium uppercase tracking-wider">
                                 {gstIncluded > 0 ? `${currencyText(gstIncluded)} GST included in item totals` : 'Inclusive of applicable taxes'}

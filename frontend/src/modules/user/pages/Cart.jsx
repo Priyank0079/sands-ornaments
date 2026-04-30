@@ -180,26 +180,33 @@ const Cart = () => {
 
                     {/* Summary Section */}
                     <div className="w-full lg:w-[400px] shrink-0">
-                        <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-xl shadow-black/5 sticky top-28 space-y-8">
+                        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-xl shadow-black/5 sticky top-28 space-y-6">
                             <h2 className="text-xl font-semibold text-gray-800 tracking-tight">Order Summary</h2>
 
                             <div className="space-y-4 pt-2">
-                                <div className="flex justify-between items-center text-sm font-bold text-gray-900">
-                                    <span className="text-gray-400 font-medium">Estimated Total</span>
-                                    <div className="flex items-center gap-2">
-                                        {discount > 0 && <span className="text-gray-300 line-through text-xs font-medium">{currencyText(subtotal + shipping)}</span>}
-                                        <span className="text-xl tracking-tight">{currencyText(total)}</span>
-                                        <Info className="w-4 h-4 text-gray-200" />
+                                <div className="flex justify-between items-end border-b border-gray-50 pb-4">
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] text-gray-400 font-black uppercase tracking-[0.15em] mb-1">Final Amount</span>
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-2xl font-black text-gray-900 tracking-tight">{currencyText(total)}</span>
+                                            <Info className="w-4 h-4 text-gray-300 hover:text-gray-400 transition-colors cursor-help" />
+                                        </div>
                                     </div>
+                                    {discount > 0 && (
+                                        <div className="flex flex-col items-end">
+                                            <span className="text-[9px] text-gray-300 font-bold uppercase tracking-wider mb-1">Original</span>
+                                            <span className="text-sm text-gray-400 line-through font-medium">{currencyText(subtotal + shipping)}</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
                             {/* Coupons Section - GIVA Style */}
-                            <div className="pt-6 border-t border-gray-100">
+                            <div className="pt-5 border-t border-gray-100">
                                 <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">Available Coupons</p>
                                 <div className="space-y-1 border border-gray-100 rounded-2xl overflow-hidden">
                                     {availableCoupons.slice(0, 3).map((coupon) => (
-                                        <div key={coupon.code} className="flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0 group cursor-pointer" onClick={() => handleApplyCoupon(coupon.code)}>
+                                        <div key={coupon.code} className="flex items-center justify-between p-3 bg-white hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0 group cursor-pointer" onClick={() => handleApplyCoupon(coupon.code)}>
                                             <div className="flex items-center gap-3 min-w-0">
                                                 <div className="w-10 h-10 rounded-full bg-[#FFF8F9] flex items-center justify-center text-[#E77382] shrink-0 border border-[#FDF2F4]">
                                                     <Tag className="w-4 h-4" />
@@ -214,7 +221,7 @@ const Cart = () => {
                                     ))}
                                     <button 
                                         onClick={() => setShowCouponModal(true)}
-                                        className="w-full py-4 text-[11px] font-bold text-gray-400 hover:text-[#8E2B45] transition-colors bg-gray-50/50 uppercase tracking-widest"
+                                        className="w-full py-3 text-[11px] font-bold text-gray-400 hover:text-[#8E2B45] transition-colors bg-gray-50/50 uppercase tracking-widest"
                                     >
                                         View All Offers
                                     </button>
@@ -234,7 +241,7 @@ const Cart = () => {
                                 </div>
                             )}
 
-                            <div className="space-y-4 pt-4">
+                            <div className="space-y-3 pt-3">
                                 <p className="text-[10px] text-gray-400 font-medium text-center uppercase tracking-wider">Free Shipping on orders above ₹450</p>
                                 
                                 <div className="flex items-center gap-3 px-1">
@@ -246,7 +253,7 @@ const Cart = () => {
 
                                 <Link
                                     to="/checkout"
-                                    className="w-full bg-[#E77382] text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] hover:bg-[#8E2B45] transition-all flex items-center justify-center gap-3 shadow-xl shadow-[#E77382]/20 active:scale-95 group"
+                                    className="w-full bg-[#8E2B45] text-white py-3.5 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] hover:bg-[#5B1E26] transition-all flex items-center justify-center gap-3 shadow-xl shadow-[#8E2B45]/20 active:scale-95 group"
                                 >
                                     <Lock className="w-4 h-4" />
                                     Checkout Securely
