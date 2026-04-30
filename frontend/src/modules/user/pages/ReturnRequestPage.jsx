@@ -48,7 +48,14 @@ const ReturnRequestPage = () => {
     const [reason, setReason] = useState('');
     const [comments, setComments] = useState('');
     const [selectedFiles, setSelectedFiles] = useState([]);
+    const [voidTagFiles, setVoidTagFiles] = useState([]);
     const [loading, setLoading] = useState(false);
+    const voidTagInputRef = useRef(null);
+    const selectedOrderItem = useMemo(
+        () => (order?.items || []).find((item) => String(item._id || item.id) === String(selectedItemId)) || null,
+        [order, selectedItemId]
+    );
+    const requiresVoidTagPhoto = Boolean(String(selectedOrderItem?.voidTagId || '').trim());
 
     const handleImageChange = (e) => {
         const files = Array.from(e.target.files || []).slice(0, 5);
@@ -76,6 +83,11 @@ const ReturnRequestPage = () => {
             return;
         }
 
+        if (requiresVoidTagPhoto && voidTagFiles.length === 0) {
+            toast.error('Please upload a clear photo of the intact security void tag');
+            return;
+        }
+
         setLoading(true);
         try {
             const formData = new FormData();
@@ -84,6 +96,7 @@ const ReturnRequestPage = () => {
             formData.append('reason', reason);
             formData.append('description', comments);
             selectedFiles.forEach((file) => formData.append('evidence', file));
+            voidTagFiles.forEach((file) => formData.append('voidTagImages', file));
 
             await api.post('user/returns', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
@@ -221,11 +234,59 @@ const ReturnRequestPage = () => {
                         </div>
                     </div>
 
-                    <div className="bg-blue-50 p-4 rounded-xl flex gap-3 items-start border border-blue-100">
-                        <AlertCircle size={18} className="text-blue-600 mt-0.5 shrink-0" />
-                        <p className="text-xs text-blue-800 leading-relaxed">
-                            <strong>Note:</strong> Items must be in original condition with tags and packaging intact.
-                            Pickup will be scheduled after approval.
+                    <div className="bg-amber-50 p-6 rounded-2xl border border-amber-200 shadow-sm transition-all hover:shadow-md">
+                        <h3 className="font-bold text-amber-900 mb-4 flex items-center gap-2">
+                            <span className="bg-amber-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black">3</span>
+                            SECURITY SEAL VERIFICATION
+                        </h3>
+
+                        <div className="space-y-4">
+                            <div className="bg-white p-4 rounded-xl border border-amber-100">
+                                <p className="text-xs font-bold text-amber-800 uppercase tracking-widest mb-2">Mandatory Security Photo</p>
+                                <p className="text-xs text-amber-700 leading-relaxed mb-4">
+                                    {requiresVoidTagPhoto
+                                        ? <>To prevent return fraud, this item must have its <strong>Security Void Tag</strong> attached and unbroken. Please upload a clear photo of the intact tag as shown in the example.</>
+                                        : <>If this item was delivered with a seller security seal, upload a clear photo of the intact tag to speed up review.</>}
+                                </p>
+                                {requiresVoidTagPhoto && selectedOrderItem?.voidTagId && (
+                                    <p className="text-[11px] font-bold text-amber-900 mb-4">
+                                        Expected Seal ID: <span className="font-black tracking-wide">{selectedOrderItem.voidTagId}</span>
+                                    </p>
+                                )}
+
+                                <input
+                                    type="file"
+                                    ref={voidTagInputRef}
+                                    onChange={(e) => setVoidTagFiles(Array.from(e.target.files || []).slice(0, 2))}
+                                    accept="image/*"
+                                    className="hidden"
+                                />
+                                <div
+                                    onClick={() => voidTagInputRef.current?.click()}
+                                    className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${voidTagFiles.length > 0 ? 'border-green-400 bg-green-50' : 'border-amber-300 hover:bg-amber-100/50'}`}
+                                >
+                                    <Upload size={20} className={`mx-auto mb-2 ${voidTagFiles.length > 0 ? 'text-green-600' : 'text-amber-600'}`} />
+                                    <p className="text-xs font-black uppercase tracking-widest text-amber-900">
+                                        {voidTagFiles.length > 0 ? `${voidTagFiles.length} Photo(s) Selected` : requiresVoidTagPhoto ? 'Upload Void Tag Photo' : 'Upload Seal Photo (Optional)'}
+                                    </p>
+                                </div>
+                                {voidTagFiles.length > 0 && (
+                                    <div className="flex gap-2 mt-4">
+                                        {voidTagFiles.map((file, idx) => (
+                                            <div key={idx} className="w-16 h-16 rounded-lg overflow-hidden border border-green-200">
+                                                <img src={URL.createObjectURL(file)} alt="Void Tag Preview" className="w-full h-full object-cover" />
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-footerBg p-4 rounded-xl flex gap-3 items-start border border-gray-800">
+                        <AlertCircle size={18} className="text-white mt-0.5 shrink-0" />
+                        <p className="text-[10px] text-gray-300 leading-relaxed font-bold uppercase tracking-widest">
+                            <strong>Policy Notice:</strong> If the physical security seal is found to be tampered, missing, or broken upon arrival, the return will be rejected and the item will be sent back to you without a refund.
                         </p>
                     </div>
 

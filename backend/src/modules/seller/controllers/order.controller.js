@@ -139,7 +139,7 @@ exports.getMyOrderDetail = async (req, res) => {
 exports.updateOrderStatus = async (req, res) => {
   try {
     const { orderId } = req.params;
-    const { status, note, shippingInfo } = req.body;
+    const { status, note, shippingInfo, itemVoidTags } = req.body;
     const sellerId = req.user.userId;
     const nextStatus = normalizeOrderStatus(status);
     if (!mongoose.Types.ObjectId.isValid(orderId)) {
@@ -172,6 +172,15 @@ exports.updateOrderStatus = async (req, res) => {
     const isSameStatusUpdate = nextStatus === order.status;
     if (!isSameStatusUpdate && !allowedStatuses.includes(nextStatus)) {
       return error(res, `Seller cannot move order from ${order.status} to ${nextStatus}`, 400);
+    }
+
+    if (Array.isArray(itemVoidTags)) {
+      itemVoidTags.forEach(({ itemId, voidTagId }) => {
+        const item = order.items.id(itemId);
+        if (item) {
+          item.voidTagId = String(voidTagId || "").trim();
+        }
+      });
     }
 
     if (["Shipped", "Delivered"].includes(nextStatus)) {

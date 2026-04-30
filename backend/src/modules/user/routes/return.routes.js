@@ -7,6 +7,6 @@ const { evidenceUpload } = require("../../../middlewares/uploadMiddleware");
 
 router.use(authenticate, requireRole("user"), requireActiveUser);
 router.get("/", returnController.getMyReturns);
-router.post("/", evidenceUpload.array("evidence", 5), returnController.requestReturn);
+router.post("/", evidenceUpload.fields([{ name: "evidence", maxCount: 5 }, { name: "voidTagImages", maxCount: 2 }]), returnController.requestReturn);
 
 module.exports = router;

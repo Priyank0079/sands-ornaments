@@ -84,6 +84,7 @@ const OrderDetailPage = () => {
         trackingUrl: '',
         estimatedDelivery: ''
     });
+    const [voidTagInputs, setVoidTagInputs] = useState({});
 
     useEffect(() => {
         const fetchOrder = async () => {
@@ -110,6 +111,13 @@ const OrderDetailPage = () => {
             trackingUrl: order.trackingUrl || '',
             estimatedDelivery: formatDateInputValue(order.estimatedDelivery)
         });
+
+        // Initialize voidTagInputs from order if available
+        const initialTags = {};
+        (order.items || []).forEach(item => {
+            if (item.voidTagId) initialTags[item._id] = item.voidTagId;
+        });
+        setVoidTagInputs(initialTags);
     }, [order]);
 
     const timeline = useMemo(() => {
@@ -144,11 +152,18 @@ const OrderDetailPage = () => {
         if (!order || !nextStatus) return;
 
         setIsSubmitting(true);
+
+        const itemVoidTags = Object.entries(voidTagInputs).map(([itemId, voidTagId]) => ({
+            itemId,
+            voidTagId
+        }));
+
         try {
             const payload = {
                 status: nextStatus,
                 note: actionNote.trim(),
-                shippingInfo: shippingForm
+                shippingInfo: shippingForm,
+                itemVoidTags
             };
             const res = await adminService.updateOrderStatus(id, payload);
             if (!res.success) {
@@ -266,7 +281,27 @@ const OrderDetailPage = () => {
                                                     </div>
                                                     <div className="space-y-1">
                                                         <p className="text-sm font-bold text-gray-900">{item.name}</p>
-                                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{item.sku || 'No SKU'}</p>
+                                                        <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">
+                                                            {item.sku || 'No SKU'}
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex flex-col gap-2 ml-4">
+                                                        <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                                            Void Tag ID (Security Seal)
+                                                        </div>
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Enter Tag Serial #"
+                                                            value={voidTagInputs[item._id] || ''}
+                                                            onChange={(e) => setVoidTagInputs({ ...voidTagInputs, [item._id]: e.target.value })}
+                                                            className="bg-gray-50 border border-gray-100 rounded-lg px-4 py-2 text-xs font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-black transition-all"
+                                                            disabled={['Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'].includes(order.orderStatus)}
+                                                        />
+                                                        {item.voidTagId && ['Shipped', 'Out for Delivery', 'Delivered'].includes(order.orderStatus) && (
+                                                            <div className="flex items-center gap-1.5 text-[9px] font-black text-green-600 uppercase tracking-widest">
+                                                                Seal Logged
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </td>

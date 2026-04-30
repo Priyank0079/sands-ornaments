@@ -5,6 +5,7 @@ const { success, error } = require("../../../utils/apiResponse");
 
 const SELLER_ACTIONABLE_STATUSES = ["Pending"];
 const SELLER_ALLOWED_STATUSES = ["Approved", "Rejected"];
+const VOID_TAG_REQUIRED_STATUSES = new Set(["Approved", "Rejected"]);
 
 const buildSellerReturnScope = async (sellerId) => {
   const products = await Product.find({ sellerId }).select("_id");
@@ -18,6 +19,25 @@ const filterReturnsToOwnedItemsOnly = (returns = [], sellerProductIds = []) => {
     if (items.length === 0) return false;
     return items.every((it) => owned.has(String(it.productId)));
   });
+};
+
+const returnRequiresVoidTagVerification = (returnReq) =>
+  (returnReq?.items || []).some((item) => String(item?.voidTagId || "").trim());
+
+const validateVoidTagDecision = ({ returnReq, nextStatus, voidTagStatus }) => {
+  if (!VOID_TAG_REQUIRED_STATUSES.has(nextStatus) || !returnRequiresVoidTagVerification(returnReq)) {
+    return null;
+  }
+
+  if (!["Intact", "Tampered", "Missing"].includes(voidTagStatus)) {
+    return "Seal verification is required before processing this return";
+  }
+
+  if (nextStatus === "Approved" && voidTagStatus !== "Intact") {
+    return "A return with a tampered or missing security seal cannot be approved";
+  }
+
+  return null;
 };
 
 exports.getReturns = async (req, res) => {
@@ -91,7 +111,7 @@ exports.getReturnDetail = async (req, res) => {
 exports.processReturn = async (req, res) => {
   try {
     const sellerId = req.user.userId;
-    const { status, remarks } = req.body;
+    const { status, remarks, voidTagStatus, voidTagNotes } = req.body;
     const sellerProductIds = await buildSellerReturnScope(sellerId);
 
     if (!SELLER_ALLOWED_STATUSES.includes(status)) {
@@ -110,9 +130,21 @@ exports.processReturn = async (req, res) => {
       return error(res, `Seller can only process returns in: ${SELLER_ACTIONABLE_STATUSES.join(", ")}`, 400);
     }
 
+    const voidTagValidationError = validateVoidTagDecision({ returnReq, nextStatus: status, voidTagStatus });
+    if (voidTagValidationError) {
+      return error(res, voidTagValidationError, 400);
+    }
+
     returnReq.status = status;
     if (remarks) {
       returnReq.adminComment = remarks;
+    }
+    
+    if (voidTagStatus) {
+      returnReq.voidTagVerification = {
+        status: voidTagStatus,
+        notes: voidTagNotes || ""
+      };
     }
     returnReq.timeline.push({
       status,

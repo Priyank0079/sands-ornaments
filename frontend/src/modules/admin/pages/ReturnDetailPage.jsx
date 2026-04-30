@@ -79,6 +79,8 @@ const ReturnDetailPage = () => {
     const [pickupPartner, setPickupPartner] = useState('');
     const [pickupAwb, setPickupAwb] = useState('');
     const [pickupScheduledDate, setPickupScheduledDate] = useState('');
+    const [voidTagStatus, setVoidTagStatus] = useState('Pending');
+    const [voidTagNotes, setVoidTagNotes] = useState('');
 
     const formatDateInputValue = (value) => {
         if (!value) return '';
@@ -113,6 +115,11 @@ const ReturnDetailPage = () => {
         setPickupPartner(ret.pickup?.partner || '');
         setPickupAwb(ret.pickup?.awb || '');
         setPickupScheduledDate(formatDateInputValue(ret.pickup?.scheduledDate));
+        
+        if (ret.voidTagVerification) {
+            setVoidTagStatus(ret.voidTagVerification.status || 'Pending');
+            setVoidTagNotes(ret.voidTagVerification.notes || '');
+        }
     }, [ret]);
 
     const timeline = useMemo(() => {
@@ -126,10 +133,17 @@ const ReturnDetailPage = () => {
     }, [ret]);
 
     const allowedTransitions = ret ? (ALLOWED_TRANSITIONS[ret.status] || []) : [];
+    const returnHasVoidTag = Boolean((ret?.items || []).some((item) => String(item?.voidTagId || '').trim()));
+    const primaryVoidTagId = (ret?.items || []).find((item) => String(item?.voidTagId || '').trim())?.voidTagId || '';
 
     const handleAction = async (status) => {
         if (['Refund Initiated', 'Refunded'].includes(status) && !String(refundAmount).trim()) {
             toast.error('Enter the refund amount before continuing.');
+            return;
+        }
+
+        if (returnHasVoidTag && ['Approved', 'Rejected'].includes(status) && !['Intact', 'Tampered', 'Missing'].includes(voidTagStatus)) {
+            toast.error('Choose a seal verification result before processing this return.');
             return;
         }
 
@@ -143,7 +157,9 @@ const ReturnDetailPage = () => {
                 refundTransactionId,
                 pickupPartner,
                 pickupAwb,
-                pickupScheduledDate
+                pickupScheduledDate,
+                voidTagStatus,
+                voidTagNotes
             });
             if (!res.success) {
                 toast.error(res.message || 'Failed to update return status.');
@@ -250,32 +266,31 @@ const ReturnDetailPage = () => {
                                 {ret.comment ? `"${ret.comment}"` : 'No comment provided.'}
                             </p>
                         </div>
-                        <div>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Proof Uploads</p>
+                        <div className="mt-6">
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Security Seal (Void Tag) Evidence</p>
+                            {returnHasVoidTag && (
+                                <p className="text-xs font-bold text-amber-700 mb-3">
+                                    Expected Seal ID: <span className="font-black tracking-wide text-amber-900">{primaryVoidTagId}</span>
+                                </p>
+                            )}
                             <div className="flex gap-4 overflow-x-auto pb-2">
-                                {(ret.evidenceImages || []).map((img, index) => (
+                                {(ret.evidence?.voidTagImages || []).map((img, index) => (
                                     <a
-                                        key={`${img}-${index}`}
+                                        key={index}
                                         href={img}
                                         target="_blank"
                                         rel="noreferrer"
-                                        className="w-20 h-20 rounded-xl border border-gray-200 overflow-hidden shrink-0 relative group cursor-pointer shadow-sm hover:shadow-md transition-all"
+                                        className="w-32 h-32 rounded-xl border-2 border-amber-200 overflow-hidden shrink-0 relative group cursor-pointer shadow-sm hover:shadow-md transition-all"
                                     >
-                                        <img src={img} alt="Proof" className="w-full h-full object-cover" />
+                                        <img src={img} alt="Void Tag" className="w-full h-full object-cover" />
+                                        <div className="absolute inset-0 bg-amber-900/10 group-hover:bg-transparent transition-colors"></div>
+                                        <div className="absolute bottom-2 left-2 bg-amber-600 text-white text-[8px] font-black px-2 py-0.5 rounded tracking-tighter">Security Photo</div>
                                     </a>
                                 ))}
-                                {ret.evidenceVideo && (
-                                    <a
-                                        href={ret.evidenceVideo}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="w-20 h-20 rounded-xl border border-gray-200 bg-gray-100 flex items-center justify-center shrink-0 cursor-pointer shadow-sm hover:shadow-md transition-all"
-                                    >
-                                        <Video className="text-gray-400" size={20} />
-                                    </a>
-                                )}
-                                {!ret.evidenceImages?.length && !ret.evidenceVideo && (
-                                    <div className="text-xs text-gray-400 font-bold">No evidence uploaded.</div>
+                                {!ret.evidence?.voidTagImages?.length && (
+                                    <div className="text-xs text-amber-600 font-bold bg-amber-50 px-4 py-2 rounded-lg border border-amber-100 italic">
+                                        {returnHasVoidTag ? 'No security seal images uploaded by customer.' : 'No security seal evidence uploaded for this return.'}
+                                    </div>
                                 )}
                             </div>
                         </div>
@@ -375,6 +390,35 @@ const ReturnDetailPage = () => {
                                 className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-xs font-medium outline-none focus:border-[#3E2723]"
                             />
                         </div>
+                        <div className="space-y-2 border-t border-gray-100 pt-4">
+                            <label className="block text-[10px] font-black text-amber-600 uppercase tracking-widest">Seal Status Verification</label>
+                            <select
+                                value={voidTagStatus}
+                                onChange={(e) => setVoidTagStatus(e.target.value)}
+                                disabled={!returnHasVoidTag}
+                                className="w-full bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs font-black uppercase outline-none focus:border-amber-500"
+                            >
+                                <option value="Pending">Pending</option>
+                                <option value="Intact">Intact (Valid)</option>
+                                <option value="Tampered">Tampered (Invalid)</option>
+                                <option value="Missing">Missing (Invalid)</option>
+                            </select>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="block text-[10px] font-black text-amber-600 uppercase tracking-widest">Seal Verification Note</label>
+                            <textarea
+                                value={voidTagNotes}
+                                onChange={(e) => setVoidTagNotes(e.target.value)}
+                                disabled={!returnHasVoidTag}
+                                className="w-full bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs font-medium outline-none focus:border-amber-500 min-h-[60px] resize-none"
+                                placeholder="Describe seal condition..."
+                            />
+                        </div>
+                        {returnHasVoidTag && (
+                            <p className="text-[10px] font-bold text-amber-700">
+                                Tagged-item returns require an explicit seal verdict before approval or rejection.
+                            </p>
+                        )}
                         <div className="grid grid-cols-1 gap-3">
                             {allowedTransitions.map((status) => (
                                 <button
