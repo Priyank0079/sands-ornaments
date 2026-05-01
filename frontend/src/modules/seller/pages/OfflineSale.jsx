@@ -14,7 +14,7 @@ const OfflineSale = () => {
     const handleScan = (e) => {
         if (e) e.preventDefault();
         if (!scannedCode) return;
-        
+
         setLoading(true);
         setResult(null);
         setPreview(null);
@@ -37,7 +37,7 @@ const OfflineSale = () => {
     return (
         <div className="space-y-8 animate-in fade-in duration-500 pb-20">
             <div className="flex items-center gap-4">
-                <button 
+                <button
                     onClick={() => navigate('/seller/dashboard')}
                     className="p-2.5 hover:bg-white rounded-xl border border-gray-100 shadow-sm transition-all"
                 >
@@ -52,29 +52,29 @@ const OfflineSale = () => {
             <div className="max-w-xl mx-auto">
                 <div className="bg-[#0F172A] rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden transition-all duration-500 border border-white/5">
                     <div className="relative z-10 flex flex-col items-center text-center space-y-8">
-                        
+
                         {/* Scanner Icon/Feed Area */}
                         <div className="relative group">
                             <div className="w-24 h-24 rounded-full flex items-center justify-center border-2 transition-all duration-500 bg-blue-500/10 border-blue-500/20 group-hover:bg-blue-500/20 group-hover:border-blue-500/40">
                                 <ScanLine className="w-12 h-12 transition-all duration-500 text-blue-500" />
                             </div>
-                            
-                            <button 
+
+                            <button
                                 onClick={startScanner}
                                 className="absolute -bottom-2 -right-2 bg-blue-600 p-2.5 rounded-xl shadow-lg hover:bg-blue-700 transition-all border border-blue-400/30"
                             >
                                 <ScanLine className="w-4 h-4 text-white" />
                             </button>
                         </div>
-                        
+
                         <div>
-                             <h2 className="text-white text-xl font-black uppercase tracking-[0.2em]">Inventory Reconciliation</h2>
-                             <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mt-2 opacity-60">Scan or enter a serialized unit code for direct fulfillment</p>
+                            <h2 className="text-white text-xl font-black uppercase tracking-[0.2em]">Inventory Reconciliation</h2>
+                            <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mt-2 opacity-60">Scan or enter a serialized unit code for direct fulfillment</p>
                         </div>
 
                         <form onSubmit={handleScan} className="w-full space-y-6">
                             <div className="relative group">
-                                <input 
+                                <input
                                     value={scannedCode}
                                     onChange={(e) => setScannedCode(e.target.value)}
                                     placeholder="SERIAL CODE (e.g. ITEM010001234)"
@@ -83,7 +83,7 @@ const OfflineSale = () => {
                                 <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-blue-500 transition-colors" />
                             </div>
 
-                            <button 
+                            <button
                                 type="submit"
                                 disabled={loading}
                                 className="w-full bg-blue-600 hover:bg-blue-700 text-white py-5 rounded-[1.25rem] font-black uppercase tracking-[0.3em] text-xs transition-all shadow-xl shadow-blue-500/20 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3 group"
@@ -148,22 +148,22 @@ const OfflineSale = () => {
                     <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
                     <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
                 </div>
-                
+
                 <div className="mt-8 bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
                     <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">How it works</h3>
                     <ul className="space-y-3">
-                         <li className="flex gap-3 text-xs font-semibold text-gray-600">
-                             <div className="w-5 h-5 bg-gray-50 rounded flex items-center justify-center shrink-0 text-[10px] border border-gray-100 italic">1</div>
-                             <span>Enter a serialized unit code from a variant's unique code list.</span>
-                         </li>
-                         <li className="flex gap-3 text-xs font-semibold text-gray-600">
-                             <div className="w-5 h-5 bg-gray-50 rounded flex items-center justify-center shrink-0 text-[10px] border border-gray-100 italic">2</div>
-                             <span>The system checks whether that serialized unit is still AVAILABLE.</span>
-                         </li>
-                         <li className="flex gap-3 text-xs font-semibold text-gray-600">
-                             <div className="w-5 h-5 bg-gray-50 rounded flex items-center justify-center shrink-0 text-[10px] border border-gray-100 italic">3</div>
-                             <span>If valid, that unit becomes SOLD_OFFLINE and the variant stock decreases automatically.</span>
-                         </li>
+                        <li className="flex gap-3 text-xs font-semibold text-gray-600">
+                            <div className="w-5 h-5 bg-gray-50 rounded flex items-center justify-center shrink-0 text-[10px] border border-gray-100 italic">1</div>
+                            <span>Enter a serialized unit code from a variant's unique code list.</span>
+                        </li>
+                        <li className="flex gap-3 text-xs font-semibold text-gray-600">
+                            <div className="w-5 h-5 bg-gray-50 rounded flex items-center justify-center shrink-0 text-[10px] border border-gray-100 italic">2</div>
+                            <span>The system checks whether that serialized unit is still AVAILABLE.</span>
+                        </li>
+                        <li className="flex gap-3 text-xs font-semibold text-gray-600">
+                            <div className="w-5 h-5 bg-gray-50 rounded flex items-center justify-center shrink-0 text-[10px] border border-gray-100 italic">3</div>
+                            <span>If valid, that unit becomes SOLD_OFFLINE and the variant stock decreases automatically.</span>
+                        </li>
                     </ul>
                 </div>
             </div>

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { Download, CheckCircle2 as SuccessIcon, Copy, QrCode, Barcode as BarcodeIcon, Loader2, Plus, Upload, X, Trash2, Sparkles, ImagePlus, ExternalLink, FileText, CheckCircle2 } from 'lucide-react';
+import { Download, CheckCircle2 as SuccessIcon, Copy, QrCode, Barcode as BarcodeIcon, Loader2, Plus, Upload, X, Trash2, Sparkles, ImagePlus, ExternalLink, FileText, CheckCircle2, IndianRupee, Scale, Tag, Box, Zap, Coins, Calculator, Layers } from 'lucide-react';
 import Barcode from 'react-barcode';
 import PageHeader from '../../admin/components/common/PageHeader';
 import { FormSection, Input, Select, TextArea } from '../../admin/components/common/FormControls';
@@ -1623,259 +1623,337 @@ const SharedProductEditor = ({
                                             </button>
                                         )}
                                         
-                                        <div className="space-y-4">
-                                            <div className="flex items-center justify-between gap-3">
-                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em]">Variant Details</p>
-                                                <p className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">Step 1</p>
-                                            </div>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-6 gap-4 xl:gap-6">
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Variant Name</label>
-                                                <input 
-                                                    value={v.name} 
-                                                    onChange={(e) => handleVariantChange(v.id, 'name', e.target.value)} 
-                                                    disabled={isViewMode} 
-                                                    className="w-full bg-white border border-gray-100 rounded-2xl py-4 px-6 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723]/30 transition-all shadow-sm" 
-                                                    placeholder="Standard" 
-                                                />
-                                                {errors[`variant_${idx}_name`] && <div className="text-[10px] text-red-500 mt-1 ml-1">{errors[`variant_${idx}_name`]}</div>}
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Diamond Type</label>
-                                                <select
-                                                    value={v.diamondType || formData.diamondType || 'none'}
-                                                    onChange={(e) => handleVariantChange(v.id, 'diamondType', e.target.value)}
-                                                    disabled={isViewMode}
-                                                    className="w-full bg-white border border-gray-100 rounded-2xl py-4 px-6 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723]/30 transition-all shadow-sm"
-                                                >
-                                                    <option value="none">No Diamonds</option>
-                                                    <option value="lab_grown">Lab Grown</option>
-                                                    <option value="natural">Natural</option>
-                                                </select>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Variant Weight</label>
-                                                <input
-                                                    type="number"
-                                                    value={v.weight ?? ''}
-                                                    onChange={(e) => handleVariantChange(v.id, 'weight', e.target.value)}
-                                                    disabled={isViewMode}
-                                                    className="w-full bg-white border border-gray-100 rounded-2xl py-4 px-6 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723]/30 transition-all shadow-sm"
-                                                    placeholder="0"
-                                                />
-                                                {errors[`variant_${idx}_weight`] && <div className="text-[10px] text-red-500 mt-1 ml-1">{errors[`variant_${idx}_weight`]}</div>}
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Weight Unit</label>
-                                                <select
-                                                    value={v.weightUnit || 'Grams'}
-                                                    onChange={(e) => handleVariantChange(v.id, 'weightUnit', e.target.value)}
-                                                    disabled={isViewMode}
-                                                    className="w-full bg-white border border-gray-100 rounded-2xl py-4 px-6 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723]/30 transition-all shadow-sm"
-                                                >
-                                                    {variantWeightUnitOptions.map((option) => (
-                                                        <option key={option.value} value={option.value}>{option.label}</option>
-                                                    ))}
-                                                </select>
-                                                {errors[`variant_${idx}_weightUnit`] && <div className="text-[10px] text-red-500 mt-1 ml-1">{errors[`variant_${idx}_weightUnit`]}</div>}
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Making Charge</label>
-                                                <div className="relative group/field">
-                                                    <input 
-                                                        type="number" 
-                                                        value={v.makingCharge} 
-                                                        onChange={(e) => handleVariantChange(v.id, 'makingCharge', e.target.value)} 
-                                                        disabled={isViewMode} 
-                                                        className="w-full bg-white border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723]/30 transition-all shadow-sm" 
-                                                        placeholder="0" 
-                                                    />
-                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">Rs</span>
+                                        <div className="space-y-6">
+                                            <div className="flex items-center justify-between gap-3 border-b border-gray-100 pb-4">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="p-2 bg-amber-100 rounded-lg text-amber-600">
+                                                        <Layers size={16} />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.25em]">Variant Details</p>
+                                                        <p className="text-[8px] font-bold text-gray-400 uppercase mt-0.5">Define naming and physical specifications</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-full border border-gray-100">
+                                                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Step 1</span>
                                                 </div>
                                             </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Hallmarking Charge</label>
-                                                <div className="relative group/field">
+                                            
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                                        <Tag size={10} className="text-amber-500" /> Variant Name
+                                                    </label>
                                                     <input 
-                                                        type="number" 
-                                                        value={v.hallmarkingCharge ?? '0'} 
-                                                        onChange={(e) => handleVariantChange(v.id, 'hallmarkingCharge', e.target.value)} 
+                                                        value={v.name} 
+                                                        onChange={(e) => handleVariantChange(v.id, 'name', e.target.value)} 
                                                         disabled={isViewMode} 
-                                                        className="w-full bg-white border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723]/30 transition-all shadow-sm" 
-                                                        placeholder="0" 
+                                                        className="w-full bg-white border border-gray-200 rounded-xl py-3.5 px-5 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm" 
+                                                        placeholder="e.g. Standard, Small, Large" 
                                                     />
-                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 font-bold group-focus-within/field:text-[#3E2723]">Rs</span>
+                                                    {errors[`variant_${idx}_name`] && <div className="text-[10px] text-red-500 mt-1 ml-1">{errors[`variant_${idx}_name`]}</div>}
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                                        <Sparkles size={10} className="text-amber-500" /> Diamond Type
+                                                    </label>
+                                                    <select
+                                                        value={v.diamondType || formData.diamondType || 'none'}
+                                                        onChange={(e) => handleVariantChange(v.id, 'diamondType', e.target.value)}
+                                                        disabled={isViewMode}
+                                                        className="w-full bg-white border border-gray-200 rounded-xl py-3.5 px-5 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm appearance-none cursor-pointer"
+                                                    >
+                                                        <option value="none">No Diamonds</option>
+                                                        <option value="lab_grown">Lab Grown</option>
+                                                        <option value="natural">Natural</option>
+                                                    </select>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                                        <Scale size={10} className="text-amber-500" /> Variant Weight
+                                                    </label>
+                                                    <div className="flex gap-2">
+                                                        <input
+                                                            type="number"
+                                                            value={v.weight ?? ''}
+                                                            onChange={(e) => handleVariantChange(v.id, 'weight', e.target.value)}
+                                                            disabled={isViewMode}
+                                                            className="flex-1 bg-white border border-gray-200 rounded-xl py-3.5 px-5 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm"
+                                                            placeholder="0"
+                                                        />
+                                                        <select
+                                                            value={v.weightUnit || 'Grams'}
+                                                            onChange={(e) => handleVariantChange(v.id, 'weightUnit', e.target.value)}
+                                                            disabled={isViewMode}
+                                                            className="w-24 bg-gray-50 border border-gray-200 rounded-xl px-2 text-[10px] font-black uppercase tracking-widest text-gray-600 outline-none focus:border-[#3E2723] transition-all cursor-pointer"
+                                                        >
+                                                            {variantWeightUnitOptions.map((option) => (
+                                                                <option key={option.value} value={option.value}>{option.label}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                    {errors[`variant_${idx}_weight`] && <div className="text-[10px] text-red-500 mt-1 ml-1">{errors[`variant_${idx}_weight`]}</div>}
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                                        <Zap size={10} className="text-amber-500" /> Unit Stock
+                                                    </label>
+                                                    <div className="relative">
+                                                        <input 
+                                                            type="number" 
+                                                            value={availableCount} 
+                                                            onChange={(e) => updateVariantSerialQuantity(v.id, e.target.value)} 
+                                                            disabled={isViewMode} 
+                                                            className="w-full bg-white border border-gray-200 rounded-xl py-3.5 px-5 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm" 
+                                                            placeholder="0" 
+                                                        />
+                                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                                                            <div className={`w-1.5 h-1.5 rounded-full ${availableCount > 0 ? 'bg-emerald-500 animate-pulse' : 'bg-gray-300'}`} />
+                                                            <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Active</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Diamond Certificate Charge</label>
-                                                <div className="relative group/field">
-                                                    <input 
-                                                        type="number" 
-                                                        value={v.diamondCertificateCharge ?? '0'} 
-                                                        onChange={(e) => handleVariantChange(v.id, 'diamondCertificateCharge', e.target.value)} 
-                                                        disabled={isViewMode} 
-                                                        className="w-full bg-white border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723]/30 transition-all shadow-sm" 
-                                                        placeholder="0" 
-                                                    />
-                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 font-bold group-focus-within/field:text-[#3E2723]">Rs</span>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                                        <IndianRupee size={10} className="text-amber-500" /> Making Charge
+                                                    </label>
+                                                    <div className="relative group/field">
+                                                        <input 
+                                                            type="number" 
+                                                            value={v.makingCharge} 
+                                                            onChange={(e) => handleVariantChange(v.id, 'makingCharge', e.target.value)} 
+                                                            disabled={isViewMode} 
+                                                            className="w-full bg-white border border-gray-200 rounded-xl py-3.5 pl-12 pr-5 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm" 
+                                                            placeholder="0" 
+                                                        />
+                                                        <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 uppercase tracking-widest">Rs</span>
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                                        <CheckCircle2 size={10} className="text-amber-500" /> Hallmarking Charge
+                                                    </label>
+                                                    <div className="relative group/field">
+                                                        <input 
+                                                            type="number" 
+                                                            value={v.hallmarkingCharge ?? '0'} 
+                                                            onChange={(e) => handleVariantChange(v.id, 'hallmarkingCharge', e.target.value)} 
+                                                            disabled={isViewMode} 
+                                                            className="w-full bg-white border border-gray-200 rounded-xl py-3.5 pl-12 pr-5 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm" 
+                                                            placeholder="0" 
+                                                        />
+                                                        <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 uppercase tracking-widest">Rs</span>
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                                        <FileText size={10} className="text-amber-500" /> Certificate Charge
+                                                    </label>
+                                                    <div className="relative group/field">
+                                                        <input 
+                                                            type="number" 
+                                                            value={v.diamondCertificateCharge ?? '0'} 
+                                                            onChange={(e) => handleVariantChange(v.id, 'diamondCertificateCharge', e.target.value)} 
+                                                            disabled={isViewMode} 
+                                                            className="w-full bg-white border border-gray-200 rounded-xl py-3.5 pl-12 pr-5 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm" 
+                                                            placeholder="0" 
+                                                        />
+                                                        <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 uppercase tracking-widest">Rs</span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
                                         </div>
 
                                         <div className="border-t border-gray-100/50 pt-8 space-y-4">
-                                            <div className="flex items-center justify-between gap-3">
-                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em]">Pricing Breakdown</p>
-                                                <p className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">Step 2</p>
-                                            </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-4 gap-4 xl:gap-6">
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Metal Price (Auto)</label>
-                                                <div className="relative group/field">
-                                                    <input 
-                                                        type="number" 
-                                                        value={pricing.metalPrice.toFixed(2)} 
-                                                        readOnly
-                                                        disabled={isViewMode} 
-                                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-black text-gray-700 outline-none shadow-sm" 
-                                                        placeholder="0" 
-                                                    />
-                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">Rs</span>
+                                            <div className="flex items-center justify-between gap-3 border-b border-gray-100 pb-4">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="p-2 bg-amber-100 rounded-lg text-amber-600">
+                                                        <Calculator size={16} />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.25em]">Pricing Breakdown</p>
+                                                        <p className="text-[8px] font-bold text-gray-400 uppercase mt-0.5">Automated pricing intelligence</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-full border border-gray-100">
+                                                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Step 2</span>
                                                 </div>
                                             </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Hidden Charge (Auto)</label>
-                                                <div className="relative group/field">
-                                                    <input 
-                                                        type="number" 
-                                                        value={pricing.hiddenCharge.toFixed(2)} 
-                                                        readOnly
-                                                        disabled={isViewMode} 
-                                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-700 outline-none shadow-sm" 
-                                                        placeholder="0" 
-                                                    />
-                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">Rs</span>
+                                            
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                                        <Coins size={10} className="text-amber-500" /> Metal Price
+                                                    </label>
+                                                    <div className="relative group/field">
+                                                        <input 
+                                                            type="text" 
+                                                            value={`Rs ${pricing.metalPrice.toFixed(2)}`} 
+                                                            readOnly
+                                                            className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-3.5 px-5 text-sm font-black text-gray-600 outline-none transition-all" 
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                                        <Box size={10} className="text-amber-500" /> Hidden Charges
+                                                    </label>
+                                                    <div className="relative group/field">
+                                                        <input 
+                                                            type="text" 
+                                                            value={`Rs ${pricing.hiddenCharge.toFixed(2)}`} 
+                                                            readOnly
+                                                            className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-3.5 px-5 text-sm font-bold text-gray-600 outline-none transition-all" 
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                                        <Calculator size={10} className="text-amber-500" /> Subtotal
+                                                    </label>
+                                                    <div className="relative group/field">
+                                                        <input 
+                                                            type="text" 
+                                                            value={`Rs ${pricing.subtotalBeforeTax.toFixed(2)}`} 
+                                                            readOnly
+                                                            className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-3.5 px-5 text-sm font-bold text-gray-600 outline-none transition-all" 
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                                        <Zap size={10} className="text-amber-500" /> GST ({Number(gstRate || 0)}%)
+                                                    </label>
+                                                    <div className="relative group/field">
+                                                        <input 
+                                                            type="text" 
+                                                            value={`Rs ${pricing.gstValue.toFixed(2)}`} 
+                                                            readOnly
+                                                            className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-3.5 px-5 text-sm font-bold text-gray-600 outline-none transition-all" 
+                                                        />
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Subtotal Before GST (Auto)</label>
-                                                <div className="relative group/field">
-                                                    <input 
-                                                        type="number" 
-                                                        value={pricing.subtotalBeforeTax.toFixed(2)} 
-                                                        readOnly
-                                                        disabled={isViewMode} 
-                                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-700 outline-none shadow-sm" 
-                                                        placeholder="0" 
-                                                    />
-                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">Rs</span>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 items-end">
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Price After GST</label>
+                                                    <div className="relative group/field">
+                                                        <input 
+                                                            type="text" 
+                                                            value={`Rs ${pricing.priceAfterTax.toFixed(2)}`} 
+                                                            readOnly
+                                                            className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-3.5 px-5 text-sm font-bold text-gray-600 outline-none transition-all" 
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">PG Charge ({pricing.pgChargePercent}%)</label>
+                                                    <div className="relative group/field">
+                                                        <input 
+                                                            type="text" 
+                                                            value={`Rs ${pricing.pgChargeAmount.toFixed(2)}`} 
+                                                            readOnly
+                                                            className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-3.5 px-5 text-sm font-bold text-gray-600 outline-none transition-all" 
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                                        <SuccessIcon size={10} /> Final Variant Price
+                                                    </label>
+                                                    <div className="relative overflow-hidden rounded-xl border border-amber-200 bg-amber-50 shadow-inner group">
+                                                        <div className="absolute inset-0 bg-gradient-to-r from-amber-100/50 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                                                        <div className="relative py-3.5 px-5 flex items-center justify-between">
+                                                            <span className="text-[10px] font-black text-amber-800 uppercase tracking-widest">Total</span>
+                                                            <span className="text-lg font-black text-[#3E2723] font-mono tracking-tighter">
+                                                                Rs {roundCurrency(v.mrp).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                                            </span>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">GST ({Number(gstRate || 0)}% Auto)</label>
-                                                <div className="relative group/field">
-                                                    <input 
-                                                        type="number" 
-                                                        value={pricing.gstValue.toFixed(2)} 
-                                                        readOnly
-                                                        disabled={isViewMode} 
-                                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-700 outline-none shadow-sm" 
-                                                        placeholder="0" 
-                                                    />
-                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">Rs</span>
-                                                </div>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Price After GST (Auto)</label>
-                                                <div className="relative group/field">
-                                                    <input 
-                                                        type="number" 
-                                                        value={pricing.priceAfterTax.toFixed(2)} 
-                                                        readOnly
-                                                        disabled={isViewMode} 
-                                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-700 outline-none shadow-sm" 
-                                                        placeholder="0" 
-                                                    />
-                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">Rs</span>
-                                                </div>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">PG Charge ({pricing.pgChargePercent}% {String(formData.paymentGatewayChargeBearer || 'seller').toLowerCase() === 'user' ? 'User' : 'Seller'})</label>
-                                                <div className="relative group/field">
-                                                    <input 
-                                                        type="number" 
-                                                        value={pricing.pgChargeAmount.toFixed(2)} 
-                                                        readOnly
-                                                        disabled={isViewMode} 
-                                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-700 outline-none shadow-sm" 
-                                                        placeholder="0" 
-                                                    />
-                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">Rs</span>
-                                                </div>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest ml-1">Final Price (Calculated)</label>
-                                                <div className="relative group/field">
-                                                    <input 
-                                                        type="number" 
-                                                        value={v.mrp} 
-                                                        readOnly
-                                                        disabled={isViewMode} 
-                                                        className="w-full bg-amber-50/20 border border-amber-100/30 rounded-2xl py-4 pl-12 pr-6 text-sm font-black text-[#3E2723] outline-none shadow-sm" 
-                                                        placeholder="Final Price" 
-                                                    />
-                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-amber-600 font-bold">Rs</span>
-                                                </div>
-                                            </div>
-                                        </div>
                                         </div>
 
                                         <div className="border-t border-gray-100/50 pt-8 space-y-4">
-                                            <div className="flex items-center justify-between gap-3">
-                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em]">Inventory Sync</p>
-                                                <p className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">Step 3</p>
+                                            <div className="flex items-center justify-between gap-3 border-b border-gray-100 pb-4">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="p-2 bg-amber-100 rounded-lg text-amber-600">
+                                                        <Box size={16} />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.25em]">Inventory Sync</p>
+                                                        <p className="text-[8px] font-bold text-gray-400 uppercase mt-0.5">Control stock levels and serialization</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-full border border-gray-100">
+                                                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Step 3</span>
+                                                </div>
                                             </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 xl:gap-6">
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Serialized Quantity</label>
-                                                <input 
-                                                    type="number" 
-                                                    value={availableCount} 
-                                                    onChange={(e) => updateVariantSerialQuantity(v.id, e.target.value)} 
-                                                    disabled={isViewMode} 
-                                                    className="w-full bg-white border border-gray-100 rounded-2xl py-4 px-6 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723]/30 transition-all shadow-sm" 
-                                                    placeholder="0" 
-                                                />
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                                        <Zap size={10} className="text-amber-500" /> Serialized Quantity
+                                                    </label>
+                                                    <input 
+                                                        type="number" 
+                                                        value={availableCount} 
+                                                        onChange={(e) => updateVariantSerialQuantity(v.id, e.target.value)} 
+                                                        disabled={isViewMode} 
+                                                        className="w-full bg-white border border-gray-200 rounded-xl py-3.5 px-5 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm" 
+                                                        placeholder="0" 
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                                        <Box size={10} className="text-amber-500" /> Live Stock Units
+                                                    </label>
+                                                    <div className="relative">
+                                                        <input 
+                                                            type="number" 
+                                                            value={availableCount} 
+                                                            readOnly
+                                                            disabled
+                                                            className="w-full bg-gray-50 border border-gray-100 rounded-xl py-3.5 px-5 text-sm font-black text-gray-500 outline-none cursor-not-allowed" 
+                                                            placeholder="In Stock" 
+                                                        />
+                                                        <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                                                            <span className="text-[8px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2 py-1 rounded-md border border-emerald-100">In Stock</span>
+                                                        </div>
+                                                    </div>
+                                                    {errors[`variant_${idx}_stock`] && <div className="text-[10px] text-red-500 mt-1 ml-1">{errors[`variant_${idx}_stock`]}</div>}
+                                                </div>
                                             </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Stock Units</label>
-                                                <input 
-                                                    type="number" 
-                                                    value={availableCount} 
-                                                    readOnly
-                                                    disabled
-                                                    className="w-full bg-gray-100 border border-gray-200 rounded-2xl py-4 px-6 text-sm font-bold text-gray-700 outline-none shadow-sm cursor-not-allowed" 
-                                                    placeholder="In Stock" 
-                                                />
-                                                {errors[`variant_${idx}_stock`] && <div className="text-[10px] text-red-500 mt-1 ml-1">{errors[`variant_${idx}_stock`]}</div>}
-                                            </div>
-                                        </div>
                                         </div>
 
                                         <div className="border-t border-gray-100/60 pt-8 space-y-4">
-                                            <div className="flex items-center justify-between gap-3">
-                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em]">Identity & Barcode</p>
-                                                <p className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">Step 4</p>
+                                            <div className="flex items-center justify-between gap-3 border-b border-gray-100 pb-4">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="p-2 bg-amber-100 rounded-lg text-amber-600">
+                                                        <BarcodeIcon size={16} />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.25em]">Identity & Barcode</p>
+                                                        <p className="text-[8px] font-bold text-gray-400 uppercase mt-0.5">Global identification and tracking markers</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-full border border-gray-100">
+                                                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Step 4</span>
+                                                </div>
                                             </div>
-                                            <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] gap-6">
+                                            <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] gap-8">
                                                 <div className="space-y-3">
-                                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Variant Code</label>
+                                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                                        <Tag size={10} className="text-amber-500" /> Variant Signature
+                                                    </label>
                                                     <div className="flex items-center gap-3">
                                                         <input
-                                                            value={v.variantCode || 'Will be generated on save'}
+                                                            value={v.variantCode || 'PENDING ASSIGNMENT'}
                                                             readOnly
-                                                            className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 text-sm font-black text-gray-700 outline-none shadow-sm"
+                                                            className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3.5 px-5 text-sm font-mono font-black text-gray-600 outline-none shadow-inner"
                                                         />
                                                         {(v.variantCode || '').trim() && (
                                                             <button
@@ -1884,7 +1962,7 @@ const SharedProductEditor = ({
                                                                     navigator.clipboard.writeText(v.variantCode);
                                                                     toast.success('Variant code copied');
                                                                 }}
-                                                                className="p-3 bg-white border border-gray-200 rounded-2xl text-gray-500 hover:text-[#3E2723] transition-all"
+                                                                className="p-3 bg-white border border-gray-200 rounded-xl text-gray-400 hover:text-[#3E2723] hover:border-[#3E2723] transition-all shadow-sm"
                                                             >
                                                                 <Copy size={16} />
                                                             </button>
@@ -1892,18 +1970,23 @@ const SharedProductEditor = ({
                                                     </div>
                                                 </div>
                                                 <div className="space-y-3">
-                                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Variant Barcode Preview</label>
-                                                    <div className="bg-white border border-gray-100 rounded-[1.5rem] px-4 py-5 shadow-sm min-h-[92px] flex items-center justify-center">
+                                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                                        <BarcodeIcon size={10} className="text-amber-500" /> Visual Identifier
+                                                    </label>
+                                                    <div className="bg-white border border-gray-200 rounded-2xl px-6 py-4 shadow-sm min-h-[92px] flex items-center justify-center overflow-hidden">
                                                         {(v.variantCode || '').trim() ? (
                                                             <Barcode
                                                                 value={v.variantCode}
-                                                                width={1.2}
-                                                                height={34}
+                                                                width={1.5}
+                                                                height={30}
                                                                 fontSize={10}
                                                                 background="#ffffff"
                                                             />
                                                         ) : (
-                                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Available after first save</span>
+                                                            <div className="flex flex-col items-center gap-1">
+                                                                <div className="w-12 h-0.5 bg-gray-100 rounded-full animate-pulse" />
+                                                                <span className="text-[8px] font-black text-gray-300 uppercase tracking-[0.3em]">Locked</span>
+                                                            </div>
                                                         )}
                                                     </div>
                                                 </div>
@@ -1999,9 +2082,19 @@ const SharedProductEditor = ({
                                         </div>
 
                                         <div className="border-t border-gray-100/60 pt-8 space-y-6">
-                                            <div className="flex items-center justify-between gap-3">
-                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em]">Variant Media & FAQs</p>
-                                                <p className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">Step 5</p>
+                                            <div className="flex items-center justify-between gap-3 border-b border-gray-100 pb-4">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="p-2 bg-amber-100 rounded-lg text-amber-600">
+                                                        <ImagePlus size={16} />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.25em]">Variant Media & FAQs</p>
+                                                        <p className="text-[8px] font-bold text-gray-400 uppercase mt-0.5">Custom assets and information overrides</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-full border border-gray-100">
+                                                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Step 5</span>
+                                                </div>
                                             </div>
 
                                             <div className="space-y-4">
