@@ -15,7 +15,8 @@ const app = express();
 const defaultAllowedOrigins = [
   "http://localhost:3000",
   "http://localhost:5173",
-  "https://sands-ornaments-ten.vercel.app"
+  "https://sands-ornaments-ten.vercel.app",
+  "https://sandsjewels.com"
 ];
 
 const configuredAllowedOrigins = process.env.CLIENT_URL
@@ -59,6 +60,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(mongoSanitize()); // Prevent NoSQL injection
 app.use(compression());  // Performance: Gzip compression
 app.use(morgan("dev")); // Logging (Production: use "combined")
+
+// Trust first proxy (required for accurate IP detection behind reverse proxies/load balancers)
+app.set('trust proxy', 1);
 
 // Rate limiting
 const limiter = rateLimit({
