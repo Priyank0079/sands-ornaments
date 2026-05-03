@@ -23,6 +23,7 @@ import SellerProfile from '../pages/SellerProfile';
 import SellerMetalPricing from '../pages/SellerMetalPricing';
 import SellerInventory from '../pages/SellerInventory';
 import SellerNotifications from '../pages/SellerNotifications';
+import SellerShipments from '../pages/SellerShipments';
 import SellerStockAdjustmentPage from '../pages/inventory/SellerStockAdjustmentPage';
 import SellerStockHistoryPage from '../pages/inventory/SellerStockHistoryPage';
 import SellerLowStockAlertsPage from '../pages/inventory/SellerLowStockAlertsPage';
@@ -97,6 +98,7 @@ const SellerRoutes = () => {
                             <Route path="/inventory/reports" element={<SellerInventoryReportsPage />} />
                             <Route path="/orders" element={<SellerOrders />} />
                             <Route path="/order-details/:id" element={<SellerOrderDetail />} />
+                            <Route path="/shipments" element={<SellerShipments />} />
                             <Route path="/returns" element={<SellerReturns />} />
                             <Route path="/return-details/:id" element={<SellerReturnDetail />} />
                             <Route path="/replacements" element={<SellerReplacements />} />

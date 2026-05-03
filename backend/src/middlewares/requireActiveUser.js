@@ -3,22 +3,26 @@ const { error } = require("../utils/apiResponse");
 
 const requireActiveUser = async (req, res, next) => {
   try {
-    if (!req.user || req.user.role !== "user") {
-      return error(res, "Forbidden. User account required.", 403, "FORBIDDEN");
+    // Allow user, seller, and admin roles through this middleware
+    if (!req.user) {
+      return error(res, "Forbidden. Authentication required.", 403, "FORBIDDEN");
     }
 
-    const user = await User.findById(req.user.userId).select("isBlocked");
-    if (!user) {
-      return error(res, "User not found.", 401, "UNAUTHENTICATED");
-    }
+    // Only look up block-status for regular users
+    if (req.user.role === "user") {
+      const user = await User.findById(req.user.userId).select("isBlocked");
+      if (!user) {
+        return error(res, "User not found.", 401, "UNAUTHENTICATED");
+      }
 
-    if (user.isBlocked) {
-      return error(
-        res,
-        "Your account has been suspended. Please contact support.",
-        403,
-        "ACCOUNT_BLOCKED"
-      );
+      if (user.isBlocked) {
+        return error(
+          res,
+          "Your account has been suspended. Please contact support.",
+          403,
+          "ACCOUNT_BLOCKED"
+        );
+      }
     }
 
     next();

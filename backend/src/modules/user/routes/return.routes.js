@@ -5,7 +5,7 @@ const requireRole = require("../../../middlewares/requireRole");
 const requireActiveUser = require("../../../middlewares/requireActiveUser");
 const { evidenceUpload } = require("../../../middlewares/uploadMiddleware");
 
-router.use(authenticate, requireRole("user"), requireActiveUser);
+router.use(authenticate, requireRole("user", "seller", "admin"), requireActiveUser);
 router.get("/", returnController.getMyReturns);
 router.post("/", evidenceUpload.array("evidence", 5), returnController.requestReturn);
 

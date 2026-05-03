@@ -9,6 +9,7 @@ const allowedTransitions = {
   Processing: ["Confirmed", "Cancelled"],
   Confirmed: ["Packed"],
   Packed: ["Shipped"],
+  "Partially Shipped": ["Shipped"],
   Shipped: ["Delivered"],
 };
 

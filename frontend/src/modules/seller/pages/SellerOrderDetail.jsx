@@ -5,6 +5,7 @@ import {
     Box, CheckCircle, XCircle, Truck, PackageCheck
 } from 'lucide-react';
 import { sellerOrderService } from '../services/sellerOrderService';
+import SellerShipmentPanel from '../components/SellerShipmentPanel';
 import SellerFAQ from '../components/SellerFAQ';
 import toast from 'react-hot-toast';
 
@@ -91,7 +92,7 @@ const SellerOrderDetail = () => {
     if (loading) return <div className="p-20 text-center text-gray-400 font-black uppercase tracking-widest animate-pulse">Synchronizing Data...</div>;
     if (!order) return <div className="p-20 text-center text-gray-400 font-black uppercase tracking-widest">Order Not Found</div>;
 
-    const cardClasses = 'bg-white rounded-2xl border border-gray-100 p-8 shadow-sm h-full';
+    const cardClasses = 'bg-white rounded-2xl border border-gray-100 p-8 shadow-sm';
     const sectionTitleClasses = 'text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-8 flex items-center gap-2';
     const labelClasses = 'text-[9px] font-black text-gray-400 uppercase tracking-widest';
     const valueClasses = 'text-sm font-bold text-gray-900 mt-1 uppercase';
@@ -295,6 +296,20 @@ const SellerOrderDetail = () => {
                                 </p>
                             )}
                         </div>
+                    </div>
+
+                    {/* Courier Shipment Panel */}
+                    <div>
+                        <SellerShipmentPanel
+                            order={{
+                                ...order,
+                                sellerPincode: '', // Will be fetched from seller profile on backend
+                            }}
+                            onShipmentCreated={() => {
+                                // Refresh order data
+                                sellerOrderService.getOrderDetails(id).then(setOrder);
+                            }}
+                        />
                     </div>
 
                     <div className={cardClasses}>
