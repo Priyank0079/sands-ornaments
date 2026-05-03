@@ -105,9 +105,9 @@ export const sellerOrderService = {
         return order ? mapSellerOrder(order) : null;
     },
 
-    updateOrderStatus: async (orderId, status, note = '', shippingInfo = null) => {
+    updateOrderStatus: async (orderId, status, note = '', shippingInfo = null, itemVoidTags = []) => {
         try {
-            const res = await api.patch(`seller/orders/${orderId}/status`, { status, note, shippingInfo });
+            const res = await api.patch(`seller/orders/${orderId}/status`, { status, note, shippingInfo, itemVoidTags });
             const order = res.data?.data?.order;
             return {
                 success: true,
@@ -157,9 +157,9 @@ export const sellerOrderService = {
         return normalizeReturn(res.data?.data?.returnReq || res.data?.returnReq);
     },
 
-    processReturn: async (returnId, status, remarks = '') => {
+    processReturn: async (returnId, status, remarks = '', voidTagStatus = null, voidTagNotes = '') => {
         try {
-            const res = await api.patch(`seller/returns/${returnId}/process`, { status, remarks });
+            const res = await api.patch(`seller/returns/${returnId}/process`, { status, remarks, voidTagStatus, voidTagNotes });
             return {
                 success: true,
                 message: res.data?.message || 'Return updated',

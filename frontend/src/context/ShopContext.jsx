@@ -57,7 +57,7 @@ const resolveAvailableStock = (product = {}, variantId = null) => {
 };
 
 export const ShopProvider = ({ children }) => {
-    const { user, logout: authLogout } = useAuth();
+    const { user, logout: authLogout, deleteAccount: authDeleteAccount } = useAuth();
     const isUserRole = user?.role === 'user';
     const hasAuthToken = () => Boolean(localStorage.getItem('sands_token'));
     // Initialize from LocalStorage if available
@@ -832,17 +832,35 @@ export const ShopProvider = ({ children }) => {
         showNotification("Ticket removed successfully.");
     };
 
-    const deleteAccount = () => {
-        // User state is owned by AuthContext; we just clear dependent state here.
-        authLogout();
+    const deleteAccount = async () => {
+        const result = await authDeleteAccount();
+        if (!result?.success) {
+            return result;
+        }
+
         setOrders([]);
         setAddresses([]);
         setCart([]);
         setWishlist([]);
         setSupportTickets([]);
+        setReturns([]);
+        setReplacements([]);
+        setCoupons([]);
+        setAppliedCoupon(null);
+        setCouponDiscount(0);
+        setUserNotifications([]);
         setDefaultAddressId(null);
-        localStorage.clear();
-        showNotification("Account deleted successfully.");
+        localStorage.removeItem('cart');
+        localStorage.removeItem('wishlist');
+        localStorage.removeItem('addresses');
+        localStorage.removeItem('defaultAddressId');
+        localStorage.removeItem('appliedCoupon');
+        localStorage.removeItem('couponDiscount');
+        localStorage.removeItem('userNotifications');
+        localStorage.removeItem('notificationsEnabled');
+        localStorage.removeItem('sands_token');
+        localStorage.removeItem('sands_current_user');
+        return result;
     };
 
     // Coupon Management

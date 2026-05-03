@@ -547,6 +547,54 @@ const OrderCard = ({ order, isExpanded, onToggle }) => {
     );
 };
 
+const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    if (!isOpen) return null;
+
+    const handleDelete = async () => {
+        setIsDeleting(true);
+        const result = await onConfirm();
+        setIsDeleting(false);
+        if (result?.success) {
+            onClose();
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose}></div>
+            <div className="bg-white relative z-10 w-full max-w-md rounded-[2rem] p-6 md:p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+                <div className="flex flex-col items-center text-center">
+                    <div className="bg-red-50 p-4 rounded-full mb-6">
+                        <AlertTriangle className="w-10 h-10 text-red-500" />
+                    </div>
+                    <h3 className="text-xl md:text-2xl font-serif font-bold text-black mb-3">Delete Account?</h3>
+                    <p className="text-sm text-gray-500 leading-relaxed mb-8">
+                        This action is permanent and cannot be undone. All your profile data, addresses, and wishlist will be permanently deleted.
+                    </p>
+                    <div className="flex flex-col w-full gap-3">
+                        <button
+                            onClick={handleDelete}
+                            disabled={isDeleting}
+                            className="w-full bg-red-500 text-white py-3.5 rounded-xl font-bold uppercase tracking-widest text-xs shadow-lg shadow-red-500/20 hover:bg-red-600 transition-all disabled:opacity-50"
+                        >
+                            {isDeleting ? 'Deleting...' : 'Yes, Delete My Account'}
+                        </button>
+                        <button
+                            onClick={onClose}
+                            disabled={isDeleting}
+                            className="w-full bg-gray-100 text-gray-600 py-3.5 rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-gray-200 transition-all"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const Profile = () => {
     const { user, login, logout, orders, wishlist, addresses, addAddress, removeAddress, setDefaultAddress, defaultAddressId, deleteAccount, notificationsEnabled, toggleNotificationSettings, coupons } = useShop();
     const safeOrders = Array.isArray(orders) ? orders : [];
@@ -1034,39 +1082,21 @@ const Profile = () => {
                         )}
                     </div>
                 </div>
-
-                {/* Delete Account Modal */}
-                {showDeleteModal && (
-                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-                        <div className="bg-white rounded-3xl p-6 md:p-8 max-w-sm md:max-w-md w-full shadow-2xl animate-in fade-in zoom-in-95 duration-300">
-                            <div className="bg-red-50 w-12 h-12 md:w-16 md:h-16 rounded-2xl flex items-center justify-center text-red-500 mb-4 md:mb-6 mx-auto">
-                                <AlertTriangle className="w-6 h-6 md:w-8 md:h-8" />
-                            </div>
-                            <h3 className="text-xl md:text-2xl font-serif font-bold text-[#3E2723] text-center mb-3 md:mb-4">Delete Account?</h3>
-                            <p className="text-xs md:text-base text-[#8D6E63] text-center mb-6 md:mb-8 leading-relaxed">
-                                This action is permanent and cannot be undone. All your orders, addresses, and wishlist will be wiped forever.
-                            </p>
-                            <div className="flex flex-col gap-2.5 md:gap-3">
-                                <button
-                                    onClick={() => {
-                                        deleteAccount();
-                                        navigate('/');
-                                    }}
-                                    className="w-full bg-red-600 text-white py-3 md:py-4 rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg text-[10px] md:text-sm uppercase tracking-widest"
-                                >
-                                    Yes, Delete My Account
-                                </button>
-                                <button
-                                    onClick={() => setShowDeleteModal(false)}
-                                    className="w-full bg-[#EFEBE9] text-[#5D4037] py-3 md:py-4 rounded-xl font-bold hover:bg-[#D7CCC8] transition-all text-[10px] md:text-sm uppercase tracking-widest"
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
             </div>
+
+            <DeleteConfirmationModal 
+                isOpen={showDeleteModal} 
+                onClose={() => setShowDeleteModal(false)} 
+                onConfirm={async () => {
+                    const result = await deleteAccount();
+                    if (result?.success) {
+                        navigate('/');
+                    } else if (result?.message) {
+                        toast.error(result.message);
+                    }
+                    return result;
+                }} 
+            />
         </div>
     );
 };

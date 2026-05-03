@@ -20,7 +20,7 @@ const CategoryNav = ({ showMetalToggle = true }) => {
         { id: 'her', name: 'Gifts for Her', path: '/category/women', hasChevron: false },
         { id: 'family', name: 'Gifts for Family', path: '/category/family', hasChevron: false },
         // Legacy filter tags were removed from product placement. Keep these links functional via search.
-        { id: 'card', name: 'SANDS Gift Card', path: '/shop?search=gift%20card', hasChevron: false },
+        { id: 'card', name: 'SANDS Gift Card', path: '/gift-cards', hasChevron: false },
         { id: 'blogs', name: 'Blogs', path: '/blogs', hasChevron: false },
         { id: 'exclusive', name: 'Exclusive Collections', path: '/shop?search=exclusive', hasChevron: false },
         { id: 'more', name: 'More at SANDS', path: '/about', hasChevron: false },
@@ -57,7 +57,7 @@ const CategoryNav = ({ showMetalToggle = true }) => {
             <div className="container mx-auto px-4 md:px-12 relative" onMouseLeave={resetMenu}>
                 {/* Navigation Links - Centered and Spaced Out */}
                 <div className="flex justify-center items-center py-3">
-                    <ul className="flex items-center gap-12">
+                    <ul className="flex items-center gap-16">
                         {navItems.map((item) => (
                             <li
                                 key={item.id}
@@ -102,25 +102,25 @@ const CategoryNav = ({ showMetalToggle = true }) => {
 
                 {/* Silver / Gold Toggle - Precise SANDS Polish with Navigation logic */}
                 {showMetalToggle && (
-                    <div className="flex justify-center pb-3 pt-0.5 relative">
-                        <div className="p-0.5 rounded-full border border-[#D4B390]/30 flex items-center bg-white shadow-sm overflow-hidden" style={{ minWidth: '680px' }}>
+                    <div className="flex justify-center pb-2 pt-1 relative">
+                        <div className="p-0.5 rounded-full border border-[#D4B390]/40 flex items-center bg-white shadow-[0_4px_25px_rgba(212,179,144,0.15)] overflow-hidden" style={{ minWidth: '850px' }}>
                             <button
                                 onClick={() => {
                                     updateActiveMetal('silver');
                                     navigate('/');
                                 }}
-                                className={`flex-1 py-1 px-12 rounded-full text-[17px] font-bold transition-all duration-500 transform ${activeMetal === 'silver' ? 'bg-gradient-to-r from-[#707070] via-[#E0E0E0] to-[#707070] text-white shadow-lg' : 'text-gray-700 hover:bg-gray-50'}`}
+                                className={`flex-1 py-1.5 px-16 rounded-full text-[17px] font-bold uppercase tracking-widest transition-all duration-500 transform ${activeMetal === 'silver' ? 'bg-gradient-to-r from-[#434343] via-[#C0C0C0] to-[#434343] text-white shadow-[0_8px_30px_rgba(0,0,0,0.25)] scale-[1.01]' : 'text-[#4A4A4A] hover:bg-gray-50 hover:text-black'}`}
                             >
-                                Silver Jewellery
+                                Silver
                             </button>
                             <button
                                 onClick={() => {
                                     updateActiveMetal('gold');
                                     navigate('/gold-collection');
                                 }}
-                                className={`flex-1 py-1 px-12 rounded-full text-[17px] font-bold transition-all duration-500 transform ${activeMetal === 'gold' ? 'bg-gradient-to-r from-[#C9A24D] via-[#E2C074] to-[#C9A24D] text-white shadow-lg' : 'text-gray-700 hover:bg-gray-50'}`}
+                                className={`flex-1 py-1.5 px-16 rounded-full text-[17px] font-bold uppercase tracking-widest transition-all duration-500 transform ${activeMetal === 'gold' ? 'bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] text-[#3D2B1F] shadow-[0_8px_30px_rgba(191,149,63,0.35)] scale-[1.01]' : 'text-[#4A4A4A] hover:bg-gray-50 hover:text-black'}`}
                             >
-                                Gold Jewellery
+                                Gold
                             </button>
                         </div>
                     </div>

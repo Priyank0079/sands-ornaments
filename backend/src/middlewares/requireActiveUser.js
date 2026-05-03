@@ -8,6 +8,14 @@ const requireActiveUser = async (req, res, next) => {
       return error(res, "Forbidden. Authentication required.", 403, "FORBIDDEN");
     }
 
+    const user = await User.findById(req.user.userId).select("isBlocked isDeleted");
+    if (!user) {
+      return error(res, "User not found.", 401, "UNAUTHENTICATED");
+    }
+
+    if (user.isDeleted) {
+      return error(res, "This account no longer exists.", 401, "ACCOUNT_DELETED");
+    }
     // Only look up block-status for regular users
     if (req.user.role === "user") {
       const user = await User.findById(req.user.userId).select("isBlocked");
@@ -32,3 +40,4 @@ const requireActiveUser = async (req, res, next) => {
 };
 
 module.exports = requireActiveUser;
+

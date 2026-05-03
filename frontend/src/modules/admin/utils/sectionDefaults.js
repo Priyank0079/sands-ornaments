@@ -70,9 +70,9 @@ import testimonialCustomer2 from '@assets/testimonial_customer_2.png';
 import testimonialCustomer3 from '@assets/testimonial_customer_3.png';
 import { homeCategoryGridDefaults } from '../../user/utils/homeCategoryGridDefaults';
 
-import menHeroDefault from '@assets/hero/gold_fusion.png';
-import womenHeroDefault from '@assets/hero/diamond_luxury.png';
-import silverHeroDefault from '@assets/hero/silver_minimalist.png';
+import menHeroDefault from '@assets/hero/modern_gold_fusion.png';
+import womenHeroDefault from '@assets/hero/eternal_diamond_brilliance.png';
+import silverHeroDefault from '@assets/hero/sterling_silver_heritage.png';
 import familyHeroDefault from '@assets/hero/bridal_royal.png';
 import heroMasterpieceDefault from '@assets/hero/hero_masterpiece.png';
 import categoryPersonalised from '@assets/categories/personalised.png';

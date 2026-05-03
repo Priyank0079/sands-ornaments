@@ -1781,6 +1781,9 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                         </div>
                                     )}
                                 </div>
+                                <p className="text-[11px] leading-4 text-gray-500">
+                                    Recommended size: 2100 x 900 px
+                                </p>
                                 <Input 
                                     placeholder="Banner URL..." 
                                     value={settings.bannerImage || ''} 

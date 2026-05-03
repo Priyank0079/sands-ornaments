@@ -15,7 +15,8 @@ const orderSchema = new mongoose.Schema({
     price: Number,
     mrp: Number,
     quantity: Number,
-    sellerId: { type: mongoose.Schema.Types.ObjectId, ref: "Seller", default: null }
+    sellerId: { type: mongoose.Schema.Types.ObjectId, ref: "Seller", default: null },
+    voidTagId: String
   }],
   shippingAddress: {
     firstName: String, lastName: String, email: String, phone: String,

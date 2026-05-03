@@ -11,15 +11,24 @@ const SellerLayout = ({ children }) => {
                 .seller-font-reset, .seller-font-reset * {
                     font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
                 }
+                .sidebar-scroll {
+                    scrollbar-width: thin;
+                    scrollbar-color: rgba(255, 255, 255, 0.32) transparent;
+                }
                 .sidebar-scroll::-webkit-scrollbar {
-                    width: 6px;
+                    width: 8px;
+                    height: 8px;
                 }
                 .sidebar-scroll::-webkit-scrollbar-track {
-                    background: rgba(255, 255, 255, 0.05);
+                    background: rgba(255, 255, 255, 0.04);
                 }
                 .sidebar-scroll::-webkit-scrollbar-thumb {
-                    background: rgba(255, 255, 255, 0.2);
-                    border-radius: 10px;
+                    background: rgba(255, 255, 255, 0.28);
+                    border-radius: 9999px;
+                    border: 2px solid rgba(62, 39, 35, 0.65);
+                }
+                .sidebar-scroll::-webkit-scrollbar-button {
+                    display: none;
                 }
             `}</style>
             
@@ -33,12 +42,12 @@ const SellerLayout = ({ children }) => {
 
             <SellerSidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
 
-            <main className={`flex-grow flex flex-col h-screen overflow-hidden transition-all duration-500 ease-in-out ${isSidebarOpen ? 'lg:ml-80' : 'lg:ml-20'}`}>
+            <main className={`flex-grow flex flex-col min-h-screen min-w-0 transition-all duration-500 ease-in-out ${isSidebarOpen ? 'lg:ml-80' : 'lg:ml-20'}`}>
                 <SellerHeader isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
 
-                {/* Scrollable Page Content */}
-                <div className="flex-grow overflow-y-auto bg-gray-50 p-4 lg:p-8 space-y-6 relative">
-                    <div className="max-w-[1600px] mx-auto animate-in fade-in duration-500">
+                {/* Page Content */}
+                <div className="flex-grow min-h-0 bg-gray-50 p-4 lg:p-8 space-y-6 relative">
+                    <div className="max-w-[1600px] mx-auto w-full min-w-0 animate-in fade-in duration-500 pb-10 lg:pb-14">
                         {children}
                     </div>
                 </div>

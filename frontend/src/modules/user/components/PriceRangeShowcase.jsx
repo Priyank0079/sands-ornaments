@@ -79,7 +79,7 @@ const PriceRangeShowcase = () => {
                     <div className="w-12 h-1 bg-[#FFD6DB] mx-auto rounded-full"></div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 max-w-[1400px] mx-auto">
+                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 max-w-[1600px] mx-auto">
                     {displayItems.map((item, index) => {
                         const priceMax = getPriceMaxFromItem(item);
                         const itemLabel = priceMax ? `UNDER INR ${priceMax}` : (item.name || item.label || '');
@@ -140,9 +140,7 @@ const PriceRangeShowcase = () => {
                                             )}
                                         </div>
                                         
-                                        <h3 className="text-[12px] text-gray-700 line-clamp-1 h-[18px] group-hover/card:text-black transition-colors uppercase tracking-tight font-medium overflow-hidden mb-1">
-                                            {itemLabel}
-                                        </h3>
+                                        {/* Removed redundant itemLabel as it is already present in the image */}
 
                                         <div className="h-[15px] mb-2">
                                             <p className="text-[9px] font-bold text-blue-600 uppercase tracking-wider">
@@ -152,7 +150,7 @@ const PriceRangeShowcase = () => {
                                         
                                         {/* Action Button */}
                                         <div className="mt-auto">
-                                            <div className="w-full bg-[#FFD9E0] text-[#8E2B45] font-bold text-[11px] py-2.5 rounded-none hover:bg-[#ffc2cd] transition-all duration-300 uppercase tracking-widest text-center">
+                                            <div className="w-full bg-[#1F1F1F] text-white font-bold text-[11px] py-3 rounded-sm group-hover/card:bg-[#C9A24D] transition-all duration-500 uppercase tracking-[0.2em] text-center shadow-lg">
                                                 Shop Now
                                             </div>
                                         </div>

@@ -115,7 +115,7 @@ exports.getOrderDetail = async (req, res) => {
 exports.updateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, note, shippingInfo } = req.body;
+    const { status, note, shippingInfo, itemVoidTags } = req.body;
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return error(res, "Invalid order id", 400);
     }
@@ -144,6 +144,15 @@ exports.updateOrderStatus = async (req, res) => {
       if (!allowedStatuses.includes(nextStatus)) {
         return error(res, `Invalid status transition from ${currentStatus} to ${nextStatus}`, 400);
       }
+    }
+    
+    if (Array.isArray(itemVoidTags)) {
+      itemVoidTags.forEach(({ itemId, voidTagId }) => {
+        const item = order.items.id(itemId);
+        if (item) {
+          item.voidTagId = String(voidTagId || "").trim();
+        }
+      });
     }
 
     if (["Shipped", "Out for Delivery"].includes(nextStatus)) {

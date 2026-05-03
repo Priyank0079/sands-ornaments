@@ -42,6 +42,8 @@ const getDisplayLabel = (priceMax) => {
     return `Under INR ${numeric}`;
 };
 
+const RECOMMENDED_IMAGE_SIZE = '920 x 1000 px';
+
 const MenLuxurySectionEditor = ({ sectionData, onSave, defaultSection = {} }) => {
     const initialSettings = useMemo(() => {
         const fallbackSettings = defaultSection?.settings || {};
@@ -295,6 +297,9 @@ const MenLuxurySectionEditor = ({ sectionData, onSave, defaultSection = {} }) =>
                                             </div>
                                         )}
                                     </div>
+                                    <p className="text-[11px] leading-4 text-gray-500">
+                                        Recommended size: {RECOMMENDED_IMAGE_SIZE}
+                                    </p>
 
                                     <label className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#3E2723] px-4 py-3 text-xs font-bold uppercase tracking-widest text-white hover:bg-[#2D1B18] transition-all cursor-pointer">
                                         <ImageIcon size={14} />

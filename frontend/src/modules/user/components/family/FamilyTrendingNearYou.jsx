@@ -71,8 +71,8 @@ const FamilyTrendingNearYou = ({ sectionData }) => {
                  setCardWidth(170);
                  setCardHeight(240);
              } else {
-                 setRadius(1200);
-                 setCardWidth(240);
+                 setRadius(720);
+                 setCardWidth(220);
                  setCardHeight(340);
              }
         };
@@ -88,7 +88,7 @@ const FamilyTrendingNearYou = ({ sectionData }) => {
                 '--radius': `${radius}px`,
                 '--cardW': `${cardWidth}px`,
                 '--cardH': `${cardHeight}px`,
-                '--gap': window.innerWidth < 1024 ? '10px' : '15px'
+                '--gap': window.innerWidth < 1024 ? '10px' : '8px'
             }}
         >
             {/* Inline styles for the 3D Cylinder Animation (Left to Right) */}
@@ -124,7 +124,7 @@ const FamilyTrendingNearYou = ({ sectionData }) => {
                     width: 100%;
                     height: 100%;
                     backface-visibility: hidden;
-                    padding: 0 var(--gap); /* Creates the "difference" between cards */
+                    padding: 0 var(--gap);
                 }
                 `}
             </style>

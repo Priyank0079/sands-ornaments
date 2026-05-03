@@ -18,6 +18,8 @@ const SellerReturnDetail = () => {
     const navigate = useNavigate();
     const [returnReq, setReturnReq] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [voidTagStatus, setVoidTagStatus] = useState('Pending');
+    const [voidTagNotes, setVoidTagNotes] = useState('');
 
     useEffect(() => {
         let active = true;
@@ -36,8 +38,23 @@ const SellerReturnDetail = () => {
         return () => { active = false; };
     }, [id]);
 
+    useEffect(() => {
+        if (returnReq?.voidTagVerification) {
+            setVoidTagStatus(returnReq.voidTagVerification.status || 'Pending');
+            setVoidTagNotes(returnReq.voidTagVerification.notes || '');
+        }
+    }, [returnReq]);
+
+    const returnHasVoidTag = Boolean((returnReq?.items || []).some((item) => String(item?.voidTagId || '').trim()));
+    const primaryVoidTagId = (returnReq?.items || []).find((item) => String(item?.voidTagId || '').trim())?.voidTagId || '';
+
     const handleAction = async (status) => {
-        const res = await sellerOrderService.processReturn(id, status);
+        if (returnHasVoidTag && !['Intact', 'Tampered', 'Missing'].includes(voidTagStatus)) {
+            toast.error('Choose a seal verification result before processing this return.');
+            return;
+        }
+
+        const res = await sellerOrderService.processReturn(id, status, '', voidTagStatus, voidTagNotes);
         if (res.success && res.data) {
             setReturnReq(res.data);
             toast.success(res.message || `Return ${status.toLowerCase()} successfully.`);
@@ -179,11 +196,83 @@ const SellerReturnDetail = () => {
                                     )}
                                 </div>
                             </div>
+
+                            <div>
+                                <div className="flex items-center justify-between mb-4">
+                                    <p className={labelClasses}>Security Seal (Void Tag) Evidence</p>
+                                    <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border ${
+                                        returnReq.voidTagVerification?.status === 'Intact'
+                                            ? 'bg-green-50 text-green-600 border-green-100'
+                                            : returnReq.voidTagVerification?.status === 'Pending' || !returnHasVoidTag
+                                                ? 'bg-amber-50 text-amber-700 border-amber-100'
+                                                : 'bg-red-50 text-red-600 border-red-100'
+                                    }`}>
+                                        {returnReq.voidTagVerification?.status || 'Verification Pending'}
+                                    </span>
+                                </div>
+                                {returnHasVoidTag && (
+                                    <p className="text-xs font-black text-amber-800 uppercase tracking-widest mb-4">
+                                        Expected Seal ID: {primaryVoidTagId}
+                                    </p>
+                                )}
+                                <div className="grid grid-cols-2 gap-6">
+                                    {(returnReq.evidence?.voidTagImages || []).length > 0 ? (
+                                        returnReq.evidence.voidTagImages.map((img, idx) => (
+                                            <div key={idx} className="aspect-square bg-gray-50 rounded-3xl overflow-hidden border-2 border-amber-100 group cursor-zoom-in relative">
+                                                <img src={img} alt="Void Tag Evidence" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                                                <div className="absolute bottom-4 left-4 bg-amber-600 text-white px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-tighter shadow-lg">Security View #{idx + 1}</div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="col-span-full rounded-3xl border-2 border-dashed border-amber-200 bg-amber-50/30 p-10 text-center">
+                                            <AlertCircle className="mx-auto text-amber-400 mb-2" size={24} />
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-amber-600">
+                                                {returnHasVoidTag ? 'No security seal images provided by customer' : 'No security seal evidence attached to this return'}
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div className="space-y-8">
+                    {returnReq.status === 'Pending' && (
+                        <div className={`${cardClasses} border-amber-100 bg-amber-50/20`}>
+                            <h3 className={sectionTitleClasses}><CheckCircle size={14} className="text-amber-600" /> Security Check</h3>
+                            <div className="space-y-6">
+                                <div>
+                                    <label className={labelClasses}>Seal Status Inspection</label>
+                                    <select
+                                        value={voidTagStatus}
+                                        onChange={(e) => setVoidTagStatus(e.target.value)}
+                                        className="w-full bg-white border border-gray-200 rounded-2xl px-4 py-3.5 mt-2 focus:ring-2 focus:ring-amber-200 outline-none transition-all text-xs font-black text-gray-900 uppercase"
+                                    >
+                                        <option value="Pending">Pending Verification</option>
+                                        <option value="Intact">Verified: Tag is Intact</option>
+                                        <option value="Tampered">Rejected: Tag is Tampered</option>
+                                        <option value="Missing">Rejected: Tag is Missing</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className={labelClasses}>Inspection Notes</label>
+                                    <textarea
+                                        value={voidTagNotes}
+                                        onChange={(e) => setVoidTagNotes(e.target.value)}
+                                        rows="3"
+                                        placeholder="Add notes about the seal condition..."
+                                        className="w-full bg-white border border-gray-200 rounded-2xl px-4 py-3.5 mt-2 focus:ring-2 focus:ring-amber-200 outline-none transition-all text-xs font-bold"
+                                    />
+                                </div>
+                                <div className="p-4 bg-white/50 rounded-2xl border border-amber-100">
+                                    <p className="text-[9px] font-black text-amber-600 uppercase tracking-widest leading-relaxed">
+                                        Verification is mandatory before approving or rejecting. Your findings will be logged as evidence.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                     <div className={cardClasses}>
                         <h3 className={sectionTitleClasses}><User size={14} className="text-[#3E2723]" /> Customer Snapshot</h3>
                         <div className="space-y-8">

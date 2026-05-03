@@ -24,6 +24,12 @@ import SilverCollectionSection from '../components/SilverCollectionSection';
 import SilverCuratedShowcase from '../components/SilverCuratedShowcase';
 import Loader from '../../shared/components/Loader';
 
+const SectionShell = ({ children }) => (
+    <div style={{ contentVisibility: 'auto', containIntrinsicSize: '900px' }}>
+        {children}
+    </div>
+);
+
 const Home = () => {
     const { isLoading } = useShop();
     const {
@@ -76,31 +82,62 @@ const Home = () => {
             {/* GENDER / COLLECTION CARDS */}
             <PremiumCategoryCards />
 
-            {/* BEST STYLES SECTION (Horizontal Scroll) */}
-            <BestStylesSection />
+            <SectionShell>
+                {/* BEST STYLES SECTION (Horizontal Scroll) */}
+                <BestStylesSection />
+            </SectionShell>
 
-            {/* AUTO SCROLLING BANNERS */}
-            <AutoBannerSection />
+            <SectionShell>
+                {/* AUTO SCROLLING BANNERS */}
+                <AutoBannerSection />
+            </SectionShell>
 
-            {/* NEW LAUNCH SPECIAL GRID */}
-            <SilverNewLaunchGrid />
+            <SectionShell>
+                {/* NEW LAUNCH SPECIAL GRID */}
+                <SilverNewLaunchGrid />
+            </SectionShell>
 
-            {/* SHOP BY COLOUR SECTION */}
-            <ShopByColour />
+            <SectionShell>
+                {/* SHOP BY COLOUR SECTION */}
+                <ShopByColour />
+            </SectionShell>
 
-
-            <PriceRangeShowcase />
-            <PerfectGift />
-            <NewLaunchSection />
-            <StyleItYourWay />
-            <OccasionalSpecial />
-            <AllJewellery />
-            <SilverCollectionSection />
-            <SilverCuratedShowcase />
-            <Testimonials />
-            <BrandPromises />
-            <ChitChatSection />
-            <FAQSection />
+            <SectionShell>
+                <PriceRangeShowcase />
+            </SectionShell>
+            <SectionShell>
+                <PerfectGift />
+            </SectionShell>
+            <SectionShell>
+                <NewLaunchSection />
+            </SectionShell>
+            <SectionShell>
+                <StyleItYourWay />
+            </SectionShell>
+            <SectionShell>
+                <OccasionalSpecial />
+            </SectionShell>
+            <SectionShell>
+                <AllJewellery />
+            </SectionShell>
+            <SectionShell>
+                <SilverCollectionSection />
+            </SectionShell>
+            <SectionShell>
+                <SilverCuratedShowcase />
+            </SectionShell>
+            <SectionShell>
+                <Testimonials />
+            </SectionShell>
+            <SectionShell>
+                <BrandPromises />
+            </SectionShell>
+            <SectionShell>
+                <ChitChatSection />
+            </SectionShell>
+            <SectionShell>
+                <FAQSection />
+            </SectionShell>
         </div>
     );
 };

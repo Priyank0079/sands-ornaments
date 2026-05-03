@@ -30,7 +30,7 @@ exports.sendOtp = async (req, res) => {
 
     await sendOtpSms(phone, otp);
 
-    // BUG-05 FIX: NEVER expose OTP in API response — log to server console in dev only
+    // BUG-05 FIX: NEVER expose OTP in API response; log to server console in dev only
     if (process.env.USE_REAL_OTP !== "true") {
       console.log(`[DEV OTP] ${phone}: ${otp}`);
     }
@@ -58,7 +58,7 @@ exports.verifyOtp = async (req, res) => {
       return error(res, "OTP expired or not found. Please request a new one.", 400, "OTP_EXPIRED");
     }
 
-    // BUG-06 FIX: Enforce lockout after max attempts — invalidate OTP & force re-request
+    // BUG-06 FIX: Enforce lockout after max attempts; invalidate OTP and force re-request
     if (otpRecord.attempts >= OTP_MAX_ATTEMPTS) {
       await OTP.deleteMany({ phone });
       return error(res, "Too many failed attempts. Please request a new OTP.", 429, "OTP_MAX_ATTEMPTS");
@@ -86,6 +86,10 @@ exports.verifyOtp = async (req, res) => {
       if (name  && name  !== user.name)  user.name  = name;
       if (email && email !== user.email) user.email = email;
       if (name || email) await user.save();
+    }
+
+    if (user.isDeleted) {
+      return error(res, "This account has been deleted. Please sign in again to create a new account.", 401, "ACCOUNT_DELETED");
     }
 
     // BUG-04 FIX: Check isBlocked BEFORE issuing a token
@@ -116,7 +120,7 @@ exports.verifyOtp = async (req, res) => {
 };
 
 /**
- * GET /api/auth/me — Protected
+ * GET /api/auth/me - Protected
  */
 exports.getMe = async (req, res) => {
   try {
@@ -138,6 +142,10 @@ exports.getMe = async (req, res) => {
     const user = await User.findById(req.user.userId).select("-password");
     if (!user) return error(res, "User not found.", 404, "USER_NOT_FOUND");
 
+    if (user.isDeleted) {
+      return error(res, "This account no longer exists.", 401, "ACCOUNT_DELETED");
+    }
+
     // Also block mid-session if a user gets suspended while logged in
     if (user.isBlocked) {
       return error(res, "Your account has been suspended.", 403, "ACCOUNT_BLOCKED");
@@ -155,3 +163,4 @@ exports.getMe = async (req, res) => {
 exports.logout = async (req, res) => {
   return success(res, {}, "Logged out successfully");
 };
+

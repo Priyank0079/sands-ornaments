@@ -5,6 +5,8 @@ const { generateReturnId } = require("../../../utils/generateId");
 const { success, error } = require("../../../utils/apiResponse");
 const { createSellerNotification } = require("../../../services/sellerNotificationService");
 
+const normalizeVoidTagId = (value) => String(value || "").trim();
+
 exports.requestReturn = async (req, res) => {
   try {
     const { orderId, itemId, reason, description } = req.body;
@@ -30,8 +32,14 @@ exports.requestReturn = async (req, res) => {
       return error(res, "Replacement already requested for this item. Please complete that flow first.", 409);
     }
 
-    const images = req.files ? req.files.map(f => f.path) : [];
+    const images = req.files?.evidence ? req.files.evidence.map(f => f.path) : [];
+    const voidTagImages = req.files?.voidTagImages ? req.files.voidTagImages.map(f => f.path) : [];
+    const itemVoidTagId = normalizeVoidTagId(item.voidTagId);
 
+    if (itemVoidTagId && voidTagImages.length === 0) {
+      return error(res, "A clear photo of the intact security void tag is required for this return", 400);
+    }
+ 
     const returnRequest = await Return.create({
       returnId: generateReturnId(),
       userId,
@@ -41,12 +49,14 @@ exports.requestReturn = async (req, res) => {
         variantId: item.variantId,
         name: item.name,
         sku: item.sku,
+        voidTagId: itemVoidTagId,
         qty: item.quantity,
         price: item.price,
         reason
       }],
-      evidence: { reason, comment: description, images },
+      evidence: { reason, comment: description, images, voidTagImages },
       status: "Pending",
+      voidTagVerification: itemVoidTagId ? { status: "Pending", notes: "" } : undefined,
       timeline: [{ status: "Requested", note: "Return request submitted" }]
     });
 

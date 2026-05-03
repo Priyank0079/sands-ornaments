@@ -35,6 +35,7 @@ const STATUSES_THAT_KEEP_ORDER_IN_RETURN_FLOW = [
   "Pickup Completed",
   "Refund Initiated"
 ];
+const VOID_TAG_REQUIRED_STATUSES = new Set(["Approved", "Rejected"]);
 
 const shouldMarkOrderAsReturned = (currentStatus, nextStatus) => {
   if (nextStatus === "Refunded") return true;
@@ -54,6 +55,25 @@ const buildOrderStatusFromReturnStatus = (currentStatus, nextStatus) => {
 
   if (shouldMarkOrderAsReturned(currentStatus, nextStatus)) {
     return "Returned";
+  }
+
+  return null;
+};
+
+const returnRequiresVoidTagVerification = (returnReq) =>
+  (returnReq?.items || []).some((item) => String(item?.voidTagId || "").trim());
+
+const validateVoidTagDecision = ({ returnReq, nextStatus, voidTagStatus }) => {
+  if (!VOID_TAG_REQUIRED_STATUSES.has(nextStatus) || !returnRequiresVoidTagVerification(returnReq)) {
+    return null;
+  }
+
+  if (!["Intact", "Tampered", "Missing"].includes(voidTagStatus)) {
+    return "Seal verification is required before processing this return";
+  }
+
+  if (nextStatus === "Approved" && voidTagStatus !== "Intact") {
+    return "A return with a tampered or missing security seal cannot be approved";
   }
 
   return null;
@@ -166,7 +186,9 @@ exports.updateReturnStatus = async (req, res) => {
       refundTransactionId,
       pickupPartner,
       pickupAwb,
-      pickupScheduledDate
+      pickupScheduledDate,
+      voidTagStatus,
+      voidTagNotes
     } = req.body;
     const returnReq = await Return.findById(req.params.id)
       .populate("orderId", "orderId paymentStatus total shippingAddress");
@@ -180,6 +202,11 @@ exports.updateReturnStatus = async (req, res) => {
     const allowed = ALLOWED_TRANSITIONS[currentStatus] || [];
     if (currentStatus !== nextStatus && !allowed.includes(nextStatus)) {
       return error(res, `Invalid status transition from ${currentStatus} to ${nextStatus}`, 400);
+    }
+
+    const voidTagValidationError = validateVoidTagDecision({ returnReq, nextStatus, voidTagStatus });
+    if (voidTagValidationError) {
+      return error(res, voidTagValidationError, 400);
     }
 
     returnReq.status = nextStatus;
@@ -214,6 +241,13 @@ exports.updateReturnStatus = async (req, res) => {
         awb: typeof pickupAwb === "string" && pickupAwb.trim() ? pickupAwb.trim() : returnReq.pickup?.awb,
         scheduledDate: pickupScheduledDate || returnReq.pickup?.scheduledDate || new Date(),
         status: nextStatus === "Pickup Completed" ? "Completed" : "Scheduled"
+      };
+    }
+
+    if (voidTagStatus) {
+      returnReq.voidTagVerification = {
+        status: voidTagStatus,
+        notes: voidTagNotes || ""
       };
     }
     returnReq.timeline.push({

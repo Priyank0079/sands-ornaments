@@ -31,6 +31,8 @@ const buildFamilyRelationPath = (relationKey) => {
     return normalized === 'all' ? '/category/family' : `/category/family/${normalized}`;
 };
 
+const RECOMMENDED_IMAGE_SIZE = '1200 x 1500 px';
+
 const resolveRelationKey = (item = {}) => {
     const candidates = [item.relationKey, item.recipient, item.bondKey, item.id, item.itemId];
     for (const value of candidates) {
@@ -312,6 +314,9 @@ const ShopByBondEditor = ({ sectionData, onSave, defaultSection = {} }) => {
                                             </div>
                                         )}
                                     </div>
+                                    <p className="text-[11px] leading-4 text-gray-500">
+                                        Recommended size: {RECOMMENDED_IMAGE_SIZE}
+                                    </p>
                                     <label className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-widest transition-all ${
                                         isFamilyRelationEditor && editingCardId !== item.id
                                             ? 'bg-gray-200 text-gray-500 cursor-not-allowed'

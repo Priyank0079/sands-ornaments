@@ -4,54 +4,38 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useHomepageCms } from '../hooks/useHomepageCms';
 
-// Import Assets
-// Import Assets
-import heroRings from '@assets/hero/hero_rings.png';
-import heroBracelets from '@assets/hero/hero_bracelets.png';
-import heroPendants from '@assets/categories/pendants.png';
-import heroEarrings from '@assets/categories/earrings.png';
-import heroMasterpiece from '@assets/hero/hero_masterpiece.png';
+// Hero Banner Fallback Images (AI-generated premium jewellery scenes)
+import heroDiamondBrilliance from '@assets/hero/eternal_diamond_brilliance.png';
+import heroGoldFusion from '@assets/hero/modern_gold_fusion.png';
+import heroSilverHeritage from '@assets/hero/sterling_silver_heritage.png';
 
 const SLIDES = [
     {
-        id: 5,
-        image: heroMasterpiece,
-        title: "The Masterpiece Collection",
-        subtitle: "Exquisite craftsmanship meets timeless luxury.",
-        tag: "Exclusive Launch",
-        link: "/category/necklaces"
-    },
-    {
         id: 1,
-        image: heroRings,
-        title: "Eternal Silver Rings",
-        subtitle: "Handcrafted perfection inspired by timeless traditions.",
-        tag: "Boutique Collection",
-        link: "/category/rings"
+        image: heroDiamondBrilliance,
+        title: "Eternal Diamond Brilliance",
+        subtitle: "Masterfully crafted for those who demand the extraordinary.",
+        tag: "Luxury Collection",
+        ctaLabel: "Shop Collection",
+        link: "/shop"
     },
     {
         id: 2,
-        image: heroBracelets,
-        title: "Graceful Silver Bracelets",
-        subtitle: "Minimalist elegance refined for the modern woman.",
-        tag: "Premium Silver",
-        link: "/category/bracelets"
+        image: heroGoldFusion,
+        title: "Modern Gold Fusion",
+        subtitle: "Minimalist silhouettes elegantly refined in pure 18K gold.",
+        tag: "Contemporary Luxe",
+        ctaLabel: "Shop Collection",
+        link: "/shop"
     },
     {
         id: 3,
-        image: heroPendants,
-        title: "Celestial Silver Pendants",
-        subtitle: "Shine brighter with our artisan-carved collections.",
-        tag: "Artisan Series",
-        link: "/category/necklaces"
-    },
-    {
-        id: 4,
-        image: heroEarrings,
-        title: "Ethereal Silver Earrings",
-        subtitle: "Delicate designs that capture the essence of luxury.",
-        tag: "Limited Edition",
-        link: "/category/earrings"
+        image: heroSilverHeritage,
+        title: "Sterling Silver Heritage",
+        subtitle: "Timeless craftsmanship meets modern architectural design.",
+        tag: "Handcrafted Silver",
+        ctaLabel: "Explore Now",
+        link: "/shop"
     }
 ];
 

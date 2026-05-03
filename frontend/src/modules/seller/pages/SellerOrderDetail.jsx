@@ -32,6 +32,7 @@ const SellerOrderDetail = () => {
         trackingUrl: '',
         estimatedDelivery: ''
     });
+    const [voidTagInputs, setVoidTagInputs] = useState({});
 
     useEffect(() => {
         const fetchOrder = async () => {
@@ -56,6 +57,13 @@ const SellerOrderDetail = () => {
             trackingUrl: order.shippingInfo?.trackingUrl || '',
             estimatedDelivery: formatDateInputValue(order.shippingInfo?.estimatedDelivery)
         });
+
+        // Initialize voidTagInputs from order if available
+        const initialTags = {};
+        (order.sellerItems || []).forEach(item => {
+            if (item.voidTagId) initialTags[item._id] = item.voidTagId;
+        });
+        setVoidTagInputs(initialTags);
     }, [order]);
 
     const handleStatusUpdate = async (status, customNote = note) => {
@@ -72,8 +80,14 @@ const SellerOrderDetail = () => {
 
         setIsUpdating(true);
         setPendingStatus(target);
+
+        const itemVoidTags = Object.entries(voidTagInputs).map(([itemId, voidTagId]) => ({
+            itemId,
+            voidTagId
+        }));
+
         try {
-            const res = await sellerOrderService.updateOrderStatus(id, status, customNote, shippingForm);
+            const res = await sellerOrderService.updateOrderStatus(id, status, customNote, shippingForm, itemVoidTags);
             if (!res.success) {
                 toast.error(res.message || 'Unable to update order status.');
                 return;
@@ -376,6 +390,24 @@ const SellerOrderDetail = () => {
                                                 <p className={labelClasses}>Line Total</p>
                                                 <p className="text-sm font-black text-emerald-600 mt-1">{formatCurrency((item.price || 0) * (item.quantity || 0))}</p>
                                             </div>
+                                        </div>
+                                        <div className="flex flex-col gap-2">
+                                            <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                                Void Tag ID (Security Seal)
+                                            </div>
+                                            <input
+                                                type="text"
+                                                placeholder="Enter Tag Serial #"
+                                                value={voidTagInputs[item._id] || ''}
+                                                onChange={(e) => setVoidTagInputs({ ...voidTagInputs, [item._id]: e.target.value })}
+                                                className="bg-gray-50 border border-gray-100 rounded-lg px-4 py-2 text-xs font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-black transition-all"
+                                                disabled={!canManage || ['Shipped', 'Delivered', 'Cancelled'].includes(currentStatus)}
+                                            />
+                                            {item.voidTagId && ['Shipped', 'Delivered'].includes(currentStatus) && (
+                                                <div className="flex items-center gap-1.5 text-[9px] font-black text-green-600 uppercase tracking-widest">
+                                                    <PackageCheck size={10} /> Seal Logged
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

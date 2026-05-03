@@ -15,7 +15,8 @@ const app = express();
 const defaultAllowedOrigins = [
   "http://localhost:3000",
   "http://localhost:5173",
-  "https://sands-ornaments-ten.vercel.app"
+  "https://sands-ornaments-ten.vercel.app",
+  "https://sandsjewels.com"
 ];
 
 const configuredAllowedOrigins = process.env.CLIENT_URL
@@ -60,6 +61,9 @@ app.use(mongoSanitize()); // Prevent NoSQL injection
 app.use(compression());  // Performance: Gzip compression
 app.use(morgan("dev")); // Logging (Production: use "combined")
 
+// Trust first proxy (required for accurate IP detection behind reverse proxies/load balancers)
+app.set('trust proxy', 1);
+
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
@@ -67,7 +71,15 @@ const limiter = rateLimit({
 });
 app.use("/api/", limiter);
 
-// ── ROUTES ───────────────────────────────────────────────────────────────────
+// Health Check / Root route
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Sands Ornaments API is running smoothly",
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Auth (user + admin + seller)
 app.use("/api/auth",   require("./modules/auth/routes/auth.routes"));
 

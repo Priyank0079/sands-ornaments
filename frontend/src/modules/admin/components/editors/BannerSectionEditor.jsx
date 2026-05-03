@@ -17,6 +17,9 @@ const createBannerItem = () => ({
     sortOrder: 0
 });
 
+const BANNER_PREVIEW_ASPECT = 'aspect-[4/5]';
+const RECOMMENDED_BANNER_SIZE = '1200 x 1500 px';
+
 const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     const sectionKey = sectionData?.sectionKey || sectionData?.id || '';
     const pageKey = sectionData?.pageKey || '';
@@ -195,8 +198,11 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                             <div className="space-y-3">
                                 <label className="block text-xs font-semibold text-gray-700 tracking-wide">
                                     Banner Image
+                                    <span className="ml-2 text-[10px] font-medium uppercase tracking-[0.2em] text-gray-400">
+                                        {RECOMMENDED_BANNER_SIZE}
+                                    </span>
                                 </label>
-                                <div className="relative aspect-[4/5] rounded-2xl border border-dashed border-gray-300 bg-[#F8F5F2] overflow-hidden">
+                                <div className={`relative ${BANNER_PREVIEW_ASPECT} rounded-2xl border border-dashed border-gray-300 bg-[#F8F5F2] overflow-hidden`}>
                                     {item.image ? (
                                         <img
                                             src={resolveLegacyCmsAsset(item.image, item.image)}
@@ -212,6 +218,9 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                         </div>
                                     )}
                                 </div>
+                                <p className="text-[11px] leading-4 text-gray-500">
+                                    Recommended ratio: 4:5. Upload the same size for every banner so the layouts stay aligned.
+                                </p>
                                 <label className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#3E2723] px-4 py-3 text-xs font-bold uppercase tracking-widest text-white hover:bg-[#2D1B18] transition-all cursor-pointer">
                                     <ImageIcon size={14} />
                                     Change Image

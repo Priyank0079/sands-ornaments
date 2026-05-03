@@ -128,6 +128,20 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const deleteAccount = async () => {
+        try {
+            const res = await api.delete('user/me');
+            if (res.data.success) {
+                logout({ silent: true });
+                toast.success("Account deleted successfully");
+                return { success: true, message: res.data.message || "Account deleted successfully" };
+            }
+            return { success: false, message: res.data.message || "Failed to delete account" };
+        } catch (err) {
+            return { success: false, message: err.response?.data?.message || "Failed to delete account" };
+        }
+    };
+
     return (
         <AuthContext.Provider value={{ 
             user, 
@@ -137,7 +151,8 @@ export const AuthProvider = ({ children }) => {
             adminLogin, 
             sellerRegister, 
             sellerLogin, 
-            logout 
+            logout,
+            deleteAccount 
         }}>
             {children}
         </AuthContext.Provider>
