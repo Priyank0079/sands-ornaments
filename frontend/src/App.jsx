@@ -14,6 +14,7 @@ import SmoothScrollProvider from './components/SmoothScrollProvider';
 
 // Admin Imports
 import AdminLogin from './modules/admin/pages/Login';
+import AdminDashboard from './modules/admin/pages/Dashboard';
 import AdminLayout from './modules/admin/components/AdminLayout';
 import AdminProtectedRoute from './modules/admin/components/AdminProtectedRoute';
 import CategoryPage from './modules/admin/pages/categories/CategoryPage';
