@@ -45,50 +45,58 @@ const GoldRingCarousel = ({ sectionData = null }) => {
     const ctaPath = ensureGoldPath(String(sectionData?.settings?.ctaPath || '/shop?metal=gold&category=rings').trim() || '/shop?metal=gold&category=rings');
 
     return (
-        <section className="w-full py-10 bg-white">
-            <div className="max-w-[1450px] mx-auto px-4">
-                <div className="bg-[#FAF9F0] rounded-[24px] p-8 md:p-10 text-center shadow-sm">
-                    <div className="mb-8">
-                        <h2 className="text-[24px] md:text-[32px] text-[#2A4D35] font-serif font-medium tracking-tight italic mb-3">
-                            {title}
-                        </h2>
-                        <div className="h-px w-20 bg-[#D4B390]/50 mx-auto" />
-                    </div>
+        <section className="w-full py-12 bg-white">
+            <div className="max-w-[1450px] mx-auto px-6">
+                <div className="text-center mb-12">
+                    <h2 className="text-3xl md:text-4xl font-serif text-[#142E1F] italic mb-4">
+                        {title}
+                    </h2>
+                    <div className="h-[1px] w-24 bg-[#D4B390] mx-auto opacity-50" />
+                </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 md:gap-8 mb-10 mt-12">
-                        {ringTypes.map((type) => (
-                            <div
-                                key={type.id}
-                                onClick={() => navigate(type.path)}
-                                className="flex flex-col items-center group cursor-pointer"
-                            >
-                                <motion.div
-                                    whileHover={{ y: -5 }}
-                                    className="w-[120px] h-[120px] md:w-[160px] md:h-[160px] rounded-full overflow-hidden mb-4 bg-[#142E1F] relative shadow-lg border-2 border-white group-hover:border-[#D4B390]/30 transition-all"
-                                >
-                                    <img
-                                        src={type.image}
-                                        alt={type.name}
-                                        className="w-full h-full object-cover p-1 scale-110"
-                                    />
-                                    <div className="absolute inset-0 shadow-[inset_0_0_30px_rgba(0,0,0,0.5)] rounded-full" />
-                                </motion.div>
-                                <span className="text-[14px] md:text-[16px] font-bold text-gray-900 tracking-tight leading-tight group-hover:text-[#2A4D35] transition-colors">
-                                    {type.name}
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="flex justify-center">
-                        <button
-                            onClick={() => navigate(ctaPath)}
-                            className="bg-gradient-to-b from-[#F5ECD7] to-[#E8D8A0] border border-[#D4B390] text-[#142E1F] font-black text-[14px] md:text-[16px] px-10 py-3 rounded-xl hover:brightness-105 transition-all duration-300 shadow-md"
-                            type="button"
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
+                    {ringTypes.map((type) => (
+                        <motion.div
+                            key={type.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.5 }}
+                            onClick={() => navigate(type.path)}
+                            className="bg-white border border-gray-100 rounded-lg overflow-hidden group cursor-pointer shadow-sm hover:shadow-lg transition-all duration-500 flex flex-col h-full p-3"
                         >
-                            {ctaLabel}
-                        </button>
-                    </div>
+                            {/* Image Container - Square and clean */}
+                            <div className="relative w-full aspect-square overflow-hidden bg-[#F8F8F8] rounded-md">
+                                <img
+                                    src={type.image}
+                                    alt={type.name}
+                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                />
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-500" />
+                            </div>
+
+                            {/* Button Style Label - Centered and padded */}
+                            <div className="mt-4 mb-1 px-2">
+                                <div className="w-full py-2.5 bg-[#142E1F] text-center rounded-sm transition-all duration-300 group-hover:bg-[#1A3D29] group-hover:shadow-md">
+                                    <span className="text-[10px] md:text-[11px] font-bold text-white uppercase tracking-[0.15em]">
+                                        {type.name}
+                                    </span>
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
+
+                <div className="mt-12 flex justify-center">
+                    <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => navigate(ctaPath)}
+                        className="bg-[#142E1F] text-white font-bold text-[13px] md:text-[15px] px-12 py-3.5 rounded-full hover:bg-[#1A3D29] transition-all duration-300 shadow-lg tracking-widest uppercase"
+                        type="button"
+                    >
+                        {ctaLabel}
+                    </motion.button>
                 </div>
             </div>
         </section>
