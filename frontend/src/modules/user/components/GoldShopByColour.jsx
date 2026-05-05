@@ -39,37 +39,98 @@ const GoldShopByColour = ({ sectionData = null }) => {
             image: resolveLegacyCmsAsset(item?.image, fallbackColors[idx % fallbackColors.length].image),
             path: ensureGoldCategoryPath(item?.path || fallbackColors[idx % fallbackColors.length].path, item?.categoryId || ''),
             gradient: item?.gradient || item?.colorCode || fallbackColors[idx % fallbackColors.length].gradient,
+            // Add theme color for the stylish text
+            textColor: item?.id === 'rose' || item?.name?.toLowerCase().includes('rose') ? 'text-[#E6A0A0]' : 
+                      item?.id === 'white' || item?.name?.toLowerCase().includes('white') ? 'text-[#A0A0A0]' :
+                      'text-[#B8860B]' 
         }));
     }, [sectionData]);
 
     const title = String(sectionData?.settings?.title || sectionData?.label || 'Shop by Colour').trim() || 'Shop by Colour';
 
     return (
-        <section className="w-full py-6 bg-white overflow-hidden">
-            <div className="max-w-[1200px] mx-auto px-6">
-                <div className="text-center mb-6">
-                    <h2 className="text-xl md:text-2xl font-serif text-black">{title}</h2>
+        <section className="w-full py-24 bg-white relative overflow-hidden">
+            {/* Abstract Background Elements */}
+            <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-[#B8860B]/2 rounded-full blur-[120px] -translate-y-1/2" />
+            <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-[#B8860B]/2 rounded-full blur-[100px] translate-y-1/2" />
+
+            <div className="max-w-[1300px] mx-auto px-8 relative z-10">
+                <div className="text-center mb-20">
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.8, ease: "easeOut" }}
+                    >
+                        <h2 className="text-4xl md:text-6xl font-display text-[#111] mb-6 tracking-tight">
+                            {title}
+                        </h2>
+                        <div className="flex items-center justify-center gap-6">
+                            <div className="h-[0.5px] w-16 bg-[#B8860B]/30" />
+                            <span className="text-[10px] md:text-[12px] uppercase tracking-[0.6em] text-[#B8860B] font-medium">
+                                Discovery in Every Shade
+                            </span>
+                            <div className="h-[0.5px] w-16 bg-[#B8860B]/30" />
+                        </div>
+                    </motion.div>
                 </div>
 
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 lg:gap-16">
                     {colors.map((color, idx) => (
                         <motion.div
                             key={color.id}
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            whileInView={{ opacity: 1, scale: 1 }}
+                            initial={{ opacity: 0, y: 50 }}
+                            whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
-                            transition={{ duration: 0.5, delay: idx * 0.1 }}
+                            transition={{ duration: 1, delay: idx * 0.15, ease: [0.19, 1, 0.22, 1] }}
                             onClick={() => navigate(color.path)}
                             className="group cursor-pointer flex flex-col items-center"
                         >
-                            <div className="relative w-full aspect-square rounded-[20px] overflow-hidden shadow-sm border border-gray-100 mb-2 transition-transform duration-500 group-hover:-translate-y-1">
-                                <img src={color.image} alt={color.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
+                            {/* Card Container - No borders, sophisticated shadow */}
+                            <div className="relative w-full aspect-square rounded-[40px] overflow-hidden bg-white shadow-[0_15px_45px_rgba(0,0,0,0.03)] transition-all duration-1000 group-hover:shadow-[0_40px_80px_rgba(184,134,11,0.15)] group-hover:-translate-y-4">
+                                
+                                {/* Image with refined zoom and subtle parallax-like effect */}
+                                <img 
+                                    src={color.image} 
+                                    alt={color.name} 
+                                    className="w-full h-full object-cover transform scale-105 group-hover:scale-125 transition-transform duration-[2s] ease-out" 
+                                />
 
-                                <div className={`absolute bottom-2 right-2 w-6 md:w-8 h-6 md:h-8 rounded-full border-2 border-white shadow-md ${color.gradient}`} />
+                                {/* Interactive Gradient Overlay */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-1000" />
 
-                                <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                {/* Color Indicator - Luxury Floating Badge */}
+                                <div className="absolute bottom-8 right-8 z-20">
+                                    <div className="relative">
+                                        <div className={`w-11 h-11 md:w-14 md:h-14 rounded-full border-[3px] border-white shadow-[0_10px_25px_rgba(0,0,0,0.2)] ${color.gradient} transition-all duration-700 group-hover:scale-110 group-hover:-rotate-12`} />
+                                        <div className="absolute inset-0 rounded-full bg-white/40 animate-ping opacity-0 group-hover:opacity-20 transition-opacity duration-1000" />
+                                    </div>
+                                </div>
+
+                                {/* Shimmer Sweep effect */}
+                                <div className="absolute inset-0 z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-1000">
+                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-[1.5s] ease-in-out" />
+                                </div>
                             </div>
-                            <h3 className="text-gray-900 font-bold text-[13px] md:text-[14px] tracking-tight">{color.name}</h3>
+
+                            {/* Label Styling - Using font-display for 'Stylish' look */}
+                            <div className="mt-10 text-center relative px-2">
+                                <h3 className={`font-display text-[16px] md:text-[20px] tracking-[0.1em] transition-all duration-500 ${color.textColor} group-hover:scale-110`}>
+                                    {color.name}
+                                </h3>
+                                
+                                {/* Decorative underline like in the screenshot */}
+                                <div className="mt-3 flex flex-col items-center">
+                                    <motion.div 
+                                        className="h-[1.5px] bg-[#B8860B]/60"
+                                        initial={{ width: 0 }}
+                                        whileInView={{ width: "24px" }}
+                                        viewport={{ once: true }}
+                                        transition={{ delay: 1 + idx * 0.1, duration: 0.8 }}
+                                    />
+                                    <div className="h-[1px] w-0 bg-[#B8860B]/20 group-hover:w-32 transition-all duration-1000 ease-in-out mt-1" />
+                                </div>
+                            </div>
                         </motion.div>
                     ))}
                 </div>
