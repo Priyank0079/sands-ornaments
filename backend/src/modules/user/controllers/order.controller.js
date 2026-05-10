@@ -143,6 +143,84 @@ const deductStockForOrder = async (orderItems, orderId, userId) => {
 };
 
 
+/**
+ * Internal helper to calculate order data without saving to DB.
+ * Used by both placeOrder (for COD) and initiatePayment (for Razorpay).
+ */
+const _calculateOrderData = async (userId, userEmail, items, shippingAddress, paymentMethod, couponCode) => {
+  if (!items || !items.length) throw new Error("Order must contain at least one item.");
+  if (!shippingAddress) throw new Error("Shipping address is required.");
+
+  let subtotal = 0;
+  const orderItems = [];
+
+  // 1. Validate Items & Stock & Price
+  for (const item of items) {
+    const product = await Product.findById(item.productId);
+    if (!product) throw new Error(`Product ${item.productId} not found`);
+
+    const variant = product.variants.id(item.variantId);
+    if (!variant) throw new Error(`Variant ${item.variantId} not found`);
+
+    if (variant.stock < item.quantity) {
+      throw new Error(`Insufficient stock for ${product.name} (${variant.name})`);
+    }
+
+    const itemTotal = variant.price * item.quantity;
+    subtotal += itemTotal;
+
+    orderItems.push({
+      productId:  product._id,
+      variantId:  variant._id,
+      name:       product.name,
+      sku:        variant.sku || `${product.slug}-${variant.name}`,
+      image:      product.images[0] || "",
+      price:      variant.price,
+      mrp:        variant.mrp,
+      quantity:   item.quantity,
+      sellerId:   product.sellerId,
+      categoryId: product.categories?.[0] || undefined
+    });
+  }
+
+  // 2. Handle Coupon
+  let discount = 0;
+  let appliedCoupon = null;
+  let isFreeShipping = false;
+
+  if (couponCode) {
+    const result = await applyCoupon(couponCode, subtotal, userId, orderItems);
+    discount = result.discount;
+    appliedCoupon = result.coupon;
+    isFreeShipping = result.isFreeShipping;
+  }
+
+  // Default shipping logic (₹49 if < ₹999, else 0)
+  let shipping = subtotal - discount > 999 ? 0 : 49;
+  if (isFreeShipping) shipping = 0;
+
+  const total = subtotal - discount + shipping;
+
+  return {
+    orderId:       generateOrderId(),
+    userId,
+    customerName:  `${shippingAddress.firstName} ${shippingAddress.lastName}`,
+    customerEmail: shippingAddress.email || userEmail,
+    customerPhone: shippingAddress.phone,
+    items:         orderItems,
+    shippingAddress,
+    paymentMethod,
+    couponCode:    appliedCoupon ? couponCode.toUpperCase() : undefined,
+    subtotal,
+    discount,
+    shipping,
+    total,
+    status:           paymentMethod === "cod" ? "Processing" : "Pending",
+    paymentStatus:    paymentMethod === "cod" ? "cod" : "pending",
+    timeline:      [{ status: "Ordered", note: "Order placed successfully" }],
+  };
+};
+
 // ─────────────────────────────────────────────────────────────────
 // POST /api/user/orders  — Place an Order
 // ─────────────────────────────────────────────────────────────────
@@ -150,94 +228,21 @@ exports.placeOrder = async (req, res) => {
   try {
     const { items, shippingAddress, paymentMethod, couponCode } = req.body;
     const userId = req.user.userId;
+    const userEmail = req.user.email;
 
-    if (!items || !items.length) return error(res, "Order must contain at least one item.", 400);
-    if (!shippingAddress) return error(res, "Shipping address is required.", 400);
-
-    let subtotal = 0;
-    const orderItems = [];
-
-    // 1. Validate Items & Stock & Price
-    for (const item of items) {
-      const product = await Product.findById(item.productId);
-      if (!product) return error(res, `Product ${item.productId} not found`, 404);
-
-      const variant = product.variants.id(item.variantId);
-      if (!variant) return error(res, `Variant ${item.variantId} not found`, 404);
-
-      if (variant.stock < item.quantity) {
-        return error(res, `Insufficient stock for ${product.name} (${variant.name})`, 400);
-      }
-
-      const itemTotal = variant.price * item.quantity;
-      subtotal += itemTotal;
-
-      orderItems.push({
-        productId:  product._id,
-        variantId:  variant._id,
-        name:       product.name,
-        sku:        variant.sku || `${product.slug}-${variant.name}`,
-        image:      product.images[0] || "",
-        price:      variant.price,
-        mrp:        variant.mrp,
-        quantity:   item.quantity,
-        sellerId:   product.sellerId,
-        categoryId: product.categories?.[0] || undefined
-      });
-    }
-
-    // 2. Handle Coupon — support advanced validation items
-    let discount = 0;
-    let appliedCoupon = null;
-    let isFreeShipping = false;
-
-    if (couponCode) {
-      const result = await applyCoupon(couponCode, subtotal, userId, orderItems);
-      discount = result.discount;
-      appliedCoupon = result.coupon;
-      isFreeShipping = result.isFreeShipping;
-    }
-
-    // Default shipping logic (₹49 if < ₹999, else 0)
-    let shipping = subtotal - discount > 999 ? 0 : 49;
-    
-    // Override if Free Shipping coupon applied
-    if (isFreeShipping) shipping = 0;
-
-    const total = subtotal - discount + shipping;
-
-    // 3. Build Order
-    const orderData = {
-      orderId:       generateOrderId(),
-      userId,
-      customerName:  `${shippingAddress.firstName} ${shippingAddress.lastName}`,
-      customerEmail: shippingAddress.email,
-      customerPhone: shippingAddress.phone,
-      items:         orderItems,
-      shippingAddress,
-      paymentMethod,
-      couponCode:    appliedCoupon ? couponCode.toUpperCase() : undefined,
-      subtotal,
-      discount,
-      shipping,
-      total,
-      // BUG-02 FIX: COD orders are confirmed immediately; Razorpay orders stay "Pending" until payment
-      status:           paymentMethod === "cod" ? "Processing" : "Pending",
-      paymentStatus:    paymentMethod === "cod" ? "cod" : "pending",
-      timeline:      [{ status: "Ordered", note: "Order placed successfully" }],
-    };
+    // Use shared helper to prepare order data
+    const orderData = await _calculateOrderData(userId, userEmail, items, shippingAddress, paymentMethod, couponCode);
 
     // 4. Create Razorpay order (no stock deduction yet for online payments)
     if (paymentMethod === "razorpay") {
       try {
         const rpOrder = await razorpay.orders.create({
-          amount:   Math.round(total * 100),
+          amount:   Math.round(orderData.total * 100),
           currency: "INR",
           receipt:  orderData.orderId,
         });
         orderData.razorpayOrderId = rpOrder.id;
       } catch (err) {
-        // Dev/stub fallback — never reached in production with valid keys
         orderData.razorpayOrderId = "rzp_stub_" + Date.now();
         console.error("Razorpay Order Creation Failed:", err.message);
       }
@@ -245,11 +250,9 @@ exports.placeOrder = async (req, res) => {
 
     const order = await Order.create(orderData);
 
-    // Notify sellers involved in this order (seller panel bell).
-    // For Razorpay orders, this is "order placed" (payment may still be pending).
-    // For COD orders, this is also the correct moment (order is created and can be fulfilled).
+    // Notify sellers
     const sellerCounts = new Map();
-    for (const item of orderItems) {
+    for (const item of orderData.items) {
       const sid = item?.sellerId ? String(item.sellerId) : "";
       if (!sid) continue;
       sellerCounts.set(sid, (sellerCounts.get(sid) || 0) + (Number(item.quantity) || 0));
@@ -266,19 +269,16 @@ exports.placeOrder = async (req, res) => {
         isBroadcast: false,
         isRead: false
       }));
-      // Best-effort; don't block checkout if notification insert fails
       try { await Notification.insertMany(docs); } catch (e) { /* ignore */ }
     }
 
-    // 5. Deduct Stock immediately ONLY for COD (cash is guaranteed)
-    //    For Razorpay, stock is deducted inside verifyPayment after signature check.
+    // 5. Deduct Stock immediately ONLY for COD
     if (paymentMethod === "cod") {
-      await deductStockForOrder(orderItems, order.orderId, userId);
+      await deductStockForOrder(orderData.items, order.orderId, userId);
 
-      // BUG-01 FIX: Update coupon usage on successful COD order
-      if (appliedCoupon) {
+      if (order.couponCode) {
         await Coupon.updateOne(
-          { _id: appliedCoupon._id },
+          { code: order.couponCode, active: true },
           {
             $inc:  { usageCount: 1 },
             $push: { usedBy: { userId, usedAt: new Date() } },
@@ -295,6 +295,7 @@ exports.placeOrder = async (req, res) => {
 // Export the helpers so payment controller can use them
 exports._deductStockForOrder = deductStockForOrder;
 exports._applyCoupon = applyCoupon;
+exports._calculateOrderData = _calculateOrderData;
 
 
 // ─────────────────────────────────────────────────────────────────

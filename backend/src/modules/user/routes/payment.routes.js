@@ -6,7 +6,7 @@ const requireActiveUser = require("../../../middlewares/requireActiveUser");
 
 router.use(authenticate, requireRole("user"), requireActiveUser);
 
-router.post("/create-order", paymentController.createRazorpayOrder);
-router.post("/verify",       paymentController.verifyPayment);
+router.post("/initiate",   paymentController.initiatePayment);
+router.post("/verify",     paymentController.verifyPayment);
 
 module.exports = router;

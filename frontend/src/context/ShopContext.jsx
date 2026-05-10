@@ -443,12 +443,12 @@ export const ShopProvider = ({ children }) => {
             lastName,
             email,
             phone,
-            flatNo: String(raw.flatNo || raw.flat || raw.houseNo || '').trim(),
+            flatNo: String(raw.flatNo || raw.flat || raw.houseNo || raw.streetAddress || '').trim(),
             area: String(raw.area || raw.locality || '').trim(),
             city: String(raw.city || '').trim(),
             district: String(raw.district || '').trim(),
             state: String(raw.state || '').trim(),
-            pincode: String(raw.pincode || '').replace(/[^\d]/g, '').trim(),
+            pincode: String(raw.pincode || raw.zipCode || '').replace(/[^\d]/g, '').trim(),
         };
     };
 
@@ -458,7 +458,6 @@ export const ShopProvider = ({ children }) => {
             const resolvedAddress = shippingAddress || addresses.find(a => a._id === addressId);
             const normalizedAddress = normalizeShippingAddress(resolvedAddress, user);
 
-            // Backend validator requires these fields; fail fast for a cleaner UX.
             if (!normalizedAddress.firstName || !normalizedAddress.lastName || !normalizedAddress.email) {
                 toast.error("Please complete your name and email in the shipping address.");
                 return null;
@@ -467,25 +466,45 @@ export const ShopProvider = ({ children }) => {
                 toast.error("Please enter a valid 10-digit phone number.");
                 return null;
             }
-            if (!normalizedAddress.flatNo || !normalizedAddress.area || !normalizedAddress.city || !normalizedAddress.state || normalizedAddress.pincode.length !== 6) {
-                toast.error("Please complete your shipping address (flat, area, city, state, pincode).");
+            if (!normalizedAddress.flatNo || !normalizedAddress.city || !normalizedAddress.state || normalizedAddress.pincode.length !== 6) {
+                toast.error("Please complete your shipping address (Address, City, State, Pincode).");
                 return null;
             }
 
-            // 1. Create order on backend
-            // Note: backend expects { items: [{productId, variantId, quantity}], shippingAddress, paymentMethod, couponCode }
             const formattedItems = (items || cart).map(item => ({
                 productId: item.productId || item.id || item._id,
                 variantId: item.variantId || item.packId || item.selectedVariant?.id || item.selectedVariant?._id || item.variants?.[0]?.id || item.variants?.[0]?._id,
                 quantity: item.qty || item.quantity
             }));
 
-            const missingIds = formattedItems.some(it => !it.productId || !it.variantId);
-            if (missingIds) {
-                toast.error("Some cart items are missing variant information. Please remove and re-add them, then try again.");
+            if (formattedItems.some(it => !it.productId || !it.variantId)) {
+                toast.error("Some cart items are missing variant information.");
                 return null;
             }
 
+            // --- RAZORPAY FLOW (Order only after payment) ---
+            if (paymentMethod === 'razorpay' || paymentMethod === 'online') {
+                try {
+                    const initRes = await api.post('user/payments/initiate', {
+                        items: formattedItems,
+                        shippingAddress: normalizedAddress,
+                        couponCode
+                    });
+
+                    if (!initRes.data.success) {
+                        toast.error(initRes.data.message || "Payment initiation failed");
+                        return null;
+                    }
+
+                    const { rpOrder, orderData } = initRes.data.data;
+                    return await handleRazorpayPayment(rpOrder, orderData);
+                } catch (err) {
+                    toast.error(err.response?.data?.message || "Payment initiation failed");
+                    return null;
+                }
+            }
+
+            // --- COD FLOW (Order created immediately) ---
             const res = await api.post('user/orders/place', {
                 items: formattedItems,
                 shippingAddress: normalizedAddress,
@@ -500,55 +519,44 @@ export const ShopProvider = ({ children }) => {
 
             const order = res.data?.data?.order;
             if (!order) {
-                toast.error("Order response is incomplete. Please try again.");
+                toast.error("Order response is incomplete.");
                 return null;
             }
 
-            // 2. Handle Razorpay if selected
-            if (orderDetails.paymentMethod === 'razorpay' && order.razorpayOrderId) {
-                return await handleRazorpayPayment(order.razorpayOrderId, order);
-            }
-
-            // 3. For COD or other methods, complete local flow
             await fetchOrders();
             setCart([]);
             showNotification("Order placed successfully!");
             return order._id;
 
         } catch (err) {
-            const apiError = err.response?.data;
-            if (apiError?.error === "VALIDATION_ERROR") {
-                toast.error("Please check your shipping address and try again.");
-            } else {
-                toast.error(apiError?.message || "Checkout failed");
-            }
+            toast.error(err.response?.data?.message || "Checkout failed");
             return null;
         }
     };
 
-    const handleRazorpayPayment = (razorpayOrderId, backendOrder) => {
+    const handleRazorpayPayment = (rpOrder, orderData) => {
         return new Promise((resolve) => {
             const options = {
                 key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-                amount: Math.round(Number(backendOrder.total || 0) * 100),
-                currency: "INR",
+                amount: rpOrder.amount,
+                currency: rpOrder.currency,
                 name: "Sands Ornaments",
-                description: "Order #" + backendOrder.orderId,
-                order_id: razorpayOrderId,
+                description: "Order Payment",
+                order_id: rpOrder.id,
                 handler: async (response) => {
                     try {
                         const verifyRes = await api.post('user/payments/verify', {
-                            orderId: backendOrder._id,
                             razorpay_order_id: response.razorpay_order_id,
                             razorpay_payment_id: response.razorpay_payment_id,
-                            razorpay_signature: response.razorpay_signature
+                            razorpay_signature: response.razorpay_signature,
+                            orderData: orderData // Pass the pre-calculated order data back
                         });
 
                         if (verifyRes.data.success) {
                             await fetchOrders();
                             setCart([]);
-                            toast.success("Payment successful!");
-                            resolve(backendOrder._id);
+                            toast.success("Payment successful & Order placed!");
+                            resolve(verifyRes.data.data.order._id);
                         } else {
                             toast.error("Payment verification failed");
                             resolve(null);
@@ -563,7 +571,13 @@ export const ShopProvider = ({ children }) => {
                     email: user?.email,
                     contact: user?.phone
                 },
-                theme: { color: "#EBCDD0" }
+                theme: { color: "#EBCDD0" },
+                modal: {
+                    ondismiss: function() {
+                        toast.error("Payment cancelled");
+                        resolve(null);
+                    }
+                }
             };
 
             const rzp = new window.Razorpay(options);
