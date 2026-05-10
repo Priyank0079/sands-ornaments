@@ -34,10 +34,17 @@ const orderSchema = new mongoose.Schema({
   total: { type: Number, required: true },
   status: {
     type: String,
-    enum: ["Pending", "Processing", "Confirmed", "Packed", "Shipped", "Out for Delivery", "Delivered", "Cancelled", "Return Requested", "Returned"],
+    enum: ["Pending", "Processing", "Confirmed", "Packed", "Partially Shipped", "Shipped", "Out for Delivery", "Delivered", "Cancelled", "Return Requested", "Returned"],
     default: "Processing"
   },
   shippingInfo: { carrier: String, trackingId: String, trackingUrl: String, estimatedDelivery: Date },
+  sellerShipments: [{
+    sellerId: { type: mongoose.Schema.Types.ObjectId, ref: "Seller" },
+    shipmentId: { type: mongoose.Schema.Types.ObjectId, ref: "Shipment" },
+    courier: String,
+    awbNumber: String,
+    status: String,
+  }],
   timeline: [{ status: String, date: { type: Date, default: Date.now }, note: String }],
   notes: String,
 }, { timestamps: true });

@@ -47,44 +47,66 @@ const Testimonials = () => {
         : TESTIMONIALS;
 
     return (
-        <section className="w-full pt-4 pb-12 md:pt-6 md:pb-20 bg-white overflow-hidden select-none">
+        <section className="w-full py-16 md:py-24 bg-[#F4F7F5] overflow-hidden select-none relative">
+            {/* Background Decorative Element */}
+            <div className="absolute top-0 right-0 w-96 h-96 bg-[#142E1F]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+
             {/* Heading Section */}
-            <div className="container mx-auto px-4 mb-10 md:mb-16 text-center">
-                <h2 className="text-2xl md:text-3xl font-sans text-gray-900 font-medium tracking-tight">
-                    {sectionData?.label || 'Customer Stories'}
+            <div className="container mx-auto px-4 mb-12 md:mb-20 text-center relative z-10">
+                <span className="text-[11px] uppercase tracking-[0.4em] text-[#B8860B] font-bold mb-4 block">
+                    Our Patrons
+                </span>
+                <h2 className="text-3xl md:text-5xl font-display text-[#142E1F] tracking-tight">
+                    {sectionData?.label || 'Movements Made by Her'}
                 </h2>
+                <div className="h-[1px] w-24 bg-[#B8860B]/30 mx-auto mt-6" />
             </div>
 
             {/* Horizontal Scroll Containers */}
-            <div className="flex overflow-x-auto gap-4 md:gap-8 px-6 md:px-12 pb-16 scrollbar-hide snap-x snap-mandatory justify-start md:justify-center">
+            <div className="flex overflow-x-auto gap-6 md:gap-10 px-6 md:px-12 pb-20 scrollbar-hide snap-x snap-mandatory justify-start md:justify-center relative z-10">
                 {displayItems.map((testimonial, index) => (
                     <motion.div
                         key={testimonial.id}
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: index * 0.1 }}
-                        className="flex-shrink-0 w-[280px] md:w-[320px] snap-center"
+                        transition={{ duration: 0.8, delay: index * 0.1 }}
+                        className="flex-shrink-0 w-[300px] md:w-[380px] snap-center"
                     >
-                        {/* Peach Card (Reference to Img 1) */}
-                        <div className="bg-[#FFE8BC] rounded-[20px] p-8 md:p-10 flex flex-col items-center text-center shadow-sm min-h-[240px] md:min-h-[280px] relative">
-                            {/* Name at the Top */}
-                            <h3 className="text-gray-900 font-sans font-semibold text-lg md:text-xl mb-4 md:mb-6">
-                                {testimonial.name.split(' ')[0]}
-                            </h3>
+                        <div className="bg-white rounded-[32px] p-8 md:p-12 flex flex-col items-center text-center shadow-[0_15px_45px_rgba(20,46,31,0.05)] min-h-[320px] md:min-h-[360px] relative border border-[#142E1F]/5 group hover:border-[#B8860B]/20 transition-all duration-500">
+                            {/* Stars Rating */}
+                            <div className="flex gap-1 mb-6">
+                                {[...Array(5)].map((_, i) => (
+                                    <span key={i} className="text-[#B8860B] text-sm">★</span>
+                                ))}
+                            </div>
 
                             {/* Testimonial Text */}
-                            <p className="text-gray-800 font-sans text-sm md:text-base leading-relaxed line-clamp-4">
-                                {testimonial.text}
-                            </p>
+                            <div className="relative">
+                                <span className="absolute -top-4 -left-2 text-4xl text-[#142E1F]/10 font-serif">"</span>
+                                <p className="text-[#4A4A4A] font-serif italic text-base md:text-lg leading-relaxed mb-8 px-2">
+                                    {testimonial.text}
+                                </p>
+                                <span className="absolute -bottom-8 -right-2 text-4xl text-[#142E1F]/10 font-serif rotate-180">"</span>
+                            </div>
 
-                            {/* Portrait Photo - Absolute positioned at the bottom center, overlapping outside */}
-                            <div className="absolute bottom-0 translate-y-1/2 left-1/2 -translate-x-1/2 w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-4 border-white shadow-lg z-10">
+                            {/* Portrait Photo - Absolute positioned at the bottom center */}
+                            <div className="absolute bottom-0 translate-y-1/2 left-1/2 -translate-x-1/2 w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-4 border-white shadow-xl z-20 transition-transform duration-500 group-hover:scale-105">
                                 <img
                                     src={testimonial.image}
                                     alt={testimonial.name}
                                     className="w-full h-full object-cover"
                                 />
                             </div>
+                        </div>
+
+                        {/* Name at the Bottom */}
+                        <div className="mt-14 text-center">
+                            <h3 className="text-[#142E1F] font-display font-bold text-lg md:text-xl tracking-widest uppercase">
+                                {testimonial.name.split(' ')[0]}
+                            </h3>
+                            <p className="text-[#B8860B] text-[10px] uppercase tracking-[0.3em] font-bold mt-1">
+                                {testimonial.location || 'Verified Buyer'}
+                            </p>
                         </div>
                     </motion.div>
                 ))}

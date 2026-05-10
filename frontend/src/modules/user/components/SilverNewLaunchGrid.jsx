@@ -93,24 +93,23 @@ const SilverNewLaunchGrid = () => {
                             to={cat.path}
                             className="flex flex-col items-center group/item cursor-pointer shrink-0 snap-center"
                         >
-                            <div className="relative w-[110px] h-[110px] md:w-[155px] md:h-[155px] mb-3 overflow-hidden rounded-[35px] md:rounded-[50px] shadow-[0_10px_20px_rgba(0,0,0,0.12)]">
+                            <div className="relative w-[110px] h-[110px] md:w-[155px] md:h-[155px] mb-3 overflow-hidden rounded-xl shadow-md border border-gray-100">
                                 <img
                                     src={cat.image}
                                     alt={cat.name}
                                     className="w-full h-full object-cover brightness-95"
                                 />
 
-                                <div className="absolute inset-x-0 top-0 h-1/4 bg-gradient-to-b from-black/20 to-transparent pointer-events-none" />
+                                <div className="absolute inset-x-0 top-0 h-1/4 bg-gradient-to-b from-black/10 to-transparent pointer-events-none" />
 
                                 <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20">
-                                    <div className="bg-[#8C5D62]/60 backdrop-blur-md px-4 md:px-6 py-0.5 md:py-1 rounded-b-2xl md:rounded-b-3xl flex items-center justify-center gap-1 border border-white/10 shadow-sm">
-                                        <span className="text-white/80 text-[8px] md:text-[10px] leading-none mb-0.5">*</span>
-                                        <span className="text-white text-[9px] md:text-[11px] font-bold leading-none">{cat.tag || 'New'}</span>
+                                    <div className="bg-[#8C5D62] px-4 md:px-5 py-1 rounded-b-lg flex items-center justify-center gap-1 shadow-sm">
+                                        <span className="text-white text-[9px] md:text-[10px] font-bold leading-none tracking-wider uppercase">{cat.tag || 'New'}</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <span className="text-[14px] md:text-[16px] font-bold text-[#333] tracking-tight">
+                            <span className="text-[13px] md:text-[15px] font-bold text-[#333] tracking-tight group-hover/item:text-[#8C5D62] transition-colors">
                                 {cat.name}
                             </span>
                         </Link>

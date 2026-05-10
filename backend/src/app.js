@@ -71,7 +71,15 @@ const limiter = rateLimit({
 });
 app.use("/api/", limiter);
 
-// ── ROUTES ───────────────────────────────────────────────────────────────────
+// Health Check / Root route
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Sands Ornaments API is running smoothly",
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Auth (user + admin + seller)
 app.use("/api/auth",   require("./modules/auth/routes/auth.routes"));
 

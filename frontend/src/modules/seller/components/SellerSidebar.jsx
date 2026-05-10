@@ -18,7 +18,8 @@ import {
     UserCircle,
     QrCode,
     BarChart3,
-    Bell
+    Bell,
+    Truck
 } from 'lucide-react';
 import logo from '@assets/sands-logo.png';
 import logoName from '@assets/sands-logoname.png';
@@ -55,7 +56,8 @@ const SellerSidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                 { name: 'Reports', path: '/seller/inventory/reports', icon: Package }
             ]
         },
-        { name: 'Shipments', icon: ShoppingBag, path: '/seller/orders' },
+        { name: 'Orders', icon: ShoppingBag, path: '/seller/orders' },
+        { name: 'Shipping', icon: Truck, path: '/seller/shipments' },
         { name: 'Returns', icon: RotateCcw, path: '/seller/returns' },
         { name: 'Replacements', icon: RefreshCcw, path: '/seller/replacements' },
         { name: 'Customers', icon: Users, path: '/seller/customers' },

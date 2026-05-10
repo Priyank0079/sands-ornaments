@@ -475,6 +475,18 @@ const AdminSidebar = () => {
                     <span className="font-bold text-sm">Replacements</span>
                 </Link>
 
+                {/* Shipping */}
+                <Link
+                    to="/admin/shipping"
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all group ${location.pathname.startsWith('/admin/shipping')
+                        ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                        : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                        }`}
+                >
+                    <Truck size={20} strokeWidth={location.pathname.startsWith('/admin/shipping') ? 2.5 : 2} />
+                    <span className="font-bold text-sm">Shipping</span>
+                </Link>
+
                 {/* Inventory Management */}
                 {/* Inventory Management Section - Expandable */}
                 <div className="mt-1">
