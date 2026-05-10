@@ -14,9 +14,9 @@ export const sellerShippingService = {
   /**
    * Create a new shipment for seller's items in an order.
    */
-  createShipment: async (orderId, { courier, packageInfo, paymentMode, codAmount }) => {
+  createShipment: async (orderId, { courier, packageInfo, paymentMode, codAmount, pickupLocationId }) => {
     const res = await api.post(`seller/shipping/orders/${orderId}/create`, {
-      courier, packageInfo, paymentMode, codAmount,
+      courier, packageInfo, paymentMode, codAmount, pickupLocationId,
     });
     return res.data?.data || {};
   },

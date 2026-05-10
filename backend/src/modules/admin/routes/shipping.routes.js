@@ -21,4 +21,10 @@ router.post("/:shipmentId/cancel", shippingController.cancelShipment);
 // Override status
 router.patch("/:shipmentId/override-status", shippingController.overrideStatus);
 
+// Generate Shiprocket manifest
+router.post("/:shipmentId/manifest", shippingController.generateManifest);
+
+// Re-generate shipping label
+router.post("/:shipmentId/generate-label", shippingController.regenerateLabel);
+
 module.exports = router;

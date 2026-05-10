@@ -301,3 +301,68 @@ exports.getReports = async (req, res) => {
     return error(res, err.message);
   }
 };
+
+/**
+ * POST /api/admin/shipping/:shipmentId/manifest
+ * Generate Shiprocket manifest for a shipment.
+ */
+exports.generateManifest = async (req, res) => {
+  try {
+    const { shipmentId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(shipmentId)) {
+      return error(res, "Invalid shipment ID", 400);
+    }
+
+    const shipment = await Shipment.findById(shipmentId);
+    if (!shipment) return error(res, "Shipment not found", 404);
+    if (shipment.courier !== "shiprocket") {
+      return error(res, "Manifest generation is only supported for Shiprocket shipments", 400);
+    }
+
+    const provider = getCourierProvider("shiprocket");
+    const result = await provider.generateManifest({
+      awbNumbers: [shipment.awbNumber],
+      shiprocketShipmentIds: shipment.shiprocketShipmentId ? [shipment.shiprocketShipmentId] : [],
+    });
+
+    if (result.manifestUrl) {
+      shipment.manifestUrl = result.manifestUrl;
+      await shipment.save();
+    }
+
+    return success(res, { manifestUrl: result.manifestUrl, shipment }, "Manifest generated");
+  } catch (err) {
+    return error(res, err.message);
+  }
+};
+
+/**
+ * POST /api/admin/shipping/:shipmentId/generate-label
+ * Re-generate label for a shipment (Shiprocket).
+ */
+exports.regenerateLabel = async (req, res) => {
+  try {
+    const { shipmentId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(shipmentId)) {
+      return error(res, "Invalid shipment ID", 400);
+    }
+
+    const shipment = await Shipment.findById(shipmentId);
+    if (!shipment) return error(res, "Shipment not found", 404);
+
+    const provider = getCourierProvider(shipment.courier);
+    const result = await provider.generateLabel({
+      awbNumber: shipment.awbNumber,
+      shiprocketShipmentId: shipment.shiprocketShipmentId,
+    });
+
+    if (result.labelUrl) {
+      shipment.labelUrl = result.labelUrl;
+      await shipment.save();
+    }
+
+    return success(res, { labelUrl: result.labelUrl, shipment }, "Label regenerated");
+  } catch (err) {
+    return error(res, err.message);
+  }
+};

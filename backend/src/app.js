@@ -86,6 +86,9 @@ app.use("/api/auth",   require("./modules/auth/routes/auth.routes"));
 // Public storefront (no auth)
 app.use("/api/public",        require("./modules/public/routes/index"));
 
+// ── Courier Webhooks (no auth – verified by secret inside controllers) ───────
+app.post("/api/webhooks/shiprocket", require("./modules/shared/shiprocketWebhook.controller").handleShiprocketWebhook);
+
 // Customer routes (must be authenticated)
 // Allow both users and sellers to access user-related routes if they have the token, 
 // but requireRole("user") for specific ones inside the module.

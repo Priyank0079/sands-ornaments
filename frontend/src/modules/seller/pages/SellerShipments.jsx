@@ -25,7 +25,7 @@ const STATUS_LABELS = {
   FAILED: 'Failed', RTO_INITIATED: 'RTO', RTO_DELIVERED: 'RTO Delivered', CANCELLED: 'Cancelled',
 };
 
-const COURIER_LABELS = { delhivery: 'Delhivery', bluedart: 'Blue Dart' };
+const COURIER_LABELS = { delhivery: 'Delhivery', bluedart: 'Blue Dart', shiprocket: 'Shiprocket' };
 
 const SellerShipments = () => {
   const navigate = useNavigate();
@@ -212,6 +212,17 @@ const SellerShipments = () => {
                               rel="noopener noreferrer"
                               className="p-1.5 rounded-lg hover:bg-green-50 text-green-600 transition-colors"
                               title="Download Label"
+                            >
+                              <Download className="w-4 h-4" />
+                            </a>
+                          )}
+                          {s.invoiceUrl && (
+                            <a
+                              href={s.invoiceUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-1.5 rounded-lg hover:bg-purple-50 text-purple-600 transition-colors"
+                              title="Download Invoice"
                             >
                               <Download className="w-4 h-4" />
                             </a>

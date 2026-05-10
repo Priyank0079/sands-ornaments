@@ -2,19 +2,25 @@
  * 📦 Courier Factory
  *    Returns the correct ShippingProvider instance based on courier name.
  *    Designed for easy extension – add new providers here.
+ *
+ *    Current providers: delhivery | bluedart | shiprocket
+ *    Future providers: add here without changing any controller.
  */
 
 const DelhiveryProvider = require("./delhivery.service");
 const BlueDartProvider = require("./bluedart.service");
+const ShiprocketProvider = require("./shiprocket.service");
 
 const providers = {
   delhivery: null,
   bluedart: null,
+  shiprocket: null,
+  // Future: xpressbees: null, ecomexpress: null, dtdc: null
 };
 
 /**
  * Lazy-initialize and return the shipping provider instance.
- * @param {string} courier - "delhivery" | "bluedart"
+ * @param {string} courier - "delhivery" | "bluedart" | "shiprocket"
  * @returns {import("./ShippingProvider")}
  */
 const getCourierProvider = (courier) => {
@@ -32,6 +38,9 @@ const getCourierProvider = (courier) => {
         break;
       case "bluedart":
         providers[key] = new BlueDartProvider();
+        break;
+      case "shiprocket":
+        providers[key] = new ShiprocketProvider();
         break;
       default:
         throw new Error(`No provider implementation for: "${key}"`);

@@ -49,6 +49,43 @@ const sellerSchema = new mongoose.Schema({
   // Auth hardening: DB-backed login lockout to mitigate brute force.
   loginAttempts: { type: Number, default: 0 },
   lockUntil: { type: Date, default: null },
+
+  // ── Courier Preferences ──────────────────────────────────────────────────
+  courierPreferences: {
+    defaultCourier: {
+      type: String,
+      enum: ["delhivery", "bluedart", "shiprocket", null],
+      default: null,
+    },
+    fallbackCouriers: {
+      type: [String],
+      default: [],
+    },
+    allowCourierOverride: { type: Boolean, default: true },
+  },
+
+  // ── Shiprocket Config (per-seller) ───────────────────────────────────────
+  // Note: Global Shiprocket creds are in .env. This block stores
+  // per-seller overrides or metadata if needed.
+  shiprocketConfig: {
+    defaultPickupLocationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "PickupLocation",
+      default: null,
+    },
+    preferredCourierId: { type: Number, default: null }, // Shiprocket courier_company_id
+  },
+
+  // ── Delhivery Config (per-seller) ────────────────────────────────────────
+  delhiveryConfig: {
+    pickupName: { type: String, default: null }, // DELHIVERY_PICKUP_NAME override
+  },
+
+  // ── Blue Dart Config (per-seller) ────────────────────────────────────────
+  bluedartConfig: {
+    originArea: { type: String, default: null }, // BLUEDART_ORIGIN_AREA override
+  },
+
 }, { timestamps: true });
 
 module.exports = mongoose.model("Seller", sellerSchema);

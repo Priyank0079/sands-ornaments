@@ -19,7 +19,8 @@ import {
     QrCode,
     BarChart3,
     Bell,
-    Truck
+    Truck,
+    MapPin
 } from 'lucide-react';
 import logo from '@assets/sands-logo.png';
 import logoName from '@assets/sands-logoname.png';
@@ -57,7 +58,15 @@ const SellerSidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
             ]
         },
         { name: 'Orders', icon: ShoppingBag, path: '/seller/orders' },
-        { name: 'Shipping', icon: Truck, path: '/seller/shipments' },
+        {
+            name: 'Shipping',
+            icon: Truck,
+            path: '/seller/shipments',
+            subItems: [
+                { name: 'Shipments', path: '/seller/shipments', icon: Truck },
+                { name: 'Pickup Locations', path: '/seller/pickup-locations', icon: MapPin },
+            ]
+        },
         { name: 'Returns', icon: RotateCcw, path: '/seller/returns' },
         { name: 'Replacements', icon: RefreshCcw, path: '/seller/replacements' },
         { name: 'Customers', icon: Users, path: '/seller/customers' },

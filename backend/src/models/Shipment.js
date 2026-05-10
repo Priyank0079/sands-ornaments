@@ -13,7 +13,7 @@ const shipmentSchema = new mongoose.Schema({
 
   courier: {
     type: String,
-    enum: ["delhivery", "bluedart"],
+    enum: ["delhivery", "bluedart", "shiprocket"],
     required: true,
     index: true,
   },
@@ -21,7 +21,14 @@ const shipmentSchema = new mongoose.Schema({
   awbNumber: { type: String, default: "", index: true },
   waybill: { type: String, default: "" },
   labelUrl: { type: String, default: "" },
+  invoiceUrl: { type: String, default: "" },   // Shiprocket invoice PDF
+  manifestUrl: { type: String, default: "" },  // Shiprocket manifest PDF
   trackingUrl: { type: String, default: "" },
+
+  // Shiprocket-specific identifiers (null for Delhivery/BlueDart)
+  shiprocketOrderId: { type: String, default: null },
+  shiprocketShipmentId: { type: String, default: null },
+  shiprocketPickupName: { type: String, default: null }, // Pickup warehouse name in Shiprocket
 
   status: {
     type: String,

@@ -7,6 +7,7 @@ const mongoose = require("mongoose");
 const Shipment = require("../../../models/Shipment");
 const Order = require("../../../models/Order");
 const Seller = require("../../../models/Seller");
+const PickupLocation = require("../../../models/PickupLocation");
 const { success, error, paginated } = require("../../../utils/apiResponse");
 const { getCourierProvider, getAvailableCouriers } = require("../../../services/shipping/courierFactory");
 
@@ -15,14 +16,16 @@ const { getCourierProvider, getAvailableCouriers } = require("../../../services/
 const filterSellerItems = (items = [], sellerId) =>
   (items || []).filter((item) => String(item?.sellerId || "") === String(sellerId));
 
-const buildPickupAddress = (seller) => ({
-  name: seller.fullName || seller.shopName || "Seller",
-  phone: seller.mobileNumber || "",
-  address: seller.shopAddress || "",
-  city: seller.city || "",
-  state: seller.state || "",
-  pincode: seller.pincode || "",
-  country: "India",
+const buildPickupAddress = (source) => ({
+  name: source.contactPerson || source.fullName || source.shopName || "Seller",
+  phone: source.phone || source.mobileNumber || "",
+  address: source.addressLine1
+    ? [source.addressLine1, source.addressLine2].filter(Boolean).join(", ")
+    : source.shopAddress || "",
+  city: source.city || "",
+  state: source.state || "",
+  pincode: source.pincode || "",
+  country: source.country || "India",
 });
 
 const buildDeliveryAddress = (shippingAddr) => ({
@@ -125,7 +128,7 @@ exports.createShipment = async (req, res) => {
   try {
     const sellerId = req.user.userId;
     const { orderId } = req.params;
-    const { courier, packageInfo, paymentMode, codAmount } = req.body;
+    const { courier, packageInfo, paymentMode, codAmount, pickupLocationId } = req.body;
 
     // Validate orderId
     if (!mongoose.Types.ObjectId.isValid(orderId)) {
@@ -182,7 +185,48 @@ exports.createShipment = async (req, res) => {
       return error(res, "COD amount is required for COD orders", 400);
     }
 
-    const pickupAddress = buildPickupAddress(seller);
+    // ── Pickup address: prefer pickupLocationId, fallback to seller profile ──────
+    let pickupAddress;
+    let shiprocketPickupName = null;
+
+    if (pickupLocationId) {
+      // Seller specified a specific pickup location
+      if (!mongoose.Types.ObjectId.isValid(pickupLocationId)) {
+        return error(res, "Invalid pickupLocationId", 400);
+      }
+      const pickupLoc = await PickupLocation.findOne({
+        _id: pickupLocationId, sellerId, isActive: true,
+      });
+      if (!pickupLoc) return error(res, "Pickup location not found or not yours", 404);
+
+      pickupAddress = buildPickupAddress(pickupLoc);
+      shiprocketPickupName = pickupLoc.shiprocket?.pickupName || pickupLoc.warehouseName;
+    } else if (courier === "shiprocket") {
+      // Shiprocket: try the seller's default pickup location
+      const defaultLoc = await PickupLocation.findOne({
+        sellerId, isDefault: true, isActive: true,
+      });
+
+      if (!defaultLoc) {
+        return error(res, "No default pickup location found. Add a pickup location first.", 400);
+      }
+
+      pickupAddress = buildPickupAddress(defaultLoc);
+      shiprocketPickupName = defaultLoc.shiprocket?.pickupName || defaultLoc.warehouseName;
+    } else {
+      // Delhivery / BlueDart: use seller's shop address
+      if (!seller.pincode) return error(res, "Seller pickup pincode is missing. Update your profile.", 400);
+      if (!seller.mobileNumber) return error(res, "Seller phone is missing. Update your profile.", 400);
+      if (!seller.shopAddress) return error(res, "Seller shop address is missing. Update your profile.", 400);
+
+      pickupAddress = buildPickupAddress(seller);
+    }
+
+    // Validate seller pickup address only for non-Shiprocket couriers (Shiprocket handled above)
+    if (courier !== "shiprocket") {
+      if (!pickupAddress.pincode) return error(res, "Seller pickup pincode is missing. Update your profile.", 400);
+    }
+
     const deliveryAddress = buildDeliveryAddress(shippingAddr);
 
     // Check serviceability first
@@ -222,11 +266,14 @@ exports.createShipment = async (req, res) => {
       codAmount: mode === "cod" ? codAmount : 0,
       items: shipmentItems,
       sellerName: seller.shopName || seller.fullName,
+      // Shiprocket-specific:
+      shiprocketPickupName,
+      preferredCourierId: seller.shiprocketConfig?.preferredCourierId || null,
     });
 
-    // Generate label
+    // Generate label (Shiprocket returns label inline; Delhivery/BlueDart may need separate call)
     let labelUrl = courierResult.labelUrl || "";
-    if (!labelUrl && courierResult.awbNumber) {
+    if (!labelUrl && courierResult.awbNumber && courier !== "shiprocket") {
       try {
         const labelResult = await provider.generateLabel({ awbNumber: courierResult.awbNumber });
         labelUrl = labelResult.labelUrl || "";
@@ -243,7 +290,12 @@ exports.createShipment = async (req, res) => {
       awbNumber: courierResult.awbNumber,
       waybill: courierResult.waybill || courierResult.awbNumber,
       labelUrl,
+      invoiceUrl: courierResult.invoiceUrl || "",
+      manifestUrl: "",
       trackingUrl: courierResult.trackingUrl || "",
+      shiprocketOrderId: courierResult.shiprocketOrderId || null,
+      shiprocketShipmentId: courierResult.shiprocketShipmentId || null,
+      shiprocketPickupName: shiprocketPickupName || null,
       status: "CREATED",
       pickupAddress,
       deliveryAddress,

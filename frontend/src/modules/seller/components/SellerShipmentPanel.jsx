@@ -4,11 +4,13 @@ import {
   Loader2, ExternalLink, Download, RefreshCw, X, ChevronDown
 } from 'lucide-react';
 import { sellerShippingService } from '../services/sellerShippingService';
+import { pickupLocationService } from '../services/pickupLocationService';
 import ShipmentTimeline from '../../shared/components/ShipmentTimeline';
 
 const COURIERS = [
-  { id: 'delhivery', name: 'Delhivery', desc: 'Pan-India coverage with express delivery' },
-  { id: 'bluedart', name: 'Blue Dart', desc: 'Premium courier with high reliability' },
+  { id: 'delhivery',  name: 'Delhivery',  desc: 'Pan-India coverage with express delivery' },
+  { id: 'bluedart',  name: 'Blue Dart',   desc: 'Premium courier with high reliability' },
+  { id: 'shiprocket', name: 'Shiprocket', desc: 'Smart courier selection via Shiprocket' },
 ];
 
 const SellerShipmentPanel = ({ order, onShipmentCreated }) => {
@@ -25,6 +27,11 @@ const SellerShipmentPanel = ({ order, onShipmentCreated }) => {
   const [packageInfo, setPackageInfo] = useState({ weight: '', length: '', breadth: '', height: '' });
   const [paymentMode, setPaymentMode] = useState(order?.paymentMethod === 'cod' ? 'cod' : 'prepaid');
   const [codAmount, setCodAmount] = useState(order?.total || 0);
+
+  // Pickup location state (for Shiprocket)
+  const [pickupLocations, setPickupLocations] = useState([]);
+  const [selectedPickupLocationId, setSelectedPickupLocationId] = useState('');
+  const [loadingPickupLocations, setLoadingPickupLocations] = useState(false);
 
   // Serviceability
   const [serviceability, setServiceability] = useState(null);
@@ -45,6 +52,28 @@ const SellerShipmentPanel = ({ order, onShipmentCreated }) => {
       console.error('Failed to fetch shipments:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCourierSelect = async (courierId) => {
+    setSelectedCourier(courierId);
+    setServiceability(null);
+    setSelectedPickupLocationId('');
+
+    // Load pickup locations when Shiprocket is chosen
+    if (courierId === 'shiprocket') {
+      setLoadingPickupLocations(true);
+      try {
+        const locs = await pickupLocationService.list();
+        setPickupLocations(locs);
+        // Pre-select the default location
+        const def = locs.find(l => l.isDefault);
+        if (def) setSelectedPickupLocationId(def._id);
+      } catch (err) {
+        console.error('Failed to load pickup locations:', err);
+      } finally {
+        setLoadingPickupLocations(false);
+      }
     }
   };
 
@@ -97,6 +126,8 @@ const SellerShipmentPanel = ({ order, onShipmentCreated }) => {
         },
         paymentMode,
         codAmount: paymentMode === 'cod' ? Number(codAmount) : 0,
+        // Only sent for Shiprocket
+        pickupLocationId: selectedCourier === 'shiprocket' ? selectedPickupLocationId || undefined : undefined,
       });
       setMessage({ type: 'success', text: `Shipment created! AWB: ${result.shipment?.awbNumber}` });
       setShowCreateForm(false);
@@ -229,6 +260,16 @@ const SellerShipmentPanel = ({ order, onShipmentCreated }) => {
                     <Download className="w-3.5 h-3.5" /> Download Label
                   </a>
                 )}
+                {activeShipment.invoiceUrl && (
+                  <a
+                    href={activeShipment.invoiceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-purple-50 text-purple-700 text-xs font-bold hover:bg-purple-100 transition-colors border border-purple-200"
+                  >
+                    <Download className="w-3.5 h-3.5" /> Download Invoice
+                  </a>
+                )}
               </div>
             </div>
           </div>
@@ -266,11 +307,11 @@ const SellerShipmentPanel = ({ order, onShipmentCreated }) => {
               {/* Courier Selection */}
               <div className="mb-6">
                 <label className="block text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-2">Select Courier</label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {COURIERS.map((c) => (
                     <button
                       key={c.id}
-                      onClick={() => { setSelectedCourier(c.id); setServiceability(null); }}
+                      onClick={() => handleCourierSelect(c.id)}
                       className={`p-4 rounded-xl border-2 text-left transition-all ${selectedCourier === c.id
                         ? 'border-[#3E2723] bg-[#3E2723]/5 shadow-md'
                         : 'border-gray-200 hover:border-gray-300'
@@ -281,6 +322,37 @@ const SellerShipmentPanel = ({ order, onShipmentCreated }) => {
                     </button>
                   ))}
                 </div>
+
+                {/* Shiprocket: Pickup Location Picker */}
+                {selectedCourier === 'shiprocket' && (
+                  <div className="mt-4">
+                    <label className="block text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1.5">Pickup Location</label>
+                    {loadingPickupLocations ? (
+                      <div className="flex items-center gap-2 text-xs text-gray-500 py-2">
+                        <Loader2 className="w-4 h-4 animate-spin" /> Loading pickup locations...
+                      </div>
+                    ) : pickupLocations.length === 0 ? (
+                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-700 flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                        No pickup locations found.
+                        <a href="/seller/pickup-locations" className="underline font-bold ml-1" target="_blank">Add one here →</a>
+                      </div>
+                    ) : (
+                      <select
+                        value={selectedPickupLocationId}
+                        onChange={(e) => setSelectedPickupLocationId(e.target.value)}
+                        className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#3E2723]/20 focus:border-[#3E2723]"
+                      >
+                        <option value="">— Select a pickup location —</option>
+                        {pickupLocations.map((loc) => (
+                          <option key={loc._id} value={loc._id}>
+                            {loc.warehouseName}{loc.isDefault ? ' (Default)' : ''} — {loc.city}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+                )}
 
                 {selectedCourier && (
                   <button
