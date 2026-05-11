@@ -85,6 +85,8 @@ const sellerSchema = new mongoose.Schema({
   bluedartConfig: {
     originArea: { type: String, default: null }, // BLUEDART_ORIGIN_AREA override
   },
+  fcmTokens: { type: [String], default: [] },
+  fcmTokenMobile: { type: [String], default: [] },
 
 }, { timestamps: true });
 

@@ -1,4 +1,5 @@
 const Notification = require("../models/Notification");
+const { sendNotificationToRecipient } = require("../utils/pushNotificationHelper");
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_LOW_STOCK_THRESHOLD = 5;
@@ -21,7 +22,7 @@ const createSellerNotification = async ({
     const safeMessage = safeString(message);
     if (!safeTitle || !safeMessage) return null;
 
-    return await Notification.create({
+    const notification = await Notification.create({
       sellerId: sid,
       title: safeTitle,
       message: safeMessage,
@@ -31,6 +32,15 @@ const createSellerNotification = async ({
       isBroadcast: false,
       isRead: false
     });
+
+    // Send push notification to seller
+    await sendNotificationToRecipient(sid, "seller", {
+      title: safeTitle,
+      body: safeMessage,
+      data: { type, link }
+    });
+
+    return notification;
   } catch (_err) {
     // Best-effort: notification failures must not break core flows.
     return null;

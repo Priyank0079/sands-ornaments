@@ -99,8 +99,27 @@ import Loader from './modules/shared/components/Loader';
 
 const LoadingFallback = () => <Loader fullPage={false} />;
 
+import { initializePushNotifications, setupForegroundNotificationHandler } from './services/pushNotificationService';
+import toast from 'react-hot-toast';
+
 const AppContent = () => {
   const location = useLocation();
+
+  React.useEffect(() => {
+    // Initialize push notifications
+    initializePushNotifications();
+
+    // Setup foreground handler
+    setupForegroundNotificationHandler((payload) => {
+      console.log('Notification received in foreground:', payload);
+      // Show a toast for foreground notifications
+      toast.success(payload.notification.body, {
+        icon: '🔔',
+        duration: 5000,
+      });
+    });
+  }, []);
+
   const isAdminPath = location.pathname.startsWith('/admin');
   const isSellerPath = location.pathname.startsWith('/seller');
   const isScannerPath = location.pathname === '/scanner';

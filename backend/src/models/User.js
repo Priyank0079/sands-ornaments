@@ -14,6 +14,8 @@ const userSchema = new mongoose.Schema(
     isDeleted: { type: Boolean, default: false, index: true },
     deletedAt: { type: Date, default: null },
     notificationsEnabled: { type: Boolean, default: true },
+    fcmTokens: { type: [String], default: [] },
+    fcmTokenMobile: { type: [String], default: [] },
     wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
   },
   { timestamps: true }

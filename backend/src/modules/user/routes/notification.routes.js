@@ -7,5 +7,7 @@ const requireActiveUser = require("../../../middlewares/requireActiveUser");
 router.use(authenticate, requireRole("user", "seller", "admin"), requireActiveUser);
 router.get("/", notificationController.getMyNotifications);
 router.patch("/:id/read", notificationController.markAsRead);
+router.post("/fcm-token", notificationController.saveFCMToken);
+router.delete("/fcm-token", notificationController.removeFCMToken);
 
 module.exports = router;

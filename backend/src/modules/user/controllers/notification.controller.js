@@ -1,4 +1,6 @@
 const Notification = require("../../../models/Notification");
+const User = require("../../../models/User");
+const Seller = require("../../../models/Seller");
 const mongoose = require("mongoose");
 const { success, error } = require("../../../utils/apiResponse");
 
@@ -40,4 +42,69 @@ exports.markAsRead = async (req, res) => {
 
     return success(res, {}, "Marked as read");
   } catch (err) { return error(res, err.message); }
+};
+
+// ── FCM Token Management ─────────────────────────────────────────────────────
+
+exports.saveFCMToken = async (req, res) => {
+  try {
+    const { token, platform = "web" } = req.body;
+    if (!token) return error(res, "Token is required", 400);
+
+    const { userId, role } = req.user;
+    let user;
+
+    if (role === "seller") {
+      user = await Seller.findById(userId);
+    } else {
+      user = await User.findById(userId);
+    }
+
+    if (!user) return error(res, "User not found", 404);
+
+    const tokenField = platform === "mobile" ? "fcmTokenMobile" : "fcmTokens";
+    
+    if (!user[tokenField]) user[tokenField] = [];
+    if (!user[tokenField].includes(token)) {
+      user[tokenField].push(token);
+      // Keep only last 5 tokens
+      if (user[tokenField].length > 5) {
+        user[tokenField] = user[tokenField].slice(-5);
+      }
+      await user.save();
+    }
+
+    return success(res, {}, "FCM token saved successfully");
+  } catch (err) {
+    return error(res, err.message);
+  }
+};
+
+exports.removeFCMToken = async (req, res) => {
+  try {
+    const { token, platform = "web" } = req.body;
+    if (!token) return error(res, "Token is required", 400);
+
+    const { userId, role } = req.user;
+    let user;
+
+    if (role === "seller") {
+      user = await Seller.findById(userId);
+    } else {
+      user = await User.findById(userId);
+    }
+
+    if (!user) return error(res, "User not found", 404);
+
+    const tokenField = platform === "mobile" ? "fcmTokenMobile" : "fcmTokens";
+
+    if (user[tokenField]) {
+      user[tokenField] = user[tokenField].filter((t) => t !== token);
+      await user.save();
+    }
+
+    return success(res, {}, "FCM token removed successfully");
+  } catch (err) {
+    return error(res, err.message);
+  }
 };
