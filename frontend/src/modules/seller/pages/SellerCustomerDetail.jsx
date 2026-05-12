@@ -118,13 +118,6 @@ const SellerCustomerDetail = () => {
 
                         <div className="space-y-6">
                             <div className="flex items-center gap-4">
-                                <div className="p-2 bg-gray-50 rounded-lg"><Mail size={14} className="text-gray-400" /></div>
-                                <div>
-                                    <p className={labelClasses}>Digital Endpoint</p>
-                                    <p className="text-sm font-bold text-gray-900">{customer.email || 'Email not available'}</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-4">
                                 <div className="p-2 bg-gray-50 rounded-lg"><User size={14} className="text-gray-400" /></div>
                                 <div>
                                     <p className={labelClasses}>Customer Name</p>

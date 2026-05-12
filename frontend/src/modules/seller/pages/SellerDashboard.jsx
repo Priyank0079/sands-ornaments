@@ -22,6 +22,7 @@ const SellerDashboard = () => {
         lowStockItems: []
     });
     const [analytics, setAnalytics] = useState(null);
+    const [visitorInsights, setVisitorInsights] = useState([]);
     const [recentOrders, setRecentOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState('');
@@ -30,9 +31,13 @@ const SellerDashboard = () => {
         const fetchSellerStats = async () => {
             try {
                 setLoadError('');
-                const res = await api.get('seller/dashboard/stats');
-                if (res.data.success) {
-                    const payload = res.data.data || res.data;
+                const [statsRes, insightsRes] = await Promise.all([
+                    api.get('seller/dashboard/stats'),
+                    api.get('seller/analytics/visitor-insights')
+                ]);
+
+                if (statsRes.data.success) {
+                    const payload = statsRes.data.data || statsRes.data;
                     const { stats: sellerStats, recentOrders: orderRows, analytics: dashboardAnalytics } = payload;
 
                     setStats({
@@ -50,11 +55,14 @@ const SellerDashboard = () => {
                         id: order._id,
                         customerName: order.userId?.fullName || order.userId?.name || order.shippingAddress?.firstName || 'Customer',
                         product: order.items?.[0]?.productId?.name || order.items?.[0]?.name || 'Jewellery Item',
-                        // Prefer seller-scoped totals if present (avoids multi-seller order inflation).
                         price: Number(order.sellerSubtotal ?? order.total ?? 0),
                         paymentStatus: String(order.paymentStatus || 'pending').toLowerCase(),
                         orderStatus: order.status || 'Processing'
                     })));
+                }
+
+                if (insightsRes.data.success) {
+                    setVisitorInsights(insightsRes.data.data.insights || []);
                 }
             } catch (err) {
                 setLoadError(err?.response?.data?.message || err?.message || 'Failed to load dashboard');
@@ -279,6 +287,44 @@ const SellerDashboard = () => {
                                 </div>
                             ))}
                         </div>
+                    </div>
+                </div>
+
+                <div className="lg:col-span-8 bg-white rounded-[2rem] border border-gray-100 p-8 shadow-sm">
+                    <div className="flex items-center justify-between mb-8">
+                        <div>
+                            <h3 className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em]">Product Engagement</h3>
+                            <p className="text-[9px] font-bold text-gray-400 uppercase mt-1 italic">Visitor Views & Cart Additions</p>
+                        </div>
+                        <Eye size={16} className="text-gray-200" />
+                    </div>
+                    
+                    <div className="space-y-4">
+                        {visitorInsights.slice(0, 5).map((insight, idx) => (
+                            <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100/50">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-[10px] font-black text-[#3E2723]">
+                                        0{idx + 1}
+                                    </div>
+                                    <span className="text-[10px] font-black text-gray-900 uppercase truncate max-w-[200px]">{insight.name}</span>
+                                </div>
+                                <div className="flex items-center gap-6">
+                                    <div className="text-right">
+                                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Views</p>
+                                        <p className="text-xs font-black text-gray-900">{insight.views}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Carts</p>
+                                        <p className="text-xs font-black text-[#8D6E63]">{insight.carts}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                        {visitorInsights.length === 0 && (
+                            <div className="text-center py-10 text-[10px] font-black text-gray-300 uppercase tracking-widest">
+                                No engagement data yet
+                            </div>
+                        )}
                     </div>
                 </div>
 

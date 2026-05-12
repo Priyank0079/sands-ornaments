@@ -18,6 +18,7 @@ const AdminLayout = ({ children }) => {
 
     const menuItems = [
         { name: 'Dashboard', icon: LayoutDashboard, path: '/admin' },
+        { name: 'Analytics', icon: FileBarChart, path: '/admin/analytics' },
         { name: 'Categories', icon: ImageIcon, path: '/admin/categories' },
 
         {

@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from './AuthContext';
 import { useCatalogue } from '../hooks/useCatalogue';
 import { adminService } from '../modules/admin/services/adminService';
+import { analytics } from '../services/analytics';
 
 export const ShopContext = createContext();
 
@@ -679,6 +680,7 @@ export const ShopProvider = ({ children }) => {
             return;
         }
 
+        analytics.track('add_to_cart', { productId, variantId, quantity: requestedQty, name: productData?.name });
         setCart((prev) => {
             const existing = prev.find((item) => item.id === productId && item.variantId === variantId);
             if (existing) {
@@ -766,6 +768,7 @@ export const ShopProvider = ({ children }) => {
     };
 
     const addToWishlist = async (product) => {
+        analytics.track('wishlist_add', { productId: product._id || product.id, name: product.name });
         if (!user) {
             // Guest Wishlist Management
             setWishlist(prev => {

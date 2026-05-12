@@ -11,6 +11,9 @@ import AnnouncementBar from './modules/user/components/AnnouncementBar';
 import PincodeModal from './modules/user/components/PincodeModal';
 import WhatsAppFloating from './modules/user/components/WhatsAppFloating';
 import SmoothScrollProvider from './components/SmoothScrollProvider';
+import { usePageTracking } from './hooks/useAnalytics';
+import LeadCapturePopup from './modules/user/components/LeadCapturePopup';
+import CookieConsent from './modules/user/components/CookieConsent';
 
 // Admin Imports
 import AdminLogin from './modules/admin/pages/Login';
@@ -57,6 +60,7 @@ import QrScannerPage from './modules/seller/pages/QrScannerPage';
 import MetalPricing from './modules/admin/pages/MetalPricing';
 import TaxSettings from './modules/admin/pages/TaxSettings';
 import AdminShipments from './modules/admin/pages/AdminShipments';
+import AnalyticsDashboard from './modules/admin/pages/AnalyticsDashboard';
 
 // Seller Imports
 import SellerRoutes from './modules/seller/routes/sellerRoutes';
@@ -104,6 +108,7 @@ import toast from 'react-hot-toast';
 
 const AppContent = () => {
   const location = useLocation();
+  usePageTracking();
 
   React.useEffect(() => {
     // Initialize push notifications
@@ -134,6 +139,8 @@ const AppContent = () => {
             <Navbar />
             <CategoryNav showMetalToggle={showMetalToggle} />
             <PincodeModal />
+            <LeadCapturePopup />
+            <CookieConsent />
           </div>
           <div className={`h-[104px] ${showMetalToggle ? 'md:h-[226px]' : 'md:h-[166px]'} w-full`}></div>
         </>
@@ -196,6 +203,7 @@ const AppContent = () => {
               <AdminLayout>
                 <Routes>
                   <Route path="/" element={<AdminDashboard />} />
+                  <Route path="/analytics" element={<AnalyticsDashboard />} />
                   {/* Legacy alias: older admin UI linked to /admin/dashboard */}
                   <Route path="/dashboard" element={<AdminDashboard />} />
                   <Route path="/categories" element={<CategoryPage />} />

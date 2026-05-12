@@ -7,5 +7,6 @@ router.use(authenticate, requireRole("seller"));
 
 router.get("/sales-trend", analyticsController.getSalesTrend);
 router.get("/product-performance", analyticsController.getProductPerformance);
+router.get("/visitor-insights", analyticsController.getVisitorInsights);
 
 module.exports = router;

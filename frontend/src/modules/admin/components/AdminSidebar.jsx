@@ -32,7 +32,8 @@ import {
     RefreshCw,
     AlertTriangle,
     FileBarChart,
-    FileText
+    FileText,
+    Activity
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
@@ -74,10 +75,10 @@ const AdminSidebar = () => {
 
     const mainMenuItems = [
         { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
+        { icon: Activity, label: 'Analytics', path: '/admin/analytics' },
         { icon: Users, label: 'Users', path: '/admin/users' },
         { icon: Store, label: 'Sellers', path: '/admin/sellers' },
         { icon: Layers, label: 'Categories', path: '/admin/categories' },
-        { icon: Layers, label: 'Sub-categories', path: '/admin/sub-categories' },
     ];
 
     const secondaryMenuItems = [

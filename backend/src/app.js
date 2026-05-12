@@ -83,6 +83,9 @@ app.get("/", (req, res) => {
 // Auth (user + admin + seller)
 app.use("/api/auth",   require("./modules/auth/routes/auth.routes"));
 
+// Public Tracking (no auth)
+app.use("/api/analytics", require("./modules/admin/routes/analytics.routes"));
+
 // Public storefront (no auth)
 app.use("/api/public",        require("./modules/public/routes/index"));
 

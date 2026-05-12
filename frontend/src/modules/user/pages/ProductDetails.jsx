@@ -8,6 +8,7 @@ import ProductCard from '../components/ProductCard';
 
 import { Heart, ShoppingBag, Star, Share2, Plus, Minus, Truck, ShieldCheck, Smile, Gift, ChevronDown, SlidersHorizontal, X, Camera, Check, ArrowLeft, ArrowRight, Droplets, Sparkles, Play, Globe, Zap, Users } from 'lucide-react';
 // Product video is backend-driven (optional) via `product.videoUrl`.
+import { useAnalytics } from '../../../hooks/useAnalytics';
 import Loader from '../../shared/components/Loader';
 
 // Import model shots (angle 2) for maximum hover impact
@@ -53,6 +54,7 @@ const AccordionItem = ({ title, children, isOpen, onClick }) => (
 
 const ProductDetails = () => {
     const { id } = useParams();
+    const { track } = useAnalytics();
     const navigate = useNavigate();
     const { addToCart, addToWishlist, removeFromWishlist, wishlist, products, isLoading, pincode, updatePincode } = useShop();
     const { user } = useAuth();
@@ -100,6 +102,7 @@ const ProductDetails = () => {
 
     useEffect(() => {
         if (product) {
+            track('product_view', { productId: product._id || product.id, name: product.name });
             const materialLower = String(product?.material || product?.metal || '').trim().toLowerCase();
             const suffix = materialLower === 'gold'
                 ? 'Gold Jewellery'
@@ -108,7 +111,7 @@ const ProductDetails = () => {
                     : 'Jewellery';
             document.title = `${product.name} | Sands Ornaments - ${suffix}`;
         }
-    }, [product]);
+    }, [product, track]);
 
     useEffect(() => {
         const loadReviews = async () => {

@@ -1,6 +1,7 @@
 const router = require("express").Router();
 
 router.use("/",          require("./dashboard.routes"));
+router.use("/analytics",     require("./analytics.routes"));
 router.use("/orders",        require("./order.routes"));
 router.use("/products",      require("./product.routes"));
 router.use("/categories",    require("./category.routes"));

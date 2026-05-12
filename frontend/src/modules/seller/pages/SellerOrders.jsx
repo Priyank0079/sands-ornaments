@@ -85,7 +85,6 @@ const SellerOrders = () => {
             render: (row) => (
                 <div className="flex flex-col">
                     <span className="text-[10px] font-black text-gray-900 uppercase">{row.customerName || 'Customer'}</span>
-                    <span className="text-[9px] text-gray-400 font-bold">{row.customerPhone || row.customerEmail || 'Private profile'}</span>
                 </div>
             )
         },

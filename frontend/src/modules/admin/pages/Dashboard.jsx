@@ -4,7 +4,7 @@ import api from '../../../services/api';
 import {
     Plus, Ticket, Clock, RotateCcw, AlertTriangle,
     Users, IndianRupee, ShoppingBag,
-    Store
+    Store, Activity
 } from 'lucide-react';
 import AdminStatsCard from '../components/AdminStatsCard';
 import AdminTable from '../components/AdminTable';
@@ -80,6 +80,7 @@ const AdminDashboard = () => {
     }, [fetchStats]);
 
     const quickActions = [
+        { label: 'VISITOR ANALYTICS', icon: Activity, bg: 'bg-blue-50', text: 'text-blue-500', path: '/admin/analytics' },
         { label: 'ADD PRODUCT', icon: Plus, bg: 'bg-[#F0FDF4]', text: 'text-emerald-500', path: '/admin/products/new' },
         { label: 'CREATE COUPON', icon: Ticket, bg: 'bg-[#FDF2F8]', text: 'text-pink-500', path: '/admin/coupons/add' },
         { label: 'PENDING ORDERS', icon: Clock, bg: 'bg-[#FFF7ED]', text: 'text-orange-500', path: '/admin/orders?status=pending' },

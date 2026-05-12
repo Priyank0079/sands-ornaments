@@ -48,18 +48,6 @@ const SellerCustomers = () => {
             )
         },
         {
-            header: 'EMAIL',
-            className: 'w-[24%]',
-            render: (row) => (
-                <div className="flex items-center gap-2">
-                    <Mail size={12} className="text-gray-300" />
-                    <span className="text-[11px] font-bold text-gray-700 normal-case break-all">
-                        {row.email || 'Email not available'}
-                    </span>
-                </div>
-            )
-        },
-        {
             header: 'ORDERS',
             className: 'w-[12%]',
             render: (row) => (

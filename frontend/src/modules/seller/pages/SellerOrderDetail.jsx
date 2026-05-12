@@ -335,10 +335,6 @@ const SellerOrderDetail = () => {
                                         <p className={labelClasses}>Customer Name</p>
                                         <p className={valueClasses}>{order.customerName || order.userId?.fullName || 'Customer'}</p>
                                     </div>
-                                    <div>
-                                        <p className={labelClasses}>Contact</p>
-                                        <p className="text-sm font-bold text-gray-900 mt-1">{order.customerPhone || order.userId?.mobileNumber || 'Private'}</p>
-                                    </div>
                                 </div>
                             </div>
                             <div>
