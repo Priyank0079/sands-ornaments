@@ -4,8 +4,6 @@ import { useShop } from '../../../context/ShopContext';
 import { useAuth } from '../../../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { getMenLoginRedirect, storeMenPendingCartItem } from '../utils/menNavigation';
-import { getWomenLoginRedirect, storeWomenPendingCartItem } from '../utils/womenNavigation';
 
 import latestRing from '@assets/latest_drop_ring.png';
 import latestBracelet from '@assets/latest_drop_bracelet.png';
@@ -45,11 +43,9 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
     const currencyText = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
 
     const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
-    const isWishlisted = safeWishlist.some(item => item.id === product.id);
+    const isWishlisted = safeWishlist.some(item => (item.id || item._id) === (product.id || product._id));
 
-    // Dynamic Image Resolution - Prefer DB images; only use hardcoded fallbacks when DB has none.
-    // Build a "real images" list first (DB-backed images), and only fall back to legacy fields if needed.
-    // This avoids mixing a legacy/hardcoded `product.image` with DB images (which looks like 2 sources).
+    // Dynamic Image Resolution
     const productImages = Array.isArray(product.images) ? product.images.filter(Boolean) : [];
     const variantImages = Array.isArray(product.variants)
         ? product.variants.flatMap((v) => (Array.isArray(v?.variantImages) ? v.variantImages : [])).filter(Boolean)
@@ -58,42 +54,29 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
     const dbImages = productImages.length > 0 ? productImages : variantImages;
 
     const resolvePrimaryImage = () => {
-        // 1) Use DB image when available.
         if (dbImages[0]) return dbImages[0];
-
-        // 2) Only if DB has no images, use hardcoded premium fallbacks.
         const categoryData = product.category;
         const categoryName = (typeof categoryData === 'object' ? categoryData?.name : categoryData) || '';
         const searchStr = String(categoryName + ' ' + (product.name || '')).toLowerCase();
-
         if (searchStr.includes('ring')) return fallbackProductMap.ring;
         if (searchStr.includes('necklace') || searchStr.includes('choker') || searchStr.includes('set')) return fallbackProductMap.necklace;
         if (searchStr.includes('pendant') || searchStr.includes('chain')) return fallbackProductMap.pendant;
         if (searchStr.includes('bracelet')) return fallbackProductMap.bracelet;
-
         return null;
     };
 
     const primaryImage = resolvePrimaryImage();
 
     const resolveSecondaryImage = () => {
-        // 1) Prefer product-level image #2 for hover (admin/seller-controlled).
-        if (productImages.length >= 2) {
-            return productImages[1];
-        }
-
-        // 2) If product images are missing, allow variants to provide a hover image.
+        if (productImages.length >= 2) return productImages[1];
         if (productImages.length === 0) {
             const variantHover = variantImages.find((img) => img && img !== primaryImage);
             if (variantHover) return variantHover;
         }
-
-        // 2) If DB had no images and we are using hardcoded fallbacks, allow a hover fallback too.
         if (!dbImages[0]) {
             const categoryData = product.category;
             const categoryName = (typeof categoryData === 'object' ? categoryData?.name : categoryData) || '';
             const searchStr = String(categoryName + ' ' + (product.name || '')).toLowerCase();
-
             if (searchStr.includes('ring')) return fallbackModelMap.ring;
             if (searchStr.includes('necklace') || searchStr.includes('choker') || searchStr.includes('set')) return fallbackModelMap.pendant;
             if (searchStr.includes('pendant') || searchStr.includes('chain')) return fallbackModelMap.pendant;
@@ -101,61 +84,29 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
             if (searchStr.includes('bracelet')) return fallbackModelMap.bracelet;
             if (searchStr.includes('anklet')) return fallbackModelMap.anklet;
         }
-
         return null;
     };
     const secondaryImage = resolveSecondaryImage();
 
-    const variantPrices = (product.variants || [])
-        .map(v => Number(v.price))
-        .filter(v => !Number.isNaN(v) && v > 0);
-    const variantOriginalPrices = (product.variants || [])
-        .map(v => Number(v.mrp))
-        .filter(v => !Number.isNaN(v) && v > 0);
+    const variantPrices = (product.variants || []).map(v => Number(v.price)).filter(v => !Number.isNaN(v) && v > 0);
+    const variantOriginalPrices = (product.variants || []).map(v => Number(v.mrp)).filter(v => !Number.isNaN(v) && v > 0);
     const variantCount = (product.variants || []).length;
     const fromPrice = variantPrices.length > 0 ? Math.min(...variantPrices) : Number(product.price || 0);
     const fromOriginalPrice = variantOriginalPrices.length > 0 ? Math.max(...variantOriginalPrices) : Number(product.originalPrice || 0);
-
     const effectivePrice = variantCount > 1 ? fromPrice : Number(product.price || 0);
     const effectiveOriginalPrice = variantCount > 1 ? fromOriginalPrice : Number(product.originalPrice || 0);
 
-    // UI Label logic
-    const categoryData = product.category;
-    const categoryLabel = typeof categoryData === 'object' ? categoryData?.name : categoryData || '';
-    const materialLower = String(product?.material || product?.metal || '').trim().toLowerCase();
-    const metalLabel = materialLower === 'gold' ? 'Gold' : 'Silver';
-    const collectionLabel = categoryLabel
-        ? `925 ${metalLabel} ${categoryLabel}`
-        : `925 ${metalLabel} Jewellery`;
-
-    const ratingValue = Number(product.rating || 0);
     const reviewCount = Number(product.reviewCount ?? product.reviews ?? 0);
-    const hasReviews = reviewCount > 0 && ratingValue > 0;
-
-    const redirectToLogin = () => {
-        toast.error('Please login to continue');
-        navigate(loginSource === 'women' ? getWomenLoginRedirect() : getMenLoginRedirect());
-    };
 
     const handleProductOpen = () => {
-        if (requireLogin && !user) {
-            redirectToLogin();
-            return;
-        }
-
         navigate(`/product/${product.id || product._id}`);
     };
 
     const handleAddToCart = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (requireLogin && !user) {
-            if (loginSource === 'women') {
-                storeWomenPendingCartItem(product);
-            } else {
-                storeMenPendingCartItem(product);
-            }
-            redirectToLogin();
+        if (product.status === 'Draft' || product.active === false) {
+            toast.error("This product is currently unavailable");
             return;
         }
         setFlyingType('cart');
@@ -170,17 +121,13 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
     const handleWishlist = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (requireLogin && !user) {
-            redirectToLogin();
-            return;
-        }
         if (!isWishlisted) {
             setFlyingType('heart');
             setFlying(true);
             addToWishlist(product);
             setTimeout(() => setFlying(false), 800);
         } else {
-            removeFromWishlist(product.id);
+            removeFromWishlist(product.id || product._id);
         }
     };
 
@@ -218,7 +165,6 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
             )}
 
             <div className="group/card relative w-full flex flex-col bg-white overflow-hidden cursor-pointer" onClick={handleProductOpen}>
-                {/* Image Container - Square & Sharp */}
                 <div className="relative aspect-square overflow-hidden bg-gray-50 rounded-none mb-3">
                     {primaryImage ? (
                         <>
@@ -241,14 +187,12 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
                         </div>
                     )}
 
-                    {/* Bestseller Badge */}
                     {(product.isTrending || product.tags?.isTrending) && (
                         <div className="absolute top-0 left-0 bg-[#E89BA8] text-white text-[9px] font-bold px-2 py-1 z-10 uppercase tracking-widest">
                             Bestseller
                         </div>
                     )}
 
-                    {/* Minimal Heart Icon */}
                     <button
                         onClick={handleWishlist}
                         className={`absolute top-2 right-2 z-20 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm transition-all transform hover:scale-110 ${isWishlisted ? 'text-[#8E2B45]' : 'text-gray-400 hover:text-rose-500'}`}
@@ -256,7 +200,6 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
                         <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
                     </button>
 
-                    {/* Rating Badge Overlay */}
                     <div className="absolute bottom-2 left-2 z-10 bg-white/95 px-1.5 py-0.5 rounded-sm flex items-center gap-1 shadow-sm border border-gray-100">
                         <span className="text-[10px] font-bold text-gray-800">{product.rating || 4.5}</span>
                         <Star className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
@@ -265,7 +208,6 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
                     </div>
                 </div>
 
-                {/* Content Container - Fixed Height for alignment */}
                 <div className="flex flex-col h-[115px] px-0">
                     <div className="flex items-baseline gap-2 mb-1">
                         <span className="text-[15px] font-bold text-gray-900">{currencyText(effectivePrice)}</span>
@@ -286,7 +228,6 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
                         )}
                     </div>
                     
-                    {/* Add to Cart Button - Boutique Style */}
                     <div className="mt-auto">
                         <button 
                             onClick={handleAddToCart}
@@ -302,4 +243,3 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
 };
 
 export default ProductCard;
-

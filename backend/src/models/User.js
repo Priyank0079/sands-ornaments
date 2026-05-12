@@ -17,6 +17,11 @@ const userSchema = new mongoose.Schema(
     fcmTokens: { type: [String], default: [] },
     fcmTokenMobile: { type: [String], default: [] },
     wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
+    cart: [{
+      productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+      variantId: { type: mongoose.Schema.Types.ObjectId },
+      quantity: { type: Number, default: 1 }
+    }],
   },
   { timestamps: true }
 );

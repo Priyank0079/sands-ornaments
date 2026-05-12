@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
 import ProductCard from '../components/ProductCard';
@@ -856,8 +856,6 @@ const Shop = () => {
                                         <ProductCard
                                             key={product.id || product._id}
                                             product={product}
-                                            requireLogin={isMenFlow || isWomenFlow}
-                                            loginSource={isWomenFlow ? 'women' : 'men'}
                                         />
                                     ))}
                                 </div>

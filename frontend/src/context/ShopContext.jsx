@@ -57,16 +57,17 @@ const resolveAvailableStock = (product = {}, variantId = null) => {
 };
 
 export const ShopProvider = ({ children }) => {
-    const { user, logout: authLogout, deleteAccount: authDeleteAccount } = useAuth();
+    const { user, loading: authLoading, logout: authLogout, deleteAccount: authDeleteAccount } = useAuth();
     const isUserRole = user?.role === 'user';
     const hasAuthToken = () => Boolean(localStorage.getItem('sands_token'));
+
     // Initialize from LocalStorage if available
     const [cart, setCart] = useState(() => {
-        const saved = localStorage.getItem('cart');
+        const saved = localStorage.getItem('guestCart') || localStorage.getItem('cart');
         return saved ? JSON.parse(saved) : [];
     });
     const [wishlist, setWishlist] = useState(() => {
-        const saved = localStorage.getItem('wishlist');
+        const saved = localStorage.getItem('guestWishlist') || localStorage.getItem('wishlist');
         return saved ? JSON.parse(saved) : [];
     });
     const [orders, setOrders] = useState([]);
@@ -171,22 +172,17 @@ export const ShopProvider = ({ children }) => {
 
     // FETCH USER DATA ON LOGIN
     useEffect(() => {
-        // These endpoints are user-only. When logged in as admin/seller, calling them
-        // will correctly return 403, but we don't want console noise or wasted requests.
-        if (isUserRole) {
-            // If user state exists but token is missing/cleared, do a silent logout to avoid 403 spam.
-            if (!hasAuthToken()) {
-                authLogout({ silent: true });
-                return;
-            }
+        if (!authLoading && user && isUserRole) {
+            syncGuestDataWithBackend();
             fetchAddresses();
+            fetchNotifications();
             fetchWishlist();
+            fetchCart();
             fetchOrders();
             fetchReturns();
             fetchReplacements();
             fetchSupportTickets();
-            fetchNotifications();
-        } else {
+        } else if (!authLoading && !user) {
             setAddresses([]);
             setWishlist([]);
             setOrders([]);
@@ -216,6 +212,53 @@ export const ShopProvider = ({ children }) => {
             }
             console.error("Fetch addresses failed", err);
         }
+    };
+
+    const fetchCart = async () => {
+        if (!isUserRole || !hasAuthToken()) return;
+        try {
+            const res = await api.get('user/cart');
+            if (res.data.success) {
+                const backendCart = res.data.data?.cart || [];
+                const mappedCart = backendCart.map(item => {
+                    const product = item.productId;
+                    if (!product) return null;
+                    const selectedVariant = product.variants?.find(v => String(v._id || v.id) === String(item.variantId)) || product.variants?.[0];
+                    return {
+                        ...normalizeProductForCart(product, selectedVariant),
+                        quantity: item.quantity
+                    };
+                }).filter(Boolean);
+                setCart(mappedCart);
+            }
+        } catch (err) {
+            console.error("Fetch cart failed", err);
+        }
+    };
+
+    const syncGuestDataWithBackend = async () => {
+        if (!isUserRole || !hasAuthToken()) return;
+        
+        const guestCart = JSON.parse(localStorage.getItem('guestCart') || '[]');
+        const guestWishlist = JSON.parse(localStorage.getItem('guestWishlist') || '[]');
+
+        if (guestCart.length > 0) {
+            try {
+                await api.post('user/cart/sync', { guestItems: guestCart });
+                localStorage.removeItem('guestCart');
+            } catch (err) { console.error("Sync cart failed", err); }
+        }
+
+        if (guestWishlist.length > 0) {
+            try {
+                const guestIds = guestWishlist.map(item => item.id || item._id).filter(Boolean);
+                await api.post('user/wishlist/sync', { guestItems: guestIds });
+                localStorage.removeItem('guestWishlist');
+            } catch (err) { console.error("Sync wishlist failed", err); }
+        }
+        
+        fetchCart();
+        fetchWishlist();
     };
 
     const fetchWishlist = async () => {
@@ -384,8 +427,32 @@ export const ShopProvider = ({ children }) => {
 
     // Persist Cart
     useEffect(() => {
-        localStorage.setItem('cart', JSON.stringify(cart));
-    }, [cart]);
+        if (!user) {
+            localStorage.setItem('guestCart', JSON.stringify(cart));
+            if (localStorage.getItem('cart')) localStorage.removeItem('cart');
+        } else {
+            localStorage.setItem(`user_cart_${user.id || user._id}`, JSON.stringify(cart));
+            // Sync to backend periodically or on change
+            const items = cart.map(item => ({
+                productId: item.id || item._id,
+                variantId: item.variantId,
+                quantity: item.quantity
+            }));
+            if (items.length > 0) {
+                api.put('user/cart', { items }).catch(() => {});
+            }
+        }
+    }, [cart, user]);
+
+    // Persist Wishlist (Local only for guests)
+    useEffect(() => {
+        if (!user) {
+            localStorage.setItem('guestWishlist', JSON.stringify(wishlist));
+            if (localStorage.getItem('wishlist')) localStorage.removeItem('wishlist');
+        } else {
+            localStorage.setItem(`user_wishlist_${user.id || user._id}`, JSON.stringify(wishlist));
+        }
+    }, [wishlist, user]);
 
     // Persist Coupons
     useEffect(() => {
@@ -588,11 +655,7 @@ export const ShopProvider = ({ children }) => {
     const addToCart = (arg1, arg2, arg3) => {
         let productId, variantId, qty = 1, productData = null;
 
-        if (!user) {
-            toast.error("Please login to add to cart");
-            window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
-            return;
-        }
+        // No longer requiring login for guest cart support
 
         if (typeof arg1 === 'object') {
             // Logic for addToCart(product)
@@ -704,8 +767,13 @@ export const ShopProvider = ({ children }) => {
 
     const addToWishlist = async (product) => {
         if (!user) {
-            toast.error("Please login to save items to your wishlist");
-            window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+            // Guest Wishlist Management
+            setWishlist(prev => {
+                const exists = prev.some(item => (item.id || item._id) === (product.id || product._id));
+                if (exists) return prev;
+                return [...prev, product];
+            });
+            showNotification("Added to wishlist");
             return;
         }
         try {
@@ -742,6 +810,11 @@ export const ShopProvider = ({ children }) => {
     };
 
     const removeFromWishlist = async (productId) => {
+        if (!user) {
+            setWishlist(prev => prev.filter(item => (item.id || item._id) !== productId));
+            showNotification("Removed from wishlist");
+            return;
+        }
         try {
             const res = await api.delete(`user/wishlist/${productId}`);
             if (res.data.success) {

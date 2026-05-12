@@ -129,9 +129,6 @@ const WomenProductsListing = ({ sectionData = null }) => {
 
     const displayedProducts = useMemo(() => {
         const allProducts = Array.isArray(products) ? products : [];
-        // "navGiftsFor/navOccasions" legacy placement tags are retired. Women sections are now driven by:
-        // - CMS pinned products (manual), or
-        // - CMS category selection (category mode).
         const sortedByLatest = [...allProducts]
             .filter(isWomenAudienceProduct)
             .sort((a, b) => productCreatedAt(b) - productCreatedAt(a));
@@ -163,31 +160,11 @@ const WomenProductsListing = ({ sectionData = null }) => {
         return categoryFiltered.slice(0, resolvedSettings.productLimit);
     }, [products, resolvedSettings, sectionData?.items]);
 
-    const redirectToLogin = () => {
-        toast.error('Please login to continue');
-        navigate(getWomenLoginRedirect());
-    };
-
     const handleProductOpen = (product) => {
-        if (!user) {
-            redirectToLogin();
-            return;
-        }
         navigate(`/product/${product.id || product._id}`);
     };
 
     const handleAddToCart = (product) => {
-        if (!user) {
-            const productForCart = {
-                ...product,
-                _id: product._id || product.id,
-                id: product.id || product._id
-            };
-            storeWomenPendingCartItem(productForCart);
-            redirectToLogin();
-            return;
-        }
-
         addToCart(product);
         toast.success(`${product.name || 'Product'} added to your bag!`, {
             style: { background: PINK, color: '#fff', fontSize: '12px' },

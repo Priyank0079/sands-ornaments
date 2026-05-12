@@ -163,26 +163,10 @@ const MenFeaturedProducts = ({ sectionData }) => {
     }, [products, resolvedSettings, sectionData?.items]);
 
     const handleProductOpen = (product) => {
-        if (!user) {
-            redirectToLogin();
-            return;
-        }
-
         navigate(`/product/${product.id || product._id}`);
     };
 
     const handleAddToCart = (product) => {
-        if (!user) {
-            const realProduct = product || {
-                ...product,
-                _id: product.id || product._id,
-                id: product.id || product._id
-            };
-            storeMenPendingCartItem(realProduct);
-            redirectToLogin();
-            return;
-        }
-
         addToCart(product);
         toast.success(`${product.name || 'Product'} added to cart!`);
         setTimeout(() => navigate('/cart'), 800);

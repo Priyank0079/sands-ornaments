@@ -3,6 +3,7 @@ const router = require("express").Router();
 router.use("/profile",       require("./user.routes"));
 router.use("/addresses",     require("./address.routes"));
 router.use("/wishlist",      require("./wishlist.routes"));
+router.use("/cart",          require("./cart.routes"));
 router.use("/orders",        require("./order.routes"));
 router.use("/payments",      require("./payment.routes"));
 router.use("/coupons",       require("./coupon.routes"));

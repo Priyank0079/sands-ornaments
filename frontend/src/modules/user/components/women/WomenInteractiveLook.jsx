@@ -74,11 +74,6 @@ const WomenInteractiveLook = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
 
-    const redirectToLogin = () => {
-        toast.error('Please login to continue');
-        navigate(getWomenLoginRedirect());
-    };
-
     const handleQuickAdd = (item) => {
         const product = {
             id: `w-${item.id}`,
@@ -88,11 +83,6 @@ const WomenInteractiveLook = () => {
             category: "Women's Collection",
             variants: [{ id: `w-${item.id}-v1`, price: parseInt(item.price.replace(',', '')) }]
         };
-        if (!user) {
-            storeWomenPendingCartItem(product);
-            redirectToLogin();
-            return;
-        }
         addToCart(product);
         toast.success(`${item.productName} added to bag!`, {
             style: { background: '#4A1015', color: '#fff', fontSize: '12px', fontWeight: 'bold' },

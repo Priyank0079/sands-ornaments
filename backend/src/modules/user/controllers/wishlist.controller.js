@@ -34,3 +34,26 @@ exports.removeFromWishlist = async (req, res) => {
     return success(res, {}, "Product removed from wishlist");
   } catch (err) { return error(res, err.message); }
 };
+
+exports.syncWishlist = async (req, res) => {
+  try {
+    const { guestItems } = req.body; // Expecting array of productIds or product objects
+    
+    if (!Array.isArray(guestItems)) {
+      return error(res, "Guest items must be an array", 400);
+    }
+
+    const guestIds = guestItems.map(item => {
+      if (typeof item === 'string') return item;
+      return item.id || item._id;
+    }).filter(Boolean);
+
+    await User.findByIdAndUpdate(req.user.userId, {
+      $addToSet: { wishlist: { $each: guestIds } }
+    });
+
+    return success(res, {}, "Wishlist synced successfully");
+  } catch (err) {
+    return error(res, err.message);
+  }
+};
