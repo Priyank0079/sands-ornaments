@@ -16,7 +16,6 @@ import Loader from '../../shared/components/Loader';
 import { usePublicCmsPage } from '../hooks/usePublicCmsPage';
 
 const ShopForMen = () => {
-    const [loading, setLoading] = useState(true);
     const {
         data: sections = [],
         isLoading: isCmsLoading,
@@ -27,9 +26,6 @@ const ShopForMen = () => {
 
     useEffect(() => {
         document.title = "Shop Men's Jewellery | Sands Ornaments";
-        
-        const timer = setTimeout(() => setLoading(false), 800);
-        return () => clearTimeout(timer);
     }, []);
 
     const sectionMap = useMemo(() => (
@@ -40,7 +36,7 @@ const ShopForMen = () => {
         }, {})
     ), [sections]);
 
-    if (loading || isCmsLoading) return <Loader />;
+    if (isCmsLoading) return <Loader />;
     if (isError) {
         return (
             <div className="bg-[#FDF5F6] min-h-screen flex items-center justify-center px-6 py-14">

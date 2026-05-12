@@ -31,7 +31,6 @@ const TRUST_BADGES = [
 ];
 
 const GoldJewelleryPage = () => {
-    const [loading, setLoading] = useState(true);
     const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
     const {
         data: sections = [],
@@ -42,10 +41,7 @@ const GoldJewelleryPage = () => {
     } = usePublicCmsPage('gold-collection');
 
     useEffect(() => {
-        
         document.title = 'Shop Gold Jewellery | Sands Ornaments';
-        const timer = setTimeout(() => setLoading(false), 800);
-        return () => clearTimeout(timer);
     }, []);
 
     const sectionMap = useMemo(() => (
@@ -133,7 +129,7 @@ const GoldJewelleryPage = () => {
         }));
     }, [sectionMap]);
 
-    if (loading || isCmsLoading) return <Loader />;
+    if (isCmsLoading) return <Loader />;
     if (isError) {
         return (
             <div className="bg-white min-h-screen flex items-center justify-center px-6 py-14">

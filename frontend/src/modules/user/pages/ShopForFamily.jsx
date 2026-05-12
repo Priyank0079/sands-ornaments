@@ -20,7 +20,6 @@ const ShopForFamily = () => {
     const [selectedRecipient, setSelectedRecipient] = useState(() => (
         normalizeFamilyRecipient(recipientParam || getFamilyRecipientFromSearch(location.search))
     ));
-    const [loading, setLoading] = useState(true);
     const {
         data: sections = [],
         isLoading: isCmsLoading,
@@ -31,9 +30,6 @@ const ShopForFamily = () => {
 
     useEffect(() => {
         document.title = "Gifts for Family | Sands Ornaments";
-        
-        const timer = setTimeout(() => setLoading(false), 800);
-        return () => clearTimeout(timer);
     }, []);
 
     useEffect(() => {
@@ -51,7 +47,7 @@ const ShopForFamily = () => {
         }, {})
     ), [sections]);
 
-    if (loading || isCmsLoading) return <Loader />;
+    if (isCmsLoading) return <Loader />;
     if (isError) {
         return (
             <div className="bg-white min-h-screen flex items-center justify-center px-6 py-14">

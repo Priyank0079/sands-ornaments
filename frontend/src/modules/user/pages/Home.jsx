@@ -31,8 +31,9 @@ const SectionShell = ({ children }) => (
 );
 
 const Home = () => {
-    const { isLoading } = useShop();
+    const { isLoading: isShopLoading } = useShop();
     const {
+        isLoading: isHomepageCmsLoading,
         isError: isHomepageCmsError,
         error: homepageCmsError,
         refetch: refetchHomepageCms,
@@ -42,7 +43,7 @@ const Home = () => {
         document.title = "Sands Ornaments | Pure 925 Silver Jewellery - Timeless Elegance";
     }, []);
 
-    if (isLoading) {
+    if (isShopLoading || isHomepageCmsLoading) {
         return <Loader />;
     }
 
