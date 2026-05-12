@@ -186,26 +186,21 @@ const AdminLayout = ({ children }) => {
                     font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
                 }
                 .sidebar-scroll {
-                    scrollbar-width: none;
-                    -ms-overflow-style: none;
+                    scrollbar-width: thin;
+                    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
                 }
                 .sidebar-scroll::-webkit-scrollbar {
-                    width: 0;
-                    height: 0;
+                    width: 6px;
                 }
                 .sidebar-scroll::-webkit-scrollbar-track {
                     background: transparent;
                 }
                 .sidebar-scroll::-webkit-scrollbar-thumb {
-                    background: transparent;
+                    background: rgba(255, 255, 255, 0.15);
+                    border-radius: 10px;
                 }
                 .sidebar-scroll::-webkit-scrollbar-thumb:hover {
-                    background: transparent;
-                }
-                .sidebar-scroll::-webkit-scrollbar-button {
-                    display: none;
-                    width: 0;
-                    height: 0;
+                    background: rgba(255, 255, 255, 0.25);
                 }
             `}</style>
             {/* Sidebar Backdrop (Mobile only) */}
@@ -242,7 +237,7 @@ const AdminLayout = ({ children }) => {
                 </div>
 
                 {/* Scrollable Container for Nav */}
-                <div className="flex-1 min-h-0 overflow-y-auto sidebar-scroll bg-[#3E2723]">
+                <div className="flex-1 min-h-0 overflow-y-auto sidebar-scroll bg-[#3E2723]" data-lenis-prevent>
                     <nav className="py-6 lg:py-4 px-4 lg:px-0 space-y-1 lg:space-y-0 pb-20">
                         {menuItems.map((item) => {
                             const isActive = location.pathname === item.path || (item.subItems && location.pathname.startsWith(item.path));

@@ -133,7 +133,7 @@ const SellerSidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                 </button>
             </div>
 
-            <div className="flex-1 min-h-0 overflow-y-auto sidebar-scroll bg-[#3E2723]">
+            <div className="flex-1 min-h-0 overflow-y-auto sidebar-scroll bg-[#3E2723]" data-lenis-prevent>
                 <nav className="py-6 lg:py-4 px-4 lg:px-0 space-y-1 lg:space-y-0 pb-20">
                     {menuItems.map((item) => {
                         const relatedPrefixes = (() => {

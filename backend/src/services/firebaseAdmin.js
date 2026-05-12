@@ -4,7 +4,11 @@ const admin = require('firebase-admin');
 const serviceAccount = {
   "type": "service_account",
   "project_id": process.env.FIREBASE_PROJECT_ID || "dummy-project-id",
-  "private_key": (process.env.FIREBASE_PRIVATE_KEY || "").replace(/\\n/g, '\n') || "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n",
+  "private_key": (process.env.FIREBASE_PRIVATE_KEY || "")
+    .replace(/^["']|["']$/g, '') // Remove accidental quotes
+    .replace(/\\n/g, '\n')       // Replace literal \n with newlines
+    .replace(/\\/g, '\n')        // Replace any stray backslashes with newlines
+    .trim() || "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n",
   "client_email": process.env.FIREBASE_CLIENT_EMAIL || "firebase-adminsdk-dummy@dummy-project-id.iam.gserviceaccount.com",
 };
 

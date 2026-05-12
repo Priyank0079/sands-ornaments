@@ -105,7 +105,7 @@ const AdminSidebar = () => {
             </div>
 
             {/* Navigation Links */}
-            <nav className="flex-1 min-h-0 overflow-y-auto py-6 px-4 space-y-1 custom-scrollbar">
+            <nav className="flex-1 min-h-0 overflow-y-auto py-6 px-4 space-y-1 custom-scrollbar" data-lenis-prevent>
                 <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-4 px-2">Main Menu</p>
 
                 {/* Main Items */}
