@@ -5,7 +5,11 @@ const cloudinary = require("../config/cloudinary");
 const makeStorage = (folder, allowedFormats = ["jpg", "jpeg", "png", "webp"]) =>
   new CloudinaryStorage({
     cloudinary,
-    params: { folder: `sands-ornaments/${folder}`, allowed_formats: allowedFormats },
+    params: { 
+      folder: `sands-ornaments/${folder}`, 
+      allowed_formats: allowedFormats,
+      resource_type: "auto"
+    },
   });
 
 const productUpload   = multer({ storage: makeStorage("products"),   limits: { fileSize: 10 * 1024 * 1024 } });

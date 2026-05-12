@@ -496,9 +496,14 @@ const ProductDetails = () => {
                                                 loop
                                                 playsInline
                                                 controls
+                                                preload="auto"
                                                 className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
+                                                onError={(e) => {
+                                                    console.error("Product video playback failed:", e);
+                                                    // Optional: Hide the video container or show a fallback if needed
+                                                }}
                                             />
-                                            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/5 transition-colors" />
+                                            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/5 transition-colors pointer-events-none" />
                                         </>
                                     )
                                 ) : (

@@ -397,8 +397,11 @@ const SharedProductEditor = ({
     const familyVideoFramePreview = !removeVideo && isEditMode && isFamilyVideoFrameProduct && !videoPreview && !formData.videoUrl
         ? familyVideoFrame
         : '';
-    const resolvedVideoPreview = videoPreview || familyVideoFramePreview;
-    const isImageVideoPreview = Boolean(resolvedVideoPreview) && IMAGE_PREVIEW_RE.test(resolvedVideoPreview);
+    const resolvedVideoPreview = videoPreview || formData.videoUrl || familyVideoFramePreview;
+    const isImageVideoPreview = Boolean(resolvedVideoPreview) && (
+        IMAGE_PREVIEW_RE.test(resolvedVideoPreview) || 
+        /\.(png|jpe?g|webp|gif|avif|svg)(\?.*)?$/i.test(String(resolvedVideoPreview))
+    );
 
     useEffect(() => {
         const loadCategories = async () => {

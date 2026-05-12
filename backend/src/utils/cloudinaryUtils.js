@@ -9,17 +9,25 @@ const deleteFromCloudinary = async (url) => {
   try {
     if (!url || !url.includes("cloudinary.com")) return null;
 
-    // Extract public_id from URL
-    // Format: https://res.cloudinary.com/cloud_name/image/upload/v12345/folder/public_id.jpg
-    const parts = url.split("/");
-    const filenameWithExt = parts.pop();
-    const publicIdWithFolder = parts.slice(parts.indexOf("upload") + 2).join("/") + "/" + filenameWithExt.split(".")[0];
-    
-    // Fallback if the above logic fails due to different URL structure
-    const publicId = publicIdWithFolder.startsWith("/") ? publicIdWithFolder.substring(1) : publicIdWithFolder;
+    // Detect resource type from URL
+    // Images: .../image/upload/...
+    // Videos: .../video/upload/...
+    const isVideo = url.includes("/video/upload/");
+    const resourceType = isVideo ? "video" : "image";
 
-    const result = await cloudinary.uploader.destroy(publicId);
-    console.log(`Cloudinary deletion result for ${publicId}:`, result);
+    // Extract public_id from URL
+    // Format: https://res.cloudinary.com/cloud_name/[image|video]/upload/v12345/folder/public_id.ext
+    const parts = url.split("/");
+    const uploadIndex = parts.indexOf("upload");
+    if (uploadIndex === -1) return null;
+
+    // The public_id with folder is everything after version (v...) until the extension
+    // We skip 'upload' and the version (e.g., v12345678)
+    const publicIdWithExt = parts.slice(uploadIndex + 2).join("/");
+    const publicId = publicIdWithExt.split(".")[0];
+    
+    const result = await cloudinary.uploader.destroy(publicId, { resource_type: resourceType });
+    console.log(`Cloudinary deletion result for ${publicId} (${resourceType}):`, result);
     return result;
   } catch (err) {
     console.error("Cloudinary deletion error:", err);
