@@ -190,7 +190,7 @@ const FamilyCollectionProductsPage = () => {
 
     useEffect(() => {
         document.title = `${meta.title} | Sands Ornaments`;
-        window.scrollTo(0, 0);
+        
     }, [meta.title]);
 
     const sectionMap = useMemo(() => (

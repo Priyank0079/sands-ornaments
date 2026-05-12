@@ -27,7 +27,7 @@ const DynamicPage = ({ slug: propSlug }) => {
         };
 
         fetchPage();
-        window.scrollTo(0, 0);
+        
     }, [slug]);
 
     useEffect(() => {

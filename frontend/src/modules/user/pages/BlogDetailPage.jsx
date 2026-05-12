@@ -32,7 +32,7 @@ const BlogDetailPage = () => {
     };
 
     fetchBlog();
-    window.scrollTo(0, 0);
+    
   }, [slug]);
 
   useEffect(() => {

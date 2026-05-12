@@ -10,7 +10,7 @@ const OrderSuccess = () => {
 
     // Confetti effect removed due to installation issues.
     useEffect(() => {
-        window.scrollTo(0, 0);
+        
     }, []);
 
     return (

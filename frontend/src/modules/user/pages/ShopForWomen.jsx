@@ -25,7 +25,7 @@ const ShopForWomen = () => {
 
     useEffect(() => {
         document.title = "Shop Women's Jewellery | Sands Ornaments";
-        window.scrollTo(0, 0);
+        
         const timer = setTimeout(() => setLoading(false), 800);
         return () => clearTimeout(timer);
     }, []);

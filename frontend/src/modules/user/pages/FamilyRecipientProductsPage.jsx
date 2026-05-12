@@ -22,7 +22,7 @@ const FamilyRecipientProductsPage = () => {
 
     useEffect(() => {
         document.title = `${recipientLabels[selectedRecipient] || 'Family Collections'} | Sands Ornaments`;
-        window.scrollTo(0, 0);
+        
     }, [selectedRecipient]);
 
     const sectionMap = useMemo(() => (

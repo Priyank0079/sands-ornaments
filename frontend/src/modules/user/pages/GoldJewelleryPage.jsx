@@ -42,7 +42,7 @@ const GoldJewelleryPage = () => {
     } = usePublicCmsPage('gold-collection');
 
     useEffect(() => {
-        window.scrollTo(0, 0);
+        
         document.title = 'Shop Gold Jewellery | Sands Ornaments';
         const timer = setTimeout(() => setLoading(false), 800);
         return () => clearTimeout(timer);

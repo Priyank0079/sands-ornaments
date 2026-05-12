@@ -94,7 +94,7 @@ const BondCollectionPage = () => {
     }, [products, bondId, metalQuery]);
 
     useEffect(() => {
-        window.scrollTo(0, 0);
+        
     }, [bondId]);
 
     return (

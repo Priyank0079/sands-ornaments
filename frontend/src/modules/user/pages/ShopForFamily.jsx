@@ -31,7 +31,7 @@ const ShopForFamily = () => {
 
     useEffect(() => {
         document.title = "Gifts for Family | Sands Ornaments";
-        window.scrollTo(0, 0);
+        
         const timer = setTimeout(() => setLoading(false), 800);
         return () => clearTimeout(timer);
     }, []);

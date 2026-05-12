@@ -9,7 +9,7 @@ const Notifications = () => {
     const navigate = useNavigate();
 
     React.useEffect(() => {
-        window.scrollTo(0, 0);
+        
     }, []);
 
     // Animation Variants
