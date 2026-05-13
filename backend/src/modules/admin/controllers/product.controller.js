@@ -91,6 +91,14 @@ const normalizeVariantFields = (variants = [], fallback = {}) => {
     price: Number(variant.price) || 0,
     stock: Number(variant.stock) || 0,
     discount: Number(variant.discount) || 0,
+    diamondSpecs: {
+      carat: String(variant.diamondSpecs?.carat || "").trim(),
+      clarity: String(variant.diamondSpecs?.clarity || "").trim(),
+      color: String(variant.diamondSpecs?.color || "").trim(),
+      cut: String(variant.diamondSpecs?.cut || "").trim(),
+      shape: String(variant.diamondSpecs?.shape || "").trim(),
+      diamondCount: Number(variant.diamondSpecs?.diamondCount) || 0
+    },
     serialCodes: normalizeSerialCodes(variant.serialCodes || [])
   }));
 };

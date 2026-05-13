@@ -352,7 +352,15 @@ const SharedProductEditor = ({
                 finalPrice: 0,
                 variantCode: '',
                 variantImages: [],
-                variantFaqs: []
+                variantFaqs: [],
+                diamondSpecs: {
+                    carat: '',
+                    clarity: '',
+                    color: '',
+                    cut: '',
+                    shape: '',
+                    diamondCount: 0
+                }
             }
         ],
         faqs: [],
@@ -549,7 +557,15 @@ const SharedProductEditor = ({
                                 serialCodes: ensured.serialCodes,
                                 stock: ensured.stock,
                                 variantImages: Array.isArray(v.variantImages) ? v.variantImages : [],
-                                variantFaqs: Array.isArray(v.variantFaqs) ? v.variantFaqs : []
+                                variantFaqs: Array.isArray(v.variantFaqs) ? v.variantFaqs : [],
+                                diamondSpecs: {
+                                    carat: v.diamondSpecs?.carat || '',
+                                    clarity: v.diamondSpecs?.clarity || '',
+                                    color: v.diamondSpecs?.color || '',
+                                    cut: v.diamondSpecs?.cut || '',
+                                    shape: v.diamondSpecs?.shape || '',
+                                    diamondCount: v.diamondSpecs?.diamondCount || 0
+                                }
                             };
                         }) || prev.variants,
                         faqs: data.faqs || [],
@@ -738,6 +754,24 @@ const SharedProductEditor = ({
         }));
     };
 
+    const handleDiamondSpecChange = (vid, field, value) => {
+        setFormData(prev => ({
+            ...prev,
+            variants: prev.variants.map(v => {
+                if (v.id === vid) {
+                    return {
+                        ...v,
+                        diamondSpecs: {
+                            ...(v.diamondSpecs || {}),
+                            [field]: value
+                        }
+                    };
+                }
+                return v;
+            })
+        }));
+    };
+
     const addVariant = () => {
         setFormData(prev => ({
             ...prev,
@@ -763,7 +797,15 @@ const SharedProductEditor = ({
                 pgChargeAmount: 0,
                 variantCode: '',
                 variantImages: [],
-                variantFaqs: []
+                variantFaqs: [],
+                diamondSpecs: {
+                    carat: '',
+                    clarity: '',
+                    color: '',
+                    cut: '',
+                    shape: '',
+                    diamondCount: 0
+                }
             }]
         }));
     };
@@ -1768,6 +1810,87 @@ const SharedProductEditor = ({
                                                     </div>
                                                 </div>
                                             </div>
+
+                                            {/* Diamond Intelligence Section */}
+                                            {(v.diamondType || formData.diamondType) !== 'none' && (
+                                                <div className="mt-8 pt-8 border-t border-gray-100/50 space-y-6">
+                                                    <div className="flex items-center justify-between gap-3 border-b border-gray-100 pb-4">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="p-2 bg-pink-50 rounded-lg text-pink-600">
+                                                                <Sparkles size={16} />
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.25em]">Diamond Intelligence</p>
+                                                                <p className="text-[8px] font-bold text-gray-400 uppercase mt-0.5">Define detailed diamond specifications</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                                        <div className="space-y-2">
+                                                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">Carat Weight (Ct)</label>
+                                                            <input 
+                                                                value={v.diamondSpecs?.carat || ''} 
+                                                                onChange={(e) => handleDiamondSpecChange(v.id, 'carat', e.target.value)}
+                                                                disabled={isViewMode}
+                                                                className="w-full bg-white border border-gray-200 rounded-xl py-3.5 px-5 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm"
+                                                                placeholder="e.g. 0.50"
+                                                            />
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">Clarity</label>
+                                                            <input 
+                                                                value={v.diamondSpecs?.clarity || ''} 
+                                                                onChange={(e) => handleDiamondSpecChange(v.id, 'clarity', e.target.value)}
+                                                                disabled={isViewMode}
+                                                                className="w-full bg-white border border-gray-200 rounded-xl py-3.5 px-5 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm"
+                                                                placeholder="e.g. VVS1"
+                                                            />
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">Color</label>
+                                                            <input 
+                                                                value={v.diamondSpecs?.color || ''} 
+                                                                onChange={(e) => handleDiamondSpecChange(v.id, 'color', e.target.value)}
+                                                                disabled={isViewMode}
+                                                                className="w-full bg-white border border-gray-200 rounded-xl py-3.5 px-5 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm"
+                                                                placeholder="e.g. GH"
+                                                            />
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">Cut</label>
+                                                            <input 
+                                                                value={v.diamondSpecs?.cut || ''} 
+                                                                onChange={(e) => handleDiamondSpecChange(v.id, 'cut', e.target.value)}
+                                                                disabled={isViewMode}
+                                                                className="w-full bg-white border border-gray-200 rounded-xl py-3.5 px-5 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm"
+                                                                placeholder="e.g. Brilliant"
+                                                            />
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">Shape</label>
+                                                            <input 
+                                                                value={v.diamondSpecs?.shape || ''} 
+                                                                onChange={(e) => handleDiamondSpecChange(v.id, 'shape', e.target.value)}
+                                                                disabled={isViewMode}
+                                                                className="w-full bg-white border border-gray-200 rounded-xl py-3.5 px-5 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm"
+                                                                placeholder="e.g. Round"
+                                                            />
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">Diamond Count</label>
+                                                            <input 
+                                                                type="number"
+                                                                value={v.diamondSpecs?.diamondCount || 0} 
+                                                                onChange={(e) => handleDiamondSpecChange(v.id, 'diamondCount', e.target.value)}
+                                                                disabled={isViewMode}
+                                                                className="w-full bg-white border border-gray-200 rounded-xl py-3.5 px-5 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm"
+                                                                placeholder="0"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
 
                                         <div className="border-t border-gray-100/50 pt-8 space-y-4">

@@ -135,7 +135,8 @@ const SilverCollectionSection = () => {
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    className="relative w-full h-[170px] md:h-[320px] rounded-[32px] md:rounded-[40px] overflow-hidden mb-6 md:mb-12 shadow-2xl group border border-white/20"
+                    className="relative w-full h-[170px] md:h-[320px] rounded-[32px] md:rounded-[40px] overflow-hidden mb-6 md:mb-12 shadow-2xl group border border-white/20 cursor-pointer"
+                    onClick={() => navigate('/shop')}
                 >
                     <div className="flex h-full w-full">
                         <div className="relative w-[50%] md:w-[60%] h-full overflow-hidden">

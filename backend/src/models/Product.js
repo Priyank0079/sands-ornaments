@@ -82,6 +82,14 @@ const productSchema = new mongoose.Schema({
     discount: { type: Number },
     stock: { type: Number, required: true, min: 0 },
     sold: { type: Number, default: 0 },
+    diamondSpecs: {
+      carat: { type: String, default: "" },
+      clarity: { type: String, default: "" },
+      color: { type: String, default: "" },
+      cut: { type: String, default: "" },
+      shape: { type: String, default: "" },
+      diamondCount: { type: Number, default: 0 }
+    },
     serialCodes: [{
       code: { type: String, trim: true },
       status: { type: String, enum: ["AVAILABLE", "SOLD_OFFLINE", "SOLD_ONLINE"], default: "AVAILABLE" }

@@ -622,23 +622,33 @@ const ProductDetails = () => {
                                                 <div className="w-12 h-12 rounded-full bg-[#D39A9F]/10 flex items-center justify-center mb-6">
                                                     <Sparkles className="w-6 h-6 text-[#D39A9F]" />
                                                 </div>
-                                                <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-8">Diamond & Setting</h4>
-                                                <div className="grid grid-cols-2 gap-y-8 gap-x-12 w-full">
+                                                <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-8">Diamond Intelligence</h4>
+                                                <div className="grid grid-cols-2 gap-y-6 gap-x-8 w-full">
                                                     <div className="space-y-1">
-                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Type</span>
-                                                        <span className="text-sm font-semibold text-gray-900 block capitalize">{String(diamondType).replace('_', ' ')}</span>
+                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Type</span>
+                                                        <span className="text-xs font-semibold text-gray-900 block capitalize">{String(diamondType).replace('_', ' ')}</span>
                                                     </div>
                                                     <div className="space-y-1">
-                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Weight</span>
-                                                        <span className="text-sm font-semibold text-gray-900 block">{product.diamondWeight || currentVariant?.diamondWeight || '---'} cts</span>
+                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Weight</span>
+                                                        <span className="text-xs font-semibold text-gray-900 block">{currentVariant?.diamondSpecs?.carat || product.diamondWeight || currentVariant?.diamondWeight || '---'} Ct</span>
                                                     </div>
                                                     <div className="space-y-1">
-                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Diamonds</span>
-                                                        <span className="text-sm font-semibold text-gray-900 block">{product.diamondCount || currentVariant?.diamondCount || '---'}</span>
+                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Clarity</span>
+                                                        <span className="text-xs font-semibold text-gray-900 block">{currentVariant?.diamondSpecs?.clarity || product.diamondClarity || currentVariant?.diamondClarity || '---'}</span>
                                                     </div>
                                                     <div className="space-y-1">
-                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Clarity</span>
-                                                        <span className="text-sm font-semibold text-gray-900 block">{product.diamondClarity || currentVariant?.diamondClarity || '---'}</span>
+                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Color</span>
+                                                        <span className="text-xs font-semibold text-gray-900 block">{currentVariant?.diamondSpecs?.color || '---'}</span>
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Cut / Shape</span>
+                                                        <span className="text-xs font-semibold text-gray-900 block">
+                                                            {currentVariant?.diamondSpecs?.cut || '---'} / {currentVariant?.diamondSpecs?.shape || '---'}
+                                                        </span>
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Count</span>
+                                                        <span className="text-xs font-semibold text-gray-900 block">{currentVariant?.diamondSpecs?.diamondCount || product.diamondCount || currentVariant?.diamondCount || '---'}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -649,22 +659,22 @@ const ProductDetails = () => {
                                                 <ShieldCheck className="w-6 h-6 text-[#9C5B61]" />
                                             </div>
                                             <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-8">Metal & Authentication</h4>
-                                            <div className="grid grid-cols-2 gap-y-8 gap-x-12 w-full">
+                                            <div className="grid grid-cols-2 gap-y-6 gap-x-8 w-full">
                                                 <div className="space-y-1">
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Metal</span>
-                                                    <span className="text-sm font-semibold text-gray-900 block">{product.material || product.metal || '925 Silver'}</span>
+                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Metal</span>
+                                                    <span className="text-xs font-semibold text-gray-900 block">{product.material || product.metal || '925 Silver'}</span>
                                                 </div>
                                                 <div className="space-y-1">
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Purity</span>
-                                                    <span className="text-sm font-semibold text-gray-900 block">{product.silverCategory || product.purity || '---'}</span>
+                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Purity</span>
+                                                    <span className="text-xs font-semibold text-gray-900 block">{product.silverCategory || product.purity || '---'}</span>
                                                 </div>
                                                 <div className="space-y-1">
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Weight</span>
-                                                    <span className="text-sm font-semibold text-gray-900 block">{selectedVariantWeight || product.weight || '---'} {selectedVariantWeightUnit || product.weightUnit || 'g'}</span>
+                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Weight</span>
+                                                    <span className="text-xs font-semibold text-gray-900 block">{selectedVariantWeight || product.weight || '---'} {selectedVariantWeightUnit || product.weightUnit || 'g'}</span>
                                                 </div>
                                                 <div className="space-y-1">
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Certificate</span>
-                                                    <span className="text-sm font-semibold text-emerald-700 block">{product.certificate || 'Sands Authenticated'}</span>
+                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">HUID</span>
+                                                    <span className="text-xs font-semibold text-emerald-700 block uppercase tracking-tighter">{product.huid || 'SANDS-AUTH'}</span>
                                                 </div>
                                             </div>
                                         </div>

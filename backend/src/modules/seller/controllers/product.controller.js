@@ -103,6 +103,14 @@ const sanitizeVariants = (variants, fallback = {}) => {
     metalPrice: Number(v.metalPrice) || 0,
     gst: Number(v.gst) || 0,
     finalPrice: Number(v.finalPrice) || 0,
+    diamondSpecs: {
+      carat: String(v.diamondSpecs?.carat || "").trim(),
+      clarity: String(v.diamondSpecs?.clarity || "").trim(),
+      color: String(v.diamondSpecs?.color || "").trim(),
+      cut: String(v.diamondSpecs?.cut || "").trim(),
+      shape: String(v.diamondSpecs?.shape || "").trim(),
+      diamondCount: Number(v.diamondSpecs?.diamondCount) || 0
+    },
     serialCodes: normalizeSerialCodes(v.serialCodes || [])
   }));
 };
