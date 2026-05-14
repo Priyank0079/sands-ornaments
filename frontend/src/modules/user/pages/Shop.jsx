@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
 import ProductCard from '../components/ProductCard';
+import { getProductPrice, formatCurrency } from '../utils/price';
 import ProductSkeleton from '../components/ProductSkeleton';
 import Loader from '../../shared/components/Loader';
 import api from '../../../services/api';
@@ -14,7 +15,7 @@ import {
 
 
 
-const currencyText = (value) => `â‚¹${Number(value || 0).toLocaleString('en-IN')}`;
+// Local currency utility removed in favor of centralized price utility
 
 const stableKeyFromParams = (params) => {
     const entries = Object.entries(params || {})
@@ -262,6 +263,9 @@ const Shop = () => {
     }, [productsQuery, pinnedProducts, serverModeEnabled, serverAccumulatedProducts, serverProducts, filteredProducts]);
 
     useEffect(() => {
+        // Use a local flag to avoid multiple updates in the same cycle
+        let isCancelled = false;
+
         const categoryQuery = queryParams.get('category');
         const parsedPrice = Number(String(priceMaxQuery || '').replace(/[^0-9]/g, ''));
 
@@ -274,32 +278,41 @@ const Shop = () => {
                 c.name === categoryQuery
             ));
             if (categoryFromQuery && selectedCategory !== categoryFromQuery.name) {
-                setSelectedCategory(categoryFromQuery.name);
+                if (!isCancelled) setSelectedCategory(categoryFromQuery.name);
             }
         } else if (selectedCategory !== 'All') {
-            setSelectedCategory('All');
+            if (!isCancelled) setSelectedCategory('All');
         }
 
-        setFilterNewArrivals(location.pathname === '/new-arrivals');
-        setFilterTrending(location.pathname === '/trending');
+        const isNewArrivals = location.pathname === '/new-arrivals';
+        if (filterNewArrivals !== isNewArrivals) {
+            if (!isCancelled) setFilterNewArrivals(isNewArrivals);
+        }
+
+        const isTrending = location.pathname === '/trending';
+        if (filterTrending !== isTrending) {
+            if (!isCancelled) setFilterTrending(isTrending);
+        }
 
         if (sortQuery === 'most-sold' && sortBy !== 'Best Selling') {
-            setSortBy('Best Selling');
+            if (!isCancelled) setSortBy('Best Selling');
         } else if (sortQuery === 'latest' && sortBy !== 'Newest') {
-            setSortBy('Newest');
+            if (!isCancelled) setSortBy('Newest');
         } else if (sortQuery === 'price-asc' && sortBy !== 'Price: Low to High') {
-            setSortBy('Price: Low to High');
+            if (!isCancelled) setSortBy('Price: Low to High');
         } else if (sortQuery === 'price-desc' && sortBy !== 'Price: High to Low') {
-            setSortBy('Price: High to Low');
+            if (!isCancelled) setSortBy('Price: High to Low');
         }
 
         if (Number.isFinite(parsedPrice) && parsedPrice > 0) {
             if (priceRange !== parsedPrice) {
-                setPriceRange(parsedPrice);
+                if (!isCancelled) setPriceRange(parsedPrice);
             }
         } else if (priceRange !== 50000) {
-            setPriceRange(50000);
+            if (!isCancelled) setPriceRange(50000);
         }
+
+        return () => { isCancelled = true; };
     }, [location.search, location.pathname, categories]);
 
     const normalizeAudience = (value) => String(value || '').trim().toLowerCase();
@@ -347,32 +360,7 @@ const Shop = () => {
         let baseProducts = products;
         let title = 'All Jewellery';
 
-        const getProductPrice = (product) => {
-            if (!product) return 0;
-            const topLevelCandidates = [
-                product.finalPrice,
-                product.price,
-                product.originalPrice,
-                product.mrp
-            ]
-                .map((value) => Number(value))
-                .filter((value) => Number.isFinite(value) && value > 0);
-
-            if (topLevelCandidates.length > 0) {
-                return topLevelCandidates[0];
-            }
-
-            const variantPrices = (product.variants || [])
-                .map((variant) => Number(
-                    variant.finalPrice ??
-                    variant.price ??
-                    variant.mrp ??
-                    0
-                ))
-                .filter(v => Number.isFinite(v) && v > 0);
-            if (variantPrices.length > 0) return Math.min(...variantPrices);
-            return 0;
-        };
+        // Use centralized price utility
         const getProductCreatedAt = (product) => {
             const ts = product?.createdAt || product?.updatedAt || '';
             const date = ts ? new Date(ts).getTime() : 0;
@@ -935,13 +923,11 @@ const Shop = () => {
                         </button>
                     </div>
 
-                    {/* Sidebar Content */}
-                    <div className="p-6 flex-1 overflow-y-auto space-y-8">
-
+                              <div className="p-6 flex-1 overflow-y-auto space-y-10 custom-scrollbar">
                         {/* 1. Category Filter */}
-                        <div>
-                            <h4 className="font-bold text-black text-sm uppercase tracking-wider mb-4">Category</h4>
-                            <div className="space-y-3">
+                        <section>
+                            <h4 className="font-bold text-black text-[11px] uppercase tracking-[0.2em] mb-5">Category</h4>
+                            <div className="flex flex-col gap-3">
                                 <label className="flex items-center space-x-3 cursor-pointer group">
                                     <input
                                         type="radio"
@@ -951,90 +937,108 @@ const Shop = () => {
                                         onChange={(e) => handleCategoryChange(e.target.value)}
                                         className="form-radio text-black focus:ring-[#D39A9F] h-4 w-4 border-gray-300"
                                     />
-                                    <span className={`text-sm group-hover:text-black transition-colors ${selectedCategory === 'All' ? 'text-black font-medium' : 'text-gray-600'}`}>All Categories</span>
+                                    <span className={`text-[13px] transition-all ${selectedCategory === 'All' ? 'text-black font-bold underline underline-offset-4 decoration-[#D39A9F]' : 'text-gray-500 group-hover:text-black'}`}>All Jewellery</span>
                                 </label>
                                 {visibleCategories.map(cat => (
-                                    <div key={cat.id}>
-                                        <label className="flex items-center space-x-3 cursor-pointer group mb-2">
-                                            <input
-                                                type="radio"
-                                                name="category"
-                                                value={cat.name}
-                                                checked={selectedCategory === cat.name}
-                                                onChange={(e) => handleCategoryChange(e.target.value)}
-                                                className="form-radio text-black focus:ring-[#D39A9F] h-4 w-4 border-gray-300"
-                                            />
-                                            <span className={`text-sm group-hover:text-black transition-colors ${selectedCategory === cat.name ? 'text-black font-medium' : 'text-gray-600'}`}>{cat.name}</span>
-                                        </label>
-                                    </div>
+                                    <label key={cat.id} className="flex items-center space-x-3 cursor-pointer group">
+                                        <input
+                                            type="radio"
+                                            name="category"
+                                            value={cat.name}
+                                            checked={selectedCategory === cat.name}
+                                            onChange={(e) => handleCategoryChange(e.target.value)}
+                                            className="form-radio text-black focus:ring-[#D39A9F] h-4 w-4 border-gray-300"
+                                        />
+                                        <span className={`text-[13px] transition-all ${selectedCategory === cat.name ? 'text-black font-bold underline underline-offset-4 decoration-[#D39A9F]' : 'text-gray-500 group-hover:text-black'}`}>{cat.name}</span>
+                                    </label>
                                 ))}
                             </div>
-                        </div>
+                        </section>
 
-
-
-                        {/* 1.5 Collections Filter */}
-                        <div className="pt-6 border-t border-[#EBCDD0]">
-                            <h4 className="font-bold text-black text-sm uppercase tracking-wider mb-4">Collections</h4>
-                            <div className="space-y-3">
-                                <label className="flex items-center space-x-3 cursor-pointer group">
-                                    <input
-                                        type="checkbox"
-                                        checked={filterNewArrivals}
-                                        onChange={(e) => handleCollectionToggle('new-arrivals', e.target.checked)}
-                                        className="rounded border-gray-300 text-black focus:ring-[#D39A9F] h-4 w-4"
-                                    />
-                                    <span className={`text-sm group-hover:text-black transition-colors ${filterNewArrivals ? 'text-black font-medium' : 'text-gray-600'}`}>
-                                        Just Arrived
-                                    </span>
-                                </label>
-                                <label className="flex items-center space-x-3 cursor-pointer group">
-                                    <input
-                                        type="checkbox"
-                                        checked={filterTrending}
-                                        onChange={(e) => handleCollectionToggle('trending', e.target.checked)}
-                                        className="rounded border-gray-300 text-black focus:ring-[#D39A9F] h-4 w-4"
-                                    />
-                                    <span className={`text-sm group-hover:text-black transition-colors ${filterTrending ? 'text-black font-medium' : 'text-gray-600'}`}>
-                                        Trending Now
-                                    </span>
-                                </label>
+                        {/* 2. Price Range Filter */}
+                        <section className="pt-8 border-t border-gray-100">
+                            <div className="flex justify-between items-center mb-6">
+                                <h4 className="font-bold text-black text-[11px] uppercase tracking-[0.2em]">Price Range</h4>
+                                <span className="text-[10px] font-black text-[#8E2B45] bg-[#8E2B45]/5 px-2 py-0.5 rounded uppercase tracking-widest">
+                                    {priceRange >= 50000 ? 'Any Price' : `Under ${formatCurrency(priceRange)}`}
+                                </span>
                             </div>
-                        </div>
-
-                        {/* 2. Price Filter */}
-                        <div className="pt-6 border-t border-[#EBCDD0]">
-                            <h4 className="font-bold text-black text-sm uppercase tracking-wider mb-4">Max Price: {currencyText(priceRange)}</h4>
-                            <input
-                                type="range"
-                                min="500"
-                                max="50000"
-                                step="500"
-                                value={priceRange}
-                                onChange={(e) => handlePriceRangeChange(e.target.value)}
-                                className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#D39A9F]"
-                            />
-                            <div className="flex justify-between text-xs text-gray-600 mt-2">
-                                <span>{currencyText(500)}</span>
-                                <span>{currencyText(50000)}+</span>
+                            <div className="px-1">
+                                <input
+                                    type="range"
+                                    min="1000"
+                                    max="50000"
+                                    step="1000"
+                                    value={priceRange}
+                                    onChange={(e) => handlePriceRangeChange(e.target.value)}
+                                    className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-[#8E2B45]"
+                                />
+                                <div className="flex justify-between mt-4">
+                                    <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">₹1,000</span>
+                                    <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">₹50,000+</span>
+                                </div>
                             </div>
-                        </div>
+                        </section>
+
+                        {/* 3. Metal Type Filter */}
+                        <section className="pt-8 border-t border-gray-100">
+                            <h4 className="font-bold text-black text-[11px] uppercase tracking-[0.2em] mb-5">Metal Type</h4>
+                            <div className="grid grid-cols-2 gap-3">
+                                {[
+                                    { id: 'silver', label: 'Silver' },
+                                    { id: 'gold', label: 'Gold' }
+                                ].map((m) => {
+                                    const isActive = queryParams.get('metal') === m.id;
+                                    return (
+                                        <button
+                                            key={m.id}
+                                            onClick={() => updateShopQuery({ metal: isActive ? null : m.id })}
+                                            className={`px-4 py-3 text-[10px] font-black uppercase tracking-[0.1em] border transition-all rounded-lg ${isActive ? 'bg-black text-white border-black shadow-md scale-[1.02]' : 'bg-white text-gray-500 border-gray-100 hover:border-black'}`}
+                                        >
+                                            {m.label}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </section>
+
+                        {/* 4. Purity / Karat Filter */}
+                        <section className="pt-8 border-t border-gray-100 pb-4">
+                            <h4 className="font-bold text-black text-[11px] uppercase tracking-[0.2em] mb-5">Purity / Karat</h4>
+                            <div className="flex flex-wrap gap-2.5">
+                                {['925', '14k', '18k', '22k'].map((k) => {
+                                    const currentK = queryParams.get('karat') || queryParams.get('purity');
+                                    const isActive = currentK === k;
+                                    return (
+                                        <button
+                                            key={k}
+                                            onClick={() => updateShopQuery({ karat: isActive ? null : k, purity: null })}
+                                            className={`px-5 py-2.5 text-[10px] font-black uppercase tracking-widest border transition-all rounded-full ${isActive ? 'bg-[#8E2B45] text-white border-[#8E2B45] shadow-sm' : 'bg-gray-50 text-gray-400 border-transparent hover:border-[#8E2B45]'}`}
+                                        >
+                                            {k}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </section>
                     </div>
 
                     {/* Sidebar Footer */}
-                    <div className="p-6 border-t border-[#EBCDD0] bg-white">
-                        <button
-                            onClick={clearAllFilters}
-                            className="w-full py-3 border border-[#EBCDD0] text-black font-medium rounded-lg hover:bg-[#FDF5F6] hover:shadow-sm transition-all text-sm mb-3"
-                        >
-                            Reset Filters
-                        </button>
-                        <button
-                            onClick={() => setIsFilterOpen(false)}
-                            className="w-full py-3 bg-[#D39A9F] text-white font-medium rounded-lg hover:bg-[#D39A9F] shadow-lg hover:shadow-xl transition-all text-sm"
-                        >
-                            View Results
-                        </button>
+                    <div className="p-6 border-t border-gray-100 bg-white">
+                        <div className="flex gap-3">
+                            <button
+                                onClick={clearAllFilters}
+                                className="flex-1 py-3.5 border border-gray-200 text-black font-bold uppercase tracking-widest text-[10px] rounded-xl hover:bg-gray-50 transition-all"
+                            >
+                                Reset
+                            </button>
+                            <button
+                                onClick={() => setIsFilterOpen(false)}
+                                className="flex-[2] py-3.5 bg-[#8E2B45] text-white font-bold uppercase tracking-widest text-[10px] rounded-xl shadow-lg hover:bg-[#5B1E26] transition-all"
+                            >
+                                Apply Filters
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

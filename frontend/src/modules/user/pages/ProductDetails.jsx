@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
 import { useAuth } from '../../../context/AuthContext';
@@ -6,10 +7,12 @@ import api from '../../../services/api';
 import toast from 'react-hot-toast';
 import ProductCard from '../components/ProductCard';
 
-import { Heart, ShoppingBag, Star, Share2, Plus, Minus, Truck, ShieldCheck, Smile, Gift, ChevronDown, SlidersHorizontal, X, Camera, Check, ArrowLeft, ArrowRight, Droplets, Sparkles, Play, Globe, Zap, Users } from 'lucide-react';
+import { Heart, ShoppingBag, Star, Share2, Plus, Minus, Truck, ShieldCheck, Smile, Gift, ChevronDown, SlidersHorizontal, X, Camera, Check, ArrowLeft, ArrowRight, Droplets, Sparkles, Play, Globe, Zap, Users, Ruler, ExternalLink, RotateCcw, Lock } from 'lucide-react';
 // Product video is backend-driven (optional) via `product.videoUrl`.
 import { useAnalytics } from '../../../hooks/useAnalytics';
 import Loader from '../../shared/components/Loader';
+import { getProductPrice, getProductMRP, formatCurrency } from '../utils/price';
+import RecentlyViewed from '../components/RecentlyViewed';
 
 // Import model shots (angle 2) for maximum hover impact
 import latestRing from '@assets/latest_drop_ring.png';
@@ -135,6 +138,27 @@ const ProductDetails = () => {
         loadReviews();
     }, [product?.id, product?._id]);
 
+    useEffect(() => {
+        const fetchRelated = async () => {
+            if (!product?.relatedProducts || product.relatedProducts.length === 0) {
+                setRelatedProducts([]);
+                return;
+            }
+            setIsRelatedLoading(true);
+            try {
+                const res = await api.get('public/products/by-ids', {
+                    params: { ids: product.relatedProducts.join(',') }
+                });
+                setRelatedProducts(res.data?.data?.products || []);
+            } catch (err) {
+                console.error("Failed to load related products", err);
+            } finally {
+                setIsRelatedLoading(false);
+            }
+        };
+        fetchRelated();
+    }, [product?.relatedProducts]);
+
     // State for Animations
     const [flying, setFlying] = useState(false);
     const [flyingType, setFlyingType] = useState('cart');
@@ -147,11 +171,14 @@ const ProductDetails = () => {
     // State for Reviews
     const [isWriteReviewOpen, setIsWriteReviewOpen] = useState(false);
     const [reviewStep, setReviewStep] = useState(1);
+    const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
     const [isReviewFilterOpen, setIsReviewFilterOpen] = useState(false);
     const [sortBy, setSortBy] = useState('Featured');
     const [rating, setRating] = useState(0);
 
     const [reviews, setReviews] = useState([]);
+    const [relatedProducts, setRelatedProducts] = useState([]);
+    const [isRelatedLoading, setIsRelatedLoading] = useState(false);
     const [reviewTitle, setReviewTitle] = useState('');
     const [reviewComment, setReviewComment] = useState('');
     const [isLabGrownModalOpen, setIsLabGrownModalOpen] = useState(false);
@@ -207,12 +234,12 @@ const ProductDetails = () => {
 
     // Image Gallery State
     const [selectedImage, setSelectedImage] = useState(null);
-    const [selectedVariantId, setSelectedVariantId] = useState(null);
+    const [selectedVariantId, setSelectedVariantId] = useState('');
 
     useEffect(() => {
         if (product) {
             const firstVariant = product.variants?.[0];
-            setSelectedVariantId(firstVariant?.id || firstVariant?._id || null);
+            setSelectedVariantId(firstVariant?.id || firstVariant?._id || '');
             // Defer image selection to the unified galleryImages logic below (variant images > product images).
             setSelectedImage(null);
         }
@@ -228,8 +255,8 @@ const ProductDetails = () => {
     }, [product]);
 
     const selectedVariant = product?.variants?.find(v => String(v.id || v._id) === String(selectedVariantId)) || product?.variants?.[0];
-    const variantPrice = selectedVariant?.price ?? product?.price;
-    const variantMrp = selectedVariant?.mrp ?? product?.originalPrice;
+    const variantPrice = selectedVariant?.price ?? getProductPrice(product);
+    const variantMrp = selectedVariant?.mrp ?? getProductMRP(product);
     const variantDiscount = variantMrp > variantPrice ? Math.round(((variantMrp - variantPrice) / variantMrp) * 100) : 0;
     const selectedVariantStock = Number(selectedVariant?.stock);
     const availableStock = Number.isFinite(selectedVariantStock) ? Math.max(0, selectedVariantStock) : null;
@@ -301,8 +328,8 @@ const ProductDetails = () => {
     const gstPercent = pricingSubtotal > 0 ? Math.round((Number(pricingBreakdown.gst || 0) / pricingSubtotal) * 10000) / 100 : 0;
     const supplierName = product?.sellerId?.shopName || product?.supplierInfo || product?.brand || '';
 
-    const currencyText = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
-    const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
+    // Local currencyText removed
+    // Using imported formatCurrency
 
     // State for Size Selection
 
@@ -345,6 +372,19 @@ const ProductDetails = () => {
         }
     };
 
+    useEffect(() => {
+        if (product && product.id) {
+            const recentlyViewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+            const filtered = recentlyViewed.filter(item => item.id !== product.id && item.id !== product._id);
+            const updated = [{ 
+                id: product.id || product._id, 
+                name: product.name, 
+                price: variantPrice, 
+                image: primaryImage || (product.images?.[0]) 
+            }, ...filtered].slice(0, 10);
+            localStorage.setItem('recentlyViewed', JSON.stringify(updated));
+        }
+    }, [product, variantPrice, primaryImage]);
 
     if (isLoading || detailLoading) {
         return <Loader />;
@@ -371,7 +411,16 @@ const ProductDetails = () => {
     const isWishlisted = safeWishlist.some(item => item.id === product?.id);
 
     const currentVariant = selectedVariant || product?.variants?.[0] || {};
-    const hasDiamonds = !!(product?.diamondWeight || product?.diamondCount || currentVariant?.diamondWeight || currentVariant?.diamondCount || Number(currentVariant?.diamondPrice || 0) > 0);
+    const dSpecs = currentVariant?.diamondSpecs || {};
+    const hasDiamonds = !!(
+        product?.diamondWeight || 
+        product?.diamondCount || 
+        currentVariant?.diamondWeight || 
+        currentVariant?.diamondCount || 
+        dSpecs?.carat || 
+        dSpecs?.diamondCount ||
+        Number(currentVariant?.diamondPrice || 0) > 0
+    );
     const diamondType = product?.diamondType || currentVariant?.diamondType || (hasDiamonds ? 'Natural' : 'None');
     const isLabGrown = String(diamondType).toLowerCase().includes('lab_grown');
 
@@ -381,6 +430,15 @@ const ProductDetails = () => {
 
     return (
         <div className="bg-white min-h-screen py-8 pb-24 md:pb-8 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out fill-mode-both selection:bg-[#D39A9F] selection:text-white">
+            <Helmet>
+                <title>{product.name} | Sands Ornaments</title>
+                <meta name="description" content={product.description?.replace(/<[^>]*>?/gm, '').slice(0, 160) || `Buy ${product.name} at Sands Ornaments.`} />
+                <meta property="og:title" content={`${product.name} | Sands Ornaments`} />
+                <meta property="og:description" content={`Exclusive ${product.category?.name || 'jewellery'} piece starting at ${formatCurrency(variantPrice)}.`} />
+                <meta property="og:image" content={primaryImage} />
+                <meta property="og:url" content={window.location.href} />
+                <meta property="og:type" content="product" />
+            </Helmet>
             {/* Back Button */}
             <div className="container mx-auto px-4 md:px-6 mb-6 md:mb-10 pt-2 lg:pt-4">
                 <button
@@ -434,7 +492,7 @@ const ProductDetails = () => {
                         <div className="flex flex-col items-start px-6 border-r border-gray-100">
                             <span className="text-[9px] text-gray-400 font-medium uppercase tracking-widest mb-0.5">Price</span>
                             <span className="text-xl font-semibold text-gray-900 tracking-tight">
-                                {currencyText(variantPrice)}
+                                {formatCurrency(variantPrice)}
                             </span>
                         </div>
 
@@ -618,37 +676,60 @@ const ProductDetails = () => {
                                 {activeDetailTab === 'details' ? (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         {hasDiamonds && (
-                                            <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 flex flex-col items-center text-center">
-                                                <div className="w-12 h-12 rounded-full bg-[#D39A9F]/10 flex items-center justify-center mb-6">
-                                                    <Sparkles className="w-6 h-6 text-[#D39A9F]" />
+                                            <div className="bg-white rounded-3xl p-8 border border-[#8E2B45]/10 shadow-[0_4px_20px_-4px_rgba(142,43,69,0.05)] flex flex-col items-center text-center">
+                                                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#8E2B45] to-[#5B1E26] flex items-center justify-center mb-8 shadow-lg transform -rotate-3 hover:rotate-0 transition-transform duration-500">
+                                                    <Sparkles className="w-7 h-7 text-white" />
                                                 </div>
-                                                <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-8">Diamond Intelligence</h4>
-                                                <div className="grid grid-cols-2 gap-y-6 gap-x-8 w-full">
-                                                    <div className="space-y-1">
-                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Type</span>
-                                                        <span className="text-xs font-semibold text-gray-900 block capitalize">{String(diamondType).replace('_', ' ')}</span>
+                                                <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-[#8E2B45] mb-10 border-b border-[#8E2B45]/10 pb-2">Diamond Intelligence</h4>
+                                                <div className="grid grid-cols-2 md:grid-cols-3 gap-y-10 gap-x-6 w-full">
+                                                    <div className="group transition-all duration-300">
+                                                        <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3 group-hover:bg-[#8E2B45]/5 transition-colors">
+                                                            <Layers className="w-4 h-4 text-gray-400 group-hover:text-[#8E2B45]" />
+                                                        </div>
+                                                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Type</span>
+                                                        <span className="text-[13px] font-bold text-gray-900 block capitalize">{String(diamondType).replace('_', ' ')}</span>
                                                     </div>
-                                                    <div className="space-y-1">
-                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Weight</span>
-                                                        <span className="text-xs font-semibold text-gray-900 block">{currentVariant?.diamondSpecs?.carat || product.diamondWeight || currentVariant?.diamondWeight || '---'} Ct</span>
-                                                    </div>
-                                                    <div className="space-y-1">
-                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Clarity</span>
-                                                        <span className="text-xs font-semibold text-gray-900 block">{currentVariant?.diamondSpecs?.clarity || product.diamondClarity || currentVariant?.diamondClarity || '---'}</span>
-                                                    </div>
-                                                    <div className="space-y-1">
-                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Color</span>
-                                                        <span className="text-xs font-semibold text-gray-900 block">{currentVariant?.diamondSpecs?.color || '---'}</span>
-                                                    </div>
-                                                    <div className="space-y-1">
-                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Cut / Shape</span>
-                                                        <span className="text-xs font-semibold text-gray-900 block">
-                                                            {currentVariant?.diamondSpecs?.cut || '---'} / {currentVariant?.diamondSpecs?.shape || '---'}
+                                                    <div className="group transition-all duration-300">
+                                                        <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3 group-hover:bg-[#8E2B45]/5 transition-colors">
+                                                            <Scale className="w-4 h-4 text-gray-400 group-hover:text-[#8E2B45]" />
+                                                        </div>
+                                                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Weight</span>
+                                                        <span className="text-[13px] font-bold text-gray-900 block">
+                                                            {currentVariant?.diamondSpecs?.carat || product.diamondWeight || currentVariant?.diamondWeight || '---'}
+                                                            <span className="text-[10px] ml-0.5">Ct</span>
                                                         </span>
                                                     </div>
-                                                    <div className="space-y-1">
-                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Count</span>
-                                                        <span className="text-xs font-semibold text-gray-900 block">{currentVariant?.diamondSpecs?.diamondCount || product.diamondCount || currentVariant?.diamondCount || '---'}</span>
+                                                    <div className="group transition-all duration-300">
+                                                        <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3 group-hover:bg-[#8E2B45]/5 transition-colors">
+                                                            <Sparkles className="w-4 h-4 text-gray-400 group-hover:text-[#8E2B45]" />
+                                                        </div>
+                                                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Clarity</span>
+                                                        <span className="text-[13px] font-bold text-gray-900 block">{currentVariant?.diamondSpecs?.clarity || product.diamondClarity || currentVariant?.diamondClarity || '---'}</span>
+                                                    </div>
+                                                    <div className="group transition-all duration-300">
+                                                        <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3 group-hover:bg-[#8E2B45]/5 transition-colors">
+                                                            <Droplets className="w-4 h-4 text-gray-400 group-hover:text-[#8E2B45]" />
+                                                        </div>
+                                                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Color</span>
+                                                        <span className="text-[13px] font-bold text-gray-900 block">{currentVariant?.diamondSpecs?.color || '---'}</span>
+                                                    </div>
+                                                    <div className="group transition-all duration-300">
+                                                        <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3 group-hover:bg-[#8E2B45]/5 transition-colors">
+                                                            <Zap className="w-4 h-4 text-gray-400 group-hover:text-[#8E2B45]" />
+                                                        </div>
+                                                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Cut / Shape</span>
+                                                        <span className="text-[13px] font-bold text-gray-900 block">
+                                                            {currentVariant?.diamondSpecs?.cut || '---'}
+                                                            <span className="mx-1 text-gray-200">/</span>
+                                                            {currentVariant?.diamondSpecs?.shape || '---'}
+                                                        </span>
+                                                    </div>
+                                                    <div className="group transition-all duration-300">
+                                                        <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3 group-hover:bg-[#8E2B45]/5 transition-colors">
+                                                            <Box className="w-4 h-4 text-gray-400 group-hover:text-[#8E2B45]" />
+                                                        </div>
+                                                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Count</span>
+                                                        <span className="text-[13px] font-bold text-gray-900 block">{currentVariant?.diamondSpecs?.diamondCount || product.diamondCount || currentVariant?.diamondCount || '---'}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -680,24 +761,39 @@ const ProductDetails = () => {
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="max-w-2xl mx-auto space-y-6">
-                                        <div className="grid grid-cols-1 gap-4 text-sm">
-                                            {[
-                                                { label: 'Metal Price', value: pricingBreakdown.metalPrice },
-                                                { label: 'Making Charge', value: pricingBreakdown.makingCharge },
-                                                { label: 'Diamond Price', value: pricingBreakdown.diamondPrice },
-                                                { label: `GST (${gstPercent}%)`, value: pricingBreakdown.gst }
-                                            ].map((item, idx) => (
-                                                <div key={idx} className="flex items-center justify-between py-4 border-b border-gray-50 last:border-0">
-                                                    <span className="text-gray-500 font-bold uppercase tracking-widest text-[10px]">{item.label}</span>
-                                                    <span className="font-semibold text-gray-900 text-sm">{currencyText(item.value)}</span>
-                                                </div>
-                                            ))}
+                                    <div className="max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
+                                        <div className="bg-gray-50/50 rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+                                            <table className="w-full text-left border-collapse">
+                                                <thead>
+                                                    <tr className="border-b border-gray-100">
+                                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Component</th>
+                                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">Rate/Qty</th>
+                                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">Value</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-gray-50">
+                                                    {[
+                                                        { label: 'Metal (925 Silver)', rate: `${selectedVariantWeight || product.weight || '---'} g`, value: pricingBreakdown.metalPrice },
+                                                        { label: 'Making Charges', rate: '-', value: pricingBreakdown.makingCharge },
+                                                        { label: 'Diamond / Stones', rate: '-', value: pricingBreakdown.diamondPrice },
+                                                        { label: `GST (${gstPercent}%)`, rate: '-', value: pricingBreakdown.gst }
+                                                    ].map((item, idx) => (
+                                                        <tr key={idx} className="hover:bg-white transition-colors">
+                                                            <td className="px-6 py-4 text-[11px] font-bold text-gray-700 uppercase tracking-tight">{item.label}</td>
+                                                            <td className="px-6 py-4 text-[11px] font-semibold text-gray-500 text-right">{item.rate}</td>
+                                                            <td className="px-6 py-4 text-[11px] font-bold text-gray-900 text-right">{formatCurrency(item.value)}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                                <tfoot>
+                                                    <tr className="bg-[#8E2B45]/5 border-t border-[#8E2B45]/10">
+                                                        <td colSpan="2" className="px-6 py-5 text-[11px] font-black text-[#8E2B45] uppercase tracking-[0.2em]">Total Price</td>
+                                                        <td className="px-6 py-5 text-lg font-black text-[#8E2B45] text-right">{formatCurrency(pricingBreakdown.finalPrice || variantPrice || 0)}</td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
                                         </div>
-                                        <div className="mt-8 flex items-center justify-between border-t border-gray-200 pt-8">
-                                            <span className="text-xs font-bold uppercase tracking-[0.3em] text-gray-400">Total Price</span>
-                                            <span className="text-2xl font-bold text-gray-900">{currencyText(pricingBreakdown.finalPrice || variantPrice || 0)}</span>
-                                        </div>
+                                        <p className="mt-4 text-[9px] text-gray-400 text-center font-bold uppercase tracking-widest italic">* Final price includes all applicable taxes and insured shipping.</p>
                                     </div>
                                 )}
                             </div>
@@ -738,12 +834,12 @@ const ProductDetails = () => {
                     <div className="mb-8">
                         <div className="flex items-baseline justify-center gap-3">
                             <span className="text-3xl md:text-5xl font-bold text-black tracking-tighter">
-                                {currencyText(variantPrice)}
+                                {formatCurrency(variantPrice)}
                             </span>
                             {variantMrp > variantPrice && (
                                 <div className="flex items-center gap-2">
                                     <span className="text-base md:text-lg text-gray-300 line-through font-medium">
-                                        {currencyText(variantMrp)}
+                                        {formatCurrency(variantMrp)}
                                     </span>
                                     <span className="text-[9px] font-bold text-[#9C5B61] uppercase tracking-widest bg-rose-50 px-2 py-0.5 rounded">
                                         -{variantDiscount}%
@@ -800,10 +896,38 @@ const ProductDetails = () => {
                                 </span>
                             </button>
 
-                            <div className="flex items-center justify-center gap-8 text-[9px] font-bold uppercase tracking-widest text-gray-400 opacity-60">
-                                <span className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5 text-emerald-500" /> Authentic</span>
-                                <span className="flex items-center gap-1.5"><Truck className="w-3.5 h-3.5 text-blue-500" /> Free Global Shipping</span>
+                            <div className="flex items-center justify-center gap-6 mt-2">
+                                <button 
+                                    onClick={() => setIsSizeGuideOpen(true)}
+                                    className="text-[9px] font-black text-[#8E2B45] uppercase tracking-[0.2em] hover:underline flex items-center gap-1.5 transition-all active:scale-95"
+                                >
+                                    <Ruler size={12} /> Find Your Size
+                                </button>
+                                <div className="h-3 w-[1px] bg-gray-100" />
+                                <button className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] hover:text-[#8E2B45] transition-all">
+                                    Shipping Policy
+                                </button>
                             </div>
+                        </div>
+
+                        {/* Trust Ribbon - Premium Highlight */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full pt-8 border-t border-gray-50">
+                            {[
+                                { icon: <ShieldCheck className="w-5 h-5 text-emerald-600" />, title: "BIS Hallmark", desc: "100% Pure & Certified" },
+                                { icon: <RotateCcw className="w-5 h-5 text-amber-600" />, title: "7-Day Returns", desc: "Easy & Hassle Free" },
+                                { icon: <Truck className="w-5 h-5 text-blue-600" />, title: "Free Delivery", desc: "Fully Insured Shipping" },
+                                { icon: <Lock className="w-5 h-5 text-gray-600" />, title: "Secure Pay", desc: "Encrypted Payments" }
+                            ].map((item, idx) => (
+                                <div key={idx} className="flex flex-col items-center gap-2 group cursor-default">
+                                    <div className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center transition-all group-hover:bg-white group-hover:shadow-md border border-transparent group-hover:border-gray-100">
+                                        {item.icon}
+                                    </div>
+                                    <div className="text-center">
+                                        <p className="text-[9px] font-black text-gray-900 uppercase tracking-widest">{item.title}</p>
+                                        <p className="text-[8px] font-bold text-gray-400 uppercase mt-0.5 opacity-0 group-hover:opacity-100 transition-all">{item.desc}</p>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
 
                         {/* Stock & Codes */}
@@ -845,7 +969,7 @@ const ProductDetails = () => {
             <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 p-3 z-[150] md:hidden flex gap-3 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] pb-safe animate-in slide-in-from-bottom duration-500">
                 <div className="flex flex-col justify-center px-2">
                     <span className="text-[8px] uppercase tracking-wider text-gray-400 font-bold mb-0.5">Total</span>
-                    <span className="text-lg font-bold text-black tracking-tight">{currencyText(variantPrice)}</span>
+                    <span className="text-lg font-bold text-black tracking-tight">{formatCurrency(variantPrice)}</span>
                 </div>
                 <button
                     onClick={handleAddToCart}
@@ -883,47 +1007,71 @@ const ProductDetails = () => {
 
             {/* CHECK AVAILABILITY SECTION - Ultra Compact */}
             <div className="container mx-auto px-4 mt-4 mb-10 max-w-4xl">
-                <div className="bg-white border border-gray-100 rounded-xl p-3 flex flex-col md:flex-row items-center gap-4 shadow-sm">
+                <div className="bg-white border border-gray-100 rounded-xl p-3 flex flex-col md:flex-row items-center gap-4 shadow-sm relative overflow-hidden group">
+                    {/* Progress Bar (Purely Aesthetic) */}
+                    <div className="absolute top-0 left-0 h-[2px] bg-[#8E2B45]/10 w-full" />
+                    <div className="absolute top-0 left-0 h-[2px] bg-[#8E2B45] w-0 group-hover:w-full transition-all duration-1000" />
+
                     <div className="flex items-center gap-2 pl-2">
-                        <Truck className="w-4 h-4 text-gray-400" />
-                        <span className="text-[9px] font-semibold uppercase tracking-widest text-gray-500 hidden lg:block whitespace-nowrap">Check Delivery</span>
+                        <Truck className="w-4 h-4 text-[#8E2B45]" />
+                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 hidden lg:block whitespace-nowrap">Deliver To</span>
                     </div>
 
-                    <div className="flex w-full md:max-w-xs gap-1.5 bg-gray-50 rounded-lg p-1">
+                    <div className="flex w-full md:max-w-xs gap-1.5 bg-gray-50 rounded-lg p-1 border border-transparent focus-within:border-[#8E2B45]/20 focus-within:bg-white transition-all">
                         <input
                             type="text"
                             placeholder="Enter Pincode"
                             value={localPincode}
                             onChange={(e) => setLocalPincode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                            className="flex-1 bg-transparent border-none px-3 py-1 text-xs focus:ring-0 transition-all placeholder:text-gray-300 font-medium"
+                            className="flex-1 bg-transparent border-none px-3 py-1 text-xs focus:ring-0 transition-all placeholder:text-gray-300 font-bold"
                         />
                         <button
                             onClick={() => {
                                 if (localPincode.length === 6) {
                                     updatePincode(localPincode);
-                                    toast.success("Pincode applied!");
+                                    toast.success("Checking availability...");
                                 } else {
                                     toast.error("Please enter a 6-digit pincode");
                                 }
                             }}
-                            className="bg-[#8E2B45] text-white px-4 py-1.5 rounded-md font-medium text-[9px] uppercase tracking-wider hover:bg-[#5B1E26] transition-all"
+                            className="bg-[#8E2B45] text-white px-4 py-1.5 rounded-md font-black text-[9px] uppercase tracking-wider hover:bg-[#5B1E26] transition-all shadow-sm active:scale-95"
                         >
                             Check
                         </button>
                     </div>
 
-                    <div className="flex items-center gap-6 md:ml-auto md:border-l md:border-gray-100 md:pl-6 pr-2">
-                        {[
-                            { icon: <Truck className="w-3.5 h-3.5" />, label: "Fast Shipping" },
-                            { icon: <ShieldCheck className="w-3.5 h-3.5" />, label: "925 Certified" },
-                            { icon: <Gift className="w-3.5 h-3.5" />, label: "Luxury Gift Box" }
-                        ].map((badge, i) => (
-                            <div key={i} className="flex items-center gap-2 text-gray-400">
-                                {badge.icon}
-                                <span className="text-[8px] font-bold uppercase tracking-widest whitespace-nowrap">{badge.label}</span>
+                    {pincode ? (
+                        <div className="flex flex-col md:flex-row items-center gap-3 md:ml-auto md:border-l md:border-gray-100 md:pl-6 animate-in fade-in slide-in-from-left-2 duration-500">
+                            <div className="flex items-center gap-2 text-emerald-600">
+                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                <span className="text-[10px] font-black uppercase tracking-widest">Available</span>
                             </div>
-                        ))}
-                    </div>
+                            <div className="h-4 w-[1px] bg-gray-100 hidden md:block" />
+                            <p className="text-[10px] font-bold text-gray-900 uppercase tracking-widest">
+                                Get it by <span className="text-[#8E2B45]">
+                                    {(() => {
+                                        const days = product?.logistics?.estimatedShippingDays || 3;
+                                        const date = new Date();
+                                        date.setDate(date.getDate() + days + 2); // 2 days buffer for delivery
+                                        return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', weekday: 'short' });
+                                    })()}
+                                </span>
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-6 md:ml-auto md:border-l md:border-gray-100 md:pl-6 pr-2 opacity-60">
+                            {[
+                                { icon: <Truck className="w-3.5 h-3.5" />, label: "Express" },
+                                { icon: <ShieldCheck className="w-3.5 h-3.5" />, label: "Insured" },
+                                { icon: <Gift className="w-3.5 h-3.5" />, label: "Luxury Box" }
+                            ].map((badge, i) => (
+                                <div key={i} className="flex items-center gap-2 text-gray-400">
+                                    {badge.icon}
+                                    <span className="text-[8px] font-black uppercase tracking-widest whitespace-nowrap">{badge.label}</span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -1012,13 +1160,15 @@ const ProductDetails = () => {
                                                 </h4>
                                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-y-10 gap-x-8">
                                                     {[
-                                                        { label: 'Type', value: String(diamondType).replace('_', ' ') || 'Natural' },
-                                                        { label: 'Total Weight', value: `${product.diamondWeight || currentVariant?.diamondWeight || '---'} cts` },
-                                                        { label: 'Count', value: product.diamondCount || currentVariant?.diamondCount || '---' },
-                                                        { label: 'Shape', value: product.diamondShape || currentVariant?.diamondShape || 'Round' },
-                                                        { label: 'Color/Clarity', value: product.diamondClarity || currentVariant?.diamondClarity || '---' },
+                                                        { label: 'Type', value: String(diamondType).replace('_', ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') || 'Natural' },
+                                                        { label: 'Carat Weight', value: dSpecs?.carat ? `${dSpecs.carat} cts` : (product.diamondWeight || currentVariant?.diamondWeight || '---') },
+                                                        { label: 'Count', value: dSpecs?.diamondCount || product.diamondCount || currentVariant?.diamondCount || '---' },
+                                                        { label: 'Shape', value: dSpecs?.shape || product.diamondShape || currentVariant?.diamondShape || 'Round' },
+                                                        { label: 'Color', value: dSpecs?.color || '---' },
+                                                        { label: 'Clarity', value: dSpecs?.clarity || product.diamondClarity || currentVariant?.diamondClarity || '---' },
+                                                        { label: 'Cut', value: dSpecs?.cut || '---' },
                                                         { label: 'Setting', value: product.diamondSetting || currentVariant?.diamondSetting || 'Prong' }
-                                                    ].map((spec, i) => (
+                                                    ].filter(s => s.value && s.value !== '---').map((spec, i) => (
                                                         <div key={i} className="space-y-1.5">
                                                             <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">{spec.label}</span>
                                                             <span className="text-sm font-bold text-gray-900 block">{spec.value}</span>
@@ -1037,15 +1187,27 @@ const ProductDetails = () => {
                                             <div className="grid grid-cols-2 md:grid-cols-3 gap-y-10 gap-x-8">
                                                 {[
                                                     { label: 'Metal', value: product.material || product.metal || '925 Silver' },
-                                                    { label: 'Purity', value: product.silverCategory || product.purity || '---' },
+                                                    { label: 'Purity', value: product.silverCategory || product.goldCategory || product.purity || '---' },
                                                     { label: 'Weight', value: `${selectedVariantWeight || product.weight || '---'} ${selectedVariantWeightUnit || product.weightUnit || 'g'}` },
-                                                    { label: 'Certificate', value: product.certificate || 'Sands Authenticated' },
+                                                    { 
+                                                        label: 'Certificate', 
+                                                        value: product.logistics?.certificateUrl ? (
+                                                            <a 
+                                                                href={product.logistics.certificateUrl} 
+                                                                target="_blank" 
+                                                                rel="noopener noreferrer"
+                                                                className="text-[#8E2B45] hover:underline flex items-center gap-1 transition-all"
+                                                            >
+                                                                View Certificate <ExternalLink size={10} />
+                                                            </a>
+                                                        ) : (product.certificate || 'Sands Authenticated')
+                                                    },
                                                     { label: 'HUID', value: product.huid || '---' },
                                                     { label: 'Reference', value: selectedVariant?.variantCode || '---' }
                                                 ].map((spec, i) => (
                                                     <div key={i} className="space-y-1.5">
                                                         <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">{spec.label}</span>
-                                                        <span className="text-sm font-bold text-gray-900 block">{spec.value}</span>
+                                                        <div className="text-sm font-bold text-gray-900 block">{spec.value}</div>
                                                     </div>
                                                 ))}
                                             </div>
@@ -1054,6 +1216,56 @@ const ProductDetails = () => {
                                         {product.specifications && (
                                             <div className="mt-6 p-6 bg-gray-50/30 rounded-2xl border border-gray-100 prose prose-sm max-w-none text-gray-600 font-medium" dangerouslySetInnerHTML={{ __html: product.specifications }} />
                                         )}
+                                    </div>
+                                </AccordionItem>
+
+                                <AccordionItem title="Price Breakup" isOpen={openSection === 'priceBreakup'} onClick={() => toggleSection('priceBreakup')}>
+                                    <div className="py-6 space-y-6">
+                                        <div className="bg-[#FDFBF7] rounded-2xl p-6 border border-[#F5E6D3]/30">
+                                            <div className="space-y-4">
+                                                <div className="flex justify-between items-center text-xs font-medium text-gray-600">
+                                                    <span>Metal Price ({currentVariant?.weight || product.weight || '0'} {currentVariant?.weightUnit || product.weightUnit || 'g'})</span>
+                                                    <span className="font-bold text-gray-900">{formatCurrency(currentVariant?.metalPrice || 0)}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center text-xs font-medium text-gray-600">
+                                                    <span>Making Charges</span>
+                                                    <span className="font-bold text-gray-900">{formatCurrency(currentVariant?.makingCharge || 0)}</span>
+                                                </div>
+                                                {Number(currentVariant?.diamondPrice || 0) > 0 && (
+                                                    <div className="flex justify-between items-center text-xs font-medium text-gray-600">
+                                                        <span>Diamond Price</span>
+                                                        <span className="font-bold text-gray-900">{formatCurrency(currentVariant.diamondPrice)}</span>
+                                                    </div>
+                                                )}
+                                                {Number(currentVariant?.hallmarkingCharge || 0) > 0 && (
+                                                    <div className="flex justify-between items-center text-xs font-medium text-gray-600">
+                                                        <span>Hallmarking Charges</span>
+                                                        <span className="font-bold text-gray-900">{formatCurrency(currentVariant.hallmarkingCharge)}</span>
+                                                    </div>
+                                                )}
+                                                {Number(currentVariant?.diamondCertificateCharge || 0) > 0 && (
+                                                    <div className="flex justify-between items-center text-xs font-medium text-gray-600">
+                                                        <span>Certificate Charges</span>
+                                                        <span className="font-bold text-gray-900">{formatCurrency(currentVariant.diamondCertificateCharge)}</span>
+                                                    </div>
+                                                )}
+                                                <div className="pt-4 border-t border-[#F5E6D3]/50 flex justify-between items-center">
+                                                    <span className="text-xs font-black text-[#8E2B45] uppercase tracking-widest">Subtotal (Pre-Tax)</span>
+                                                    <span className="text-sm font-black text-[#8E2B45]">{formatCurrency(currentVariant?.subtotalBeforeTax || (variantPrice / 1.03))}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                                    <span>GST (3%)</span>
+                                                    <span>{formatCurrency(currentVariant?.gstAmount || (variantPrice - (variantPrice / 1.03)))}</span>
+                                                </div>
+                                                <div className="pt-4 border-t-2 border-dashed border-[#F5E6D3] flex justify-between items-center">
+                                                    <span className="text-sm font-black text-black uppercase tracking-widest">Grand Total</span>
+                                                    <span className="text-xl font-black text-black">{formatCurrency(variantPrice)}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p className="text-[10px] text-center text-gray-400 font-medium italic">
+                                            * Prices are subject to change based on daily metal rates and final weight of the piece.
+                                        </p>
                                     </div>
                                 </AccordionItem>
 
@@ -1556,6 +1768,148 @@ const ProductDetails = () => {
                             >
                                 Close & Continue
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Recently Viewed Section */}
+            <RecentlyViewed />
+
+            {/* Complete the Look / Pairs Well With (Cross-selling) */}
+            {relatedProducts.length > 0 && (
+                <div className="bg-[#111] py-20 mt-10 relative overflow-hidden">
+                    {/* Decorative Elements */}
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-[#D39A9F]/10 rounded-full blur-3xl" />
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#8E2B45]/10 rounded-full blur-3xl" />
+                    
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-black text-[#D39A9F] uppercase tracking-[0.4em] mb-3">Elevate Your Set</span>
+                                <h2 className="text-3xl font-black text-white uppercase tracking-tight">Pairs Well With</h2>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <div className="h-[1px] w-12 md:w-24 bg-white/20" />
+                                <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest whitespace-nowrap">Handpicked for you</span>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
+                            {relatedProducts.slice(0, 4).map((relProduct) => (
+                                <div key={relProduct._id || relProduct.id} className="group">
+                                    <div 
+                                        onClick={() => {
+                                            navigate(`/product/${relProduct._id || relProduct.id}`);
+                                            window.scrollTo(0, 0);
+                                        }}
+                                        className="aspect-[4/5] rounded-[2rem] overflow-hidden bg-white/5 border border-white/10 relative group-hover:border-white/20 transition-all cursor-pointer"
+                                    >
+                                        <img 
+                                            src={relProduct.images?.[0] || relProduct.primaryImage} 
+                                            alt={relProduct.name}
+                                            className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110"
+                                        />
+                                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors" />
+                                        
+                                        {/* Quick Tag */}
+                                        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full">
+                                            <span className="text-[8px] font-black text-black uppercase tracking-widest">Matching Set</span>
+                                        </div>
+                                    </div>
+                                    <div className="mt-4 flex justify-between items-start">
+                                        <div>
+                                            <h3 className="text-[10px] font-bold text-white uppercase tracking-widest line-clamp-1">{relProduct.name}</h3>
+                                            <p className="text-[10px] font-black text-[#D39A9F] mt-1">{formatCurrency(relProduct.price)}</p>
+                                        </div>
+                                        <button className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-white hover:bg-white hover:text-black transition-all">
+                                            <Plus size={14} />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Size Guide Modal */}
+            {isSizeGuideOpen && (
+                <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+                        <div className="bg-[#8E2B45] p-8 text-white relative">
+                            <div className="flex items-center gap-3 mb-2">
+                                <Ruler className="w-6 h-6 text-amber-400" />
+                                <h2 className="text-2xl font-black uppercase tracking-tight">Jewellery Size Guide</h2>
+                            </div>
+                            <p className="text-[10px] font-bold text-white/50 uppercase tracking-[0.2em]">Find your perfect fit with Sands Ornaments</p>
+                            <button 
+                                onClick={() => setIsSizeGuideOpen(false)}
+                                className="absolute top-8 right-8 p-2 hover:bg-white/10 rounded-xl transition-all"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="p-8 overflow-y-auto max-h-[70vh]">
+                            <div className="space-y-8">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="space-y-4">
+                                        <h4 className="text-[11px] font-black text-gray-900 uppercase tracking-widest border-b border-gray-100 pb-2">Ring Size Chart</h4>
+                                        <div className="bg-gray-50 rounded-2xl border border-gray-100 overflow-hidden">
+                                            <table className="w-full text-[10px] text-left border-collapse">
+                                                <thead className="bg-gray-100/50 border-b border-gray-100">
+                                                    <tr>
+                                                        <th className="px-4 py-2 font-bold uppercase tracking-widest text-[9px]">Size</th>
+                                                        <th className="px-4 py-2 font-bold uppercase tracking-widest text-[9px]">Dia (mm)</th>
+                                                        <th className="px-4 py-2 font-bold uppercase tracking-widest text-[9px]">Circ (mm)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-gray-100">
+                                                    {[
+                                                        { s: '6', d: '16.5', c: '51.9' },
+                                                        { s: '7', d: '17.3', c: '54.4' },
+                                                        { s: '8', d: '18.1', c: '57.0' },
+                                                        { s: '9', d: '18.9', c: '59.5' },
+                                                        { s: '10', d: '19.8', c: '62.1' },
+                                                        { s: '11', d: '20.6', c: '64.7' },
+                                                        { s: '12', d: '21.4', c: '67.2' }
+                                                    ].map((row, i) => (
+                                                        <tr key={i} className="hover:bg-white">
+                                                            <td className="px-4 py-2 font-black text-[#8E2B45]">{row.s}</td>
+                                                            <td className="px-4 py-2 font-bold text-gray-600">{row.d}</td>
+                                                            <td className="px-4 py-2 font-bold text-gray-600">{row.c}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-4">
+                                        <h4 className="text-[11px] font-black text-gray-900 uppercase tracking-widest border-b border-gray-100 pb-2">How to measure?</h4>
+                                        <div className="space-y-4">
+                                            {[
+                                                { step: "01", text: "Take a piece of string or a strip of paper." },
+                                                { step: "02", text: "Wrap it around the base of the finger." },
+                                                { step: "03", text: "Mark the point where the ends meet." },
+                                                { step: "04", text: "Measure the length in mm to find circumference." }
+                                            ].map((item, i) => (
+                                                <div key={i} className="flex gap-4 p-3 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
+                                                    <span className="text-sm font-black text-[#8E2B45]/10 group-hover:text-[#8E2B45]/30 transition-colors">{item.step}</span>
+                                                    <p className="text-[11px] font-bold text-gray-500 leading-relaxed uppercase tracking-tight">{item.text}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="bg-amber-50 border border-amber-100 rounded-2xl p-6 flex gap-4 shadow-sm">
+                                    <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0 shadow-inner">
+                                        <Sparkles className="w-5 h-5 text-amber-500" />
+                                    </div>
+                                    <p className="text-[10px] font-black text-amber-800 uppercase leading-relaxed tracking-[0.05em]">
+                                        Pro Tip: Always measure your fingers at the end of the day when they are at their largest. If between sizes, choose the larger one.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -32,7 +32,7 @@ const fallbackModelMap = {
     anklet: newAnklets
 };
 
-const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
+import { getProductPrice, getProductMRP, formatCurrency } from '../utils/price';
 
 const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, loginSource = 'men' }) => {
     const { addToCart, addToWishlist, removeFromWishlist, wishlist } = useShop();
@@ -40,7 +40,6 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
     const navigate = useNavigate();
     const [flying, setFlying] = useState(false);
     const [flyingType, setFlyingType] = useState('cart'); // 'cart' or 'heart'
-    const currencyText = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
 
     const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
     const isWishlisted = safeWishlist.some(item => (item.id || item._id) === (product.id || product._id));
@@ -88,13 +87,9 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
     };
     const secondaryImage = resolveSecondaryImage();
 
-    const variantPrices = (product.variants || []).map(v => Number(v.price)).filter(v => !Number.isNaN(v) && v > 0);
-    const variantOriginalPrices = (product.variants || []).map(v => Number(v.mrp)).filter(v => !Number.isNaN(v) && v > 0);
-    const variantCount = (product.variants || []).length;
-    const fromPrice = variantPrices.length > 0 ? Math.min(...variantPrices) : Number(product.price || 0);
-    const fromOriginalPrice = variantOriginalPrices.length > 0 ? Math.max(...variantOriginalPrices) : Number(product.originalPrice || 0);
-    const effectivePrice = variantCount > 1 ? fromPrice : Number(product.price || 0);
-    const effectiveOriginalPrice = variantCount > 1 ? fromOriginalPrice : Number(product.originalPrice || 0);
+    // Use Centralized Price Logic
+    const effectivePrice = getProductPrice(product);
+    const effectiveOriginalPrice = getProductMRP(product);
 
     const reviewCount = Number(product.reviewCount ?? product.reviews ?? 0);
 
@@ -187,11 +182,24 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
                         </div>
                     )}
 
-                    {(product.isTrending || product.tags?.isTrending) && (
-                        <div className="absolute top-0 left-0 bg-[#E89BA8] text-white text-[9px] font-bold px-2 py-1 z-10 uppercase tracking-widest">
-                            Bestseller
-                        </div>
-                    )}
+                    {/* Dynamic Urgency Badges */}
+                    <div className="absolute top-0 left-0 flex flex-col gap-1 z-10">
+                        {(product.isTrending || product.tags?.isTrending) && (
+                            <div className="bg-[#E89BA8] text-white text-[9px] font-black px-2 py-1 uppercase tracking-widest shadow-sm">
+                                Bestseller
+                            </div>
+                        )}
+                        {(product.tags?.isNewArrival || product.tags?.isNewLaunch) && (
+                            <div className="bg-emerald-500 text-white text-[9px] font-black px-2 py-1 uppercase tracking-widest shadow-sm">
+                                New Arrival
+                            </div>
+                        )}
+                        {product.tags?.isMostGifted && (
+                            <div className="bg-[#3E2723] text-white text-[9px] font-black px-2 py-1 uppercase tracking-widest shadow-sm">
+                                Most Gifted
+                            </div>
+                        )}
+                    </div>
 
                     <button
                         onClick={handleWishlist}
@@ -210,9 +218,9 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
 
                 <div className="flex flex-col h-[115px] px-0">
                     <div className="flex items-baseline gap-2 mb-1">
-                        <span className="text-[15px] font-bold text-gray-900">{currencyText(effectivePrice)}</span>
+                        <span className="text-[15px] font-bold text-gray-900">{formatCurrency(effectivePrice)}</span>
                         {effectiveOriginalPrice > effectivePrice && (
-                            <span className="text-[12px] text-gray-400 line-through font-medium">{currencyText(effectiveOriginalPrice)}</span>
+                            <span className="text-[12px] text-gray-400 line-through font-medium">{formatCurrency(effectiveOriginalPrice)}</span>
                         )}
                     </div>
                     

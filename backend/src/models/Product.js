@@ -110,6 +110,17 @@ const productSchema = new mongoose.Schema({
   active: { type: Boolean, default: true },
   sellerId: { type: mongoose.Schema.Types.ObjectId, ref: "Seller", default: null },
   navShopByCategory: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" }],
+  // New Marketing & Logistics Fields
+  seo: {
+    title: { type: String, trim: true },
+    description: { type: String, trim: true },
+    keywords: { type: String, trim: true }
+  },
+  logistics: {
+    estimatedShippingDays: { type: Number, default: 3 },
+    certificateUrl: { type: String, default: "" }
+  },
+  relatedProducts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
   faqs: [{
     question: { type: String, trim: true },
     answer: { type: String, trim: true }

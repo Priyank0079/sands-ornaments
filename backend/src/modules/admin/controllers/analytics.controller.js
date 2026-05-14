@@ -30,7 +30,9 @@ exports.trackEvent = async (req, res) => {
       // Geo Lookup
       const geoip = require('geoip-lite');
       const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
-      const geo = geoip.lookup(clientIp);
+      // Simple check for local IP to prevent geoip-lite crash/null
+      const isLocal = clientIp === '::1' || clientIp === '127.0.0.1' || clientIp.startsWith('192.168.') || clientIp.startsWith('10.');
+      const geo = isLocal ? null : geoip.lookup(clientIp);
 
       visitor = await Visitor.create({
         visitorId,

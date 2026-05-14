@@ -320,6 +320,16 @@ const SharedProductEditor = ({
         supplierInfo: '',
         paymentGatewayChargeBearer: 'seller',
         diamondType: 'none',
+        seo: {
+            title: '',
+            description: '',
+            keywords: ''
+        },
+        logistics: {
+            estimatedShippingDays: 3,
+            certificateUrl: ''
+        },
+        relatedProducts: [],
         categories: [{ category: '' }],
         tags: {
             isNewArrival: false,
@@ -569,7 +579,9 @@ const SharedProductEditor = ({
                             };
                         }) || prev.variants,
                         faqs: data.faqs || [],
-                        deletedImages: [],
+                        seo: data.seo || { title: '', description: '', keywords: '' },
+                        logistics: data.logistics || { estimatedShippingDays: 3, certificateUrl: '' },
+                        relatedProducts: data.relatedProducts || [],
                         silverCategory: data.silverCategory || '',
                         goldCategory: data.goldCategory || '',
                         careTips: data.careTips || '',
@@ -2430,6 +2442,72 @@ const SharedProductEditor = ({
                                         </div>
                                     )}
                                 </div>
+                            </div>
+                        </FormSection>
+
+                        {/* SEO & Marketing Section */}
+                        <FormSection
+                            title="SEO & Marketing"
+                            icon={Search}
+                            subtitle="Optimize how this product appears on Google and search engines"
+                        >
+                            <div className="grid grid-cols-1 gap-6">
+                                <div className="space-y-4">
+                                    <Input
+                                        label="SEO Meta Title"
+                                        value={formData.seo?.title || ''}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, seo: { ...prev.seo, title: e.target.value } }))}
+                                        placeholder="e.g. Pure 925 Sterling Silver Heart Pendant | Sands Ornaments"
+                                        disabled={isViewMode}
+                                    />
+                                    <div className="space-y-1.5">
+                                        <label className="block text-xs font-semibold text-gray-700 tracking-wide">SEO Meta Description</label>
+                                        <textarea
+                                            value={formData.seo?.description || ''}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, seo: { ...prev.seo, description: e.target.value } }))}
+                                            placeholder="Brief summary for Google search results (150-160 characters recommended)"
+                                            disabled={isViewMode}
+                                            className="w-full bg-white border border-gray-300 rounded-xl py-3 px-4 text-sm text-gray-900 focus:outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm"
+                                            rows={3}
+                                        />
+                                    </div>
+                                    <Input
+                                        label="Keywords (Comma separated)"
+                                        value={formData.seo?.keywords || ''}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, seo: { ...prev.seo, keywords: e.target.value } }))}
+                                        placeholder="silver, jewelry, pendant, gift"
+                                        disabled={isViewMode}
+                                    />
+                                </div>
+                            </div>
+                        </FormSection>
+
+                        {/* Shipping & Logistics Section */}
+                        <FormSection
+                            title="Shipping & Logistics"
+                            icon={Truck}
+                            subtitle="Configure delivery estimates and documentation"
+                        >
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Estimated Shipping Days</label>
+                                    <input 
+                                        type="number"
+                                        value={formData.logistics?.estimatedShippingDays || 3}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, logistics: { ...prev.logistics, estimatedShippingDays: parseInt(e.target.value) || 0 } }))}
+                                        disabled={isViewMode}
+                                        className="w-full bg-white border border-gray-200 rounded-xl py-3.5 px-5 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm"
+                                        placeholder="3"
+                                    />
+                                    <p className="text-[10px] text-gray-400 ml-1 italic">Used to calculate 'Estimated Delivery' on storefront</p>
+                                </div>
+                                <Input
+                                    label="Certificate URL / Link"
+                                    value={formData.logistics?.certificateUrl || ''}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, logistics: { ...prev.logistics, certificateUrl: e.target.value } }))}
+                                    placeholder="https://cloudinary.com/..."
+                                    disabled={isViewMode}
+                                />
                             </div>
                         </FormSection>
                     </div>

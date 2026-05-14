@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
 import { useHomepageCms } from '../hooks/useHomepageCms';
+import { getProductPrice, getProductMRP } from '../utils/price';
 
 import ProductCard from './ProductCard';
 
@@ -30,41 +31,9 @@ const BestStylesSection = ({ sectionData = null }) => {
     const productLimit = Math.max(1, Number(settings.productLimit) || 6);
 
     const dynamicProducts = useMemo(() => {
-        const getEffectivePrice = (product) => {
-            const topLevelCandidates = [
-                product?.finalPrice,
-                product?.price
-            ]
-                .map((value) => Number(value))
-                .filter((value) => Number.isFinite(value) && value > 0);
-
-            if (topLevelCandidates.length > 0) return topLevelCandidates[0];
-
-            const variantPrices = (product?.variants || [])
-                .map((variant) => Number(variant?.finalPrice ?? variant?.price))
-                .filter((value) => Number.isFinite(value) && value > 0);
-            return variantPrices.length > 0 ? Math.min(...variantPrices) : 0;
-        };
-
-        const getOriginalPrice = (product) => {
-            const topLevelCandidates = [
-                product?.originalPrice,
-                product?.mrp
-            ]
-                .map((value) => Number(value))
-                .filter((value) => Number.isFinite(value) && value > 0);
-
-            if (topLevelCandidates.length > 0) return topLevelCandidates[0];
-
-            const variantMrps = (product?.variants || [])
-                .map((variant) => Number(variant?.mrp ?? variant?.price ?? variant?.finalPrice))
-                .filter((value) => Number.isFinite(value) && value > 0);
-            return variantMrps.length > 0 ? Math.max(...variantMrps) : 0;
-        };
-
         const getDiscountAmount = (product) => {
-            const originalPrice = getOriginalPrice(product);
-            const effectivePrice = getEffectivePrice(product);
+            const originalPrice = getProductMRP(product);
+            const effectivePrice = getProductPrice(product);
             return Math.max(0, originalPrice - effectivePrice);
         };
 
@@ -84,8 +53,8 @@ const BestStylesSection = ({ sectionData = null }) => {
 
         return matchingMetalProducts
             .map((product) => {
-                const price = getEffectivePrice(product);
-                const originalPrice = getOriginalPrice(product);
+                const price = getProductPrice(product);
+                const originalPrice = getProductMRP(product);
                 const discountAmount = getDiscountAmount(product);
                 return {
                     ...product,

@@ -1,4 +1,5 @@
 import React, { Suspense, lazy } from 'react';
+import { HelmetProvider } from 'react-helmet-async';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { ShopProvider } from './context/ShopContext';
 import { AuthProvider } from './context/AuthContext';
@@ -274,17 +275,19 @@ const AppContent = () => {
 
 function App() {
   return (
-    <AuthProvider>
-      <ShopProvider>
-        <SmoothScrollProvider />
-        <Router>
-          <ScrollToTop />
-          <AppErrorBoundary>
-            <AppContent />
-          </AppErrorBoundary>
-        </Router>
-      </ShopProvider>
-    </AuthProvider>
+    <HelmetProvider>
+      <AuthProvider>
+        <ShopProvider>
+          <SmoothScrollProvider />
+          <Router>
+            <ScrollToTop />
+            <AppErrorBoundary>
+              <AppContent />
+            </AppErrorBoundary>
+          </Router>
+        </ShopProvider>
+      </AuthProvider>
+    </HelmetProvider>
   );
 }
 

@@ -33,6 +33,7 @@ const SELLER_UPDATE_WHITELIST = [
   "silverCategory",
   "goldCategory",
   "diamondType",
+  "seo", "logistics", "relatedProducts",
   "paymentGatewayChargeBearer",
   "huid",
   "sizes",

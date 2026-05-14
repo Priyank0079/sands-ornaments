@@ -23,6 +23,7 @@ const PRODUCT_UPDATE_WHITELIST = [
   "goldCategory", "weightUnit", "specifications", "supplierInfo",
   "huid", "sizes", "isSerialized", "paymentGatewayChargeBearer", "audience",
   "diamondType",
+  "seo", "logistics", "relatedProducts",
   "videoUrl"
 ];
 
