@@ -19,6 +19,7 @@ const variantSchema = Joi.object({
   diamondType: Joi.string().valid("none", "lab_grown", "natural").optional(),
   hallmarkingCharge: Joi.number().min(0).optional(),
   diamondCertificateCharge: Joi.number().min(0).optional(),
+  additionalCharge: Joi.number().min(0).optional(),
   hiddenCharge: Joi.number().min(0).optional(),
   subtotalBeforeTax: Joi.number().min(0).optional(),
   gstAmount: Joi.number().min(0).optional(),
@@ -33,6 +34,14 @@ const variantSchema = Joi.object({
     question: Joi.string().trim().required(),
     answer: Joi.string().trim().required()
   })).optional(),
+  diamondSpecs: Joi.object({
+    carat: Joi.string().trim().allow(""),
+    clarity: Joi.string().trim().allow(""),
+    color: Joi.string().trim().allow(""),
+    cut: Joi.string().trim().allow(""),
+    shape: Joi.string().trim().allow(""),
+    diamondCount: Joi.number().integer().min(0).optional()
+  }).optional(),
   serialCodes: Joi.array().items(Joi.object({
     _id: Joi.string().trim().allow(""),
     code: Joi.string().trim().required(),
@@ -87,7 +96,19 @@ const productSchema = Joi.object({
     _id: Joi.string().trim().allow(""),
     question: Joi.string().trim().required(),
     answer: Joi.string().trim().required()
-  }))
+  })),
+  seo: Joi.object({
+    title: Joi.string().trim().allow(""),
+    description: Joi.string().trim().allow(""),
+    keywords: Joi.string().trim().allow("")
+  }).optional(),
+  logistics: Joi.object({
+    estimatedShippingDays: Joi.number().integer().min(0).optional(),
+    certificateUrl: Joi.string().trim().allow("")
+  }).optional(),
+  relatedProducts: Joi.array()
+    .items(Joi.string().pattern(/^[0-9a-fA-F]{24}$/))
+    .optional()
 });
 
 module.exports = { productSchema };

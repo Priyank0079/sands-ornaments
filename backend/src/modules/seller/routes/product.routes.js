@@ -14,7 +14,10 @@ const SELLER_COMPLEX_FIELDS = [
   "sizes",
   "faqs",
   "deletedImages",
-  "audience"
+  "audience",
+  "seo",
+  "logistics",
+  "relatedProducts"
 ];
 
 router.use(authenticate, requireRole("seller"));

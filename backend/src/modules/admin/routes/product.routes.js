@@ -14,7 +14,10 @@ const PRODUCT_COMPLEX_FIELDS = [
   "showInNavbar",
   "showInCollection",
   "navShopByCategory",
-  "audience"
+  "audience",
+  "seo",
+  "logistics",
+  "relatedProducts"
 ];
 
 router.get("/", productController.getProducts);

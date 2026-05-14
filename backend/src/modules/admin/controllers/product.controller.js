@@ -79,6 +79,7 @@ const normalizeVariantFields = (variants = [], fallback = {}) => {
         ? variant.diamondCertificateCharge
         : variant.diamondPrice
     ) || 0,
+    additionalCharge: Number(variant.additionalCharge) || 0,
     hiddenCharge: Number(variant.hiddenCharge) || 0,
     subtotalBeforeTax: Number(variant.subtotalBeforeTax) || 0,
     gstAmount: Number(variant.gstAmount) || 0,

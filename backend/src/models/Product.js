@@ -68,6 +68,7 @@ const productSchema = new mongoose.Schema({
     },
     hallmarkingCharge: { type: Number, default: 0 },
     diamondCertificateCharge: { type: Number, default: 0 },
+    additionalCharge: { type: Number, default: 0 },
     hiddenCharge: { type: Number, default: 0 },
     subtotalBeforeTax: { type: Number, default: 0 },
     gstAmount: { type: Number, default: 0 },

@@ -3,6 +3,7 @@ const Order = require("../../../models/Order");
 const Product = require("../../../models/Product");
 const Coupon = require("../../../models/Coupon");
 const StockLog = require("../../../models/StockLog");
+const Seller = require("../../../models/Seller");
 const { generateOrderId } = require("../../../utils/generateId");
 const { success, error } = require("../../../utils/apiResponse");
 const razorpay = require("../../../config/razorpay");
@@ -16,6 +17,19 @@ const {
 
 const toIdSet = (values = []) =>
   new Set((Array.isArray(values) ? values : []).map((value) => String(value)));
+
+const ensureProductOrderable = async (product) => {
+  if (!product || product.status !== "Active" || product.active === false) {
+    throw new Error(`Product ${product?._id || ""} is currently unavailable`);
+  }
+
+  if (product.sellerId) {
+    const seller = await Seller.findById(product.sellerId).select("status").lean();
+    if (!seller || seller.status !== "APPROVED") {
+      throw new Error(`${product.name} is currently unavailable`);
+    }
+  }
+};
 
 /**
  * Shared helper: validate + compute coupon discount.
@@ -158,6 +172,7 @@ const _calculateOrderData = async (userId, userEmail, items, shippingAddress, pa
   for (const item of items) {
     const product = await Product.findById(item.productId);
     if (!product) throw new Error(`Product ${item.productId} not found`);
+    await ensureProductOrderable(product);
 
     const variant = product.variants.id(item.variantId);
     if (!variant) throw new Error(`Variant ${item.variantId} not found`);

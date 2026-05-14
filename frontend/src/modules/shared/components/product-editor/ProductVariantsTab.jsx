@@ -207,7 +207,7 @@ const ProductVariantsTab = ({
                                             </div>
                                         </div>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                                             <div className="space-y-3">
                                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
                                                     <IndianRupee size={10} className="text-amber-500" /> Making Charge
@@ -250,6 +250,22 @@ const ProductVariantsTab = ({
                                                         onChange={(e) => handleVariantChange(v.id, 'diamondCertificateCharge', e.target.value)} 
                                                         disabled={isViewMode} 
                                                         className="w-full bg-white border border-gray-200 rounded-xl py-3.5 pl-12 pr-5 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm" 
+                                                    />
+                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 uppercase tracking-widest">Rs</span>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-3">
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                                    <IndianRupee size={10} className="text-amber-500" /> Additional Charges
+                                                </label>
+                                                <div className="relative">
+                                                    <input
+                                                        type="number"
+                                                        value={v.additionalCharge ?? '0'}
+                                                        onChange={(e) => handleVariantChange(v.id, 'additionalCharge', e.target.value)}
+                                                        disabled={isViewMode}
+                                                        className="w-full bg-white border border-gray-200 rounded-xl py-3.5 pl-12 pr-5 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm"
+                                                        placeholder="0"
                                                     />
                                                     <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 uppercase tracking-widest">Rs</span>
                                                 </div>

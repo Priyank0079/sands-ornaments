@@ -100,7 +100,8 @@ export const getPricingForVariant = (variant, formData, metalRates, gstRate) => 
             ? variant.diamondCertificateCharge
             : variant.diamondPrice
     ) || 0;
-    const hiddenCharge = roundCurrency(hallmarkingCharge + diamondCertificateCharge);
+    const additionalCharge = Number(variant.additionalCharge) || 0;
+    const hiddenCharge = roundCurrency(hallmarkingCharge + diamondCertificateCharge + additionalCharge);
     const subtotalBeforeTax = roundCurrency(metalPrice + makingCharge + hiddenCharge);
     const gstValue = roundCurrency((subtotalBeforeTax * (Number(gstRate) || 0)) / 100);
     const priceAfterTax = roundCurrency(subtotalBeforeTax + gstValue);
@@ -112,6 +113,7 @@ export const getPricingForVariant = (variant, formData, metalRates, gstRate) => 
         makingCharge,
         hallmarkingCharge,
         diamondCertificateCharge,
+        additionalCharge,
         hiddenCharge,
         subtotalBeforeTax,
         gstValue,

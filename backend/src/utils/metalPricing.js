@@ -102,7 +102,8 @@ const computeVariantPricing = ({
         : variant.diamondPrice
     ) || 0
   );
-  const hiddenCharge = roundCurrency(hallmarkingCharge + diamondCertificateCharge);
+  const additionalCharge = roundCurrency(Number(variant.additionalCharge) || 0);
+  const hiddenCharge = roundCurrency(hallmarkingCharge + diamondCertificateCharge + additionalCharge);
   const subtotalBeforeTax = roundCurrency(metalPrice + makingCharge + hiddenCharge);
   const gstPercentage = Number(gstRate) || 0;
   const gstAmount = roundCurrency((subtotalBeforeTax * gstPercentage) / 100);
@@ -118,6 +119,7 @@ const computeVariantPricing = ({
     makingCharge,
     hallmarkingCharge,
     diamondCertificateCharge,
+    additionalCharge,
     hiddenCharge,
     subtotalBeforeTax,
     gstAmount,

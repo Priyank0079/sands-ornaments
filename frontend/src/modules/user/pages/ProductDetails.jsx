@@ -7,7 +7,7 @@ import api from '../../../services/api';
 import toast from 'react-hot-toast';
 import ProductCard from '../components/ProductCard';
 
-import { Heart, ShoppingBag, Star, Share2, Plus, Minus, Truck, ShieldCheck, Smile, Gift, ChevronDown, SlidersHorizontal, X, Camera, Check, ArrowLeft, ArrowRight, Droplets, Sparkles, Play, Globe, Zap, Users, Ruler, ExternalLink, RotateCcw, Lock } from 'lucide-react';
+import { Heart, ShoppingBag, Star, Share2, Plus, Minus, Truck, ShieldCheck, Smile, Gift, ChevronDown, SlidersHorizontal, X, Camera, Check, ArrowLeft, ArrowRight, Droplets, Sparkles, Play, Globe, Zap, Users, Ruler, ExternalLink, RotateCcw, Lock, Layers, Scale, Box } from 'lucide-react';
 // Product video is backend-driven (optional) via `product.videoUrl`.
 import { useAnalytics } from '../../../hooks/useAnalytics';
 import Loader from '../../shared/components/Loader';
@@ -315,16 +315,22 @@ const ProductDetails = () => {
     const averageRating = Number(product?.rating || 0);
     const hasReviews = reviewCount > 0 && averageRating > 0;
 
+    const resolvedHiddenCharge = Number(selectedVariant?.hiddenCharge ?? (
+        Number(selectedVariant?.hallmarkingCharge || 0) +
+        Number(selectedVariant?.diamondCertificateCharge || 0) +
+        Number(selectedVariant?.additionalCharge || 0)
+    ));
     const pricingBreakdown = {
-        metalPrice: selectedVariant?.metalPrice ?? 0,
-        makingCharge: selectedVariant?.makingCharge ?? 0,
-        diamondPrice: selectedVariant?.diamondPrice ?? 0,
-        gst: selectedVariant?.gst ?? 0,
-        finalPrice: selectedVariant?.finalPrice ?? variantPrice ?? 0
+        metalPrice: Number(selectedVariant?.metalPrice || 0),
+        makingCharge: Number(selectedVariant?.makingCharge || 0) + resolvedHiddenCharge,
+        gst: Number(selectedVariant?.gst ?? selectedVariant?.gstAmount ?? 0),
+        pgCharge: Number(selectedVariant?.pgChargeAmount || 0),
+        finalPrice: Number(selectedVariant?.finalPrice ?? variantPrice ?? 0)
     };
     const selectedVariantWeight = selectedVariant?.weight ?? product?.weight ?? 0;
     const selectedVariantWeightUnit = selectedVariant?.weightUnit || product?.weightUnit || '';
-    const pricingSubtotal = Number(pricingBreakdown.metalPrice || 0) + Number(pricingBreakdown.makingCharge || 0) + Number(pricingBreakdown.diamondPrice || 0);
+    const pricingSubtotal = Number(selectedVariant?.subtotalBeforeTax || 0)
+        || (Number(pricingBreakdown.metalPrice || 0) + Number(pricingBreakdown.makingCharge || 0));
     const gstPercent = pricingSubtotal > 0 ? Math.round((Number(pricingBreakdown.gst || 0) / pricingSubtotal) * 10000) / 100 : 0;
     const supplierName = product?.sellerId?.shopName || product?.supplierInfo || product?.brand || '';
 
@@ -775,8 +781,10 @@ const ProductDetails = () => {
                                                     {[
                                                         { label: 'Metal (925 Silver)', rate: `${selectedVariantWeight || product.weight || '---'} g`, value: pricingBreakdown.metalPrice },
                                                         { label: 'Making Charges', rate: '-', value: pricingBreakdown.makingCharge },
-                                                        { label: 'Diamond / Stones', rate: '-', value: pricingBreakdown.diamondPrice },
-                                                        { label: `GST (${gstPercent}%)`, rate: '-', value: pricingBreakdown.gst }
+                                                        { label: `GST (${gstPercent}%)`, rate: '-', value: pricingBreakdown.gst },
+                                                        ...(pricingBreakdown.pgCharge > 0
+                                                            ? [{ label: 'Payment Gateway Charges', rate: '-', value: pricingBreakdown.pgCharge }]
+                                                            : [])
                                                     ].map((item, idx) => (
                                                         <tr key={idx} className="hover:bg-white transition-colors">
                                                             <td className="px-6 py-4 text-[11px] font-bold text-gray-700 uppercase tracking-tight">{item.label}</td>
@@ -1229,37 +1237,25 @@ const ProductDetails = () => {
                                                 </div>
                                                 <div className="flex justify-between items-center text-xs font-medium text-gray-600">
                                                     <span>Making Charges</span>
-                                                    <span className="font-bold text-gray-900">{formatCurrency(currentVariant?.makingCharge || 0)}</span>
+                                                    <span className="font-bold text-gray-900">{formatCurrency(pricingBreakdown.makingCharge)}</span>
                                                 </div>
-                                                {Number(currentVariant?.diamondPrice || 0) > 0 && (
-                                                    <div className="flex justify-between items-center text-xs font-medium text-gray-600">
-                                                        <span>Diamond Price</span>
-                                                        <span className="font-bold text-gray-900">{formatCurrency(currentVariant.diamondPrice)}</span>
-                                                    </div>
-                                                )}
-                                                {Number(currentVariant?.hallmarkingCharge || 0) > 0 && (
-                                                    <div className="flex justify-between items-center text-xs font-medium text-gray-600">
-                                                        <span>Hallmarking Charges</span>
-                                                        <span className="font-bold text-gray-900">{formatCurrency(currentVariant.hallmarkingCharge)}</span>
-                                                    </div>
-                                                )}
-                                                {Number(currentVariant?.diamondCertificateCharge || 0) > 0 && (
-                                                    <div className="flex justify-between items-center text-xs font-medium text-gray-600">
-                                                        <span>Certificate Charges</span>
-                                                        <span className="font-bold text-gray-900">{formatCurrency(currentVariant.diamondCertificateCharge)}</span>
-                                                    </div>
-                                                )}
                                                 <div className="pt-4 border-t border-[#F5E6D3]/50 flex justify-between items-center">
                                                     <span className="text-xs font-black text-[#8E2B45] uppercase tracking-widest">Subtotal (Pre-Tax)</span>
-                                                    <span className="text-sm font-black text-[#8E2B45]">{formatCurrency(currentVariant?.subtotalBeforeTax || (variantPrice / 1.03))}</span>
+                                                    <span className="text-sm font-black text-[#8E2B45]">{formatCurrency(pricingSubtotal)}</span>
                                                 </div>
                                                 <div className="flex justify-between items-center text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                                                    <span>GST (3%)</span>
-                                                    <span>{formatCurrency(currentVariant?.gstAmount || (variantPrice - (variantPrice / 1.03)))}</span>
+                                                    <span>GST ({gstPercent}%)</span>
+                                                    <span>{formatCurrency(pricingBreakdown.gst)}</span>
                                                 </div>
+                                                {pricingBreakdown.pgCharge > 0 && (
+                                                    <div className="flex justify-between items-center text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                                        <span>Payment Gateway Charges</span>
+                                                        <span>{formatCurrency(pricingBreakdown.pgCharge)}</span>
+                                                    </div>
+                                                )}
                                                 <div className="pt-4 border-t-2 border-dashed border-[#F5E6D3] flex justify-between items-center">
                                                     <span className="text-sm font-black text-black uppercase tracking-widest">Grand Total</span>
-                                                    <span className="text-xl font-black text-black">{formatCurrency(variantPrice)}</span>
+                                                    <span className="text-xl font-black text-black">{formatCurrency(pricingBreakdown.finalPrice || variantPrice)}</span>
                                                 </div>
                                             </div>
                                         </div>

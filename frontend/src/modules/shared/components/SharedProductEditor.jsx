@@ -93,6 +93,7 @@ const SharedProductEditor = ({
             makingCharge: '0', 
             hallmarkingCharge: '0',
             diamondCertificateCharge: '0',
+            additionalCharge: '0',
             diamondPrice: '0', 
             diamondType: 'none',
             mrp: '0', 
@@ -267,6 +268,7 @@ const SharedProductEditor = ({
                                         ? v.diamondCertificateCharge
                                         : (v.diamondPrice || 0)
                                 ).toString(),
+                                additionalCharge: (v.additionalCharge || 0).toString(),
                                 diamondPrice: (v.diamondPrice || 0).toString(),
                                 diamondType: v.diamondType || data.diamondType || 'none',
                                 serialCodes: ensured.serialCodes,
@@ -367,7 +369,7 @@ const SharedProductEditor = ({
                 if (v.id === vid) {
                     const updated = { ...v, [field]: value };
                     
-                    if (['makingCharge', 'hallmarkingCharge', 'diamondCertificateCharge', 'diamondPrice', 'weight', 'weightUnit'].includes(field)) {
+                    if (['makingCharge', 'hallmarkingCharge', 'diamondCertificateCharge', 'additionalCharge', 'diamondPrice', 'weight', 'weightUnit'].includes(field)) {
                         if (field === 'diamondCertificateCharge') {
                             updated.diamondPrice = value;
                         }
@@ -420,6 +422,7 @@ const SharedProductEditor = ({
                 makingCharge: '0', 
                 hallmarkingCharge: '0',
                 diamondCertificateCharge: '0',
+                additionalCharge: '0',
                 diamondPrice: '0', 
                 diamondType: prev.diamondType || 'none',
                 mrp: '0', 
@@ -636,6 +639,14 @@ const SharedProductEditor = ({
                 const { id: _, ...rest } = v;
                 return rest;
             });
+            const categoryIds = (payload.categories || [])
+                .map((entry) => {
+                    if (!entry) return '';
+                    if (typeof entry === 'string') return entry;
+                    return entry.category || entry._id || entry.id || '';
+                })
+                .filter(Boolean)
+                .slice(0, 1);
 
             productForm.append('name', payload.name);
             productForm.append('productCode', payload.productCode);
@@ -647,7 +658,7 @@ const SharedProductEditor = ({
             productForm.append('stylingTips', payload.stylingTips || '');
             productForm.append('careTips', payload.careTips || '');
             productForm.append('diamondType', payload.diamondType);
-            productForm.append('categories', JSON.stringify(payload.categories));
+            productForm.append('categories', JSON.stringify(categoryIds));
             productForm.append('audience', JSON.stringify(payload.audience || ['unisex']));
             productForm.append('weight', payload.weight || '');
             productForm.append('weightUnit', payload.weightUnit || 'Grams');
@@ -674,9 +685,10 @@ const SharedProductEditor = ({
             if (videoFile) productForm.append('video', videoFile);
 
             // Variant image files
-            Object.keys(variantImageFiles).forEach(vid => {
-                variantImageFiles[vid].forEach(file => {
-                    productForm.append(`variantImages_${vid}`, file);
+            payload.variants.forEach((variant, index) => {
+                const key = variant.id;
+                (variantImageFiles[key] || []).forEach(file => {
+                    productForm.append(`variantImages_${index}`, file);
                 });
             });
 

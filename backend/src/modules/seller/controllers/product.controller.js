@@ -95,6 +95,7 @@ const sanitizeVariants = (variants, fallback = {}) => {
         ? v.diamondCertificateCharge
         : v.diamondPrice
     ) || 0,
+    additionalCharge: Number(v.additionalCharge) || 0,
     hiddenCharge: Number(v.hiddenCharge) || 0,
     subtotalBeforeTax: Number(v.subtotalBeforeTax) || 0,
     gstAmount: Number(v.gstAmount) || 0,
