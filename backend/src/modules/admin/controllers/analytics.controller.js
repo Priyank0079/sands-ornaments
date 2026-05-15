@@ -51,24 +51,27 @@ exports.trackEvent = async (req, res) => {
     }
 
     // 2. Heartbeat / Session Management
-    let session = await AnalyticsSession.findOne({ sessionId });
-    if (!session) {
-      session = await AnalyticsSession.create({
-        visitorId,
-        sessionId,
-        entryPage: path,
-        metadata: {
-          browser: visitor?.browser?.name,
-          os: visitor?.os?.name,
-          device: visitor?.device?.type
-        }
-      });
-    }
+    const now = new Date();
+    let session = await AnalyticsSession.findOneAndUpdate(
+      { sessionId },
+      { 
+        $setOnInsert: {
+          visitorId,
+          entryPage: path,
+          metadata: {
+            browser: visitor?.browser?.name,
+            os: visitor?.os?.name,
+            device: visitor?.device?.type
+          }
+        },
+        $set: { endTime: now },
+        $inc: { pageViews: type === 'page_view' ? 1 : 0 }
+      },
+      { upsert: true, new: true, runValidators: true }
+    );
 
-    // Update session stats
-    session.endTime = new Date();
+    // Update session duration
     session.duration = Math.floor((session.endTime - session.startTime) / 1000);
-    if (type === 'page_view') session.pageViews += 1;
     await session.save();
 
     // 3. Log Event

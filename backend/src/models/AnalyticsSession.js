@@ -2,8 +2,8 @@ const mongoose = require("mongoose");
 
 const analyticsSessionSchema = new mongoose.Schema({
   visitorId: { type: String, required: true, index: true },
-  sessionId: { type: String, required: true, unique: true, index: true },
-  startTime: { type: Date, default: Date.now, index: true },
+  sessionId: { type: String, required: true, unique: true },
+  startTime: { type: Date, default: Date.now },
   endTime: { type: Date },
   duration: { type: Number, default: 0 }, // in seconds
   isActive: { type: Boolean, default: true, index: true },
