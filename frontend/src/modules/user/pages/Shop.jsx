@@ -496,13 +496,13 @@ const Shop = () => {
         if (priceMaxQuery && priceMinQuery) {
             const parsedMin = Number(String(priceMinQuery).replace(/[^0-9]/g, ''));
             const parsedMax = Number(String(priceMaxQuery).replace(/[^0-9]/g, ''));
-            title = `â‚¹${parsedMin.toLocaleString('en-IN')} â€“ â‚¹${parsedMax.toLocaleString('en-IN')}`;
+            title = `₹${parsedMin.toLocaleString('en-IN')} – ₹${parsedMax.toLocaleString('en-IN')}`;
         } else if (priceMaxQuery) {
             const parsedPrice = Number(String(priceMaxQuery).replace(/[^0-9]/g, ''));
-            title = `Under â‚¹${parsedPrice.toLocaleString('en-IN')}`;
+            title = `Under ₹${parsedPrice.toLocaleString('en-IN')}`;
         } else if (priceMinQuery) {
             const parsedMin = Number(String(priceMinQuery).replace(/[^0-9]/g, ''));
-            title = `Above â‚¹${parsedMin.toLocaleString('en-IN')}`;
+            title = `Above ₹${parsedMin.toLocaleString('en-IN')}`;
         }
         if (productsQuery) {
             if (pinnedProducts.length > 0) {
