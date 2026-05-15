@@ -90,11 +90,7 @@ const sanitizeVariants = (variants, fallback = {}) => {
     makingCharge: Number(v.makingCharge) || 0,
     diamondPrice: Number(v.diamondPrice) || 0,
     hallmarkingCharge: Number(v.hallmarkingCharge) || 0,
-    diamondCertificateCharge: Number(
-      v.diamondCertificateCharge !== undefined && v.diamondCertificateCharge !== null
-        ? v.diamondCertificateCharge
-        : v.diamondPrice
-    ) || 0,
+    diamondCertificateCharge: Number(v.diamondCertificateCharge) || 0,
     additionalCharge: Number(v.additionalCharge) || 0,
     hiddenCharge: Number(v.hiddenCharge) || 0,
     subtotalBeforeTax: Number(v.subtotalBeforeTax) || 0,

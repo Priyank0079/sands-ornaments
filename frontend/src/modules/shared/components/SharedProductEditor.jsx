@@ -266,7 +266,7 @@ const SharedProductEditor = ({
                                 diamondCertificateCharge: (
                                     v.diamondCertificateCharge !== undefined && v.diamondCertificateCharge !== null
                                         ? v.diamondCertificateCharge
-                                        : (v.diamondPrice || 0)
+                                        : 0
                                 ).toString(),
                                 additionalCharge: (v.additionalCharge || 0).toString(),
                                 diamondPrice: (v.diamondPrice || 0).toString(),
@@ -370,9 +370,6 @@ const SharedProductEditor = ({
                     const updated = { ...v, [field]: value };
                     
                     if (['makingCharge', 'hallmarkingCharge', 'diamondCertificateCharge', 'additionalCharge', 'diamondPrice', 'weight', 'weightUnit'].includes(field)) {
-                        if (field === 'diamondCertificateCharge') {
-                            updated.diamondPrice = value;
-                        }
                         const pricing = getPricingForVariant(updated, prev, metalRates, gstRate);
                         updated.mrp = pricing.finalPrice.toString();
                         updated.price = pricing.finalPrice.toString();

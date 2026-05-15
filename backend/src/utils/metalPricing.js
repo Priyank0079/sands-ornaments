@@ -94,17 +94,12 @@ const computeVariantPricing = ({
     computeMetalPrice(product, variantWeight, variantWeightUnit, rates)
   );
   const makingCharge = roundCurrency(Number(variant.makingCharge) || 0);
+  const diamondPrice = roundCurrency(Number(variant.diamondPrice) || 0);
   const hallmarkingCharge = roundCurrency(Number(variant.hallmarkingCharge) || 0);
-  const diamondCertificateCharge = roundCurrency(
-    Number(
-      variant.diamondCertificateCharge !== undefined && variant.diamondCertificateCharge !== null
-        ? variant.diamondCertificateCharge
-        : variant.diamondPrice
-    ) || 0
-  );
+  const diamondCertificateCharge = roundCurrency(Number(variant.diamondCertificateCharge) || 0);
   const additionalCharge = roundCurrency(Number(variant.additionalCharge) || 0);
   const hiddenCharge = roundCurrency(hallmarkingCharge + diamondCertificateCharge + additionalCharge);
-  const subtotalBeforeTax = roundCurrency(metalPrice + makingCharge + hiddenCharge);
+  const subtotalBeforeTax = roundCurrency(metalPrice + makingCharge + diamondPrice + hiddenCharge);
   const gstPercentage = Number(gstRate) || 0;
   const gstAmount = roundCurrency((subtotalBeforeTax * gstPercentage) / 100);
   const priceAfterTax = roundCurrency(subtotalBeforeTax + gstAmount);
@@ -117,6 +112,7 @@ const computeVariantPricing = ({
     weightUnit: variantWeightUnit,
     metalPrice,
     makingCharge,
+    diamondPrice,
     hallmarkingCharge,
     diamondCertificateCharge,
     additionalCharge,

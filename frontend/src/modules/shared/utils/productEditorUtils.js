@@ -94,15 +94,12 @@ export const getPaymentGatewayChargePercent = (formData) => (
 export const getPricingForVariant = (variant, formData, metalRates, gstRate) => {
     const metalPrice = getMetalPrice(variant, formData, metalRates);
     const makingCharge = Number(variant.makingCharge) || 0;
+    const diamondPrice = Number(variant.diamondPrice) || 0;
     const hallmarkingCharge = Number(variant.hallmarkingCharge) || 0;
-    const diamondCertificateCharge = Number(
-        variant.diamondCertificateCharge !== undefined && variant.diamondCertificateCharge !== null
-            ? variant.diamondCertificateCharge
-            : variant.diamondPrice
-    ) || 0;
+    const diamondCertificateCharge = Number(variant.diamondCertificateCharge) || 0;
     const additionalCharge = Number(variant.additionalCharge) || 0;
     const hiddenCharge = roundCurrency(hallmarkingCharge + diamondCertificateCharge + additionalCharge);
-    const subtotalBeforeTax = roundCurrency(metalPrice + makingCharge + hiddenCharge);
+    const subtotalBeforeTax = roundCurrency(metalPrice + makingCharge + diamondPrice + hiddenCharge);
     const gstValue = roundCurrency((subtotalBeforeTax * (Number(gstRate) || 0)) / 100);
     const priceAfterTax = roundCurrency(subtotalBeforeTax + gstValue);
     const pgChargePercent = getPaymentGatewayChargePercent(formData);
@@ -111,6 +108,7 @@ export const getPricingForVariant = (variant, formData, metalRates, gstRate) => 
     return {
         metalPrice,
         makingCharge,
+        diamondPrice,
         hallmarkingCharge,
         diamondCertificateCharge,
         additionalCharge,

@@ -131,7 +131,7 @@ const ProductVariantsTab = ({
                                             <span className="text-[9px] font-black text-gray-300 uppercase tracking-widest">Step 1</span>
                                         </div>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                                             <div className="space-y-2">
                                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
                                                     <Tag size={10} className="text-amber-500" /> Variant Name
@@ -241,6 +241,22 @@ const ProductVariantsTab = ({
                                             </div>
                                             <div className="space-y-3">
                                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                                    <Sparkles size={10} className="text-amber-500" /> Diamond / Stones
+                                                </label>
+                                                <div className="relative">
+                                                    <input
+                                                        type="number"
+                                                        value={v.diamondPrice ?? '0'}
+                                                        onChange={(e) => handleVariantChange(v.id, 'diamondPrice', e.target.value)}
+                                                        disabled={isViewMode}
+                                                        className="w-full bg-white border border-gray-200 rounded-xl py-3.5 pl-12 pr-5 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm"
+                                                        placeholder="0"
+                                                    />
+                                                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 uppercase tracking-widest">Rs</span>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-3">
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
                                                     <FileText size={10} className="text-amber-500" /> Certificate Charge
                                                 </label>
                                                 <div className="relative">
@@ -288,11 +304,17 @@ const ProductVariantsTab = ({
                                             <span className="text-[9px] font-black text-gray-300 uppercase tracking-widest">Step 2</span>
                                         </div>
 
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
                                             <div className="space-y-3">
                                                 <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Metal Price</label>
                                                 <div className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-4 px-5 text-sm font-black text-gray-800 shadow-inner flex items-center gap-2">
                                                     <span className="text-[10px] text-gray-400">Rs</span> {pricing.metalPrice.toFixed(2)}
+                                                </div>
+                                            </div>
+                                            <div className="space-y-3">
+                                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Diamond / Stones</label>
+                                                <div className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-4 px-5 text-sm font-black text-gray-800 shadow-inner flex items-center gap-2">
+                                                    <span className="text-[10px] text-gray-400">Rs</span> {pricing.diamondPrice.toFixed(2)}
                                                 </div>
                                             </div>
                                             <div className="space-y-3">

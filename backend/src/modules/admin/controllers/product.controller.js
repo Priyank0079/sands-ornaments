@@ -74,11 +74,7 @@ const normalizeVariantFields = (variants = [], fallback = {}) => {
     makingCharge: Number(variant.makingCharge) || 0,
     diamondPrice: Number(variant.diamondPrice) || 0,
     hallmarkingCharge: Number(variant.hallmarkingCharge) || 0,
-    diamondCertificateCharge: Number(
-      variant.diamondCertificateCharge !== undefined && variant.diamondCertificateCharge !== null
-        ? variant.diamondCertificateCharge
-        : variant.diamondPrice
-    ) || 0,
+    diamondCertificateCharge: Number(variant.diamondCertificateCharge) || 0,
     additionalCharge: Number(variant.additionalCharge) || 0,
     hiddenCharge: Number(variant.hiddenCharge) || 0,
     subtotalBeforeTax: Number(variant.subtotalBeforeTax) || 0,
@@ -535,7 +531,6 @@ exports.bulkPriceUpdate = async (req, res) => {
             break;
           case "set_diamond_certificate_charge":
             v.diamondCertificateCharge = numericValue;
-            v.diamondPrice = numericValue;
             break;
           case "set_pg_charge_to_user":
             prod.paymentGatewayChargeBearer = "user";

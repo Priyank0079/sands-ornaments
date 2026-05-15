@@ -320,17 +320,18 @@ const ProductDetails = () => {
         Number(selectedVariant?.diamondCertificateCharge || 0) +
         Number(selectedVariant?.additionalCharge || 0)
     ));
+    const resolvedPgCharge = Number(selectedVariant?.pgChargeAmount || 0);
     const pricingBreakdown = {
         metalPrice: Number(selectedVariant?.metalPrice || 0),
-        makingCharge: Number(selectedVariant?.makingCharge || 0) + resolvedHiddenCharge,
+        makingCharge: Number(selectedVariant?.makingCharge || 0) + resolvedHiddenCharge + resolvedPgCharge,
+        diamondPrice: Number(selectedVariant?.diamondPrice || 0),
         gst: Number(selectedVariant?.gst ?? selectedVariant?.gstAmount ?? 0),
-        pgCharge: Number(selectedVariant?.pgChargeAmount || 0),
         finalPrice: Number(selectedVariant?.finalPrice ?? variantPrice ?? 0)
     };
     const selectedVariantWeight = selectedVariant?.weight ?? product?.weight ?? 0;
     const selectedVariantWeightUnit = selectedVariant?.weightUnit || product?.weightUnit || '';
     const pricingSubtotal = Number(selectedVariant?.subtotalBeforeTax || 0)
-        || (Number(pricingBreakdown.metalPrice || 0) + Number(pricingBreakdown.makingCharge || 0));
+        || (Number(pricingBreakdown.metalPrice || 0) + Number(pricingBreakdown.makingCharge || 0) + Number(pricingBreakdown.diamondPrice || 0) - resolvedPgCharge);
     const gstPercent = pricingSubtotal > 0 ? Math.round((Number(pricingBreakdown.gst || 0) / pricingSubtotal) * 10000) / 100 : 0;
     const supplierName = product?.sellerId?.shopName || product?.supplierInfo || product?.brand || '';
 
@@ -781,10 +782,8 @@ const ProductDetails = () => {
                                                     {[
                                                         { label: 'Metal (925 Silver)', rate: `${selectedVariantWeight || product.weight || '---'} g`, value: pricingBreakdown.metalPrice },
                                                         { label: 'Making Charges', rate: '-', value: pricingBreakdown.makingCharge },
-                                                        { label: `GST (${gstPercent}%)`, rate: '-', value: pricingBreakdown.gst },
-                                                        ...(pricingBreakdown.pgCharge > 0
-                                                            ? [{ label: 'Payment Gateway Charges', rate: '-', value: pricingBreakdown.pgCharge }]
-                                                            : [])
+                                                        { label: 'Diamond / Stones', rate: '-', value: pricingBreakdown.diamondPrice },
+                                                        { label: `GST (${gstPercent}%)`, rate: '-', value: pricingBreakdown.gst }
                                                     ].map((item, idx) => (
                                                         <tr key={idx} className="hover:bg-white transition-colors">
                                                             <td className="px-6 py-4 text-[11px] font-bold text-gray-700 uppercase tracking-tight">{item.label}</td>
@@ -1239,6 +1238,12 @@ const ProductDetails = () => {
                                                     <span>Making Charges</span>
                                                     <span className="font-bold text-gray-900">{formatCurrency(pricingBreakdown.makingCharge)}</span>
                                                 </div>
+                                                {pricingBreakdown.diamondPrice > 0 && (
+                                                    <div className="flex justify-between items-center text-xs font-medium text-gray-600">
+                                                        <span>Diamond / Stones</span>
+                                                        <span className="font-bold text-gray-900">{formatCurrency(pricingBreakdown.diamondPrice)}</span>
+                                                    </div>
+                                                )}
                                                 <div className="pt-4 border-t border-[#F5E6D3]/50 flex justify-between items-center">
                                                     <span className="text-xs font-black text-[#8E2B45] uppercase tracking-widest">Subtotal (Pre-Tax)</span>
                                                     <span className="text-sm font-black text-[#8E2B45]">{formatCurrency(pricingSubtotal)}</span>
@@ -1247,12 +1252,6 @@ const ProductDetails = () => {
                                                     <span>GST ({gstPercent}%)</span>
                                                     <span>{formatCurrency(pricingBreakdown.gst)}</span>
                                                 </div>
-                                                {pricingBreakdown.pgCharge > 0 && (
-                                                    <div className="flex justify-between items-center text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                                                        <span>Payment Gateway Charges</span>
-                                                        <span>{formatCurrency(pricingBreakdown.pgCharge)}</span>
-                                                    </div>
-                                                )}
                                                 <div className="pt-4 border-t-2 border-dashed border-[#F5E6D3] flex justify-between items-center">
                                                     <span className="text-sm font-black text-black uppercase tracking-widest">Grand Total</span>
                                                     <span className="text-xl font-black text-black">{formatCurrency(pricingBreakdown.finalPrice || variantPrice)}</span>
