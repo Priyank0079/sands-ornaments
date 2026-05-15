@@ -120,6 +120,13 @@ const GoldCategoryGrid = ({ sectionData = null }) => {
                                         {cat.badge}
                                     </div>
                                 ) : null}
+
+                                {/* Premium Sliding Button Overlay */}
+                                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#C9A84C] to-[#D4B56A] py-3 md:py-4 transform translate-y-full group-hover/item:translate-y-0 transition-transform duration-500 ease-in-out flex items-center justify-center shadow-[0_-4px_15px_rgba(0,0,0,0.1)]">
+                                    <span className="text-[9px] md:text-[11px] font-black text-white uppercase tracking-[0.3em] flex items-center gap-1.5">
+                                        Shop Now <ChevronRight className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                                    </span>
+                                </div>
                             </div>
                             <span className="text-[12px] md:text-[16px] font-bold text-gray-800 group-hover/item:text-[#A8862A] transition-colors text-center tracking-tight leading-tight">
                                 {cat.name}
