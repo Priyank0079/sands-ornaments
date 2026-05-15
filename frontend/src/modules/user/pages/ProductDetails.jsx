@@ -190,7 +190,7 @@ const ImageLightbox = ({ images, currentIndex, isOpen, onClose, onPrev, onNext }
                             onClick={() => onNext(idx)}
                             className={`relative w-14 h-14 rounded-lg overflow-hidden border-2 transition-all shadow-lg ${currentIndex === idx ? 'border-[#D39A9F] scale-110 shadow-[#D39A9F]/20' : 'border-white/10 opacity-50 hover:opacity-100 hover:border-white/40'}`}
                         >
-                            <img src={img} className="w-full h-full object-cover" />
+                            <img src={img} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                         </button>
                     ))}
                 </div>
@@ -575,15 +575,8 @@ const ProductDetails = () => {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [isLightboxOpen, galleryImages.length]);
 
-    // Preload Gallery Images
-    useEffect(() => {
-        if (galleryImages.length > 0) {
-            galleryImages.forEach(url => {
-                const img = new Image();
-                img.src = url;
-            });
-        }
-    }, [galleryImages]);
+    // Note: Gallery image preloading removed — browser native lazy loading handles
+    // this more efficiently on mobile without saturating bandwidth on load.
 
     if (isLoading || detailLoading) {
         return <Loader />;
@@ -671,30 +664,9 @@ const ProductDetails = () => {
                     <span>Go Back</span>
                 </button>
             </div>
-            <style>
-                {`
-                    @keyframes flyToCart {
-                        0% { top: 50%; left: 50%; transform: translate(-50%, -50%) scale(1); opacity: 1; border-radius: 20px; }
-                        50% { opacity: 0.8; transform: translate(-50%, -50%) scale(0.4); }
-                        100% { top: 30px; left: 92%; transform: translate(-50%, -50%) scale(0.1); opacity: 0; border-radius: 50%; }
-                    }
-                     @keyframes flyToHeart {
-                        0% { top: 50%; left: 50%; transform: translate(-50%, -50%) scale(1); opacity: 1; border-radius: 20px; }
-                        50% { opacity: 0.8; transform: translate(-50%, -50%) scale(0.4); }
-                        100% { top: 30px; left: 88%; transform: translate(-50%, -50%) scale(0.1); opacity: 0; border-radius: 50%; }
-                    }
-                    .animate-fly-cart {
-                        animation: flyToCart 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-                    }
-                    .animate-fly-heart {
-                        animation: flyToHeart 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-                    }
-                `}
-            </style>
 
 
-
-            {/* Flying Image Animation Element */}
+            {/* Flying Image Animation Element — keyframes in index.css */}
             {flying && primaryImage && (
                 <img
                     src={primaryImage}
@@ -773,7 +745,7 @@ const ProductDetails = () => {
                                             loop
                                             playsInline
                                             controls
-                                            preload="auto"
+                                            preload="none"
                                             className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
                                             onError={(e) => {
                                                 console.error("Product video playback failed:", e);
@@ -807,10 +779,12 @@ const ProductDetails = () => {
                             >
                                 {primaryImage ? (
                                     <>
-                                        {/* Main State Image (Thumbnail selected or default) */}
+                                        {/* Main State Image (Thumbnail selected or default) — eager load (LCP element) */}
                                         <img
                                             src={primaryImage}
                                             alt={product.name}
+                                            fetchpriority="high"
+                                            decoding="sync"
                                             className="absolute inset-0 w-full h-full object-cover z-0"
                                         />
 
@@ -819,6 +793,8 @@ const ProductDetails = () => {
                                             <img
                                                 src={hoverPaneImage}
                                                 alt={`${product.name} look`}
+                                                loading="lazy"
+                                                decoding="async"
                                                 className="absolute inset-0 w-full h-full object-cover z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-[1200ms] ease-in-out"
                                             />
                                         ) : null}
@@ -861,7 +837,7 @@ const ProductDetails = () => {
                                         onClick={() => setSelectedImage(img)}
                                         className={`relative shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-lg overflow-hidden border-2 transition-all shadow-sm ${selectedImage === img ? 'border-[#D39A9F] ring-1 ring-[#D39A9F]' : 'border-transparent hover:border-gray-200'}`}
                                     >
-                                        <img src={img} alt={`View ${idx + 1}`} className="w-full h-full object-cover" />
+                                        <img src={img} alt={`View ${idx + 1}`} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                                         {selectedImage === img && <div className="absolute inset-0 bg-black/10" />}
                                     </button>
                                 ))}

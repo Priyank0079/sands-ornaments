@@ -6,12 +6,18 @@
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Sands Jewels</title>
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <!-- Preconnect to critical origins for faster DNS + TLS handshakes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="dns-prefetch" href="https://checkout.razorpay.com" />
+  <link rel="dns-prefetch" href="https://res.cloudinary.com" />
 </head>
 
 <body>
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
+  <!-- Razorpay loaded after app bundle — no longer blocks render -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
 </body>
 
 </html>

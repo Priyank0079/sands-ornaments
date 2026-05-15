@@ -250,21 +250,6 @@ const AllJewelleryMenu = ({ resetMenu }) => {
                     </motion.div>
                 </AnimatePresence>
             </div>
-            <style>{`
-                .custom-scrollbar::-webkit-scrollbar {
-                    width: 5px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-track {
-                    background: transparent;
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: #F1F1F1;
-                    border-radius: 10px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                    background: #E5E5E5;
-                }
-            `}</style>
         </div>
     );
 };

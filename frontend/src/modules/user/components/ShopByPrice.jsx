@@ -77,6 +77,8 @@ const ShopByPrice = () => {
                             <img
                                 src={item.image}
                                 alt={item.title}
+                                loading="lazy"
+                                decoding="async"
                                 className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110"
                             />
 
@@ -99,11 +101,6 @@ const ShopByPrice = () => {
                 </div>
             </div>
 
-            <style>{`
-                .shadow-glow {
-                    box-shadow: 0 0 10px rgba(201, 162, 77, 0.5);
-                }
-            `}</style>
         </section>
     );
 };

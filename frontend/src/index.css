@@ -195,3 +195,48 @@ html.lenis body {
 .mens-section :where(h1, h2, h3, h4, h5, h6, p, span, a, button, label, input, textarea, select, option, li) {
     font-family: var(--font-serif) !important;
 }
+
+/* ============================================================
+   Flying Cart / Wishlist Animation — shared by ProductCard
+   & ProductDetails. Defined here ONCE to avoid injecting a
+   <style> tag per card on product grids.
+   ============================================================ */
+@keyframes flyToCart {
+    0%   { top: 50%; left: 50%; transform: translate(-50%, -50%) scale(1);   opacity: 1; border-radius: 20px; }
+    50%  { opacity: 0.8; transform: translate(-50%, -50%) scale(0.4); }
+    100% { top: 30px; left: 92%; transform: translate(-50%, -50%) scale(0.1); opacity: 0; border-radius: 50%; }
+}
+
+@keyframes flyToHeart {
+    0%   { top: 50%; left: 50%; transform: translate(-50%, -50%) scale(1);   opacity: 1; border-radius: 20px; }
+    50%  { opacity: 0.8; transform: translate(-50%, -50%) scale(0.4); }
+    100% { top: 30px; left: 88%; transform: translate(-50%, -50%) scale(0.1); opacity: 0; border-radius: 50%; }
+}
+
+.animate-fly-cart {
+    animation: flyToCart 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.animate-fly-heart {
+    animation: flyToHeart 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* Shared utility — moved from ShopByPrice inline style */
+.shadow-glow {
+    box-shadow: 0 0 10px rgba(201, 162, 77, 0.5);
+}
+
+/* Marquee animation — moved from OfferStrip inline style */
+@keyframes marquee-scroll {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+.animate-marquee-infinite {
+    display: inline-flex;
+    animation: marquee-scroll 25s linear infinite;
+}
+
+.animate-marquee-infinite:hover {
+    animation-play-state: paused;
+}

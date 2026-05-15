@@ -98,6 +98,8 @@ const AutoBannerSection = () => {
                                 transition={{ duration: 5 }}
                                 src={slides[currentIndex].image} 
                                 alt={slides[currentIndex].title}
+                                loading="lazy"
+                                decoding="async"
                                 className="w-full h-full object-cover"
                             />
                             
