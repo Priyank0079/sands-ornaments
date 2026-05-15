@@ -216,32 +216,36 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
                     </div>
                 </div>
 
-                <div className="flex flex-col h-[115px] px-0">
-                    <div className="flex items-baseline gap-2 mb-1">
-                        <span className="text-[15px] font-bold text-gray-900">{formatCurrency(effectivePrice)}</span>
+                <div className="flex flex-col items-center px-2 py-3">
+                    <div className="flex items-center justify-center gap-2 mb-1.5">
+                        <span className="text-[17px] font-extrabold text-gray-900 tracking-tight">
+                            {formatCurrency(effectivePrice)}
+                        </span>
                         {effectiveOriginalPrice > effectivePrice && (
-                            <span className="text-[12px] text-gray-400 line-through font-medium">{formatCurrency(effectiveOriginalPrice)}</span>
+                            <span className="text-[13px] text-gray-400 line-through font-medium opacity-70">
+                                {formatCurrency(effectiveOriginalPrice)}
+                            </span>
                         )}
                     </div>
                     
-                    <h3 className="text-[12px] text-gray-700 line-clamp-1 h-[18px] group-hover/card:text-black transition-colors uppercase tracking-tight font-medium overflow-hidden mb-1">
+                    <h3 className="text-[11px] text-gray-500 line-clamp-1 h-[16px] group-hover/card:text-black transition-colors uppercase tracking-[0.08em] font-medium overflow-hidden mb-2 text-center">
                         {product.name}
                     </h3>
 
-                    <div className="h-[15px] mb-2">
+                    <div className="h-[22px] mb-3 flex items-center justify-center">
                         {(product.priceDrop || (effectiveOriginalPrice > effectivePrice)) && (
-                            <p className="text-[9px] font-bold text-blue-600 uppercase tracking-wider">
+                            <span className="px-2.5 py-0.5 bg-blue-50 text-blue-600 text-[9px] font-black uppercase tracking-widest rounded-full border border-blue-100 shadow-sm">
                                 PRICE DROP!
-                            </p>
+                            </span>
                         )}
                     </div>
                     
-                    <div className="mt-auto">
+                    <div className="w-full">
                         <button 
                             onClick={handleAddToCart}
-                            className="w-full bg-[#FFD9E0] text-[#8E2B45] font-bold text-[11px] py-2.5 rounded-none hover:bg-[#ffc2cd] transition-all duration-300 uppercase tracking-widest"
+                            className="w-full bg-[#1A1A1A] text-white font-bold text-[11px] py-3 rounded-none hover:bg-black transition-all duration-300 uppercase tracking-[0.15em] active:scale-[0.98]"
                         >
-                            Add to Cart
+                            Shop Now
                         </button>
                     </div>
                 </div>

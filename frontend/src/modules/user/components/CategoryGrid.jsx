@@ -71,6 +71,13 @@ const CategoryGrid = () => {
                                         {category.badge}
                                     </div>
                                 ) : null}
+
+                                {/* Sliding Button Overlay */}
+                                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#9C5B61] to-[#D39A9F] py-2 md:py-3.5 transform translate-y-full group-hover/item:translate-y-0 transition-transform duration-500 ease-in-out flex items-center justify-center shadow-[0_-4px_15px_rgba(0,0,0,0.1)]">
+                                    <span className="text-[8px] md:text-[10px] font-black text-white uppercase tracking-[0.3em] flex items-center gap-1">
+                                        Shop Now <ChevronRight className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                                    </span>
+                                </div>
                             </div>
                             <span className="text-[13px] md:text-[15px] font-medium text-gray-800 group-hover/item:text-[#9C5B61] transition-colors text-center tracking-tight leading-tight">
                                 {category.name}
