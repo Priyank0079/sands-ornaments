@@ -313,7 +313,7 @@ const Shop = () => {
         }
 
         return () => { isCancelled = true; };
-    }, [location.search, location.pathname, categories]);
+    }, [location.search, location.pathname, categories, selectedCategory, filterNewArrivals, filterTrending, sortBy, priceRange]);
 
     const normalizeAudience = (value) => String(value || '').trim().toLowerCase();
     const getProductAudience = (product) => {
@@ -541,10 +541,15 @@ const Shop = () => {
             title = 'Trending Now';
         }
 
-        setPageTitle(title);
+        if (pageTitle !== title) {
+            setPageTitle(title);
+        }
 
         if (canUseServerProducts) {
-            setFilteredProducts([...serverProducts]);
+            // Only update if the length or first item changed (simple stability check)
+            if (filteredProducts.length !== serverProducts.length || filteredProducts[0]?.id !== serverProducts[0]?.id) {
+                setFilteredProducts(serverProducts);
+            }
             return;
         }
 
@@ -632,7 +637,13 @@ const Shop = () => {
             }
         }
 
-        setFilteredProducts([...result]); // Create new array to force re-render
+        // Only update filteredProducts if the results have actually changed
+        const hasChanged = result.length !== filteredProducts.length || 
+                          (result.length > 0 && result[0]?.id !== filteredProducts[0]?.id);
+                          
+        if (hasChanged) {
+            setFilteredProducts(result);
+        }
 
     }, [
         location,

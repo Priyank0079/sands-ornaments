@@ -22,6 +22,7 @@ import ChitChatSection from '../components/ChitChatSection';
 import SilverNewLaunchGrid from '../components/SilverNewLaunchGrid';
 import SilverCollectionSection from '../components/SilverCollectionSection';
 import SilverCuratedShowcase from '../components/SilverCuratedShowcase';
+import ProposalBanner from '../components/ProposalBanner';
 import Loader from '../../shared/components/Loader';
 
 const SectionShell = ({ children }) => (
@@ -126,6 +127,9 @@ const Home = () => {
             </SectionShell>
             <SectionShell>
                 <SilverCuratedShowcase />
+            </SectionShell>
+            <SectionShell>
+                <ProposalBanner />
             </SectionShell>
             <SectionShell>
                 <Testimonials />

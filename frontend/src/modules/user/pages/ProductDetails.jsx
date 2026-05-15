@@ -1,4 +1,9 @@
-import React, { useMemo, useState, useEffect } from 'react';
+
+
+
+
+import React, { useMemo, useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
@@ -7,7 +12,45 @@ import api from '../../../services/api';
 import toast from 'react-hot-toast';
 import ProductCard from '../components/ProductCard';
 
-import { Heart, ShoppingBag, Star, Share2, Plus, Minus, Truck, ShieldCheck, Smile, Gift, ChevronDown, SlidersHorizontal, X, Camera, Check, ArrowLeft, ArrowRight, Droplets, Sparkles, Play, Globe, Zap, Users, Ruler, ExternalLink, RotateCcw, Lock, Layers, Scale, Box } from 'lucide-react';
+import {
+    Heart,
+    ShoppingBag,
+    Star,
+    Share2,
+    Plus,
+    Minus,
+    Truck,
+    ShieldCheck,
+    Smile,
+    Gift,
+    ChevronDown,
+    ChevronLeft,
+    ChevronRight,
+    SlidersHorizontal,
+    X,
+    Camera,
+    Check,
+    ArrowLeft,
+    ArrowRight,
+    Droplets,
+    Sparkles,
+    Play,
+    Globe,
+    Zap,
+    Users,
+    Ruler,
+    ExternalLink,
+    RotateCcw,
+    Lock,
+    Layers,
+    Scale,
+    Box,
+    Maximize2,
+    ZoomIn,
+    ZoomOut,
+    RefreshCw,
+    Loader2
+} from 'lucide-react';
 // Product video is backend-driven (optional) via `product.videoUrl`.
 import { useAnalytics } from '../../../hooks/useAnalytics';
 import Loader from '../../shared/components/Loader';
@@ -31,6 +74,132 @@ const fallbackModelMap = {
 };
 
 const isImageMedia = (src = '') => /\.(png|jpe?g|webp|gif|avif|svg)(\?.*)?$/i.test(String(src));
+
+const ImageLightbox = ({ images, currentIndex, isOpen, onClose, onPrev, onNext }) => {
+    const [zoom, setZoom] = useState(1);
+    const [dragConstraints, setDragConstraints] = useState({ left: 0, right: 0, top: 0, bottom: 0 });
+    const [isLoading, setIsLoading] = useState(true);
+    const containerRef = useRef(null);
+
+    // Reset zoom and loading state when image changes
+    useEffect(() => {
+        setZoom(1);
+        setIsLoading(true);
+    }, [currentIndex]);
+
+    const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.5, 4));
+    const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.5, 1));
+    const handleReset = () => setZoom(1);
+
+    if (!isOpen) return null;
+
+    return (
+        <AnimatePresence>
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-xl touch-none"
+                onClick={onClose}
+            >
+                {/* Close Button */}
+                <button
+                    onClick={onClose}
+                    className="absolute top-6 right-6 z-[110] p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all border border-white/10 backdrop-blur"
+                >
+                    <X className="w-6 h-6" />
+                </button>
+
+                {/* Main Image Container */}
+                <div 
+                    ref={containerRef}
+                    className="relative w-full h-full flex items-center justify-center overflow-hidden"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {/* Placeholder (Low-res blurred) */}
+                    <motion.img
+                        key={`placeholder-${currentIndex}`}
+                        src={images[currentIndex]}
+                        className="absolute inset-0 w-full h-full object-contain blur-2xl opacity-30 scale-110 pointer-events-none"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 0.3 }}
+                    />
+
+                    {/* Loading Spinner */}
+                    {isLoading && (
+                        <div className="absolute inset-0 flex items-center justify-center z-10">
+                            <Loader2 className="w-10 h-10 text-white/40 animate-spin" />
+                        </div>
+                    )}
+
+                    {/* High-res Image */}
+                    <motion.div
+                        className="w-full h-full flex items-center justify-center"
+                        style={{ scale: zoom }}
+                        drag={zoom > 1}
+                        dragConstraints={containerRef}
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ 
+                            scale: zoom, 
+                            opacity: isLoading ? 0 : 1,
+                            transition: { duration: 0.4, ease: "easeOut" }
+                        }}
+                    >
+                        <img
+                            src={images[currentIndex]}
+                            alt="Product view"
+                            className="max-w-[90%] max-h-[90vh] object-contain select-none shadow-2xl"
+                            onLoad={() => setIsLoading(false)}
+                            draggable={false}
+                        />
+                    </motion.div>
+
+                    {/* Navigation Buttons (Desktop) */}
+                    <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none">
+                        <button
+                            onClick={onPrev}
+                            className="p-4 rounded-full bg-black/40 hover:bg-black/60 text-white transition-all backdrop-blur-md pointer-events-auto border border-white/10 group"
+                        >
+                            <ChevronLeft className="w-8 h-8 group-hover:-translate-x-1 transition-transform" />
+                        </button>
+                        <button
+                            onClick={() => onNext()}
+                            className="p-4 rounded-full bg-black/40 hover:bg-black/60 text-white transition-all backdrop-blur-md pointer-events-auto border border-white/10 group"
+                        >
+                            <ChevronRight className="w-8 h-8 group-hover:translate-x-1 transition-transform" />
+                        </button>
+                    </div>
+
+                    {/* Zoom Controls */}
+                    <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-4 p-2 bg-black/40 backdrop-blur-xl rounded-2xl border border-white/10 z-[120]">
+                        <button onClick={handleZoomOut} className="p-3 text-white/80 hover:text-white transition-colors hover:bg-white/10 rounded-xl"><ZoomOut className="w-5 h-5" /></button>
+                        <div className="w-[1px] h-4 bg-white/20" />
+                        <button onClick={handleReset} className="px-4 py-2 text-xs font-bold text-white/80 hover:text-white transition-colors flex items-center gap-2 hover:bg-white/10 rounded-xl uppercase tracking-widest">
+                            <RefreshCw className="w-4 h-4" /> {Math.round(zoom * 100)}%
+                        </button>
+                        <div className="w-[1px] h-4 bg-white/20" />
+                        <button onClick={handleZoomIn} className="p-3 text-white/80 hover:text-white transition-colors hover:bg-white/10 rounded-xl"><ZoomIn className="w-5 h-5" /></button>
+                    </div>
+                </div>
+
+                {/* Thumbnails Row */}
+                <div className="absolute bottom-32 left-0 right-0 flex justify-center gap-3 px-4 z-[120]">
+                    {images.map((img, idx) => (
+                        <button
+                            key={idx}
+                            onClick={() => onNext(idx)}
+                            className={`relative w-14 h-14 rounded-lg overflow-hidden border-2 transition-all shadow-lg ${currentIndex === idx ? 'border-[#D39A9F] scale-110 shadow-[#D39A9F]/20' : 'border-white/10 opacity-50 hover:opacity-100 hover:border-white/40'}`}
+                        >
+                            <img src={img} className="w-full h-full object-cover" />
+                        </button>
+                    ))}
+                </div>
+            </motion.div>
+        </AnimatePresence>
+    );
+};
+
+
 
 const AccordionItem = ({ title, children, isOpen, onClick }) => (
     <div className="border-b border-[#EBCDD0]/50">
@@ -182,6 +351,8 @@ const ProductDetails = () => {
     const [reviewTitle, setReviewTitle] = useState('');
     const [reviewComment, setReviewComment] = useState('');
     const [isLabGrownModalOpen, setIsLabGrownModalOpen] = useState(false);
+    const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+    const [lightboxIndex, setLightboxIndex] = useState(0);
     const sortedReviews = useMemo(() => {
         const parseReviewDate = (value) => {
             if (!value) return 0;
@@ -393,6 +564,27 @@ const ProductDetails = () => {
         }
     }, [product, variantPrice, primaryImage]);
 
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (!isLightboxOpen) return;
+            if (e.key === 'Escape') setIsLightboxOpen(false);
+            if (e.key === 'ArrowRight') handleLightboxNext();
+            if (e.key === 'ArrowLeft') handleLightboxPrev();
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isLightboxOpen, galleryImages.length]);
+
+    // Preload Gallery Images
+    useEffect(() => {
+        if (galleryImages.length > 0) {
+            galleryImages.forEach(url => {
+                const img = new Image();
+                img.src = url;
+            });
+        }
+    }, [galleryImages]);
+
     if (isLoading || detailLoading) {
         return <Loader />;
     }
@@ -434,6 +626,27 @@ const ProductDetails = () => {
     const toggleSection = (section) => {
         setOpenSection(openSection === section ? null : section);
     };
+
+    // Lightbox Handlers
+    const openLightbox = (image) => {
+        const index = galleryImages.findIndex(img => img === image);
+        setLightboxIndex(index >= 0 ? index : 0);
+        setIsLightboxOpen(true);
+    };
+
+    const handleLightboxNext = (index) => {
+        if (typeof index === 'number') {
+            setLightboxIndex(index);
+        } else {
+            setLightboxIndex((prev) => (prev + 1) % galleryImages.length);
+        }
+    };
+
+    const handleLightboxPrev = () => {
+        setLightboxIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
+    };
+
+
 
     return (
         <div className="bg-white min-h-screen py-8 pb-24 md:pb-8 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out fill-mode-both selection:bg-[#D39A9F] selection:text-white">
@@ -541,9 +754,9 @@ const ProductDetails = () => {
                     <div className="relative space-y-4">
                         <div className="h-[400px] lg:h-[520px] w-full bg-white rounded-2xl overflow-hidden shadow-sm relative flex flex-col md:flex-row gap-[1px] border border-gray-100">
                             {/* Video Pane (optional, product-specific) */}
-                            <div className="w-full md:w-1/2 relative h-1/2 md:h-full group overflow-hidden border-r border-white/10 bg-black">
-                                {product?.videoUrl ? (
-                                    isImageMedia(product.videoUrl) ? (
+                            {product?.videoUrl && (
+                                <div className="w-full md:w-1/2 relative h-1/2 md:h-full group overflow-hidden border-r border-white/10 bg-black">
+                                    {isImageMedia(product.videoUrl) ? (
                                         <>
                                             <img
                                                 src={product.videoUrl}
@@ -553,50 +766,45 @@ const ProductDetails = () => {
                                             <div className="absolute inset-0 bg-black/20 group-hover:bg-black/5 transition-colors" />
                                         </>
                                     ) : (
-                                        <>
-                                            <video
-                                                src={product.videoUrl}
-                                                autoPlay
-                                                muted
-                                                loop
-                                                playsInline
-                                                controls
-                                                preload="auto"
-                                                className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
-                                                onError={(e) => {
-                                                    console.error("Product video playback failed:", e);
-                                                    // Optional: Hide the video container or show a fallback if needed
-                                                }}
-                                            />
-                                            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/5 transition-colors pointer-events-none" />
-                                        </>
-                                    )
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-[#111]">
-                                        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/60">No product video</p>
-                                    </div>
-                                )}
+                                        <video
+                                            src={product.videoUrl}
+                                            autoPlay
+                                            muted
+                                            loop
+                                            playsInline
+                                            controls
+                                            preload="auto"
+                                            className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
+                                            onError={(e) => {
+                                                console.error("Product video playback failed:", e);
+                                            }}
+                                        />
+                                    )}
 
-                                {/* Experience Sticker Layer (Subtle) */}
-                                <div className="absolute bottom-4 right-4 z-30 scale-75 md:scale-[0.85]">
-                                    <div className="relative w-24 h-24 flex items-center justify-center animate-[spin_10s_linear_infinite]">
-                                        <svg className="w-full h-full" viewBox="0 0 100 100">
-                                            <path id="circlePathSmall" d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="none" />
-                                            <text className="text-[9px] font-bold tracking-[0.2em] uppercase fill-white/80">
-                                                <textPath xlinkHref="#circlePathSmall">The Lookbook • Sands Royal • </textPath>
-                                            </text>
-                                        </svg>
-                                        <div className="absolute inset-0 flex items-center justify-center animate-none">
-                                            <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center">
-                                                <Play className="w-3 h-3 text-white fill-current translate-x-[1px]" />
+                                    {/* Experience Sticker Layer (Subtle) */}
+                                    <div className="absolute bottom-4 right-4 z-30 scale-75 md:scale-[0.85]">
+                                        <div className="relative w-24 h-24 flex items-center justify-center animate-[spin_10s_linear_infinite]">
+                                            <svg className="w-full h-full" viewBox="0 0 100 100">
+                                                <path id="circlePathSmall" d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="none" />
+                                                <text className="text-[9px] font-bold tracking-[0.2em] uppercase fill-white/80">
+                                                    <textPath xlinkHref="#circlePathSmall">The Lookbook • Sands Royal • </textPath>
+                                                </text>
+                                            </svg>
+                                            <div className="absolute inset-0 flex items-center justify-center animate-none">
+                                                <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center">
+                                                    <Play className="w-3 h-3 text-white fill-current translate-x-[1px]" />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* Image Pane - CLEAN IMAGE SWAP (No Zoom) */}
-                            <div className="w-full md:w-1/2 relative h-1/2 md:h-full group overflow-hidden bg-[#F7F2F3]">
+                            <div 
+                                onClick={() => openLightbox(primaryImage)}
+                                className={`${product?.videoUrl ? 'w-full md:w-1/2 h-1/2 md:h-full' : 'w-full h-full'} relative group overflow-hidden bg-[#F7F2F3] cursor-zoom-in`}
+                            >
                                 {primaryImage ? (
                                     <>
                                         {/* Main State Image (Thumbnail selected or default) */}
@@ -614,6 +822,12 @@ const ProductDetails = () => {
                                                 className="absolute inset-0 w-full h-full object-cover z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-[1200ms] ease-in-out"
                                             />
                                         ) : null}
+                                        {/* Zoom Indicator Icon */}
+                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/5 z-20 pointer-events-none">
+                                            <div className="p-3 rounded-full bg-white/80 backdrop-blur shadow-sm transform scale-90 group-hover:scale-100 transition-transform duration-500">
+                                                <Maximize2 className="w-5 h-5 text-black" strokeWidth={1.5} />
+                                            </div>
+                                        </div>
                                     </>
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-[#B88B90] text-[10px] font-bold uppercase tracking-widest">
@@ -1909,9 +2123,20 @@ const ProductDetails = () => {
                     </div>
                 </div>
             )}
+            <ImageLightbox
+                images={galleryImages}
+                currentIndex={lightboxIndex}
+                isOpen={isLightboxOpen}
+                onClose={() => setIsLightboxOpen(false)}
+                onPrev={handleLightboxPrev}
+                onNext={handleLightboxNext}
+            />
         </div>
     );
 };
+
+
+
 
 export default ProductDetails;
 

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { Check } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -1061,30 +1061,37 @@ export const ShopProvider = ({ children }) => {
         localStorage.setItem('userNotifications', JSON.stringify(userNotifications));
     }, [userNotifications]);
 
+    const contextValue = useMemo(() => ({
+        cart, wishlist, user, orders, addresses, supportTickets, returns, replacements,
+        login, logout, placeOrder, addToCart, addToWishlist,
+        removeFromCart, removeFromWishlist, updateQuantity, updateCartQty, clearCart,
+        getCart, getVariantById, getPackById, getRecommendations: (uid, n) => products.slice(0, n), // Basic stub
+        addAddress, removeAddress, updateAddress, setDefaultAddress,
+        defaultAddressId, createTicket, addTicketReply, deleteTicket,
+        refreshOrders, refreshReturns, refreshReplacements, refreshSupportTickets, refreshNotifications,
+
+        showNotification, deleteAccount,
+        coupons, addCoupon, updateCoupon, deleteCoupon, toggleCoupon, getActiveCoupons, validateCoupon,
+        appliedCoupon, couponDiscount, applyCoupon, clearAppliedCoupon,
+        notificationsEnabled, userNotifications, toggleNotificationSettings, deleteUserNotification,
+        isPincodeModalOpen, setIsPincodeModalOpen,
+        pincode, updatePincode,
+        activeMetal, updateActiveMetal,
+
+        products,
+        categories, isLoading: isCatalogueLoading,
+
+        // Global Config
+        globalGst, setGlobalGst
+    }), [
+        cart, wishlist, user, orders, addresses, supportTickets, returns, replacements,
+        products, categories, isCatalogueLoading, coupons, appliedCoupon, couponDiscount,
+        notificationsEnabled, userNotifications, isPincodeModalOpen, pincode, activeMetal,
+        defaultAddressId, globalGst
+    ]);
+
     return (
-        <ShopContext.Provider value={{
-            cart, wishlist, user, orders, addresses, supportTickets, returns, replacements,
-            login, logout, placeOrder, addToCart, addToWishlist,
-            removeFromCart, removeFromWishlist, updateQuantity, updateCartQty, clearCart,
-            getCart, getVariantById, getPackById, getRecommendations: (uid, n) => products.slice(0, n), // Basic stub
-            addAddress, removeAddress, updateAddress, setDefaultAddress,
-            defaultAddressId, createTicket, addTicketReply, deleteTicket,
-            refreshOrders, refreshReturns, refreshReplacements, refreshSupportTickets, refreshNotifications,
-
-            showNotification, deleteAccount,
-            coupons, addCoupon, updateCoupon, deleteCoupon, toggleCoupon, getActiveCoupons, validateCoupon,
-            appliedCoupon, couponDiscount, applyCoupon, clearAppliedCoupon,
-            notificationsEnabled, userNotifications, toggleNotificationSettings, deleteUserNotification,
-            isPincodeModalOpen, setIsPincodeModalOpen,
-            pincode, updatePincode,
-            activeMetal, updateActiveMetal,
-
-            products,
-            categories, isLoading: isCatalogueLoading,
-
-            // Global Config
-            globalGst, setGlobalGst
-        }}>
+        <ShopContext.Provider value={contextValue}>
             {children}
             {/* Custom Toast Notification */}
             {notification && (
