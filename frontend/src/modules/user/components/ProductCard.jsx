@@ -33,6 +33,7 @@ const fallbackModelMap = {
 };
 
 import { getProductPrice, getProductMRP, formatCurrency } from '../utils/price';
+import { getProductCardUrl } from '../../../utils/imageUtils';
 
 const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, loginSource = 'men' }) => {
     const { addToCart, addToWishlist, removeFromWishlist, wishlist } = useShop();
@@ -143,7 +144,7 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
                     {primaryImage ? (
                         <>
                             <img
-                                src={primaryImage}
+                                src={getProductCardUrl(primaryImage)}
                                 alt={product.name}
                                 loading="lazy"
                                 decoding="async"
@@ -151,7 +152,7 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
                             />
                             {secondaryImage && (
                                 <img
-                                    src={secondaryImage}
+                                    src={getProductCardUrl(secondaryImage)}
                                     alt={`${product.name} detail`}
                                     loading="lazy"
                                     decoding="async"

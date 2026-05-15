@@ -1,40 +1,52 @@
-import React, { useEffect } from 'react';
+import React, { lazy, Suspense, useEffect } from 'react';
 import { useShop } from '../../../context/ShopContext';
 import { useHomepageCms } from '../hooks/useHomepageCms';
-import PriceRangeShowcase from '../components/PriceRangeShowcase';
-import PerfectGift from '../components/PerfectGift';
-import NewLaunchSection from '../components/NewLaunchSection';
+import Loader from '../../shared/components/Loader';
+
+// ─── ABOVE-FOLD: eagerly imported — these are visible immediately on page load ───
 import PromoSlider from '../components/PromoSlider';
 import CategoryGrid from '../components/CategoryGrid';
 import TrustMarkers from '../components/TrustMarkers';
-import ShopByPrice from '../components/ShopByPrice';
-import PremiumCategoryCards from '../components/PremiumCategoryCards';
-import BestStylesSection from '../components/BestStylesSection';
-import AutoBannerSection from '../components/AutoBannerSection';
-import ShopByColour from '../components/ShopByColour';
-import StyleItYourWay from '../components/StyleItYourWay';
-import OccasionalSpecial from '../components/OccasionalSpecial';
-import AllJewellery from '../components/AllJewellery';
-import Testimonials from '../components/Testimonials';
-import BrandPromises from '../components/BrandPromises';
-import FAQSection from '../components/FAQSection';
-import ChitChatSection from '../components/ChitChatSection';
-import SilverNewLaunchGrid from '../components/SilverNewLaunchGrid';
-import SilverCollectionSection from '../components/SilverCollectionSection';
-import SilverCuratedShowcase from '../components/SilverCuratedShowcase';
-import ProposalBanner from '../components/ProposalBanner';
-import Loader from '../../shared/components/Loader';
 
+// ─── BELOW-FOLD: lazy loaded — downloaded only when user scrolls toward them ────
+// This moves ~70KB of JS out of the critical render path
+const ShopByPrice           = lazy(() => import('../components/ShopByPrice'));
+const PremiumCategoryCards  = lazy(() => import('../components/PremiumCategoryCards'));
+const BestStylesSection     = lazy(() => import('../components/BestStylesSection'));
+const AutoBannerSection     = lazy(() => import('../components/AutoBannerSection'));
+const SilverNewLaunchGrid   = lazy(() => import('../components/SilverNewLaunchGrid'));
+const ShopByColour          = lazy(() => import('../components/ShopByColour'));
+const PriceRangeShowcase    = lazy(() => import('../components/PriceRangeShowcase'));
+const PerfectGift           = lazy(() => import('../components/PerfectGift'));
+const NewLaunchSection      = lazy(() => import('../components/NewLaunchSection'));
+const StyleItYourWay        = lazy(() => import('../components/StyleItYourWay'));
+const OccasionalSpecial     = lazy(() => import('../components/OccasionalSpecial'));
+const AllJewellery          = lazy(() => import('../components/AllJewellery'));
+const SilverCollectionSection = lazy(() => import('../components/SilverCollectionSection'));
+const SilverCuratedShowcase = lazy(() => import('../components/SilverCuratedShowcase'));
+const ProposalBanner        = lazy(() => import('../components/ProposalBanner'));
+const Testimonials          = lazy(() => import('../components/Testimonials'));
+const BrandPromises         = lazy(() => import('../components/BrandPromises'));
+const ChitChatSection       = lazy(() => import('../components/ChitChatSection'));
+const FAQSection            = lazy(() => import('../components/FAQSection'));
+
+// Lightweight fallback for lazy sections — invisible so layout doesn't shift
+const SectionFallback = () => (
+    <div style={{ minHeight: '200px' }} aria-hidden="true" />
+);
+
+// contentVisibility:auto skips layout/paint of off-screen sections
 const SectionShell = ({ children }) => (
     <div style={{ contentVisibility: 'auto', containIntrinsicSize: '900px' }}>
-        {children}
+        <Suspense fallback={<SectionFallback />}>
+            {children}
+        </Suspense>
     </div>
 );
 
 const Home = () => {
     const { isLoading: isShopLoading } = useShop();
     const {
-        isLoading: isHomepageCmsLoading,
         isError: isHomepageCmsError,
         error: homepageCmsError,
         refetch: refetchHomepageCms,
@@ -44,7 +56,12 @@ const Home = () => {
         document.title = "Sands Ornaments | Pure 925 Silver Jewellery - Timeless Elegance";
     }, []);
 
-    if (isShopLoading || isHomepageCmsLoading) {
+    // ONLY block on shop data (products/categories) — CMS is enhancement-only.
+    // Previously we also blocked on isHomepageCmsLoading which meant the entire
+    // page showed a blank loader until TWO separate APIs finished. On mobile
+    // with a slow connection, CMS fetch could take 1-2s extra. Now the page
+    // renders immediately once products are ready, and CMS slots fill in async.
+    if (isShopLoading) {
         return <Loader />;
     }
 
@@ -69,80 +86,32 @@ const Home = () => {
                     </div>
                 </div>
             )}
-            {/* NEW PREMIUM HERO CAROUSEL */}
+
+            {/* ── ABOVE FOLD: loaded eagerly (visible immediately) ── */}
             <PromoSlider />
-
-            {/* NEW CATEGORY GRID SECTION */}
             <CategoryGrid />
-
-            {/* BRAND TRUST MARKERS */}
             <TrustMarkers />
 
-            {/* SHOP BY PRICE SECTION (Luxury within Reach) */}
-            <ShopByPrice />
-
-            {/* GENDER / COLLECTION CARDS */}
-            <PremiumCategoryCards />
-
-            <SectionShell>
-                {/* BEST STYLES SECTION (Horizontal Scroll) */}
-                <BestStylesSection />
-            </SectionShell>
-
-            <SectionShell>
-                {/* AUTO SCROLLING BANNERS */}
-                <AutoBannerSection />
-            </SectionShell>
-
-            <SectionShell>
-                {/* NEW LAUNCH SPECIAL GRID */}
-                <SilverNewLaunchGrid />
-            </SectionShell>
-
-            <SectionShell>
-                {/* SHOP BY COLOUR SECTION */}
-                <ShopByColour />
-            </SectionShell>
-
-            <SectionShell>
-                <PriceRangeShowcase />
-            </SectionShell>
-            <SectionShell>
-                <PerfectGift />
-            </SectionShell>
-            <SectionShell>
-                <NewLaunchSection />
-            </SectionShell>
-            <SectionShell>
-                <StyleItYourWay />
-            </SectionShell>
-            <SectionShell>
-                <OccasionalSpecial />
-            </SectionShell>
-            <SectionShell>
-                <AllJewellery />
-            </SectionShell>
-            <SectionShell>
-                <SilverCollectionSection />
-            </SectionShell>
-            <SectionShell>
-                <SilverCuratedShowcase />
-            </SectionShell>
-            <SectionShell>
-                <ProposalBanner />
-            </SectionShell>
-            <SectionShell>
-                <Testimonials />
-            </SectionShell>
-            <SectionShell>
-                <BrandPromises />
-            </SectionShell>
-            <SectionShell>
-                <ChitChatSection />
-            </SectionShell>
-            <SectionShell>
-                <FAQSection />
-            </SectionShell>
+            {/* ── BELOW FOLD: lazy loaded inside SectionShell ── */}
+            <SectionShell><ShopByPrice /></SectionShell>
+            <SectionShell><PremiumCategoryCards /></SectionShell>
+            <SectionShell><BestStylesSection /></SectionShell>
+            <SectionShell><AutoBannerSection /></SectionShell>
+            <SectionShell><SilverNewLaunchGrid /></SectionShell>
+            <SectionShell><ShopByColour /></SectionShell>
+            <SectionShell><PriceRangeShowcase /></SectionShell>
+            <SectionShell><PerfectGift /></SectionShell>
+            <SectionShell><NewLaunchSection /></SectionShell>
+            <SectionShell><StyleItYourWay /></SectionShell>
+            <SectionShell><OccasionalSpecial /></SectionShell>
+            <SectionShell><AllJewellery /></SectionShell>
+            <SectionShell><SilverCollectionSection /></SectionShell>
+            <SectionShell><SilverCuratedShowcase /></SectionShell>
+            <SectionShell><ProposalBanner /></SectionShell>
+            <SectionShell><Testimonials /></SectionShell>
+            <SectionShell><BrandPromises /></SectionShell>
+            <SectionShell><ChitChatSection /></SectionShell>
+            <SectionShell><FAQSection /></SectionShell>
         </div>
     );
 };

@@ -128,9 +128,9 @@ const MenHeroCarousel = ({ sectionData }) => {
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.5, duration: 0.6 }}
                                 className="text-4xl sm:text-7xl md:text-9xl font-black tracking-tighter"
-                        >
-                            {resolvedSlides[current].mainTitle}
-                        </motion.h1>
+                            >
+                                {resolvedSlides[current].mainTitle}
+                            </motion.h1>
                             <div className="flex items-center gap-1.5 md:gap-3 -mt-1 md:-mt-4">
                                 <motion.span
                                     key={`in-${current}`}
@@ -203,13 +203,8 @@ const MenHeroCarousel = ({ sectionData }) => {
                     />
                 ))}
             </div>
-
-            <style dangerouslySetInnerHTML={{
-                __html: `@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');`
-            }} />
         </section>
     );
 };
 
 export default MenHeroCarousel;
-

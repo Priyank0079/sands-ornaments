@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Lato:wght@300;400;700&display=swap');
+/* Google Fonts are loaded via <link> in index.html — do NOT add @import here (render-blocking) */
 @import "tailwindcss";
 
 @theme {
@@ -14,6 +14,12 @@
     --color-wine: #7A2E3A;
     --color-beige: #F7F2EF;
 }
+
+/* Utility classes for font families used across components */
+.font-lato    { font-family: 'Lato', sans-serif; }
+.font-cinzel  { font-family: 'Cinzel', serif; }
+.font-inter   { font-family: 'Inter', sans-serif; }
+.font-dancing { font-family: 'Dancing Script', cursive; }
 
 /* Disable Zooming on Mobile & Horizontal Scroll */
 html,
@@ -240,3 +246,7 @@ html.lenis body {
 .animate-marquee-infinite:hover {
     animation-play-state: paused;
 }
+
+/* hide-scrollbar — moved from MenExploreCollections inline style */
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

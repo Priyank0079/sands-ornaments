@@ -105,19 +105,18 @@ const WomenOccasionCarousel = ({ sectionData }) => {
                     </button>
 
                     <div className="w-full flex justify-center">
-                        <motion.div 
+                        <motion.div
                             className="flex items-center gap-2 md:gap-3"
                             animate={{ x: (focusIndex - activeIndex) * (cardWidth + gap) }}
                             transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
                         >
                             {occasions.map((item, idx) => {
                                 const isActive = idx === activeIndex;
-
                                 return (
                                     <motion.div
                                         key={item.id}
                                         layout
-                                        animate={{ 
+                                        animate={{
                                             opacity: isActive ? 1 : 0.4,
                                             scale: isActive ? 1.05 : 0.85,
                                             zIndex: isActive ? 20 : 10,
@@ -132,10 +131,10 @@ const WomenOccasionCarousel = ({ sectionData }) => {
                                             else setActiveIndex(idx);
                                         }}
                                     >
-                                        <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
-                                        
+                                        <img src={item.image} alt={item.title} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                        
+
                                         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[90%] pointer-events-none">
                                             <div className={`py-1.5 md:py-2.5 rounded-full bg-white/95 text-center shadow-md transition-all duration-500 ${isActive ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
                                                 <span className="text-[10px] md:text-[14px] font-bold text-gray-800 tracking-tight uppercase whitespace-nowrap px-3">
@@ -150,15 +149,8 @@ const WomenOccasionCarousel = ({ sectionData }) => {
                     </div>
                 </div>
             </div>
-
-            <style>
-                {`
-                @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap');
-                `}
-            </style>
         </section>
     );
 };
 
 export default WomenOccasionCarousel;
-

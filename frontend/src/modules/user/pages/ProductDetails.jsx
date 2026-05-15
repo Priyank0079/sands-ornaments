@@ -11,6 +11,7 @@ import { useAuth } from '../../../context/AuthContext';
 import api from '../../../services/api';
 import toast from 'react-hot-toast';
 import ProductCard from '../components/ProductCard';
+import { getProductDetailUrl, getProductCardUrl, getProductThumbUrl } from '../../../utils/imageUtils';
 
 import {
     Heart,
@@ -781,7 +782,7 @@ const ProductDetails = () => {
                                     <>
                                         {/* Main State Image (Thumbnail selected or default) — eager load (LCP element) */}
                                         <img
-                                            src={primaryImage}
+                                            src={getProductDetailUrl(primaryImage)}
                                             alt={product.name}
                                             fetchpriority="high"
                                             decoding="sync"
@@ -791,7 +792,7 @@ const ProductDetails = () => {
                                         {/* Hover Image (2nd gallery image when available; otherwise model fallback) */}
                                         {hoverPaneImage ? (
                                             <img
-                                                src={hoverPaneImage}
+                                                src={getProductCardUrl(hoverPaneImage)}
                                                 alt={`${product.name} look`}
                                                 loading="lazy"
                                                 decoding="async"
@@ -837,7 +838,7 @@ const ProductDetails = () => {
                                         onClick={() => setSelectedImage(img)}
                                         className={`relative shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-lg overflow-hidden border-2 transition-all shadow-sm ${selectedImage === img ? 'border-[#D39A9F] ring-1 ring-[#D39A9F]' : 'border-transparent hover:border-gray-200'}`}
                                     >
-                                        <img src={img} alt={`View ${idx + 1}`} loading="lazy" decoding="async" className="w-full h-full object-cover" />
+                                        <img src={getProductThumbUrl(img)} alt={`View ${idx + 1}`} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                                         {selectedImage === img && <div className="absolute inset-0 bg-black/10" />}
                                     </button>
                                 ))}
