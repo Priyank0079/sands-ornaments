@@ -145,7 +145,7 @@ const AppContent = () => {
           <div className={`h-[104px] ${showMetalToggle ? 'md:h-[226px]' : 'md:h-[166px]'} w-full`}></div>
         </>
       )}
-      <main className={`flex-grow ${!isAdminPath && !isSellerPath && !isScannerPath ? 'pb-16 md:pb-0' : ''}`}>
+      <main className={`flex-grow ${!isAdminPath && !isSellerPath && !isScannerPath ? 'md:pb-0' : ''}`}>
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
           {/* User Routes */}

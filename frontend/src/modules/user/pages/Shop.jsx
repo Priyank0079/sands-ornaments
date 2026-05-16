@@ -891,24 +891,24 @@ const Shop = () => {
             </div>
 
             {/* Mobile Bottom Action Bar (Nykaa Style) */}
-            <div className="md:hidden fixed bottom-[62px] left-0 right-0 bg-white z-[60] border-t border-[#EBCDD0] flex h-14 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md z-[70] border-t border-[#EBCDD0] flex h-16 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] pb-safe transition-all duration-300">
                 {/* Sort Button (Custom Sheet Trigger) */}
-                <div onClick={() => setIsSortOpen(true)} className="flex-1 border-r border-[#EBCDD0] relative flex flex-col items-center justify-center active:bg-gray-50 cursor-pointer py-1">
-                    <span className="text-black font-bold text-xs flex items-center gap-1.5">
-                        <ArrowUpDown className="w-3 h-3" /> Sort by
+                <div onClick={() => setIsSortOpen(true)} className="flex-1 border-r border-[#EBCDD0]/50 relative flex flex-col items-center justify-center active:bg-[#FDF5F6] cursor-pointer py-2">
+                    <span className="text-black font-black text-[11px] uppercase tracking-widest flex items-center gap-2">
+                        <ArrowUpDown className="w-3.5 h-3.5 text-[#8E2B45]" /> Sort by
                     </span>
-                    <span className="text-[10px] text-gray-600 font-medium mt-0.5">{sortBy}</span>
+                    <span className="text-[10px] text-gray-500 font-bold mt-1 uppercase tracking-tighter">{sortBy}</span>
                 </div>
 
                 {/* Filter Button */}
                 <button
                     onClick={() => setIsFilterOpen(true)}
-                    className="flex-1 flex flex-col items-center justify-center active:bg-gray-50 py-1"
+                    className="flex-1 flex flex-col items-center justify-center active:bg-[#FDF5F6] py-2 transition-colors"
                 >
-                    <span className="text-black font-bold text-xs flex items-center gap-1.5">
-                        <Filter className="w-3 h-3" /> Filter
+                    <span className="text-black font-black text-[11px] uppercase tracking-widest flex items-center gap-2">
+                        <Filter className="w-3.5 h-3.5 text-[#8E2B45]" /> Filter
                     </span>
-                    <span className="text-[10px] text-gray-600 font-medium mt-0.5">
+                    <span className="text-[10px] text-gray-500 font-bold mt-1 uppercase tracking-tighter">
                         {(selectedCategory !== 'All' || filterNewArrivals || filterTrending || priceRange < 50000 || !!searchQuery) ? 'Filters applied' : 'No filter applied'}
                     </span>
                 </button>
