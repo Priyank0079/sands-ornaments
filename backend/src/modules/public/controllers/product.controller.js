@@ -66,6 +66,7 @@ exports.getProducts = async (req, res) => {
       karat,
       silver_type,
       audience,
+      diamondType,
       tags,
       sort,
       inStockOnly = "false",
@@ -153,6 +154,19 @@ exports.getProducts = async (req, res) => {
         const expanded = new Set(requested);
         expanded.add("unisex");
         query.audience = { $in: Array.from(expanded) };
+      }
+    }
+
+    // 3.3 Diamond Type Filter
+    if (diamondType) {
+      const requested = String(diamondType || "").trim().toLowerCase();
+      if (requested !== "all" && requested !== "") {
+          andFilters.push({
+              $or: [
+                  { diamondType: requested },
+                  { "variants.diamondType": requested }
+              ]
+          });
       }
     }
 

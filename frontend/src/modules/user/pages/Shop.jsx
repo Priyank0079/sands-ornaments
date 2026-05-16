@@ -12,6 +12,7 @@ import {
     Filter, ChevronDown, ShoppingBag, SlidersHorizontal,
     ArrowLeft, ArrowUpDown
 } from 'lucide-react';
+import HorizontalFilters from '../components/HorizontalFilters';
 
 
 
@@ -56,6 +57,7 @@ const Shop = () => {
     const silverTypeQuery = queryParams.get('silver_type');
     // Backwards compatibility for older links (e.g. All Type mega menu used `purity`)
     const purityQuery = queryParams.get('purity');
+    const diamondTypeQuery = queryParams.get('diamondType');
     const isMenFlow = sourceQuery === 'men';
     const isWomenFlow = sourceQuery === 'women';
 
@@ -185,6 +187,7 @@ const Shop = () => {
             ...(priceMin ? { price_min: priceMin } : {}),
             ...(priceMax ? { price_max: priceMax } : {}),
             ...(sortParam ? { sort: sortParam } : {}),
+            ...(diamondTypeQuery ? { diamondType: diamondTypeQuery } : {}),
             inStockOnly: true,
             page: resolvedPage,
             limit: resolvedLimit,
@@ -203,6 +206,7 @@ const Shop = () => {
         priceMaxQuery,
         limitQuery,
         location.pathname,
+        diamondTypeQuery
     ]);
 
     const {
@@ -726,6 +730,34 @@ const Shop = () => {
         }
     };
 
+    const handleAudienceChange = (val) => {
+        updateShopQuery({ source: val === 'all' ? null : val });
+    };
+
+    const handleMetalChange = (val) => {
+        updateShopQuery({ 
+            metal: val === 'All' ? null : val.toLowerCase(),
+            karat: null,
+            silver_type: null,
+            purity: null
+        });
+    };
+
+    const handleDiamondTypeChange = (val) => {
+        updateShopQuery({ diamondType: val === 'All' ? null : val });
+    };
+
+    const handleTagsChange = (val) => {
+        const currentTags = queryParams.get('tags')?.split(',').filter(Boolean) || [];
+        let nextTags;
+        if (currentTags.includes(val)) {
+            nextTags = currentTags.filter(t => t !== val);
+        } else {
+            nextTags = [...currentTags, val];
+        }
+        updateShopQuery({ tags: nextTags.length > 0 ? nextTags.join(',') : null });
+    };
+
     const clearAllFilters = () => {
         setSelectedCategory('All');
         setFilterNewArrivals(false);
@@ -769,52 +801,64 @@ const Shop = () => {
                 {activeCategory && (
                     <CategoryHeroBanner category={activeCategory} />
                 )}
-                {/* Header Section - Single Row: Title Left, Filter Button Right */}
-                {/* Header Section - Compact Mobile */}
-                <div className="sticky top-[50px] md:top-[141px] z-30 bg-white pt-2 md:pt-4 flex flex-row justify-between items-center mb-4 md:mb-10 pb-2 md:pb-6 border-b border-[#EBCDD0] gap-4 transition-all duration-300">
-                    <div className="text-left shrink-0">
-                        <h1 className="text-2xl md:text-4xl lg:text-5xl font-serif font-medium text-black">{pageTitle}</h1>
-                        <p className="text-black mt-1 md:mt-2 text-xs md:text-base font-medium">
-                            {(serverModeEnabled && serverPagination?.total ? serverPagination.total : productsToRender.length)} Products Found
-                        </p>
-                    </div>
-
-                    <div className="hidden md:flex items-center gap-2 md:gap-4 shrink-0">
-                        {/* Desktop Sort Dropdown */}
-                        <div className="relative">
-                            <button
-                                onClick={() => setIsWebSortOpen(!isWebSortOpen)}
-                                className="flex items-center gap-2 text-black font-medium text-sm border border-[#EBCDD0] px-4 py-2 rounded-full hover:bg-[#FDF5F6] hover:shadow-sm transition-all"
-                            >
-                                <ArrowUpDown className="w-4 h-4" />
-                                <span>Sort By</span>
-                                <ChevronDown className={`w-4 h-4 transition-transform ${isWebSortOpen ? 'rotate-180' : ''}`} />
-                            </button>
-
-                            {isWebSortOpen && (
-                                <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-[#EBCDD0] rounded-xl shadow-xl z-50 py-2 animate-in fade-in zoom-in-95 duration-200">
-                                    {['Newest', 'Price: High to Low', 'Price: Low to High', 'Best Selling'].map((option) => (
-                                        <button
-                                            key={option}
-                                            onClick={() => { handleSortChange(option); setIsWebSortOpen(false); }}
-                                            className={`w-full text-left px-4 py-2.5 text-sm hover:bg-[#FDF5F6] transition-colors flex items-center justify-between group ${sortBy === option ? 'text-black font-bold bg-[#FDF5F6]' : 'text-gray-600'}`}
-                                        >
-                                            <span>{option}</span>
-                                            {sortBy === option && <div className="w-2 h-2 rounded-full bg-[#D39A9F]" />}
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
+                {/* Sticky Header & Filters Container */}
+                <div className="sticky top-[50px] md:top-[141px] z-30 bg-white transition-all duration-300">
+                    {/* Header Section - Single Row: Title Left, Filter Button Right */}
+                    <div className="pt-2 md:pt-4 flex flex-row justify-between items-center mb-2 md:mb-4 pb-2 md:pb-4 border-b border-[#EBCDD0] gap-4">
+                        <div className="text-left shrink-0">
+                            <h1 className="text-2xl md:text-4xl lg:text-5xl font-serif font-medium text-black">{pageTitle}</h1>
+                            <p className="text-black mt-1 md:mt-2 text-xs md:text-base font-medium">
+                                {(serverModeEnabled && serverPagination?.total ? serverPagination.total : productsToRender.length)} Products Found
+                            </p>
                         </div>
 
-                        <button
-                            onClick={() => setIsFilterOpen(true)}
-                            className="flex items-center gap-1.5 md:gap-2 border border-[#EBCDD0] px-3 md:px-6 py-1.5 md:py-2.5 rounded-full hover:bg-[#D39A9F] hover:text-white hover:border-[#D39A9F] hover:shadow-md transition-all text-black text-xs md:text-sm font-medium bg-white/50"
-                        >
-                            <Filter className="w-3 h-3 md:w-4 md:h-4" />
-                            <span>Filter</span>
-                        </button>
+                        <div className="hidden md:flex items-center gap-2 md:gap-4 shrink-0">
+                            <button
+                                onClick={() => setIsFilterOpen(true)}
+                                className="flex items-center gap-1.5 md:gap-2 border border-[#EBCDD0] px-3 md:px-6 py-1.5 md:py-2.5 rounded-full hover:bg-[#D39A9F] hover:text-white hover:border-[#D39A9F] hover:shadow-md transition-all text-black text-xs md:text-sm font-medium bg-white/50"
+                            >
+                                <Filter className="w-3 h-3 md:w-4 md:h-4" />
+                                <span>Detailed Filters</span>
+                            </button>
+                        </div>
+
+                        {/* Mobile Actions */}
+                        <div className="flex md:hidden items-center gap-2">
+                            <button
+                                onClick={() => setIsSortOpen(true)}
+                                className="p-2 border border-[#EBCDD0] rounded-full text-black"
+                            >
+                                <ArrowUpDown className="w-4 h-4" />
+                            </button>
+                            <button
+                                onClick={() => setIsFilterOpen(true)}
+                                className="flex items-center gap-2 bg-[#8E2B45] text-white px-4 py-2 rounded-full font-bold uppercase tracking-widest text-[10px]"
+                            >
+                                <Filter className="w-3 h-3" />
+                                Filter
+                            </button>
+                        </div>
                     </div>
+
+                    {/* Horizontal Desktop Filters - SANDS Premium Style */}
+                    <HorizontalFilters 
+                        categories={visibleCategories}
+                        selectedCategory={selectedCategory}
+                        onCategoryChange={handleCategoryChange}
+                        priceRange={priceRange}
+                        onPriceChange={handlePriceRangeChange}
+                        audience={queryParams.get('source') || 'All'}
+                        onAudienceChange={handleAudienceChange}
+                        metal={queryParams.get('metal')?.charAt(0).toUpperCase() + queryParams.get('metal')?.slice(1) || 'All'}
+                        onMetalChange={handleMetalChange}
+                        diamondType={diamondTypeQuery || 'All'}
+                        onDiamondTypeChange={handleDiamondTypeChange}
+                        tags={queryParams.get('tags')?.split(',').filter(Boolean) || []}
+                        onTagsChange={handleTagsChange}
+                        sortBy={sortBy}
+                        onSortChange={handleSortChange}
+                        clearAll={clearAllFilters}
+                    />
                 </div>
 
 

@@ -1,0 +1,192 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { ChevronDown, Check, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const HorizontalFilters = ({
+    categories = [],
+    selectedCategory = 'All',
+    onCategoryChange,
+    priceRange = 50000,
+    onPriceChange,
+    audience = 'All',
+    onAudienceChange,
+    metal = 'All',
+    onMetalChange,
+    diamondType = 'All',
+    onDiamondTypeChange,
+    tags = [],
+    onTagsChange,
+    sortBy = 'Newest',
+    onSortChange,
+    clearAll
+}) => {
+    const [activeDropdown, setActiveDropdown] = useState(null);
+    const dropdownRef = useRef(null);
+
+    // Close dropdown on click outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setActiveDropdown(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const filterGroups = [
+        {
+            id: 'product-type',
+            label: 'Product type',
+            value: selectedCategory,
+            options: ['All', ...categories.map(c => c.name)],
+            onChange: onCategoryChange
+        },
+        {
+            id: 'price',
+            label: 'Price',
+            value: priceRange >= 50000 ? 'All' : `Under ₹${priceRange.toLocaleString()}`,
+            options: [
+                { label: 'All', value: 50000 },
+                { label: 'Under ₹2,000', value: 2000 },
+                { label: 'Under ₹5,000', value: 5000 },
+                { label: 'Under ₹10,000', value: 10000 },
+                { label: 'Under ₹20,000', value: 20000 },
+            ],
+            onChange: onPriceChange
+        },
+        {
+            id: 'shop-for',
+            label: 'Shop For',
+            value: audience === 'All' ? 'All' : audience.charAt(0).toUpperCase() + audience.slice(1),
+            options: ['All', 'Women', 'Men', 'Family'],
+            onChange: (val) => onAudienceChange(val.toLowerCase())
+        },
+        {
+            id: 'metal',
+            label: 'Metal',
+            value: metal,
+            options: ['All', 'Silver', 'Gold'],
+            onChange: onMetalChange
+        },
+        {
+            id: 'stone',
+            label: 'Stone',
+            value: diamondType === 'All' ? 'All' : diamondType.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+            options: [
+                { label: 'All', value: 'All' },
+                { label: 'Natural Diamond', value: 'natural' },
+                { label: 'Lab Grown Diamond', value: 'lab_grown' },
+                { label: 'No Stone', value: 'none' }
+            ],
+            onChange: onDiamondTypeChange
+        },
+        {
+            id: 'style',
+            label: 'Style',
+            value: tags.length > 0 ? `${tags.length} Selected` : 'All',
+            options: [
+                { label: 'Trending', value: 'isTrending' },
+                { label: 'New Arrival', value: 'isNewArrival' },
+                { label: 'Best Selling', value: 'isMostGifted' },
+                { label: 'Premium', value: 'isPremium' }
+            ],
+            isMulti: true,
+            onChange: onTagsChange
+        }
+    ];
+
+    const toggleDropdown = (id) => {
+        setActiveDropdown(activeDropdown === id ? null : id);
+    };
+
+    return (
+        <div className="hidden md:block w-full border-b border-[#EBCDD0] bg-white">
+            <div className="container mx-auto px-6 py-3 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2 flex-wrap" ref={dropdownRef}>
+                    {filterGroups.map((group) => (
+                        <div key={group.id} className="relative">
+                            <button
+                                onClick={() => toggleDropdown(group.id)}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all text-[13px] font-medium ${
+                                    activeDropdown === group.id || (group.value !== 'All' && group.value !== 50000)
+                                        ? 'border-[#8E2B45] bg-[#FDF5F6] text-[#8E2B45]'
+                                        : 'border-gray-200 hover:border-[#8E2B45] text-gray-700'
+                                }`}
+                            >
+                                <span>{group.label}</span>
+                                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${activeDropdown === group.id ? 'rotate-180' : ''}`} />
+                            </button>
+
+                            <AnimatePresence>
+                                {activeDropdown === group.id && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                        transition={{ duration: 0.2 }}
+                                        className="absolute left-0 mt-2 w-56 bg-white border border-[#EBCDD0] rounded-xl shadow-2xl z-50 py-2 overflow-hidden"
+                                    >
+                                        {group.options.map((option) => {
+                                            const label = typeof option === 'string' ? option : option.label;
+                                            const val = typeof option === 'string' ? option : option.value;
+                                            const isSelected = group.isMulti 
+                                                ? tags.includes(val)
+                                                : group.id === 'price' 
+                                                    ? priceRange === val
+                                                    : group.value === label || (group.id === 'shop-for' && audience === val.toLowerCase());
+
+                                            return (
+                                                <button
+                                                    key={label}
+                                                    onClick={() => {
+                                                        group.onChange(val);
+                                                        if (!group.isMulti) setActiveDropdown(null);
+                                                    }}
+                                                    className={`w-full text-left px-4 py-2.5 text-[13px] hover:bg-[#FDF5F6] transition-colors flex items-center justify-between group ${
+                                                        isSelected ? 'text-[#8E2B45] font-bold bg-[#FDF5F6]' : 'text-gray-600'
+                                                    }`}
+                                                >
+                                                    {label}
+                                                    {isSelected && <Check className="w-4 h-4" />}
+                                                </button>
+                                            );
+                                        })}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+                    ))}
+                    
+                    {/* Clear All Button */}
+                    {(selectedCategory !== 'All' || priceRange < 50000 || audience !== 'All' || metal !== 'All' || diamondType !== 'All' || tags.length > 0) && (
+                        <button
+                            onClick={clearAll}
+                            className="flex items-center gap-1.5 px-3 py-2 text-[12px] font-bold text-[#8E2B45] hover:bg-[#FDF5F6] rounded-full transition-colors ml-2"
+                        >
+                            <X className="w-3.5 h-3.5" />
+                            Clear All
+                        </button>
+                    )}
+                </div>
+
+                {/* Sort is handled separately or can be integrated */}
+                <div className="flex items-center gap-2">
+                    <span className="text-[12px] text-gray-400 font-medium uppercase tracking-widest mr-2">Sort By:</span>
+                    <select 
+                        value={sortBy}
+                        onChange={(e) => onSortChange(e.target.value)}
+                        className="bg-transparent text-[13px] font-bold text-gray-800 outline-none cursor-pointer border-b border-transparent hover:border-[#8E2B45] transition-all"
+                    >
+                        <option value="Newest">Newest</option>
+                        <option value="Price: Low to High">Price: Low to High</option>
+                        <option value="Price: High to Low">Price: High to Low</option>
+                        <option value="Best Selling">Best Selling</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default HorizontalFilters;
