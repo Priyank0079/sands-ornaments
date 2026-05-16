@@ -1,7 +1,5 @@
 
 
-
-
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
@@ -850,7 +848,7 @@ const ProductDetails = () => {
 
                     {/* JEWELLERY DETAILS TABBED SECTION - Moved to center below product area */}
                     <div className="h-[400px] lg:h-[520px] w-full bg-white rounded-[2rem] border border-gray-100 p-6 md:p-10 shadow-sm relative flex flex-col">
-                        <div className="flex-1 flex flex-col justify-start pt-4 overflow-y-auto no-scrollbar">
+                        <div className="flex-1 flex flex-col justify-start pt-4 overflow-y-auto custom-scrollbar">
                             <h2 className="text-xl font-bold text-center text-gray-900 mb-6 tracking-tight">Jewellery Details</h2>
 
                             {/* Tab Switcher */}
@@ -870,7 +868,25 @@ const ProductDetails = () => {
                             </div>
 
                             {/* Tab Content */}
-                            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                            {/* Tab Content with Swipe Gesture */}
+                            <motion.div 
+                                key={activeDetailTab}
+                                initial={{ opacity: 0, x: activeDetailTab === 'details' ? -20 : 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.4, ease: "easeOut" }}
+                                drag="x"
+                                dragConstraints={{ left: 0, right: 0 }}
+                                dragElastic={0.1}
+                                onDragEnd={(e, { offset, velocity }) => {
+                                    const swipe = offset.x;
+                                    if (swipe < -50 && activeDetailTab === 'details') {
+                                        setActiveDetailTab('price');
+                                    } else if (swipe > 50 && activeDetailTab === 'price') {
+                                        setActiveDetailTab('details');
+                                    }
+                                }}
+                                className="animate-in fade-in slide-in-from-bottom-4 duration-700 cursor-grab active:cursor-grabbing touch-pan-y"
+                            >
                                 {activeDetailTab === 'details' ? (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         {hasDiamonds && (
@@ -960,7 +976,7 @@ const ProductDetails = () => {
                                     </div>
                                 ) : (
                                     <div className="max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
-                                        <div className="bg-gray-50/50 rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+                                        <div className="bg-gray-50/50 rounded-2xl border border-gray-100 overflow-x-auto custom-scrollbar shadow-sm">
                                             <table className="w-full text-left border-collapse">
                                                 <thead>
                                                     <tr className="border-b border-gray-100">
@@ -994,7 +1010,7 @@ const ProductDetails = () => {
                                         <p className="mt-4 text-[9px] text-gray-400 text-center font-bold uppercase tracking-widest italic">* Final price includes all applicable taxes and insured shipping.</p>
                                     </div>
                                 )}
-                            </div>
+                            </motion.div>
                         </div>
                     </div>
                 </div>
@@ -1620,6 +1636,7 @@ const ProductDetails = () => {
 
 
 
+                {/* TABBED EXPLORE SECTION (Related & Recent) */}
                 <div className="flex gap-4 md:gap-10 border-b border-gray-100 mb-8 overflow-x-auto no-scrollbar">
                     <button
                         className={`pb-4 text-xs md:text-base font-bold uppercase tracking-[0.2em] transition-all relative whitespace-nowrap px-1 ${activeTab === 'related' ? 'text-black' : 'text-gray-400 hover:text-gray-600'}`}
@@ -2112,9 +2129,4 @@ const ProductDetails = () => {
     );
 };
 
-
-
-
 export default ProductDetails;
-
-
