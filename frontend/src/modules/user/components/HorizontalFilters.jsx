@@ -71,6 +71,7 @@ const HorizontalFilters = ({
 }) => {
     const [activeDropdown, setActiveDropdown] = useState(null);
     const filterScroll = useDragScroll();
+    const dropdownScroll = useDragScroll();
 
     // Close dropdown on click outside
     useEffect(() => {
@@ -178,7 +179,9 @@ const HorizontalFilters = ({
                                         animate={{ opacity: 1, y: 0, scale: 1 }}
                                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
                                         transition={{ duration: 0.2 }}
-                                        className="absolute left-0 mt-2 w-56 bg-white border border-[#EBCDD0] rounded-xl shadow-2xl z-[110] py-2 max-h-[350px] overflow-y-auto custom-scrollbar overscroll-contain"
+                                        {...dropdownScroll.events}
+                                        ref={dropdownScroll.ref}
+                                        className={`absolute left-0 mt-2 w-56 bg-white border border-[#EBCDD0] rounded-xl shadow-2xl z-[110] py-2 max-h-[350px] overflow-y-auto custom-scrollbar overscroll-contain ${dropdownScroll.isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'}`}
                                     >
                                         {group.options.map((option) => {
                                             const label = typeof option === 'string' ? option : option.label;

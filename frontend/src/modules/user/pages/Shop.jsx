@@ -13,6 +13,56 @@ import {
     ArrowLeft, ArrowUpDown
 } from 'lucide-react';
 import HorizontalFilters from '../components/HorizontalFilters';
+import { useRef } from 'react';
+
+const useDragScroll = () => {
+    const ref = useRef(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const [startX, setStartX] = useState(0);
+    const [startY, setStartY] = useState(0);
+    const [scrollLeft, setScrollLeft] = useState(0);
+    const [scrollTop, setScrollTop] = useState(0);
+
+    const onMouseDown = (e) => {
+        if (!ref.current) return;
+        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.closest('button')) return;
+        setIsDragging(true);
+        setStartX(e.pageX - ref.current.offsetLeft);
+        setStartY(e.pageY - ref.current.offsetTop);
+        setScrollLeft(ref.current.scrollLeft);
+        setScrollTop(ref.current.scrollTop);
+    };
+
+    const onMouseLeave = () => {
+        setIsDragging(false);
+    };
+
+    const onMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    const onMouseMove = (e) => {
+        if (!isDragging || !ref.current) return;
+        e.preventDefault();
+        const x = e.pageX - ref.current.offsetLeft;
+        const y = e.pageY - ref.current.offsetTop;
+        const walkX = (x - startX) * 1.5;
+        const walkY = (y - startY) * 1.5;
+        ref.current.scrollLeft = scrollLeft - walkX;
+        ref.current.scrollTop = scrollTop - walkY;
+    };
+
+    return {
+        ref,
+        events: {
+            onMouseDown,
+            onMouseLeave,
+            onMouseUp,
+            onMouseMove,
+        },
+        isDragging
+    };
+};
 
 
 
@@ -44,6 +94,7 @@ const Shop = () => {
     const [priceRange, setPriceRange] = useState(50000);
     const [filteredProducts, setFilteredProducts] = useState(products || []);
     const [pageTitle, setPageTitle] = useState('All Jewellery');
+    const sidebarScroll = useDragScroll();
     const queryParams = new URLSearchParams(location.search);
     const isComingSoonQuery = queryParams.get('status') === 'coming-soon';
     const sourceQuery = queryParams.get('source');
@@ -989,7 +1040,11 @@ const Shop = () => {
                         </button>
                     </div>
 
-                              <div className="p-6 flex-1 overflow-y-auto space-y-10 custom-scrollbar overscroll-contain">
+                              <div 
+                                {...sidebarScroll.events}
+                                ref={sidebarScroll.ref}
+                                className={`p-6 flex-1 overflow-y-auto space-y-10 custom-scrollbar overscroll-contain ${sidebarScroll.isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'}`}
+                              >
                         {/* 1. Category Filter */}
                         <section>
                             <h4 className="font-bold text-black text-[11px] uppercase tracking-[0.2em] mb-5">Category</h4>
