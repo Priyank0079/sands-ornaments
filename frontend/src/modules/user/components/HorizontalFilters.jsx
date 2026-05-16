@@ -2,6 +2,55 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const useDragScroll = () => {
+    const ref = useRef(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const [startX, setStartX] = useState(0);
+    const [startY, setStartY] = useState(0);
+    const [scrollLeft, setScrollLeft] = useState(0);
+    const [scrollTop, setScrollTop] = useState(0);
+
+    const onMouseDown = (e) => {
+        if (!ref.current) return;
+        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+        setIsDragging(true);
+        setStartX(e.pageX - ref.current.offsetLeft);
+        setStartY(e.pageY - ref.current.offsetTop);
+        setScrollLeft(ref.current.scrollLeft);
+        setScrollTop(ref.current.scrollTop);
+    };
+
+    const onMouseLeave = () => {
+        setIsDragging(false);
+    };
+
+    const onMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    const onMouseMove = (e) => {
+        if (!isDragging || !ref.current) return;
+        e.preventDefault();
+        const x = e.pageX - ref.current.offsetLeft;
+        const y = e.pageY - ref.current.offsetTop;
+        const walkX = (x - startX) * 1.5;
+        const walkY = (y - startY) * 1.5;
+        ref.current.scrollLeft = scrollLeft - walkX;
+        ref.current.scrollTop = scrollTop - walkY;
+    };
+
+    return {
+        ref,
+        events: {
+            onMouseDown,
+            onMouseLeave,
+            onMouseUp,
+            onMouseMove,
+        },
+        isDragging
+    };
+};
+
 const HorizontalFilters = ({
     categories = [],
     selectedCategory = 'All',
@@ -21,18 +70,18 @@ const HorizontalFilters = ({
     clearAll
 }) => {
     const [activeDropdown, setActiveDropdown] = useState(null);
-    const dropdownRef = useRef(null);
+    const filterScroll = useDragScroll();
 
     // Close dropdown on click outside
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+            if (filterScroll.ref.current && !filterScroll.ref.current.contains(event.target)) {
                 setActiveDropdown(null);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
+    }, [filterScroll.ref]);
 
     const filterGroups = [
         {
@@ -103,7 +152,11 @@ const HorizontalFilters = ({
     return (
         <div className="hidden md:block w-full border-b border-[#EBCDD0] bg-white">
             <div className="container mx-auto px-6 py-3 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-2 flex-wrap" ref={dropdownRef}>
+                <div 
+                    {...filterScroll.events}
+                    ref={filterScroll.ref}
+                    className={`flex items-center gap-2 flex-wrap ${filterScroll.isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'}`}
+                >
                     {filterGroups.map((group) => (
                         <div key={group.id} className="relative">
                             <button
@@ -125,7 +178,7 @@ const HorizontalFilters = ({
                                         animate={{ opacity: 1, y: 0, scale: 1 }}
                                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
                                         transition={{ duration: 0.2 }}
-                                        className="absolute left-0 mt-2 w-56 bg-white border border-[#EBCDD0] rounded-xl shadow-2xl z-50 py-2 overflow-hidden"
+                                        className="absolute left-0 mt-2 w-56 bg-white border border-[#EBCDD0] rounded-xl shadow-2xl z-[110] py-2 max-h-[350px] overflow-y-auto custom-scrollbar overscroll-contain"
                                     >
                                         {group.options.map((option) => {
                                             const label = typeof option === 'string' ? option : option.label;

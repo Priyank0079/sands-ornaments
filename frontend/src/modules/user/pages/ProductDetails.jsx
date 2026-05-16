@@ -200,6 +200,57 @@ const ImageLightbox = ({ images, currentIndex, isOpen, onClose, onPrev, onNext }
 
 
 
+const useDragScroll = () => {
+    const ref = useRef(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const [startX, setStartX] = useState(0);
+    const [startY, setStartY] = useState(0);
+    const [scrollLeft, setScrollLeft] = useState(0);
+    const [scrollTop, setScrollTop] = useState(0);
+
+    const onMouseDown = (e) => {
+        if (!ref.current) return;
+        // Don't drag if clicking a button or input
+        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+        
+        setIsDragging(true);
+        setStartX(e.pageX - ref.current.offsetLeft);
+        setStartY(e.pageY - ref.current.offsetTop);
+        setScrollLeft(ref.current.scrollLeft);
+        setScrollTop(ref.current.scrollTop);
+    };
+
+    const onMouseLeave = () => {
+        setIsDragging(false);
+    };
+
+    const onMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    const onMouseMove = (e) => {
+        if (!isDragging || !ref.current) return;
+        e.preventDefault();
+        const x = e.pageX - ref.current.offsetLeft;
+        const y = e.pageY - ref.current.offsetTop;
+        const walkX = (x - startX) * 1.5; // Scroll speed
+        const walkY = (y - startY) * 1.5;
+        ref.current.scrollLeft = scrollLeft - walkX;
+        ref.current.scrollTop = scrollTop - walkY;
+    };
+
+    return {
+        ref,
+        events: {
+            onMouseDown,
+            onMouseLeave,
+            onMouseUp,
+            onMouseMove,
+        },
+        isDragging
+    };
+};
+
 const AccordionItem = ({ title, children, isOpen, onClick }) => (
     <div className="border-b border-[#EBCDD0]/50">
         <button
@@ -352,6 +403,11 @@ const ProductDetails = () => {
     const [isLabGrownModalOpen, setIsLabGrownModalOpen] = useState(false);
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState(0);
+
+    const thumbScroll = useDragScroll();
+    const detailsScroll = useDragScroll();
+    const tableScroll = useDragScroll();
+
     const sortedReviews = useMemo(() => {
         const parseReviewDate = (value) => {
             if (!value) return 0;
@@ -829,7 +885,11 @@ const ProductDetails = () => {
 
                         {/* Thumbnails Row */}
                         {galleryImages.length > 1 && (
-                            <div className="flex gap-4 overflow-x-auto pb-4 px-1 scrollbar-hide justify-center">
+                            <div 
+                                {...thumbScroll.events}
+                                ref={thumbScroll.ref}
+                                className={`flex gap-4 overflow-x-auto pb-4 px-1 scrollbar-hide justify-center ${thumbScroll.isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'}`}
+                            >
                                 {galleryImages.map((img, idx) => (
                                     <button
                                         key={idx}
@@ -848,7 +908,11 @@ const ProductDetails = () => {
 
                     {/* JEWELLERY DETAILS TABBED SECTION - Moved to center below product area */}
                     <div className="h-[400px] lg:h-[520px] w-full bg-white rounded-[2rem] border border-gray-100 p-6 md:p-10 shadow-sm relative flex flex-col">
-                        <div className="flex-1 flex flex-col justify-start pt-4 overflow-y-auto custom-scrollbar">
+                        <div 
+                            {...detailsScroll.events}
+                            ref={detailsScroll.ref}
+                            className={`flex-1 flex flex-col justify-start pt-4 overflow-y-auto custom-scrollbar ${detailsScroll.isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'}`}
+                        >
                             <h2 className="text-xl font-bold text-center text-gray-900 mb-6 tracking-tight">Jewellery Details</h2>
 
                             {/* Tab Switcher */}
@@ -976,7 +1040,11 @@ const ProductDetails = () => {
                                     </div>
                                 ) : (
                                     <div className="max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
-                                        <div className="bg-gray-50/50 rounded-2xl border border-gray-100 overflow-x-auto custom-scrollbar shadow-sm">
+                                        <div 
+                                            {...tableScroll.events}
+                                            ref={tableScroll.ref}
+                                            className={`bg-gray-50/50 rounded-2xl border border-gray-100 overflow-x-auto custom-scrollbar shadow-sm ${tableScroll.isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'}`}
+                                        >
                                             <table className="w-full text-left border-collapse">
                                                 <thead>
                                                     <tr className="border-b border-gray-100">

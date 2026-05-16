@@ -319,6 +319,17 @@ const Shop = () => {
         return () => { isCancelled = true; };
     }, [location.search, location.pathname, categories, selectedCategory, filterNewArrivals, filterTrending, sortBy, priceRange]);
 
+    useEffect(() => {
+        if (isFilterOpen || isSortOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isFilterOpen, isSortOpen]);
+
     const normalizeAudience = (value) => String(value || '').trim().toLowerCase();
     const getProductAudience = (product) => {
         const list = Array.isArray(product?.audience) ? product.audience : [];
@@ -802,7 +813,7 @@ const Shop = () => {
                     <CategoryHeroBanner category={activeCategory} />
                 )}
                 {/* Sticky Header & Filters Container */}
-                <div className="sticky top-[50px] md:top-[141px] z-30 bg-white transition-all duration-300">
+                <div className="sticky top-[50px] md:top-[141px] z-[100] bg-white transition-all duration-300">
                     {/* Header Section - Single Row: Title Left, Filter Button Right */}
                     <div className="pt-2 md:pt-4 flex flex-row justify-between items-center mb-2 md:mb-4 pb-2 md:pb-4 border-b border-[#EBCDD0] gap-4">
                         <div className="text-left shrink-0">
@@ -978,7 +989,7 @@ const Shop = () => {
                         </button>
                     </div>
 
-                              <div className="p-6 flex-1 overflow-y-auto space-y-10 custom-scrollbar">
+                              <div className="p-6 flex-1 overflow-y-auto space-y-10 custom-scrollbar overscroll-contain">
                         {/* 1. Category Filter */}
                         <section>
                             <h4 className="font-bold text-black text-[11px] uppercase tracking-[0.2em] mb-5">Category</h4>
