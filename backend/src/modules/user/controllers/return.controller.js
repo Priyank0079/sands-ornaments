@@ -4,6 +4,8 @@ const Order = require("../../../models/Order");
 const { generateReturnId } = require("../../../utils/generateId");
 const { success, error } = require("../../../utils/apiResponse");
 const { createSellerNotification } = require("../../../services/sellerNotificationService");
+const { enqueueEmail } = require("../../../services/emailService");
+const emailTemplates = require("../../../services/emailTemplates");
 
 const normalizeVoidTagId = (value) => String(value || "").trim();
 
@@ -78,6 +80,17 @@ exports.requestReturn = async (req, res) => {
         type: "RETURN",
         priority: "High",
         link: `/seller/return-details/${returnRequest._id}`
+      });
+    }
+
+    // -- Email: return request confirmation to customer --
+    const reqUser = await require("../../../models/User").findById(userId).select("email name");
+    if (reqUser && reqUser.email) {
+      enqueueEmail({
+        to:      reqUser.email,
+        subject: "Return Request Received - " + returnRequest.returnId + " | Sands Ornaments",
+        html:    emailTemplates.returnRequested({ returnReq: returnRequest, userName: reqUser.name, order }),
+        type:    "return_requested",
       });
     }
 

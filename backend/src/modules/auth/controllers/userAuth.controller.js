@@ -2,6 +2,8 @@ const User    = require("../../../models/User");
 const Seller  = require("../../../models/Seller");
 const OTP     = require("../../../models/OTP");
 const { signToken } = require("../../../config/jwt");
+const { enqueueEmail } = require("../../../services/emailService");
+const emailTemplates = require("../../../services/emailTemplates");
 const { sendOtpSms } = require("../../../services/smsService");
 const { success, error } = require("../../../utils/apiResponse");
 
@@ -86,6 +88,16 @@ exports.verifyOtp = async (req, res) => {
       if (name  && name  !== user.name)  user.name  = name;
       if (email && email !== user.email) user.email = email;
       if (name || email) await user.save();
+    }
+
+    // -- Email: welcome email for new users --
+    if (isNewUser && user.email) {
+      enqueueEmail({
+        to:      user.email,
+        subject: "Welcome to Sands Ornaments! ✨",
+        html:    emailTemplates.welcomeEmail({ userName: user.name }),
+        type:    "welcome",
+      });
     }
 
     if (user.isDeleted) {

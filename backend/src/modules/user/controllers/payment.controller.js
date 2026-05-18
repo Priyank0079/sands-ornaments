@@ -6,6 +6,9 @@ const Notification = require("../../../models/Notification");
 const { _deductStockForOrder, _calculateOrderData } = require("./order.controller");
 const { success, error } = require("../../../utils/apiResponse");
 const mongoose = require("mongoose");
+const { enqueueEmail } = require("../../../services/emailService");
+const emailTemplates = require("../../../services/emailTemplates");
+const Seller = require("../../../models/Seller");
 
 // POST /api/user/payment/razorpay-order
 exports.createRazorpayOrder = async (req, res) => {
@@ -155,6 +158,39 @@ exports.verifyPayment = async (req, res) => {
         isRead: false
       }));
       try { await Notification.insertMany(docs); } catch (e) { /* ignore */ }
+    }
+
+    // -- Email: payment success (Razorpay) --
+    const paymentRecipient = order.customerEmail || order.shippingAddress && order.shippingAddress.email;
+    if (paymentRecipient) {
+      enqueueEmail({
+        to:      paymentRecipient,
+        subject: "Payment Successful - " + order.orderId + " | Sands Ornaments",
+        html:    emailTemplates.paymentSuccess({ order, userName: order.customerName, paymentId: razorpay_payment_id }),
+        type:    "payment_success",
+      });
+    }
+
+    // -- Email: seller notification (Razorpay) --
+    const paySellerMap = new Map();
+    for (const item of order.items || []) {
+      if (!item.sellerId) continue;
+      const k = String(item.sellerId);
+      if (!paySellerMap.has(k)) paySellerMap.set(k, []);
+      paySellerMap.get(k).push(item);
+    }
+    if (paySellerMap.size > 0) {
+      const paySellerIds = Array.from(paySellerMap.keys());
+      const paySellers = await Seller.find({ _id: { $in: paySellerIds } }).select("email shopName fullName");
+      for (const seller of paySellers) {
+        if (!seller.email) continue;
+        enqueueEmail({
+          to:      seller.email,
+          subject: "Payment Confirmed - " + order.orderId + " | Sands Ornaments",
+          html:    emailTemplates.sellerNewOrder({ order, sellerName: seller.shopName || seller.fullName, sellerItems: paySellerMap.get(String(seller._id)) }),
+          type:    "seller_payment_confirmed",
+        });
+      }
     }
 
     return success(res, { order }, "Payment verified and order created successfully");

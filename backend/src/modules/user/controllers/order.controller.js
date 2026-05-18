@@ -9,6 +9,8 @@ const { success, error } = require("../../../utils/apiResponse");
 const razorpay = require("../../../config/razorpay");
 const Notification = require("../../../models/Notification");
 const { notifySellerLowStock, DEFAULT_LOW_STOCK_THRESHOLD } = require("../../../services/sellerNotificationService");
+const { enqueueEmail } = require("../../../services/emailService");
+const emailTemplates = require("../../../services/emailTemplates");
 const {
   isSerializedVariant,
   consumeSerializedStock,
@@ -299,6 +301,39 @@ exports.placeOrder = async (req, res) => {
             $push: { usedBy: { userId, usedAt: new Date() } },
           }
         );
+      }
+
+      // -- Email: order confirmation (COD) --
+      const recipientEmail = order.customerEmail || order.shippingAddress && order.shippingAddress.email;
+      if (recipientEmail) {
+        enqueueEmail({
+          to:      recipientEmail,
+          subject: "Order Confirmed - " + order.orderId + " | Sands Ornaments",
+          html:    emailTemplates.orderConfirmation({ order, userName: order.customerName }),
+          type:    "order_confirmation",
+        });
+      }
+
+      // -- Email: seller notification for each seller --
+      const sellerItemMap = new Map();
+      for (const item of order.items || []) {
+        if (!item.sellerId) continue;
+        const key = String(item.sellerId);
+        if (!sellerItemMap.has(key)) sellerItemMap.set(key, []);
+        sellerItemMap.get(key).push(item);
+      }
+      if (sellerItemMap.size > 0) {
+        const sellerIds = Array.from(sellerItemMap.keys());
+        const sellers = await Seller.find({ _id: { $in: sellerIds } }).select("email shopName fullName");
+        for (const seller of sellers) {
+          if (!seller.email) continue;
+          enqueueEmail({
+            to:      seller.email,
+            subject: "New Order - " + order.orderId + " | Sands Ornaments",
+            html:    emailTemplates.sellerNewOrder({ order, sellerName: seller.shopName || seller.fullName, sellerItems: sellerItemMap.get(String(seller._id)) }),
+            type:    "seller_new_order",
+          });
+        }
       }
     }
 
