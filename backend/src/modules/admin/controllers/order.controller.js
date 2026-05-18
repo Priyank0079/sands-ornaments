@@ -1,6 +1,7 @@
 const Order = require("../../../models/Order");
 const { success, error } = require("../../../utils/apiResponse");
 const mongoose = require("mongoose");
+const { emitOrderStatusUpdate } = require("../../../services/socketEmitter");
 
 const ALLOWED_TRANSITIONS = {
   Pending: [],
@@ -185,6 +186,11 @@ exports.updateOrderStatus = async (req, res) => {
     const refreshed = await Order.findById(order._id)
       .populate("userId", "name email phone")
       .populate("items.productId", "name images variants");
+
+    // ── Realtime: notify the customer of their order status change (best-effort) ──
+    if (!isSameStatusUpdate) {
+      try { emitOrderStatusUpdate(order); } catch (e) { /* non-blocking */ }
+    }
 
     return success(
       res,

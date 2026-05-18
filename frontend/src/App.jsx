@@ -7,6 +7,7 @@ import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { OrderProvider } from './context/OrderContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { SocketProvider } from './context/SocketContext';
 import Navbar from './modules/user/components/Navbar';
 import Footer from './modules/user/components/Footer';
 import ScrollToTop from './ScrollToTop';
@@ -280,25 +281,28 @@ function App() {
   return (
     <HelmetProvider>
       <AuthProvider>
-        {/* Sub-contexts (Cart, Wishlist, Order, Notification) live inside Auth
-            but OUTSIDE ShopProvider, so ShopProvider can consume them via hooks */}
-        <CartProvider>
-          <WishlistProvider>
-            <OrderProvider>
-              <NotificationProvider>
-                <ShopProvider>
-                  <SmoothScrollProvider />
-                  <Router>
-                    <ScrollToTop />
-                    <AppErrorBoundary>
-                      <AppContent />
-                    </AppErrorBoundary>
-                  </Router>
-                </ShopProvider>
-              </NotificationProvider>
-            </OrderProvider>
-          </WishlistProvider>
-        </CartProvider>
+        {/* SocketProvider lives inside AuthProvider so it has access to the
+            user token. It must be above NotificationProvider so notifications
+            can consume the socket instance. */}
+        <SocketProvider>
+          <CartProvider>
+            <WishlistProvider>
+              <OrderProvider>
+                <NotificationProvider>
+                  <ShopProvider>
+                    <SmoothScrollProvider />
+                    <Router>
+                      <ScrollToTop />
+                      <AppErrorBoundary>
+                        <AppContent />
+                      </AppErrorBoundary>
+                    </Router>
+                  </ShopProvider>
+                </NotificationProvider>
+              </OrderProvider>
+            </WishlistProvider>
+          </CartProvider>
+        </SocketProvider>
       </AuthProvider>
     </HelmetProvider>
   );

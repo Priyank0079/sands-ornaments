@@ -12,6 +12,7 @@ const Notification = require("../../../models/Notification");
 const { notifySellerLowStock, DEFAULT_LOW_STOCK_THRESHOLD } = require("../../../services/sellerNotificationService");
 const { enqueueEmail } = require("../../../services/emailService");
 const emailTemplates = require("../../../services/emailTemplates");
+const { emitNewOrder } = require("../../../services/socketEmitter");
 const {
   isSerializedVariant,
   consumeSerializedStock,
@@ -337,6 +338,9 @@ exports.placeOrder = async (req, res) => {
       }));
       try { await Notification.insertMany(docs); } catch (e) { /* ignore */ }
     }
+
+    // ── Realtime: emit new_order to admin + sellers (best-effort) ─────────────
+    try { emitNewOrder(order); } catch (e) { /* non-blocking */ }
 
     // 5. Deduct Stock immediately ONLY for COD
     if (paymentMethod === "cod") {

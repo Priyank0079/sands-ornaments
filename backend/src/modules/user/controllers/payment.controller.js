@@ -10,6 +10,7 @@ const { enqueueEmail } = require("../../../services/emailService");
 const emailTemplates = require("../../../services/emailTemplates");
 const Seller   = require("../../../models/Seller");
 const GiftCard = require("../../../models/GiftCard");
+const { emitNewOrder } = require("../../../services/socketEmitter");
 
 // POST /api/user/payment/razorpay-order
 exports.createRazorpayOrder = async (req, res) => {
@@ -162,6 +163,9 @@ exports.verifyPayment = async (req, res) => {
       }));
       try { await Notification.insertMany(docs); } catch (e) { /* ignore */ }
     }
+
+    // ── Realtime: emit new_order to admin + sellers (best-effort) ─────────────
+    try { emitNewOrder(order); } catch (e) { /* non-blocking */ }
 
     // Atomically redeem gift cards for Razorpay order
     if (Array.isArray(order.appliedGiftCards) && order.appliedGiftCards.length > 0) {
