@@ -3,6 +3,10 @@ import { HelmetProvider } from 'react-helmet-async';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { ShopProvider } from './context/ShopContext';
 import { AuthProvider } from './context/AuthContext';
+import { CartProvider } from './context/CartContext';
+import { WishlistProvider } from './context/WishlistContext';
+import { OrderProvider } from './context/OrderContext';
+import { NotificationProvider } from './context/NotificationContext';
 import Navbar from './modules/user/components/Navbar';
 import Footer from './modules/user/components/Footer';
 import ScrollToTop from './ScrollToTop';
@@ -276,15 +280,25 @@ function App() {
   return (
     <HelmetProvider>
       <AuthProvider>
-        <ShopProvider>
-          <SmoothScrollProvider />
-          <Router>
-            <ScrollToTop />
-            <AppErrorBoundary>
-              <AppContent />
-            </AppErrorBoundary>
-          </Router>
-        </ShopProvider>
+        {/* Sub-contexts (Cart, Wishlist, Order, Notification) live inside Auth
+            but OUTSIDE ShopProvider, so ShopProvider can consume them via hooks */}
+        <CartProvider>
+          <WishlistProvider>
+            <OrderProvider>
+              <NotificationProvider>
+                <ShopProvider>
+                  <SmoothScrollProvider />
+                  <Router>
+                    <ScrollToTop />
+                    <AppErrorBoundary>
+                      <AppContent />
+                    </AppErrorBoundary>
+                  </Router>
+                </ShopProvider>
+              </NotificationProvider>
+            </OrderProvider>
+          </WishlistProvider>
+        </CartProvider>
       </AuthProvider>
     </HelmetProvider>
   );
