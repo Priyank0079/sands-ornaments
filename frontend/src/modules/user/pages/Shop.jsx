@@ -1024,13 +1024,13 @@ const Shop = () => {
             {/* Overlay */}
             {isFilterOpen && (
                 <div
-                    className="fixed inset-0 bg-black/40 z-[105] backdrop-blur-sm transition-opacity"
+                    className="fixed inset-0 bg-black/40 z-[200] backdrop-blur-sm transition-opacity"
                     onClick={() => setIsFilterOpen(false)}
                 ></div>
             )}
 
             {/* Sidebar */}
-            <div className={`fixed top-0 right-0 h-full w-[320px] bg-white z-[110] shadow-2xl transform transition-transform duration-300 ease-in-out border-l border-[#EBCDD0] ${isFilterOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+            <div className={`fixed top-0 right-0 h-full w-[320px] bg-white z-[210] shadow-2xl transform transition-transform duration-300 ease-in-out border-l border-[#EBCDD0] ${isFilterOpen ? 'translate-x-0' : 'translate-x-full'}`}>
                 <div className="flex flex-col h-full">
                     {/* Sidebar Header */}
                     <div className="flex items-center justify-between p-6 border-b border-[#EBCDD0]">
@@ -1167,8 +1167,8 @@ const Shop = () => {
             {/* Sort Bottom Sheet */}
             {isSortOpen && (
                 <>
-                    <div className="fixed inset-0 bg-black/40 z-[70] backdrop-blur-sm transition-opacity" onClick={() => setIsSortOpen(false)} />
-                    <div className="fixed bottom-0 left-0 right-0 bg-white z-[80] rounded-t-2xl p-6 pb-8 animate-in slide-in-from-bottom duration-300 safe-bottom">
+                    <div className="fixed inset-0 bg-black/40 z-[200] backdrop-blur-sm transition-opacity" onClick={() => setIsSortOpen(false)} />
+                    <div className="fixed bottom-0 left-0 right-0 bg-white z-[210] rounded-t-2xl p-6 pb-8 animate-in slide-in-from-bottom duration-300 safe-bottom">
                         <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6 opacity-50" />
                         <h3 className="text-lg font-serif font-bold text-black mb-6">Sort By</h3>
                         <div className="space-y-4">

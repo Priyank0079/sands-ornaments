@@ -139,7 +139,7 @@ const AppContent = () => {
     <div className="min-h-screen flex flex-col font-sans text-gray-900 bg-[#FDF5F6]">
       {!isAdminPath && !isSellerPath && !isScannerPath && (
         <>
-          <div className="fixed top-0 left-0 right-0 z-[100] w-full">
+          <div className="fixed top-0 left-0 right-0 z-[150] w-full">
             <AnnouncementBar />
             <Navbar />
             <CategoryNav showMetalToggle={showMetalToggle} />
