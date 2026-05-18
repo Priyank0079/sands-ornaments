@@ -110,7 +110,7 @@ const ImageLightbox = ({ images, currentIndex, isOpen, onClose, onPrev, onNext }
                 </button>
 
                 {/* Main Image Container */}
-                <div 
+                <div
                     ref={containerRef}
                     className="relative w-full h-full flex items-center justify-center overflow-hidden"
                     onClick={(e) => e.stopPropagation()}
@@ -138,8 +138,8 @@ const ImageLightbox = ({ images, currentIndex, isOpen, onClose, onPrev, onNext }
                         drag={zoom > 1}
                         dragConstraints={containerRef}
                         initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ 
-                            scale: zoom, 
+                        animate={{
+                            scale: zoom,
                             opacity: isLoading ? 0 : 1,
                             transition: { duration: 0.4, ease: "easeOut" }
                         }}
@@ -212,7 +212,7 @@ const useDragScroll = () => {
         if (!ref.current) return;
         // Don't drag if clicking a button or input
         if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
-        
+
         setIsDragging(true);
         setStartX(e.pageX - ref.current.offsetLeft);
         setStartY(e.pageY - ref.current.offsetTop);
@@ -609,11 +609,11 @@ const ProductDetails = () => {
         if (product && product.id) {
             const recentlyViewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
             const filtered = recentlyViewed.filter(item => item.id !== product.id && item.id !== product._id);
-            const updated = [{ 
-                id: product.id || product._id, 
-                name: product.name, 
-                price: variantPrice, 
-                image: primaryImage || (product.images?.[0]) 
+            const updated = [{
+                id: product.id || product._id,
+                name: product.name,
+                price: variantPrice,
+                image: primaryImage || (product.images?.[0])
             }, ...filtered].slice(0, 10);
             localStorage.setItem('recentlyViewed', JSON.stringify(updated));
         }
@@ -660,11 +660,11 @@ const ProductDetails = () => {
     const currentVariant = selectedVariant || product?.variants?.[0] || {};
     const dSpecs = currentVariant?.diamondSpecs || {};
     const hasDiamonds = !!(
-        product?.diamondWeight || 
-        product?.diamondCount || 
-        currentVariant?.diamondWeight || 
-        currentVariant?.diamondCount || 
-        dSpecs?.carat || 
+        product?.diamondWeight ||
+        product?.diamondCount ||
+        currentVariant?.diamondWeight ||
+        currentVariant?.diamondCount ||
+        dSpecs?.carat ||
         dSpecs?.diamondCount ||
         Number(currentVariant?.diamondPrice || 0) > 0
     );
@@ -828,7 +828,7 @@ const ProductDetails = () => {
                             )}
 
                             {/* Image Pane - CLEAN IMAGE SWAP (No Zoom) */}
-                            <div 
+                            <div
                                 onClick={() => openLightbox(primaryImage)}
                                 className={`${product?.videoUrl ? 'w-full md:w-1/2 h-1/2 md:h-full' : 'w-full h-full'} relative group overflow-hidden bg-[#F7F2F3] cursor-zoom-in`}
                             >
@@ -885,7 +885,7 @@ const ProductDetails = () => {
 
                         {/* Thumbnails Row */}
                         {galleryImages.length > 1 && (
-                            <div 
+                            <div
                                 {...thumbScroll.events}
                                 ref={thumbScroll.ref}
                                 className={`flex gap-4 overflow-x-auto pb-4 px-1 scrollbar-hide justify-center ${thumbScroll.isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'}`}
@@ -908,7 +908,7 @@ const ProductDetails = () => {
 
                     {/* JEWELLERY DETAILS TABBED SECTION - Moved to center below product area */}
                     <div className="h-[400px] lg:h-[520px] w-full bg-white rounded-[2rem] border border-gray-100 p-6 md:p-10 shadow-sm relative flex flex-col">
-                        <div 
+                        <div
                             {...detailsScroll.events}
                             ref={detailsScroll.ref}
                             className={`flex-1 flex flex-col justify-start pt-4 overflow-y-auto custom-scrollbar ${detailsScroll.isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'}`}
@@ -933,7 +933,7 @@ const ProductDetails = () => {
 
                             {/* Tab Content */}
                             {/* Tab Content with Swipe Gesture */}
-                            <motion.div 
+                            <motion.div
                                 key={activeDetailTab}
                                 initial={{ opacity: 0, x: activeDetailTab === 'details' ? -20 : 20 }}
                                 animate={{ opacity: 1, x: 0 }}
@@ -1040,7 +1040,7 @@ const ProductDetails = () => {
                                     </div>
                                 ) : (
                                     <div className="max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
-                                        <div 
+                                        <div
                                             {...tableScroll.events}
                                             ref={tableScroll.ref}
                                             className={`bg-gray-50/50 rounded-2xl border border-gray-100 overflow-x-auto custom-scrollbar shadow-sm ${tableScroll.isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'}`}
@@ -1164,8 +1164,8 @@ const ProductDetails = () => {
                                 onClick={handleAddToCart}
                                 disabled={!canAddToCart}
                                 className={`w-full max-w-md py-5 rounded-xl font-bold uppercase tracking-[0.2em] text-[11px] transition-all duration-500 relative overflow-hidden group ${canAddToCart
-                                        ? 'bg-[#8E2B45] text-white hover:bg-[#5B1E26] shadow-lg hover:-translate-y-0.5'
-                                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                    ? 'bg-[#8E2B45] text-white hover:bg-[#5B1E26] shadow-lg hover:-translate-y-0.5'
+                                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                                     }`}
                             >
                                 <span className="relative z-10 flex items-center justify-center gap-3">
@@ -1179,7 +1179,7 @@ const ProductDetails = () => {
                             </button>
 
                             <div className="flex items-center justify-center gap-6 mt-2">
-                                <button 
+                                <button
                                     onClick={() => setIsSizeGuideOpen(true)}
                                     className="text-[9px] font-black text-[#8E2B45] uppercase tracking-[0.2em] hover:underline flex items-center gap-1.5 transition-all active:scale-95"
                                 >
@@ -1257,8 +1257,8 @@ const ProductDetails = () => {
                     onClick={handleAddToCart}
                     disabled={!canAddToCart}
                     className={`flex-1 rounded-xl h-11 font-bold uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-xl ${canAddToCart
-                            ? 'bg-[#8E2B45] text-white shadow-[#8E2B45]/20 hover:bg-[#5B1E26]'
-                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        ? 'bg-[#8E2B45] text-white shadow-[#8E2B45]/20 hover:bg-[#5B1E26]'
+                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                         }`}
                 >
                     {canAddToCart ? (
@@ -1471,12 +1471,12 @@ const ProductDetails = () => {
                                                     { label: 'Metal', value: product.material || product.metal || '925 Silver' },
                                                     { label: 'Purity', value: product.silverCategory || product.goldCategory || product.purity || '---' },
                                                     { label: 'Weight', value: `${selectedVariantWeight || product.weight || '---'} ${selectedVariantWeightUnit || product.weightUnit || 'g'}` },
-                                                    { 
-                                                        label: 'Certificate', 
+                                                    {
+                                                        label: 'Certificate',
                                                         value: product.logistics?.certificateUrl ? (
-                                                            <a 
-                                                                href={product.logistics.certificateUrl} 
-                                                                target="_blank" 
+                                                            <a
+                                                                href={product.logistics.certificateUrl}
+                                                                target="_blank"
                                                                 rel="noopener noreferrer"
                                                                 className="text-[#8E2B45] hover:underline flex items-center gap-1 transition-all"
                                                             >
@@ -2052,7 +2052,7 @@ const ProductDetails = () => {
                     {/* Decorative Elements */}
                     <div className="absolute top-0 right-0 w-96 h-96 bg-[#D39A9F]/10 rounded-full blur-3xl" />
                     <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#8E2B45]/10 rounded-full blur-3xl" />
-                    
+
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                         <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
                             <div className="flex flex-col">
@@ -2068,20 +2068,20 @@ const ProductDetails = () => {
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
                             {relatedProducts.slice(0, 4).map((relProduct) => (
                                 <div key={relProduct._id || relProduct.id} className="group">
-                                    <div 
+                                    <div
                                         onClick={() => {
                                             navigate(`/product/${relProduct._id || relProduct.id}`);
                                             window.scrollTo(0, 0);
                                         }}
                                         className="aspect-[4/5] rounded-[2rem] overflow-hidden bg-white/5 border border-white/10 relative group-hover:border-white/20 transition-all cursor-pointer"
                                     >
-                                        <img 
-                                            src={relProduct.images?.[0] || relProduct.primaryImage} 
+                                        <img
+                                            src={relProduct.images?.[0] || relProduct.primaryImage}
                                             alt={relProduct.name}
                                             className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110"
                                         />
                                         <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors" />
-                                        
+
                                         {/* Quick Tag */}
                                         <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full">
                                             <span className="text-[8px] font-black text-black uppercase tracking-widest">Matching Set</span>
@@ -2113,7 +2113,7 @@ const ProductDetails = () => {
                                 <h2 className="text-2xl font-black uppercase tracking-tight">Jewellery Size Guide</h2>
                             </div>
                             <p className="text-[10px] font-bold text-white/50 uppercase tracking-[0.2em]">Find your perfect fit with Sands Ornaments</p>
-                            <button 
+                            <button
                                 onClick={() => setIsSizeGuideOpen(false)}
                                 className="absolute top-8 right-8 p-2 hover:bg-white/10 rounded-xl transition-all"
                             >
