@@ -212,7 +212,8 @@ exports.getProducts = async (req, res) => {
         .populate("categories", "name slug")
         .sort(sortOption)
         .limit(resolvedLimit)
-        .skip((resolvedPage - 1) * resolvedLimit);
+        .skip((resolvedPage - 1) * resolvedLimit)
+        .lean();
     } else {
       // random: sample results (pagination is not deterministic; we return a random page-1 slice).
       products = await Product.aggregate([
@@ -251,7 +252,8 @@ exports.getProductDetail = async (req, res) => {
 
     const product = await Product.findOne(lookup)
       .populate("categories", "name slug")
-      .populate("sellerId", "shopName");
+      .populate("sellerId", "shopName")
+      .lean();
 
     if (!product) return error(res, "Product not found", 404);
 
@@ -334,7 +336,8 @@ exports.searchProducts = async (req, res) => {
       ...approvedSellerScope
     })
     .select("name slug images")
-    .limit(10);
+    .limit(10)
+    .lean();
 
     return success(res, { suggestions });
   } catch (err) { return error(res, err.message); }

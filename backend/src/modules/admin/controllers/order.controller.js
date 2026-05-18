@@ -84,7 +84,8 @@ exports.getOrders = async (req, res) => {
       .populate("userId", "name email phone")
       .sort({ createdAt: -1 })
       .limit(parsedLimit)
-      .skip((parsedPage - 1) * parsedLimit);
+      .skip((parsedPage - 1) * parsedLimit)
+      .lean();
 
     const total = await Order.countDocuments(query);
 
@@ -107,7 +108,8 @@ exports.getOrderDetail = async (req, res) => {
     }
     const order = await Order.findById(req.params.id)
       .populate("userId", "name email phone")
-      .populate("items.productId", "name images variants");
+      .populate("items.productId", "name images variants")
+      .lean();
     if (!order) return error(res, "Order not found", 404);
     return success(res, { order }, "Order details retrieved");
   } catch (err) { return error(res, err.message); }
