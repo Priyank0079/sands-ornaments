@@ -522,7 +522,7 @@ export const ShopProvider = ({ children }) => {
 
     const placeOrder = async (orderDetails) => {
         try {
-            const { items, shippingAddress, paymentMethod, couponCode, addressId } = orderDetails;
+            const { items, shippingAddress, paymentMethod, couponCode, addressId, giftCardCodes } = orderDetails;
             const resolvedAddress = shippingAddress || addresses.find(a => a._id === addressId);
             const normalizedAddress = normalizeShippingAddress(resolvedAddress, user);
 
@@ -539,11 +539,18 @@ export const ShopProvider = ({ children }) => {
                 return null;
             }
 
-            const formattedItems = (items || cart).map(item => ({
-                productId: item.productId || item.id || item._id,
-                variantId: item.variantId || item.packId || item.selectedVariant?.id || item.selectedVariant?._id || item.variants?.[0]?.id || item.variants?.[0]?._id,
-                quantity: item.qty || item.quantity
-            }));
+            const formattedItems = (items || cart).map(item => {
+                const isGift = item.isGiftCard || String(item.productId || item.id || "").startsWith("GIFT_CARD_");
+                return {
+                    productId: item.productId || item.id || item._id,
+                    variantId: isGift ? "GIFT_CARD_VAR" : (item.variantId || item.packId || item.selectedVariant?.id || item.selectedVariant?._id || item.variants?.[0]?.id || item.variants?.[0]?._id),
+                    quantity: item.qty || item.quantity,
+                    isGiftCard: isGift,
+                    personalization: item.personalization || null,
+                    price: item.price,
+                    name: item.name
+                };
+            });
 
             if (formattedItems.some(it => !it.productId || !it.variantId)) {
                 toast.error("Some cart items are missing variant information.");
@@ -556,7 +563,8 @@ export const ShopProvider = ({ children }) => {
                     const initRes = await api.post('user/payments/initiate', {
                         items: formattedItems,
                         shippingAddress: normalizedAddress,
-                        couponCode
+                        couponCode,
+                        giftCardCodes: giftCardCodes || []
                     });
 
                     if (!initRes.data.success) {
@@ -577,7 +585,8 @@ export const ShopProvider = ({ children }) => {
                 items: formattedItems,
                 shippingAddress: normalizedAddress,
                 paymentMethod,
-                couponCode
+                couponCode,
+                giftCardCodes: giftCardCodes || []
             });
 
             if (!res.data.success) {
@@ -659,11 +668,17 @@ export const ShopProvider = ({ children }) => {
         // No longer requiring login for guest cart support
 
         if (typeof arg1 === 'object') {
-            // Logic for addToCart(product)
-            const selectedVariant = arg1.selectedVariant || arg1.variants?.find(v => (v.id || v._id) === (arg1.variantId || arg1.selectedVariantId)) || arg1.variants?.[0];
-            productData = normalizeProductForCart(arg1, selectedVariant);
-            productId = productData.id || productData._id;
-            variantId = productData.variantId;
+            if (arg1.isGiftCard) {
+                productId = arg1.id;
+                variantId = "GIFT_CARD_VAR";
+                productData = arg1;
+            } else {
+                // Logic for addToCart(product)
+                const selectedVariant = arg1.selectedVariant || arg1.variants?.find(v => (v.id || v._id) === (arg1.variantId || arg1.selectedVariantId)) || arg1.variants?.[0];
+                productData = normalizeProductForCart(arg1, selectedVariant);
+                productId = productData.id || productData._id;
+                variantId = productData.variantId;
+            }
         } else {
             // Logic for addToCart(userId, productId, quantity)
             productId = arg2;

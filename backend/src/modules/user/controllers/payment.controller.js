@@ -8,7 +8,8 @@ const { success, error } = require("../../../utils/apiResponse");
 const mongoose = require("mongoose");
 const { enqueueEmail } = require("../../../services/emailService");
 const emailTemplates = require("../../../services/emailTemplates");
-const Seller = require("../../../models/Seller");
+const Seller   = require("../../../models/Seller");
+const GiftCard = require("../../../models/GiftCard");
 
 // POST /api/user/payment/razorpay-order
 exports.createRazorpayOrder = async (req, res) => {
@@ -49,12 +50,12 @@ exports.initiatePayment = async (req, res) => {
       return error(res, "Payment service is not configured on the server.", 503);
     }
 
-    const { items, shippingAddress, couponCode } = req.body;
+    const { items, shippingAddress, couponCode, giftCardCodes } = req.body;
     const userId = req.user.userId;
     const userEmail = req.user.email;
 
     // Calculate order data (this also validates stock and items)
-    const orderData = await _calculateOrderData(userId, userEmail, items, shippingAddress, "razorpay", couponCode);
+    const orderData = await _calculateOrderData(userId, userEmail, items, shippingAddress, "razorpay", couponCode, giftCardCodes);
 
     const options = {
       amount:   Math.round(orderData.total * 100),
@@ -103,6 +104,7 @@ exports.verifyPayment = async (req, res) => {
     const items = orderData.items;
     const shippingAddress = orderData.shippingAddress;
     const couponCode = orderData.couponCode;
+    const giftCardCodes = orderData.giftCardCodes || [];
 
     const validatedOrderData = await _calculateOrderData(
       userId, 
@@ -110,7 +112,8 @@ exports.verifyPayment = async (req, res) => {
       items, 
       shippingAddress, 
       "razorpay", 
-      couponCode
+      couponCode,
+      giftCardCodes
     );
     
     const finalOrderData = {
@@ -158,6 +161,33 @@ exports.verifyPayment = async (req, res) => {
         isRead: false
       }));
       try { await Notification.insertMany(docs); } catch (e) { /* ignore */ }
+    }
+
+    // Atomically redeem gift cards for Razorpay order
+    if (Array.isArray(order.appliedGiftCards) && order.appliedGiftCards.length > 0) {
+      for (const gc of order.appliedGiftCards) {
+        if (!gc.cardId || !gc.amountUsed) continue;
+        const updatedCard = await GiftCard.findOneAndUpdate(
+          { _id: gc.cardId, status: { $in: ["active", "partially_used"] }, balance: { $gte: gc.amountUsed } },
+          {
+            $inc:  { balance: -gc.amountUsed },
+            $push: { redemptions: { orderId: order.orderId, amountUsed: gc.amountUsed, redeemedAt: new Date(), redeemedByUserId: order.userId } },
+          },
+          { new: true }
+        );
+        if (updatedCard) {
+          const newStatus = updatedCard.balance <= 0 ? "used" : updatedCard.balance < updatedCard.value ? "partially_used" : "active";
+          await GiftCard.updateOne({ _id: gc.cardId }, { status: newStatus });
+        }
+      }
+    }
+
+    // Fulfill any purchased gift cards in this order
+    try {
+      const { fulfillGiftCardsInOrder } = require("./giftCard.controller");
+      await fulfillGiftCardsInOrder(order);
+    } catch (e) {
+      console.error("[GiftCard] Order fulfillment hook error:", e);
     }
 
     // -- Email: payment success (Razorpay) --

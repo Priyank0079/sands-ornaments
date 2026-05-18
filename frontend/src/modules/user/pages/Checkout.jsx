@@ -4,6 +4,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Truck, CreditCard, Banknote, ShieldCheck, Lock, Plus, Check, MapPin, ChevronRight, LayoutDashboard, Gift, ArrowRight, X, Tag } from 'lucide-react';
 import toast from 'react-hot-toast';
+import api from '../../../services/api';
 
 const Checkout = () => {
     const { cart, placeOrder, addresses, addAddress, defaultAddressId, coupons, applyCoupon, appliedCoupon, couponDiscount, clearAppliedCoupon } = useShop();
@@ -42,10 +43,16 @@ const Checkout = () => {
     const [couponCode, setCouponCode] = useState('');
     const discount = Number(couponDiscount || 0);
 
+    // ── Gift Card State ───────────────────────────────────────────────────────
+    const [giftCardInput, setGiftCardInput]   = useState('');
+    const [giftCardLoading, setGiftCardLoading] = useState(false);
+    const [appliedGiftCards, setAppliedGiftCards] = useState([]); // [{ code, balance, amountUsed }]
+    const giftCardDiscount = appliedGiftCards.reduce((acc, gc) => acc + gc.amountUsed, 0);
+
     // Calculate totals
     const subtotal = cart.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
     const shipping = subtotal > 499 ? 0 : 50;
-    const total = subtotal + shipping - discount;
+    const total = Math.max(0, subtotal + shipping - discount - giftCardDiscount);
 
     // Get active coupons from context
     const availableCoupons = coupons ? coupons.filter(c => c.active !== false) : [];
@@ -65,6 +72,42 @@ const Checkout = () => {
     const removeCoupon = () => {
         clearAppliedCoupon();
         setCouponCode('');
+    };
+
+    // ── Gift Card Handlers ────────────────────────────────────────────────────
+    const handleApplyGiftCard = async () => {
+        const code = giftCardInput.toUpperCase().trim();
+        if (!code) { toast.error('Please enter a gift card code'); return; }
+        if (appliedGiftCards.some(gc => gc.code === code)) {
+            toast.error('This gift card is already applied'); return;
+        }
+        setGiftCardLoading(true);
+        try {
+            const res = await api.get(`user/gift-cards/validate/${code}`);
+            if (res.data.success) {
+                const { balance } = res.data.data;
+                // Calculate how much of this card can actually be used
+                const remainingOrderTotal = Math.max(0, subtotal + shipping - discount - giftCardDiscount);
+                const amountUsed = Math.min(balance, remainingOrderTotal);
+                if (amountUsed <= 0) {
+                    toast.error('Your order total is already fully covered by other discounts');
+                    setGiftCardLoading(false); return;
+                }
+                setAppliedGiftCards(prev => [...prev, { code, balance, amountUsed }]);
+                setGiftCardInput('');
+                toast.success(`Gift card applied! ₹${amountUsed.toLocaleString('en-IN')} will be deducted`);
+            } else {
+                toast.error(res.data.message || 'Invalid gift card code');
+            }
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Gift card validation failed');
+        }
+        setGiftCardLoading(false);
+    };
+
+    const removeGiftCard = (code) => {
+        setAppliedGiftCards(prev => prev.filter(gc => gc.code !== code));
+        toast.success('Gift card removed');
     };
 
     const handleInputChange = (e) => {
@@ -154,7 +197,8 @@ const Checkout = () => {
             addressId: addresses.find(a => a._id === defaultAddressId)?._id,
             shippingAddress,
             paymentMethod: paymentMethod === 'online' ? 'razorpay' : 'cod',
-            couponCode: appliedCoupon?.code
+            couponCode: appliedCoupon?.code,
+            giftCardCodes: appliedGiftCards.map(gc => gc.code),
         });
 
         setLoading(false);
@@ -618,6 +662,47 @@ const Checkout = () => {
                             )}
                         </div>
 
+                        {/* Gift Card */}
+                        <div className="mb-4">
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                <Gift className="w-3.5 h-3.5 text-[#D39A9F]" />
+                                Gift Card
+                            </p>
+
+                            {appliedGiftCards.map(gc => (
+                                <div key={gc.code} className="bg-emerald-50 border border-emerald-200 p-3 rounded-xl flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-2">
+                                        <div className="bg-emerald-500 p-1.5 rounded text-white">
+                                            <Gift className="w-3.5 h-3.5" />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-bold text-emerald-800 tracking-wider font-mono">{gc.code}</p>
+                                            <p className="text-[10px] text-emerald-600">{currencyText(gc.amountUsed)} applied</p>
+                                        </div>
+                                    </div>
+                                    <button onClick={() => removeGiftCard(gc.code)} className="text-xs font-bold text-red-400 hover:text-red-600">Remove</button>
+                                </div>
+                            ))}
+
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    placeholder="SANDS-XXXX-XXXX-XXXX"
+                                    value={giftCardInput}
+                                    onChange={(e) => setGiftCardInput(e.target.value.toUpperCase())}
+                                    onKeyDown={(e) => { if (e.key === "Enter") handleApplyGiftCard(); }}
+                                    className="flex-1 border border-gray-200 rounded-lg px-4 py-2 outline-none focus:border-black font-mono text-xs uppercase placeholder:normal-case placeholder:font-sans placeholder:text-gray-400"
+                                />
+                                <button
+                                    onClick={handleApplyGiftCard}
+                                    disabled={giftCardLoading || !giftCardInput.trim()}
+                                    className="bg-black text-white px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider hover:bg-[#D39A9F] transition-colors disabled:opacity-50"
+                                >
+                                    {giftCardLoading ? "..." : "Apply"}
+                                </button>
+                            </div>
+                        </div>
+
                         <div className="space-y-3 text-sm text-gray-600 mb-6 pt-4 border-t border-[#EBCDD0]">
                             <div className="flex justify-between items-center">
                                 <span className="font-serif">Subtotal</span>
@@ -629,8 +714,14 @@ const Checkout = () => {
                             </div>
                             {appliedCoupon && (
                                 <div className="flex justify-between items-center text-[#D39A9F]">
-                                    <span className="font-serif">Discount</span>
+                                    <span className="font-serif">Coupon Discount</span>
                                     <span className="font-bold font-sans">- {currencyText(parseFloat(discount).toFixed(0))}</span>
+                                </div>
+                            )}
+                            {appliedGiftCards.length > 0 && (
+                                <div className="flex justify-between items-center text-emerald-600">
+                                    <span className="font-serif">Gift Card</span>
+                                    <span className="font-bold font-sans">- {currencyText(giftCardDiscount)}</span>
                                 </div>
                             )}
                         </div>
@@ -735,6 +826,7 @@ const Checkout = () => {
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
             )}

@@ -346,6 +346,86 @@ const welcomeEmail = ({ userName }) => {
 
 // ── Exports ───────────────────────────────────────────────────────────────────
 
+/**
+ * 10. Gift Card Delivery — sent to the RECIPIENT
+ */
+const giftCardDelivery = ({ giftCard }) => {
+  const shopUrl = process.env.CLIENT_URL || "https://sandsjewels.com";
+  const rupees  = (n) => `₹${Number(n || 0).toLocaleString("en-IN")}`;
+
+  const body = `
+    <h2 style="margin:0 0 4px;font-size:22px;color:${BRAND_DARK};">You've Received a Gift! 🎁</h2>
+    <p style="color:#666;margin:0 0 24px;font-size:15px;">
+      <strong>${giftCard.senderName}</strong> has sent you a Sands Ornaments E-Gift Card.
+      ${giftCard.personalMessage ? `<br/><em style="color:#888;">"${giftCard.personalMessage}"</em>` : ""}
+    </p>
+
+    <div style="background:linear-gradient(135deg,#1a1a1a 0%,#3d1a24 100%);border-radius:16px;padding:36px 32px;text-align:center;margin-bottom:28px;">
+      <p style="margin:0;font-size:11px;font-weight:700;color:${BRAND_COLOR};text-transform:uppercase;letter-spacing:3px;">Sands Ornaments</p>
+      <p style="margin:8px 0 24px;font-size:12px;color:#aaa;letter-spacing:1px;">E-Gift Card</p>
+      <p style="margin:0;font-size:13px;color:#aaa;text-transform:uppercase;letter-spacing:2px;">Card Value</p>
+      <p style="margin:4px 0 28px;font-size:42px;font-weight:700;color:#fff;letter-spacing:-1px;">${rupees(giftCard.value)}</p>
+      <div style="background:rgba(255,255,255,0.08);border:2px dashed rgba(255,255,255,0.2);border-radius:10px;padding:18px 24px;display:inline-block;">
+        <p style="margin:0 0 4px;font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:2px;">Your Gift Card Code</p>
+        <p style="margin:0;font-size:26px;font-weight:700;color:#fff;letter-spacing:4px;font-family:monospace;">${giftCard.code}</p>
+      </div>
+    </div>
+
+    <p style="font-size:14px;color:#555;text-align:center;margin:0 0 24px;line-height:1.7;">
+      Hi <strong>${giftCard.recipientName}</strong>, use the code above at checkout to redeem your gift.<br/>
+      ${giftCard.expiresAt ? `Valid until <strong>${new Date(giftCard.expiresAt).toLocaleDateString("en-IN")}</strong>.` : "This card has <strong>no expiry</strong> — use it whenever you're ready!"}
+    </p>
+
+    ${divider()}
+
+    <div style="background:${BRAND_LIGHT};border-radius:8px;padding:18px 20px;margin-bottom:24px;">
+      <p style="margin:0;font-size:12px;font-weight:700;color:${BRAND_DARK};text-transform:uppercase;letter-spacing:1px;">How to Redeem</p>
+      <ol style="margin:10px 0 0;padding-left:20px;font-size:13px;color:#555;line-height:2;">
+        <li>Visit <a href="${shopUrl}/shop" style="color:${BRAND_COLOR};text-decoration:none;">sandsjewels.com</a> and add items to your bag</li>
+        <li>At checkout, enter your gift card code in the "Gift Card" field</li>
+        <li>The card balance will be deducted from your order total</li>
+      </ol>
+    </div>
+
+    <div style="text-align:center;padding:8px 0;">
+      ${btn("Start Shopping", `${shopUrl}/shop`)}
+    </div>`;
+
+  return layout(`Your Sands Gift Card — ${rupees(giftCard.value)}`, body);
+};
+
+/**
+ * 11. Gift Card Purchase Confirmation — sent to the BUYER
+ */
+const giftCardPurchaseConfirmation = ({ giftCard, buyerName }) => {
+  const rupees = (n) => `₹${Number(n || 0).toLocaleString("en-IN")}`;
+  const shopUrl = process.env.CLIENT_URL || "https://sandsjewels.com";
+
+  const body = `
+    <h2 style="margin:0 0 4px;font-size:22px;color:${BRAND_DARK};">Gift Card Sent Successfully! ✅</h2>
+    <p style="color:#666;margin:0 0 24px;font-size:15px;">Hi ${buyerName || "there"}, your Sands E-Gift Card has been delivered to <strong>${giftCard.recipientEmail}</strong>.</p>
+
+    <div style="background:${BRAND_LIGHT};border-radius:8px;padding:20px 24px;margin-bottom:24px;">
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td><p style="margin:0;font-size:12px;color:#888;font-weight:600;text-transform:uppercase;">Recipient</p>
+              <p style="margin:4px 0 0;font-size:15px;font-weight:600;color:${BRAND_DARK};">${giftCard.recipientName}</p></td>
+          <td style="text-align:right;"><p style="margin:0;font-size:12px;color:#888;font-weight:600;text-transform:uppercase;">Card Value</p>
+              <p style="margin:4px 0 0;font-size:22px;font-weight:700;color:${BRAND_DARK};">${rupees(giftCard.value)}</p></td>
+        </tr>
+      </table>
+      <p style="margin:12px 0 0;font-size:13px;color:#888;border-top:1px solid #ece8e1;padding-top:12px;">Code: <strong style="font-family:monospace;letter-spacing:2px;">${giftCard.code}</strong></p>
+      ${giftCard.personalMessage ? `<p style="margin:6px 0 0;font-size:12px;color:#aaa;">Message: "${giftCard.personalMessage}"</p>` : ""}
+    </div>
+
+    ${divider()}
+    <div style="text-align:center;">
+      ${btn("Send Another Gift", `${shopUrl}/gift-cards`)}
+    </div>`;
+
+  return layout("Gift Card Sent — Sands Ornaments", body);
+};
+
 module.exports = {
   orderConfirmation,
   paymentSuccess,
@@ -356,4 +436,6 @@ module.exports = {
   sellerNewOrder,
   sellerReturnNotif,
   welcomeEmail,
+  giftCardDelivery,
+  giftCardPurchaseConfirmation,
 };
