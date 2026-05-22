@@ -40,7 +40,8 @@ export const useCatalogue = () => {
             const res = await api.get('public/products', {
                 params: {
                     inStockOnly: true,
-                    limit: 200
+                    limit: 48  // Load 48 initially — enough for home/shop above-fold display
+                               // Shop page has its own server-side pagination
                 }
             });
             const data = res.data.data.products || [];
@@ -82,7 +83,8 @@ export const useCatalogue = () => {
             });
             });
         },
-        staleTime: 5 * 60 * 1000,
+        staleTime: 10 * 60 * 1000, // 10 minutes — avoids refetch on every navigation
+        gcTime: 30 * 60 * 1000,    // 30 minutes — keep in cache across page changes
     });
 
 

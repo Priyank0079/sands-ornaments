@@ -3,12 +3,16 @@ const Order = require("../../../models/Order");
 const Product = require("../../../models/Product");
 const Coupon = require("../../../models/Coupon");
 const StockLog = require("../../../models/StockLog");
-const Seller = require("../../../models/Seller");
+const Seller   = require("../../../models/Seller");
+const GiftCard = require("../../../models/GiftCard");
 const { generateOrderId } = require("../../../utils/generateId");
 const { success, error } = require("../../../utils/apiResponse");
 const razorpay = require("../../../config/razorpay");
 const Notification = require("../../../models/Notification");
 const { notifySellerLowStock, DEFAULT_LOW_STOCK_THRESHOLD } = require("../../../services/sellerNotificationService");
+const { enqueueEmail } = require("../../../services/emailService");
+const emailTemplates = require("../../../services/emailTemplates");
+const { emitNewOrder } = require("../../../services/socketEmitter");
 const {
   isSerializedVariant,
   consumeSerializedStock,
@@ -102,6 +106,8 @@ const applyCoupon = async (couponCode, subtotal, userId, items = []) => {
  */
 const deductStockForOrder = async (orderItems, orderId, userId) => {
   for (const item of orderItems) {
+    if (item.isGiftCard || String(item.productId || "").startsWith("GIFT_CARD_")) continue;
+
     const product = await Product.findById(item.productId);
     const variant = product?.variants.id(item.variantId);
     if (!product || !variant) continue;
@@ -161,7 +167,7 @@ const deductStockForOrder = async (orderItems, orderId, userId) => {
  * Internal helper to calculate order data without saving to DB.
  * Used by both placeOrder (for COD) and initiatePayment (for Razorpay).
  */
-const _calculateOrderData = async (userId, userEmail, items, shippingAddress, paymentMethod, couponCode) => {
+const _calculateOrderData = async (userId, userEmail, items, shippingAddress, paymentMethod, couponCode, giftCardCodes = []) => {
   if (!items || !items.length) throw new Error("Order must contain at least one item.");
   if (!shippingAddress) throw new Error("Shipping address is required.");
 
@@ -170,6 +176,29 @@ const _calculateOrderData = async (userId, userEmail, items, shippingAddress, pa
 
   // 1. Validate Items & Stock & Price
   for (const item of items) {
+    const isGift = item.isGiftCard || String(item.productId || "").startsWith("GIFT_CARD_");
+    if (isGift) {
+      const cardValue = Number(item.price || 500);
+      if (cardValue < 500) throw new Error("Gift card minimum value is ₹500");
+
+      const itemTotal = cardValue * item.quantity;
+      subtotal += itemTotal;
+
+      orderItems.push({
+        productId:       item.productId,
+        variantId:       "GIFT_CARD_VAR",
+        name:            item.name || `Sands E-Gift Card (₹${cardValue})`,
+        sku:             `GIFT-CARD-${cardValue}`,
+        image:           "",
+        price:           cardValue,
+        mrp:             cardValue,
+        quantity:        item.quantity,
+        isGiftCard:      true,
+        personalization: item.personalization || undefined
+      });
+      continue;
+    }
+
     const product = await Product.findById(item.productId);
     if (!product) throw new Error(`Product ${item.productId} not found`);
     await ensureProductOrderable(product);
@@ -214,7 +243,28 @@ const _calculateOrderData = async (userId, userEmail, items, shippingAddress, pa
   let shipping = subtotal - discount > 999 ? 0 : 49;
   if (isFreeShipping) shipping = 0;
 
-  const total = subtotal - discount + shipping;
+  // 3. Apply Gift Cards (partial use supported, multiple cards allowed)
+  let giftCardDiscount = 0;
+  const appliedGiftCards = [];
+  const validGiftCardCodes = Array.isArray(giftCardCodes) ? giftCardCodes : [];
+
+  if (validGiftCardCodes.length > 0) {
+    let remainingToPay = Math.max(0, subtotal - discount + shipping);
+    for (const rawCode of validGiftCardCodes) {
+      if (remainingToPay <= 0) break;
+      const code = String(rawCode || "").toUpperCase().trim();
+      if (!code) continue;
+      const card = await GiftCard.findOne({ code, status: { $in: ["active", "partially_used"] } });
+      if (!card || card.balance <= 0) continue;
+      if (card.expiresAt && card.expiresAt < new Date()) continue;
+      const usable = Math.min(card.balance, remainingToPay);
+      giftCardDiscount += usable;
+      remainingToPay   -= usable;
+      appliedGiftCards.push({ cardId: card._id, code: card.code, amountUsed: usable });
+    }
+  }
+
+  const total = Math.max(0, subtotal - discount + shipping - giftCardDiscount);
 
   return {
     orderId:       generateOrderId(),
@@ -225,7 +275,9 @@ const _calculateOrderData = async (userId, userEmail, items, shippingAddress, pa
     items:         orderItems,
     shippingAddress,
     paymentMethod,
-    couponCode:    appliedCoupon ? couponCode.toUpperCase() : undefined,
+    couponCode:        appliedCoupon ? couponCode.toUpperCase() : undefined,
+    giftCardDiscount,
+    appliedGiftCards,
     subtotal,
     discount,
     shipping,
@@ -241,12 +293,12 @@ const _calculateOrderData = async (userId, userEmail, items, shippingAddress, pa
 // ─────────────────────────────────────────────────────────────────
 exports.placeOrder = async (req, res) => {
   try {
-    const { items, shippingAddress, paymentMethod, couponCode } = req.body;
+    const { items, shippingAddress, paymentMethod, couponCode, giftCardCodes } = req.body;
     const userId = req.user.userId;
     const userEmail = req.user.email;
 
     // Use shared helper to prepare order data
-    const orderData = await _calculateOrderData(userId, userEmail, items, shippingAddress, paymentMethod, couponCode);
+    const orderData = await _calculateOrderData(userId, userEmail, items, shippingAddress, paymentMethod, couponCode, giftCardCodes);
 
     // 4. Create Razorpay order (no stock deduction yet for online payments)
     if (paymentMethod === "razorpay") {
@@ -287,6 +339,9 @@ exports.placeOrder = async (req, res) => {
       try { await Notification.insertMany(docs); } catch (e) { /* ignore */ }
     }
 
+    // ── Realtime: emit new_order to admin + sellers (best-effort) ─────────────
+    try { emitNewOrder(order); } catch (e) { /* non-blocking */ }
+
     // 5. Deduct Stock immediately ONLY for COD
     if (paymentMethod === "cod") {
       await deductStockForOrder(orderData.items, order.orderId, userId);
@@ -299,6 +354,66 @@ exports.placeOrder = async (req, res) => {
             $push: { usedBy: { userId, usedAt: new Date() } },
           }
         );
+      }
+
+      // Atomically redeem gift cards for COD order
+      if (Array.isArray(order.appliedGiftCards) && order.appliedGiftCards.length > 0) {
+        for (const gc of order.appliedGiftCards) {
+          if (!gc.cardId || !gc.amountUsed) continue;
+          const updatedCard = await GiftCard.findOneAndUpdate(
+            { _id: gc.cardId, status: { $in: ["active", "partially_used"] }, balance: { $gte: gc.amountUsed } },
+            {
+              $inc:  { balance: -gc.amountUsed },
+              $push: { redemptions: { orderId: order.orderId, amountUsed: gc.amountUsed, redeemedAt: new Date(), redeemedByUserId: order.userId } },
+            },
+            { new: true }
+          );
+          if (updatedCard) {
+            const newStatus = updatedCard.balance <= 0 ? "used" : updatedCard.balance < updatedCard.value ? "partially_used" : "active";
+            await GiftCard.updateOne({ _id: gc.cardId }, { status: newStatus });
+          }
+        }
+      }
+
+      // Fulfill any purchased gift cards in this order
+      try {
+        const { fulfillGiftCardsInOrder } = require("./giftCard.controller");
+        await fulfillGiftCardsInOrder(order);
+      } catch (e) {
+        console.error("[GiftCard] Order fulfillment hook error:", e);
+      }
+
+      // -- Email: order confirmation (COD) --
+      const recipientEmail = order.customerEmail || order.shippingAddress && order.shippingAddress.email;
+      if (recipientEmail) {
+        enqueueEmail({
+          to:      recipientEmail,
+          subject: "Order Confirmed - " + order.orderId + " | Sands Ornaments",
+          html:    emailTemplates.orderConfirmation({ order, userName: order.customerName }),
+          type:    "order_confirmation",
+        });
+      }
+
+      // -- Email: seller notification for each seller --
+      const sellerItemMap = new Map();
+      for (const item of order.items || []) {
+        if (!item.sellerId) continue;
+        const key = String(item.sellerId);
+        if (!sellerItemMap.has(key)) sellerItemMap.set(key, []);
+        sellerItemMap.get(key).push(item);
+      }
+      if (sellerItemMap.size > 0) {
+        const sellerIds = Array.from(sellerItemMap.keys());
+        const sellers = await Seller.find({ _id: { $in: sellerIds } }).select("email shopName fullName");
+        for (const seller of sellers) {
+          if (!seller.email) continue;
+          enqueueEmail({
+            to:      seller.email,
+            subject: "New Order - " + order.orderId + " | Sands Ornaments",
+            html:    emailTemplates.sellerNewOrder({ order, sellerName: seller.shopName || seller.fullName, sellerItems: sellerItemMap.get(String(seller._id)) }),
+            type:    "seller_new_order",
+          });
+        }
       }
     }
 

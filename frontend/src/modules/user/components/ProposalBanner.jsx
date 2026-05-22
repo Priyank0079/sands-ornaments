@@ -11,6 +11,9 @@ const ProposalBanner = () => {
     const { categories } = useShop();
     const { data: homepageSections = {} } = useHomepageCms();
     const sectionData = homepageSections?.['proposal-rings'];
+
+    if (sectionData?.isActive === false) return null;
+
     const configuredItems = Array.isArray(sectionData?.items) ? sectionData.items : [];
     const normalizedConfiguredItems = configuredItems
         .map((item, index) => {

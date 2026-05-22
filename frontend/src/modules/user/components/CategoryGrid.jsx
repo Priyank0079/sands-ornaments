@@ -53,7 +53,7 @@ const CategoryGrid = () => {
                     ref={scrollRef}
                     className="flex overflow-x-auto scrollbar-hide gap-4 md:gap-7 pb-2 md:pb-4 px-1 md:px-2 snap-x snap-mandatory"
                 >
-                    {categories.map((category) => (
+                    {categories.map((category, index) => (
                         <Link
                             key={category.id}
                             to={category.path}
@@ -63,6 +63,8 @@ const CategoryGrid = () => {
                                 <img
                                     src={category.image}
                                     alt={category.name}
+                                    loading={index < 4 ? 'eager' : 'lazy'}
+                                    decoding={index < 4 ? 'sync' : 'async'}
                                     className="w-full h-full object-cover group-hover/item:scale-105 transition-transform duration-500"
                                 />
                                 {category.badge ? (

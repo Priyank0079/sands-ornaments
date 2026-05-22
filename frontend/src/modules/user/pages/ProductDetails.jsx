@@ -1,4 +1,7 @@
-import React, { useMemo, useState, useEffect } from 'react';
+
+
+import React, { useMemo, useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
@@ -6,8 +9,47 @@ import { useAuth } from '../../../context/AuthContext';
 import api from '../../../services/api';
 import toast from 'react-hot-toast';
 import ProductCard from '../components/ProductCard';
+import { getProductDetailUrl, getProductCardUrl, getProductThumbUrl } from '../../../utils/imageUtils';
 
-import { Heart, ShoppingBag, Star, Share2, Plus, Minus, Truck, ShieldCheck, Smile, Gift, ChevronDown, SlidersHorizontal, X, Camera, Check, ArrowLeft, ArrowRight, Droplets, Sparkles, Play, Globe, Zap, Users, Ruler, ExternalLink, RotateCcw, Lock, Layers, Scale, Box } from 'lucide-react';
+import {
+    Heart,
+    ShoppingBag,
+    Star,
+    Share2,
+    Plus,
+    Minus,
+    Truck,
+    ShieldCheck,
+    Smile,
+    Gift,
+    ChevronDown,
+    ChevronLeft,
+    ChevronRight,
+    SlidersHorizontal,
+    X,
+    Camera,
+    Check,
+    ArrowLeft,
+    ArrowRight,
+    Droplets,
+    Sparkles,
+    Play,
+    Globe,
+    Zap,
+    Users,
+    Ruler,
+    ExternalLink,
+    RotateCcw,
+    Lock,
+    Layers,
+    Scale,
+    Box,
+    Maximize2,
+    ZoomIn,
+    ZoomOut,
+    RefreshCw,
+    Loader2
+} from 'lucide-react';
 // Product video is backend-driven (optional) via `product.videoUrl`.
 import { useAnalytics } from '../../../hooks/useAnalytics';
 import Loader from '../../shared/components/Loader';
@@ -31,6 +73,183 @@ const fallbackModelMap = {
 };
 
 const isImageMedia = (src = '') => /\.(png|jpe?g|webp|gif|avif|svg)(\?.*)?$/i.test(String(src));
+
+const ImageLightbox = ({ images, currentIndex, isOpen, onClose, onPrev, onNext }) => {
+    const [zoom, setZoom] = useState(1);
+    const [dragConstraints, setDragConstraints] = useState({ left: 0, right: 0, top: 0, bottom: 0 });
+    const [isLoading, setIsLoading] = useState(true);
+    const containerRef = useRef(null);
+
+    // Reset zoom and loading state when image changes
+    useEffect(() => {
+        setZoom(1);
+        setIsLoading(true);
+    }, [currentIndex]);
+
+    const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.5, 4));
+    const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.5, 1));
+    const handleReset = () => setZoom(1);
+
+    if (!isOpen) return null;
+
+    return (
+        <AnimatePresence>
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-xl touch-none"
+                onClick={onClose}
+            >
+                {/* Close Button */}
+                <button
+                    onClick={onClose}
+                    className="absolute top-6 right-6 z-[110] p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all border border-white/10 backdrop-blur"
+                >
+                    <X className="w-6 h-6" />
+                </button>
+
+                {/* Main Image Container */}
+                <div
+                    ref={containerRef}
+                    className="relative w-full h-full flex items-center justify-center overflow-hidden"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {/* Placeholder (Low-res blurred) */}
+                    <motion.img
+                        key={`placeholder-${currentIndex}`}
+                        src={images[currentIndex]}
+                        className="absolute inset-0 w-full h-full object-contain blur-2xl opacity-30 scale-110 pointer-events-none"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 0.3 }}
+                    />
+
+                    {/* Loading Spinner */}
+                    {isLoading && (
+                        <div className="absolute inset-0 flex items-center justify-center z-10">
+                            <Loader2 className="w-10 h-10 text-white/40 animate-spin" />
+                        </div>
+                    )}
+
+                    {/* High-res Image */}
+                    <motion.div
+                        className="w-full h-full flex items-center justify-center"
+                        style={{ scale: zoom }}
+                        drag={zoom > 1}
+                        dragConstraints={containerRef}
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{
+                            scale: zoom,
+                            opacity: isLoading ? 0 : 1,
+                            transition: { duration: 0.4, ease: "easeOut" }
+                        }}
+                    >
+                        <img
+                            src={images[currentIndex]}
+                            alt="Product view"
+                            className="max-w-[90%] max-h-[90vh] object-contain select-none shadow-2xl"
+                            onLoad={() => setIsLoading(false)}
+                            draggable={false}
+                        />
+                    </motion.div>
+
+                    {/* Navigation Buttons (Desktop) */}
+                    <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none">
+                        <button
+                            onClick={onPrev}
+                            className="p-4 rounded-full bg-black/40 hover:bg-black/60 text-white transition-all backdrop-blur-md pointer-events-auto border border-white/10 group"
+                        >
+                            <ChevronLeft className="w-8 h-8 group-hover:-translate-x-1 transition-transform" />
+                        </button>
+                        <button
+                            onClick={() => onNext()}
+                            className="p-4 rounded-full bg-black/40 hover:bg-black/60 text-white transition-all backdrop-blur-md pointer-events-auto border border-white/10 group"
+                        >
+                            <ChevronRight className="w-8 h-8 group-hover:translate-x-1 transition-transform" />
+                        </button>
+                    </div>
+
+                    {/* Zoom Controls */}
+                    <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-4 p-2 bg-black/40 backdrop-blur-xl rounded-2xl border border-white/10 z-[120]">
+                        <button onClick={handleZoomOut} className="p-3 text-white/80 hover:text-white transition-colors hover:bg-white/10 rounded-xl"><ZoomOut className="w-5 h-5" /></button>
+                        <div className="w-[1px] h-4 bg-white/20" />
+                        <button onClick={handleReset} className="px-4 py-2 text-xs font-bold text-white/80 hover:text-white transition-colors flex items-center gap-2 hover:bg-white/10 rounded-xl uppercase tracking-widest">
+                            <RefreshCw className="w-4 h-4" /> {Math.round(zoom * 100)}%
+                        </button>
+                        <div className="w-[1px] h-4 bg-white/20" />
+                        <button onClick={handleZoomIn} className="p-3 text-white/80 hover:text-white transition-colors hover:bg-white/10 rounded-xl"><ZoomIn className="w-5 h-5" /></button>
+                    </div>
+                </div>
+
+                {/* Thumbnails Row */}
+                <div className="absolute bottom-32 left-0 right-0 flex justify-center gap-3 px-4 z-[120]">
+                    {images.map((img, idx) => (
+                        <button
+                            key={idx}
+                            onClick={() => onNext(idx)}
+                            className={`relative w-14 h-14 rounded-lg overflow-hidden border-2 transition-all shadow-lg ${currentIndex === idx ? 'border-[#D39A9F] scale-110 shadow-[#D39A9F]/20' : 'border-white/10 opacity-50 hover:opacity-100 hover:border-white/40'}`}
+                        >
+                            <img src={img} loading="lazy" decoding="async" className="w-full h-full object-cover" />
+                        </button>
+                    ))}
+                </div>
+            </motion.div>
+        </AnimatePresence>
+    );
+};
+
+
+
+const useDragScroll = () => {
+    const ref = useRef(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const [startX, setStartX] = useState(0);
+    const [startY, setStartY] = useState(0);
+    const [scrollLeft, setScrollLeft] = useState(0);
+    const [scrollTop, setScrollTop] = useState(0);
+
+    const onMouseDown = (e) => {
+        if (!ref.current) return;
+        // Don't drag if clicking a button or input
+        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+
+        setIsDragging(true);
+        setStartX(e.pageX - ref.current.offsetLeft);
+        setStartY(e.pageY - ref.current.offsetTop);
+        setScrollLeft(ref.current.scrollLeft);
+        setScrollTop(ref.current.scrollTop);
+    };
+
+    const onMouseLeave = () => {
+        setIsDragging(false);
+    };
+
+    const onMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    const onMouseMove = (e) => {
+        if (!isDragging || !ref.current) return;
+        e.preventDefault();
+        const x = e.pageX - ref.current.offsetLeft;
+        const y = e.pageY - ref.current.offsetTop;
+        const walkX = (x - startX) * 1.5; // Scroll speed
+        const walkY = (y - startY) * 1.5;
+        ref.current.scrollLeft = scrollLeft - walkX;
+        ref.current.scrollTop = scrollTop - walkY;
+    };
+
+    return {
+        ref,
+        events: {
+            onMouseDown,
+            onMouseLeave,
+            onMouseUp,
+            onMouseMove,
+        },
+        isDragging
+    };
+};
 
 const AccordionItem = ({ title, children, isOpen, onClick }) => (
     <div className="border-b border-[#EBCDD0]/50">
@@ -182,6 +401,13 @@ const ProductDetails = () => {
     const [reviewTitle, setReviewTitle] = useState('');
     const [reviewComment, setReviewComment] = useState('');
     const [isLabGrownModalOpen, setIsLabGrownModalOpen] = useState(false);
+    const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+    const [lightboxIndex, setLightboxIndex] = useState(0);
+
+    const thumbScroll = useDragScroll();
+    const detailsScroll = useDragScroll();
+    const tableScroll = useDragScroll();
+
     const sortedReviews = useMemo(() => {
         const parseReviewDate = (value) => {
             if (!value) return 0;
@@ -383,15 +609,29 @@ const ProductDetails = () => {
         if (product && product.id) {
             const recentlyViewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
             const filtered = recentlyViewed.filter(item => item.id !== product.id && item.id !== product._id);
-            const updated = [{ 
-                id: product.id || product._id, 
-                name: product.name, 
-                price: variantPrice, 
-                image: primaryImage || (product.images?.[0]) 
+            const updated = [{
+                id: product.id || product._id,
+                name: product.name,
+                price: variantPrice,
+                image: primaryImage || (product.images?.[0])
             }, ...filtered].slice(0, 10);
             localStorage.setItem('recentlyViewed', JSON.stringify(updated));
         }
     }, [product, variantPrice, primaryImage]);
+
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (!isLightboxOpen) return;
+            if (e.key === 'Escape') setIsLightboxOpen(false);
+            if (e.key === 'ArrowRight') handleLightboxNext();
+            if (e.key === 'ArrowLeft') handleLightboxPrev();
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isLightboxOpen, galleryImages.length]);
+
+    // Note: Gallery image preloading removed — browser native lazy loading handles
+    // this more efficiently on mobile without saturating bandwidth on load.
 
     if (isLoading || detailLoading) {
         return <Loader />;
@@ -420,11 +660,11 @@ const ProductDetails = () => {
     const currentVariant = selectedVariant || product?.variants?.[0] || {};
     const dSpecs = currentVariant?.diamondSpecs || {};
     const hasDiamonds = !!(
-        product?.diamondWeight || 
-        product?.diamondCount || 
-        currentVariant?.diamondWeight || 
-        currentVariant?.diamondCount || 
-        dSpecs?.carat || 
+        product?.diamondWeight ||
+        product?.diamondCount ||
+        currentVariant?.diamondWeight ||
+        currentVariant?.diamondCount ||
+        dSpecs?.carat ||
         dSpecs?.diamondCount ||
         Number(currentVariant?.diamondPrice || 0) > 0
     );
@@ -434,6 +674,27 @@ const ProductDetails = () => {
     const toggleSection = (section) => {
         setOpenSection(openSection === section ? null : section);
     };
+
+    // Lightbox Handlers
+    const openLightbox = (image) => {
+        const index = galleryImages.findIndex(img => img === image);
+        setLightboxIndex(index >= 0 ? index : 0);
+        setIsLightboxOpen(true);
+    };
+
+    const handleLightboxNext = (index) => {
+        if (typeof index === 'number') {
+            setLightboxIndex(index);
+        } else {
+            setLightboxIndex((prev) => (prev + 1) % galleryImages.length);
+        }
+    };
+
+    const handleLightboxPrev = () => {
+        setLightboxIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
+    };
+
+
 
     return (
         <div className="bg-white min-h-screen py-8 pb-24 md:pb-8 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out fill-mode-both selection:bg-[#D39A9F] selection:text-white">
@@ -458,30 +719,9 @@ const ProductDetails = () => {
                     <span>Go Back</span>
                 </button>
             </div>
-            <style>
-                {`
-                    @keyframes flyToCart {
-                        0% { top: 50%; left: 50%; transform: translate(-50%, -50%) scale(1); opacity: 1; border-radius: 20px; }
-                        50% { opacity: 0.8; transform: translate(-50%, -50%) scale(0.4); }
-                        100% { top: 30px; left: 92%; transform: translate(-50%, -50%) scale(0.1); opacity: 0; border-radius: 50%; }
-                    }
-                     @keyframes flyToHeart {
-                        0% { top: 50%; left: 50%; transform: translate(-50%, -50%) scale(1); opacity: 1; border-radius: 20px; }
-                        50% { opacity: 0.8; transform: translate(-50%, -50%) scale(0.4); }
-                        100% { top: 30px; left: 88%; transform: translate(-50%, -50%) scale(0.1); opacity: 0; border-radius: 50%; }
-                    }
-                    .animate-fly-cart {
-                        animation: flyToCart 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-                    }
-                    .animate-fly-heart {
-                        animation: flyToHeart 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-                    }
-                `}
-            </style>
 
 
-
-            {/* Flying Image Animation Element */}
+            {/* Flying Image Animation Element — keyframes in index.css */}
             {flying && primaryImage && (
                 <img
                     src={primaryImage}
@@ -541,9 +781,9 @@ const ProductDetails = () => {
                     <div className="relative space-y-4">
                         <div className="h-[400px] lg:h-[520px] w-full bg-white rounded-2xl overflow-hidden shadow-sm relative flex flex-col md:flex-row gap-[1px] border border-gray-100">
                             {/* Video Pane (optional, product-specific) */}
-                            <div className="w-full md:w-1/2 relative h-1/2 md:h-full group overflow-hidden border-r border-white/10 bg-black">
-                                {product?.videoUrl ? (
-                                    isImageMedia(product.videoUrl) ? (
+                            {product?.videoUrl && (
+                                <div className="w-full md:w-1/2 relative h-1/2 md:h-full group overflow-hidden border-r border-white/10 bg-black">
+                                    {isImageMedia(product.videoUrl) ? (
                                         <>
                                             <img
                                                 src={product.videoUrl}
@@ -553,67 +793,72 @@ const ProductDetails = () => {
                                             <div className="absolute inset-0 bg-black/20 group-hover:bg-black/5 transition-colors" />
                                         </>
                                     ) : (
-                                        <>
-                                            <video
-                                                src={product.videoUrl}
-                                                autoPlay
-                                                muted
-                                                loop
-                                                playsInline
-                                                controls
-                                                preload="auto"
-                                                className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
-                                                onError={(e) => {
-                                                    console.error("Product video playback failed:", e);
-                                                    // Optional: Hide the video container or show a fallback if needed
-                                                }}
-                                            />
-                                            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/5 transition-colors pointer-events-none" />
-                                        </>
-                                    )
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-[#111]">
-                                        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/60">No product video</p>
-                                    </div>
-                                )}
+                                        <video
+                                            src={product.videoUrl}
+                                            autoPlay
+                                            muted
+                                            loop
+                                            playsInline
+                                            controls
+                                            preload="none"
+                                            className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
+                                            onError={(e) => {
+                                                console.error("Product video playback failed:", e);
+                                            }}
+                                        />
+                                    )}
 
-                                {/* Experience Sticker Layer (Subtle) */}
-                                <div className="absolute bottom-4 right-4 z-30 scale-75 md:scale-[0.85]">
-                                    <div className="relative w-24 h-24 flex items-center justify-center animate-[spin_10s_linear_infinite]">
-                                        <svg className="w-full h-full" viewBox="0 0 100 100">
-                                            <path id="circlePathSmall" d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="none" />
-                                            <text className="text-[9px] font-bold tracking-[0.2em] uppercase fill-white/80">
-                                                <textPath xlinkHref="#circlePathSmall">The Lookbook • Sands Royal • </textPath>
-                                            </text>
-                                        </svg>
-                                        <div className="absolute inset-0 flex items-center justify-center animate-none">
-                                            <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center">
-                                                <Play className="w-3 h-3 text-white fill-current translate-x-[1px]" />
+                                    {/* Experience Sticker Layer (Subtle) */}
+                                    <div className="absolute bottom-4 right-4 z-30 scale-75 md:scale-[0.85]">
+                                        <div className="relative w-24 h-24 flex items-center justify-center animate-[spin_10s_linear_infinite]">
+                                            <svg className="w-full h-full" viewBox="0 0 100 100">
+                                                <path id="circlePathSmall" d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="none" />
+                                                <text className="text-[9px] font-bold tracking-[0.2em] uppercase fill-white/80">
+                                                    <textPath xlinkHref="#circlePathSmall">The Lookbook • Sands Royal • </textPath>
+                                                </text>
+                                            </svg>
+                                            <div className="absolute inset-0 flex items-center justify-center animate-none">
+                                                <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center">
+                                                    <Play className="w-3 h-3 text-white fill-current translate-x-[1px]" />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* Image Pane - CLEAN IMAGE SWAP (No Zoom) */}
-                            <div className="w-full md:w-1/2 relative h-1/2 md:h-full group overflow-hidden bg-[#F7F2F3]">
+                            <div
+                                onClick={() => openLightbox(primaryImage)}
+                                className={`${product?.videoUrl ? 'w-full md:w-1/2 h-1/2 md:h-full' : 'w-full h-full'} relative group overflow-hidden bg-[#F7F2F3] cursor-zoom-in`}
+                            >
                                 {primaryImage ? (
                                     <>
-                                        {/* Main State Image (Thumbnail selected or default) */}
+                                        {/* Main State Image (Thumbnail selected or default) — eager load (LCP element) */}
                                         <img
-                                            src={primaryImage}
+                                            src={getProductDetailUrl(primaryImage)}
                                             alt={product.name}
+                                            fetchpriority="high"
+                                            decoding="sync"
                                             className="absolute inset-0 w-full h-full object-cover z-0"
                                         />
 
                                         {/* Hover Image (2nd gallery image when available; otherwise model fallback) */}
                                         {hoverPaneImage ? (
                                             <img
-                                                src={hoverPaneImage}
+                                                src={getProductCardUrl(hoverPaneImage)}
                                                 alt={`${product.name} look`}
+                                                loading="lazy"
+                                                decoding="async"
                                                 className="absolute inset-0 w-full h-full object-cover z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-[1200ms] ease-in-out"
                                             />
                                         ) : null}
+                                        {/* Zoom Indicator Icon */}
+                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/5 z-20 pointer-events-none">
+                                            <div className="p-3 rounded-full bg-white/80 backdrop-blur shadow-sm transform scale-90 group-hover:scale-100 transition-transform duration-500">
+                                                <Maximize2 className="w-5 h-5 text-black" strokeWidth={1.5} />
+                                            </div>
+                                        </div>
                                     </>
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-[#B88B90] text-[10px] font-bold uppercase tracking-widest">
@@ -640,14 +885,18 @@ const ProductDetails = () => {
 
                         {/* Thumbnails Row */}
                         {galleryImages.length > 1 && (
-                            <div className="flex gap-4 overflow-x-auto pb-4 px-1 scrollbar-hide justify-center">
+                            <div
+                                {...thumbScroll.events}
+                                ref={thumbScroll.ref}
+                                className={`flex gap-4 overflow-x-auto pb-4 px-1 scrollbar-hide justify-center ${thumbScroll.isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'}`}
+                            >
                                 {galleryImages.map((img, idx) => (
                                     <button
                                         key={idx}
                                         onClick={() => setSelectedImage(img)}
                                         className={`relative shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-lg overflow-hidden border-2 transition-all shadow-sm ${selectedImage === img ? 'border-[#D39A9F] ring-1 ring-[#D39A9F]' : 'border-transparent hover:border-gray-200'}`}
                                     >
-                                        <img src={img} alt={`View ${idx + 1}`} className="w-full h-full object-cover" />
+                                        <img src={getProductThumbUrl(img)} alt={`View ${idx + 1}`} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                                         {selectedImage === img && <div className="absolute inset-0 bg-black/10" />}
                                     </button>
                                 ))}
@@ -659,7 +908,11 @@ const ProductDetails = () => {
 
                     {/* JEWELLERY DETAILS TABBED SECTION - Moved to center below product area */}
                     <div className="h-[400px] lg:h-[520px] w-full bg-white rounded-[2rem] border border-gray-100 p-6 md:p-10 shadow-sm relative flex flex-col">
-                        <div className="flex-1 flex flex-col justify-start pt-4 overflow-y-auto no-scrollbar">
+                        <div
+                            {...detailsScroll.events}
+                            ref={detailsScroll.ref}
+                            className={`flex-1 flex flex-col justify-start pt-4 overflow-y-auto custom-scrollbar ${detailsScroll.isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'}`}
+                        >
                             <h2 className="text-xl font-bold text-center text-gray-900 mb-6 tracking-tight">Jewellery Details</h2>
 
                             {/* Tab Switcher */}
@@ -679,7 +932,25 @@ const ProductDetails = () => {
                             </div>
 
                             {/* Tab Content */}
-                            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                            {/* Tab Content with Swipe Gesture */}
+                            <motion.div
+                                key={activeDetailTab}
+                                initial={{ opacity: 0, x: activeDetailTab === 'details' ? -20 : 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.4, ease: "easeOut" }}
+                                drag="x"
+                                dragConstraints={{ left: 0, right: 0 }}
+                                dragElastic={0.1}
+                                onDragEnd={(e, { offset, velocity }) => {
+                                    const swipe = offset.x;
+                                    if (swipe < -50 && activeDetailTab === 'details') {
+                                        setActiveDetailTab('price');
+                                    } else if (swipe > 50 && activeDetailTab === 'price') {
+                                        setActiveDetailTab('details');
+                                    }
+                                }}
+                                className="animate-in fade-in slide-in-from-bottom-4 duration-700 cursor-grab active:cursor-grabbing touch-pan-y"
+                            >
                                 {activeDetailTab === 'details' ? (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         {hasDiamonds && (
@@ -769,7 +1040,11 @@ const ProductDetails = () => {
                                     </div>
                                 ) : (
                                     <div className="max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
-                                        <div className="bg-gray-50/50 rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+                                        <div
+                                            {...tableScroll.events}
+                                            ref={tableScroll.ref}
+                                            className={`bg-gray-50/50 rounded-2xl border border-gray-100 overflow-x-auto custom-scrollbar shadow-sm ${tableScroll.isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'}`}
+                                        >
                                             <table className="w-full text-left border-collapse">
                                                 <thead>
                                                     <tr className="border-b border-gray-100">
@@ -803,7 +1078,7 @@ const ProductDetails = () => {
                                         <p className="mt-4 text-[9px] text-gray-400 text-center font-bold uppercase tracking-widest italic">* Final price includes all applicable taxes and insured shipping.</p>
                                     </div>
                                 )}
-                            </div>
+                            </motion.div>
                         </div>
                     </div>
                 </div>
@@ -889,8 +1164,8 @@ const ProductDetails = () => {
                                 onClick={handleAddToCart}
                                 disabled={!canAddToCart}
                                 className={`w-full max-w-md py-5 rounded-xl font-bold uppercase tracking-[0.2em] text-[11px] transition-all duration-500 relative overflow-hidden group ${canAddToCart
-                                        ? 'bg-[#8E2B45] text-white hover:bg-[#5B1E26] shadow-lg hover:-translate-y-0.5'
-                                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                    ? 'bg-[#8E2B45] text-white hover:bg-[#5B1E26] shadow-lg hover:-translate-y-0.5'
+                                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                                     }`}
                             >
                                 <span className="relative z-10 flex items-center justify-center gap-3">
@@ -904,7 +1179,7 @@ const ProductDetails = () => {
                             </button>
 
                             <div className="flex items-center justify-center gap-6 mt-2">
-                                <button 
+                                <button
                                     onClick={() => setIsSizeGuideOpen(true)}
                                     className="text-[9px] font-black text-[#8E2B45] uppercase tracking-[0.2em] hover:underline flex items-center gap-1.5 transition-all active:scale-95"
                                 >
@@ -982,8 +1257,8 @@ const ProductDetails = () => {
                     onClick={handleAddToCart}
                     disabled={!canAddToCart}
                     className={`flex-1 rounded-xl h-11 font-bold uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-xl ${canAddToCart
-                            ? 'bg-[#8E2B45] text-white shadow-[#8E2B45]/20 hover:bg-[#5B1E26]'
-                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        ? 'bg-[#8E2B45] text-white shadow-[#8E2B45]/20 hover:bg-[#5B1E26]'
+                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                         }`}
                 >
                     {canAddToCart ? (
@@ -1196,12 +1471,12 @@ const ProductDetails = () => {
                                                     { label: 'Metal', value: product.material || product.metal || '925 Silver' },
                                                     { label: 'Purity', value: product.silverCategory || product.goldCategory || product.purity || '---' },
                                                     { label: 'Weight', value: `${selectedVariantWeight || product.weight || '---'} ${selectedVariantWeightUnit || product.weightUnit || 'g'}` },
-                                                    { 
-                                                        label: 'Certificate', 
+                                                    {
+                                                        label: 'Certificate',
                                                         value: product.logistics?.certificateUrl ? (
-                                                            <a 
-                                                                href={product.logistics.certificateUrl} 
-                                                                target="_blank" 
+                                                            <a
+                                                                href={product.logistics.certificateUrl}
+                                                                target="_blank"
                                                                 rel="noopener noreferrer"
                                                                 className="text-[#8E2B45] hover:underline flex items-center gap-1 transition-all"
                                                             >
@@ -1429,6 +1704,7 @@ const ProductDetails = () => {
 
 
 
+                {/* TABBED EXPLORE SECTION (Related & Recent) */}
                 <div className="flex gap-4 md:gap-10 border-b border-gray-100 mb-8 overflow-x-auto no-scrollbar">
                     <button
                         className={`pb-4 text-xs md:text-base font-bold uppercase tracking-[0.2em] transition-all relative whitespace-nowrap px-1 ${activeTab === 'related' ? 'text-black' : 'text-gray-400 hover:text-gray-600'}`}
@@ -1776,7 +2052,7 @@ const ProductDetails = () => {
                     {/* Decorative Elements */}
                     <div className="absolute top-0 right-0 w-96 h-96 bg-[#D39A9F]/10 rounded-full blur-3xl" />
                     <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#8E2B45]/10 rounded-full blur-3xl" />
-                    
+
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                         <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
                             <div className="flex flex-col">
@@ -1792,20 +2068,20 @@ const ProductDetails = () => {
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
                             {relatedProducts.slice(0, 4).map((relProduct) => (
                                 <div key={relProduct._id || relProduct.id} className="group">
-                                    <div 
+                                    <div
                                         onClick={() => {
                                             navigate(`/product/${relProduct._id || relProduct.id}`);
                                             window.scrollTo(0, 0);
                                         }}
                                         className="aspect-[4/5] rounded-[2rem] overflow-hidden bg-white/5 border border-white/10 relative group-hover:border-white/20 transition-all cursor-pointer"
                                     >
-                                        <img 
-                                            src={relProduct.images?.[0] || relProduct.primaryImage} 
+                                        <img
+                                            src={relProduct.images?.[0] || relProduct.primaryImage}
                                             alt={relProduct.name}
                                             className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110"
                                         />
                                         <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors" />
-                                        
+
                                         {/* Quick Tag */}
                                         <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full">
                                             <span className="text-[8px] font-black text-black uppercase tracking-widest">Matching Set</span>
@@ -1837,7 +2113,7 @@ const ProductDetails = () => {
                                 <h2 className="text-2xl font-black uppercase tracking-tight">Jewellery Size Guide</h2>
                             </div>
                             <p className="text-[10px] font-bold text-white/50 uppercase tracking-[0.2em]">Find your perfect fit with Sands Ornaments</p>
-                            <button 
+                            <button
                                 onClick={() => setIsSizeGuideOpen(false)}
                                 className="absolute top-8 right-8 p-2 hover:bg-white/10 rounded-xl transition-all"
                             >
@@ -1909,10 +2185,16 @@ const ProductDetails = () => {
                     </div>
                 </div>
             )}
+            <ImageLightbox
+                images={galleryImages}
+                currentIndex={lightboxIndex}
+                isOpen={isLightboxOpen}
+                onClose={() => setIsLightboxOpen(false)}
+                onPrev={handleLightboxPrev}
+                onNext={handleLightboxNext}
+            />
         </div>
     );
 };
 
 export default ProductDetails;
-
-

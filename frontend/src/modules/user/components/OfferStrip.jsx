@@ -29,19 +29,6 @@ const OfferStrip = () => {
                     <span>100% ORGANIC & FRESH</span>
                 </div>
             </div>
-            <style>{`
-                .animate-marquee-infinite {
-                    display: inline-flex;
-                    animation: marquee-scroll 25s linear infinite;
-                }
-                @keyframes marquee-scroll {
-                    0% { transform: translateX(0); }
-                    100% { transform: translateX(-50%); }
-                }
-                .animate-marquee-infinite:hover {
-                    animation-play-state: paused;
-                }
-            `}</style>
         </div>
     );
 };

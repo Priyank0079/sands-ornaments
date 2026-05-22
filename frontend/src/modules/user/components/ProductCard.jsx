@@ -33,6 +33,7 @@ const fallbackModelMap = {
 };
 
 import { getProductPrice, getProductMRP, formatCurrency } from '../utils/price';
+import { getProductCardUrl } from '../../../utils/imageUtils';
 
 const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, loginSource = 'men' }) => {
     const { addToCart, addToWishlist, removeFromWishlist, wishlist } = useShop();
@@ -128,28 +129,7 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
 
     return (
         <>
-            <style>
-                {`
-                    @keyframes flyToCart {
-                        0% { top: 50%; left: 50%; transform: translate(-50%, -50%) scale(1); opacity: 1; border-radius: 20px; }
-                        50% { opacity: 0.8; transform: translate(-50%, -50%) scale(0.4); }
-                        100% { top: 30px; left: 92%; transform: translate(-50%, -50%) scale(0.1); opacity: 0; border-radius: 50%; }
-                    }
-                     @keyframes flyToHeart {
-                        0% { top: 50%; left: 50%; transform: translate(-50%, -50%) scale(1); opacity: 1; border-radius: 20px; }
-                        50% { opacity: 0.8; transform: translate(-50%, -50%) scale(0.4); }
-                        100% { top: 30px; left: 88%; transform: translate(-50%, -50%) scale(0.1); opacity: 0; border-radius: 50%; }
-                    }
-                    .animate-fly-cart {
-                        animation: flyToCart 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-                    }
-                    .animate-fly-heart {
-                        animation: flyToHeart 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-                    }
-                `}
-            </style>
-
-            {/* Flying Image Animation Element */}
+            {/* Flying Image Animation Element — keyframes are in index.css */}
             {flying && primaryImage && (
                 <img
                     src={primaryImage}
@@ -164,14 +144,18 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
                     {primaryImage ? (
                         <>
                             <img
-                                src={primaryImage}
+                                src={getProductCardUrl(primaryImage)}
                                 alt={product.name}
+                                loading="lazy"
+                                decoding="async"
                                 className="w-full h-full object-cover transition-transform duration-[1.5s] group-hover/card:scale-105"
                             />
                             {secondaryImage && (
                                 <img
-                                    src={secondaryImage}
+                                    src={getProductCardUrl(secondaryImage)}
                                     alt={`${product.name} detail`}
+                                    loading="lazy"
+                                    decoding="async"
                                     className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover/card:opacity-100 transition-opacity duration-[1.2s] ease-in-out"
                                 />
                             )}

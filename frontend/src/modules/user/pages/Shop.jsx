@@ -12,6 +12,57 @@ import {
     Filter, ChevronDown, ShoppingBag, SlidersHorizontal,
     ArrowLeft, ArrowUpDown
 } from 'lucide-react';
+import HorizontalFilters from '../components/HorizontalFilters';
+import { useRef } from 'react';
+
+const useDragScroll = () => {
+    const ref = useRef(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const [startX, setStartX] = useState(0);
+    const [startY, setStartY] = useState(0);
+    const [scrollLeft, setScrollLeft] = useState(0);
+    const [scrollTop, setScrollTop] = useState(0);
+
+    const onMouseDown = (e) => {
+        if (!ref.current) return;
+        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.closest('button')) return;
+        setIsDragging(true);
+        setStartX(e.pageX - ref.current.offsetLeft);
+        setStartY(e.pageY - ref.current.offsetTop);
+        setScrollLeft(ref.current.scrollLeft);
+        setScrollTop(ref.current.scrollTop);
+    };
+
+    const onMouseLeave = () => {
+        setIsDragging(false);
+    };
+
+    const onMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    const onMouseMove = (e) => {
+        if (!isDragging || !ref.current) return;
+        e.preventDefault();
+        const x = e.pageX - ref.current.offsetLeft;
+        const y = e.pageY - ref.current.offsetTop;
+        const walkX = (x - startX) * 1.5;
+        const walkY = (y - startY) * 1.5;
+        ref.current.scrollLeft = scrollLeft - walkX;
+        ref.current.scrollTop = scrollTop - walkY;
+    };
+
+    return {
+        ref,
+        events: {
+            onMouseDown,
+            onMouseLeave,
+            onMouseUp,
+            onMouseMove,
+        },
+        isDragging
+    };
+};
 
 
 
@@ -43,6 +94,7 @@ const Shop = () => {
     const [priceRange, setPriceRange] = useState(50000);
     const [filteredProducts, setFilteredProducts] = useState(products || []);
     const [pageTitle, setPageTitle] = useState('All Jewellery');
+    const sidebarScroll = useDragScroll();
     const queryParams = new URLSearchParams(location.search);
     const isComingSoonQuery = queryParams.get('status') === 'coming-soon';
     const sourceQuery = queryParams.get('source');
@@ -56,6 +108,7 @@ const Shop = () => {
     const silverTypeQuery = queryParams.get('silver_type');
     // Backwards compatibility for older links (e.g. All Type mega menu used `purity`)
     const purityQuery = queryParams.get('purity');
+    const diamondTypeQuery = queryParams.get('diamondType');
     const isMenFlow = sourceQuery === 'men';
     const isWomenFlow = sourceQuery === 'women';
 
@@ -185,6 +238,7 @@ const Shop = () => {
             ...(priceMin ? { price_min: priceMin } : {}),
             ...(priceMax ? { price_max: priceMax } : {}),
             ...(sortParam ? { sort: sortParam } : {}),
+            ...(diamondTypeQuery ? { diamondType: diamondTypeQuery } : {}),
             inStockOnly: true,
             page: resolvedPage,
             limit: resolvedLimit,
@@ -203,6 +257,7 @@ const Shop = () => {
         priceMaxQuery,
         limitQuery,
         location.pathname,
+        diamondTypeQuery
     ]);
 
     const {
@@ -313,7 +368,18 @@ const Shop = () => {
         }
 
         return () => { isCancelled = true; };
-    }, [location.search, location.pathname, categories]);
+    }, [location.search, location.pathname, categories, selectedCategory, filterNewArrivals, filterTrending, sortBy, priceRange]);
+
+    useEffect(() => {
+        if (isFilterOpen || isSortOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isFilterOpen, isSortOpen]);
 
     const normalizeAudience = (value) => String(value || '').trim().toLowerCase();
     const getProductAudience = (product) => {
@@ -541,10 +607,15 @@ const Shop = () => {
             title = 'Trending Now';
         }
 
-        setPageTitle(title);
+        if (pageTitle !== title) {
+            setPageTitle(title);
+        }
 
         if (canUseServerProducts) {
-            setFilteredProducts([...serverProducts]);
+            // Only update if the length or first item changed (simple stability check)
+            if (filteredProducts.length !== serverProducts.length || filteredProducts[0]?.id !== serverProducts[0]?.id) {
+                setFilteredProducts(serverProducts);
+            }
             return;
         }
 
@@ -632,7 +703,13 @@ const Shop = () => {
             }
         }
 
-        setFilteredProducts([...result]); // Create new array to force re-render
+        // Only update filteredProducts if the results have actually changed
+        const hasChanged = result.length !== filteredProducts.length || 
+                          (result.length > 0 && result[0]?.id !== filteredProducts[0]?.id);
+                          
+        if (hasChanged) {
+            setFilteredProducts(result);
+        }
 
     }, [
         location,
@@ -715,6 +792,34 @@ const Shop = () => {
         }
     };
 
+    const handleAudienceChange = (val) => {
+        updateShopQuery({ source: val === 'all' ? null : val });
+    };
+
+    const handleMetalChange = (val) => {
+        updateShopQuery({ 
+            metal: val === 'All' ? null : val.toLowerCase(),
+            karat: null,
+            silver_type: null,
+            purity: null
+        });
+    };
+
+    const handleDiamondTypeChange = (val) => {
+        updateShopQuery({ diamondType: val === 'All' ? null : val });
+    };
+
+    const handleTagsChange = (val) => {
+        const currentTags = queryParams.get('tags')?.split(',').filter(Boolean) || [];
+        let nextTags;
+        if (currentTags.includes(val)) {
+            nextTags = currentTags.filter(t => t !== val);
+        } else {
+            nextTags = [...currentTags, val];
+        }
+        updateShopQuery({ tags: nextTags.length > 0 ? nextTags.join(',') : null });
+    };
+
     const clearAllFilters = () => {
         setSelectedCategory('All');
         setFilterNewArrivals(false);
@@ -758,52 +863,64 @@ const Shop = () => {
                 {activeCategory && (
                     <CategoryHeroBanner category={activeCategory} />
                 )}
-                {/* Header Section - Single Row: Title Left, Filter Button Right */}
-                {/* Header Section - Compact Mobile */}
-                <div className="sticky top-[50px] md:top-[141px] z-30 bg-white pt-2 md:pt-4 flex flex-row justify-between items-center mb-4 md:mb-10 pb-2 md:pb-6 border-b border-[#EBCDD0] gap-4 transition-all duration-300">
-                    <div className="text-left shrink-0">
-                        <h1 className="text-2xl md:text-4xl lg:text-5xl font-serif font-medium text-black">{pageTitle}</h1>
-                        <p className="text-black mt-1 md:mt-2 text-xs md:text-base font-medium">
-                            {(serverModeEnabled && serverPagination?.total ? serverPagination.total : productsToRender.length)} Products Found
-                        </p>
-                    </div>
-
-                    <div className="hidden md:flex items-center gap-2 md:gap-4 shrink-0">
-                        {/* Desktop Sort Dropdown */}
-                        <div className="relative">
-                            <button
-                                onClick={() => setIsWebSortOpen(!isWebSortOpen)}
-                                className="flex items-center gap-2 text-black font-medium text-sm border border-[#EBCDD0] px-4 py-2 rounded-full hover:bg-[#FDF5F6] hover:shadow-sm transition-all"
-                            >
-                                <ArrowUpDown className="w-4 h-4" />
-                                <span>Sort By</span>
-                                <ChevronDown className={`w-4 h-4 transition-transform ${isWebSortOpen ? 'rotate-180' : ''}`} />
-                            </button>
-
-                            {isWebSortOpen && (
-                                <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-[#EBCDD0] rounded-xl shadow-xl z-50 py-2 animate-in fade-in zoom-in-95 duration-200">
-                                    {['Newest', 'Price: High to Low', 'Price: Low to High', 'Best Selling'].map((option) => (
-                                        <button
-                                            key={option}
-                                            onClick={() => { handleSortChange(option); setIsWebSortOpen(false); }}
-                                            className={`w-full text-left px-4 py-2.5 text-sm hover:bg-[#FDF5F6] transition-colors flex items-center justify-between group ${sortBy === option ? 'text-black font-bold bg-[#FDF5F6]' : 'text-gray-600'}`}
-                                        >
-                                            <span>{option}</span>
-                                            {sortBy === option && <div className="w-2 h-2 rounded-full bg-[#D39A9F]" />}
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
+                {/* Sticky Header & Filters Container */}
+                <div className="sticky top-[50px] md:top-[141px] z-[100] bg-white transition-all duration-300">
+                    {/* Header Section - Single Row: Title Left, Filter Button Right */}
+                    <div className="pt-2 md:pt-4 flex flex-row justify-between items-center mb-2 md:mb-4 pb-2 md:pb-4 border-b border-[#EBCDD0] gap-4">
+                        <div className="text-left shrink-0">
+                            <h1 className="text-2xl md:text-4xl lg:text-5xl font-serif font-medium text-black">{pageTitle}</h1>
+                            <p className="text-black mt-1 md:mt-2 text-xs md:text-base font-medium">
+                                {(serverModeEnabled && serverPagination?.total ? serverPagination.total : productsToRender.length)} Products Found
+                            </p>
                         </div>
 
-                        <button
-                            onClick={() => setIsFilterOpen(true)}
-                            className="flex items-center gap-1.5 md:gap-2 border border-[#EBCDD0] px-3 md:px-6 py-1.5 md:py-2.5 rounded-full hover:bg-[#D39A9F] hover:text-white hover:border-[#D39A9F] hover:shadow-md transition-all text-black text-xs md:text-sm font-medium bg-white/50"
-                        >
-                            <Filter className="w-3 h-3 md:w-4 md:h-4" />
-                            <span>Filter</span>
-                        </button>
+                        <div className="hidden md:flex items-center gap-2 md:gap-4 shrink-0">
+                            <button
+                                onClick={() => setIsFilterOpen(true)}
+                                className="flex items-center gap-1.5 md:gap-2 border border-[#EBCDD0] px-3 md:px-6 py-1.5 md:py-2.5 rounded-full hover:bg-[#D39A9F] hover:text-white hover:border-[#D39A9F] hover:shadow-md transition-all text-black text-xs md:text-sm font-medium bg-white/50"
+                            >
+                                <Filter className="w-3 h-3 md:w-4 md:h-4" />
+                                <span>Detailed Filters</span>
+                            </button>
+                        </div>
+
+                        {/* Mobile Actions */}
+                        <div className="flex md:hidden items-center gap-2">
+                            <button
+                                onClick={() => setIsSortOpen(true)}
+                                className="p-2 border border-[#EBCDD0] rounded-full text-black"
+                            >
+                                <ArrowUpDown className="w-4 h-4" />
+                            </button>
+                            <button
+                                onClick={() => setIsFilterOpen(true)}
+                                className="flex items-center gap-2 bg-[#8E2B45] text-white px-4 py-2 rounded-full font-bold uppercase tracking-widest text-[10px]"
+                            >
+                                <Filter className="w-3 h-3" />
+                                Filter
+                            </button>
+                        </div>
                     </div>
+
+                    {/* Horizontal Desktop Filters - SANDS Premium Style */}
+                    <HorizontalFilters 
+                        categories={visibleCategories}
+                        selectedCategory={selectedCategory}
+                        onCategoryChange={handleCategoryChange}
+                        priceRange={priceRange}
+                        onPriceChange={handlePriceRangeChange}
+                        audience={queryParams.get('source') || 'All'}
+                        onAudienceChange={handleAudienceChange}
+                        metal={queryParams.get('metal')?.charAt(0).toUpperCase() + queryParams.get('metal')?.slice(1) || 'All'}
+                        onMetalChange={handleMetalChange}
+                        diamondType={diamondTypeQuery || 'All'}
+                        onDiamondTypeChange={handleDiamondTypeChange}
+                        tags={queryParams.get('tags')?.split(',').filter(Boolean) || []}
+                        onTagsChange={handleTagsChange}
+                        sortBy={sortBy}
+                        onSortChange={handleSortChange}
+                        clearAll={clearAllFilters}
+                    />
                 </div>
 
 
@@ -880,24 +997,24 @@ const Shop = () => {
             </div>
 
             {/* Mobile Bottom Action Bar (Nykaa Style) */}
-            <div className="md:hidden fixed bottom-[62px] left-0 right-0 bg-white z-[60] border-t border-[#EBCDD0] flex h-14 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md z-[70] border-t border-[#EBCDD0] flex h-16 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] pb-safe transition-all duration-300">
                 {/* Sort Button (Custom Sheet Trigger) */}
-                <div onClick={() => setIsSortOpen(true)} className="flex-1 border-r border-[#EBCDD0] relative flex flex-col items-center justify-center active:bg-gray-50 cursor-pointer py-1">
-                    <span className="text-black font-bold text-xs flex items-center gap-1.5">
-                        <ArrowUpDown className="w-3 h-3" /> Sort by
+                <div onClick={() => setIsSortOpen(true)} className="flex-1 border-r border-[#EBCDD0]/50 relative flex flex-col items-center justify-center active:bg-[#FDF5F6] cursor-pointer py-2">
+                    <span className="text-black font-black text-[11px] uppercase tracking-widest flex items-center gap-2">
+                        <ArrowUpDown className="w-3.5 h-3.5 text-[#8E2B45]" /> Sort by
                     </span>
-                    <span className="text-[10px] text-gray-600 font-medium mt-0.5">{sortBy}</span>
+                    <span className="text-[10px] text-gray-500 font-bold mt-1 uppercase tracking-tighter">{sortBy}</span>
                 </div>
 
                 {/* Filter Button */}
                 <button
                     onClick={() => setIsFilterOpen(true)}
-                    className="flex-1 flex flex-col items-center justify-center active:bg-gray-50 py-1"
+                    className="flex-1 flex flex-col items-center justify-center active:bg-[#FDF5F6] py-2 transition-colors"
                 >
-                    <span className="text-black font-bold text-xs flex items-center gap-1.5">
-                        <Filter className="w-3 h-3" /> Filter
+                    <span className="text-black font-black text-[11px] uppercase tracking-widest flex items-center gap-2">
+                        <Filter className="w-3.5 h-3.5 text-[#8E2B45]" /> Filter
                     </span>
-                    <span className="text-[10px] text-gray-600 font-medium mt-0.5">
+                    <span className="text-[10px] text-gray-500 font-bold mt-1 uppercase tracking-tighter">
                         {(selectedCategory !== 'All' || filterNewArrivals || filterTrending || priceRange < 50000 || !!searchQuery) ? 'Filters applied' : 'No filter applied'}
                     </span>
                 </button>
@@ -907,13 +1024,13 @@ const Shop = () => {
             {/* Overlay */}
             {isFilterOpen && (
                 <div
-                    className="fixed inset-0 bg-black/40 z-[105] backdrop-blur-sm transition-opacity"
+                    className="fixed inset-0 bg-black/40 z-[200] backdrop-blur-sm transition-opacity"
                     onClick={() => setIsFilterOpen(false)}
                 ></div>
             )}
 
             {/* Sidebar */}
-            <div className={`fixed top-0 right-0 h-full w-[320px] bg-white z-[110] shadow-2xl transform transition-transform duration-300 ease-in-out border-l border-[#EBCDD0] ${isFilterOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+            <div className={`fixed top-0 right-0 h-full w-[320px] bg-white z-[210] shadow-2xl transform transition-transform duration-300 ease-in-out border-l border-[#EBCDD0] ${isFilterOpen ? 'translate-x-0' : 'translate-x-full'}`}>
                 <div className="flex flex-col h-full">
                     {/* Sidebar Header */}
                     <div className="flex items-center justify-between p-6 border-b border-[#EBCDD0]">
@@ -923,7 +1040,11 @@ const Shop = () => {
                         </button>
                     </div>
 
-                              <div className="p-6 flex-1 overflow-y-auto space-y-10 custom-scrollbar">
+                              <div 
+                                {...sidebarScroll.events}
+                                ref={sidebarScroll.ref}
+                                className={`p-6 flex-1 overflow-y-auto space-y-10 custom-scrollbar overscroll-contain ${sidebarScroll.isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'}`}
+                              >
                         {/* 1. Category Filter */}
                         <section>
                             <h4 className="font-bold text-black text-[11px] uppercase tracking-[0.2em] mb-5">Category</h4>
@@ -1046,8 +1167,8 @@ const Shop = () => {
             {/* Sort Bottom Sheet */}
             {isSortOpen && (
                 <>
-                    <div className="fixed inset-0 bg-black/40 z-[70] backdrop-blur-sm transition-opacity" onClick={() => setIsSortOpen(false)} />
-                    <div className="fixed bottom-0 left-0 right-0 bg-white z-[80] rounded-t-2xl p-6 pb-8 animate-in slide-in-from-bottom duration-300 safe-bottom">
+                    <div className="fixed inset-0 bg-black/40 z-[200] backdrop-blur-sm transition-opacity" onClick={() => setIsSortOpen(false)} />
+                    <div className="fixed bottom-0 left-0 right-0 bg-white z-[210] rounded-t-2xl p-6 pb-8 animate-in slide-in-from-bottom duration-300 safe-bottom">
                         <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6 opacity-50" />
                         <h3 className="text-lg font-serif font-bold text-black mb-6">Sort By</h3>
                         <div className="space-y-4">

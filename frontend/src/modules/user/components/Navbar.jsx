@@ -6,6 +6,7 @@ import logo from '@assets/SANDS JEWELS PINK (1).png';
 import api from '../../../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getProductPrice, formatCurrency } from '../utils/price';
+import { getSearchThumbUrl } from '../../../utils/imageUtils';
 
 const Navbar = () => {
     const {
@@ -110,13 +111,7 @@ const Navbar = () => {
 
     return (
         <nav className={`w-full bg-white transition-all duration-300 z-[100] font-lato ${isScrolled ? 'shadow-sm' : 'border-b border-gray-100'}`}>
-            <style>
-                {`
-                @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap');
-                .font-lato { font-family: 'Lato', sans-serif; }
-                `}
-            </style>
-
+    
             {/* Desktop Header */}
             <div className="hidden lg:block">
                 <div className="container mx-auto px-4 lg:px-12 py-3 flex items-center justify-between gap-10">
@@ -209,7 +204,7 @@ const Navbar = () => {
                                                     >
                                                         <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-50 flex-shrink-0">
                                                             <img 
-                                                                src={product.images?.[0] || product.primaryImage} 
+                                                                src={getSearchThumbUrl(product.images?.[0] || product.primaryImage)} 
                                                                 alt={product.name} 
                                                                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
                                                             />

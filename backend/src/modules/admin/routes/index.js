@@ -20,5 +20,7 @@ router.use("/blogs",         require("./blog.routes"));
 router.use("/pages",         require("./page.routes"));
 router.use("/sections",      require("./section.routes"));
 router.use("/shipping",      require("./shipping.routes"));
+router.use("/gift-cards",    require("./giftCard.routes"));
 
 module.exports = router;
+

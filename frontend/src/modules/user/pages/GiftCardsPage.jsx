@@ -31,6 +31,8 @@ const GiftCardsPage = () => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     const handleBuyNow = () => {
         if (isCustomAmount && (!customAmount || Number(customAmount) < 500)) {
             toast.error("Minimum gift card amount is ₹500");
@@ -38,6 +40,10 @@ const GiftCardsPage = () => {
         }
         if (!formData.recipientName || !formData.recipientEmail || !formData.senderName) {
             toast.error("Please fill in all required fields");
+            return;
+        }
+        if (!EMAIL_REGEX.test(formData.recipientEmail.trim())) {
+            toast.error("Please enter a valid recipient email address");
             return;
         }
 
