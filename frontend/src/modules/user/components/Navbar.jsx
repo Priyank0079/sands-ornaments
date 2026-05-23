@@ -110,7 +110,7 @@ const Navbar = () => {
     };
 
     return (
-        <nav className={`w-full bg-white transition-all duration-300 z-[100] font-lato ${isScrolled ? 'shadow-sm' : 'border-b border-gray-100'}`}>
+        <nav className={`w-full bg-[#FFF0F4] transition-all duration-300 z-[100] font-lato ${isScrolled ? 'shadow-sm' : 'border-b border-pink-100'}`}>
     
             {/* Desktop Header */}
             <div className="hidden lg:block">
@@ -128,7 +128,7 @@ const Navbar = () => {
 
                         <div
                             onClick={() => setIsPincodeModalOpen(true)}
-                            className="flex items-center gap-3 px-3 py-2 border border-[#FFF0F4] rounded-lg cursor-pointer bg-white hover:border-pink-200 transition-all"
+                            className="flex items-center gap-3 px-3 py-2 border border-pink-100 rounded-lg cursor-pointer bg-white hover:border-pink-200 transition-all"
                         >
                             <div className="flex-shrink-0">
                                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-pink-400">
@@ -267,7 +267,7 @@ const Navbar = () => {
             </div>
 
             {/* Mobile Header */}
-            <div className="lg:hidden flex items-center justify-between px-4 py-1.5 border-b border-gray-100">
+            <div className="lg:hidden flex items-center justify-between px-4 py-1.5 border-b border-pink-100">
                 <button onClick={() => setIsMenuOpen(true)} className="p-1">
                     <Menu className="w-7 h-7 text-gray-800" />
                 </button>

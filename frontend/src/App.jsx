@@ -130,6 +130,35 @@ const AppContent = () => {
     });
   }, []);
 
+  const [isNavVisible, setIsNavVisible] = React.useState(true);
+  const lastScrollY = React.useRef(0);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Always show nav at the very top
+      if (currentScrollY <= 50) {
+        setIsNavVisible(true);
+      } 
+      // Hide when scrolling down
+      else if (currentScrollY > lastScrollY.current) {
+        setIsNavVisible(false);
+      } 
+      // Show immediately when scrolling up
+      else {
+        setIsNavVisible(true);
+      }
+      
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
   const isAdminPath = location.pathname.startsWith('/admin');
   const isSellerPath = location.pathname.startsWith('/seller');
   const isScannerPath = location.pathname === '/scanner';
@@ -139,14 +168,18 @@ const AppContent = () => {
     <div className="min-h-screen flex flex-col font-sans text-gray-900 bg-[#FDF5F6]">
       {!isAdminPath && !isSellerPath && !isScannerPath && (
         <>
-          <div className="fixed top-0 left-0 right-0 z-[150] w-full">
+          <div 
+            className={`fixed top-0 left-0 right-0 z-[150] w-full transition-transform duration-300 ease-out ${
+              isNavVisible ? 'translate-y-0' : '-translate-y-full'
+            }`}
+          >
             <AnnouncementBar />
             <Navbar />
             <CategoryNav showMetalToggle={showMetalToggle} />
-            <PincodeModal />
-            <LeadCapturePopup />
-            <CookieConsent />
           </div>
+          <PincodeModal />
+          <LeadCapturePopup />
+          <CookieConsent />
           <div className={`h-[104px] ${showMetalToggle ? 'md:h-[226px]' : 'md:h-[166px]'} w-full`}></div>
         </>
       )}
