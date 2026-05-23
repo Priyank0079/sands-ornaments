@@ -307,14 +307,14 @@ const Navbar = () => {
                                     <X className="w-7 h-7 text-gray-500" />
                                 </button>
                             </div>
-                            <div className="flex bg-gray-50 p-1 rounded-full border border-[#D4B390]/30 mb-6">
+                            <div className="flex bg-gray-100 p-1 rounded-full mb-6">
                                 <button
                                     onClick={() => {
                                         updateActiveMetal('silver');
                                         navigate('/');
                                         setIsMenuOpen(false);
                                     }}
-                                    className={`flex-1 py-1.5 px-4 rounded-full text-sm font-bold transition-all duration-500 ${activeMetal === 'silver' ? 'bg-gradient-to-r from-[#707070] via-[#E0E0E0] to-[#707070] text-white shadow-md' : 'text-gray-700'}`}
+                                    className={`flex-1 py-2 px-4 rounded-full text-[15px] font-bold transition-all duration-300 ${activeMetal === 'silver' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                                 >
                                     Silver
                                 </button>
@@ -324,7 +324,7 @@ const Navbar = () => {
                                         navigate('/gold-collection');
                                         setIsMenuOpen(false);
                                     }}
-                                    className={`flex-1 py-1.5 px-4 rounded-full text-sm font-bold transition-all duration-500 ${activeMetal === 'gold' ? 'bg-gradient-to-r from-[#C9A24D] via-[#E2C074] to-[#C9A24D] text-white shadow-md' : 'text-gray-700'}`}
+                                    className={`flex-1 py-2 px-4 rounded-full text-[15px] font-bold transition-all duration-300 ${activeMetal === 'gold' ? 'bg-white text-[#C9A24D] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                                 >
                                     Gold
                                 </button>
