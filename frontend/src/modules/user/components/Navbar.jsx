@@ -274,7 +274,10 @@ const Navbar = () => {
                 <Link to="/">
                     <img src={logo} alt="Sands Jewels" className="h-[72px] w-auto object-contain" />
                 </Link>
-                <div className="flex items-center gap-5">
+                <div className="flex items-center gap-4 sm:gap-5">
+                    <Link to={user ? "/profile" : "/login"} className="relative">
+                        <User className="w-6 h-6 text-gray-800" />
+                    </Link>
                     <Link to="/wishlist" className="relative">
                         <Heart className="w-6 h-6 text-gray-800" />
                     </Link>
