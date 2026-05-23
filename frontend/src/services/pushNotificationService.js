@@ -88,7 +88,7 @@ async function registerFCMToken(forceUpdate = false) {
     }
     
     // Save to backend
-    const response = await api.post('/user/notifications/fcm-token', {
+    const response = await api.post('user/notifications/fcm-token', {
       token: token,
       platform: 'web'
     });
