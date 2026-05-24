@@ -90,7 +90,7 @@ const MenExploreCollections = ({ sectionData }) => {
     return (
         <section className="py-2 md:py-10 bg-[#FDF6F2] select-none overflow-hidden">
             <div className="container mx-auto px-0 md:px-4 max-w-[1550px]">
-                
+
                 {/* Header */}
                 <div className="text-center mb-4 md:mb-6">
                     <h2 className="text-xl md:text-[28px] font-bold text-gray-900 tracking-tight uppercase" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -100,29 +100,29 @@ const MenExploreCollections = ({ sectionData }) => {
 
                 {/* Professional Dual-Banner Carousel */}
                 <div className="relative group/main">
-                    
-                    {/* Navigation Arrows - Sleeker style */}
-                    <button 
+
+                    {/* Navigation Arrows */}
+                    <button
                         onClick={() => scroll('left')}
                         className="absolute left-4 top-1/2 -translate-y-1/2 z-40 w-12 h-12 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-xl opacity-0 group-hover/main:opacity-100 transition-all hover:bg-white active:scale-90"
                     >
                         <ChevronLeft className="w-6 h-6 text-black" />
                     </button>
-                    <button 
+                    <button
                         onClick={() => scroll('right')}
                         className="absolute right-4 top-1/2 -translate-y-1/2 z-40 w-12 h-12 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-xl opacity-0 group-hover/main:opacity-100 transition-all hover:bg-white active:scale-90"
                     >
                         <ChevronRight className="w-6 h-6 text-black" />
                     </button>
 
-                    <div 
+                    <div
                         ref={scrollRef}
                         className="flex overflow-x-auto gap-4 md:gap-10 pb-10 md:pb-16 hide-scrollbar scroll-smooth snap-x snap-mandatory px-[7.5vw] md:px-12"
                     >
-                        {resolvedCollections.map((col, idx) => (
+                        {resolvedCollections.map((col) => (
                             <div key={col.id} className="flex-shrink-0 w-[85vw] md:w-[650px] lg:w-[700px] snap-center relative">
                                 {/* Main Banner Card */}
-                                <motion.div 
+                                <motion.div
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     whileInView={{ opacity: 1, scale: 1 }}
                                     viewport={{ once: true, margin: "-50px" }}
@@ -130,18 +130,18 @@ const MenExploreCollections = ({ sectionData }) => {
                                     onClick={() => navigate(col.link)}
                                     className="relative h-[200px] sm:h-[230px] md:h-[350px] rounded-[26px] md:rounded-[32px] overflow-hidden cursor-pointer shadow-2xl group/card border border-white/10"
                                 >
-                                    <img 
-                                        src={col.image} 
+                                    <img
+                                        src={col.image}
                                         alt={col.title}
+                                        loading="lazy"
+                                        decoding="async"
                                         className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover/card:scale-110"
                                     />
-                                    {/* Advanced Gradient Overlay */}
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-                                    
-                                    {/* Text Content - Professional Typography */}
+
                                     <div className="absolute inset-x-0 bottom-0 p-5 md:p-12 flex flex-col justify-end text-white">
-                                        <h3 
-                                            className="text-3xl md:text-7xl font-bold italic tracking-tighter mb-1" 
+                                        <h3
+                                            className="text-3xl md:text-7xl font-bold italic tracking-tighter mb-1"
                                             style={{ fontFamily: "'Cinzel', serif" }}
                                         >
                                             {col.title}
@@ -152,7 +152,7 @@ const MenExploreCollections = ({ sectionData }) => {
                                     </div>
                                 </motion.div>
 
-                                {/* Item Thumbnails - Floating Overlay */}
+                                {/* Item Thumbnails */}
                                 <div className="absolute -bottom-5 md:-bottom-8 left-1/2 -translate-x-1/2 md:left-12 md:translate-x-0 flex gap-2 md:gap-3 z-30">
                                     {col.items.map((img, i) => (
                                         <motion.div
@@ -163,7 +163,7 @@ const MenExploreCollections = ({ sectionData }) => {
                                             transition={{ duration: 0.4, delay: 0.5 + (i * 0.1) }}
                                             className="w-12 h-12 md:w-24 md:h-24 bg-white/95 backdrop-blur-sm rounded-[14px] md:rounded-[24px] shadow-xl border border-white/50 p-1.5 md:p-3 overflow-hidden flex items-center justify-center hover:-translate-y-2 transition-transform duration-300"
                                         >
-                                            <img src={img} alt="item" className="w-full h-full object-contain" />
+                                            <img src={img} alt="item" className="w-full h-full object-contain" loading="lazy" decoding="async" />
                                         </motion.div>
                                     ))}
                                 </div>
@@ -172,22 +172,8 @@ const MenExploreCollections = ({ sectionData }) => {
                     </div>
                 </div>
             </div>
-
-            <style>
-                {`
-                @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap');
-                .hide-scrollbar::-webkit-scrollbar {
-                    display: none;
-                }
-                .hide-scrollbar {
-                    -ms-overflow-style: none;
-                    scrollbar-width: none;
-                }
-                `}
-            </style>
         </section>
     );
 };
 
 export default MenExploreCollections;
-

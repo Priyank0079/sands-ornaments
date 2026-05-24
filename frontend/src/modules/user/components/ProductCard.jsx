@@ -32,7 +32,8 @@ const fallbackModelMap = {
     anklet: newAnklets
 };
 
-const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
+import { getProductPrice, getProductMRP, formatCurrency } from '../utils/price';
+import { getProductCardUrl } from '../../../utils/imageUtils';
 
 const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, loginSource = 'men' }) => {
     const { addToCart, addToWishlist, removeFromWishlist, wishlist } = useShop();
@@ -40,7 +41,6 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
     const navigate = useNavigate();
     const [flying, setFlying] = useState(false);
     const [flyingType, setFlyingType] = useState('cart'); // 'cart' or 'heart'
-    const currencyText = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
 
     const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
     const isWishlisted = safeWishlist.some(item => (item.id || item._id) === (product.id || product._id));
@@ -88,13 +88,9 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
     };
     const secondaryImage = resolveSecondaryImage();
 
-    const variantPrices = (product.variants || []).map(v => Number(v.price)).filter(v => !Number.isNaN(v) && v > 0);
-    const variantOriginalPrices = (product.variants || []).map(v => Number(v.mrp)).filter(v => !Number.isNaN(v) && v > 0);
-    const variantCount = (product.variants || []).length;
-    const fromPrice = variantPrices.length > 0 ? Math.min(...variantPrices) : Number(product.price || 0);
-    const fromOriginalPrice = variantOriginalPrices.length > 0 ? Math.max(...variantOriginalPrices) : Number(product.originalPrice || 0);
-    const effectivePrice = variantCount > 1 ? fromPrice : Number(product.price || 0);
-    const effectiveOriginalPrice = variantCount > 1 ? fromOriginalPrice : Number(product.originalPrice || 0);
+    // Use Centralized Price Logic
+    const effectivePrice = getProductPrice(product);
+    const effectiveOriginalPrice = getProductMRP(product);
 
     const reviewCount = Number(product.reviewCount ?? product.reviews ?? 0);
 
@@ -133,28 +129,7 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
 
     return (
         <>
-            <style>
-                {`
-                    @keyframes flyToCart {
-                        0% { top: 50%; left: 50%; transform: translate(-50%, -50%) scale(1); opacity: 1; border-radius: 20px; }
-                        50% { opacity: 0.8; transform: translate(-50%, -50%) scale(0.4); }
-                        100% { top: 30px; left: 92%; transform: translate(-50%, -50%) scale(0.1); opacity: 0; border-radius: 50%; }
-                    }
-                     @keyframes flyToHeart {
-                        0% { top: 50%; left: 50%; transform: translate(-50%, -50%) scale(1); opacity: 1; border-radius: 20px; }
-                        50% { opacity: 0.8; transform: translate(-50%, -50%) scale(0.4); }
-                        100% { top: 30px; left: 88%; transform: translate(-50%, -50%) scale(0.1); opacity: 0; border-radius: 50%; }
-                    }
-                    .animate-fly-cart {
-                        animation: flyToCart 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-                    }
-                    .animate-fly-heart {
-                        animation: flyToHeart 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-                    }
-                `}
-            </style>
-
-            {/* Flying Image Animation Element */}
+            {/* Flying Image Animation Element — keyframes are in index.css */}
             {flying && primaryImage && (
                 <img
                     src={primaryImage}
@@ -169,14 +144,18 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
                     {primaryImage ? (
                         <>
                             <img
-                                src={primaryImage}
+                                src={getProductCardUrl(primaryImage)}
                                 alt={product.name}
+                                loading="lazy"
+                                decoding="async"
                                 className="w-full h-full object-cover transition-transform duration-[1.5s] group-hover/card:scale-105"
                             />
                             {secondaryImage && (
                                 <img
-                                    src={secondaryImage}
+                                    src={getProductCardUrl(secondaryImage)}
                                     alt={`${product.name} detail`}
+                                    loading="lazy"
+                                    decoding="async"
                                     className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover/card:opacity-100 transition-opacity duration-[1.2s] ease-in-out"
                                 />
                             )}
@@ -187,11 +166,24 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
                         </div>
                     )}
 
-                    {(product.isTrending || product.tags?.isTrending) && (
-                        <div className="absolute top-0 left-0 bg-[#E89BA8] text-white text-[9px] font-bold px-2 py-1 z-10 uppercase tracking-widest">
-                            Bestseller
-                        </div>
-                    )}
+                    {/* Dynamic Urgency Badges */}
+                    <div className="absolute top-0 left-0 flex flex-col gap-1 z-10">
+                        {(product.isTrending || product.tags?.isTrending) && (
+                            <div className="bg-[#E89BA8] text-white text-[9px] font-black px-2 py-1 uppercase tracking-widest shadow-sm">
+                                Bestseller
+                            </div>
+                        )}
+                        {(product.tags?.isNewArrival || product.tags?.isNewLaunch) && (
+                            <div className="bg-emerald-500 text-white text-[9px] font-black px-2 py-1 uppercase tracking-widest shadow-sm">
+                                New Arrival
+                            </div>
+                        )}
+                        {product.tags?.isMostGifted && (
+                            <div className="bg-[#3E2723] text-white text-[9px] font-black px-2 py-1 uppercase tracking-widest shadow-sm">
+                                Most Gifted
+                            </div>
+                        )}
+                    </div>
 
                     <button
                         onClick={handleWishlist}
@@ -208,32 +200,36 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
                     </div>
                 </div>
 
-                <div className="flex flex-col h-[115px] px-0">
-                    <div className="flex items-baseline gap-2 mb-1">
-                        <span className="text-[15px] font-bold text-gray-900">{currencyText(effectivePrice)}</span>
+                <div className="flex flex-col items-center px-2 py-3">
+                    <div className="flex items-center justify-center gap-2 mb-1.5">
+                        <span className="text-[17px] font-extrabold text-gray-900 tracking-tight">
+                            {formatCurrency(effectivePrice)}
+                        </span>
                         {effectiveOriginalPrice > effectivePrice && (
-                            <span className="text-[12px] text-gray-400 line-through font-medium">{currencyText(effectiveOriginalPrice)}</span>
+                            <span className="text-[13px] text-gray-400 line-through font-medium opacity-70">
+                                {formatCurrency(effectiveOriginalPrice)}
+                            </span>
                         )}
                     </div>
                     
-                    <h3 className="text-[12px] text-gray-700 line-clamp-1 h-[18px] group-hover/card:text-black transition-colors uppercase tracking-tight font-medium overflow-hidden mb-1">
+                    <h3 className="text-[11px] text-gray-500 line-clamp-1 h-[16px] group-hover/card:text-black transition-colors uppercase tracking-[0.08em] font-medium overflow-hidden mb-2 text-center">
                         {product.name}
                     </h3>
 
-                    <div className="h-[15px] mb-2">
+                    <div className="h-[22px] mb-3 flex items-center justify-center">
                         {(product.priceDrop || (effectiveOriginalPrice > effectivePrice)) && (
-                            <p className="text-[9px] font-bold text-blue-600 uppercase tracking-wider">
+                            <span className="px-2.5 py-0.5 bg-blue-50 text-blue-600 text-[9px] font-black uppercase tracking-widest rounded-full border border-blue-100 shadow-sm">
                                 PRICE DROP!
-                            </p>
+                            </span>
                         )}
                     </div>
                     
-                    <div className="mt-auto">
+                    <div className="w-full">
                         <button 
                             onClick={handleAddToCart}
-                            className="w-full bg-[#FFD9E0] text-[#8E2B45] font-bold text-[11px] py-2.5 rounded-none hover:bg-[#ffc2cd] transition-all duration-300 uppercase tracking-widest"
+                            className="w-full bg-[#1A1A1A] text-white font-bold text-[11px] py-3 rounded-none hover:bg-black transition-all duration-300 uppercase tracking-[0.15em] active:scale-[0.98]"
                         >
-                            Add to Cart
+                            Shop Now
                         </button>
                     </div>
                 </div>

@@ -1,9 +1,12 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, Heart, ShoppingCart, User, Menu, X, ChevronDown } from 'lucide-react';
+import { Search, Heart, ShoppingCart, User, Menu, X, ChevronDown, Plus } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
 import logo from '@assets/SANDS JEWELS PINK (1).png';
+import api from '../../../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getProductPrice, formatCurrency } from '../utils/price';
+import { getSearchThumbUrl } from '../../../utils/imageUtils';
 
 const Navbar = () => {
     const {
@@ -19,6 +22,9 @@ const Navbar = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [showResults, setShowResults] = useState(false);
     const [placeholderIdx, setPlaceholderIdx] = useState(0);
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -31,7 +37,7 @@ const Navbar = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    // Sync the header toggle state with the current route/query, same as CategoryNav.
+    // Sync the header toggle state with the current route/query
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const metalParam = String(params.get('metal') || '').trim().toLowerCase();
@@ -66,10 +72,33 @@ const Navbar = () => {
         return () => clearInterval(interval);
     }, [placeholders]);
 
+    // Predictive Search Logic
+    useEffect(() => {
+        const fetchResults = async () => {
+            if (searchTerm.trim().length < 2) {
+                setSearchResults([]);
+                return;
+            }
+            setIsSearching(true);
+            try {
+                const response = await api.get(`/public/products?search=${searchTerm}&limit=6`);
+                setSearchResults(response.data.products || []);
+            } catch (err) {
+                console.error("Search failed:", err);
+            } finally {
+                setIsSearching(false);
+            }
+        };
+
+        const timer = setTimeout(fetchResults, 300);
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
+
     const submitSearch = useCallback(() => {
         const query = searchTerm.trim();
         if (query) {
             navigate(`/shop?search=${encodeURIComponent(query)}`);
+            setShowResults(false);
         }
     }, [searchTerm, navigate]);
 
@@ -81,12 +110,8 @@ const Navbar = () => {
     };
 
     return (
-        <nav className={`w-full bg-white transition-all duration-300 z-[100] font-lato ${isScrolled ? 'shadow-sm' : 'border-b border-gray-100'}`}>
-            <style>
-                @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap');
-                .font-lato {'{'} font-family: 'Lato', sans-serif; {'}'}
-            </style>
-
+        <nav className={`w-full bg-[#FFF0F4] transition-all duration-300 z-[100] font-lato ${isScrolled ? 'shadow-sm' : 'border-b border-pink-100'}`}>
+    
             {/* Desktop Header */}
             <div className="hidden lg:block">
                 <div className="container mx-auto px-4 lg:px-12 py-3 flex items-center justify-between gap-10">
@@ -101,10 +126,9 @@ const Navbar = () => {
                             />
                         </Link>
 
-                        {/* Delivery Box - Exact SANDS Style */}
                         <div
                             onClick={() => setIsPincodeModalOpen(true)}
-                            className="flex items-center gap-3 px-3 py-2 border border-[#FFF0F4] rounded-lg cursor-pointer bg-white hover:border-pink-200 transition-all"
+                            className="flex items-center gap-3 px-3 py-2 border border-pink-100 rounded-lg cursor-pointer bg-white hover:border-pink-200 transition-all"
                         >
                             <div className="flex-shrink-0">
                                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-pink-400">
@@ -126,14 +150,19 @@ const Navbar = () => {
                         </div>
                     </div>
 
-                    {/* Middle Section: Wide Search Bar */}
+                    {/* Middle Section: Wide Search Bar with Dropdown */}
                     <div className="flex-1 max-w-3xl relative">
                         <input
                             type="text"
                             placeholder={placeholders[placeholderIdx]}
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value);
+                                setShowResults(true);
+                            }}
                             onKeyDown={handleSearchKeyDown}
+                            onBlur={() => setTimeout(() => setShowResults(false), 200)}
+                            onFocus={() => setShowResults(true)}
                             className="w-full bg-white border border-gray-300 rounded-md py-3 px-6 pr-12 text-[15px] focus:outline-none focus:border-gray-400 transition-all text-gray-950 placeholder-gray-600 font-medium"
                         />
                         <button
@@ -142,9 +171,72 @@ const Navbar = () => {
                         >
                             <Search className="w-5 h-5 stroke-[2]" />
                         </button>
+
+                        {/* Search Results Dropdown */}
+                        <AnimatePresence>
+                            {showResults && (searchTerm.length >= 2) && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 10 }}
+                                    className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-100 rounded-xl shadow-2xl z-[200] overflow-hidden"
+                                >
+                                    {isSearching ? (
+                                        <div className="p-8 text-center">
+                                            <div className="w-6 h-6 border-2 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Searching...</span>
+                                        </div>
+                                    ) : searchResults.length > 0 ? (
+                                        <div className="p-2">
+                                            <div className="px-4 py-2 mb-1">
+                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-[0.2em]">Suggested Products</span>
+                                            </div>
+                                            <div className="grid grid-cols-1 gap-1">
+                                                {searchResults.map((product) => (
+                                                    <div
+                                                        key={product._id}
+                                                        onClick={() => {
+                                                            navigate(`/product/${product._id}`);
+                                                            setSearchTerm('');
+                                                            setShowResults(false);
+                                                        }}
+                                                        className="flex items-center gap-4 p-3 hover:bg-pink-50/50 rounded-lg cursor-pointer transition-colors group"
+                                                    >
+                                                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-50 flex-shrink-0">
+                                                            <img 
+                                                                src={getSearchThumbUrl(product.images?.[0] || product.primaryImage)} 
+                                                                alt={product.name} 
+                                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                                                            />
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <h4 className="text-[11px] font-bold text-gray-900 uppercase tracking-widest line-clamp-1">{product.name}</h4>
+                                                            <div className="flex items-center gap-2 mt-0.5">
+                                                                <span className="text-[10px] font-black text-pink-600">{formatCurrency(getProductPrice(product))}</span>
+                                                                <span className="text-[9px] font-medium text-gray-400">{product.category?.name || product.category}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <button
+                                                onClick={submitSearch}
+                                                className="w-full mt-2 py-3 bg-gray-50 text-[10px] font-bold text-gray-500 uppercase tracking-widest hover:bg-pink-50 hover:text-pink-600 transition-colors border-t border-gray-100"
+                                            >
+                                                View all results for "{searchTerm}"
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="p-8 text-center">
+                                            <p className="text-sm font-medium text-gray-400 italic">No products found for "{searchTerm}"</p>
+                                        </div>
+                                    )}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
 
-                    {/* Right Section: Icons with precise SANDS labels */}
+                    {/* Right Section: Icons */}
                     <div className="flex items-center gap-10 flex-shrink-0">
                         <Link to={user ? "/profile" : "/login"} className="flex flex-col items-center gap-1.5 group">
                             <User className="w-7 h-7 text-gray-950" strokeWidth={1.5} />
@@ -174,15 +266,18 @@ const Navbar = () => {
                 </div>
             </div>
 
-            {/* Mobile Header - Same refinement */}
-            <div className="lg:hidden flex items-center justify-between px-4 py-1.5 border-b border-gray-100">
+            {/* Mobile Header */}
+            <div className="lg:hidden flex items-center justify-between px-4 py-1.5 border-b border-pink-100">
                 <button onClick={() => setIsMenuOpen(true)} className="p-1">
                     <Menu className="w-7 h-7 text-gray-800" />
                 </button>
                 <Link to="/">
                     <img src={logo} alt="Sands Jewels" className="h-[72px] w-auto object-contain" />
                 </Link>
-                <div className="flex items-center gap-5">
+                <div className="flex items-center gap-4 sm:gap-5">
+                    <Link to={user ? "/profile" : "/login"} className="relative">
+                        <User className="w-6 h-6 text-gray-800" />
+                    </Link>
                     <Link to="/wishlist" className="relative">
                         <Heart className="w-6 h-6 text-gray-800" />
                     </Link>
@@ -212,14 +307,14 @@ const Navbar = () => {
                                     <X className="w-7 h-7 text-gray-500" />
                                 </button>
                             </div>
-                            <div className="flex bg-gray-50 p-1 rounded-full border border-[#D4B390]/30 mb-6">
+                            <div className="flex bg-gray-100 p-1 rounded-full mb-6">
                                 <button
                                     onClick={() => {
                                         updateActiveMetal('silver');
                                         navigate('/');
                                         setIsMenuOpen(false);
                                     }}
-                                    className={`flex-1 py-1.5 px-4 rounded-full text-sm font-bold transition-all duration-500 ${activeMetal === 'silver' ? 'bg-gradient-to-r from-[#707070] via-[#E0E0E0] to-[#707070] text-white shadow-md' : 'text-gray-700'}`}
+                                    className={`flex-1 py-2 px-4 rounded-full text-[15px] font-bold transition-all duration-300 ${activeMetal === 'silver' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                                 >
                                     Silver
                                 </button>
@@ -229,7 +324,7 @@ const Navbar = () => {
                                         navigate('/gold-collection');
                                         setIsMenuOpen(false);
                                     }}
-                                    className={`flex-1 py-1.5 px-4 rounded-full text-sm font-bold transition-all duration-500 ${activeMetal === 'gold' ? 'bg-gradient-to-r from-[#C9A24D] via-[#E2C074] to-[#C9A24D] text-white shadow-md' : 'text-gray-700'}`}
+                                    className={`flex-1 py-2 px-4 rounded-full text-[15px] font-bold transition-all duration-300 ${activeMetal === 'gold' ? 'bg-white text-[#C9A24D] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                                 >
                                     Gold
                                 </button>
@@ -268,4 +363,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-

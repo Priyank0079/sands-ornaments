@@ -7,16 +7,18 @@ const orderSchema = new mongoose.Schema({
   customerEmail: String,
   customerPhone: String,
   items: [{
-    productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
-    variantId: mongoose.Schema.Types.ObjectId,
+    productId: { type: mongoose.Schema.Types.Mixed, ref: "Product" },
+    variantId: mongoose.Schema.Types.Mixed,
     name: String,
     sku: String,
     image: String,
     price: Number,
     mrp: Number,
     quantity: Number,
-    sellerId: { type: mongoose.Schema.Types.ObjectId, ref: "Seller", default: null },
-    voidTagId: String
+    sellerId: { type: mongoose.Schema.Types.Mixed, ref: "Seller", default: null },
+    voidTagId: String,
+    isGiftCard: { type: Boolean, default: false },
+    personalization: { type: mongoose.Schema.Types.Mixed }
   }],
   shippingAddress: {
     firstName: String, lastName: String, email: String, phone: String,
@@ -32,6 +34,14 @@ const orderSchema = new mongoose.Schema({
   discount: Number,
   shipping: Number,
   total: { type: Number, required: true },
+  // Gift card redemption — persisted for order history & admin audit
+  giftCardDiscount: { type: Number, default: 0 },
+  appliedGiftCards: [{
+    cardId:     { type: mongoose.Schema.Types.Mixed, default: null },
+    code:       { type: String, default: "" },
+    amountUsed: { type: Number, default: 0 },
+    _id:        false
+  }],
   status: {
     type: String,
     enum: ["Pending", "Processing", "Confirmed", "Packed", "Partially Shipped", "Shipped", "Out for Delivery", "Delivered", "Cancelled", "Return Requested", "Returned"],

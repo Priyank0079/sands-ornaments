@@ -33,7 +33,7 @@ const analyticsEventSchema = new mongoose.Schema({
     label: String,
     value: mongoose.Schema.Types.Mixed
   },
-  timestamp: { type: Date, default: Date.now, index: true }
+  timestamp: { type: Date, default: Date.now }
 }, { timestamps: true });
 
 // TTL Index: Auto-delete raw events after 90 days to keep DB healthy

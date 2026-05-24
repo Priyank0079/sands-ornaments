@@ -78,6 +78,8 @@ const PremiumCategoryCards = () => {
                                 <img
                                     src={item.image}
                                     alt={item.title}
+                                    loading="lazy"
+                                    decoding="async"
                                     className={`h-full w-auto object-contain drop-shadow-[10px_15px_30px_rgba(0,0,0,0.2)] transition-all duration-700 ${item.layout === 'left' ? 'translate-x-[5%] group-hover:translate-x-[8%]' : 'scale-x-[-1] -translate-x-[5%] group-hover:-translate-x-[8%]'}`}
                                 />
                             </div>

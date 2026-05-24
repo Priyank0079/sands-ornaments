@@ -1,7 +1,5 @@
 const router = require("express").Router();
 const {
-  otpLimiter,
-  verifyOtpLimiter,
   sellerLoginLimiter,
   sellerRegisterLimiter,
   sellerResetOtpLimiter,
@@ -13,8 +11,8 @@ const sellerAuth = require("../controllers/sellerAuth.controller");
 const { sellerUpload } = require("../../../middlewares/uploadMiddleware");
 
 // User auth
-router.post("/send-otp",    otpLimiter,       userAuth.sendOtp);
-router.post("/verify-otp",  verifyOtpLimiter, userAuth.verifyOtp);
+router.post("/send-otp",    userAuth.sendOtp);
+router.post("/verify-otp",  userAuth.verifyOtp);
 router.get("/me",           require("../../../middlewares/authenticate"), userAuth.getMe);
 router.post("/logout",      userAuth.logout);
 

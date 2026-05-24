@@ -301,21 +301,21 @@ const SellerDashboard = () => {
                     
                     <div className="space-y-4">
                         {visitorInsights.slice(0, 5).map((insight, idx) => (
-                            <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100/50">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-[10px] font-black text-[#3E2723]">
-                                        0{idx + 1}
+                            <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100/50 gap-4">
+                                <div className="flex items-center gap-4 flex-1 min-w-0">
+                                    <div className="w-10 h-10 shrink-0 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-xs font-semibold text-gray-600 shadow-sm">
+                                        {idx + 1}
                                     </div>
-                                    <span className="text-[10px] font-black text-gray-900 uppercase truncate max-w-[200px]">{insight.name}</span>
+                                    <span className="text-sm font-medium text-gray-800 truncate">{insight.name}</span>
                                 </div>
-                                <div className="flex items-center gap-6">
-                                    <div className="text-right">
-                                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Views</p>
-                                        <p className="text-xs font-black text-gray-900">{insight.views}</p>
+                                <div className="flex items-center gap-6 sm:justify-end shrink-0 pl-14 sm:pl-0">
+                                    <div className="text-left sm:text-right">
+                                        <p className="text-[10px] font-medium text-gray-500 uppercase tracking-widest mb-0.5">Views</p>
+                                        <p className="text-sm font-bold text-gray-900">{insight.views}</p>
                                     </div>
-                                    <div className="text-right">
-                                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Carts</p>
-                                        <p className="text-xs font-black text-[#8D6E63]">{insight.carts}</p>
+                                    <div className="text-left sm:text-right">
+                                        <p className="text-[10px] font-medium text-gray-500 uppercase tracking-widest mb-0.5">Carts</p>
+                                        <p className="text-sm font-bold text-[#8D6E63]">{insight.carts}</p>
                                     </div>
                                 </div>
                             </div>

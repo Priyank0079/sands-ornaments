@@ -1,6 +1,7 @@
 const Order = require("../../../models/Order");
 const { success, error } = require("../../../utils/apiResponse");
 const mongoose = require("mongoose");
+const { emitOrderStatusUpdate } = require("../../../services/socketEmitter");
 
 const ALLOWED_TRANSITIONS = {
   Pending: [],
@@ -83,7 +84,8 @@ exports.getOrders = async (req, res) => {
       .populate("userId", "name email phone")
       .sort({ createdAt: -1 })
       .limit(parsedLimit)
-      .skip((parsedPage - 1) * parsedLimit);
+      .skip((parsedPage - 1) * parsedLimit)
+      .lean();
 
     const total = await Order.countDocuments(query);
 
@@ -106,7 +108,8 @@ exports.getOrderDetail = async (req, res) => {
     }
     const order = await Order.findById(req.params.id)
       .populate("userId", "name email phone")
-      .populate("items.productId", "name images variants");
+      .populate("items.productId", "name images variants")
+      .lean();
     if (!order) return error(res, "Order not found", 404);
     return success(res, { order }, "Order details retrieved");
   } catch (err) { return error(res, err.message); }
@@ -185,6 +188,11 @@ exports.updateOrderStatus = async (req, res) => {
     const refreshed = await Order.findById(order._id)
       .populate("userId", "name email phone")
       .populate("items.productId", "name images variants");
+
+    // ── Realtime: notify the customer of their order status change (best-effort) ──
+    if (!isSameStatusUpdate) {
+      try { emitOrderStatusUpdate(order); } catch (e) { /* non-blocking */ }
+    }
 
     return success(
       res,

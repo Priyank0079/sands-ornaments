@@ -1,15 +1,60 @@
-import React, { useMemo, useState, useEffect } from 'react';
+
+
+import React, { useMemo, useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Helmet } from 'react-helmet-async';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useShop } from '../../../context/ShopContext';
 import { useAuth } from '../../../context/AuthContext';
 import api from '../../../services/api';
 import toast from 'react-hot-toast';
 import ProductCard from '../components/ProductCard';
+import { getProductDetailUrl, getProductCardUrl, getProductThumbUrl } from '../../../utils/imageUtils';
 
-import { Heart, ShoppingBag, Star, Share2, Plus, Minus, Truck, ShieldCheck, Smile, Gift, ChevronDown, SlidersHorizontal, X, Camera, Check, ArrowLeft, ArrowRight, Droplets, Sparkles, Play, Globe, Zap, Users } from 'lucide-react';
+import {
+    Heart,
+    ShoppingBag,
+    Star,
+    Share2,
+    Plus,
+    Minus,
+    Truck,
+    ShieldCheck,
+    Smile,
+    Gift,
+    ChevronDown,
+    ChevronLeft,
+    ChevronRight,
+    SlidersHorizontal,
+    X,
+    Camera,
+    Check,
+    ArrowLeft,
+    ArrowRight,
+    Droplets,
+    Sparkles,
+    Play,
+    Globe,
+    Zap,
+    Users,
+    Ruler,
+    ExternalLink,
+    RotateCcw,
+    Lock,
+    Layers,
+    Scale,
+    Box,
+    Maximize2,
+    ZoomIn,
+    ZoomOut,
+    RefreshCw,
+    Loader2
+} from 'lucide-react';
 // Product video is backend-driven (optional) via `product.videoUrl`.
 import { useAnalytics } from '../../../hooks/useAnalytics';
 import Loader from '../../shared/components/Loader';
+import { getProductPrice, getProductMRP, formatCurrency } from '../utils/price';
+import RecentlyViewed from '../components/RecentlyViewed';
 
 // Import model shots (angle 2) for maximum hover impact
 import latestRing from '@assets/latest_drop_ring.png';
@@ -28,6 +73,183 @@ const fallbackModelMap = {
 };
 
 const isImageMedia = (src = '') => /\.(png|jpe?g|webp|gif|avif|svg)(\?.*)?$/i.test(String(src));
+
+const ImageLightbox = ({ images, currentIndex, isOpen, onClose, onPrev, onNext }) => {
+    const [zoom, setZoom] = useState(1);
+    const [dragConstraints, setDragConstraints] = useState({ left: 0, right: 0, top: 0, bottom: 0 });
+    const [isLoading, setIsLoading] = useState(true);
+    const containerRef = useRef(null);
+
+    // Reset zoom and loading state when image changes
+    useEffect(() => {
+        setZoom(1);
+        setIsLoading(true);
+    }, [currentIndex]);
+
+    const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.5, 4));
+    const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.5, 1));
+    const handleReset = () => setZoom(1);
+
+    if (!isOpen) return null;
+
+    return (
+        <AnimatePresence>
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-xl touch-none"
+                onClick={onClose}
+            >
+                {/* Close Button */}
+                <button
+                    onClick={onClose}
+                    className="absolute top-6 right-6 z-[110] p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all border border-white/10 backdrop-blur"
+                >
+                    <X className="w-6 h-6" />
+                </button>
+
+                {/* Main Image Container */}
+                <div
+                    ref={containerRef}
+                    className="relative w-full h-full flex items-center justify-center overflow-hidden"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {/* Placeholder (Low-res blurred) */}
+                    <motion.img
+                        key={`placeholder-${currentIndex}`}
+                        src={images[currentIndex]}
+                        className="absolute inset-0 w-full h-full object-contain blur-2xl opacity-30 scale-110 pointer-events-none"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 0.3 }}
+                    />
+
+                    {/* Loading Spinner */}
+                    {isLoading && (
+                        <div className="absolute inset-0 flex items-center justify-center z-10">
+                            <Loader2 className="w-10 h-10 text-white/40 animate-spin" />
+                        </div>
+                    )}
+
+                    {/* High-res Image */}
+                    <motion.div
+                        className="w-full h-full flex items-center justify-center"
+                        style={{ scale: zoom }}
+                        drag={zoom > 1}
+                        dragConstraints={containerRef}
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{
+                            scale: zoom,
+                            opacity: isLoading ? 0 : 1,
+                            transition: { duration: 0.4, ease: "easeOut" }
+                        }}
+                    >
+                        <img
+                            src={images[currentIndex]}
+                            alt="Product view"
+                            className="max-w-[90%] max-h-[90vh] object-contain select-none shadow-2xl"
+                            onLoad={() => setIsLoading(false)}
+                            draggable={false}
+                        />
+                    </motion.div>
+
+                    {/* Navigation Buttons (Desktop) */}
+                    <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none">
+                        <button
+                            onClick={onPrev}
+                            className="p-4 rounded-full bg-black/40 hover:bg-black/60 text-white transition-all backdrop-blur-md pointer-events-auto border border-white/10 group"
+                        >
+                            <ChevronLeft className="w-8 h-8 group-hover:-translate-x-1 transition-transform" />
+                        </button>
+                        <button
+                            onClick={() => onNext()}
+                            className="p-4 rounded-full bg-black/40 hover:bg-black/60 text-white transition-all backdrop-blur-md pointer-events-auto border border-white/10 group"
+                        >
+                            <ChevronRight className="w-8 h-8 group-hover:translate-x-1 transition-transform" />
+                        </button>
+                    </div>
+
+                    {/* Zoom Controls */}
+                    <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-4 p-2 bg-black/40 backdrop-blur-xl rounded-2xl border border-white/10 z-[120]">
+                        <button onClick={handleZoomOut} className="p-3 text-white/80 hover:text-white transition-colors hover:bg-white/10 rounded-xl"><ZoomOut className="w-5 h-5" /></button>
+                        <div className="w-[1px] h-4 bg-white/20" />
+                        <button onClick={handleReset} className="px-4 py-2 text-xs font-bold text-white/80 hover:text-white transition-colors flex items-center gap-2 hover:bg-white/10 rounded-xl uppercase tracking-widest">
+                            <RefreshCw className="w-4 h-4" /> {Math.round(zoom * 100)}%
+                        </button>
+                        <div className="w-[1px] h-4 bg-white/20" />
+                        <button onClick={handleZoomIn} className="p-3 text-white/80 hover:text-white transition-colors hover:bg-white/10 rounded-xl"><ZoomIn className="w-5 h-5" /></button>
+                    </div>
+                </div>
+
+                {/* Thumbnails Row */}
+                <div className="absolute bottom-32 left-0 right-0 flex justify-center gap-3 px-4 z-[120]">
+                    {images.map((img, idx) => (
+                        <button
+                            key={idx}
+                            onClick={() => onNext(idx)}
+                            className={`relative w-14 h-14 rounded-lg overflow-hidden border-2 transition-all shadow-lg ${currentIndex === idx ? 'border-[#D39A9F] scale-110 shadow-[#D39A9F]/20' : 'border-white/10 opacity-50 hover:opacity-100 hover:border-white/40'}`}
+                        >
+                            <img src={img} loading="lazy" decoding="async" className="w-full h-full object-cover" />
+                        </button>
+                    ))}
+                </div>
+            </motion.div>
+        </AnimatePresence>
+    );
+};
+
+
+
+const useDragScroll = () => {
+    const ref = useRef(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const [startX, setStartX] = useState(0);
+    const [startY, setStartY] = useState(0);
+    const [scrollLeft, setScrollLeft] = useState(0);
+    const [scrollTop, setScrollTop] = useState(0);
+
+    const onMouseDown = (e) => {
+        if (!ref.current) return;
+        // Don't drag if clicking a button or input
+        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+
+        setIsDragging(true);
+        setStartX(e.pageX - ref.current.offsetLeft);
+        setStartY(e.pageY - ref.current.offsetTop);
+        setScrollLeft(ref.current.scrollLeft);
+        setScrollTop(ref.current.scrollTop);
+    };
+
+    const onMouseLeave = () => {
+        setIsDragging(false);
+    };
+
+    const onMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    const onMouseMove = (e) => {
+        if (!isDragging || !ref.current) return;
+        e.preventDefault();
+        const x = e.pageX - ref.current.offsetLeft;
+        const y = e.pageY - ref.current.offsetTop;
+        const walkX = (x - startX) * 1.5; // Scroll speed
+        const walkY = (y - startY) * 1.5;
+        ref.current.scrollLeft = scrollLeft - walkX;
+        ref.current.scrollTop = scrollTop - walkY;
+    };
+
+    return {
+        ref,
+        events: {
+            onMouseDown,
+            onMouseLeave,
+            onMouseUp,
+            onMouseMove,
+        },
+        isDragging
+    };
+};
 
 const AccordionItem = ({ title, children, isOpen, onClick }) => (
     <div className="border-b border-[#EBCDD0]/50">
@@ -135,6 +357,27 @@ const ProductDetails = () => {
         loadReviews();
     }, [product?.id, product?._id]);
 
+    useEffect(() => {
+        const fetchRelated = async () => {
+            if (!product?.relatedProducts || product.relatedProducts.length === 0) {
+                setRelatedProducts([]);
+                return;
+            }
+            setIsRelatedLoading(true);
+            try {
+                const res = await api.get('public/products/by-ids', {
+                    params: { ids: product.relatedProducts.join(',') }
+                });
+                setRelatedProducts(res.data?.data?.products || []);
+            } catch (err) {
+                console.error("Failed to load related products", err);
+            } finally {
+                setIsRelatedLoading(false);
+            }
+        };
+        fetchRelated();
+    }, [product?.relatedProducts]);
+
     // State for Animations
     const [flying, setFlying] = useState(false);
     const [flyingType, setFlyingType] = useState('cart');
@@ -147,14 +390,24 @@ const ProductDetails = () => {
     // State for Reviews
     const [isWriteReviewOpen, setIsWriteReviewOpen] = useState(false);
     const [reviewStep, setReviewStep] = useState(1);
+    const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
     const [isReviewFilterOpen, setIsReviewFilterOpen] = useState(false);
     const [sortBy, setSortBy] = useState('Featured');
     const [rating, setRating] = useState(0);
 
     const [reviews, setReviews] = useState([]);
+    const [relatedProducts, setRelatedProducts] = useState([]);
+    const [isRelatedLoading, setIsRelatedLoading] = useState(false);
     const [reviewTitle, setReviewTitle] = useState('');
     const [reviewComment, setReviewComment] = useState('');
     const [isLabGrownModalOpen, setIsLabGrownModalOpen] = useState(false);
+    const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+    const [lightboxIndex, setLightboxIndex] = useState(0);
+
+    const thumbScroll = useDragScroll();
+    const detailsScroll = useDragScroll();
+    const tableScroll = useDragScroll();
+
     const sortedReviews = useMemo(() => {
         const parseReviewDate = (value) => {
             if (!value) return 0;
@@ -207,12 +460,12 @@ const ProductDetails = () => {
 
     // Image Gallery State
     const [selectedImage, setSelectedImage] = useState(null);
-    const [selectedVariantId, setSelectedVariantId] = useState(null);
+    const [selectedVariantId, setSelectedVariantId] = useState('');
 
     useEffect(() => {
         if (product) {
             const firstVariant = product.variants?.[0];
-            setSelectedVariantId(firstVariant?.id || firstVariant?._id || null);
+            setSelectedVariantId(firstVariant?.id || firstVariant?._id || '');
             // Defer image selection to the unified galleryImages logic below (variant images > product images).
             setSelectedImage(null);
         }
@@ -228,8 +481,8 @@ const ProductDetails = () => {
     }, [product]);
 
     const selectedVariant = product?.variants?.find(v => String(v.id || v._id) === String(selectedVariantId)) || product?.variants?.[0];
-    const variantPrice = selectedVariant?.price ?? product?.price;
-    const variantMrp = selectedVariant?.mrp ?? product?.originalPrice;
+    const variantPrice = selectedVariant?.price ?? getProductPrice(product);
+    const variantMrp = selectedVariant?.mrp ?? getProductMRP(product);
     const variantDiscount = variantMrp > variantPrice ? Math.round(((variantMrp - variantPrice) / variantMrp) * 100) : 0;
     const selectedVariantStock = Number(selectedVariant?.stock);
     const availableStock = Number.isFinite(selectedVariantStock) ? Math.max(0, selectedVariantStock) : null;
@@ -288,21 +541,28 @@ const ProductDetails = () => {
     const averageRating = Number(product?.rating || 0);
     const hasReviews = reviewCount > 0 && averageRating > 0;
 
+    const resolvedHiddenCharge = Number(selectedVariant?.hiddenCharge ?? (
+        Number(selectedVariant?.hallmarkingCharge || 0) +
+        Number(selectedVariant?.diamondCertificateCharge || 0) +
+        Number(selectedVariant?.additionalCharge || 0)
+    ));
+    const resolvedPgCharge = Number(selectedVariant?.pgChargeAmount || 0);
     const pricingBreakdown = {
-        metalPrice: selectedVariant?.metalPrice ?? 0,
-        makingCharge: selectedVariant?.makingCharge ?? 0,
-        diamondPrice: selectedVariant?.diamondPrice ?? 0,
-        gst: selectedVariant?.gst ?? 0,
-        finalPrice: selectedVariant?.finalPrice ?? variantPrice ?? 0
+        metalPrice: Number(selectedVariant?.metalPrice || 0),
+        makingCharge: Number(selectedVariant?.makingCharge || 0) + resolvedHiddenCharge + resolvedPgCharge,
+        diamondPrice: Number(selectedVariant?.diamondPrice || 0),
+        gst: Number(selectedVariant?.gst ?? selectedVariant?.gstAmount ?? 0),
+        finalPrice: Number(selectedVariant?.finalPrice ?? variantPrice ?? 0)
     };
     const selectedVariantWeight = selectedVariant?.weight ?? product?.weight ?? 0;
     const selectedVariantWeightUnit = selectedVariant?.weightUnit || product?.weightUnit || '';
-    const pricingSubtotal = Number(pricingBreakdown.metalPrice || 0) + Number(pricingBreakdown.makingCharge || 0) + Number(pricingBreakdown.diamondPrice || 0);
+    const pricingSubtotal = Number(selectedVariant?.subtotalBeforeTax || 0)
+        || (Number(pricingBreakdown.metalPrice || 0) + Number(pricingBreakdown.makingCharge || 0) + Number(pricingBreakdown.diamondPrice || 0) - resolvedPgCharge);
     const gstPercent = pricingSubtotal > 0 ? Math.round((Number(pricingBreakdown.gst || 0) / pricingSubtotal) * 10000) / 100 : 0;
     const supplierName = product?.sellerId?.shopName || product?.supplierInfo || product?.brand || '';
 
-    const currencyText = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
-    const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
+    // Local currencyText removed
+    // Using imported formatCurrency
 
     // State for Size Selection
 
@@ -345,6 +605,33 @@ const ProductDetails = () => {
         }
     };
 
+    useEffect(() => {
+        if (product && product.id) {
+            const recentlyViewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+            const filtered = recentlyViewed.filter(item => item.id !== product.id && item.id !== product._id);
+            const updated = [{
+                id: product.id || product._id,
+                name: product.name,
+                price: variantPrice,
+                image: primaryImage || (product.images?.[0])
+            }, ...filtered].slice(0, 10);
+            localStorage.setItem('recentlyViewed', JSON.stringify(updated));
+        }
+    }, [product, variantPrice, primaryImage]);
+
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (!isLightboxOpen) return;
+            if (e.key === 'Escape') setIsLightboxOpen(false);
+            if (e.key === 'ArrowRight') handleLightboxNext();
+            if (e.key === 'ArrowLeft') handleLightboxPrev();
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isLightboxOpen, galleryImages.length]);
+
+    // Note: Gallery image preloading removed — browser native lazy loading handles
+    // this more efficiently on mobile without saturating bandwidth on load.
 
     if (isLoading || detailLoading) {
         return <Loader />;
@@ -371,7 +658,16 @@ const ProductDetails = () => {
     const isWishlisted = safeWishlist.some(item => item.id === product?.id);
 
     const currentVariant = selectedVariant || product?.variants?.[0] || {};
-    const hasDiamonds = !!(product?.diamondWeight || product?.diamondCount || currentVariant?.diamondWeight || currentVariant?.diamondCount || Number(currentVariant?.diamondPrice || 0) > 0);
+    const dSpecs = currentVariant?.diamondSpecs || {};
+    const hasDiamonds = !!(
+        product?.diamondWeight ||
+        product?.diamondCount ||
+        currentVariant?.diamondWeight ||
+        currentVariant?.diamondCount ||
+        dSpecs?.carat ||
+        dSpecs?.diamondCount ||
+        Number(currentVariant?.diamondPrice || 0) > 0
+    );
     const diamondType = product?.diamondType || currentVariant?.diamondType || (hasDiamonds ? 'Natural' : 'None');
     const isLabGrown = String(diamondType).toLowerCase().includes('lab_grown');
 
@@ -379,8 +675,38 @@ const ProductDetails = () => {
         setOpenSection(openSection === section ? null : section);
     };
 
+    // Lightbox Handlers
+    const openLightbox = (image) => {
+        const index = galleryImages.findIndex(img => img === image);
+        setLightboxIndex(index >= 0 ? index : 0);
+        setIsLightboxOpen(true);
+    };
+
+    const handleLightboxNext = (index) => {
+        if (typeof index === 'number') {
+            setLightboxIndex(index);
+        } else {
+            setLightboxIndex((prev) => (prev + 1) % galleryImages.length);
+        }
+    };
+
+    const handleLightboxPrev = () => {
+        setLightboxIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
+    };
+
+
+
     return (
         <div className="bg-white min-h-screen py-8 pb-24 md:pb-8 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out fill-mode-both selection:bg-[#D39A9F] selection:text-white">
+            <Helmet>
+                <title>{product.name} | Sands Ornaments</title>
+                <meta name="description" content={product.description?.replace(/<[^>]*>?/gm, '').slice(0, 160) || `Buy ${product.name} at Sands Ornaments.`} />
+                <meta property="og:title" content={`${product.name} | Sands Ornaments`} />
+                <meta property="og:description" content={`Exclusive ${product.category?.name || 'jewellery'} piece starting at ${formatCurrency(variantPrice)}.`} />
+                <meta property="og:image" content={primaryImage} />
+                <meta property="og:url" content={window.location.href} />
+                <meta property="og:type" content="product" />
+            </Helmet>
             {/* Back Button */}
             <div className="container mx-auto px-4 md:px-6 mb-6 md:mb-10 pt-2 lg:pt-4">
                 <button
@@ -393,30 +719,9 @@ const ProductDetails = () => {
                     <span>Go Back</span>
                 </button>
             </div>
-            <style>
-                {`
-                    @keyframes flyToCart {
-                        0% { top: 50%; left: 50%; transform: translate(-50%, -50%) scale(1); opacity: 1; border-radius: 20px; }
-                        50% { opacity: 0.8; transform: translate(-50%, -50%) scale(0.4); }
-                        100% { top: 30px; left: 92%; transform: translate(-50%, -50%) scale(0.1); opacity: 0; border-radius: 50%; }
-                    }
-                     @keyframes flyToHeart {
-                        0% { top: 50%; left: 50%; transform: translate(-50%, -50%) scale(1); opacity: 1; border-radius: 20px; }
-                        50% { opacity: 0.8; transform: translate(-50%, -50%) scale(0.4); }
-                        100% { top: 30px; left: 88%; transform: translate(-50%, -50%) scale(0.1); opacity: 0; border-radius: 50%; }
-                    }
-                    .animate-fly-cart {
-                        animation: flyToCart 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-                    }
-                    .animate-fly-heart {
-                        animation: flyToHeart 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-                    }
-                `}
-            </style>
 
 
-
-            {/* Flying Image Animation Element */}
+            {/* Flying Image Animation Element — keyframes in index.css */}
             {flying && primaryImage && (
                 <img
                     src={primaryImage}
@@ -434,7 +739,7 @@ const ProductDetails = () => {
                         <div className="flex flex-col items-start px-6 border-r border-gray-100">
                             <span className="text-[9px] text-gray-400 font-medium uppercase tracking-widest mb-0.5">Price</span>
                             <span className="text-xl font-semibold text-gray-900 tracking-tight">
-                                {currencyText(variantPrice)}
+                                {formatCurrency(variantPrice)}
                             </span>
                         </div>
 
@@ -476,9 +781,9 @@ const ProductDetails = () => {
                     <div className="relative space-y-4">
                         <div className="h-[400px] lg:h-[520px] w-full bg-white rounded-2xl overflow-hidden shadow-sm relative flex flex-col md:flex-row gap-[1px] border border-gray-100">
                             {/* Video Pane (optional, product-specific) */}
-                            <div className="w-full md:w-1/2 relative h-1/2 md:h-full group overflow-hidden border-r border-white/10 bg-black">
-                                {product?.videoUrl ? (
-                                    isImageMedia(product.videoUrl) ? (
+                            {product?.videoUrl && (
+                                <div className="w-full md:w-1/2 relative h-1/2 md:h-full group overflow-hidden border-r border-white/10 bg-black">
+                                    {isImageMedia(product.videoUrl) ? (
                                         <>
                                             <img
                                                 src={product.videoUrl}
@@ -488,67 +793,72 @@ const ProductDetails = () => {
                                             <div className="absolute inset-0 bg-black/20 group-hover:bg-black/5 transition-colors" />
                                         </>
                                     ) : (
-                                        <>
-                                            <video
-                                                src={product.videoUrl}
-                                                autoPlay
-                                                muted
-                                                loop
-                                                playsInline
-                                                controls
-                                                preload="auto"
-                                                className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
-                                                onError={(e) => {
-                                                    console.error("Product video playback failed:", e);
-                                                    // Optional: Hide the video container or show a fallback if needed
-                                                }}
-                                            />
-                                            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/5 transition-colors pointer-events-none" />
-                                        </>
-                                    )
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-[#111]">
-                                        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/60">No product video</p>
-                                    </div>
-                                )}
+                                        <video
+                                            src={product.videoUrl}
+                                            autoPlay
+                                            muted
+                                            loop
+                                            playsInline
+                                            controls
+                                            preload="none"
+                                            className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
+                                            onError={(e) => {
+                                                console.error("Product video playback failed:", e);
+                                            }}
+                                        />
+                                    )}
 
-                                {/* Experience Sticker Layer (Subtle) */}
-                                <div className="absolute bottom-4 right-4 z-30 scale-75 md:scale-[0.85]">
-                                    <div className="relative w-24 h-24 flex items-center justify-center animate-[spin_10s_linear_infinite]">
-                                        <svg className="w-full h-full" viewBox="0 0 100 100">
-                                            <path id="circlePathSmall" d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="none" />
-                                            <text className="text-[9px] font-bold tracking-[0.2em] uppercase fill-white/80">
-                                                <textPath xlinkHref="#circlePathSmall">The Lookbook • Sands Royal • </textPath>
-                                            </text>
-                                        </svg>
-                                        <div className="absolute inset-0 flex items-center justify-center animate-none">
-                                            <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center">
-                                                <Play className="w-3 h-3 text-white fill-current translate-x-[1px]" />
+                                    {/* Experience Sticker Layer (Subtle) */}
+                                    <div className="absolute bottom-4 right-4 z-30 scale-75 md:scale-[0.85]">
+                                        <div className="relative w-24 h-24 flex items-center justify-center animate-[spin_10s_linear_infinite]">
+                                            <svg className="w-full h-full" viewBox="0 0 100 100">
+                                                <path id="circlePathSmall" d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="none" />
+                                                <text className="text-[9px] font-bold tracking-[0.2em] uppercase fill-white/80">
+                                                    <textPath xlinkHref="#circlePathSmall">The Lookbook • Sands Royal • </textPath>
+                                                </text>
+                                            </svg>
+                                            <div className="absolute inset-0 flex items-center justify-center animate-none">
+                                                <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center">
+                                                    <Play className="w-3 h-3 text-white fill-current translate-x-[1px]" />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* Image Pane - CLEAN IMAGE SWAP (No Zoom) */}
-                            <div className="w-full md:w-1/2 relative h-1/2 md:h-full group overflow-hidden bg-[#F7F2F3]">
+                            <div
+                                onClick={() => openLightbox(primaryImage)}
+                                className={`${product?.videoUrl ? 'w-full md:w-1/2 h-1/2 md:h-full' : 'w-full h-full'} relative group overflow-hidden bg-[#F7F2F3] cursor-zoom-in`}
+                            >
                                 {primaryImage ? (
                                     <>
-                                        {/* Main State Image (Thumbnail selected or default) */}
+                                        {/* Main State Image (Thumbnail selected or default) — eager load (LCP element) */}
                                         <img
-                                            src={primaryImage}
+                                            src={getProductDetailUrl(primaryImage)}
                                             alt={product.name}
+                                            fetchpriority="high"
+                                            decoding="sync"
                                             className="absolute inset-0 w-full h-full object-cover z-0"
                                         />
 
                                         {/* Hover Image (2nd gallery image when available; otherwise model fallback) */}
                                         {hoverPaneImage ? (
                                             <img
-                                                src={hoverPaneImage}
+                                                src={getProductCardUrl(hoverPaneImage)}
                                                 alt={`${product.name} look`}
+                                                loading="lazy"
+                                                decoding="async"
                                                 className="absolute inset-0 w-full h-full object-cover z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-[1200ms] ease-in-out"
                                             />
                                         ) : null}
+                                        {/* Zoom Indicator Icon */}
+                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/5 z-20 pointer-events-none">
+                                            <div className="p-3 rounded-full bg-white/80 backdrop-blur shadow-sm transform scale-90 group-hover:scale-100 transition-transform duration-500">
+                                                <Maximize2 className="w-5 h-5 text-black" strokeWidth={1.5} />
+                                            </div>
+                                        </div>
                                     </>
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-[#B88B90] text-[10px] font-bold uppercase tracking-widest">
@@ -575,14 +885,18 @@ const ProductDetails = () => {
 
                         {/* Thumbnails Row */}
                         {galleryImages.length > 1 && (
-                            <div className="flex gap-4 overflow-x-auto pb-4 px-1 scrollbar-hide justify-center">
+                            <div
+                                {...thumbScroll.events}
+                                ref={thumbScroll.ref}
+                                className={`flex gap-4 overflow-x-auto pb-4 px-1 scrollbar-hide justify-center ${thumbScroll.isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'}`}
+                            >
                                 {galleryImages.map((img, idx) => (
                                     <button
                                         key={idx}
                                         onClick={() => setSelectedImage(img)}
                                         className={`relative shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-lg overflow-hidden border-2 transition-all shadow-sm ${selectedImage === img ? 'border-[#D39A9F] ring-1 ring-[#D39A9F]' : 'border-transparent hover:border-gray-200'}`}
                                     >
-                                        <img src={img} alt={`View ${idx + 1}`} className="w-full h-full object-cover" />
+                                        <img src={getProductThumbUrl(img)} alt={`View ${idx + 1}`} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                                         {selectedImage === img && <div className="absolute inset-0 bg-black/10" />}
                                     </button>
                                 ))}
@@ -594,7 +908,11 @@ const ProductDetails = () => {
 
                     {/* JEWELLERY DETAILS TABBED SECTION - Moved to center below product area */}
                     <div className="h-[400px] lg:h-[520px] w-full bg-white rounded-[2rem] border border-gray-100 p-6 md:p-10 shadow-sm relative flex flex-col">
-                        <div className="flex-1 flex flex-col justify-start pt-4 overflow-y-auto no-scrollbar">
+                        <div
+                            {...detailsScroll.events}
+                            ref={detailsScroll.ref}
+                            className={`flex-1 flex flex-col justify-start pt-4 overflow-y-auto custom-scrollbar ${detailsScroll.isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'}`}
+                        >
                             <h2 className="text-xl font-bold text-center text-gray-900 mb-6 tracking-tight">Jewellery Details</h2>
 
                             {/* Tab Switcher */}
@@ -614,41 +932,82 @@ const ProductDetails = () => {
                             </div>
 
                             {/* Tab Content */}
-                            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                            {/* Tab Content with Swipe Gesture */}
+                            <motion.div
+                                key={activeDetailTab}
+                                initial={{ opacity: 0, x: activeDetailTab === 'details' ? -20 : 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.4, ease: "easeOut" }}
+                                drag="x"
+                                dragConstraints={{ left: 0, right: 0 }}
+                                dragElastic={0.1}
+                                onDragEnd={(e, { offset, velocity }) => {
+                                    const swipe = offset.x;
+                                    if (swipe < -50 && activeDetailTab === 'details') {
+                                        setActiveDetailTab('price');
+                                    } else if (swipe > 50 && activeDetailTab === 'price') {
+                                        setActiveDetailTab('details');
+                                    }
+                                }}
+                                className="animate-in fade-in slide-in-from-bottom-4 duration-700 cursor-grab active:cursor-grabbing touch-pan-y"
+                            >
                                 {activeDetailTab === 'details' ? (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         {hasDiamonds && (
-                                            <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 flex flex-col items-center text-center">
-                                                <div className="w-12 h-12 rounded-full bg-[#D39A9F]/10 flex items-center justify-center mb-6">
-                                                    <Sparkles className="w-6 h-6 text-[#D39A9F]" />
+                                            <div className="bg-white rounded-3xl p-8 border border-[#8E2B45]/10 shadow-[0_4px_20px_-4px_rgba(142,43,69,0.05)] flex flex-col items-center text-center">
+                                                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#8E2B45] to-[#5B1E26] flex items-center justify-center mb-8 shadow-lg transform -rotate-3 hover:rotate-0 transition-transform duration-500">
+                                                    <Sparkles className="w-7 h-7 text-white" />
                                                 </div>
-                                                <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-8">Diamond Intelligence</h4>
-                                                <div className="grid grid-cols-2 gap-y-6 gap-x-8 w-full">
-                                                    <div className="space-y-1">
-                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Type</span>
-                                                        <span className="text-xs font-semibold text-gray-900 block capitalize">{String(diamondType).replace('_', ' ')}</span>
+                                                <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-[#8E2B45] mb-10 border-b border-[#8E2B45]/10 pb-2">Diamond Intelligence</h4>
+                                                <div className="grid grid-cols-2 md:grid-cols-3 gap-y-10 gap-x-6 w-full">
+                                                    <div className="group transition-all duration-300">
+                                                        <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3 group-hover:bg-[#8E2B45]/5 transition-colors">
+                                                            <Layers className="w-4 h-4 text-gray-400 group-hover:text-[#8E2B45]" />
+                                                        </div>
+                                                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Type</span>
+                                                        <span className="text-[13px] font-bold text-gray-900 block capitalize">{String(diamondType).replace('_', ' ')}</span>
                                                     </div>
-                                                    <div className="space-y-1">
-                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Weight</span>
-                                                        <span className="text-xs font-semibold text-gray-900 block">{currentVariant?.diamondSpecs?.carat || product.diamondWeight || currentVariant?.diamondWeight || '---'} Ct</span>
-                                                    </div>
-                                                    <div className="space-y-1">
-                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Clarity</span>
-                                                        <span className="text-xs font-semibold text-gray-900 block">{currentVariant?.diamondSpecs?.clarity || product.diamondClarity || currentVariant?.diamondClarity || '---'}</span>
-                                                    </div>
-                                                    <div className="space-y-1">
-                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Color</span>
-                                                        <span className="text-xs font-semibold text-gray-900 block">{currentVariant?.diamondSpecs?.color || '---'}</span>
-                                                    </div>
-                                                    <div className="space-y-1">
-                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Cut / Shape</span>
-                                                        <span className="text-xs font-semibold text-gray-900 block">
-                                                            {currentVariant?.diamondSpecs?.cut || '---'} / {currentVariant?.diamondSpecs?.shape || '---'}
+                                                    <div className="group transition-all duration-300">
+                                                        <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3 group-hover:bg-[#8E2B45]/5 transition-colors">
+                                                            <Scale className="w-4 h-4 text-gray-400 group-hover:text-[#8E2B45]" />
+                                                        </div>
+                                                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Weight</span>
+                                                        <span className="text-[13px] font-bold text-gray-900 block">
+                                                            {currentVariant?.diamondSpecs?.carat || product.diamondWeight || currentVariant?.diamondWeight || '---'}
+                                                            <span className="text-[10px] ml-0.5">Ct</span>
                                                         </span>
                                                     </div>
-                                                    <div className="space-y-1">
-                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Count</span>
-                                                        <span className="text-xs font-semibold text-gray-900 block">{currentVariant?.diamondSpecs?.diamondCount || product.diamondCount || currentVariant?.diamondCount || '---'}</span>
+                                                    <div className="group transition-all duration-300">
+                                                        <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3 group-hover:bg-[#8E2B45]/5 transition-colors">
+                                                            <Sparkles className="w-4 h-4 text-gray-400 group-hover:text-[#8E2B45]" />
+                                                        </div>
+                                                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Clarity</span>
+                                                        <span className="text-[13px] font-bold text-gray-900 block">{currentVariant?.diamondSpecs?.clarity || product.diamondClarity || currentVariant?.diamondClarity || '---'}</span>
+                                                    </div>
+                                                    <div className="group transition-all duration-300">
+                                                        <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3 group-hover:bg-[#8E2B45]/5 transition-colors">
+                                                            <Droplets className="w-4 h-4 text-gray-400 group-hover:text-[#8E2B45]" />
+                                                        </div>
+                                                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Color</span>
+                                                        <span className="text-[13px] font-bold text-gray-900 block">{currentVariant?.diamondSpecs?.color || '---'}</span>
+                                                    </div>
+                                                    <div className="group transition-all duration-300">
+                                                        <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3 group-hover:bg-[#8E2B45]/5 transition-colors">
+                                                            <Zap className="w-4 h-4 text-gray-400 group-hover:text-[#8E2B45]" />
+                                                        </div>
+                                                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Cut / Shape</span>
+                                                        <span className="text-[13px] font-bold text-gray-900 block">
+                                                            {currentVariant?.diamondSpecs?.cut || '---'}
+                                                            <span className="mx-1 text-gray-200">/</span>
+                                                            {currentVariant?.diamondSpecs?.shape || '---'}
+                                                        </span>
+                                                    </div>
+                                                    <div className="group transition-all duration-300">
+                                                        <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3 group-hover:bg-[#8E2B45]/5 transition-colors">
+                                                            <Box className="w-4 h-4 text-gray-400 group-hover:text-[#8E2B45]" />
+                                                        </div>
+                                                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Count</span>
+                                                        <span className="text-[13px] font-bold text-gray-900 block">{currentVariant?.diamondSpecs?.diamondCount || product.diamondCount || currentVariant?.diamondCount || '---'}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -680,27 +1039,46 @@ const ProductDetails = () => {
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="max-w-2xl mx-auto space-y-6">
-                                        <div className="grid grid-cols-1 gap-4 text-sm">
-                                            {[
-                                                { label: 'Metal Price', value: pricingBreakdown.metalPrice },
-                                                { label: 'Making Charge', value: pricingBreakdown.makingCharge },
-                                                { label: 'Diamond Price', value: pricingBreakdown.diamondPrice },
-                                                { label: `GST (${gstPercent}%)`, value: pricingBreakdown.gst }
-                                            ].map((item, idx) => (
-                                                <div key={idx} className="flex items-center justify-between py-4 border-b border-gray-50 last:border-0">
-                                                    <span className="text-gray-500 font-bold uppercase tracking-widest text-[10px]">{item.label}</span>
-                                                    <span className="font-semibold text-gray-900 text-sm">{currencyText(item.value)}</span>
-                                                </div>
-                                            ))}
+                                    <div className="max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
+                                        <div
+                                            {...tableScroll.events}
+                                            ref={tableScroll.ref}
+                                            className={`bg-gray-50/50 rounded-2xl border border-gray-100 overflow-x-auto custom-scrollbar shadow-sm ${tableScroll.isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'}`}
+                                        >
+                                            <table className="w-full text-left border-collapse">
+                                                <thead>
+                                                    <tr className="border-b border-gray-100">
+                                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Component</th>
+                                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">Rate/Qty</th>
+                                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">Value</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-gray-50">
+                                                    {[
+                                                        { label: 'Metal (925 Silver)', rate: `${selectedVariantWeight || product.weight || '---'} g`, value: pricingBreakdown.metalPrice },
+                                                        { label: 'Making Charges', rate: '-', value: pricingBreakdown.makingCharge },
+                                                        { label: 'Diamond / Stones', rate: '-', value: pricingBreakdown.diamondPrice },
+                                                        { label: `GST (${gstPercent}%)`, rate: '-', value: pricingBreakdown.gst }
+                                                    ].map((item, idx) => (
+                                                        <tr key={idx} className="hover:bg-white transition-colors">
+                                                            <td className="px-6 py-4 text-[11px] font-bold text-gray-700 uppercase tracking-tight">{item.label}</td>
+                                                            <td className="px-6 py-4 text-[11px] font-semibold text-gray-500 text-right">{item.rate}</td>
+                                                            <td className="px-6 py-4 text-[11px] font-bold text-gray-900 text-right">{formatCurrency(item.value)}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                                <tfoot>
+                                                    <tr className="bg-[#8E2B45]/5 border-t border-[#8E2B45]/10">
+                                                        <td colSpan="2" className="px-6 py-5 text-[11px] font-black text-[#8E2B45] uppercase tracking-[0.2em]">Total Price</td>
+                                                        <td className="px-6 py-5 text-lg font-black text-[#8E2B45] text-right">{formatCurrency(pricingBreakdown.finalPrice || variantPrice || 0)}</td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
                                         </div>
-                                        <div className="mt-8 flex items-center justify-between border-t border-gray-200 pt-8">
-                                            <span className="text-xs font-bold uppercase tracking-[0.3em] text-gray-400">Total Price</span>
-                                            <span className="text-2xl font-bold text-gray-900">{currencyText(pricingBreakdown.finalPrice || variantPrice || 0)}</span>
-                                        </div>
+                                        <p className="mt-4 text-[9px] text-gray-400 text-center font-bold uppercase tracking-widest italic">* Final price includes all applicable taxes and insured shipping.</p>
                                     </div>
                                 )}
-                            </div>
+                            </motion.div>
                         </div>
                     </div>
                 </div>
@@ -738,12 +1116,12 @@ const ProductDetails = () => {
                     <div className="mb-8">
                         <div className="flex items-baseline justify-center gap-3">
                             <span className="text-3xl md:text-5xl font-bold text-black tracking-tighter">
-                                {currencyText(variantPrice)}
+                                {formatCurrency(variantPrice)}
                             </span>
                             {variantMrp > variantPrice && (
                                 <div className="flex items-center gap-2">
                                     <span className="text-base md:text-lg text-gray-300 line-through font-medium">
-                                        {currencyText(variantMrp)}
+                                        {formatCurrency(variantMrp)}
                                     </span>
                                     <span className="text-[9px] font-bold text-[#9C5B61] uppercase tracking-widest bg-rose-50 px-2 py-0.5 rounded">
                                         -{variantDiscount}%
@@ -786,8 +1164,8 @@ const ProductDetails = () => {
                                 onClick={handleAddToCart}
                                 disabled={!canAddToCart}
                                 className={`w-full max-w-md py-5 rounded-xl font-bold uppercase tracking-[0.2em] text-[11px] transition-all duration-500 relative overflow-hidden group ${canAddToCart
-                                        ? 'bg-[#8E2B45] text-white hover:bg-[#5B1E26] shadow-lg hover:-translate-y-0.5'
-                                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                    ? 'bg-[#8E2B45] text-white hover:bg-[#5B1E26] shadow-lg hover:-translate-y-0.5'
+                                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                                     }`}
                             >
                                 <span className="relative z-10 flex items-center justify-center gap-3">
@@ -800,10 +1178,38 @@ const ProductDetails = () => {
                                 </span>
                             </button>
 
-                            <div className="flex items-center justify-center gap-8 text-[9px] font-bold uppercase tracking-widest text-gray-400 opacity-60">
-                                <span className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5 text-emerald-500" /> Authentic</span>
-                                <span className="flex items-center gap-1.5"><Truck className="w-3.5 h-3.5 text-blue-500" /> Free Global Shipping</span>
+                            <div className="flex items-center justify-center gap-6 mt-2">
+                                <button
+                                    onClick={() => setIsSizeGuideOpen(true)}
+                                    className="text-[9px] font-black text-[#8E2B45] uppercase tracking-[0.2em] hover:underline flex items-center gap-1.5 transition-all active:scale-95"
+                                >
+                                    <Ruler size={12} /> Find Your Size
+                                </button>
+                                <div className="h-3 w-[1px] bg-gray-100" />
+                                <button className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] hover:text-[#8E2B45] transition-all">
+                                    Shipping Policy
+                                </button>
                             </div>
+                        </div>
+
+                        {/* Trust Ribbon - Premium Highlight */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full pt-8 border-t border-gray-50">
+                            {[
+                                { icon: <ShieldCheck className="w-5 h-5 text-emerald-600" />, title: "BIS Hallmark", desc: "100% Pure & Certified" },
+                                { icon: <RotateCcw className="w-5 h-5 text-amber-600" />, title: "7-Day Returns", desc: "Easy & Hassle Free" },
+                                { icon: <Truck className="w-5 h-5 text-blue-600" />, title: "Free Delivery", desc: "Fully Insured Shipping" },
+                                { icon: <Lock className="w-5 h-5 text-gray-600" />, title: "Secure Pay", desc: "Encrypted Payments" }
+                            ].map((item, idx) => (
+                                <div key={idx} className="flex flex-col items-center gap-2 group cursor-default">
+                                    <div className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center transition-all group-hover:bg-white group-hover:shadow-md border border-transparent group-hover:border-gray-100">
+                                        {item.icon}
+                                    </div>
+                                    <div className="text-center">
+                                        <p className="text-[9px] font-black text-gray-900 uppercase tracking-widest">{item.title}</p>
+                                        <p className="text-[8px] font-bold text-gray-400 uppercase mt-0.5 opacity-0 group-hover:opacity-100 transition-all">{item.desc}</p>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
 
                         {/* Stock & Codes */}
@@ -845,14 +1251,14 @@ const ProductDetails = () => {
             <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 p-3 z-[150] md:hidden flex gap-3 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] pb-safe animate-in slide-in-from-bottom duration-500">
                 <div className="flex flex-col justify-center px-2">
                     <span className="text-[8px] uppercase tracking-wider text-gray-400 font-bold mb-0.5">Total</span>
-                    <span className="text-lg font-bold text-black tracking-tight">{currencyText(variantPrice)}</span>
+                    <span className="text-lg font-bold text-black tracking-tight">{formatCurrency(variantPrice)}</span>
                 </div>
                 <button
                     onClick={handleAddToCart}
                     disabled={!canAddToCart}
                     className={`flex-1 rounded-xl h-11 font-bold uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-xl ${canAddToCart
-                            ? 'bg-[#8E2B45] text-white shadow-[#8E2B45]/20 hover:bg-[#5B1E26]'
-                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        ? 'bg-[#8E2B45] text-white shadow-[#8E2B45]/20 hover:bg-[#5B1E26]'
+                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                         }`}
                 >
                     {canAddToCart ? (
@@ -883,47 +1289,71 @@ const ProductDetails = () => {
 
             {/* CHECK AVAILABILITY SECTION - Ultra Compact */}
             <div className="container mx-auto px-4 mt-4 mb-10 max-w-4xl">
-                <div className="bg-white border border-gray-100 rounded-xl p-3 flex flex-col md:flex-row items-center gap-4 shadow-sm">
+                <div className="bg-white border border-gray-100 rounded-xl p-3 flex flex-col md:flex-row items-center gap-4 shadow-sm relative overflow-hidden group">
+                    {/* Progress Bar (Purely Aesthetic) */}
+                    <div className="absolute top-0 left-0 h-[2px] bg-[#8E2B45]/10 w-full" />
+                    <div className="absolute top-0 left-0 h-[2px] bg-[#8E2B45] w-0 group-hover:w-full transition-all duration-1000" />
+
                     <div className="flex items-center gap-2 pl-2">
-                        <Truck className="w-4 h-4 text-gray-400" />
-                        <span className="text-[9px] font-semibold uppercase tracking-widest text-gray-500 hidden lg:block whitespace-nowrap">Check Delivery</span>
+                        <Truck className="w-4 h-4 text-[#8E2B45]" />
+                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 hidden lg:block whitespace-nowrap">Deliver To</span>
                     </div>
 
-                    <div className="flex w-full md:max-w-xs gap-1.5 bg-gray-50 rounded-lg p-1">
+                    <div className="flex w-full md:max-w-xs gap-1.5 bg-gray-50 rounded-lg p-1 border border-transparent focus-within:border-[#8E2B45]/20 focus-within:bg-white transition-all">
                         <input
                             type="text"
                             placeholder="Enter Pincode"
                             value={localPincode}
                             onChange={(e) => setLocalPincode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                            className="flex-1 bg-transparent border-none px-3 py-1 text-xs focus:ring-0 transition-all placeholder:text-gray-300 font-medium"
+                            className="flex-1 bg-transparent border-none px-3 py-1 text-xs focus:ring-0 transition-all placeholder:text-gray-300 font-bold"
                         />
                         <button
                             onClick={() => {
                                 if (localPincode.length === 6) {
                                     updatePincode(localPincode);
-                                    toast.success("Pincode applied!");
+                                    toast.success("Checking availability...");
                                 } else {
                                     toast.error("Please enter a 6-digit pincode");
                                 }
                             }}
-                            className="bg-[#8E2B45] text-white px-4 py-1.5 rounded-md font-medium text-[9px] uppercase tracking-wider hover:bg-[#5B1E26] transition-all"
+                            className="bg-[#8E2B45] text-white px-4 py-1.5 rounded-md font-black text-[9px] uppercase tracking-wider hover:bg-[#5B1E26] transition-all shadow-sm active:scale-95"
                         >
                             Check
                         </button>
                     </div>
 
-                    <div className="flex items-center gap-6 md:ml-auto md:border-l md:border-gray-100 md:pl-6 pr-2">
-                        {[
-                            { icon: <Truck className="w-3.5 h-3.5" />, label: "Fast Shipping" },
-                            { icon: <ShieldCheck className="w-3.5 h-3.5" />, label: "925 Certified" },
-                            { icon: <Gift className="w-3.5 h-3.5" />, label: "Luxury Gift Box" }
-                        ].map((badge, i) => (
-                            <div key={i} className="flex items-center gap-2 text-gray-400">
-                                {badge.icon}
-                                <span className="text-[8px] font-bold uppercase tracking-widest whitespace-nowrap">{badge.label}</span>
+                    {pincode ? (
+                        <div className="flex flex-col md:flex-row items-center gap-3 md:ml-auto md:border-l md:border-gray-100 md:pl-6 animate-in fade-in slide-in-from-left-2 duration-500">
+                            <div className="flex items-center gap-2 text-emerald-600">
+                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                <span className="text-[10px] font-black uppercase tracking-widest">Available</span>
                             </div>
-                        ))}
-                    </div>
+                            <div className="h-4 w-[1px] bg-gray-100 hidden md:block" />
+                            <p className="text-[10px] font-bold text-gray-900 uppercase tracking-widest">
+                                Get it by <span className="text-[#8E2B45]">
+                                    {(() => {
+                                        const days = product?.logistics?.estimatedShippingDays || 3;
+                                        const date = new Date();
+                                        date.setDate(date.getDate() + days + 2); // 2 days buffer for delivery
+                                        return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', weekday: 'short' });
+                                    })()}
+                                </span>
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-6 md:ml-auto md:border-l md:border-gray-100 md:pl-6 pr-2 opacity-60">
+                            {[
+                                { icon: <Truck className="w-3.5 h-3.5" />, label: "Express" },
+                                { icon: <ShieldCheck className="w-3.5 h-3.5" />, label: "Insured" },
+                                { icon: <Gift className="w-3.5 h-3.5" />, label: "Luxury Box" }
+                            ].map((badge, i) => (
+                                <div key={i} className="flex items-center gap-2 text-gray-400">
+                                    {badge.icon}
+                                    <span className="text-[8px] font-black uppercase tracking-widest whitespace-nowrap">{badge.label}</span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -1012,13 +1442,15 @@ const ProductDetails = () => {
                                                 </h4>
                                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-y-10 gap-x-8">
                                                     {[
-                                                        { label: 'Type', value: String(diamondType).replace('_', ' ') || 'Natural' },
-                                                        { label: 'Total Weight', value: `${product.diamondWeight || currentVariant?.diamondWeight || '---'} cts` },
-                                                        { label: 'Count', value: product.diamondCount || currentVariant?.diamondCount || '---' },
-                                                        { label: 'Shape', value: product.diamondShape || currentVariant?.diamondShape || 'Round' },
-                                                        { label: 'Color/Clarity', value: product.diamondClarity || currentVariant?.diamondClarity || '---' },
+                                                        { label: 'Type', value: String(diamondType).replace('_', ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') || 'Natural' },
+                                                        { label: 'Carat Weight', value: dSpecs?.carat ? `${dSpecs.carat} cts` : (product.diamondWeight || currentVariant?.diamondWeight || '---') },
+                                                        { label: 'Count', value: dSpecs?.diamondCount || product.diamondCount || currentVariant?.diamondCount || '---' },
+                                                        { label: 'Shape', value: dSpecs?.shape || product.diamondShape || currentVariant?.diamondShape || 'Round' },
+                                                        { label: 'Color', value: dSpecs?.color || '---' },
+                                                        { label: 'Clarity', value: dSpecs?.clarity || product.diamondClarity || currentVariant?.diamondClarity || '---' },
+                                                        { label: 'Cut', value: dSpecs?.cut || '---' },
                                                         { label: 'Setting', value: product.diamondSetting || currentVariant?.diamondSetting || 'Prong' }
-                                                    ].map((spec, i) => (
+                                                    ].filter(s => s.value && s.value !== '---').map((spec, i) => (
                                                         <div key={i} className="space-y-1.5">
                                                             <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">{spec.label}</span>
                                                             <span className="text-sm font-bold text-gray-900 block">{spec.value}</span>
@@ -1037,15 +1469,27 @@ const ProductDetails = () => {
                                             <div className="grid grid-cols-2 md:grid-cols-3 gap-y-10 gap-x-8">
                                                 {[
                                                     { label: 'Metal', value: product.material || product.metal || '925 Silver' },
-                                                    { label: 'Purity', value: product.silverCategory || product.purity || '---' },
+                                                    { label: 'Purity', value: product.silverCategory || product.goldCategory || product.purity || '---' },
                                                     { label: 'Weight', value: `${selectedVariantWeight || product.weight || '---'} ${selectedVariantWeightUnit || product.weightUnit || 'g'}` },
-                                                    { label: 'Certificate', value: product.certificate || 'Sands Authenticated' },
+                                                    {
+                                                        label: 'Certificate',
+                                                        value: product.logistics?.certificateUrl ? (
+                                                            <a
+                                                                href={product.logistics.certificateUrl}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="text-[#8E2B45] hover:underline flex items-center gap-1 transition-all"
+                                                            >
+                                                                View Certificate <ExternalLink size={10} />
+                                                            </a>
+                                                        ) : (product.certificate || 'Sands Authenticated')
+                                                    },
                                                     { label: 'HUID', value: product.huid || '---' },
                                                     { label: 'Reference', value: selectedVariant?.variantCode || '---' }
                                                 ].map((spec, i) => (
                                                     <div key={i} className="space-y-1.5">
                                                         <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">{spec.label}</span>
-                                                        <span className="text-sm font-bold text-gray-900 block">{spec.value}</span>
+                                                        <div className="text-sm font-bold text-gray-900 block">{spec.value}</div>
                                                     </div>
                                                 ))}
                                             </div>
@@ -1054,6 +1498,44 @@ const ProductDetails = () => {
                                         {product.specifications && (
                                             <div className="mt-6 p-6 bg-gray-50/30 rounded-2xl border border-gray-100 prose prose-sm max-w-none text-gray-600 font-medium" dangerouslySetInnerHTML={{ __html: product.specifications }} />
                                         )}
+                                    </div>
+                                </AccordionItem>
+
+                                <AccordionItem title="Price Breakup" isOpen={openSection === 'priceBreakup'} onClick={() => toggleSection('priceBreakup')}>
+                                    <div className="py-6 space-y-6">
+                                        <div className="bg-[#FDFBF7] rounded-2xl p-6 border border-[#F5E6D3]/30">
+                                            <div className="space-y-4">
+                                                <div className="flex justify-between items-center text-xs font-medium text-gray-600">
+                                                    <span>Metal Price ({currentVariant?.weight || product.weight || '0'} {currentVariant?.weightUnit || product.weightUnit || 'g'})</span>
+                                                    <span className="font-bold text-gray-900">{formatCurrency(currentVariant?.metalPrice || 0)}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center text-xs font-medium text-gray-600">
+                                                    <span>Making Charges</span>
+                                                    <span className="font-bold text-gray-900">{formatCurrency(pricingBreakdown.makingCharge)}</span>
+                                                </div>
+                                                {pricingBreakdown.diamondPrice > 0 && (
+                                                    <div className="flex justify-between items-center text-xs font-medium text-gray-600">
+                                                        <span>Diamond / Stones</span>
+                                                        <span className="font-bold text-gray-900">{formatCurrency(pricingBreakdown.diamondPrice)}</span>
+                                                    </div>
+                                                )}
+                                                <div className="pt-4 border-t border-[#F5E6D3]/50 flex justify-between items-center">
+                                                    <span className="text-xs font-black text-[#8E2B45] uppercase tracking-widest">Subtotal (Pre-Tax)</span>
+                                                    <span className="text-sm font-black text-[#8E2B45]">{formatCurrency(pricingSubtotal)}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                                    <span>GST ({gstPercent}%)</span>
+                                                    <span>{formatCurrency(pricingBreakdown.gst)}</span>
+                                                </div>
+                                                <div className="pt-4 border-t-2 border-dashed border-[#F5E6D3] flex justify-between items-center">
+                                                    <span className="text-sm font-black text-black uppercase tracking-widest">Grand Total</span>
+                                                    <span className="text-xl font-black text-black">{formatCurrency(pricingBreakdown.finalPrice || variantPrice)}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p className="text-[10px] text-center text-gray-400 font-medium italic">
+                                            * Prices are subject to change based on daily metal rates and final weight of the piece.
+                                        </p>
                                     </div>
                                 </AccordionItem>
 
@@ -1222,6 +1704,7 @@ const ProductDetails = () => {
 
 
 
+                {/* TABBED EXPLORE SECTION (Related & Recent) */}
                 <div className="flex gap-4 md:gap-10 border-b border-gray-100 mb-8 overflow-x-auto no-scrollbar">
                     <button
                         className={`pb-4 text-xs md:text-base font-bold uppercase tracking-[0.2em] transition-all relative whitespace-nowrap px-1 ${activeTab === 'related' ? 'text-black' : 'text-gray-400 hover:text-gray-600'}`}
@@ -1560,10 +2043,158 @@ const ProductDetails = () => {
                     </div>
                 </div>
             )}
+            {/* Recently Viewed Section */}
+            <RecentlyViewed />
+
+            {/* Complete the Look / Pairs Well With (Cross-selling) */}
+            {relatedProducts.length > 0 && (
+                <div className="bg-[#111] py-20 mt-10 relative overflow-hidden">
+                    {/* Decorative Elements */}
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-[#D39A9F]/10 rounded-full blur-3xl" />
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#8E2B45]/10 rounded-full blur-3xl" />
+
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-black text-[#D39A9F] uppercase tracking-[0.4em] mb-3">Elevate Your Set</span>
+                                <h2 className="text-3xl font-black text-white uppercase tracking-tight">Pairs Well With</h2>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <div className="h-[1px] w-12 md:w-24 bg-white/20" />
+                                <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest whitespace-nowrap">Handpicked for you</span>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
+                            {relatedProducts.slice(0, 4).map((relProduct) => (
+                                <div key={relProduct._id || relProduct.id} className="group">
+                                    <div
+                                        onClick={() => {
+                                            navigate(`/product/${relProduct._id || relProduct.id}`);
+                                            window.scrollTo(0, 0);
+                                        }}
+                                        className="aspect-[4/5] rounded-[2rem] overflow-hidden bg-white/5 border border-white/10 relative group-hover:border-white/20 transition-all cursor-pointer"
+                                    >
+                                        <img
+                                            src={relProduct.images?.[0] || relProduct.primaryImage}
+                                            alt={relProduct.name}
+                                            className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110"
+                                        />
+                                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors" />
+
+                                        {/* Quick Tag */}
+                                        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full">
+                                            <span className="text-[8px] font-black text-black uppercase tracking-widest">Matching Set</span>
+                                        </div>
+                                    </div>
+                                    <div className="mt-4 flex justify-between items-start">
+                                        <div>
+                                            <h3 className="text-[10px] font-bold text-white uppercase tracking-widest line-clamp-1">{relProduct.name}</h3>
+                                            <p className="text-[10px] font-black text-[#D39A9F] mt-1">{formatCurrency(relProduct.price)}</p>
+                                        </div>
+                                        <button className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-white hover:bg-white hover:text-black transition-all">
+                                            <Plus size={14} />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Size Guide Modal */}
+            {isSizeGuideOpen && (
+                <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+                        <div className="bg-[#8E2B45] p-8 text-white relative">
+                            <div className="flex items-center gap-3 mb-2">
+                                <Ruler className="w-6 h-6 text-amber-400" />
+                                <h2 className="text-2xl font-black uppercase tracking-tight">Jewellery Size Guide</h2>
+                            </div>
+                            <p className="text-[10px] font-bold text-white/50 uppercase tracking-[0.2em]">Find your perfect fit with Sands Ornaments</p>
+                            <button
+                                onClick={() => setIsSizeGuideOpen(false)}
+                                className="absolute top-8 right-8 p-2 hover:bg-white/10 rounded-xl transition-all"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="p-8 overflow-y-auto max-h-[70vh]">
+                            <div className="space-y-8">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="space-y-4">
+                                        <h4 className="text-[11px] font-black text-gray-900 uppercase tracking-widest border-b border-gray-100 pb-2">Ring Size Chart</h4>
+                                        <div className="bg-gray-50 rounded-2xl border border-gray-100 overflow-hidden">
+                                            <table className="w-full text-[10px] text-left border-collapse">
+                                                <thead className="bg-gray-100/50 border-b border-gray-100">
+                                                    <tr>
+                                                        <th className="px-4 py-2 font-bold uppercase tracking-widest text-[9px]">Size</th>
+                                                        <th className="px-4 py-2 font-bold uppercase tracking-widest text-[9px]">Dia (mm)</th>
+                                                        <th className="px-4 py-2 font-bold uppercase tracking-widest text-[9px]">Circ (mm)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-gray-100">
+                                                    {[
+                                                        { s: '6', d: '16.5', c: '51.9' },
+                                                        { s: '7', d: '17.3', c: '54.4' },
+                                                        { s: '8', d: '18.1', c: '57.0' },
+                                                        { s: '9', d: '18.9', c: '59.5' },
+                                                        { s: '10', d: '19.8', c: '62.1' },
+                                                        { s: '11', d: '20.6', c: '64.7' },
+                                                        { s: '12', d: '21.4', c: '67.2' }
+                                                    ].map((row, i) => (
+                                                        <tr key={i} className="hover:bg-white">
+                                                            <td className="px-4 py-2 font-black text-[#8E2B45]">{row.s}</td>
+                                                            <td className="px-4 py-2 font-bold text-gray-600">{row.d}</td>
+                                                            <td className="px-4 py-2 font-bold text-gray-600">{row.c}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-4">
+                                        <h4 className="text-[11px] font-black text-gray-900 uppercase tracking-widest border-b border-gray-100 pb-2">How to measure?</h4>
+                                        <div className="space-y-4">
+                                            {[
+                                                { step: "01", text: "Take a piece of string or a strip of paper." },
+                                                { step: "02", text: "Wrap it around the base of the finger." },
+                                                { step: "03", text: "Mark the point where the ends meet." },
+                                                { step: "04", text: "Measure the length in mm to find circumference." }
+                                            ].map((item, i) => (
+                                                <div key={i} className="flex gap-4 p-3 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
+                                                    <span className="text-sm font-black text-[#8E2B45]/10 group-hover:text-[#8E2B45]/30 transition-colors">{item.step}</span>
+                                                    <p className="text-[11px] font-bold text-gray-500 leading-relaxed uppercase tracking-tight">{item.text}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="bg-amber-50 border border-amber-100 rounded-2xl p-6 flex gap-4 shadow-sm">
+                                    <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0 shadow-inner">
+                                        <Sparkles className="w-5 h-5 text-amber-500" />
+                                    </div>
+                                    <p className="text-[10px] font-black text-amber-800 uppercase leading-relaxed tracking-[0.05em]">
+                                        Pro Tip: Always measure your fingers at the end of the day when they are at their largest. If between sizes, choose the larger one.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            <ImageLightbox
+                images={galleryImages}
+                currentIndex={lightboxIndex}
+                isOpen={isLightboxOpen}
+                onClose={() => setIsLightboxOpen(false)}
+                onPrev={handleLightboxPrev}
+                onNext={handleLightboxNext}
+            />
         </div>
     );
 };
 
 export default ProductDetails;
-
-

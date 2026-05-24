@@ -130,6 +130,9 @@ const PromoSlider = () => {
                             <img
                                 src={slide.image}
                                 alt={slide.title}
+                                loading={idx === 1 ? 'eager' : 'lazy'}
+                                fetchpriority={idx === 1 ? 'high' : 'low'}
+                                decoding={idx === 1 ? 'sync' : 'async'}
                                 className="absolute inset-0 w-full h-full object-cover pointer-events-none group-hover:scale-110 transition-transform duration-[4000ms] ease-out"
                             />
                             

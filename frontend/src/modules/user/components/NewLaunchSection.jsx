@@ -87,7 +87,7 @@ const NewLaunchSection = () => {
 
     return (
         <section 
-            className="pt-10 pb-2 md:pt-16 md:pb-4 bg-gradient-to-b from-[#FFF8F9] via-[#FDF0F2] to-[#FFF8F9] relative overflow-hidden"
+            className="pt-10 pb-2 md:pt-16 md:pb-4 bg-[#FFF0F3] relative overflow-hidden"
             style={{
                 '--radius': `${radius}px`,
                 '--cardW': `${cardWidth}px`,

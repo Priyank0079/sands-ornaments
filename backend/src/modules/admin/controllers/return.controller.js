@@ -4,6 +4,8 @@ const Product = require("../../../models/Product");
 const StockLog = require("../../../models/StockLog");
 const User = require("../../../models/User");
 const { success, error } = require("../../../utils/apiResponse");
+const { enqueueEmail } = require("../../../services/emailService");
+const emailTemplates = require("../../../services/emailTemplates");
 const { isSerializedVariant, restockSerializedUnits } = require("../../../utils/inventorySync");
 
 const VALID_STATUSES = [
@@ -348,6 +350,25 @@ exports.updateReturnStatus = async (req, res) => {
     const refreshed = await Return.findById(returnReq._id)
       .populate("userId", "name email phone")
       .populate("orderId", "orderId paymentStatus total shippingAddress");
+
+    // -- Email: return status update to customer --
+    const returnUser = refreshed.userId;
+    const returnOrder = refreshed.orderId;
+    const userEmail = returnUser && returnUser.email;
+    if (userEmail) {
+      enqueueEmail({
+        to:      userEmail,
+        subject: "Return Update: " + nextStatus + " - " + (refreshed.returnId || "") + " | Sands Ornaments",
+        html:    emailTemplates.returnStatusUpdate({
+          returnReq:  refreshed,
+          userName:   returnUser.name,
+          newStatus,
+          note:       note || "",
+          order:      returnOrder,
+        }),
+        type: "return_status_update",
+      });
+    }
 
     return success(res, { returnReq: refreshed }, `Return ${nextStatus} successfully`);
   } catch (err) { return error(res, err.message); }

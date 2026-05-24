@@ -1,7 +1,13 @@
 import React, { Suspense, lazy } from 'react';
+import { HelmetProvider } from 'react-helmet-async';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { ShopProvider } from './context/ShopContext';
 import { AuthProvider } from './context/AuthContext';
+import { CartProvider } from './context/CartContext';
+import { WishlistProvider } from './context/WishlistContext';
+import { OrderProvider } from './context/OrderContext';
+import { NotificationProvider } from './context/NotificationContext';
+import { SocketProvider } from './context/SocketContext';
 import Navbar from './modules/user/components/Navbar';
 import Footer from './modules/user/components/Footer';
 import ScrollToTop from './ScrollToTop';
@@ -15,55 +21,54 @@ import { usePageTracking } from './hooks/useAnalytics';
 import LeadCapturePopup from './modules/user/components/LeadCapturePopup';
 import CookieConsent from './modules/user/components/CookieConsent';
 
-// Admin Imports
-import AdminLogin from './modules/admin/pages/Login';
-import AdminDashboard from './modules/admin/pages/Dashboard';
-import AdminLayout from './modules/admin/components/AdminLayout';
-import AdminProtectedRoute from './modules/admin/components/AdminProtectedRoute';
-import CategoryPage from './modules/admin/pages/categories/CategoryPage';
-import CategoryEditor from './modules/admin/pages/categories/CategoryEditor';
+// Admin Imports — lazy loaded (only used on /admin/* routes, never by mobile users)
+const AdminLogin = lazy(() => import('./modules/admin/pages/Login'));
+const AdminDashboard = lazy(() => import('./modules/admin/pages/Dashboard'));
+const AdminLayout = lazy(() => import('./modules/admin/components/AdminLayout'));
+const AdminProtectedRoute = lazy(() => import('./modules/admin/components/AdminProtectedRoute'));
+const CategoryPage = lazy(() => import('./modules/admin/pages/categories/CategoryPage'));
+const CategoryEditor = lazy(() => import('./modules/admin/pages/categories/CategoryEditor'));
+const ProductManagement = lazy(() => import('./modules/admin/pages/ProductManagement'));
+const AdminProductEditor = lazy(() => import('./modules/admin/pages/AdminProductEditor'));
+const OrderListPage = lazy(() => import('./modules/admin/pages/OrderListPage'));
+const OrderDetailPage = lazy(() => import('./modules/admin/pages/OrderDetailPage'));
+const ReturnDetailPage = lazy(() => import('./modules/admin/pages/ReturnDetailPage'));
+const ReturnsPage = lazy(() => import('./modules/admin/pages/ReturnsPage'));
+const ReplacementsPage = lazy(() => import('./modules/admin/pages/ReplacementsPage'));
+const ReplacementDetailPage = lazy(() => import('./modules/admin/pages/ReplacementDetailPage'));
+const InventoryPage = lazy(() => import('./modules/admin/pages/InventoryPage'));
+const StockAdjustmentPage = lazy(() => import('./modules/admin/pages/inventory/StockAdjustmentPage'));
+const StockHistoryPage = lazy(() => import('./modules/admin/pages/inventory/StockHistoryPage'));
+const LowStockAlertsPage = lazy(() => import('./modules/admin/pages/inventory/LowStockAlertsPage'));
+const InventoryReportsPage = lazy(() => import('./modules/admin/pages/inventory/InventoryReportsPage'));
+const UserManagement = lazy(() => import('./modules/admin/pages/UserManagement'));
+const UserView = lazy(() => import('./modules/admin/pages/UserView'));
+const ReviewModeration = lazy(() => import('./modules/admin/pages/ReviewModeration'));
+const SupportManagement = lazy(() => import('./modules/admin/pages/SupportManagement'));
+const ContactInquiries = lazy(() => import('./modules/admin/pages/ContactInquiries'));
+const GlobalNotificationManager = lazy(() => import('./modules/admin/pages/GlobalNotificationManager'));
+const AddNotification = lazy(() => import('./modules/admin/pages/AddNotification'));
+const FAQManagement = lazy(() => import('./modules/admin/pages/FAQManagement'));
+const ContentManagement = lazy(() => import('./modules/admin/pages/ContentManagement'));
+const BlogManagement = lazy(() => import('./modules/admin/pages/BlogManagement'));
+const CouponListPage = lazy(() => import('./modules/admin/pages/CouponListPage'));
+const CouponFormPage = lazy(() => import('./modules/admin/pages/CouponFormPage'));
+const GlobalSettings = lazy(() => import('./modules/admin/pages/GlobalSettings'));
+const SectionManagement = lazy(() => import('./modules/admin/pages/SectionManagement'));
+const SectionEditor = lazy(() => import('./modules/admin/pages/SectionEditor'));
+const DynamicPageEditor = lazy(() => import('./modules/admin/pages/DynamicPageEditor'));
+const PageManagement = lazy(() => import('./modules/admin/pages/PageManagement'));
+const AdminSellersPage = lazy(() => import('./modules/admin/pages/AdminSellersPage'));
+const AdminSellerDetails = lazy(() => import('./modules/admin/pages/AdminSellerDetails'));
+const AdminNotifications = lazy(() => import('./modules/admin/pages/AdminNotifications'));
+const QrScannerPage = lazy(() => import('./modules/seller/pages/QrScannerPage'));
+const MetalPricing = lazy(() => import('./modules/admin/pages/MetalPricing'));
+const TaxSettings = lazy(() => import('./modules/admin/pages/TaxSettings'));
+const AdminShipments = lazy(() => import('./modules/admin/pages/AdminShipments'));
+const AnalyticsDashboard = lazy(() => import('./modules/admin/pages/AnalyticsDashboard'));
 
-import ProductManagement from './modules/admin/pages/ProductManagement';
-import AdminProductEditor from './modules/admin/pages/AdminProductEditor';
-import OrderListPage from './modules/admin/pages/OrderListPage';
-import OrderDetailPage from './modules/admin/pages/OrderDetailPage';
-import ReturnDetailPage from './modules/admin/pages/ReturnDetailPage';
-import ReturnsPage from './modules/admin/pages/ReturnsPage';
-import ReplacementsPage from './modules/admin/pages/ReplacementsPage';
-import ReplacementDetailPage from './modules/admin/pages/ReplacementDetailPage';
-import InventoryPage from './modules/admin/pages/InventoryPage';
-import StockAdjustmentPage from './modules/admin/pages/inventory/StockAdjustmentPage';
-import StockHistoryPage from './modules/admin/pages/inventory/StockHistoryPage';
-import LowStockAlertsPage from './modules/admin/pages/inventory/LowStockAlertsPage';
-import InventoryReportsPage from './modules/admin/pages/inventory/InventoryReportsPage';
-import UserManagement from './modules/admin/pages/UserManagement';
-import UserView from './modules/admin/pages/UserView';
-import ReviewModeration from './modules/admin/pages/ReviewModeration';
-import SupportManagement from './modules/admin/pages/SupportManagement';
-import ContactInquiries from './modules/admin/pages/ContactInquiries';
-import GlobalNotificationManager from './modules/admin/pages/GlobalNotificationManager';
-import AddNotification from './modules/admin/pages/AddNotification';
-import FAQManagement from './modules/admin/pages/FAQManagement';
-import ContentManagement from './modules/admin/pages/ContentManagement';
-import BlogManagement from './modules/admin/pages/BlogManagement';
-import CouponListPage from './modules/admin/pages/CouponListPage';
-import CouponFormPage from './modules/admin/pages/CouponFormPage';
-import GlobalSettings from './modules/admin/pages/GlobalSettings';
-import SectionManagement from './modules/admin/pages/SectionManagement';
-import SectionEditor from './modules/admin/pages/SectionEditor';
-import DynamicPageEditor from './modules/admin/pages/DynamicPageEditor';
-import PageManagement from './modules/admin/pages/PageManagement';
-import AdminSellersPage from './modules/admin/pages/AdminSellersPage';
-import AdminSellerDetails from './modules/admin/pages/AdminSellerDetails';
-import AdminNotifications from './modules/admin/pages/AdminNotifications';
-import QrScannerPage from './modules/seller/pages/QrScannerPage';
-import MetalPricing from './modules/admin/pages/MetalPricing';
-import TaxSettings from './modules/admin/pages/TaxSettings';
-import AdminShipments from './modules/admin/pages/AdminShipments';
-import AnalyticsDashboard from './modules/admin/pages/AnalyticsDashboard';
-
-// Seller Imports
-import SellerRoutes from './modules/seller/routes/sellerRoutes';
+// Seller Routes — lazy loaded
+const SellerRoutes = lazy(() => import('./modules/seller/routes/sellerRoutes'));
 
 // Lazy Loaded Pages
 const Home = lazy(() => import('./modules/user/pages/Home'));
@@ -125,6 +130,35 @@ const AppContent = () => {
     });
   }, []);
 
+  const [isNavVisible, setIsNavVisible] = React.useState(true);
+  const lastScrollY = React.useRef(0);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Always show nav at the very top
+      if (currentScrollY <= 50) {
+        setIsNavVisible(true);
+      } 
+      // Hide when scrolling down
+      else if (currentScrollY > lastScrollY.current) {
+        setIsNavVisible(false);
+      } 
+      // Show immediately when scrolling up
+      else {
+        setIsNavVisible(true);
+      }
+      
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
   const isAdminPath = location.pathname.startsWith('/admin');
   const isSellerPath = location.pathname.startsWith('/seller');
   const isScannerPath = location.pathname === '/scanner';
@@ -134,18 +168,22 @@ const AppContent = () => {
     <div className="min-h-screen flex flex-col font-sans text-gray-900 bg-[#FDF5F6]">
       {!isAdminPath && !isSellerPath && !isScannerPath && (
         <>
-          <div className="fixed top-0 left-0 right-0 z-[100] w-full">
+          <div 
+            className={`fixed top-0 left-0 right-0 z-[150] w-full transition-transform duration-300 ease-out ${
+              isNavVisible ? 'translate-y-0' : '-translate-y-full'
+            }`}
+          >
             <AnnouncementBar />
             <Navbar />
             <CategoryNav showMetalToggle={showMetalToggle} />
-            <PincodeModal />
-            <LeadCapturePopup />
-            <CookieConsent />
           </div>
+          <PincodeModal />
+          <LeadCapturePopup />
+          <CookieConsent />
           <div className={`h-[104px] ${showMetalToggle ? 'md:h-[226px]' : 'md:h-[166px]'} w-full`}></div>
         </>
       )}
-      <main className={`flex-grow ${!isAdminPath && !isSellerPath && !isScannerPath ? 'pb-16 md:pb-0' : ''}`}>
+      <main className={`flex-grow ${!isAdminPath && !isSellerPath && !isScannerPath ? 'md:pb-0' : ''}`}>
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
           {/* User Routes */}
@@ -274,17 +312,32 @@ const AppContent = () => {
 
 function App() {
   return (
-    <AuthProvider>
-      <ShopProvider>
-        <SmoothScrollProvider />
-        <Router>
-          <ScrollToTop />
-          <AppErrorBoundary>
-            <AppContent />
-          </AppErrorBoundary>
-        </Router>
-      </ShopProvider>
-    </AuthProvider>
+    <HelmetProvider>
+      <AuthProvider>
+        {/* SocketProvider lives inside AuthProvider so it has access to the
+            user token. It must be above NotificationProvider so notifications
+            can consume the socket instance. */}
+        <SocketProvider>
+          <CartProvider>
+            <WishlistProvider>
+              <OrderProvider>
+                <NotificationProvider>
+                  <ShopProvider>
+                    <SmoothScrollProvider />
+                    <Router>
+                      <ScrollToTop />
+                      <AppErrorBoundary>
+                        <AppContent />
+                      </AppErrorBoundary>
+                    </Router>
+                  </ShopProvider>
+                </NotificationProvider>
+              </OrderProvider>
+            </WishlistProvider>
+          </CartProvider>
+        </SocketProvider>
+      </AuthProvider>
+    </HelmetProvider>
   );
 }
 

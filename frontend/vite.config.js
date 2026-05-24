@@ -17,6 +17,7 @@ export default defineConfig({
     },
   },
   build: {
+    chunkSizeWarningLimit: 600, // Warn if any chunk exceeds 600KB
     rollupOptions: {
       output: {
         manualChunks(id) {
@@ -43,6 +44,26 @@ export default defineConfig({
             return 'ui-vendor';
           }
 
+          // Admin-only: recharts is heavy (~400KB) and only used in admin dashboard
+          if (id.includes('recharts') || id.includes('d3-')) {
+            return 'admin-charts';
+          }
+
+          // Firebase — auth only, split from main vendor
+          if (id.includes('firebase') || id.includes('@firebase')) {
+            return 'firebase-vendor';
+          }
+
+          // Scanner (QR page only) — very rarely used
+          if (id.includes('html5-qrcode') || id.includes('zbar')) {
+            return 'scanner-vendor';
+          }
+
+          // Rich text editor — admin only
+          if (id.includes('react-quill') || id.includes('quill')) {
+            return 'editor-vendor';
+          }
+
           return 'vendor';
         },
       },
@@ -52,3 +73,4 @@ export default defineConfig({
     port: 3000,
   },
 })
+
