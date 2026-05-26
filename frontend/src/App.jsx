@@ -2,7 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { ShopProvider } from './context/ShopContext';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { OrderProvider } from './context/OrderContext';
@@ -108,16 +108,17 @@ import Loader from './modules/shared/components/Loader';
 
 const LoadingFallback = () => <Loader fullPage={false} />;
 
-import { initializePushNotifications, setupForegroundNotificationHandler } from './services/pushNotificationService';
+import { initializePushNotifications, registerFCMToken, setupForegroundNotificationHandler } from './services/pushNotificationService';
 import toast from 'react-hot-toast';
 
 const AppContent = () => {
   const location = useLocation();
+  const { user, loading } = useAuth();
   usePageTracking();
 
   React.useEffect(() => {
-    // Initialize push notifications
-    initializePushNotifications();
+    // Initialize push notification service worker.
+    initializePushNotifications({ registerToken: false });
 
     // Setup foreground handler
     setupForegroundNotificationHandler((payload) => {
@@ -129,6 +130,11 @@ const AppContent = () => {
       });
     });
   }, []);
+
+  React.useEffect(() => {
+    if (loading || !user) return;
+    registerFCMToken().catch(err => console.error("FCM registration error:", err));
+  }, [loading, user]);
 
   const [isNavVisible, setIsNavVisible] = React.useState(true);
   const lastScrollY = React.useRef(0);

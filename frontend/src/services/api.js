@@ -9,11 +9,19 @@ const api = axios.create({
   },
 });
 
+const clearStoredSession = () => {
+  localStorage.removeItem('sands_token');
+  localStorage.removeItem('sands_current_user');
+  localStorage.removeItem('sellerToken');
+  localStorage.removeItem('sellerAuth');
+  localStorage.removeItem('currentSeller');
+};
+
 // Request interceptor to add JWT token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('sands_token'); // Standardized token name
-    if (token) {
+    const token = localStorage.getItem('sands_token') || localStorage.getItem('sellerToken');
+    if (token && token !== 'undefined' && token !== 'null') {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -30,16 +38,14 @@ api.interceptors.response.use(
   },
   (error) => {
     // Handle 401 Unauthorized (Expired token, etc.)
-    if (error.response && error.response.status === 401) {
-      localStorage.removeItem('sands_token');
-      localStorage.removeItem('sands_current_user');
+    if (error.response && error.response.status === 401 && !error.config?.skipUnauthorizedLogout) {
+      clearStoredSession();
       // Optional: Optional: Redirect to login or refresh page
       // window.location.href = '/login';
     }
 
     if (error.response && error.response.status === 403 && error.response?.data?.error === 'ACCOUNT_BLOCKED') {
-      localStorage.removeItem('sands_token');
-      localStorage.removeItem('sands_current_user');
+      clearStoredSession();
     }
 
     return Promise.reject(error);

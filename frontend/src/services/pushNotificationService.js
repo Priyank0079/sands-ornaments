@@ -88,10 +88,14 @@ async function registerFCMToken(forceUpdate = false) {
     }
     
     // Save to backend
-    const response = await api.post('user/notifications/fcm-token', {
-      token: token,
-      platform: 'web'
-    });
+    const response = await api.post(
+      'user/notifications/fcm-token',
+      {
+        token: token,
+        platform: 'web'
+      },
+      { skipUnauthorizedLogout: true }
+    );
     
     if (response.data.success) {
       localStorage.setItem('fcm_token_web', token);
@@ -132,13 +136,12 @@ function setupForegroundNotificationHandler(handler) {
 }
 
 // Initialize push notifications
-async function initializePushNotifications() {
+async function initializePushNotifications({ registerToken = false } = {}) {
   try {
     if ('serviceWorker' in navigator) {
       await registerServiceWorker();
-      // Token registration usually happens on login or when app starts and user is already logged in
-      const token = localStorage.getItem('sands_token');
-      if (token) {
+      // Token registration should happen only after AuthContext has verified the session.
+      if (registerToken) {
         await registerFCMToken();
       }
     }
