@@ -868,7 +868,7 @@ const SharedProductEditor = ({
             {showSuccessModal && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-[#0c0c0c]/90 backdrop-blur-xl animate-in fade-in duration-500">
                     <div className="bg-white w-full max-w-3xl rounded-[3rem] overflow-hidden shadow-2xl border border-white/20 animate-in zoom-in-95 duration-500 flex flex-col md:flex-row">
-                        <div className="md:w-1/2 bg-[#3E2723] p-12 flex flex-col justify-between relative">
+                        <div className="md:w-1/2 bg-[#3E2723] p-6 sm:p-12 flex flex-col justify-between relative">
                             <div className="relative z-10">
                                 <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center border border-white/20 mb-8">
                                     <SuccessIcon className="w-8 h-8 text-emerald-400" />
@@ -887,7 +887,7 @@ const SharedProductEditor = ({
                             </div>
                         </div>
 
-                        <div className="md:w-1/2 p-12 flex flex-col justify-between bg-white">
+                        <div className="md:w-1/2 p-6 sm:p-12 flex flex-col justify-between bg-white">
                             <div className="space-y-10">
                                 <div>
                                     <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-2">Master Specification</p>

@@ -64,7 +64,7 @@ const ProductGeneralTab = ({
                             {errors.categories && <span className="text-[10px] text-red-500 font-bold ml-1">{errors.categories}</span>}
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <Select
                                 label="Audience"
                                 value={Array.isArray(formData.audience) ? formData.audience[0] : 'unisex'}
@@ -94,7 +94,7 @@ const ProductGeneralTab = ({
 
                 <FormSection title="Metal & Weight Protocol">
                     <div className="space-y-5">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <Select
                                 label="Primary Material"
                                 value={formData.material}
@@ -152,7 +152,7 @@ const ProductGeneralTab = ({
                             />
                         )}
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <Input
                                 label="Default Weight"
                                 type="number"
@@ -274,8 +274,8 @@ const ProductGeneralTab = ({
             {/* Identity & Tracking (Visual Signatures) */}
             {(isViewMode || createdProductData || formData.productCode) && (
                 <FormSection title="Registry Identity">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="p-8 bg-[#FDFBF7] rounded-[2rem] border border-amber-100/50 flex flex-col items-center justify-center text-center shadow-inner">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                        <div className="p-4 sm:p-8 bg-[#FDFBF7] rounded-[2rem] border border-amber-100/50 flex flex-col items-center justify-center text-center shadow-inner">
                              <p className="text-[10px] font-black text-amber-600 uppercase tracking-[0.2em] mb-4">Master Identity</p>
                              <div className="flex items-center gap-4">
                                  <span className="text-2xl font-mono font-black text-[#3E2723] tracking-[0.2em]">
@@ -297,7 +297,7 @@ const ProductGeneralTab = ({
                              </div>
                         </div>
 
-                        <div className="bg-white p-8 rounded-[2rem] border border-gray-100 space-y-6 shadow-sm flex flex-col items-center justify-center group">
+                        <div className="bg-white p-4 sm:p-8 rounded-[2rem] border border-gray-100 space-y-6 shadow-sm flex flex-col items-center justify-center group">
                             <div className="flex items-center justify-between w-full">
                                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Barcode Artifact</span>
                                  <button 
@@ -318,7 +318,7 @@ const ProductGeneralTab = ({
                             </div>
                         </div>
 
-                        <div className="bg-white p-8 rounded-[2rem] border border-gray-100 space-y-6 shadow-sm flex flex-col items-center justify-center group">
+                        <div className="bg-white p-4 sm:p-8 rounded-[2rem] border border-gray-100 space-y-6 shadow-sm flex flex-col items-center justify-center group">
                             <div className="flex items-center justify-between w-full">
                                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Visual QR Artifact</span>
                                  <button 
@@ -351,7 +351,7 @@ const ProductGeneralTab = ({
             {/* Labels & Tags Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <FormSection title="Commerce Labels">
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <Input
                             label="Card Badge Label"
                             value={formData.cardLabel}

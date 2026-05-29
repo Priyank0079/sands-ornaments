@@ -50,41 +50,81 @@ export const OrderProvider = ({ children, showNotification = () => {} }) => {
         try {
             const res = await api.post('user/addresses', address);
             if (res.data.success) {
-                fetchAddresses();
-                showNotification('Address added successfully');
+                await fetchAddresses();
+                const { toast } = await import('react-hot-toast');
+                toast.success('Address added successfully');
+                return true;
             }
-        } catch (err) { showNotification('Failed to add address'); }
-    }, [fetchAddresses, showNotification]);
+            const { toast } = await import('react-hot-toast');
+            toast.error(res.data.message || 'Failed to add address');
+            return false;
+        } catch (err) {
+            console.error('Failed to add address:', err);
+            const { toast } = await import('react-hot-toast');
+            toast.error(err.response?.data?.message || 'Failed to add address');
+            return false;
+        }
+    }, [fetchAddresses]);
 
     const removeAddress = useCallback(async (addressId) => {
         try {
             const res = await api.delete(`user/addresses/${addressId}`);
             if (res.data.success) {
-                fetchAddresses();
-                showNotification('Address removed');
+                await fetchAddresses();
+                const { toast } = await import('react-hot-toast');
+                toast.success('Address removed');
+                return true;
             }
-        } catch (err) { showNotification('Failed to remove address'); }
-    }, [fetchAddresses, showNotification]);
+            const { toast } = await import('react-hot-toast');
+            toast.error(res.data.message || 'Failed to remove address');
+            return false;
+        } catch (err) {
+            console.error('Failed to remove address:', err);
+            const { toast } = await import('react-hot-toast');
+            toast.error(err.response?.data?.message || 'Failed to remove address');
+            return false;
+        }
+    }, [fetchAddresses]);
 
     const updateAddress = useCallback(async (updatedAddress) => {
         try {
             const res = await api.patch(`user/addresses/${updatedAddress.id || updatedAddress._id}`, updatedAddress);
             if (res.data.success) {
-                fetchAddresses();
-                showNotification('Address updated');
+                await fetchAddresses();
+                const { toast } = await import('react-hot-toast');
+                toast.success('Address updated');
+                return true;
             }
-        } catch (err) { showNotification('Failed to update address'); }
-    }, [fetchAddresses, showNotification]);
+            const { toast } = await import('react-hot-toast');
+            toast.error(res.data.message || 'Failed to update address');
+            return false;
+        } catch (err) {
+            console.error('Failed to update address:', err);
+            const { toast } = await import('react-hot-toast');
+            toast.error(err.response?.data?.message || 'Failed to update address');
+            return false;
+        }
+    }, [fetchAddresses]);
 
     const setDefaultAddress = useCallback(async (addressId) => {
         try {
             const res = await api.patch(`user/addresses/${addressId}/set-default`);
             if (res.data.success) {
-                fetchAddresses();
-                showNotification('Marked as default address');
+                await fetchAddresses();
+                const { toast } = await import('react-hot-toast');
+                toast.success('Marked as default address');
+                return true;
             }
-        } catch (err) { showNotification('Failed to set default address'); }
-    }, [fetchAddresses, showNotification]);
+            const { toast } = await import('react-hot-toast');
+            toast.error(res.data.message || 'Failed to set default address');
+            return false;
+        } catch (err) {
+            console.error('Failed to set default address:', err);
+            const { toast } = await import('react-hot-toast');
+            toast.error(err.response?.data?.message || 'Failed to set default address');
+            return false;
+        }
+    }, [fetchAddresses]);
 
     // ── Fetch Orders ─────────────────────────────────────────────────────────
     const fetchOrders = useCallback(async () => {
