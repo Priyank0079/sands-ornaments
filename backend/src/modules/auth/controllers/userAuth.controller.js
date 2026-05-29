@@ -21,11 +21,10 @@ exports.sendOtp = async (req, res) => {
       return error(res, "Please provide a valid 10-digit Indian mobile number.", 400, "INVALID_PHONE");
     }
 
-    const defaultPhone = process.env.DEFAULT_OTP_PHONE || "9111966732";
     const defaultOtp = process.env.DEFAULT_OTP || "1234";
     const otp = process.env.USE_REAL_OTP === "true"
       ? String(Math.floor(1000 + Math.random() * 9000))
-      : (phone === defaultPhone ? defaultOtp : String(Math.floor(1000 + Math.random() * 9000)));
+      : defaultOtp;
 
     await OTP.deleteMany({ phone });
     await OTP.create({ phone, otp, attempts: 0 });
@@ -175,4 +174,3 @@ exports.getMe = async (req, res) => {
 exports.logout = async (req, res) => {
   return success(res, {}, "Logged out successfully");
 };
-
