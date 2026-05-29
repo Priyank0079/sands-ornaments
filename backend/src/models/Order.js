@@ -57,6 +57,18 @@ const orderSchema = new mongoose.Schema({
   }],
   timeline: [{ status: String, date: { type: Date, default: Date.now }, note: String }],
   notes: String,
+
+  // ── Platform commission cache (source of truth lives in Commission ledger) ──
+  // This is denormalized for fast reads; recompute from the ledger when in doubt.
+  commissionSummary: {
+    totalCommission: { type: Number, default: 0 },
+    status: {
+      type: String,
+      enum: ["pending", "confirmed", "reversed", "partial", "none"],
+      default: "none"
+    },
+    computedAt: { type: Date, default: null }
+  },
 }, { timestamps: true });
 
 module.exports = mongoose.model("Order", orderSchema);

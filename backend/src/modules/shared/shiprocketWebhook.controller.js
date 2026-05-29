@@ -9,6 +9,7 @@
 const Shipment = require("../../models/Shipment");
 const Order = require("../../models/Order");
 const { mapStatus } = require("../../services/shipping/shippingStatusMapper");
+const { confirmCommissionsForOrder } = require("../../services/commissionService");
 
 // ── Duplicate prevention: in-memory dedup for last N events ──────────────────
 const SEEN_EVENTS = new Set();
@@ -30,6 +31,8 @@ const _updateOrderFromShipments = async (orderId) => {
   const order = await Order.findById(orderId);
   if (!order) return;
 
+  const previousStatus = order.status;
+
   const sellerShipments = shipments.map((s) => ({
     sellerId: s.sellerId,
     shipmentId: s._id,
@@ -49,6 +52,15 @@ const _updateOrderFromShipments = async (orderId) => {
 
   order.sellerShipments = sellerShipments;
   await order.save();
+
+  // ── Platform commission: confirm pending accruals on the Delivered transition ──
+  if (previousStatus !== "Delivered" && order.status === "Delivered") {
+    try {
+      await confirmCommissionsForOrder(order._id, { safe: true });
+    } catch (e) {
+      console.error("[Commission] Shiprocket-webhook delivery-confirm error:", e.message);
+    }
+  }
 };
 
 // ── Main webhook handler ──────────────────────────────────────────────────────

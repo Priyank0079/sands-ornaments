@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../../services/api';
+import sellerCommissionService, { formatINR } from '../services/sellerCommissionService';
 
 const formatCurrency = (value) => `INR ${Number(value || 0).toLocaleString()}`;
 
@@ -26,6 +27,8 @@ const SellerDashboard = () => {
     const [recentOrders, setRecentOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState('');
+    const [commissionTotals, setCommissionTotals] = useState({ confirmed: 0, pending: 0, reversed: 0, net: 0, gross: 0 });
+    const [commissionLoading, setCommissionLoading] = useState(true);
 
     useEffect(() => {
         const fetchSellerStats = async () => {
@@ -73,6 +76,32 @@ const SellerDashboard = () => {
 
         fetchSellerStats();
     }, []);
+
+    useEffect(() => {
+        const fetchCommission = async () => {
+            setCommissionLoading(true);
+            try {
+                const res = await sellerCommissionService.getSummary();
+                if (res?.success) {
+                    const t = res.data?.totals || {};
+                    setCommissionTotals({
+                        confirmed: Number(t.confirmed) || 0,
+                        pending:   Number(t.pending)   || 0,
+                        reversed:  Number(t.reversed)  || 0,
+                        gross:     Number(t.gross)     || 0,
+                        net:       Number(t.net)       || 0,
+                    });
+                }
+            } catch (e) {
+                console.error('Failed to load seller commission summary:', e);
+            } finally {
+                setCommissionLoading(false);
+            }
+        };
+        fetchCommission();
+    }, []);
+
+    const netPayout = Math.max(0, Number(stats.totalRevenue || 0) - Number(commissionTotals.net || 0));
 
     const statCards = [
         { label: 'Active Listings', value: stats.totalProducts, icon: Package, color: 'text-blue-600', bg: 'bg-blue-50' },
@@ -169,6 +198,53 @@ const SellerDashboard = () => {
                         </div>
                     </div>
                 ))}
+            </div>
+
+            <div className="bg-white rounded-[2rem] border border-gray-100 p-8 shadow-sm">
+                <div className="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em]">Platform Commission</h3>
+                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">
+                            Charged on every delivered order, reversed on cancel / return
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => navigate('/seller/commission')}
+                        className="px-4 py-2 rounded-xl bg-[#3E2723] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#2D1B18] flex items-center gap-2"
+                    >
+                        Full Report <ChevronRight size={12} />
+                    </button>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="rounded-2xl bg-emerald-50 border border-emerald-100 p-4">
+                        <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Net Charged</p>
+                        <p className="text-xl font-black text-emerald-700 mt-2">
+                            {commissionLoading ? '…' : formatINR(commissionTotals.net)}
+                        </p>
+                    </div>
+                    <div className="rounded-2xl bg-amber-50 border border-amber-100 p-4">
+                        <p className="text-[10px] font-black text-amber-700 uppercase tracking-widest">Pending Pipeline</p>
+                        <p className="text-xl font-black text-amber-700 mt-2">
+                            {commissionLoading ? '…' : formatINR(commissionTotals.pending)}
+                        </p>
+                    </div>
+                    <div className="rounded-2xl bg-rose-50 border border-rose-100 p-4">
+                        <p className="text-[10px] font-black text-rose-700 uppercase tracking-widest">Reversed</p>
+                        <p className="text-xl font-black text-rose-700 mt-2">
+                            {commissionLoading ? '…' : formatINR(commissionTotals.reversed)}
+                        </p>
+                    </div>
+                    <div className="rounded-2xl bg-[#FDFBF7] border border-[#EFEBE9] p-4">
+                        <p className="text-[10px] font-black text-[#3E2723] uppercase tracking-widest">Net Payout (Est.)</p>
+                        <p className="text-xl font-black text-[#3E2723] mt-2">
+                            {commissionLoading ? '…' : formatINR(netPayout)}
+                        </p>
+                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">
+                            Gross revenue − net commission
+                        </p>
+                    </div>
+                </div>
             </div>
 
             {stats.lowStockItems.length > 0 && (

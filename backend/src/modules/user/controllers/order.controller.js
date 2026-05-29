@@ -14,6 +14,10 @@ const { enqueueEmail } = require("../../../services/emailService");
 const emailTemplates = require("../../../services/emailTemplates");
 const { emitNewOrder } = require("../../../services/socketEmitter");
 const {
+  accrueCommissionsForOrder,
+  reverseCommissionsForOrder
+} = require("../../../services/commissionService");
+const {
   isSerializedVariant,
   consumeSerializedStock,
   restockSerializedUnits
@@ -346,6 +350,14 @@ exports.placeOrder = async (req, res) => {
     if (paymentMethod === "cod") {
       await deductStockForOrder(orderData.items, order.orderId, userId);
 
+      // Platform commission accrual (per-seller ledger entries, status="pending").
+      // Wrapped in `safe: true` so a ledger failure never blocks the order itself.
+      try {
+        await accrueCommissionsForOrder(order, { triggeredBy: "place_order", safe: true });
+      } catch (e) {
+        console.error("[Commission] COD accrual hook error:", e.message);
+      }
+
       if (order.couponCode) {
         await Coupon.updateOne(
           { code: order.couponCode, active: true },
@@ -472,6 +484,18 @@ exports.cancelOrder = async (req, res) => {
     order.status = "Cancelled";
     order.timeline.push({ status: "Cancelled", note: "Cancelled by user" });
     await order.save();
+
+    // Reverse platform commission ledger entries (decision F: full reversal).
+    // Safe: never let a ledger error block the cancellation itself.
+    try {
+      await reverseCommissionsForOrder(order._id, {
+        triggeredBy: "order_cancelled",
+        reasonNote:  "Cancelled by user",
+        safe:        true,
+      });
+    } catch (e) {
+      console.error("[Commission] User-cancel reversal error:", e.message);
+    }
 
     // Restock only if stock was already deducted (COD or paid Razorpay orders)
     if (order.paymentStatus === "cod" || order.paymentStatus === "paid") {

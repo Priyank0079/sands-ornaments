@@ -6,6 +6,7 @@
 const Shipment = require("../../../models/Shipment");
 const Order = require("../../../models/Order");
 const { mapStatus } = require("../../../services/shipping/shippingStatusMapper");
+const { confirmCommissionsForOrder } = require("../../../services/commissionService");
 
 // ── Helper ────────────────────────────────────────────────────────────────────
 
@@ -13,6 +14,8 @@ const updateOrderShippingStatus = async (orderId) => {
   const shipments = await Shipment.find({ orderId });
   const order = await Order.findById(orderId);
   if (!order) return;
+
+  const previousStatus = order.status;
 
   const sellerIdsInOrder = [...new Set(
     (order.items || []).map((item) => String(item.sellerId || "")).filter(Boolean)
@@ -39,6 +42,15 @@ const updateOrderShippingStatus = async (orderId) => {
   }));
 
   await order.save();
+
+  // ── Platform commission: confirm pending accruals on the Delivered transition ──
+  if (previousStatus !== "Delivered" && order.status === "Delivered") {
+    try {
+      await confirmCommissionsForOrder(order._id, { safe: true });
+    } catch (e) {
+      console.error("[Commission] Webhook delivery-confirm error:", e.message);
+    }
+  }
 };
 
 // ── Webhook Handlers ──────────────────────────────────────────────────────────

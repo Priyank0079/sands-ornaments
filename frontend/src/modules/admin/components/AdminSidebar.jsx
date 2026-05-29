@@ -33,7 +33,10 @@ import {
     AlertTriangle,
     FileBarChart,
     FileText,
-    Activity
+    Activity,
+    Wallet,
+    FileBarChart2,
+    SlidersHorizontal
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
@@ -51,6 +54,7 @@ const AdminSidebar = () => {
     const [supportExpanded, setSupportExpanded] = useState(location.pathname.startsWith('/admin/support') || location.pathname.startsWith('/admin/contact'));
     const [inventoryExpanded, setInventoryExpanded] = useState(location.pathname.startsWith('/admin/inventory'));
     const [sectionsExpanded, setSectionsExpanded] = useState(location.pathname.startsWith('/admin/sections'));
+    const [commissionExpanded, setCommissionExpanded] = useState(location.pathname.startsWith('/admin/commission'));
 
     const handleLogout = () => {
         logout();
@@ -96,6 +100,7 @@ const AdminSidebar = () => {
     const isSupportActive = location.pathname.startsWith('/admin/support') || location.pathname.startsWith('/admin/contact');
     const isInventoryActive = location.pathname.startsWith('/admin/inventory');
     const isSectionsActive = location.pathname.startsWith('/admin/sections');
+    const isCommissionActive = location.pathname.startsWith('/admin/commission');
 
     return (
         <div className="w-64 h-screen bg-footerBg text-white flex flex-col fixed left-0 top-0 z-50">
@@ -558,6 +563,48 @@ const AdminSidebar = () => {
                             >
                                 <FileBarChart size={14} />
                                 <span className="font-semibold">Reports</span>
+                            </Link>
+                        </div>
+                    )}
+                </div>
+
+                {/* Commission Section - Expandable */}
+                <div className="mt-1">
+                    <button
+                        onClick={() => setCommissionExpanded(!commissionExpanded)}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isCommissionActive
+                            ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                            : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                            }`}
+                    >
+                        <Wallet size={20} strokeWidth={isCommissionActive ? 2.5 : 2} />
+                        <span className="font-bold text-sm flex-1 text-left">Commission</span>
+                        <div className={`transition-transform duration-200 ${commissionExpanded ? 'rotate-180' : ''}`}>
+                            <ChevronDown size={16} />
+                        </div>
+                    </button>
+
+                    {commissionExpanded && (
+                        <div className="mt-1 ml-4 pl-4 border-l border-white/10 space-y-1 animate-in slide-in-from-top-1 duration-200">
+                            <Link
+                                to="/admin/commission/report"
+                                className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all text-sm ${location.pathname === '/admin/commission/report'
+                                    ? 'bg-primary/20 text-white shadow-sm'
+                                    : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                                    }`}
+                            >
+                                <FileBarChart2 size={16} />
+                                <span className="font-semibold">Report</span>
+                            </Link>
+                            <Link
+                                to="/admin/commission/tiers"
+                                className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all text-sm ${location.pathname === '/admin/commission/tiers'
+                                    ? 'bg-primary/20 text-white shadow-sm'
+                                    : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                                    }`}
+                            >
+                                <SlidersHorizontal size={16} />
+                                <span className="font-semibold">Tier Settings</span>
                             </Link>
                         </div>
                     )}

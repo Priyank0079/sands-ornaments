@@ -13,5 +13,6 @@ router.use("/direct-sales", require("./directSale.routes"));
 router.use("/shipping",  require("./shipping.routes"));
 router.use("/notifications", require("./notification.routes"));
 router.use("/pickup-locations", require("./pickupLocation.routes"));
+router.use("/commission", require("./commission.routes"));
 
 module.exports = router;

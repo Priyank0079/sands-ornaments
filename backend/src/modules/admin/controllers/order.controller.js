@@ -2,6 +2,10 @@ const Order = require("../../../models/Order");
 const { success, error } = require("../../../utils/apiResponse");
 const mongoose = require("mongoose");
 const { emitOrderStatusUpdate } = require("../../../services/socketEmitter");
+const {
+  confirmCommissionsForOrder,
+  reverseCommissionsForOrder
+} = require("../../../services/commissionService");
 
 const ALLOWED_TRANSITIONS = {
   Pending: [],
@@ -192,6 +196,32 @@ exports.updateOrderStatus = async (req, res) => {
     // ── Realtime: notify the customer of their order status change (best-effort) ──
     if (!isSameStatusUpdate) {
       try { emitOrderStatusUpdate(order); } catch (e) { /* non-blocking */ }
+    }
+
+    // ── Platform commission lifecycle (admin-initiated transitions) ────────────
+    // Delivered  → flip pending accruals to confirmed
+    // Cancelled  → fully reverse the ledger (decision F)
+    // Returned   → fully reverse (covers the Return Requested → Returned manual path)
+    if (!isSameStatusUpdate) {
+      try {
+        if (nextStatus === "Delivered") {
+          await confirmCommissionsForOrder(order._id, { safe: true });
+        } else if (nextStatus === "Cancelled") {
+          await reverseCommissionsForOrder(order._id, {
+            triggeredBy: "order_cancelled",
+            reasonNote:  "Cancelled by admin",
+            safe:        true,
+          });
+        } else if (nextStatus === "Returned") {
+          await reverseCommissionsForOrder(order._id, {
+            triggeredBy: "return_refunded",
+            reasonNote:  "Marked Returned by admin",
+            safe:        true,
+          });
+        }
+      } catch (e) {
+        console.error("[Commission] Admin status-transition hook error:", e.message);
+      }
     }
 
     return success(

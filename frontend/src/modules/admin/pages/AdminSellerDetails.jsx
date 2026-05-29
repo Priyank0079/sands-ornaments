@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Store, User, CreditCard, ShieldCheck, FileText, CheckCircle, XCircle, Package, ShoppingBag, IndianRupee, Boxes } from 'lucide-react';
 import { adminService } from '../services/adminService';
 import toast from 'react-hot-toast';
+import CommissionBreakdownCard from '../components/CommissionBreakdownCard';
 
 const AdminSellerDetails = () => {
     const { id } = useParams();
@@ -175,6 +176,8 @@ const AdminSellerDetails = () => {
                     </div>
                 </div>
             </div>
+
+            <CommissionBreakdownCard sellerId={id} />
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Column 1: Personal & Bank */}

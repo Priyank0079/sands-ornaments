@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Eye, PackageCheck, Truck, XCircle } from 'lucide-react';
 import AdminTable from '../../admin/components/AdminTable';
 import { sellerOrderService } from '../services/sellerOrderService';
+import { formatINR, commissionStatusTone } from '../services/sellerCommissionService';
 import toast from 'react-hot-toast';
 
 const formatCurrency = (value) => `INR ${Number(value || 0).toLocaleString()}`;
@@ -77,11 +78,11 @@ const SellerOrders = () => {
         {
             header: 'ORDER ID',
             accessor: 'orderId',
-            className: 'w-[13%] font-black text-gray-900 tracking-tight'
+            className: 'w-[11%] font-black text-gray-900 tracking-tight'
         },
         {
             header: 'CUSTOMER',
-            className: 'w-[16%]',
+            className: 'w-[13%]',
             render: (row) => (
                 <div className="flex flex-col">
                     <span className="text-[10px] font-black text-gray-900 uppercase">{row.customerName || 'Customer'}</span>
@@ -90,7 +91,7 @@ const SellerOrders = () => {
         },
         {
             header: 'SELLER ITEMS',
-            className: 'w-[20%]',
+            className: 'w-[16%]',
             render: (row) => (
                 <div className="flex flex-col">
                     <span className="text-[10px] font-black text-gray-900 uppercase truncate max-w-[180px]">{row.product}</span>
@@ -101,13 +102,41 @@ const SellerOrders = () => {
             )
         },
         {
-            header: 'AMOUNT',
-            className: 'w-[11%]',
+            header: 'GROSS',
+            className: 'w-[9%]',
             render: (row) => <span className="text-[10px] font-black text-gray-900">{formatCurrency(row.sellerSubtotal || row.totalAmount || 0)}</span>
         },
         {
-            header: 'PAYMENT',
+            header: 'COMMISSION',
+            className: 'w-[11%]',
+            render: (row) => {
+                const sc = row.sellerCommission || { net: 0, status: 'none' };
+                const net = Number(sc.net) || 0;
+                return (
+                    <div className="flex flex-col gap-1">
+                        <span className={`text-[10px] font-black ${net > 0 ? 'text-rose-600' : 'text-gray-400'}`}>
+                            {net > 0 ? `− ${formatINR(net)}` : '—'}
+                        </span>
+                        {sc.status && sc.status !== 'none' && (
+                            <span className={`inline-block w-fit px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ${commissionStatusTone(sc.status)}`}>
+                                {sc.status}
+                            </span>
+                        )}
+                    </div>
+                );
+            }
+        },
+        {
+            header: 'NET',
             className: 'w-[10%]',
+            render: (row) => {
+                const net = Number(row.sellerNetEarning ?? row.sellerSubtotal ?? 0);
+                return <span className="text-[10px] font-black text-emerald-700">{formatCurrency(net)}</span>;
+            }
+        },
+        {
+            header: 'PAYMENT',
+            className: 'w-[8%]',
             render: (row) => (
                 <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ${
                     ['paid'].includes(String(row.paymentStatus).toLowerCase()) ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-600'
@@ -118,7 +147,7 @@ const SellerOrders = () => {
         },
         {
             header: 'STATUS',
-            className: 'w-[12%]',
+            className: 'w-[10%]',
             render: (row) => (
                 <span className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-[0.1em] border ${STATUS_COLORS[row.orderStatus] || 'bg-gray-50 text-gray-700 border-gray-100'}`}>
                     {row.orderStatus}
@@ -127,12 +156,12 @@ const SellerOrders = () => {
         },
         {
             header: 'DATE',
-            className: 'w-[10%]',
+            className: 'w-[8%]',
             render: (row) => <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{new Date(row.orderDate).toLocaleDateString()}</span>
         },
         {
             header: 'ACTIONS',
-            className: 'w-[12%] text-right',
+            className: 'w-[4%] text-right',
             render: (row) => (
                 <div className="flex justify-end gap-2">
                     <button

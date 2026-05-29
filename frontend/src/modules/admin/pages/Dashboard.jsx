@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import AdminStatsCard from '../components/AdminStatsCard';
 import AdminTable from '../components/AdminTable';
+import adminCommissionService, { formatINR } from '../services/adminCommissionService';
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
@@ -36,6 +37,14 @@ const AdminDashboard = () => {
     });
     const [loading, setLoading] = React.useState(true);
     const [errorMessage, setErrorMessage] = React.useState('');
+    const [commissionTotals, setCommissionTotals] = React.useState({
+        confirmed: 0,
+        pending: 0,
+        reversed: 0,
+        net: 0,
+        gross: 0,
+    });
+    const [commissionLoading, setCommissionLoading] = React.useState(true);
 
     const fetchStats = React.useCallback(async () => {
         setLoading(true);
@@ -78,6 +87,30 @@ const AdminDashboard = () => {
     React.useEffect(() => {
         fetchStats();
     }, [fetchStats]);
+
+    React.useEffect(() => {
+        const fetchCommission = async () => {
+            setCommissionLoading(true);
+            try {
+                const res = await adminCommissionService.getSummary();
+                if (res?.success) {
+                    const t = res.data?.totals || {};
+                    setCommissionTotals({
+                        confirmed: Number(t.confirmed) || 0,
+                        pending:   Number(t.pending)   || 0,
+                        reversed:  Number(t.reversed)  || 0,
+                        gross:     Number(t.gross)     || 0,
+                        net:       Number(t.net)       || 0,
+                    });
+                }
+            } catch (e) {
+                console.error('Failed to fetch commission summary:', e);
+            } finally {
+                setCommissionLoading(false);
+            }
+        };
+        fetchCommission();
+    }, []);
 
     const quickActions = [
         { label: 'VISITOR ANALYTICS', icon: Activity, bg: 'bg-blue-50', text: 'text-blue-500', path: '/admin/analytics' },
@@ -185,6 +218,44 @@ const AdminDashboard = () => {
                         badgeColor={stat.badgeColor}
                     />
                 ))}
+            </div>
+
+            <div>
+                <div className="flex items-center justify-between mb-4">
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest text-left">PLATFORM COMMISSION</p>
+                    <button
+                        onClick={() => navigate('/admin/commission/report')}
+                        className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest hover:text-emerald-700"
+                    >
+                        VIEW REPORT
+                    </button>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-emerald-50 rounded-2xl border border-emerald-100 shadow-sm p-5">
+                        <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Confirmed (Net)</p>
+                        <p className="text-2xl font-black text-emerald-700 mt-2">
+                            {commissionLoading ? '…' : formatINR(commissionTotals.net)}
+                        </p>
+                    </div>
+                    <div className="bg-amber-50 rounded-2xl border border-amber-100 shadow-sm p-5">
+                        <p className="text-[10px] font-black text-amber-700 uppercase tracking-widest">Pending Pipeline</p>
+                        <p className="text-2xl font-black text-amber-700 mt-2">
+                            {commissionLoading ? '…' : formatINR(commissionTotals.pending)}
+                        </p>
+                    </div>
+                    <div className="bg-rose-50 rounded-2xl border border-rose-100 shadow-sm p-5">
+                        <p className="text-[10px] font-black text-rose-700 uppercase tracking-widest">Reversed</p>
+                        <p className="text-2xl font-black text-rose-700 mt-2">
+                            {commissionLoading ? '…' : formatINR(commissionTotals.reversed)}
+                        </p>
+                    </div>
+                    <div className="bg-blue-50 rounded-2xl border border-blue-100 shadow-sm p-5">
+                        <p className="text-[10px] font-black text-blue-700 uppercase tracking-widest">Gross Accrued</p>
+                        <p className="text-2xl font-black text-blue-700 mt-2">
+                            {commissionLoading ? '…' : formatINR(commissionTotals.gross)}
+                        </p>
+                    </div>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

@@ -64,6 +64,8 @@ const AdminNotifications = lazy(() => import('./modules/admin/pages/AdminNotific
 const QrScannerPage = lazy(() => import('./modules/seller/pages/QrScannerPage'));
 const MetalPricing = lazy(() => import('./modules/admin/pages/MetalPricing'));
 const TaxSettings = lazy(() => import('./modules/admin/pages/TaxSettings'));
+const CommissionTiers = lazy(() => import('./modules/admin/pages/CommissionTiers'));
+const CommissionReport = lazy(() => import('./modules/admin/pages/CommissionReport'));
 const AdminShipments = lazy(() => import('./modules/admin/pages/AdminShipments'));
 const AnalyticsDashboard = lazy(() => import('./modules/admin/pages/AnalyticsDashboard'));
 
@@ -293,6 +295,8 @@ const AppContent = () => {
                   <Route path="/settings" element={<GlobalSettings />} />
                   <Route path="/metal-pricing" element={<MetalPricing />} />
                   <Route path="/tax-settings" element={<TaxSettings />} />
+                  <Route path="/commission/tiers" element={<CommissionTiers />} />
+                  <Route path="/commission/report" element={<CommissionReport />} />
                   <Route path="/shipping" element={<AdminShipments />} />
                 </Routes>
               </AdminLayout>

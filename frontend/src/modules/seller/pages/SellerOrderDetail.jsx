@@ -7,6 +7,7 @@ import {
 import { sellerOrderService } from '../services/sellerOrderService';
 import SellerShipmentPanel from '../components/SellerShipmentPanel';
 import SellerFAQ from '../components/SellerFAQ';
+import SellerCommissionCard from '../components/SellerCommissionCard';
 import toast from 'react-hot-toast';
 
 const formatDateInputValue = (value) => {
@@ -224,10 +225,6 @@ const SellerOrderDetail = () => {
                                 <span>Items</span>
                                 <span className="text-gray-900">{order.sellerItemCount}</span>
                             </div>
-                            <div className="pt-4 border-t border-gray-100 flex justify-between">
-                                <span className="text-[10px] font-black text-[#3E2723] uppercase tracking-[0.2em]">Your Total</span>
-                                <span className="text-xl font-black text-gray-900 tracking-tighter">{formatCurrency(order.sellerSubtotal || 0)}</span>
-                            </div>
                             {!order.allItemsOwnedBySeller && (
                                 <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">
                                     Multi-seller order: only your subtotal is shown here.
@@ -235,6 +232,11 @@ const SellerOrderDetail = () => {
                             )}
                         </div>
                     </div>
+
+                    <SellerCommissionCard
+                        orderId={order._id || order.id}
+                        sellerSubtotal={order.sellerSubtotal || 0}
+                    />
                 </div>
 
                 <div className="lg:col-span-2 space-y-8">

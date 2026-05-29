@@ -11,6 +11,7 @@ const emailTemplates = require("../../../services/emailTemplates");
 const Seller   = require("../../../models/Seller");
 const GiftCard = require("../../../models/GiftCard");
 const { emitNewOrder } = require("../../../services/socketEmitter");
+const { accrueCommissionsForOrder } = require("../../../services/commissionService");
 
 // POST /api/user/payment/razorpay-order
 exports.createRazorpayOrder = async (req, res) => {
@@ -131,6 +132,14 @@ exports.verifyPayment = async (req, res) => {
 
     // 3. Post-creation logic: stock deduction and coupon usage
     await _deductStockForOrder(order.items, order.orderId, order.userId);
+
+    // Platform commission accrual (per-seller ledger entries, status="pending").
+    // Wrapped in `safe: true` so a ledger failure never blocks payment confirmation.
+    try {
+      await accrueCommissionsForOrder(order, { triggeredBy: "payment_verified", safe: true });
+    } catch (e) {
+      console.error("[Commission] Razorpay accrual hook error:", e.message);
+    }
 
     if (order.couponCode) {
       await Coupon.updateOne(

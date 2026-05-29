@@ -7,6 +7,7 @@ const { success, error } = require("../../../utils/apiResponse");
 const { enqueueEmail } = require("../../../services/emailService");
 const emailTemplates = require("../../../services/emailTemplates");
 const { isSerializedVariant, restockSerializedUnits } = require("../../../utils/inventorySync");
+const { reverseCommissionsForOrder } = require("../../../services/commissionService");
 
 const VALID_STATUSES = [
   "Pending",
@@ -344,6 +345,21 @@ exports.updateReturnStatus = async (req, res) => {
             }
           }
         );
+      }
+
+      // ── Platform commission reversal (decision F: full reversal on refund) ──
+      // Fire only when the refund actually completes. The service is idempotent
+      // so accidental re-fires (e.g. Refunded → Closed) are no-ops.
+      if (nextStatus === "Refunded") {
+        try {
+          await reverseCommissionsForOrder(order._id, {
+            triggeredBy: "return_refunded",
+            reasonNote:  `Return ${returnReq.returnId || returnReq._id} refunded`,
+            safe:        true,
+          });
+        } catch (e) {
+          console.error("[Commission] Return-refund reversal error:", e.message);
+        }
       }
     }
 

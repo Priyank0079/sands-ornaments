@@ -20,7 +20,8 @@ import {
     BarChart3,
     Bell,
     Truck,
-    MapPin
+    MapPin,
+    Wallet
 } from 'lucide-react';
 import logo from '@assets/sands-logo.png';
 import logoName from '@assets/sands-logoname.png';
@@ -71,6 +72,7 @@ const SellerSidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
         { name: 'Replacements', icon: RefreshCcw, path: '/seller/replacements' },
         { name: 'Customers', icon: Users, path: '/seller/customers' },
         { name: 'Analytics', icon: BarChart3, path: '/seller/analytics' },
+        { name: 'Commission', icon: Wallet, path: '/seller/commission' },
         { name: 'Notifications', icon: Bell, path: '/seller/notifications' },
         {
             name: 'Direct Sales',

@@ -1,7 +1,56 @@
 const Order = require("../../../models/Order");
+const Commission = require("../../../models/Commission");
 const { success, error } = require("../../../utils/apiResponse");
 const mongoose = require("mongoose");
 const { emitOrderStatusUpdate } = require("../../../services/socketEmitter");
+const {
+  confirmCommissionsForOrder,
+  reverseCommissionsForOrder
+} = require("../../../services/commissionService");
+
+/**
+ * Aggregate per-seller, per-order net commission totals for a list of order IDs.
+ *
+ * Returns Map<orderIdString, { net, confirmed, pending, reversed, status }>.
+ *
+ * Used to enrich seller order list / detail with the seller's own slice of
+ * commission without exposing other sellers' commission on shared orders.
+ */
+const fetchSellerCommissionMap = async (orderIds, sellerId) => {
+  const ids = (orderIds || []).filter(Boolean).map((id) => new mongoose.Types.ObjectId(id));
+  if (ids.length === 0) return new Map();
+
+  const rows = await Commission.aggregate([
+    { $match: { orderId: { $in: ids }, sellerId: new mongoose.Types.ObjectId(sellerId) } },
+    {
+      $group: {
+        _id: { orderId: "$orderId", type: "$type", status: "$status" },
+        amount: { $sum: "$commissionAmount" },
+      },
+    },
+  ]);
+
+  const map = new Map();
+  for (const row of rows) {
+    const key = String(row._id.orderId);
+    if (!map.has(key)) {
+      map.set(key, { confirmed: 0, pending: 0, reversed: 0, net: 0, status: "none" });
+    }
+    const e = map.get(key);
+    const a = Number(row.amount) || 0;
+    if (row._id.type === "reversal" && row._id.status === "confirmed") e.reversed += a;
+    else if (row._id.status === "confirmed") e.confirmed += a;
+    else if (row._id.status === "pending")   e.pending   += a;
+  }
+  for (const entry of map.values()) {
+    entry.net = entry.confirmed - entry.reversed;
+    if (entry.reversed > 0 && (entry.confirmed > 0 || entry.pending > 0)) entry.status = "partial";
+    else if (entry.reversed > 0) entry.status = "reversed";
+    else if (entry.confirmed > 0) entry.status = "confirmed";
+    else if (entry.pending > 0)   entry.status = "pending";
+  }
+  return map;
+};
 
 const normalizeOrderStatus = (value = "") => String(value || "").trim();
 
@@ -23,7 +72,7 @@ const getPrimaryItemImage = (item = {}) =>
   item.productId?.image ||
   "";
 
-const buildSellerOrderSummary = (order, sellerId) => {
+const buildSellerOrderSummary = (order, sellerId, commissionEntry = null) => {
   const sellerItems = filterSellerItems(order.items, sellerId);
   const sellerSubtotal = sellerItems.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0);
   const allItemsOwnedBySeller = sellerItems.length > 0 && sellerItems.length === (order.items || []).length;
@@ -38,6 +87,9 @@ const buildSellerOrderSummary = (order, sellerId) => {
     "Customer";
   const fallbackCustomerEmail = order.customerEmail || user.email || address.email || "";
   const fallbackCustomerPhone = order.customerPhone || user.mobileNumber || address.phone || "";
+
+  const sellerCommission = commissionEntry || { confirmed: 0, pending: 0, reversed: 0, net: 0, status: "none" };
+  const sellerNetEarning = Math.max(0, Number(sellerSubtotal) - Number(sellerCommission.net || 0));
 
   return {
     _id: order._id,
@@ -63,6 +115,9 @@ const buildSellerOrderSummary = (order, sellerId) => {
     allItemsOwnedBySeller,
     canManageStatus: allItemsOwnedBySeller,
     allowedNextStatuses: allItemsOwnedBySeller ? (allowedTransitions[order.status] || []) : [],
+    sellerCommission,
+    sellerNetEarning,
+    commissionSummary: order.commissionSummary || null,
   };
 };
 
@@ -103,8 +158,10 @@ exports.getMyOrders = async (req, res) => {
       Order.countDocuments(query)
     ]);
 
+    const commissionMap = await fetchSellerCommissionMap(orders.map((o) => o._id), sellerId);
+
     const sellerOrders = orders
-      .map((order) => buildSellerOrderSummary(order, sellerId))
+      .map((order) => buildSellerOrderSummary(order, sellerId, commissionMap.get(String(order._id))))
       .filter((order) => order.sellerItemCount > 0);
 
     const totalPages = Math.max(1, Math.ceil(total / limit));
@@ -133,7 +190,8 @@ exports.getMyOrderDetail = async (req, res) => {
 
     if (!order) return error(res, "Order not found", 404);
 
-    const sellerOrder = buildSellerOrderSummary(order, sellerId);
+    const commissionMap = await fetchSellerCommissionMap([order._id], sellerId);
+    const sellerOrder = buildSellerOrderSummary(order, sellerId, commissionMap.get(String(order._id)));
     return success(res, { order: sellerOrder }, "Seller order retrieved");
   } catch (err) { return error(res, err.message); }
 };
@@ -229,6 +287,25 @@ exports.updateOrderStatus = async (req, res) => {
     // ── Realtime: notify the customer of their order status change (best-effort) ──
     if (!isSameStatusUpdate) {
       try { emitOrderStatusUpdate(order); } catch (e) { /* non-blocking */ }
+    }
+
+    // ── Platform commission lifecycle (seller-initiated transitions) ───────────
+    // Delivered → flip pending accruals to confirmed
+    // Cancelled → fully reverse the ledger (decision F)
+    if (!isSameStatusUpdate) {
+      try {
+        if (nextStatus === "Delivered") {
+          await confirmCommissionsForOrder(order._id, { safe: true });
+        } else if (nextStatus === "Cancelled") {
+          await reverseCommissionsForOrder(order._id, {
+            triggeredBy: "order_cancelled",
+            reasonNote:  "Cancelled by seller",
+            safe:        true,
+          });
+        }
+      } catch (e) {
+        console.error("[Commission] Seller status-transition hook error:", e.message);
+      }
     }
 
     return success(

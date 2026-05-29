@@ -12,6 +12,7 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { adminService } from '../services/adminService';
+import CommissionBreakdownCard from '../components/CommissionBreakdownCard';
 
 const STATUS_STYLES = {
     Pending: 'bg-yellow-50 text-yellow-700 border-yellow-100',
@@ -362,6 +363,11 @@ const OrderDetailPage = () => {
                 </div>
 
                 <div className="space-y-6">
+                    <CommissionBreakdownCard
+                        orderId={order._id || order.id}
+                        commissionSummary={order.commissionSummary}
+                    />
+
                     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
                         <div className="flex items-center gap-2">
                             <Truck size={16} className="text-gray-400" />

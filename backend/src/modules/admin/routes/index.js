@@ -21,6 +21,7 @@ router.use("/pages",         require("./page.routes"));
 router.use("/sections",      require("./section.routes"));
 router.use("/shipping",      require("./shipping.routes"));
 router.use("/gift-cards",    require("./giftCard.routes"));
+router.use("/commission",    require("./commission.routes"));
 
 module.exports = router;
 
