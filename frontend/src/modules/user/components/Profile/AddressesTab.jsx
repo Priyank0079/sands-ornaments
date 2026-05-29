@@ -28,7 +28,7 @@ const AddressesTab = ({
 
             {/* Mobile Add Address Form - Full Screen Overlay Style */}
             {showAddressForm && (
-                <div className="md:hidden fixed inset-0 z-[100] bg-[#FDFBF7] flex flex-col animate-in slide-in-from-bottom duration-300">
+                <div className="md:hidden fixed inset-0 z-[200] bg-[#FDFBF7] flex flex-col animate-in slide-in-from-bottom duration-300">
                     <div className="bg-white p-4 shadow-sm flex items-center gap-4 sticky top-0 z-10">
                         <button onClick={() => navigate('/profile/addresses')} className="text-[#3E2723]"><ArrowLeft className="w-5 h-5" /></button>
                         <h2 className="text-lg font-display font-bold text-[#3E2723]">Add New Address</h2>
