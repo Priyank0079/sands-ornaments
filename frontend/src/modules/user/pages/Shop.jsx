@@ -95,6 +95,27 @@ const Shop = () => {
     const [filteredProducts, setFilteredProducts] = useState(products || []);
     const [pageTitle, setPageTitle] = useState('All Jewellery');
     const sidebarScroll = useDragScroll();
+    const [isNavVisible, setIsNavVisible] = useState(true);
+    const lastScrollY = useRef(0);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            const currentScrollY = window.scrollY;
+            if (currentScrollY <= 50) {
+                setIsNavVisible(true);
+            } else if (currentScrollY > lastScrollY.current) {
+                setIsNavVisible(false);
+            } else {
+                setIsNavVisible(true);
+            }
+            lastScrollY.current = currentScrollY;
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+        };
+    }, []);
     const queryParams = new URLSearchParams(location.search);
     const isComingSoonQuery = queryParams.get('status') === 'coming-soon';
     const sourceQuery = queryParams.get('source');
@@ -864,7 +885,7 @@ const Shop = () => {
                     <CategoryHeroBanner category={activeCategory} />
                 )}
                 {/* Sticky Header & Filters Container */}
-                <div className="sticky top-[50px] md:top-[141px] z-[100] bg-white transition-all duration-300">
+                <div className={`sticky z-[100] bg-white transition-all duration-300 ${isNavVisible ? 'top-[50px] md:top-[141px]' : 'top-0'}`}>
                     {/* Header Section - Single Row: Title Left, Filter Button Right */}
                     <div className="pt-2 md:pt-4 flex flex-row justify-between items-center mb-2 md:mb-4 pb-2 md:pb-4 border-b border-[#EBCDD0] gap-4">
                         <div className="text-left shrink-0">
