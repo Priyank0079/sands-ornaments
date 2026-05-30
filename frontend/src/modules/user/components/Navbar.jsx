@@ -277,11 +277,8 @@ const Navbar = () => {
 
             {/* Mobile Header */}
             <div className="lg:hidden flex items-center justify-between px-4 py-1.5 border-b border-pink-100">
-                <button onClick={() => setIsMenuOpen(true)} className="p-1">
-                    <Menu className="w-7 h-7 text-gray-800" />
-                </button>
-                <Link to="/">
-                    <img src={logo} alt="Sands Jewels" className="h-[72px] w-auto object-contain" />
+                <Link to="/" className="block">
+                    <img src={logo} alt="Sands Jewels" className="h-[72px] w-auto object-contain transform scale-[1.35] origin-left" />
                 </Link>
                 <div className="flex items-center gap-4 sm:gap-5">
                     <Link to={user ? "/profile" : "/login"} className="relative">
@@ -293,6 +290,9 @@ const Navbar = () => {
                     <Link to="/cart" className="relative">
                         <ShoppingCart className="w-6 h-6 text-gray-800" />
                     </Link>
+                    <button onClick={() => setIsMenuOpen(true)} className="p-1">
+                        <Menu className="w-7 h-7 text-gray-800" />
+                    </button>
                 </div>
             </div>
 

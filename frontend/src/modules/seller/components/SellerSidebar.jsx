@@ -156,18 +156,18 @@ const SellerSidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                             <div key={item.name} className="flex flex-col">
                                 <button
                                     onClick={() => handleMenuClick(item)}
-                                    className={`flex items-center gap-4 px-6 py-4 lg:py-3.5 rounded-xl lg:rounded-none transition-all w-full text-left ${isActive && !item.subItems
-                                        ? 'bg-[#8D6E63] text-white shadow-lg lg:scale-100 scale-[1.02]'
-                                        : isActive && item.subItems ? 'text-white bg-white/5' : 'text-gray-200 hover:bg-white/10 hover:text-white'
+                                    className={`flex items-center gap-4 px-6 py-3 transition-all w-full text-left ${isActive && !item.subItems
+                                        ? 'bg-white/10 text-white border-l-2 border-white'
+                                        : isActive && item.subItems ? 'text-white bg-white/5 border-l-2 border-white/50' : 'text-white/60 hover:bg-white/5 hover:text-white border-l-2 border-transparent'
                                         }`}
                                 >
-                                    <item.icon className={`w-6 h-6 lg:w-6 lg:h-6 flex-shrink-0 ${isActive ? 'text-white' : ''}`} />
+                                    <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-white' : 'text-white/60'}`} />
                                     {(isSidebarOpen || window.innerWidth <= 1024) && (
                                         <>
-                                            <span className="text-lg lg:text-base font-semibold flex-1 tracking-wide">{item.name}</span>
+                                            <span className={`text-sm tracking-wide flex-1 ${isActive ? 'font-medium' : 'font-light'}`}>{item.name}</span>
                                             {item.subItems && (
                                                 <div className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
-                                                    <ChevronDown className="w-5 h-5" />
+                                                    <ChevronDown className="w-4 h-4 opacity-50" />
                                                 </div>
                                             )}
                                         </>
@@ -175,20 +175,20 @@ const SellerSidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                                 </button>
 
                                 {item.subItems && isExpanded && (isSidebarOpen || window.innerWidth <= 1024) && (
-                                    <div className="bg-black/20 lg:bg-transparent overflow-hidden animate-in slide-in-from-top-2 duration-200">
+                                    <div className="bg-black/10 lg:bg-transparent overflow-hidden animate-in slide-in-from-top-2 duration-200 py-1">
                                         {item.subItems.map((subItem) => {
                                             const isSubActive = location.pathname === subItem.path;
                                             return (
                                                 <button
                                                     key={subItem.path}
                                                     onClick={() => navigate(subItem.path)}
-                                                    className={`flex items-center gap-3 pl-14 pr-6 py-3 w-full text-left transition-all ${isSubActive
-                                                        ? 'text-white bg-white/5 font-bold'
-                                                        : 'text-white/90 hover:text-white hover:bg-white/5'
+                                                    className={`flex items-center gap-3 pl-14 pr-6 py-2.5 w-full text-left transition-all ${isSubActive
+                                                        ? 'text-white font-medium bg-white/5'
+                                                        : 'text-white/60 hover:text-white hover:bg-white/5 font-light'
                                                         }`}
                                                 >
-                                                    <subItem.icon className="w-4 h-4" />
-                                                    <span className="text-base font-medium">{subItem.name}</span>
+                                                    <subItem.icon className="w-4 h-4 opacity-80" />
+                                                    <span className="text-sm tracking-wide">{subItem.name}</span>
                                                 </button>
                                             )
                                         })}
@@ -200,13 +200,13 @@ const SellerSidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                 </nav>
             </div>
 
-            <div className="p-6 lg:p-4 border-t border-white/10 shrink-0 bg-[#3E2723]">
+            <div className="py-2 border-t border-white/10 shrink-0 bg-[#3E2723]">
                 <button
                     onClick={handleLogout}
-                    className="flex items-center gap-4 text-gray-400 hover:text-white transition-colors w-full px-2 py-3 lg:py-2"
+                    className="flex items-center gap-4 text-white/60 hover:text-white hover:bg-white/5 transition-all w-full px-6 py-3 border-l-2 border-transparent font-light"
                 >
-                    <LogOut className="w-6 h-6 lg:w-6 lg:h-6" />
-                    {(isSidebarOpen || window.innerWidth <= 1024) && <span className="text-lg lg:text-base font-semibold">Logout</span>}
+                    <LogOut className="w-5 h-5 flex-shrink-0 opacity-80" />
+                    {(isSidebarOpen || window.innerWidth <= 1024) && <span className="text-sm tracking-wide">Logout</span>}
                 </button>
             </div>
         </aside>

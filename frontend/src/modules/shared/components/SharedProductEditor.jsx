@@ -743,29 +743,29 @@ const SharedProductEditor = ({
                                 <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
                             </button>
                             <div>
-                                <h1 className="text-xl font-black text-[#3E2723] uppercase tracking-tight flex items-center gap-3">
-                                    {isEditMode ? 'Modify Artifact' : (isViewMode ? 'Artifact Inspection' : 'Register New Artifact')}
-                                    {isEditMode && <span className="px-2 py-0.5 rounded-lg bg-amber-100 text-amber-700 text-[9px] font-black tracking-widest">{formData.productCode || 'GEN-001'}</span>}
+                                <h1 className="text-2xl font-light text-gray-800 tracking-wide flex items-center gap-3">
+                                    {isEditMode ? 'Edit Product' : (isViewMode ? 'View Product' : 'New Product')}
+                                    {isEditMode && <span className="px-2 py-0.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 text-xs font-medium tracking-wide">{formData.productCode || 'GEN-001'}</span>}
                                 </h1>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">
-                                    {isAdminMode ? 'Enterprise Master Registry' : 'Authorized Merchant Catalogue'}
+                                <p className="text-sm font-light text-gray-500 mt-1">
+                                    {isAdminMode ? 'Admin Product Management' : 'Seller Product Management'}
                                 </p>
                             </div>
                         </div>
 
                         {/* Top Navigation Tabs */}
-                        <div className="flex items-center p-1.5 bg-gray-100/50 rounded-2xl border border-gray-100 overflow-x-auto no-scrollbar">
+                        <div className="flex items-center p-1.5 bg-gray-50 rounded-xl border border-gray-100 overflow-x-auto no-scrollbar">
                             {tabItems.map((tab) => (
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
-                                    className={`flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                                    className={`flex items-center gap-2.5 px-5 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
                                         activeTab === tab.id 
-                                        ? 'bg-white text-[#3E2723] shadow-md ring-1 ring-black/5' 
-                                        : 'text-gray-400 hover:text-gray-600'
+                                        ? 'bg-white text-gray-800 shadow-sm border border-gray-100' 
+                                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100/50'
                                     }`}
                                 >
-                                    <tab.icon size={14} />
+                                    <tab.icon size={16} className={activeTab === tab.id ? 'text-gray-700' : 'text-gray-400'} />
                                     {tab.label}
                                 </button>
                             ))}
@@ -775,10 +775,10 @@ const SharedProductEditor = ({
                             <button
                                 onClick={handleSubmit}
                                 disabled={isSaving}
-                                className="px-8 py-3.5 bg-[#3E2723] text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-amber-900/20 hover:bg-black transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
+                                className="px-6 py-2.5 bg-gray-900 text-white rounded-lg text-sm font-medium shadow-sm hover:bg-black transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
                             >
-                                {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Zap size={16} />}
-                                {isEditMode ? 'Commit Changes' : 'Publish Manifest'}
+                                {isSaving ? <Loader2 size={16} className="animate-spin" /> : <SuccessIcon size={16} />}
+                                {isEditMode ? 'Update Product' : 'Save Product'}
                             </button>
                         )}
                     </div>

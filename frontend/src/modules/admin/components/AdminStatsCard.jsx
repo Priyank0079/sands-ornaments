@@ -1,8 +1,11 @@
 import React from 'react';
 
-const AdminStatsCard = ({ label, value, icon: Icon, color, bgColor, badge, badgeColor }) => {
+const AdminStatsCard = ({ label, value, icon: Icon, color, bgColor, badge, badgeColor, onClick }) => {
     return (
-        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all group relative overflow-hidden flex items-center justify-between h-full">
+        <div 
+            onClick={onClick}
+            className={`bg-white p-5 rounded-xl border border-gray-200 shadow-sm transition-all group relative overflow-hidden flex items-center justify-between h-full ${onClick ? 'cursor-pointer hover:border-gray-300 hover:shadow-md' : 'hover:shadow-md'}`}
+        >
             <div className="text-left">
                 <p className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">{label}</p>
                 <h3 className="text-2xl md:text-3xl font-bold text-gray-900">{value}</h3>

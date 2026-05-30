@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
     Users, MousePointer2, Clock, Target, 
     Smartphone, Monitor, Globe, ArrowUpRight,
@@ -12,9 +13,10 @@ import api from '../../../services/api';
 import AdminStatsCard from '../components/AdminStatsCard';
 import Loader from '../../shared/components/Loader';
 
-const COLORS = ['#3E2723', '#8D6E63', '#D39A9F', '#FFE1E6', '#FDFBF7'];
+const COLORS = ['#4F46E5', '#10B981', '#F59E0B', '#6366F1', '#EC4899'];
 
 const AnalyticsDashboard = () => {
+    const navigate = useNavigate();
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -42,9 +44,9 @@ const AnalyticsDashboard = () => {
     return (
         <div className="space-y-8 animate-in fade-in duration-700 pb-20">
             {/* Header */}
-            <div className="text-left">
-                <h1 className="text-2xl font-bold text-gray-900 uppercase tracking-tight">VISITOR ANALYTICS</h1>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mt-1">Real-time visitor tracking & engagement metrics</p>
+            <div className="text-left mb-8">
+                <h1 className="text-2xl font-light text-gray-800 tracking-wide">Visitor Analytics</h1>
+                <p className="text-sm font-light text-gray-500 mt-1">Real-time visitor tracking and engagement metrics</p>
             </div>
 
             {/* Overview Cards */}
@@ -55,6 +57,7 @@ const AnalyticsDashboard = () => {
                     icon={Users} 
                     color="text-blue-500" 
                     bgColor="bg-blue-50" 
+                    onClick={() => navigate('/admin/users')}
                 />
                 <AdminStatsCard 
                     label="ACTIVE NOW" 
@@ -64,6 +67,7 @@ const AnalyticsDashboard = () => {
                     bgColor="bg-emerald-50" 
                     badge="LIVE" 
                     badgeColor="text-emerald-600"
+                    onClick={() => navigate('/admin/users')}
                 />
                 <AdminStatsCard 
                     label="TOTAL SESSIONS" 
@@ -71,6 +75,7 @@ const AnalyticsDashboard = () => {
                     icon={Clock} 
                     color="text-orange-500" 
                     bgColor="bg-orange-50" 
+                    onClick={() => navigate('/admin/users')}
                 />
                 <AdminStatsCard 
                     label="CAPTURED LEADS" 
@@ -78,6 +83,7 @@ const AnalyticsDashboard = () => {
                     icon={Target} 
                     color="text-pink-500" 
                     bgColor="bg-pink-50" 
+                    onClick={() => navigate('/admin/users')}
                 />
             </div>
 
@@ -85,17 +91,17 @@ const AnalyticsDashboard = () => {
             <div className="grid grid-cols-2 gap-4">
                 <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
                     <div>
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Bounce Rate</p>
-                        <h4 className="text-2xl font-black text-gray-900 mt-1">{overview.bounceRate}%</h4>
+                        <p className="text-sm font-medium text-gray-500">Bounce Rate</p>
+                        <h4 className="text-2xl font-semibold text-gray-800 mt-1">{overview.bounceRate}%</h4>
                     </div>
-                    <div className="w-12 h-12 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center">
+                    <div className="w-12 h-12 bg-rose-50 text-rose-500 rounded-xl flex items-center justify-center">
                         <ArrowUpRight size={20} className={overview.bounceRate > 50 ? 'rotate-0' : 'rotate-180'} />
                     </div>
                 </div>
                 <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
                     <div>
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Avg. Session Duration</p>
-                        <h4 className="text-2xl font-black text-gray-900 mt-1">{Math.floor(overview.avgSessionDuration / 60)}m {overview.avgSessionDuration % 60}s</h4>
+                        <p className="text-sm font-medium text-gray-500">Avg. Session Duration</p>
+                        <h4 className="text-2xl font-semibold text-gray-800 mt-1">{Math.floor(overview.avgSessionDuration / 60)}m {overview.avgSessionDuration % 60}s</h4>
                     </div>
                     <div className="w-12 h-12 bg-indigo-50 text-indigo-500 rounded-2xl flex items-center justify-center">
                         <Clock size={20} />
@@ -105,7 +111,7 @@ const AnalyticsDashboard = () => {
 
             {/* Traffic Trends */}
             <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-6">Traffic Trends (Last 30 Days)</h3>
+                <h3 className="text-lg font-medium text-gray-800 mb-6">Traffic Trends (Last 30 Days)</h3>
                 <div className="h-80 w-full">
                     <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={trafficTrends}>
@@ -130,7 +136,7 @@ const AnalyticsDashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Device Distribution */}
                 <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-6">Device Distribution</h3>
+                    <h3 className="text-lg font-medium text-gray-800 mb-6">Device Distribution</h3>
                     <div className="h-64">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
@@ -157,15 +163,15 @@ const AnalyticsDashboard = () => {
 
                 {/* Conversion Funnel */}
                 <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-6">Conversion Funnel</h3>
+                    <h3 className="text-lg font-medium text-gray-800 mb-6">Conversion Funnel</h3>
                     <div className="space-y-4">
                         {funnel.map((item, idx) => {
                             const percentage = idx === 0 ? 100 : Math.round((item.count / funnel[0].count) * 100);
                             return (
                                 <div key={item.step} className="space-y-2">
-                                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-gray-500">
+                                    <div className="flex justify-between text-xs font-medium text-gray-600 tracking-wide uppercase">
                                         <span>{item.step.replace('_', ' ')}</span>
-                                        <span>{item.count} ({percentage}%)</span>
+                                        <span className="font-semibold">{item.count} ({percentage}%)</span>
                                     </div>
                                     <div className="h-2 bg-gray-50 rounded-full overflow-hidden">
                                         <div 
@@ -183,15 +189,15 @@ const AnalyticsDashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Top Countries */}
                 <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-6">Top Countries</h3>
+                    <h3 className="text-lg font-medium text-gray-800 mb-6">Top Countries</h3>
                     <div className="space-y-4">
                         {countryStats?.map((item, idx) => (
                             <div key={idx} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition-colors">
                                 <div className="flex items-center gap-3">
                                     <Globe className="text-gray-400" size={16} />
-                                    <span className="text-xs font-semibold text-gray-700 uppercase tracking-tight">{item._id || 'UNKNOWN'}</span>
+                                    <span className="text-sm font-medium text-gray-700">{item._id || 'UNKNOWN'}</span>
                                 </div>
-                                <span className="text-xs font-black text-gray-900">{item.count} VISITORS</span>
+                                <span className="text-sm font-semibold text-gray-800">{item.count} visitors</span>
                             </div>
                         ))}
                         {(!countryStats || countryStats.length === 0) && <p className="text-[10px] font-bold text-gray-400 uppercase text-center py-4">Collecting data...</p>}
@@ -200,15 +206,15 @@ const AnalyticsDashboard = () => {
 
                 {/* Top Cities */}
                 <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-6">Top Cities</h3>
+                    <h3 className="text-lg font-medium text-gray-800 mb-6">Top Cities</h3>
                     <div className="space-y-4">
                         {cityStats?.map((item, idx) => (
                             <div key={idx} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition-colors">
                                 <div className="flex items-center gap-3">
                                     <MapPin className="text-gray-400" size={16} />
-                                    <span className="text-xs font-semibold text-gray-700 uppercase tracking-tight">{item._id || 'UNKNOWN'}</span>
+                                    <span className="text-sm font-medium text-gray-700">{item._id || 'UNKNOWN'}</span>
                                 </div>
-                                <span className="text-xs font-black text-gray-900">{item.count} VISITORS</span>
+                                <span className="text-sm font-semibold text-gray-800">{item.count} visitors</span>
                             </div>
                         ))}
                         {(!cityStats || cityStats.length === 0) && <p className="text-[10px] font-bold text-gray-400 uppercase text-center py-4">Collecting data...</p>}
@@ -219,37 +225,41 @@ const AnalyticsDashboard = () => {
             {/* Recent Leads Table */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="p-6 border-b border-gray-50 flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Recent Captured Leads</h3>
-                    <Target size={16} className="text-gray-300" />
+                    <h3 className="text-lg font-medium text-gray-800">Recent Captured Leads</h3>
+                    <Target size={18} className="text-gray-400" />
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead>
                             <tr className="bg-gray-50/50">
-                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Contact</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Source</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Cart Items</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Date</th>
+                                <th className="px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                                <th className="px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
+                                <th className="px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Cart Items</th>
+                                <th className="px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
                             {data.recentLeads?.map((lead, idx) => (
-                                <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
+                                <tr 
+                                    key={idx} 
+                                    onClick={() => navigate('/admin/users')}
+                                    className="hover:bg-gray-50/50 transition-colors cursor-pointer"
+                                >
                                     <td className="px-6 py-4">
                                         <div className="flex flex-col">
-                                            <span className="text-[10px] font-black text-gray-900 uppercase truncate max-w-[150px]">{lead.email}</span>
-                                            <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{lead.phone || 'NO PHONE'}</span>
+                                            <span className="text-sm font-medium text-gray-800 truncate max-w-[150px]">{lead.email}</span>
+                                            <span className="text-xs font-light text-gray-500 mt-0.5">{lead.phone || 'No phone'}</span>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className="px-2 py-1 bg-gray-100 text-[8px] font-black text-gray-500 rounded-md uppercase tracking-widest">
-                                            {lead.source?.replace('_', ' ')}
+                                        <span className="px-2.5 py-1 bg-gray-100 text-xs font-medium text-gray-600 rounded-md capitalize">
+                                            {lead.source?.replace('_', ' ').toLowerCase()}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-[10px] font-black text-gray-700">
-                                        {lead.lastCart?.length || 0} ITEMS
+                                    <td className="px-6 py-4 text-sm font-medium text-gray-700">
+                                        {lead.lastCart?.length || 0} items
                                     </td>
-                                    <td className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase">
+                                    <td className="px-6 py-4 text-sm font-light text-gray-500">
                                         {new Date(lead.capturedAt).toLocaleDateString()}
                                     </td>
                                 </tr>
@@ -262,17 +272,21 @@ const AnalyticsDashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Top Viewed Products */}
                 <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-6">Top Engaging Products</h3>
+                    <h3 className="text-lg font-medium text-gray-800 mb-6">Top Engaging Products</h3>
                     <div className="space-y-4">
                         {productStats.map((prod, idx) => (
-                            <div key={idx} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition-colors">
+                            <div 
+                                key={idx} 
+                                onClick={() => navigate(prod._id ? `/admin/products/view/${prod._id}` : '/admin/products')}
+                                className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer"
+                            >
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-400">
+                                    <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center text-xs font-semibold text-gray-500">
                                         {idx + 1}
                                     </div>
-                                    <span className="text-xs font-semibold text-gray-700 uppercase tracking-tight">{prod.name}</span>
+                                    <span className="text-sm font-medium text-gray-700">{prod.name}</span>
                                 </div>
-                                <span className="text-xs font-black text-gray-900">{prod.views} VIEWS</span>
+                                <span className="text-sm font-semibold text-gray-800">{prod.views} views</span>
                             </div>
                         ))}
                     </div>
@@ -280,19 +294,19 @@ const AnalyticsDashboard = () => {
 
                 {/* Top Traffic Pages */}
                 <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-6">Most Visited Pages</h3>
+                    <h3 className="text-lg font-medium text-gray-800 mb-6">Most Visited Pages</h3>
                     <div className="space-y-4">
                         {topPages.map((page, idx) => (
                             <div key={idx} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition-colors">
-                                <span className="text-xs font-semibold text-gray-600 truncate max-w-[250px]">{page._id}</span>
+                                <span className="text-sm font-medium text-gray-600 truncate max-w-[250px]">{page._id}</span>
                                 <div className="flex items-center gap-2">
                                     <div className="h-1.5 w-12 bg-gray-100 rounded-full overflow-hidden">
                                         <div 
-                                            className="h-full bg-emerald-500" 
+                                            className="h-full bg-indigo-500" 
                                             style={{ width: `${(page.views / topPages[0].views) * 100}%` }}
                                         />
                                     </div>
-                                    <span className="text-[10px] font-black text-gray-900">{page.views}</span>
+                                    <span className="text-sm font-semibold text-gray-800">{page.views}</span>
                                 </div>
                             </div>
                         ))}

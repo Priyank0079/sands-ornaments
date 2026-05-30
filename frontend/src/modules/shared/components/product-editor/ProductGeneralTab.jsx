@@ -53,7 +53,7 @@ const ProductGeneralTab = ({
                         />
                         
                         <div className="space-y-2">
-                            <label className="block text-xs font-semibold text-gray-700 tracking-wide uppercase">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Category <span className="text-red-500">*</span>
                             </label>
                             
@@ -64,7 +64,7 @@ const ProductGeneralTab = ({
                                         value={categorySearchQuery}
                                         onChange={(e) => setCategorySearchQuery(e.target.value)}
                                         placeholder="Type to filter categories..."
-                                        className="w-full bg-gray-50/50 border border-gray-200 rounded-xl py-2.5 pl-10 pr-10 text-xs font-bold text-gray-800 outline-none focus:bg-white focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm"
+                                        className="w-full bg-gray-50/50 border border-gray-200 rounded-xl py-2.5 pl-10 pr-10 text-sm font-normal text-gray-800 outline-none focus:bg-white focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm"
                                     />
                                     <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#3E2723] transition-colors">
                                         <Search size={14} />
@@ -96,7 +96,7 @@ const ProductGeneralTab = ({
                                     </option>
                                 ))}
                             </select>
-                            {errors.categories && <span className="text-[10px] text-red-500 font-bold ml-1">{errors.categories}</span>}
+                            {errors.categories && <span className="text-xs text-red-500 mt-1 block">{errors.categories}</span>}
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -215,7 +215,7 @@ const ProductGeneralTab = ({
             <FormSection title="Visual Narrative & Descriptions">
                 <div className="space-y-8">
                     <div className="space-y-3">
-                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Product Description</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product Description</label>
                         <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
                             <ReactQuill
                                 theme="snow"
@@ -231,7 +231,7 @@ const ProductGeneralTab = ({
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-3">
-                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Specifications</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Specifications</label>
                             <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
                                 <ReactQuill
                                     theme="snow"
@@ -246,7 +246,7 @@ const ProductGeneralTab = ({
                         </div>
 
                         <div className="space-y-3">
-                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Supplier Info</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Supplier Info</label>
                             <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
                                 <ReactQuill
                                     theme="snow"
@@ -263,7 +263,7 @@ const ProductGeneralTab = ({
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-3">
-                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Styling Protocol</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Styling Protocol</label>
                             <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
                                 <ReactQuill
                                     theme="snow"
@@ -279,12 +279,12 @@ const ProductGeneralTab = ({
 
                         <div className="space-y-3">
                             <div className="flex items-center justify-between px-1 mb-1">
-                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Caring Protocol</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Caring Protocol</label>
                                 {!isViewMode && (
                                     <button 
                                         type="button"
                                         onClick={() => setFormData(prev => ({ ...prev, careTips: "<p><strong>Jewelry Care Guide:</strong></p><ul><li>Avoid direct contact with perfumes, lotions, and hairsprays.</li><li>Remove jewelry before swimming, bathing, or exercising.</li><li>Store in a cool, dry place, ideally in an airtight bag or box.</li><li>Clean occasionally with a soft, lint-free cloth to restore shine.</li></ul>" }))}
-                                        className="text-[9px] font-black text-amber-700 uppercase tracking-widest hover:underline flex items-center gap-1.5"
+                                        className="text-xs font-medium text-amber-700 hover:text-amber-800 transition-colors flex items-center gap-1.5"
                                     >
                                         <Plus size={12} /> Load Template
                                     </button>
@@ -311,9 +311,9 @@ const ProductGeneralTab = ({
                 <FormSection title="Registry Identity">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                         <div className="p-4 sm:p-8 bg-[#FDFBF7] rounded-[2rem] border border-amber-100/50 flex flex-col items-center justify-center text-center shadow-inner">
-                             <p className="text-[10px] font-black text-amber-600 uppercase tracking-[0.2em] mb-4">Master Identity</p>
+                             <p className="text-sm font-medium text-amber-700 mb-4">Master Identity</p>
                              <div className="flex items-center gap-4">
-                                 <span className="text-2xl font-mono font-black text-[#3E2723] tracking-[0.2em]">
+                                 <span className="text-2xl font-mono text-gray-900 tracking-wide">
                                      {formData.productCode || createdProductData?.productCode || 'LOCKING...'}
                                  </span>
                                  <button 
@@ -328,13 +328,13 @@ const ProductGeneralTab = ({
                              </div>
                              <div className="mt-6 flex items-center gap-2 px-3 py-1 bg-white rounded-full border border-amber-100 shadow-sm">
                                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                <span className="text-[8px] font-black text-amber-700 uppercase tracking-widest">Registry Synchronized</span>
+                                <span className="text-xs font-medium text-amber-700">Registry Synchronized</span>
                              </div>
                         </div>
 
                         <div className="bg-white p-4 sm:p-8 rounded-[2rem] border border-gray-100 space-y-6 shadow-sm flex flex-col items-center justify-center group">
                             <div className="flex items-center justify-between w-full">
-                                 <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Barcode Artifact</span>
+                                 <span className="text-sm font-medium text-gray-500">Barcode Artifact</span>
                                  <button 
                                     onClick={() => downloadImage(formData.barcode || createdProductData?.barcode, `barcode-${formData.productCode}.png`)}
                                     className="p-2 text-gray-400 hover:text-[#3E2723] hover:bg-gray-50 rounded-xl transition-all"
@@ -355,7 +355,7 @@ const ProductGeneralTab = ({
 
                         <div className="bg-white p-4 sm:p-8 rounded-[2rem] border border-gray-100 space-y-6 shadow-sm flex flex-col items-center justify-center group">
                             <div className="flex items-center justify-between w-full">
-                                 <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Visual QR Artifact</span>
+                                 <span className="text-sm font-medium text-gray-500">Visual QR Artifact</span>
                                  <button 
                                     onClick={() => downloadImage(formData.qrCode || createdProductData?.qrCode || `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${formData.productCode || createdProductData?.productCode}`, `qr-${formData.productCode}.png`)}
                                     className="p-2 text-gray-400 hover:text-[#3E2723] hover:bg-gray-50 rounded-xl transition-all"
@@ -374,7 +374,7 @@ const ProductGeneralTab = ({
                                  ) : (
                                      <div className="flex flex-col items-center text-gray-300">
                                         <Loader2 className="w-5 h-5 animate-spin mb-2" />
-                                        <span className="text-[8px] font-black uppercase tracking-widest">Rendering</span>
+                                        <span className="text-xs font-medium text-gray-500">Rendering</span>
                                      </div>
                                  )}
                             </div>
@@ -424,13 +424,13 @@ const ProductGeneralTab = ({
                                                 setFormData({ ...formData, audience: normalized.length > 0 ? normalized : ['unisex'] });
                                             }}
                                         />
-                                        <span className="text-[10px] font-black uppercase tracking-widest">{key}</span>
+                                        <span className="text-sm font-medium">{key}</span>
                                     </label>
                                 );
                             })}
                         </div>
-                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed mt-6 flex items-start gap-2">
-                            <Info size={12} className="mt-0.5" />
+                        <p className="text-xs font-light text-gray-500 mt-6 flex items-start gap-2">
+                            <Info size={14} className="mt-0.5 shrink-0" />
                             Defines which store departments this artifact is discoverable in. Default is "Unisex".
                         </p>
                     </div>
