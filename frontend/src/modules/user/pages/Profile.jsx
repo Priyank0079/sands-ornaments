@@ -92,11 +92,13 @@ const Profile = () => {
         navigate('/profile/profile');
     };
 
-    const handleAddAddress = (e) => {
+    const handleAddAddress = async (e) => {
         e.preventDefault();
-        addAddress(normalizeAddressPayload(newAddress));
-        navigate('/profile/addresses');
-        setNewAddress(EMPTY_ADDRESS);
+        const success = await addAddress(normalizeAddressPayload(newAddress));
+        if (success) {
+            navigate('/profile/addresses');
+            setNewAddress(EMPTY_ADDRESS);
+        }
     };
 
     const handleCopyCoupon = (code) => {

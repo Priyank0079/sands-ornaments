@@ -163,7 +163,7 @@ const ProductAdvancedTab = ({
                         </div>
                     </div>
 
-                    <div className="bg-[#FDFBF7] rounded-[2.5rem] p-8 border border-amber-100/50 space-y-6">
+                    <div className="bg-[#FDFBF7] rounded-[2.5rem] p-4 sm:p-8 border border-amber-100/50 space-y-6">
                         <div className="space-y-4">
                             <Input
                                 label="SEO Meta Title"
@@ -212,7 +212,7 @@ const ProductAdvancedTab = ({
                         </div>
                     </div>
 
-                    <div className="bg-emerald-50/30 rounded-[2.5rem] p-8 border border-emerald-100/50 space-y-6">
+                    <div className="bg-emerald-50/30 rounded-[2.5rem] p-4 sm:p-8 border border-emerald-100/50 space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Est. Shipping Days</label>

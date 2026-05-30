@@ -72,7 +72,7 @@ const ProductVariantsTab = ({
                         <div key={v.id} className={`bg-white rounded-[2rem] border transition-all overflow-hidden ${isExpanded ? 'border-amber-200 shadow-xl ring-1 ring-amber-100' : 'border-gray-100 shadow-sm hover:shadow-md'}`}>
                             {/* Variant Header/Summary */}
                             <div 
-                                className={`p-6 flex items-center justify-between cursor-pointer transition-colors ${isExpanded ? 'bg-amber-50/30' : 'hover:bg-gray-50'}`}
+                                className={`p-4 sm:p-6 flex items-center justify-between cursor-pointer transition-colors ${isExpanded ? 'bg-amber-50/30' : 'hover:bg-gray-50'}`}
                                 onClick={() => toggleExpand(v.id)}
                             >
                                 <div className="flex items-center gap-4">
@@ -118,7 +118,7 @@ const ProductVariantsTab = ({
 
                             {/* Variant Body */}
                             {isExpanded && (
-                                <div className="p-8 pt-2 border-t border-gray-100 space-y-10 animate-in slide-in-from-top-2 duration-300">
+                                <div className="p-4 sm:p-8 pt-2 border-t border-gray-100 space-y-10 animate-in slide-in-from-top-2 duration-300">
                                     {/* Physical Specifications */}
                                     <div className="space-y-6">
                                         <div className="flex items-center justify-between border-b border-gray-50 pb-2">
@@ -131,7 +131,7 @@ const ProductVariantsTab = ({
                                             <span className="text-[9px] font-black text-gray-300 uppercase tracking-widest">Step 1</span>
                                         </div>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
                                             <div className="space-y-2">
                                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
                                                     <Tag size={10} className="text-amber-500" /> Variant Name
@@ -170,14 +170,14 @@ const ProductVariantsTab = ({
                                                         value={v.weight ?? ''}
                                                         onChange={(e) => handleVariantChange(v.id, 'weight', e.target.value)}
                                                         disabled={isViewMode}
-                                                        className="flex-1 bg-white border border-gray-200 rounded-xl py-3.5 px-5 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm"
+                                                        className="flex-1 min-w-0 bg-white border border-gray-200 rounded-xl py-3.5 px-5 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm"
                                                         placeholder="0"
                                                     />
                                                     <select
                                                         value={v.weightUnit || 'Grams'}
                                                         onChange={(e) => handleVariantChange(v.id, 'weightUnit', e.target.value)}
                                                         disabled={isViewMode}
-                                                        className="w-24 bg-gray-50 border border-gray-200 rounded-xl px-2 text-[10px] font-black uppercase tracking-widest text-gray-600 outline-none focus:border-[#3E2723] transition-all cursor-pointer"
+                                                        className="w-24 min-w-0 bg-gray-50 border border-gray-200 rounded-xl px-2 text-[10px] font-black uppercase tracking-widest text-gray-600 outline-none focus:border-[#3E2723] transition-all cursor-pointer"
                                                     >
                                                         {variantWeightUnitOptions.map((option) => (
                                                             <option key={option.value} value={option.value}>{option.label}</option>
@@ -207,7 +207,7 @@ const ProductVariantsTab = ({
                                             </div>
                                         </div>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
                                             <div className="space-y-3">
                                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
                                                     <IndianRupee size={10} className="text-amber-500" /> Making Charge
@@ -304,7 +304,7 @@ const ProductVariantsTab = ({
                                             <span className="text-[9px] font-black text-gray-300 uppercase tracking-widest">Step 2</span>
                                         </div>
 
-                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
                                             <div className="space-y-3">
                                                 <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Metal Price</label>
                                                 <div className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-4 px-5 text-sm font-black text-gray-800 shadow-inner flex items-center gap-2">
@@ -337,7 +337,7 @@ const ProductVariantsTab = ({
                                             </div>
                                         </div>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 items-end">
                                             <div className="space-y-3">
                                                 <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Price After GST</label>
                                                 <div className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-4 px-5 text-sm font-black text-gray-800 shadow-inner flex items-center gap-2">
@@ -350,14 +350,14 @@ const ProductVariantsTab = ({
                                                     <span className="text-[10px] text-gray-400">Rs</span> {pricing.pgChargeAmount.toFixed(2)}
                                                 </div>
                                             </div>
-                                            <div className="space-y-3">
+                                            <div className="space-y-3 sm:col-span-2 md:col-span-1">
                                                 <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest ml-1 flex items-center gap-1.5">
                                                     <SuccessIcon size={12} /> Final Variant Price
                                                 </label>
                                                 <div className="relative overflow-hidden rounded-[1.5rem] border-2 border-amber-200 bg-amber-50/30 shadow-lg group h-[60px] flex items-center">
-                                                    <div className="relative px-6 flex items-center justify-between w-full">
+                                                    <div className="relative px-4 sm:px-6 flex items-center justify-between w-full">
                                                         <span className="text-[9px] font-black text-amber-800 uppercase tracking-widest">Total</span>
-                                                        <span className="text-xl font-black text-[#3E2723] font-mono tracking-tighter">
+                                                        <span className="text-base sm:text-lg md:text-xl font-black text-[#3E2723] font-mono tracking-tighter">
                                                             Rs {pricing.finalPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                                                         </span>
                                                     </div>
@@ -440,7 +440,7 @@ const ProductVariantsTab = ({
 
                                     {/* Diamond Specs (Conditional) */}
                                     {(v.diamondType || formData.diamondType) !== 'none' && (
-                                        <div className="bg-pink-50/30 rounded-[2.5rem] p-8 border border-pink-100/50 space-y-6">
+                                        <div className="bg-pink-50/30 rounded-[2.5rem] p-4 sm:p-8 border border-pink-100/50 space-y-6">
                                             <div className="flex items-center gap-3 mb-2">
                                                 <div className="p-2 bg-pink-100 rounded-xl text-pink-600">
                                                     <Sparkles size={18} />
@@ -450,7 +450,7 @@ const ProductVariantsTab = ({
                                                     <p className="text-[8px] font-bold text-pink-400 uppercase mt-0.5">High-precision optical specifications</p>
                                                 </div>
                                             </div>
-                                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
                                                 {[
                                                     { label: 'Carat', key: 'carat', placeholder: 'e.g. 0.50' },
                                                     { label: 'Clarity', key: 'clarity', placeholder: 'e.g. VVS1' },
@@ -482,7 +482,7 @@ const ProductVariantsTab = ({
                                                 <h4 className="text-[10px] font-black text-gray-900 uppercase tracking-[0.2em]">Variant Media</h4>
                                                 <span className="text-[8px] font-bold text-gray-400 uppercase">Custom overrides</span>
                                             </div>
-                                            <div className="bg-gray-50 rounded-3xl p-6 border border-gray-100 space-y-4">
+                                            <div className="bg-gray-50 rounded-3xl p-4 sm:p-6 border border-gray-100 space-y-4">
                                                 <div className="flex flex-wrap gap-3">
                                                     {!isViewMode && (
                                                         <label className="px-5 py-3 bg-white border border-gray-200 rounded-2xl text-[9px] font-black uppercase tracking-widest text-gray-700 hover:border-[#3E2723] hover:text-[#3E2723] transition-all cursor-pointer shadow-sm">

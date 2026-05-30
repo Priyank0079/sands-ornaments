@@ -3,7 +3,8 @@ import ReactQuill from 'react-quill-new';
 import { 
     Tag, Sparkles, Scale, Zap, IndianRupee, CheckCircle2, 
     Layers, Copy, Barcode as BarcodeIcon, QrCode, Download, 
-    Loader2, Upload, Plus, Trash2, ImagePlus, FileText, Info
+    Loader2, Upload, Plus, Trash2, ImagePlus, FileText, Info,
+    Search, X
 } from 'lucide-react';
 import Barcode from 'react-barcode';
 import { FormSection, Input, Select, TextArea } from '../../../admin/components/common/FormControls';
@@ -20,6 +21,13 @@ const ProductGeneralTab = ({
     handleCategoryChange,
     createdProductData
 }) => {
+    const [categorySearchQuery, setCategorySearchQuery] = React.useState('');
+    const filteredCategories = React.useMemo(() => {
+        return (categories || []).filter(cat => 
+            cat && String(cat.name || '').toLowerCase().includes(categorySearchQuery.toLowerCase())
+        );
+    }, [categories, categorySearchQuery]);
+
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Top Section: Basic Info & Core Specs */}
@@ -48,14 +56,41 @@ const ProductGeneralTab = ({
                             <label className="block text-xs font-semibold text-gray-700 tracking-wide uppercase">
                                 Category <span className="text-red-500">*</span>
                             </label>
+                            
+                            {!isViewMode && (
+                                <div className="relative group">
+                                    <input
+                                        type="text"
+                                        value={categorySearchQuery}
+                                        onChange={(e) => setCategorySearchQuery(e.target.value)}
+                                        placeholder="Type to filter categories..."
+                                        className="w-full bg-gray-50/50 border border-gray-200 rounded-xl py-2.5 pl-10 pr-10 text-xs font-bold text-gray-800 outline-none focus:bg-white focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm"
+                                    />
+                                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#3E2723] transition-colors">
+                                        <Search size={14} />
+                                    </div>
+                                    {categorySearchQuery && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setCategorySearchQuery('')}
+                                            className="absolute right-3.5 top-1/2 -translate-y-1/2 h-5 w-5 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-500 transition-colors"
+                                        >
+                                            <X size={10} />
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+
                             <select
                                 value={formData.categories?.[0]?.category || ''}
                                 onChange={(e) => handleCategoryChange(e.target.value)}
                                 className={`w-full bg-white border rounded-xl py-3 px-4 text-sm text-gray-900 focus:outline-none focus:ring-2 transition-all shadow-sm ${errors.categories ? 'border-red-300 focus:border-red-400 focus:ring-red-200/40' : 'border-gray-200 focus:border-[#3E2723] focus:ring-[#3E2723]/10'}`}
                                 disabled={isViewMode}
                             >
-                                <option value="">Select Category</option>
-                                {categories.map(cat => (
+                                <option value="">
+                                    {categorySearchQuery ? `Matching Categories (${filteredCategories.length})` : 'Select Category'}
+                                </option>
+                                {filteredCategories.map(cat => (
                                     <option key={cat._id} value={cat._id} disabled={cat.isActive === false}>
                                         {cat.name}{cat.isActive === false ? ' (Inactive)' : ''}
                                     </option>
@@ -64,7 +99,7 @@ const ProductGeneralTab = ({
                             {errors.categories && <span className="text-[10px] text-red-500 font-bold ml-1">{errors.categories}</span>}
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <Select
                                 label="Audience"
                                 value={Array.isArray(formData.audience) ? formData.audience[0] : 'unisex'}
@@ -94,7 +129,7 @@ const ProductGeneralTab = ({
 
                 <FormSection title="Metal & Weight Protocol">
                     <div className="space-y-5">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <Select
                                 label="Primary Material"
                                 value={formData.material}
@@ -152,7 +187,7 @@ const ProductGeneralTab = ({
                             />
                         )}
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <Input
                                 label="Default Weight"
                                 type="number"
@@ -274,8 +309,8 @@ const ProductGeneralTab = ({
             {/* Identity & Tracking (Visual Signatures) */}
             {(isViewMode || createdProductData || formData.productCode) && (
                 <FormSection title="Registry Identity">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="p-8 bg-[#FDFBF7] rounded-[2rem] border border-amber-100/50 flex flex-col items-center justify-center text-center shadow-inner">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                        <div className="p-4 sm:p-8 bg-[#FDFBF7] rounded-[2rem] border border-amber-100/50 flex flex-col items-center justify-center text-center shadow-inner">
                              <p className="text-[10px] font-black text-amber-600 uppercase tracking-[0.2em] mb-4">Master Identity</p>
                              <div className="flex items-center gap-4">
                                  <span className="text-2xl font-mono font-black text-[#3E2723] tracking-[0.2em]">
@@ -297,7 +332,7 @@ const ProductGeneralTab = ({
                              </div>
                         </div>
 
-                        <div className="bg-white p-8 rounded-[2rem] border border-gray-100 space-y-6 shadow-sm flex flex-col items-center justify-center group">
+                        <div className="bg-white p-4 sm:p-8 rounded-[2rem] border border-gray-100 space-y-6 shadow-sm flex flex-col items-center justify-center group">
                             <div className="flex items-center justify-between w-full">
                                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Barcode Artifact</span>
                                  <button 
@@ -318,7 +353,7 @@ const ProductGeneralTab = ({
                             </div>
                         </div>
 
-                        <div className="bg-white p-8 rounded-[2rem] border border-gray-100 space-y-6 shadow-sm flex flex-col items-center justify-center group">
+                        <div className="bg-white p-4 sm:p-8 rounded-[2rem] border border-gray-100 space-y-6 shadow-sm flex flex-col items-center justify-center group">
                             <div className="flex items-center justify-between w-full">
                                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Visual QR Artifact</span>
                                  <button 
@@ -351,7 +386,7 @@ const ProductGeneralTab = ({
             {/* Labels & Tags Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <FormSection title="Commerce Labels">
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <Input
                             label="Card Badge Label"
                             value={formData.cardLabel}

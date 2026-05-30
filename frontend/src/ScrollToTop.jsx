@@ -14,12 +14,10 @@ const ScrollToTop = () => {
     // Persistent ref to store positions: { [pathname+search]: scrollY }
     const scrollPositions = useRef({});
     
-    // We also use a ref for currentKey to avoid race conditions in scroll listeners
-    const keyRef = useRef(location.pathname + location.search);
-
-    useEffect(() => {
-        keyRef.current = location.pathname + location.search;
-    }, [location.pathname, location.search]);
+    // Synchronously update current key to avoid race conditions during transitions
+    const currentKey = location.pathname + location.search;
+    const keyRef = useRef(currentKey);
+    keyRef.current = currentKey;
 
     // 1. Set scroll restoration to manual globally
     useEffect(() => {
@@ -28,7 +26,8 @@ const ScrollToTop = () => {
         }
     }, []);
 
-    // 2. Continuously save scroll position
+    // 2. Continuously save scroll position on window scroll events
+    // This bound window listener captures all scroll updates from both Lenis and native scrolling.
     useEffect(() => {
         const handleSavePosition = () => {
             const lenis = getLenis();
@@ -40,24 +39,18 @@ const ScrollToTop = () => {
             }
         };
 
-        const lenis = getLenis();
-        if (lenis) {
-            lenis.on('scroll', handleSavePosition);
-            return () => lenis.off('scroll', handleSavePosition);
-        } else {
-            window.addEventListener('scroll', handleSavePosition, { passive: true });
-            return () => window.removeEventListener('scroll', handleSavePosition);
-        }
+        window.addEventListener('scroll', handleSavePosition, { passive: true });
+        return () => window.removeEventListener('scroll', handleSavePosition);
     }, []);
 
     // 3. Persist to sessionStorage as backup for hard refreshes
     useLayoutEffect(() => {
-        const currentKey = location.pathname + location.search;
+        const key = location.pathname + location.search;
         return () => {
-            const pos = scrollPositions.current[currentKey];
+            const pos = scrollPositions.current[key];
             if (pos > 0) {
                 try {
-                    sessionStorage.setItem(`scroll_${currentKey}`, String(pos));
+                    sessionStorage.setItem(`scroll_${key}`, String(pos));
                 } catch (e) { /* ignore */ }
             }
         };
@@ -65,11 +58,11 @@ const ScrollToTop = () => {
 
     // 4. Handle Restoration on POP (Back/Forward)
     useEffect(() => {
-        const currentKey = location.pathname + location.search;
+        const key = location.pathname + location.search;
 
         if (navType === 'POP') {
-            const savedScroll = scrollPositions.current[currentKey] || 
-                               Number(sessionStorage.getItem(`scroll_${currentKey}`)) || 0;
+            const savedScroll = scrollPositions.current[key] || 
+                               Number(sessionStorage.getItem(`scroll_${key}`)) || 0;
             
             if (savedScroll > 0) {
                 let attempts = 0;
@@ -78,10 +71,8 @@ const ScrollToTop = () => {
                     const currentHeight = document.documentElement.scrollHeight;
                     
                     // Restoration logic: Wait for page height to be sufficient
-                    // Jewellery pages often have dynamic images, so we retry several times
                     if (currentHeight >= savedScroll || attempts > 20) {
                         if (lenis) {
-                            // Use immediate: true for instant jump on back navigation
                             lenis.scrollTo(savedScroll, { immediate: true });
                         } else {
                             window.scrollTo(0, savedScroll);
