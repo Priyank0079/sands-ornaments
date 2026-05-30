@@ -256,6 +256,201 @@ const FamilyProductsCatalog = ({
                     <motion.div
                         initial={{ opacity: 0, y: -15 }}
                         whileInView={{ opacity: 1, y: 0 }}
+const getProductOriginalPrice = (product = {}) => {
+    const variantMrps = (product.variants || [])
+        .map((variant) => Number(variant.mrp ?? variant.originalPrice ?? 0))
+        .filter((value) => Number.isFinite(value) && value > 0);
+    if (variantMrps.length > 0) return Math.max(...variantMrps);
+    const fallback = Number(product.originalPrice ?? product.mrp ?? 0);
+    return Number.isFinite(fallback) && fallback > 0 ? fallback : getProductPrice(product);
+};
+
+const matchesCategory = (product = {}, categoryId = '') => {
+    const target = normalizeToken(categoryId);
+    if (!target) return true;
+    const categoryTokens = new Set([
+        normalizeToken(product.categoryId),
+        normalizeToken(product.category),
+        normalizeToken(product.categorySlug),
+        ...((product.navShopByCategory || []).map((id) => normalizeToken(id)))
+    ].filter(Boolean));
+    return categoryTokens.has(target);
+};
+
+const matchesRecipientAudience = (_product = {}, _recipient = 'all') => {
+    // Legacy "navGiftsFor/navOccasions" tags are retired. Family tabs are driven by CMS
+    // category selection (or manual pinned products), so we no longer filter by audience tags.
+    return true;
+};
+
+const toProductCard = (product) => {
+    const id = product.id || product._id;
+    const price = getProductPrice(product);
+    const originalPrice = getProductOriginalPrice(product);
+    return {
+        ...product,
+        id,
+        _id: id,
+        image: product.image || product.images?.[0] || '',
+        price,
+        originalPrice,
+        rating: Number(product.rating || 4.5),
+        reviews: Number(product.reviews || product.reviewCount || 0),
+        isTrending: false,
+        priceDrop: originalPrice > price,
+        variants: Array.isArray(product.variants) && product.variants.length > 0
+            ? product.variants
+            : [{ id: `${id}-v1`, price, mrp: originalPrice }]
+    };
+};
+
+const defaultTabConfig = (tabKey = 'all') => ({
+    tabLabel: defaultRecipientLabels[tabKey] || defaultRecipientLabels.all,
+    productLimit: 8,
+    sourceMode: 'category',
+    categoryId: '',
+    productIds: []
+});
+
+const FamilyProductsCatalog = ({
+    selectedRecipient = 'all',
+    onSelectRecipient,
+    allowedProductIds = null,
+    minPrice = null,
+    maxPrice = null,
+    titleOverride = null,
+    eyebrowOverride = null,
+    subtitleOverride = null,
+    hideRecipientFilters = false,
+    sectionData = null
+}) => {
+    const navigate = useNavigate();
+    const { products } = useContext(ShopContext);
+
+    const resolvedSettings = useMemo(() => {
+        const settings = sectionData?.settings || {};
+        const rawTabConfigs = settings.tabConfigs || {};
+        const legacyGlobalLimit = parsePositiveNumber(settings.productLimit, 8);
+        const tabConfigs = FAMILY_TABS.reduce((acc, key) => {
+            const source = rawTabConfigs[key] || {};
+            acc[key] = {
+                tabLabel: String(source.tabLabel || defaultRecipientLabels[key] || '').trim() || defaultRecipientLabels[key],
+                productLimit: parsePositiveNumber(source.productLimit, legacyGlobalLimit),
+                sourceMode: source.sourceMode === 'manual' ? 'manual' : 'category',
+                categoryId: String(source.categoryId || '').trim(),
+                productIds: Array.isArray(source.productIds) ? source.productIds.map((id) => String(id)).filter(Boolean) : []
+            };
+            return acc;
+        }, {});
+
+        const manualIdsFromItems = {};
+        (Array.isArray(sectionData?.items) ? sectionData.items : []).forEach((item) => {
+            const tabKey = String(item?.recipient || item?.relationKey || 'all').trim().toLowerCase();
+            if (!FAMILY_TABS.includes(tabKey)) return;
+            const ids = [];
+            const primaryId = normalizeIdValue(item?.productId);
+            if (primaryId) ids.push(primaryId);
+            if (Array.isArray(item?.productIds)) {
+                ids.push(...item.productIds.map((id) => normalizeIdValue(id)).filter(Boolean));
+            }
+            if (ids.length === 0) return;
+            manualIdsFromItems[tabKey] = [...new Set([...(manualIdsFromItems[tabKey] || []), ...ids])];
+        });
+
+        FAMILY_TABS.forEach((tabKey) => {
+            if (tabConfigs[tabKey].sourceMode === 'manual') {
+                tabConfigs[tabKey].productIds = [...new Set([...(tabConfigs[tabKey].productIds || []), ...(manualIdsFromItems[tabKey] || [])])];
+            }
+        });
+
+        return {
+            title: String(settings.title || 'All Family Collections').trim() || 'All Family Collections',
+            highlightWord: String(settings.highlightWord || 'Edit').trim() || 'Edit',
+            subtitle: String(settings.subtitle || '"Curated boutique jewellery picks for every family member."').trim()
+                || '"Curated boutique jewellery picks for every family member."',
+            ctaLabel: String(settings.ctaLabel || 'View All Collections').trim() || 'View All Collections',
+            tabConfigs
+        };
+    }, [sectionData]);
+
+    const productsList = Array.isArray(products) && products.length > 0 ? products : [];
+    const sortedProducts = useMemo(() => [...productsList].sort((a, b) => productCreatedAt(b) - productCreatedAt(a)), [productsList]);
+
+    const effectiveTab = useMemo(() => (
+        FAMILY_TABS.includes(selectedRecipient) ? selectedRecipient : 'all'
+    ), [selectedRecipient]);
+
+    const activeTabConfig = resolvedSettings.tabConfigs[effectiveTab] || defaultTabConfig(effectiveTab);
+    const allTabConfig = resolvedSettings.tabConfigs.all || defaultTabConfig('all');
+    const runtimeTabConfig = (
+        activeTabConfig.sourceMode === 'category' && !activeTabConfig.categoryId && effectiveTab !== 'all'
+    ) ? allTabConfig : activeTabConfig;
+    const runtimeLimit = parsePositiveNumber(runtimeTabConfig.productLimit, 8);
+    const runtimeLabels = FAMILY_TABS.reduce((acc, tabKey) => {
+        acc[tabKey] = resolvedSettings.tabConfigs?.[tabKey]?.tabLabel || defaultRecipientLabels[tabKey];
+        return acc;
+    }, {});
+
+    const visibleProductCards = useMemo(() => {
+        let selected = [];
+        if (runtimeTabConfig.sourceMode === 'manual') {
+            const pinnedMap = new Map(sortedProducts.map((product) => [String(product.id || product._id), product]));
+            selected = (runtimeTabConfig.productIds || [])
+                .map((id) => pinnedMap.get(String(id)))
+                .filter(Boolean)
+                .map(toProductCard);
+        } else {
+            const categoryFiltered = runtimeTabConfig.categoryId
+                ? sortedProducts.filter((product) => matchesCategory(product, runtimeTabConfig.categoryId))
+                : sortedProducts;
+
+            const recipientFiltered = categoryFiltered.filter((product) => matchesRecipientAudience(product, effectiveTab));
+            const withFallback = recipientFiltered.length > 0 ? recipientFiltered : categoryFiltered;
+            selected = withFallback.map(toProductCard);
+        }
+
+        const allowedIds = Array.isArray(allowedProductIds) ? allowedProductIds.map((id) => String(id)) : null;
+        if (allowedIds && allowedIds.length > 0) {
+            const filtered = selected.filter((product) => allowedIds.includes(String(product.id || product._id)));
+            if (filtered.length > 0) selected = filtered;
+        }
+
+        selected = selected.filter((product) => {
+            const price = Number(product.price || 0);
+            const matchesMin = minPrice === null || Number.isNaN(minPrice) || price >= minPrice;
+            const matchesMax = maxPrice === null || Number.isNaN(maxPrice) || price <= maxPrice;
+            return matchesMin && matchesMax;
+        });
+
+        return selected.slice(0, runtimeLimit);
+    }, [
+        allowedProductIds,
+        effectiveTab,
+        maxPrice,
+        minPrice,
+        runtimeLimit,
+        runtimeTabConfig,
+        sortedProducts
+    ]);
+
+    const handleSelectRecipient = (recipientId) => {
+        const normalizedRecipient = normalizeFamilyRecipient(recipientId);
+        onSelectRecipient?.(normalizedRecipient);
+        navigate(buildFamilyShopPath({ recipient: normalizedRecipient }));
+    };
+
+    const PINK_LIGHT = '#FFD9E0';
+    const MAROON = '#8E2B45';
+
+    if (visibleProductCards.length === 0) return null;
+
+    return (
+        <section id="family-products" className="py-3 md:py-10 bg-white">
+            <div className="container mx-auto px-4 md:px-12 max-w-[1500px]">
+                <div className="text-center mb-4 md:mb-10">
+                    <motion.div
+                        initial={{ opacity: 0, y: -15 }}
+                        whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.6 }}
                         className="inline-flex items-center gap-2 px-3 py-1 rounded-none mb-2"
@@ -272,10 +467,10 @@ const FamilyProductsCatalog = ({
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.7, delay: 0.1 }}
-                        className="text-xl sm:text-3xl md:text-4xl font-serif text-[#2D060F] tracking-tight mb-1"
+                        className="text-[4vw] sm:text-3xl md:text-4xl font-serif text-[#2D060F] tracking-tight mb-1 whitespace-nowrap flex justify-center items-center"
                     >
-                        {(titleOverride || runtimeLabels[effectiveTab] || resolvedSettings.title)}{' '}
-                        <span className="italic" style={{ color: MAROON }}>
+                        {(titleOverride || runtimeLabels[effectiveTab] || resolvedSettings.title)}
+                        <span className="italic ml-1.5" style={{ color: MAROON }}>
                             {eyebrowOverride || resolvedSettings.highlightWord}
                         </span>
                     </motion.h2>

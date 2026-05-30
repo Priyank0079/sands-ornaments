@@ -838,7 +838,7 @@ const ProductDetails = () => {
                                         <img
                                             src={getProductDetailUrl(primaryImage)}
                                             alt={product.name}
-                                            fetchpriority="high"
+                                            fetchPriority="high"
                                             decoding="sync"
                                             className="absolute inset-0 w-full h-full object-cover z-0"
                                         />
