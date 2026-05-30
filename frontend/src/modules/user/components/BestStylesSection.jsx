@@ -116,9 +116,9 @@ const BestStylesSection = ({ sectionData = null }) => {
                             </div>
                         </Link>
                     </div>
-                    
-                    {/* Navigation Arrows - Positioned on the right for desktop */}
-                    <div className="hidden md:flex gap-2 absolute right-0 bottom-0">
+
+                    {/* Navigation Arrows - Visible on both mobile and desktop */}
+                    <div className="md:flex gap-2 absolute right-0 bottom-0 hidden">
                         <button onClick={() => scroll('left')} className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors">
                             <ChevronLeft className="w-5 h-5 text-gray-600" />
                         </button>
@@ -128,12 +128,30 @@ const BestStylesSection = ({ sectionData = null }) => {
                     </div>
                 </div>
 
-                <div ref={scrollRef} className="flex gap-4 md:gap-6 overflow-x-auto no-scrollbar pb-4 md:pb-8 snap-x snap-mandatory px-1">
-                    {dynamicProducts.map((product) => (
-                        <div key={product.id} className="min-w-[180px] md:min-w-[280px] w-[180px] md:w-[280px] snap-start">
-                            <ProductCard product={product} />
-                        </div>
-                    ))}
+                <div className="flex items-center gap-3">
+                    {/* Mobile Left Arrow */}
+                    <button
+                        onClick={() => scroll('left')}
+                        className="md:hidden flex-shrink-0 w-8 h-8 bg-gray-900 hover:bg-[#D4AF37] rounded-full flex items-center justify-center shadow-md transition-all duration-300 hover:scale-110 active:scale-95"
+                    >
+                        <ChevronLeft className="w-4 h-4 text-white" />
+                    </button>
+
+                    <div ref={scrollRef} className="flex gap-4 md:gap-6 overflow-x-auto no-scrollbar pb-4 md:pb-8 snap-x snap-mandatory px-1 flex-1">
+                        {dynamicProducts.map((product) => (
+                            <div key={product.id} className="min-w-[180px] md:min-w-[280px] w-[180px] md:w-[280px] snap-start">
+                                <ProductCard product={product} />
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Mobile Right Arrow */}
+                    <button
+                        onClick={() => scroll('right')}
+                        className="md:hidden flex-shrink-0 w-8 h-8 bg-gray-900 hover:bg-[#D4AF37] rounded-full flex items-center justify-center shadow-md transition-all duration-300 hover:scale-110 active:scale-95"
+                    >
+                        <ChevronRight className="w-4 h-4 text-white" />
+                    </button>
                 </div>
             </div>
 

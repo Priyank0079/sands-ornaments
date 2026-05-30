@@ -62,6 +62,15 @@ const MenInteractiveLook = () => {
     const navigate = useNavigate();
     const [hoveredNode, setHoveredNode] = useState(null);
 
+    // Detect if tooltip should appear above based on vertical position to avoid overlaps
+    const shouldAppearAbove = (spotIndex) => {
+        // CHAINS (index 1) appears above PENDANTS
+        // BRACELETS (index 3) appears above to avoid overlap with PENDANTS
+        if (spotIndex === 1) return true; // CHAINS above
+        if (spotIndex === 3) return true; // BRACELETS above
+        return false;
+    };
+
     return (
         <section className="pt-1 md:pt-2 pb-2 md:pb-8 bg-[#FCFBF8]">
             <div className="container mx-auto px-4 md:px-8">
@@ -78,7 +87,14 @@ const MenInteractiveLook = () => {
                 </div>
 
                 {/* Ultra-Compact Sharp Square Interactive Container */}
-                <div className="max-w-[620px] mx-auto relative shadow-[0_24px_60px_-28px_rgba(0,0,0,0.55)] overflow-hidden bg-[#0A0B0D] h-[320px] md:h-[580px]">
+                <div className="max-w-[620px] mx-auto relative shadow-[0_24px_60px_-28px_rgba(0,0,0,0.55)] overflow-visible bg-[#0A0B0D] h-[320px] md:h-[580px]">
+                    {/* Overlay to close tooltip on click */}
+                    {hoveredNode && (
+                        <div
+                            className="absolute inset-0 z-20 cursor-default"
+                            onClick={() => setHoveredNode(null)}
+                        />
+                    )}
 
                     {/* Model Image */}
                     <img
@@ -152,7 +168,7 @@ const MenInteractiveLook = () => {
                     </svg>
 
                     {/* Hotspots & Labels */}
-                    {hotspots.map(spot => (
+                    {hotspots.map((spot, spotIndex) => (
                         <div key={spot.id}>
                             <div
                                 className="absolute"
@@ -182,7 +198,7 @@ const MenInteractiveLook = () => {
                                     whileInView={{ opacity: 1, scale: 1 }}
                                     transition={{ duration: 0.5, delay: 0.2 }}
                                 >
-                                    <div className={`px-3 py-1.5 md:px-4 md:py-2 bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-xl transition-all duration-300 border border-transparent ${hoveredNode === spot.id ? 'scale-110 shadow-blue-500/20 border-blue-400 z-50' : 'hover:-translate-y-1'}`}>
+                                    <div className={`px-3 py-1.5 md:px-4 md:py-2 bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-xl transition-all duration-300 border border-transparent ${hoveredNode === spot.id ? 'scale-110 shadow-blue-500/20 border-blue-400' : 'hover:-translate-y-1'}`}>
                                         <span className="text-[#111] font-bold text-[9px] md:text-xs uppercase tracking-wide">
                                             {spot.label}
                                         </span>
@@ -191,20 +207,29 @@ const MenInteractiveLook = () => {
                                         <AnimatePresence>
                                             {hoveredNode === spot.id && (
                                                 <motion.div
-                                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                                                    animate={{ opacity: 1, y: 55, scale: 1 }}
-                                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                                    className={`absolute top-full mt-2 w-56 bg-white p-4 rounded-[20px] shadow-2xl border border-gray-100 ${spot.direction === 'left' ? 'right-0' : 'left-0'}`}
+                                                    initial={{ opacity: 0, y: shouldAppearAbove(spotIndex) ? -10 : 10, scale: 0.95 }}
+                                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                    exit={{ opacity: 0, y: shouldAppearAbove(spotIndex) ? -10 : 10, scale: 0.95 }}
+                                                    className={`absolute min-w-max bg-white p-4 rounded-2xl shadow-2xl border border-gray-100 pointer-events-auto ${
+                                                        shouldAppearAbove(spotIndex)
+                                                            ? spot.direction === 'left'
+                                                                ? 'right-0 bottom-full mb-3'
+                                                                : 'left-0 bottom-full mb-3'
+                                                            : spot.direction === 'left'
+                                                            ? 'right-0 top-full mt-3'
+                                                            : 'left-0 top-full mt-3'
+                                                    }`}
+                                                    style={{ zIndex: 9999 }}
                                                 >
-                                                    <p className="text-gray-900 text-[12px] font-bold mb-1 line-clamp-1">{spot.desc}</p>
+                                                    <p className="text-gray-900 text-[12px] font-bold mb-1 line-clamp-2 max-w-xs">{spot.desc}</p>
                                                     <p className="text-[#3B82F6] text-lg font-black mb-3">₹{spot.price}</p>
-                                                    <div
+                                                    <button
                                                         onClick={() => navigate(buildMenShopPath({ category: spot.category }))}
-                                                        className="w-full flex items-center justify-center gap-2 py-3 bg-[#0B1528] text-white text-[11px] font-bold uppercase rounded-xl cursor-pointer hover:bg-[#3B82F6] transition-all duration-300 shadow-lg shadow-blue-900/10"
+                                                        className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-[#0B1528] text-white text-[11px] font-bold uppercase rounded-xl cursor-pointer hover:bg-[#3B82F6] transition-all duration-300 shadow-lg shadow-blue-900/10 whitespace-nowrap"
                                                     >
-                                                        <ChevronRight className="w-3.5 h-3.5" />
+                                                        <ChevronRight className="w-3.5 h-3.5 flex-shrink-0" />
                                                         View Product
-                                                    </div>
+                                                    </button>
                                                 </motion.div>
                                             )}
                                         </AnimatePresence>

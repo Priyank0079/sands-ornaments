@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, Heart, ShoppingCart, User, Menu, X, ChevronDown, Plus } from 'lucide-react';
+import { Search, Heart, ShoppingCart, User, Menu, X, ChevronDown, ChevronRight } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
 import logo from '@assets/SANDS JEWELS PINK (1).png';
 import api from '../../../services/api';
@@ -29,6 +29,7 @@ const Navbar = () => {
     const [placeholderIdx, setPlaceholderIdx] = useState(0);
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [expandedSections, setExpandedSections] = useState({});
 
     useEffect(() => {
         const handleScroll = () => {
@@ -108,6 +109,13 @@ const Navbar = () => {
             event.preventDefault();
             submitSearch();
         }
+    };
+
+    const toggleSection = (sectionId) => {
+        setExpandedSections(prev => ({
+            ...prev,
+            [sectionId]: !prev[sectionId]
+        }));
     };
 
     return (
@@ -303,12 +311,13 @@ const Navbar = () => {
                                 transition={{ type: 'tween', duration: 0.3 }}
                                 className="fixed top-0 left-0 h-full w-[280px] bg-white z-[9999] p-6 shadow-2xl flex flex-col"
                             >
-                                <div className="flex justify-between items-center mb-10 border-b pb-4">
-                                    <span className="font-bold text-xl tracking-wide uppercase">Menu</span>
+                                <div className="flex justify-between items-center mb-8 border-b pb-4">
+                                    <span className="text-lg tracking-wide uppercase">Menu</span>
                                     <button onClick={() => setIsMenuOpen(false)} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
                                         <X className="w-7 h-7 text-gray-500" />
                                     </button>
                                 </div>
+
                                 <div className="flex bg-gray-100 p-1 rounded-full mb-6">
                                     <button
                                         onClick={() => {
@@ -316,7 +325,7 @@ const Navbar = () => {
                                             navigate('/');
                                             setIsMenuOpen(false);
                                         }}
-                                        className={`flex-1 py-2 px-4 rounded-full text-[15px] font-bold transition-all duration-300 ${activeMetal === 'silver' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                        className={`flex-1 py-2 px-4 rounded-full text-sm transition-all duration-300 ${activeMetal === 'silver' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                                     >
                                         Silver
                                     </button>
@@ -326,35 +335,64 @@ const Navbar = () => {
                                             navigate('/gold-collection');
                                             setIsMenuOpen(false);
                                         }}
-                                        className={`flex-1 py-2 px-4 rounded-full text-[15px] font-bold transition-all duration-300 ${activeMetal === 'gold' ? 'bg-white text-[#C9A24D] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                        className={`flex-1 py-2 px-4 rounded-full text-sm transition-all duration-300 ${activeMetal === 'gold' ? 'bg-white text-[#C9A24D] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                                     >
                                         Gold
                                     </button>
                                 </div>
 
-                                <nav className="flex flex-col gap-5 overflow-y-auto pb-8 no-scrollbar">
-                                    <div className="flex flex-col gap-3">
-                                        <Link to="/" className="text-gray-900 font-bold text-[17px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Home</Link>
-                                        <Link to="/shop" className="text-gray-900 font-bold text-[17px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Shop All</Link>
-                                    </div>
+                                <nav className="flex flex-col gap-1 overflow-y-auto pb-8 no-scrollbar">
+                                    <Link to="/" className="text-gray-900 text-base py-3 px-2 hover:text-pink-500 hover:bg-pink-50 rounded-lg transition-all" onClick={() => setIsMenuOpen(false)}>Home</Link>
+                                    <Link to="/shop" className="text-gray-900 text-base py-3 px-2 hover:text-pink-500 hover:bg-pink-50 rounded-lg transition-all" onClick={() => setIsMenuOpen(false)}>Shop All</Link>
 
-                                    <hr className="border-gray-100" />
-                                    
-                                    <div className="flex flex-col gap-3">
-                                        <span className="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">Collections & Gifts</span>
-                                        <Link to="/category/men" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Gifts for Him</Link>
-                                        <Link to="/category/women" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Gifts for Her</Link>
-                                        <Link to="/category/family" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Gifts for Family</Link>
-                                        <Link to="/shop?search=exclusive" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Exclusive Collections</Link>
-                                    </div>
+                                    <div className="my-2 border-t border-gray-200" />
 
-                                    <hr className="border-gray-100" />
-                                    
-                                    <div className="flex flex-col gap-3">
-                                        <span className="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">More at Sands</span>
-                                        <Link to="/blogs" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>Blogs</Link>
-                                        <Link to="/about" className="text-gray-700 font-medium text-[16px] hover:text-pink-500" onClick={() => setIsMenuOpen(false)}>About Us</Link>
-                                    </div>
+                                    <button
+                                        onClick={() => toggleSection('categories')}
+                                        className="flex items-center justify-between py-3 px-2 text-gray-900 text-base hover:text-pink-500 hover:bg-pink-50 rounded-lg transition-all"
+                                    >
+                                        Shop by Category
+                                        <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${expandedSections.categories ? 'rotate-90' : ''}`} />
+                                    </button>
+                                    {expandedSections.categories && (
+                                        <div className="pl-4 flex flex-col gap-2 py-2 bg-gray-50 rounded-lg my-1">
+                                            <Link to="/collections" className="text-gray-700 text-sm py-2 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>All Categories</Link>
+                                            <Link to="/category/men" className="text-gray-700 text-sm py-2 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>Men's Collection</Link>
+                                            <Link to="/category/women" className="text-gray-700 text-sm py-2 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>Women's Collection</Link>
+                                            <Link to="/category/family" className="text-gray-700 text-sm py-2 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>Family Collection</Link>
+                                        </div>
+                                    )}
+
+                                    <button
+                                        onClick={() => toggleSection('collections')}
+                                        className="flex items-center justify-between py-3 px-2 text-gray-900 text-base hover:text-pink-500 hover:bg-pink-50 rounded-lg transition-all"
+                                    >
+                                        Collections & Gifts
+                                        <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${expandedSections.collections ? 'rotate-90' : ''}`} />
+                                    </button>
+                                    {expandedSections.collections && (
+                                        <div className="pl-4 flex flex-col gap-2 py-2 bg-gray-50 rounded-lg my-1">
+                                            <Link to="/category/men" className="text-gray-700 text-sm py-2 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>Gifts for Him</Link>
+                                            <Link to="/category/women" className="text-gray-700 text-sm py-2 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>Gifts for Her</Link>
+                                            <Link to="/category/family" className="text-gray-700 text-sm py-2 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>Gifts for Family</Link>
+                                            <Link to="/shop?search=exclusive" className="text-gray-700 text-sm py-2 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>Exclusive Collections</Link>
+                                        </div>
+                                    )}
+
+                                    <button
+                                        onClick={() => toggleSection('more')}
+                                        className="flex items-center justify-between py-3 px-2 text-gray-900 text-base hover:text-pink-500 hover:bg-pink-50 rounded-lg transition-all"
+                                    >
+                                        More at Sands
+                                        <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${expandedSections.more ? 'rotate-90' : ''}`} />
+                                    </button>
+                                    {expandedSections.more && (
+                                        <div className="pl-4 flex flex-col gap-2 py-2 bg-gray-50 rounded-lg my-1">
+                                            <Link to="/gift-cards" className="text-gray-700 text-sm py-2 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>Gift Cards</Link>
+                                            <Link to="/blogs" className="text-gray-700 text-sm py-2 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>Blogs</Link>
+                                            <Link to="/about" className="text-gray-700 text-sm py-2 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>About Us</Link>
+                                        </div>
+                                    )}
                                 </nav>
                             </motion.div>
                         </>

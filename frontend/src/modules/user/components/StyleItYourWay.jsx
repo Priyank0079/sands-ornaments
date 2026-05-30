@@ -160,7 +160,7 @@ const StyleItYourWay = () => {
                         {displayCollections.map((detail) => (
                             <div
                                 key={detail.id}
-                                className={`min-w-[85vw] md:min-w-[calc(50%-20px)] h-[180px] md:h-[320px] rounded-[1.2rem] md:rounded-[2rem] relative flex-shrink-0 snap-center group overflow-visible cursor-pointer transition-all duration-500 isolate mb-10`}
+                                className={`min-w-[75vw] md:min-w-[calc(45%-20px)] h-[160px] md:h-[280px] rounded-[1.2rem] md:rounded-[2rem] relative flex-shrink-0 snap-center group overflow-visible cursor-pointer transition-all duration-500 isolate mb-10`}
                             >
                                 <Link to={detail.path}>
                                     {/* Full Card Banner Image */}
