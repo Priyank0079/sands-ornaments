@@ -256,63 +256,54 @@ const FamilyProductsCatalog = ({
                     <motion.div
                         initial={{ opacity: 0, y: -15 }}
                         whileInView={{ opacity: 1, y: 0 }}
-const getProductOriginalPrice = (product = {}) => {
-    const variantMrps = (product.variants || [])
-        .map((variant) => Number(variant.mrp ?? variant.originalPrice ?? 0))
-        .filter((value) => Number.isFinite(value) && value > 0);
-    if (variantMrps.length > 0) return Math.max(...variantMrps);
-    const fallback = Number(product.originalPrice ?? product.mrp ?? 0);
-    return Number.isFinite(fallback) && fallback > 0 ? fallback : getProductPrice(product);
+                        transition={{ duration: 0.5 }}
+                        className="mb-6"
+                    >
+                        <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+                            {titleOverride || resolvedSettings.title}
+                        </h2>
+                    </motion.div>
+                </div>
+
+                {!hideRecipientFilters && FAMILY_TABS.length > 1 && (
+                    <div className="flex gap-2 flex-wrap justify-center mb-8">
+                        {FAMILY_TABS.map((tabKey) => (
+                            <motion.button
+                                key={tabKey}
+                                onClick={() => onSelectRecipient?.(tabKey)}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className={`px-6 py-2.5 rounded-full font-semibold transition-all ${
+                                    selectedRecipient === tabKey
+                                        ? 'bg-pink-500 text-white shadow-lg'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                            >
+                                {resolvedSettings.tabConfigs?.[tabKey]?.tabLabel || defaultRecipientLabels[tabKey]}
+                            </motion.button>
+                        ))}
+                    </div>
+                )}
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                    {visibleProductCards.map((product, idx) => (
+                        <motion.div
+                            key={product.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: idx * 0.05 }}
+                            viewport={{ once: true }}
+                        >
+                            <ProductCard product={product} />
+                        </motion.div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
 };
 
-const matchesCategory = (product = {}, categoryId = '') => {
-    const target = normalizeToken(categoryId);
-    if (!target) return true;
-    const categoryTokens = new Set([
-        normalizeToken(product.categoryId),
-        normalizeToken(product.category),
-        normalizeToken(product.categorySlug),
-        ...((product.navShopByCategory || []).map((id) => normalizeToken(id)))
-    ].filter(Boolean));
-    return categoryTokens.has(target);
-};
-
-const matchesRecipientAudience = (_product = {}, _recipient = 'all') => {
-    // Legacy "navGiftsFor/navOccasions" tags are retired. Family tabs are driven by CMS
-    // category selection (or manual pinned products), so we no longer filter by audience tags.
-    return true;
-};
-
-const toProductCard = (product) => {
-    const id = product.id || product._id;
-    const price = getProductPrice(product);
-    const originalPrice = getProductOriginalPrice(product);
-    return {
-        ...product,
-        id,
-        _id: id,
-        image: product.image || product.images?.[0] || '',
-        price,
-        originalPrice,
-        rating: Number(product.rating || 4.5),
-        reviews: Number(product.reviews || product.reviewCount || 0),
-        isTrending: false,
-        priceDrop: originalPrice > price,
-        variants: Array.isArray(product.variants) && product.variants.length > 0
-            ? product.variants
-            : [{ id: `${id}-v1`, price, mrp: originalPrice }]
-    };
-};
-
-const defaultTabConfig = (tabKey = 'all') => ({
-    tabLabel: defaultRecipientLabels[tabKey] || defaultRecipientLabels.all,
-    productLimit: 8,
-    sourceMode: 'category',
-    categoryId: '',
-    productIds: []
-});
-
-const FamilyProductsCatalog = ({
+const FamilyProductsCatalog_OLD = ({
     selectedRecipient = 'all',
     onSelectRecipient,
     allowedProductIds = null,

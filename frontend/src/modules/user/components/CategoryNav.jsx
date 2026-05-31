@@ -56,8 +56,8 @@ const CategoryNav = ({ showMetalToggle = true }) => {
         <div className="bg-[#FFF0F4] border-b border-pink-100 hidden md:block w-full">
             <div className="container mx-auto px-4 md:px-12 relative" onMouseLeave={resetMenu}>
                 {/* Navigation Links - Centered and Spaced Out */}
-                <div className="flex justify-center items-center py-3">
-                    <ul className="flex items-center gap-16">
+                <div className="flex justify-center items-center py-1.5">
+                    <ul className="flex items-center gap-12">
                         {navItems.map((item) => (
                             <li
                                 key={item.id}
@@ -102,7 +102,7 @@ const CategoryNav = ({ showMetalToggle = true }) => {
 
                 {/* Silver / Gold Toggle - Precise SANDS Polish with Navigation logic */}
                 {showMetalToggle && (
-                    <div className="flex justify-center pb-1.5 pt-0.5 relative">
+                    <div className="flex justify-center pb-1 pt-0 relative">
                         <div className="p-0.5 rounded-full border border-[#D4B390]/40 flex items-center bg-white shadow-[0_4px_25px_rgba(212,179,144,0.15)] overflow-hidden" style={{ minWidth: '850px' }}>
                             <button
                                 onClick={() => {

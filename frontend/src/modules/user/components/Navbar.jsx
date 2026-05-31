@@ -123,7 +123,7 @@ const Navbar = () => {
     
             {/* Desktop Header */}
             <div className="hidden lg:block">
-                <div className="container mx-auto px-4 lg:px-12 py-3 flex items-center justify-between gap-10">
+                <div className="container mx-auto px-4 lg:px-12 py-1.5 flex items-center justify-between gap-10">
 
                     {/* Left Section: Logo & Delivery Box */}
                     <div className="flex items-center gap-6 flex-shrink-0">
@@ -131,7 +131,7 @@ const Navbar = () => {
                             <img
                                 src={logo}
                                 alt="Sands Jewels"
-                                className="h-20 w-auto object-contain transform scale-110"
+                                className="h-14 w-auto object-contain"
                             />
                         </Link>
 
