@@ -29,6 +29,7 @@ const Navbar = () => {
     const [placeholderIdx, setPlaceholderIdx] = useState(0);
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [showMobileSearch, setShowMobileSearch] = useState(false);
     const [expandedSections, setExpandedSections] = useState({});
 
     useEffect(() => {
@@ -101,6 +102,7 @@ const Navbar = () => {
         if (query) {
             navigate(`/shop?search=${encodeURIComponent(query)}`);
             setShowResults(false);
+            setShowMobileSearch(false);
         }
     }, [searchTerm, navigate]);
 
@@ -276,24 +278,63 @@ const Navbar = () => {
             </div>
 
             {/* Mobile Header */}
-            <div className="lg:hidden flex items-center justify-between px-4 py-1.5 border-b border-pink-100">
-                <Link to="/" className="block">
-                    <img src={logo} alt="Sands Jewels" className="h-[72px] w-auto object-contain transform scale-[1.35] origin-left" />
-                </Link>
-                <div className="flex items-center gap-4 sm:gap-5">
-                    <Link to={user ? "/profile" : "/login"} className="relative">
-                        <User className="w-6 h-6 text-gray-800" />
+            <div className="lg:hidden flex flex-col w-full relative">
+                <div className="flex items-center justify-between px-4 py-1.5 border-b border-pink-100">
+                    <Link to="/" className="block">
+                        <img src={logo} alt="Sands Jewels" className="h-[72px] w-auto object-contain transform scale-[1.35] origin-left" />
                     </Link>
-                    <Link to="/wishlist" className="relative">
-                        <Heart className="w-6 h-6 text-gray-800" />
-                    </Link>
-                    <Link to="/cart" className="relative">
-                        <ShoppingCart className="w-6 h-6 text-gray-800" />
-                    </Link>
-                    <button onClick={() => setIsMenuOpen(true)} className="p-1">
-                        <Menu className="w-7 h-7 text-gray-800" />
-                    </button>
+                    <div className="flex items-center gap-4 sm:gap-5">
+                        <button onClick={() => setShowMobileSearch(!showMobileSearch)} className="relative p-1">
+                            <Search className="w-6 h-6 text-gray-800" />
+                        </button>
+                        <Link to={user ? "/profile" : "/login"} className="relative">
+                            <User className="w-6 h-6 text-gray-800" />
+                        </Link>
+                        <Link to="/wishlist" className="relative hidden sm:block">
+                            <Heart className="w-6 h-6 text-gray-800" />
+                        </Link>
+                        <Link to="/cart" className="relative">
+                            <ShoppingCart className="w-6 h-6 text-gray-800" />
+                        </Link>
+                        <button onClick={() => setIsMenuOpen(true)} className="p-1">
+                            <Menu className="w-7 h-7 text-gray-800" />
+                        </button>
+                    </div>
                 </div>
+                
+                {/* Mobile Search Bar */}
+                <AnimatePresence>
+                    {showMobileSearch && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="w-full bg-white border-b border-pink-50 px-4 py-2 absolute top-full left-0 z-50 shadow-md"
+                        >
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder={placeholders[placeholderIdx]}
+                                    value={searchTerm}
+                                    onChange={(e) => {
+                                        setSearchTerm(e.target.value);
+                                        setShowResults(true);
+                                    }}
+                                    onKeyDown={handleSearchKeyDown}
+                                    onBlur={() => setTimeout(() => setShowResults(false), 200)}
+                                    onFocus={() => setShowResults(true)}
+                                    className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2.5 px-4 pr-10 text-[14px] focus:outline-none focus:border-pink-300 transition-all"
+                                />
+                                <button
+                                    onClick={submitSearch}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                                >
+                                    <Search className="w-5 h-5" />
+                                </button>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
 
             {/* Mobile Swipe-in sidebar */}
@@ -346,6 +387,49 @@ const Navbar = () => {
                                     <Link to="/shop" className="text-gray-900 text-base py-3 px-2 hover:text-pink-500 hover:bg-pink-50 rounded-lg transition-all" onClick={() => setIsMenuOpen(false)}>Shop All</Link>
 
                                     <div className="my-2 border-t border-gray-200" />
+
+                                    <button
+                                        onClick={() => toggleSection('allType')}
+                                        className="flex items-center justify-between py-3 px-2 text-gray-900 text-base hover:text-pink-500 hover:bg-pink-50 rounded-lg transition-all"
+                                    >
+                                        ALL TYPE
+                                        <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${expandedSections.allType ? 'rotate-90' : ''}`} />
+                                    </button>
+                                    {expandedSections.allType && (
+                                        <div className="pl-4 flex flex-col gap-1 py-2 bg-gray-50 rounded-lg my-1">
+                                            {/* Gold Section */}
+                                            <button
+                                                onClick={() => toggleSection('allTypeGold')}
+                                                className="flex items-center justify-between py-2 px-2 text-gray-800 text-sm font-semibold hover:text-pink-500 rounded transition-all"
+                                            >
+                                                Gold Collection
+                                                <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-300 ${expandedSections.allTypeGold ? 'rotate-90' : ''}`} />
+                                            </button>
+                                            {expandedSections.allTypeGold && (
+                                                <div className="pl-4 flex flex-col gap-1.5 pb-2">
+                                                    <Link to="/shop?metal=gold&karat=24" className="text-gray-600 text-sm py-1.5 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>24K Gold</Link>
+                                                    <Link to="/shop?metal=gold&karat=22" className="text-gray-600 text-sm py-1.5 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>22K Gold</Link>
+                                                    <Link to="/shop?metal=gold&karat=18" className="text-gray-600 text-sm py-1.5 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>18K Gold</Link>
+                                                    <Link to="/shop?metal=gold&karat=14" className="text-gray-600 text-sm py-1.5 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>14K Gold</Link>
+                                                </div>
+                                            )}
+
+                                            {/* Silver Section */}
+                                            <button
+                                                onClick={() => toggleSection('allTypeSilver')}
+                                                className="flex items-center justify-between py-2 px-2 text-gray-800 text-sm font-semibold hover:text-pink-500 rounded transition-all"
+                                            >
+                                                Silver Collection
+                                                <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-300 ${expandedSections.allTypeSilver ? 'rotate-90' : ''}`} />
+                                            </button>
+                                            {expandedSections.allTypeSilver && (
+                                                <div className="pl-4 flex flex-col gap-1.5 pb-2">
+                                                    <Link to="/shop?metal=silver&silver_type=sterling" className="text-gray-600 text-sm py-1.5 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>925 Sterling Silver</Link>
+                                                    <Link to="/shop?metal=silver&silver_type=fine" className="text-gray-600 text-sm py-1.5 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>Fine Silver</Link>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
 
                                     <button
                                         onClick={() => toggleSection('categories')}
