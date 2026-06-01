@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 import { 
     Tag, Sparkles, Scale, Zap, IndianRupee, CheckCircle2, 
     Layers, Copy, Barcode as BarcodeIcon, QrCode, Download, 
