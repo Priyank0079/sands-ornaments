@@ -1,9 +1,13 @@
 const Joi = require("joi");
 
 const itemSchema = Joi.object({
-  productId: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).required(),
-  variantId: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).required(),
+  productId: Joi.string().required(),
+  variantId: Joi.string().required(),
   quantity: Joi.number().integer().min(1).required(),
+  isGiftCard: Joi.boolean().optional(),
+  personalization: Joi.any().optional(),
+  price: Joi.number().optional(),
+  name: Joi.string().optional(),
 });
 
 const placeOrderSchema = Joi.object({
@@ -22,6 +26,8 @@ const placeOrderSchema = Joi.object({
   }).required(),
   paymentMethod: Joi.string().valid("razorpay", "cod").required(),
   couponCode: Joi.string().allow("").uppercase(),
+  giftCardCodes: Joi.array().items(Joi.string().allow("")).optional(),
 });
 
 module.exports = { placeOrderSchema };
+
