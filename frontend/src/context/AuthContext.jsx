@@ -137,7 +137,7 @@ export const AuthProvider = ({ children }) => {
 
     const deleteAccount = async () => {
         try {
-            const res = await api.delete('user/me');
+            const res = await api.delete('user/profile/me');
             if (res.data.success) {
                 logout({ silent: true });
                 toast.success("Account deleted successfully");

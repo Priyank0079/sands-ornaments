@@ -274,6 +274,11 @@ const AccordionItem = ({ title, children, isOpen, onClick }) => (
     </div>
 );
 
+const stripHtml = (html) => {
+    if (!html) return '';
+    return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+};
+
 const ProductDetails = () => {
     const { id } = useParams();
     const { track } = useAnalytics();
@@ -559,7 +564,8 @@ const ProductDetails = () => {
     const pricingSubtotal = Number(selectedVariant?.subtotalBeforeTax || 0)
         || (Number(pricingBreakdown.metalPrice || 0) + Number(pricingBreakdown.makingCharge || 0) + Number(pricingBreakdown.diamondPrice || 0) - resolvedPgCharge);
     const gstPercent = pricingSubtotal > 0 ? Math.round((Number(pricingBreakdown.gst || 0) / pricingSubtotal) * 10000) / 100 : 0;
-    const supplierName = product?.sellerId?.shopName || product?.supplierInfo || product?.brand || '';
+    const cleanedSupplierInfo = stripHtml(product?.supplierInfo);
+    const supplierName = product?.sellerId?.shopName || cleanedSupplierInfo || product?.brand || '';
 
     // Local currencyText removed
     // Using imported formatCurrency
@@ -1723,7 +1729,13 @@ const ProductDetails = () => {
                 </div>
 
                 {(() => {
-                    const relatedList = products.filter(p => p.category === product.category && p.id !== product.id).slice(0, 8);
+                    const categoryId = typeof product.category === 'object' ? product.category?._id : product.category;
+                    const fallbackRelatedList = products.filter(p => {
+                        const pCatId = typeof p.category === 'object' ? p.category?._id : p.category;
+                        return pCatId && pCatId === categoryId && p.id !== product.id;
+                    }).slice(0, 8);
+
+                    const relatedList = relatedProducts.length > 0 ? relatedProducts : fallbackRelatedList;
                     const recentList = products.filter(p => p.id !== product.id).reverse().slice(0, 8);
                     const displayList = activeTab === 'related' ? relatedList : recentList;
 
@@ -2048,20 +2060,20 @@ const ProductDetails = () => {
 
             {/* Complete the Look / Pairs Well With (Cross-selling) */}
             {relatedProducts.length > 0 && (
-                <div className="bg-[#111] py-20 mt-10 relative overflow-hidden">
+                <div className="bg-[#FDFBF7] border-t border-gray-100 py-20 mt-10 relative overflow-hidden">
                     {/* Decorative Elements */}
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-[#D39A9F]/10 rounded-full blur-3xl" />
-                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#8E2B45]/10 rounded-full blur-3xl" />
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-[#8E2B45]/5 rounded-full blur-3xl" />
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#D39A9F]/5 rounded-full blur-3xl" />
 
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                         <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-black text-[#D39A9F] uppercase tracking-[0.4em] mb-3">Elevate Your Set</span>
-                                <h2 className="text-3xl font-black text-white uppercase tracking-tight">Pairs Well With</h2>
+                                <span className="text-[10px] font-black text-[#8E2B45] uppercase tracking-[0.4em] mb-3">Elevate Your Set</span>
+                                <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tight">Pairs Well With</h2>
                             </div>
                             <div className="flex items-center gap-4">
-                                <div className="h-[1px] w-12 md:w-24 bg-white/20" />
-                                <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest whitespace-nowrap">Handpicked for you</span>
+                                <div className="h-[1px] w-12 md:w-24 bg-gray-200" />
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Handpicked for you</span>
                             </div>
                         </div>
 
@@ -2073,26 +2085,42 @@ const ProductDetails = () => {
                                             navigate(`/product/${relProduct._id || relProduct.id}`);
                                             window.scrollTo(0, 0);
                                         }}
-                                        className="aspect-[4/5] rounded-[2rem] overflow-hidden bg-white/5 border border-white/10 relative group-hover:border-white/20 transition-all cursor-pointer"
+                                        className="aspect-[4/5] rounded-[2rem] overflow-hidden bg-white border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all cursor-pointer relative"
                                     >
                                         <img
                                             src={relProduct.images?.[0] || relProduct.primaryImage}
                                             alt={relProduct.name}
                                             className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110"
                                         />
-                                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors" />
+                                        <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors" />
 
                                         {/* Quick Tag */}
-                                        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full">
-                                            <span className="text-[8px] font-black text-black uppercase tracking-widest">Matching Set</span>
+                                        <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-md px-3 py-1 rounded-full shadow-sm border border-gray-50">
+                                            <span className="text-[8px] font-black text-gray-800 uppercase tracking-widest">Matching Set</span>
                                         </div>
                                     </div>
                                     <div className="mt-4 flex justify-between items-start">
-                                        <div>
-                                            <h3 className="text-[10px] font-bold text-white uppercase tracking-widest line-clamp-1">{relProduct.name}</h3>
-                                            <p className="text-[10px] font-black text-[#D39A9F] mt-1">{formatCurrency(relProduct.price)}</p>
+                                        <div className="min-w-0 flex-1 pr-2">
+                                            <h3 className="text-[10px] font-bold text-gray-800 uppercase tracking-widest line-clamp-1">{relProduct.name}</h3>
+                                            <p className="text-[10px] font-black text-[#8E2B45] mt-1">{formatCurrency(getProductPrice(relProduct))}</p>
                                         </div>
-                                        <button className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-white hover:bg-white hover:text-black transition-all">
+                                        <button 
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (relProduct.variants && relProduct.variants.length > 0) {
+                                                    addToCart({
+                                                        ...relProduct,
+                                                        selectedVariant: relProduct.variants[0]
+                                                    });
+                                                    toast.success(`${relProduct.name} added to bag!`);
+                                                } else {
+                                                    toast.error("This product is currently out of stock.");
+                                                }
+                                            }}
+                                            className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-black hover:text-white hover:border-black transition-all active:scale-95 flex-shrink-0"
+                                            title="Add to Bag"
+                                        >
                                             <Plus size={14} />
                                         </button>
                                     </div>
