@@ -4,7 +4,7 @@ import { ShoppingBag, Sparkles, ChevronRight } from 'lucide-react';
 import { useShop } from '../../../../context/ShopContext';
 import { useAuth } from '../../../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { getWomenLoginRedirect, storeWomenPendingCartItem } from '../../utils/womenNavigation';
+import { getWomenLoginRedirect, storeWomenPendingCartItem, buildWomenShopPath } from '../../utils/womenNavigation';
 import toast from 'react-hot-toast';
 
 // Import local image
@@ -20,7 +20,8 @@ const hotspots = [
         left: '42%',
         labelX: -180,
         labelY: 0,
-        purity: "925 Silver"
+        purity: "925 Silver",
+        category: 'earrings'
     },
     {
         id: 'chains',
@@ -31,7 +32,8 @@ const hotspots = [
         left: '45%',
         labelX: -220,
         labelY: 0,
-        purity: "18K Gold Plated"
+        purity: "18K Gold Plated",
+        category: 'chains'
     },
     {
         id: 'pendants',
@@ -42,7 +44,8 @@ const hotspots = [
         left: '50%',
         labelX: -220,
         labelY: 0,
-        purity: "Rose Gold Plated"
+        purity: "Rose Gold Plated",
+        category: 'necklaces'
     },
     {
         id: 'rings',
@@ -53,7 +56,8 @@ const hotspots = [
         left: '52%',
         labelX: 150,
         labelY: 0,
-        purity: "Pure 925"
+        purity: "Pure 925",
+        category: 'rings'
     },
     {
         id: 'bracelets',
@@ -64,7 +68,8 @@ const hotspots = [
         left: '55%',
         labelX: 150,
         labelY: 0,
-        purity: "Handcrafted"
+        purity: "Handcrafted",
+        category: 'bracelets'
     }
 ];
 
@@ -92,20 +97,8 @@ const WomenInteractiveLook = () => {
     };
 
     return (
-        <section className="py-24 px-6 md:px-12 bg-[#F6F3F4] overflow-hidden">
+        <section className="pt-0 pb-6 md:pb-8 px-6 md:px-12 bg-[#F6F3F4] overflow-hidden border-t-8 border-[#D39A9F]">
             <div className="max-w-7xl mx-auto">
-                {/* Header */}
-                <div className="text-center mb-16 space-y-4">
-                    <motion.h2 
-                        initial={{ opacity: 0, y: 30 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8 }}
-                        className="text-4xl md:text-6xl font-bold text-black uppercase tracking-tight"
-                    >
-                        Shop The Look
-                    </motion.h2>
-                    <p className="text-[#333] text-lg md:text-xl font-light italic">Elevate your style game</p>
-                </div>
 
                 <div className="flex flex-col lg:flex-row gap-16 items-start">
                     
@@ -124,19 +117,35 @@ const WomenInteractiveLook = () => {
                                     <h3 className="text-2xl font-serif text-black mb-1">{h.productName}</h3>
                                     <div className="text-3xl font-bold text-[#4A1015] mb-6">₹{h.price}</div>
                                     
-                                    <button 
-                                        onClick={() => handleQuickAdd(h)}
-                                        className="w-full bg-black text-white py-4 rounded-xl font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all shadow-lg"
-                                    >
-                                        <ShoppingBag className="w-4 h-4" /> Add to Bag
-                                    </button>
+                                    <div className="flex flex-col gap-3">
+                                        <button
+                                            onClick={() => handleQuickAdd(h)}
+                                            className="w-full bg-black text-white py-4 rounded-xl font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all shadow-lg"
+                                        >
+                                            <ShoppingBag className="w-4 h-4" /> Add to Bag
+                                        </button>
+                                        <button
+                                            onClick={() => navigate(buildWomenShopPath({ category: h.category }))}
+                                            className="w-full bg-white text-black py-3 rounded-xl font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:bg-gray-100 transition-all border-2 border-black"
+                                        >
+                                            <ChevronRight className="w-4 h-4" /> View All {h.name}
+                                        </button>
+                                    </div>
                                 </motion.div>
                             ))}
                         </AnimatePresence>
                     </div>
 
                     {/* Right Side: Interactive Image with Labels */}
-                    <div className="lg:w-3/4 w-full order-1 lg:order-2 relative aspect-[16/9] rounded-[3rem] overflow-hidden shadow-2xl bg-white group">
+                    <div
+                        className="lg:w-3/4 w-full order-1 lg:order-2 relative aspect-[16/9] rounded-[3rem] overflow-hidden shadow-2xl bg-white group cursor-pointer"
+                        onClick={() => {
+                            const activeHotspot = hotspots.find(h => h.id === activeId);
+                            if (activeHotspot) {
+                                navigate(buildWomenShopPath({ category: activeHotspot.category }));
+                            }
+                        }}
+                    >
                         {/* High-End Model Image */}
                         <img
                             src={InteractiveLookImg}

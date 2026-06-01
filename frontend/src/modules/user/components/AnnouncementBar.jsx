@@ -39,22 +39,22 @@ const AnnouncementBar = () => {
     }, []);
 
     return (
-        <div className="bg-[#9C5B61] text-[#F7F2EF] overflow-hidden py-1.5 relative z-[60]">
+        <div className="bg-[#9C5B61] text-[#F7F2EF] overflow-hidden py-0.5 relative z-[60]">
             <div className="flex animate-marquee whitespace-nowrap">
                 {[...Array(10)].map((_, i) => (
-                    <div key={i} className="flex items-center gap-8 md:gap-16 pr-8 md:pr-16">
+                    <div key={i} className="flex items-center gap-6 md:gap-12 pr-6 md:pr-12">
                         {announcements.map((item, idx) => {
                             return (
-                                <div key={idx} className="flex items-center gap-2">
+                                <div key={idx} className="flex items-center gap-1.5">
                                     {item.type === 'image' && item.image ? (
-                                        <img src={item.image} alt="" className="w-5 h-5 object-contain" />
+                                        <img src={item.image} alt="" className="w-4 h-4 object-contain" />
                                     ) : (
                                         (() => {
                                             const IconComponent = iconMap[item.icon] || Tag;
-                                            return <IconComponent className="w-4 h-4 text-[#C9A24D]" />;
+                                            return <IconComponent className="w-3.5 h-3.5 text-[#C9A24D]" />;
                                         })()
                                     )}
-                                    <span className="text-xs font-medium uppercase tracking-widest">{item.text}</span>
+                                    <span className="text-[10px] font-medium uppercase tracking-widest">{item.text}</span>
                                 </div>
                             );
                         })}

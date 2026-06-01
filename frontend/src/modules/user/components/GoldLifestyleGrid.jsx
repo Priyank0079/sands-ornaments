@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
@@ -47,6 +47,28 @@ const desktopSlotClasses = [
 
 const GoldLifestyleGrid = ({ sectionData = null }) => {
     const navigate = useNavigate();
+    const scrollRef = useRef(null);
+
+    useEffect(() => {
+        const autoScroll = setInterval(() => {
+            if (scrollRef.current) {
+                const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+                const scrollAmount = 350;
+                let newScrollLeft = scrollLeft + scrollAmount;
+
+                if (newScrollLeft >= scrollWidth - clientWidth - 10) {
+                    newScrollLeft = 0;
+                }
+
+                scrollRef.current.scrollTo({
+                    left: newScrollLeft,
+                    behavior: 'smooth'
+                });
+            }
+        }, 1000);
+
+        return () => clearInterval(autoScroll);
+    }, []);
 
     const items = useMemo(() => {
         const configured = Array.isArray(sectionData?.items) ? sectionData.items : [];
@@ -64,9 +86,9 @@ const GoldLifestyleGrid = ({ sectionData = null }) => {
     }, [sectionData]);
 
     return (
-        <section className="w-full py-16 bg-white">
-            <div className="max-w-[1450px] mx-auto px-4 md:px-6">
-                <div className="hidden md:grid grid-cols-5 grid-rows-2 gap-4 h-[600px]">
+        <section className="w-full py-4 md:py-12 bg-white">
+            <div className="max-w-full mx-auto">
+                <div className="hidden md:grid grid-cols-5 grid-rows-2 gap-4 h-[600px] px-4 md:px-6 max-w-[1450px] mx-auto">
                     {items.map((item, idx) => (
                         <motion.div
                             key={item.id}
@@ -84,19 +106,25 @@ const GoldLifestyleGrid = ({ sectionData = null }) => {
                     ))}
                 </div>
 
-                <div className="md:hidden flex overflow-x-auto gap-4 pb-4 no-scrollbar -mx-4 h-[350px] px-4">
-                    {items.map((item) => (
-                        <div
-                            key={item.id}
-                            onClick={() => navigate(item.path)}
-                            className="min-w-[240px] h-full relative rounded-[24px] overflow-hidden shrink-0 shadow-md"
-                        >
-                            <img src={item.image} className="w-full h-full object-cover" alt={item.title} />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end justify-center pb-6">
-                                <span className="text-white font-bold text-lg">{item.title}</span>
+                <div className="md:hidden">
+                    {/* Scrollable Cards */}
+                    <div
+                        ref={scrollRef}
+                        className="flex overflow-x-auto gap-3 no-scrollbar h-[350px] scroll-smooth snap-x snap-mandatory px-4 py-4"
+                    >
+                        {items.map((item) => (
+                            <div
+                                key={item.id}
+                                onClick={() => navigate(item.path)}
+                                className="min-w-[85vw] h-full relative rounded-2xl overflow-hidden shrink-0 shadow-md snap-start cursor-pointer group"
+                            >
+                                <img src={item.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={item.title} />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent flex items-end justify-center pb-6 px-4">
+                                    <span className="text-white font-bold text-lg text-center">{item.title}</span>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
             </div>
         </section>

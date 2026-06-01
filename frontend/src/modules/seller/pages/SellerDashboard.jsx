@@ -104,25 +104,25 @@ const SellerDashboard = () => {
     const netPayout = Math.max(0, Number(stats.totalRevenue || 0) - Number(commissionTotals.net || 0));
 
     const statCards = [
-        { label: 'Active Listings', value: stats.totalProducts, icon: Package, color: 'text-blue-600', bg: 'bg-blue-50' },
-        { label: 'Total Inventory', value: stats.totalInventory, icon: Boxes, color: 'text-purple-600', bg: 'bg-purple-50' },
-        { label: 'Pending Fulfillment', value: stats.pendingOrders, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
-        { label: 'In-Transit Orders', value: stats.acceptedOrders, icon: ShoppingBag, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-        { label: 'Completed Orders', value: stats.deliveredOrders, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-        { label: 'Return Requests', value: stats.returnRequests, icon: RotateCcw, color: 'text-red-600', bg: 'bg-red-50' },
-        { label: 'Gross Revenue', value: formatCurrency(stats.totalRevenue), icon: IndianRupee, color: 'text-[#3E2723]', bg: 'bg-[#FDFBF7]', wide: true },
-        { label: "Today's Volume", value: analytics?.todayStats?.orders || 0, icon: ShoppingCart, color: 'text-sky-600', bg: 'bg-sky-50' },
-        { label: 'Monthly Target', value: formatCurrency(analytics?.monthlyStats?.revenue || 0), icon: TrendingUp, color: 'text-rose-600', bg: 'bg-rose-50' },
+        { label: 'Active Listings', value: stats.totalProducts, icon: Package, color: 'text-blue-600', bg: 'bg-blue-50', path: '/seller/products' },
+        { label: 'Total Inventory', value: stats.totalInventory, icon: Boxes, color: 'text-purple-600', bg: 'bg-purple-50', path: '/seller/inventory' },
+        { label: 'Pending Fulfillment', value: stats.pendingOrders, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50', path: '/seller/orders?status=pending' },
+        { label: 'In-Transit Orders', value: stats.acceptedOrders, icon: ShoppingBag, color: 'text-indigo-600', bg: 'bg-indigo-50', path: '/seller/orders?status=processing' },
+        { label: 'Completed Orders', value: stats.deliveredOrders, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50', path: '/seller/orders?status=delivered' },
+        { label: 'Return Requests', value: stats.returnRequests, icon: RotateCcw, color: 'text-red-600', bg: 'bg-red-50', path: '/seller/returns' },
+        { label: 'Gross Revenue', value: formatCurrency(stats.totalRevenue), icon: IndianRupee, color: 'text-[#3E2723]', bg: 'bg-[#FDFBF7]', wide: true, path: '/seller/analytics' },
+        { label: "Today's Volume", value: analytics?.todayStats?.orders || 0, icon: ShoppingCart, color: 'text-sky-600', bg: 'bg-sky-50', path: '/seller/orders' },
+        { label: 'Monthly Target', value: formatCurrency(analytics?.monthlyStats?.revenue || 0), icon: TrendingUp, color: 'text-rose-600', bg: 'bg-rose-50', path: '/seller/analytics' },
     ];
 
     const ordersFilter = (arr, status) => arr.filter((order) => order.orderStatus === status);
 
     const statusWidgets = [
-        { label: 'Pending', count: stats.pendingOrders, color: 'bg-amber-500' },
-        { label: 'Processing', count: stats.acceptedOrders, color: 'bg-indigo-500' },
-        { label: 'Shipped', count: ordersFilter(recentOrders, 'Shipped').length, color: 'bg-blue-500' },
-        { label: 'Delivered', count: stats.deliveredOrders, color: 'bg-emerald-500' },
-        { label: 'Returned', count: stats.returnRequests, color: 'bg-red-500' }
+        { label: 'Pending', count: stats.pendingOrders, color: 'bg-amber-500', path: '/seller/orders?status=pending' },
+        { label: 'Processing', count: stats.acceptedOrders, color: 'bg-indigo-500', path: '/seller/orders?status=processing' },
+        { label: 'Shipped', count: ordersFilter(recentOrders, 'Shipped').length, color: 'bg-blue-500', path: '/seller/orders?status=shipped' },
+        { label: 'Delivered', count: stats.deliveredOrders, color: 'bg-emerald-500', path: '/seller/orders?status=delivered' },
+        { label: 'Returned', count: stats.returnRequests, color: 'bg-red-500', path: '/seller/returns' }
     ];
 
     if (loading) {
@@ -166,35 +166,38 @@ const SellerDashboard = () => {
     }
 
     return (
-        <div className="space-y-10 font-sans pb-20 animate-in fade-in duration-700">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="space-y-6 font-sans pb-20 animate-in fade-in duration-700">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-black text-gray-900 uppercase tracking-tight text-left">OPERATIONAL DASHBOARD</h1>
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mt-1 text-left">Comprehensive store performance and transaction metrics</p>
+                    <h1 className="text-2xl font-light text-gray-800 tracking-wide text-left">Operational Dashboard</h1>
+                    <p className="text-sm font-light text-gray-500 mt-1 text-left">Store performance and transaction metrics</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <span className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-100">
-                        <TrendingUp size={12} /> Store Availability: Online
+                    <span className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-lg text-xs font-medium border border-emerald-100">
+                        <TrendingUp size={14} /> Online
                     </span>
-                    <div className="h-6 w-px bg-gray-200 mx-2" />
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                        {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                    <div className="h-4 w-px bg-gray-300 mx-1" />
+                    <span className="text-xs font-medium text-gray-500">
+                        {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </span>
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {statCards.map((stat, index) => (
-                    <div key={index} className={`bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm flex flex-col justify-between group hover:shadow-xl hover:shadow-[#3E2723]/5 transition-all duration-500 ${stat.wide ? 'xl:col-span-1' : ''}`}>
-                        <div className="flex items-center justify-between mb-8">
-                            <div className={`p-3 rounded-2xl ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}>
-                                <stat.icon size={20} />
+                    <div 
+                        key={index} 
+                        onClick={() => stat.path && navigate(stat.path)}
+                        className={`bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex flex-col justify-between group hover:shadow-md transition-all duration-300 ${stat.wide ? 'xl:col-span-1' : ''} ${stat.path ? 'cursor-pointer hover:border-emerald-200' : ''}`}
+                    >
+                        <div className="flex items-center justify-between mb-4">
+                            <div className={`p-2.5 rounded-xl ${stat.bg} ${stat.color}`}>
+                                <stat.icon size={18} />
                             </div>
-                            <TrendingUp size={14} className="text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{stat.label}</p>
-                            <p className="text-xl font-black text-gray-900 tracking-tighter">{stat.value}</p>
+                            <p className="text-xs font-medium text-gray-500 mb-1">{stat.label}</p>
+                            <p className="text-2xl font-semibold text-gray-800">{stat.value}</p>
                         </div>
                     </div>
                 ))}
@@ -203,8 +206,8 @@ const SellerDashboard = () => {
             <div className="bg-white rounded-[2rem] border border-gray-100 p-8 shadow-sm">
                 <div className="flex items-center justify-between mb-6">
                     <div>
-                        <h3 className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em]">Platform Commission</h3>
-                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">
+                        <h3 className="text-lg font-medium text-gray-800">Platform Commission</h3>
+                        <p className="text-sm font-light text-gray-500 mt-1">
                             Charged on every delivered order, reversed on cancel / return
                         </p>
                     </div>
@@ -268,8 +271,8 @@ const SellerDashboard = () => {
                 <div className="lg:col-span-8 bg-white rounded-[2.5rem] border border-gray-100 p-8 shadow-sm">
                     <div className="flex items-center justify-between mb-10">
                         <div>
-                            <h3 className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em]">Transaction Frequency</h3>
-                            <p className="text-[9px] font-bold text-gray-400 uppercase mt-1 italic">30-Day Acquisition Cycle</p>
+                            <h3 className="text-lg font-medium text-gray-800">Transaction Frequency</h3>
+                            <p className="text-sm font-light text-gray-500 mt-1">30-Day Acquisition Cycle</p>
                         </div>
                         <div className="flex gap-2">
                             <div className="flex items-center gap-1.5 text-[9px] font-black uppercase text-[#3E2723]">
@@ -304,7 +307,7 @@ const SellerDashboard = () => {
 
                 <div className="lg:col-span-4 bg-[#3E2723] rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden group">
                     <div className="relative z-10">
-                        <h3 className="text-[11px] font-black text-white/40 uppercase tracking-[0.2em] mb-8 group-hover:text-white transition-colors">Category Composition</h3>
+                        <h3 className="text-lg font-medium text-white/90 mb-8">Category Composition</h3>
                         <div className="space-y-6">
                             {analytics?.categoryPerformance?.map((category, index) => (
                                 <div key={index} className="space-y-2">
@@ -318,9 +321,9 @@ const SellerDashboard = () => {
                                 </div>
                             ))}
                         </div>
-                        <div className="mt-12 pt-8 border-t border-white/5">
-                            <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest leading-relaxed">
-                                Top performing category is <span className="text-white">NECKLACES</span> accounting for 45% of total acquisition volume this quarter.
+                        <div className="mt-12 pt-8 border-t border-white/10">
+                            <p className="text-sm font-light text-white/70 leading-relaxed">
+                                Top performing category is <span className="font-medium text-white">NECKLACES</span> accounting for 45% of total acquisition volume this quarter.
                             </p>
                         </div>
                     </div>
@@ -330,15 +333,19 @@ const SellerDashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 <div className="lg:col-span-4 space-y-8">
                     <div className="bg-white rounded-[2rem] border border-gray-100 p-8 shadow-sm">
-                        <h3 className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em] mb-8">Fulfillment Summary</h3>
+                        <h3 className="text-lg font-medium text-gray-800 mb-6">Fulfillment Summary</h3>
                         <div className="grid grid-cols-2 gap-4">
                             {statusWidgets.map((widget, index) => (
-                                <div key={index} className="p-4 rounded-2xl bg-gray-50 border border-gray-100 flex flex-col gap-2">
+                                <div 
+                                    key={index} 
+                                    onClick={() => widget.path && navigate(widget.path)}
+                                    className={`p-4 rounded-2xl bg-gray-50 border border-gray-100 flex flex-col gap-2 ${widget.path ? 'cursor-pointer hover:border-gray-300 hover:bg-gray-100 transition-colors' : ''}`}
+                                >
                                     <div className="flex items-center gap-2">
                                         <div className={`w-2 h-2 rounded-full ${widget.color}`} />
-                                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">{widget.label}</span>
+                                        <span className="text-xs font-medium text-gray-500">{widget.label}</span>
                                     </div>
-                                    <span className="text-lg font-black text-gray-900">{widget.count}</span>
+                                    <span className="text-xl font-semibold text-gray-800">{widget.count}</span>
                                 </div>
                             ))}
                         </div>
@@ -346,8 +353,8 @@ const SellerDashboard = () => {
 
                     <div className="bg-white rounded-[2rem] border border-gray-100 p-8 shadow-sm">
                         <div className="flex items-center justify-between mb-8">
-                            <h3 className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em]">Revenue Velocity</h3>
-                            <IndianRupee size={16} className="text-gray-200" />
+                            <h3 className="text-lg font-medium text-gray-800">Revenue Velocity</h3>
+                            <IndianRupee size={16} className="text-gray-400" />
                         </div>
                         <div className="flex items-end justify-between h-32 gap-3 px-2">
                             {analytics?.weeklyRevenue?.map((week, index) => (
@@ -369,10 +376,10 @@ const SellerDashboard = () => {
                 <div className="lg:col-span-8 bg-white rounded-[2rem] border border-gray-100 p-8 shadow-sm">
                     <div className="flex items-center justify-between mb-8">
                         <div>
-                            <h3 className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em]">Product Engagement</h3>
-                            <p className="text-[9px] font-bold text-gray-400 uppercase mt-1 italic">Visitor Views & Cart Additions</p>
+                            <h3 className="text-lg font-medium text-gray-800">Product Engagement</h3>
+                            <p className="text-sm font-light text-gray-500 mt-1">Visitor Views & Cart Additions</p>
                         </div>
-                        <Eye size={16} className="text-gray-200" />
+                        <Eye size={16} className="text-gray-400" />
                     </div>
                     
                     <div className="space-y-4">
@@ -406,8 +413,8 @@ const SellerDashboard = () => {
 
                 <div className="lg:col-span-8 bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
                     <div className="p-8 border-b border-gray-50 flex items-center justify-between bg-white sticky top-0 z-10">
-                        <h3 className="text-[11px] font-black text-gray-900 uppercase tracking-[0.2em]">Live Transaction Stream</h3>
-                        <button onClick={() => navigate('/seller/orders')} className="text-[9px] font-black text-[#8D6E63] uppercase tracking-widest flex items-center gap-1 hover:text-[#3E2723] transition-colors">
+                        <h3 className="text-lg font-medium text-gray-800">Live Transaction Stream</h3>
+                        <button onClick={() => navigate('/seller/orders')} className="text-sm font-medium text-[#8D6E63] flex items-center gap-1 hover:text-[#3E2723] transition-colors">
                             Audit Module <ChevronRight size={14} />
                         </button>
                     </div>

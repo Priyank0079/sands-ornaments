@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -75,6 +75,7 @@ const collections = [
 const GoldCuratedCollections = () => {
     const navigate = useNavigate();
     const scrollRef = useRef(null);
+    const [showScrollHint, setShowScrollHint] = useState(true);
 
     const scroll = (direction) => {
         if (scrollRef.current) {
@@ -86,51 +87,49 @@ const GoldCuratedCollections = () => {
                 current.scrollLeft += scrollAmount;
             }
         }
+        setShowScrollHint(false);
+    };
+
+    const handleScroll = () => {
+        setShowScrollHint(false);
     };
 
     return (
-        <section className="py-6 md:py-10 bg-white select-none overflow-hidden">
+        <section className="py-2 md:py-3 bg-white select-none overflow-hidden">
             <div className="container mx-auto px-4 max-w-[1450px]">
-                
+
                 {/* Header - Compact */}
-                <div className="text-center mb-6 md:mb-8">
-                    <h2 className="text-[18px] md:text-[24px] font-medium text-[#2A4D35] tracking-tight font-serif italic">
+                <div className="text-center mb-3 md:mb-4">
+                    <h2 className="text-[16px] md:text-[22px] font-medium text-[#2A4D35] tracking-tight font-serif italic">
                         Gold Curated Collections
                     </h2>
                 </div>
 
                 {/* Horizontal Scroll Area with Arrows */}
-                <div className="relative group/main">
-                    
-                    {/* Left Scroll Arrow - Smaller */}
-                    <button 
+                <div className="relative group/main flex items-center gap-3">
+
+                    {/* Left Scroll Arrow */}
+                    <button
                         onClick={() => scroll('left')}
-                        className="absolute left-[-10px] top-1/2 -translate-y-1/2 z-30 w-10 h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg border border-gray-100 opacity-0 group-hover/main:opacity-100 transition-all duration-300 hover:bg-[#D4AF37] hover:text-white hover:scale-110 active:scale-95"
+                        className="flex-shrink-0 w-8 h-8 md:w-9 md:h-9 bg-gray-900 hover:bg-[#D4AF37] rounded-full flex items-center justify-center shadow-md transition-all duration-300 hover:scale-110 active:scale-95 z-20"
                     >
-                        <ChevronLeft className="w-5 h-5" />
+                        <ChevronLeft className="w-4 h-4 md:w-5 md:h-5 text-white" />
                     </button>
 
-                    {/* Right Scroll Arrow - Smaller */}
-                    <button 
-                        onClick={() => scroll('right')}
-                        className="absolute right-[-10px] top-1/2 -translate-y-1/2 z-30 w-10 h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg border border-gray-100 opacity-0 group-hover/main:opacity-100 transition-all duration-300 hover:bg-[#D4AF37] hover:text-white hover:scale-110 active:scale-95"
-                    >
-                        <ChevronRight className="w-5 h-5" />
-                    </button>
-
-                    <div 
+                    <div
                         ref={scrollRef}
-                        className="flex overflow-x-auto gap-2 md:gap-3 pb-6 hide-scrollbar scroll-smooth snap-x snap-mandatory"
+                        onScroll={handleScroll}
+                        className="flex overflow-x-auto gap-2 md:gap-3 pb-2 hide-scrollbar scroll-smooth snap-x snap-mandatory flex-1"
                     >
                         {collections.map((item, idx) => (
-                            <motion.div 
+                            <motion.div
                                 key={item.id}
                                 initial={{ opacity: 0, scale: 0.98 }}
                                 whileInView={{ opacity: 1, scale: 1 }}
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.5, delay: idx * 0.05 }}
                                 onClick={() => navigate(item.link)}
-                                className="flex-shrink-0 w-[140px] sm:w-[180px] md:w-[220px] h-[180px] sm:h-[240px] md:h-[280px] relative group cursor-pointer overflow-hidden bg-[#0D1C12] snap-center first:ml-4 last:mr-4 lg:first:ml-0 lg:last:mr-0 rounded-none shadow-md"
+                                className="flex-shrink-0 w-[120px] sm:w-[150px] md:w-[190px] h-[150px] sm:h-[200px] md:h-[240px] relative group cursor-pointer overflow-hidden bg-[#0D1C12] snap-center first:ml-4 last:mr-4 lg:first:ml-0 lg:last:mr-0 rounded-lg shadow-md transition-transform duration-300 hover:shadow-lg"
                             >
                                 {item.type === 'video' ? (
                                     <video 
@@ -164,6 +163,14 @@ const GoldCuratedCollections = () => {
                             </motion.div>
                         ))}
                     </div>
+
+                    {/* Right Scroll Arrow */}
+                    <button
+                        onClick={() => scroll('right')}
+                        className="flex-shrink-0 w-8 h-8 md:w-9 md:h-9 bg-gray-900 hover:bg-[#D4AF37] rounded-full flex items-center justify-center shadow-md transition-all duration-300 hover:scale-110 active:scale-95 z-20"
+                    >
+                        <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-white" />
+                    </button>
                 </div>
             </div>
 

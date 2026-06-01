@@ -47,69 +47,84 @@ const Testimonials = () => {
         : TESTIMONIALS;
 
     return (
-        <section className="w-full py-16 md:py-24 bg-[#F4F7F5] overflow-hidden select-none relative">
-            {/* Background Decorative Element */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-[#142E1F]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-
-            {/* Heading Section */}
-            <div className="container mx-auto px-4 mb-12 md:mb-20 text-center relative z-10">
-                <span className="text-[11px] uppercase tracking-[0.4em] text-[#B8860B] font-bold mb-4 block">
-                    Our Patrons
-                </span>
-                <h2 className="text-3xl md:text-5xl font-display text-[#142E1F] tracking-tight">
-                    {sectionData?.label || 'Movements Made by Her'}
-                </h2>
-                <div className="h-[1px] w-24 bg-[#B8860B]/30 mx-auto mt-6" />
-            </div>
-
-            {/* Horizontal Scroll Containers */}
-            <div className="flex overflow-x-auto gap-6 md:gap-10 px-6 md:px-12 pb-20 scrollbar-hide snap-x snap-mandatory justify-start md:justify-center relative z-10">
-                {displayItems.map((testimonial, index) => (
-                    <motion.div
-                        key={testimonial.id}
-                        initial={{ opacity: 0, y: 30 }}
+        <section className="w-full py-16 md:py-24 bg-white overflow-hidden select-none border-t border-pink-50">
+            <div className="container mx-auto px-4 md:px-12 max-w-[1500px]">
+                {/* Heading Section */}
+                <div className="text-center mb-10 md:mb-16">
+                    <motion.span 
+                        initial={{ opacity: 0, y: 10 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, delay: index * 0.1 }}
-                        className="flex-shrink-0 w-[300px] md:w-[380px] snap-center"
+                        viewport={{ once: true }}
+                        className="text-[10px] uppercase tracking-[0.35em] text-[#8E2B45] font-black mb-3 block"
                     >
-                        <div className="bg-white rounded-[32px] p-8 md:p-12 flex flex-col items-center text-center shadow-[0_15px_45px_rgba(20,46,31,0.05)] min-h-[320px] md:min-h-[360px] relative border border-[#142E1F]/5 group hover:border-[#B8860B]/20 transition-all duration-500">
-                            {/* Stars Rating */}
-                            <div className="flex gap-1 mb-6">
-                                {[...Array(5)].map((_, i) => (
-                                    <span key={i} className="text-[#B8860B] text-sm">★</span>
-                                ))}
-                            </div>
+                        Our Patrons
+                    </motion.span>
+                    <motion.h2 
+                        initial={{ opacity: 0, y: 15 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.1 }}
+                        className="text-3xl md:text-5xl font-serif text-[#2D060F] tracking-tight"
+                    >
+                        {sectionData?.label || 'Customer Stories'}
+                    </motion.h2>
+                    <motion.div 
+                        initial={{ scaleX: 0 }}
+                        whileInView={{ scaleX: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.2, duration: 0.5 }}
+                        className="w-10 h-[1px] bg-[#FFD9E0] mx-auto mt-6 origin-left" 
+                    />
+                </div>
 
-                            {/* Testimonial Text */}
-                            <div className="relative">
-                                <span className="absolute -top-4 -left-2 text-4xl text-[#142E1F]/10 font-serif">"</span>
-                                <p className="text-[#4A4A4A] font-serif italic text-base md:text-lg leading-relaxed mb-8 px-2">
-                                    {testimonial.text}
+                {/* Horizontal Scroll Containers */}
+                <div className="flex overflow-x-auto gap-4 md:gap-6 px-4 md:px-0 pb-12 scrollbar-hide snap-x snap-mandatory justify-start lg:justify-center relative z-10">
+                    {displayItems.map((testimonial, index) => (
+                        <motion.div
+                            key={testimonial.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.5, delay: index * 0.1 }}
+                            className="flex-shrink-0 w-[280px] md:w-[360px] snap-center bg-[#fff9fb] rounded-2xl p-6 md:p-8 border border-[#FFD9E0]/50 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group"
+                        >
+                            <div>
+                                {/* Stars Rating */}
+                                <div className="flex gap-1 mb-5">
+                                    {[...Array(5)].map((_, i) => (
+                                        <svg key={i} className="w-4 h-4 text-[#8E2B45]" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                    ))}
+                                </div>
+
+                                {/* Testimonial Text */}
+                                <p className="text-gray-700 font-sans text-sm md:text-[15px] leading-relaxed mb-8">
+                                    "{testimonial.text}"
                                 </p>
-                                <span className="absolute -bottom-8 -right-2 text-4xl text-[#142E1F]/10 font-serif rotate-180">"</span>
                             </div>
 
-                            {/* Portrait Photo - Absolute positioned at the bottom center */}
-                            <div className="absolute bottom-0 translate-y-1/2 left-1/2 -translate-x-1/2 w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-4 border-white shadow-xl z-20 transition-transform duration-500 group-hover:scale-105">
-                                <img
-                                    src={testimonial.image}
-                                    alt={testimonial.name}
-                                    className="w-full h-full object-cover"
-                                />
+                            {/* Customer Profile Layout */}
+                            <div className="flex items-center gap-4 mt-auto">
+                                <div className="w-12 h-12 md:w-14 md:h-14 rounded-full overflow-hidden border-2 border-white shadow-sm flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
+                                    <img
+                                        src={testimonial.image}
+                                        alt={testimonial.name}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                                <div>
+                                    <h3 className="text-gray-900 font-bold text-sm md:text-base tracking-wide">
+                                        {testimonial.name}
+                                    </h3>
+                                    <p className="text-[#8E2B45] text-[9px] md:text-[10px] font-black uppercase tracking-widest mt-0.5">
+                                        {testimonial.location || 'Verified Buyer'}
+                                    </p>
+                                </div>
                             </div>
-                        </div>
-
-                        {/* Name at the Bottom */}
-                        <div className="mt-14 text-center">
-                            <h3 className="text-[#142E1F] font-display font-bold text-lg md:text-xl tracking-widest uppercase">
-                                {testimonial.name.split(' ')[0]}
-                            </h3>
-                            <p className="text-[#B8860B] text-[10px] uppercase tracking-[0.3em] font-bold mt-1">
-                                {testimonial.location || 'Verified Buyer'}
-                            </p>
-                        </div>
-                    </motion.div>
-                ))}
+                        </motion.div>
+                    ))}
+                </div>
             </div>
 
             <style dangerouslySetInnerHTML={{

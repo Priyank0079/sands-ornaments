@@ -871,37 +871,35 @@ const Shop = () => {
                     </div>
                 </div>
             )}
-            <div className="container mx-auto px-4 pt-6">
-                <button
-                    onClick={() => navigate(-1)}
-                    className="flex items-center gap-2 text-black hover:text-black transition-all group font-bold uppercase tracking-widest text-[10px]"
-                >
-                    <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                    Back
-                </button>
-            </div>
-            <div className="container mx-auto px-4 md:px-6 pt-4 pb-32 md:pb-8">
+            <div className="container mx-auto px-4 md:px-6 pb-32 md:pb-8">
                 {activeCategory && (
                     <CategoryHeroBanner category={activeCategory} />
                 )}
                 {/* Sticky Header & Filters Container */}
                 <div className={`sticky z-[100] bg-white transition-all duration-300 ${isNavVisible ? 'top-[50px] md:top-[141px]' : 'top-0'}`}>
-                    {/* Header Section - Single Row: Title Left, Filter Button Right */}
-                    <div className="pt-2 md:pt-4 flex flex-row justify-between items-center mb-2 md:mb-4 pb-2 md:pb-4 border-b border-[#EBCDD0] gap-4">
-                        <div className="text-left shrink-0">
-                            <h1 className="text-2xl md:text-4xl lg:text-5xl font-serif font-medium text-black">{pageTitle}</h1>
-                            <p className="text-black mt-1 md:mt-2 text-xs md:text-base font-medium">
-                                {(serverModeEnabled && serverPagination?.total ? serverPagination.total : productsToRender.length)} Products Found
-                            </p>
+                    {/* Header Section - Back Left, Title Center, Items Right */}
+                    <div className="py-2.5 md:py-3 flex flex-row justify-between items-center gap-4 border-b border-[#EBCDD0] px-4 md:px-0">
+                        {/* Back Button */}
+                        <button
+                            onClick={() => navigate(-1)}
+                            className="flex items-center gap-1.5 text-black hover:text-[#9C3D5E] transition-all group font-medium uppercase tracking-wide text-[10px] md:text-xs shrink-0"
+                        >
+                            <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
+                            Back
+                        </button>
+
+                        {/* Title - Center */}
+                        <div className="text-center flex-1">
+                            <h1 className="text-lg md:text-2xl font-serif font-medium text-black leading-tight">{pageTitle}</h1>
                         </div>
 
-                        <div className="hidden md:flex items-center gap-2 md:gap-4 shrink-0">
+                        <div className="hidden md:flex items-center gap-2 md:gap-3 shrink-0">
                             <button
                                 onClick={() => setIsFilterOpen(true)}
-                                className="flex items-center gap-1.5 md:gap-2 border border-[#EBCDD0] px-3 md:px-6 py-1.5 md:py-2.5 rounded-full hover:bg-[#D39A9F] hover:text-white hover:border-[#D39A9F] hover:shadow-md transition-all text-black text-xs md:text-sm font-medium bg-white/50"
+                                className="flex items-center gap-1.5 border border-[#D39A9F] px-4 py-1.5 rounded-lg hover:bg-[#D39A9F] hover:text-white hover:border-[#D39A9F] transition-all text-black text-xs md:text-sm font-medium"
                             >
-                                <Filter className="w-3 h-3 md:w-4 md:h-4" />
-                                <span>Detailed Filters</span>
+                                <Filter className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                                <span>Filters</span>
                             </button>
                         </div>
 
@@ -909,15 +907,15 @@ const Shop = () => {
                         <div className="flex md:hidden items-center gap-2">
                             <button
                                 onClick={() => setIsSortOpen(true)}
-                                className="p-2 border border-[#EBCDD0] rounded-full text-black"
+                                className="p-1.5 border border-[#EBCDD0] rounded-lg text-black hover:bg-[#EBCDD0] transition-all"
                             >
                                 <ArrowUpDown className="w-4 h-4" />
                             </button>
                             <button
                                 onClick={() => setIsFilterOpen(true)}
-                                className="flex items-center gap-2 bg-[#8E2B45] text-white px-4 py-2 rounded-full font-bold uppercase tracking-widest text-[10px]"
+                                className="flex items-center gap-1.5 bg-[#9C3D5E] text-white px-3 py-1.5 rounded-lg font-medium text-[11px] uppercase tracking-wider"
                             >
-                                <Filter className="w-3 h-3" />
+                                <Filter className="w-3.5 h-3.5" />
                                 Filter
                             </button>
                         </div>
