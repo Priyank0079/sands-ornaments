@@ -106,8 +106,8 @@ const AdminSidebar = () => {
         <div className="w-64 h-screen bg-footerBg text-white flex flex-col fixed left-0 top-0 z-50">
             {/* Logo Section */}
             <div className="p-6 border-b border-white/10 flex items-center gap-3 shrink-0">
-                <img src={logo} alt="FarmLyf" className="h-8 w-auto object-contain" />
-                <span className="font-brand font-bold text-xl tracking-tight">Admin</span>
+                <img src={logo} alt="Sands Ornaments" className="h-8 w-auto object-contain" />
+                <span className="font-brand font-brand text-xl tracking-tight">Admin</span>
             </div>
 
             {/* Navigation Links */}

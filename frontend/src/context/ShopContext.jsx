@@ -67,7 +67,7 @@ export const ShopProvider = ({ children }) => {
     const { products, categories, coupons: apiCoupons, isLoading: isCatalogueLoading } = useCatalogue();
 
     useEffect(() => {
-        localStorage.setItem('farmlyf_products', JSON.stringify(products));
+        localStorage.setItem('sands_products', JSON.stringify(products));
     }, [products]);
 
     // ── Sub-context delegates ────────────────────────────────────────────────
@@ -83,7 +83,7 @@ export const ShopProvider = ({ children }) => {
 
     // Persist coupons list
     useEffect(() => {
-        localStorage.setItem('farmlyf_coupons', JSON.stringify(cartCtx.coupons));
+        localStorage.setItem('sands_coupons', JSON.stringify(cartCtx.coupons));
     }, [cartCtx.coupons]);
 
     // ── Auth Lifecycle (login / logout triggers) ─────────────────────────────

@@ -6,11 +6,11 @@ const InfoPage = ({ type }) => {
     // Dynamic Content Config
     const contentMap = {
         about: {
-            title: "About FarmLyf",
+            title: "About Sands Ornaments",
             subtitle: "Delivering nature's finest to your doorstep",
             content: (
                 <div className="space-y-6 text-gray-600 leading-relaxed text-lg">
-                    <p>At FarmLyf, we believe in the power of pure, unadulterated nature. Our journey began with a simple mission: to bridge the gap between conscientious farmers and mindful consumers.</p>
+                    <p>At Sands Ornaments, we believe in the power of pure, unadulterated nature. Our journey began with a simple mission: to bridge the gap between conscientious farmers and mindful consumers.</p>
                     <p>We source premium dry fruits, nuts, seeds, and organic staples directly from growers who practice sustainable farming. Every product is handpicked, quality-checked, and packed with care to ensure you get nothing but the best.</p>
                     <h3 className="text-2xl font-black text-footerBg mt-10 mb-4">Our Values</h3>
                     <ul className="grid md:grid-cols-3 gap-6">
@@ -96,8 +96,8 @@ const InfoPage = ({ type }) => {
                                     <div>
                                         <h4 className="font-bold text-footerBg text-sm">Email Us</h4>
                                         <div className="text-gray-500 text-sm mt-1 space-y-0.5">
-                                            <p>hello@farmlyf.com</p>
-                                            <p>partners@farmlyf.com</p>
+                                            <p>hello@sandsornaments.com</p>
+                                            <p>partners@sandsornaments.com</p>
                                         </div>
                                     </div>
                                 </div>
