@@ -4,6 +4,7 @@ const Product = require("../../../models/Product");
 const Seller = require("../../../models/Seller");
 const { applyMetalPricingToProduct } = require("../../../utils/metalPricing");
 const { normalizeMetalRates, hasNegativeRate } = require("../../../utils/metalRateNormalization");
+const auditLogger = require("../../../utils/auditLogger");
 
 const getOrCreateSettings = async () => {
   let settings = await Setting.findOne();
@@ -53,12 +54,26 @@ exports.getSettings = async (req, res) => {
 exports.updateSettings = async (req, res) => {
   try {
     let settings = await Setting.findOne();
+    const before = settings ? { ...settings.toObject() } : null;
     if (!settings) {
       settings = await Setting.create(req.body);
     } else {
       Object.assign(settings, req.body);
       await settings.save();
     }
+    auditLogger.log(req, {
+      action: "SETTINGS_UPDATE",
+      entity: "Settings",
+      entityId: String(settings._id),
+      entityLabel: "Global Settings",
+      before: before
+        ? Object.keys(req.body || {}).reduce((acc, key) => {
+            acc[key] = before[key];
+            return acc;
+          }, {})
+        : null,
+      after: { ...req.body }
+    });
     return success(res, { settings }, "Settings updated successfully");
   } catch (err) { return error(res, err.message); }
 };
@@ -80,6 +95,7 @@ exports.updateMetalPricing = async (req, res) => {
   try {
     const { metalRates, gstRate } = req.body || {};
     const settings = await getOrCreateSettings();
+    const beforeRates = { ...(settings.metalRates || {}) };
 
     if (gstRate !== undefined && gstRate !== null) {
       return error(res, "GST is managed through Tax Settings, not Metal Pricing", 400);
@@ -94,6 +110,15 @@ exports.updateMetalPricing = async (req, res) => {
     }
     settings.metalPricingUpdatedAt = new Date();
     await settings.save();
+
+    auditLogger.log(req, {
+      action: "SETTINGS_UPDATE",
+      entity: "Settings",
+      entityId: String(settings._id),
+      entityLabel: "Metal Pricing",
+      before: { metalRates: beforeRates },
+      after:  { metalRates: settings.metalRates || {} }
+    });
 
     const adminProducts = await Product.find({
       $or: [{ sellerId: null }, { sellerId: { $exists: false } }]
@@ -138,9 +163,19 @@ exports.updateTaxSettings = async (req, res) => {
     }
 
     const settings = await getOrCreateSettings();
+    const previousGst = settings.gstRate || 0;
     settings.gstRate = normalizedGst;
     settings.taxSettingsUpdatedAt = new Date();
     await settings.save();
+
+    auditLogger.log(req, {
+      action: "SETTINGS_UPDATE",
+      entity: "Settings",
+      entityId: String(settings._id),
+      entityLabel: "Tax Settings",
+      before: { gstRate: previousGst },
+      after:  { gstRate: normalizedGst }
+    });
 
     const allProducts = await Product.find({});
     const sellerRateMap = await buildSellerRateMap(allProducts);

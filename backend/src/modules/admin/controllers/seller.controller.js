@@ -4,6 +4,7 @@ const Product = require("../../../models/Product");
 const Order = require("../../../models/Order");
 const { success, error } = require("../../../utils/apiResponse");
 const { sendEmail } = require("../../../services/emailService");
+const auditLogger = require("../../../utils/auditLogger");
 
 const escapeRegex = (value = "") => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const isValidObjectId = (value) => mongoose.Types.ObjectId.isValid(String(value || ""));
@@ -217,9 +218,21 @@ exports.updateSellerStatus = async (req, res) => {
       (status !== "REJECTED" || (seller.rejectionReason || "") === trimmedReason);
 
     if (!isSameStatus) {
+      const previousStatus = seller.status;
+      const previousRejectionReason = seller.rejectionReason || null;
       seller.status = status;
       seller.rejectionReason = status === "REJECTED" ? trimmedReason : null;
       await seller.save();
+
+      // Audit log — non-blocking
+      auditLogger.log(req, {
+        action:      status === "APPROVED" ? "APPROVE" : "REJECT",
+        entity:      "Seller",
+        entityId:    String(seller._id),
+        entityLabel: seller.shopName || seller.fullName || seller.email || "",
+        before:      { status: previousStatus, rejectionReason: previousRejectionReason },
+        after:       { status, rejectionReason: seller.rejectionReason || null }
+      });
     }
 
     if (seller.email) {

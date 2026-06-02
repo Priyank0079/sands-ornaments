@@ -3,6 +3,7 @@ const User = require("../../../models/User");
 const Order = require("../../../models/Order");
 const Address = require("../../../models/Address");
 const { success, error } = require("../../../utils/apiResponse");
+const auditLogger = require("../../../utils/auditLogger");
 
 const escapeRegex = (value = "") => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const isValidObjectId = (value) => mongoose.Types.ObjectId.isValid(String(value || ""));
@@ -229,8 +230,19 @@ exports.blockUser = async (req, res) => {
       return error(res, "You cannot block your own admin account", 400);
     }
 
+    const previousState = user.isBlocked;
     user.isBlocked = !user.isBlocked;
     await user.save();
+
+    // Audit log — non-blocking
+    auditLogger.log(req, {
+      action:      user.isBlocked ? "BLOCK" : "UNBLOCK",
+      entity:      "User",
+      entityId:    String(user._id),
+      entityLabel: user.email || user.name || "",
+      before:      { isBlocked: previousState },
+      after:       { isBlocked: user.isBlocked }
+    });
 
     return success(
       res,

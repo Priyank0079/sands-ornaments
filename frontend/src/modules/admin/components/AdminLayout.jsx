@@ -5,7 +5,7 @@ import {
     Bell, ChevronRight, ChevronDown, Star, HelpCircle, LogOut, Menu, X, ListTree,
     FileText, MessageSquare, Ticket, Settings, Plus, List, BookOpen,
     Clock, RefreshCw, RefreshCcw, RotateCcw, Boxes, ClipboardList, MapPin, Truck, CheckCircle2, XCircle, Percent,
-    AlertTriangle, FileBarChart, Store
+    AlertTriangle, FileBarChart, Store, ShieldCheck
 } from 'lucide-react';
 import { adminService } from '../services/adminService';
 import logo from '@assets/sands-logo.png';
@@ -19,6 +19,7 @@ const AdminLayout = ({ children }) => {
     const menuItems = [
         { name: 'Dashboard', icon: LayoutDashboard, path: '/admin' },
         { name: 'Analytics', icon: FileBarChart, path: '/admin/analytics' },
+        { name: 'Audit Trail', icon: ShieldCheck, path: '/admin/audit-logs' },
         { name: 'Categories', icon: ImageIcon, path: '/admin/categories' },
 
         {

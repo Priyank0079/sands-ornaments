@@ -68,6 +68,7 @@ const CommissionTiers = lazy(() => import('./modules/admin/pages/CommissionTiers
 const CommissionReport = lazy(() => import('./modules/admin/pages/CommissionReport'));
 const AdminShipments = lazy(() => import('./modules/admin/pages/AdminShipments'));
 const AnalyticsDashboard = lazy(() => import('./modules/admin/pages/AnalyticsDashboard'));
+const AuditLogPage = lazy(() => import('./modules/admin/pages/AuditLogPage'));
 
 // Seller Routes — lazy loaded
 const SellerRoutes = lazy(() => import('./modules/seller/routes/sellerRoutes'));
@@ -298,6 +299,7 @@ const AppContent = () => {
                   <Route path="/commission/tiers" element={<CommissionTiers />} />
                   <Route path="/commission/report" element={<CommissionReport />} />
                   <Route path="/shipping" element={<AdminShipments />} />
+                  <Route path="/audit-logs" element={<AuditLogPage />} />
                 </Routes>
               </AdminLayout>
             </AdminProtectedRoute>

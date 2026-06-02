@@ -7,6 +7,7 @@ const {
   reverseCommissionsForOrder
 } = require("../../../services/commissionService");
 const { processRefund: razorpayProcessRefund } = require("../../../services/razorpayService");
+const auditLogger = require("../../../utils/auditLogger");
 
 const ALLOWED_TRANSITIONS = {
   Pending: [],
@@ -199,10 +200,7 @@ exports.updateOrderStatus = async (req, res) => {
       try { emitOrderStatusUpdate(order); } catch (e) { /* non-blocking */ }
     }
 
-    // ── Platform commission lifecycle (admin-initiated transitions) ────────────
-    // Delivered  → flip pending accruals to confirmed
-    // Cancelled  → fully reverse the ledger (decision F)
-    // Returned   → fully reverse (covers the Return Requested → Returned manual path)
+    // ── Platform commission lifecycle ─────────────────────────────────────────
     if (!isSameStatusUpdate) {
       try {
         if (nextStatus === "Delivered") {
@@ -223,6 +221,16 @@ exports.updateOrderStatus = async (req, res) => {
       } catch (e) {
         console.error("[Commission] Admin status-transition hook error:", e.message);
       }
+
+      // Audit log — non-blocking
+      auditLogger.log(req, {
+        action:      "STATUS_CHANGE",
+        entity:      "Order",
+        entityId:    String(order._id),
+        entityLabel: order.orderId || String(order._id),
+        before:      { status: currentStatus },
+        after:       { status: nextStatus }
+      });
     }
 
     return success(
@@ -276,6 +284,13 @@ exports.processRefund = async (req, res) => {
       return error(res, `Refund amount (${refundAmount}) cannot exceed the order total (${order.total}).`, 400);
     }
 
+    const refundBefore = {
+      refundStatus: order.refundStatus || null,
+      paymentStatus: order.paymentStatus || null,
+      refundAmount: order.refundAmount || null,
+      refundId: order.refundId || null
+    };
+
     // Mark as pending before calling Razorpay (optimistic lock)
     order.refundStatus = "pending";
     await order.save();
@@ -311,6 +326,16 @@ exports.processRefund = async (req, res) => {
     });
 
     await order.save();
+
+    // Audit log — non-blocking
+    auditLogger.log(req, {
+      action:      "REFUND",
+      entity:      "Order",
+      entityId:    String(order._id),
+      entityLabel: order.orderId || String(order._id),
+      before:      refundBefore,
+      after:       { refundStatus: "processed", refundAmount, refundId: refundResult.id }
+    });
 
     const refreshed = await Order.findById(order._id)
       .populate("userId", "name email phone")

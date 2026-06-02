@@ -36,7 +36,8 @@ import {
     Activity,
     Wallet,
     FileBarChart2,
-    SlidersHorizontal
+    SlidersHorizontal,
+    ShieldCheck
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
@@ -83,6 +84,7 @@ const AdminSidebar = () => {
         { icon: Users, label: 'Users', path: '/admin/users' },
         { icon: Store, label: 'Sellers', path: '/admin/sellers' },
         { icon: Layers, label: 'Categories', path: '/admin/categories' },
+        { icon: ShieldCheck, label: 'Audit Trail', path: '/admin/audit-logs' },
     ];
 
     const secondaryMenuItems = [

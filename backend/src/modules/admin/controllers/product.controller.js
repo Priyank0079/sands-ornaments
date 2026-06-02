@@ -10,6 +10,7 @@ const Seller = require("../../../models/Seller");
 const { applyMetalPricingToProduct } = require("../../../utils/metalPricing");
 const { generateUniqueProductCode, generateVariantCode } = require("../../../utils/productIdentity");
 const { normalizeProductForResponse } = require("../../../utils/productCompatibility");
+const auditLogger = require("../../../utils/auditLogger");
 
 // BUG-10 FIX: explicit whitelist of fields that can be updated via API
 const PRODUCT_UPDATE_WHITELIST = [
@@ -403,6 +404,16 @@ exports.updateProduct = async (req, res) => {
       );
     }
 
+    // Audit log — non-blocking
+    auditLogger.log(req, {
+      action:      "UPDATE",
+      entity:      "Product",
+      entityId:    String(product._id),
+      entityLabel: product.name || "",
+      before:      null,
+      after:       { name: product.name, status: product.status, updatedFields: Object.keys(data).filter(k => PRODUCT_UPDATE_WHITELIST.includes(k)) }
+    });
+
     return success(res, { product }, "Product updated successfully");
   } catch (err) { return error(res, err.message); }
 };
@@ -435,6 +446,16 @@ exports.deleteProduct = async (req, res) => {
     ]);
 
     await product.deleteOne();
+
+    // Audit log — non-blocking
+    auditLogger.log(req, {
+      action:      "DELETE",
+      entity:      "Product",
+      entityId:    String(product._id),
+      entityLabel: product.name || "",
+      before:      { name: product.name, status: product.status },
+      after:       null
+    });
 
     if (mediaToRemove.length > 0) {
       await Promise.allSettled(mediaToRemove.map((url) => deleteFromCloudinary(url)));
