@@ -9,5 +9,6 @@ router.get("/summary", orderController.getOrderSummary);
 router.get("/", orderController.getOrders);
 router.get("/:id", orderController.getOrderDetail);
 router.patch("/:id/status", orderController.updateOrderStatus);
+router.post("/:id/refund", orderController.processRefund);
 
 module.exports = router;

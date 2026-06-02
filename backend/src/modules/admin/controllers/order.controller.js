@@ -6,6 +6,7 @@ const {
   confirmCommissionsForOrder,
   reverseCommissionsForOrder
 } = require("../../../services/commissionService");
+const { processRefund: razorpayProcessRefund } = require("../../../services/razorpayService");
 
 const ALLOWED_TRANSITIONS = {
   Pending: [],
@@ -230,4 +231,98 @@ exports.updateOrderStatus = async (req, res) => {
       isSameStatusUpdate ? "Order shipping info updated" : `Order status updated to ${nextStatus}`
     );
   } catch (err) { return error(res, err.message); }
+};
+
+exports.processRefund = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return error(res, "Invalid order id", 400);
+    }
+
+    const order = await Order.findById(id);
+    if (!order) return error(res, "Order not found", 404);
+
+    // Guard: only Razorpay orders can be refunded online
+    if (order.paymentMethod !== "razorpay") {
+      return error(res, "Refunds are only available for online Razorpay payments.", 400);
+    }
+
+    // Guard: must have a captured payment ID
+    if (!order.razorpayPaymentId) {
+      return error(res, "No Razorpay payment ID found for this order. The payment may not have been captured.", 400);
+    }
+
+    // Guard: prevent double-refund
+    if (order.refundStatus === "processed") {
+      return error(res, `This order has already been refunded (Refund ID: ${order.refundId}).`, 400);
+    }
+
+    // Guard: pending in-flight refund
+    if (order.refundStatus === "pending") {
+      return error(res, "A refund is already in progress for this order.", 400);
+    }
+
+    // Determine refund amount — body.amount is optional (defaults to full order total)
+    const { amount: reqAmount, reason } = req.body || {};
+    const refundAmount = reqAmount ? Number(reqAmount) : order.total;
+
+    if (!refundAmount || refundAmount <= 0) {
+      return error(res, "Refund amount must be greater than zero.", 400);
+    }
+
+    if (refundAmount > order.total) {
+      return error(res, `Refund amount (${refundAmount}) cannot exceed the order total (${order.total}).`, 400);
+    }
+
+    // Mark as pending before calling Razorpay (optimistic lock)
+    order.refundStatus = "pending";
+    await order.save();
+
+    let refundResult;
+    try {
+      refundResult = await razorpayProcessRefund(
+        order.razorpayPaymentId,
+        refundAmount,
+        {
+          orderId:  String(order.orderId  || order._id),
+          reason:   reason || "Admin initiated refund",
+          adminId:  String(req.user?._id || "admin")
+        }
+      );
+    } catch (refundErr) {
+      // Roll back the pending flag so admin can retry
+      order.refundStatus = "failed";
+      await order.save();
+      return error(res, refundErr.message, 502);
+    }
+
+    // Persist refund metadata
+    order.refundId     = refundResult.id;
+    order.refundStatus = "processed";
+    order.refundAmount = refundAmount;
+    order.refundedAt   = new Date();
+    order.paymentStatus = "refunded";
+    order.timeline.push({
+      status: order.status,
+      note:   `Refund of INR ${refundAmount} processed. Razorpay Refund ID: ${refundResult.id}`,
+      date:   new Date()
+    });
+
+    await order.save();
+
+    const refreshed = await Order.findById(order._id)
+      .populate("userId", "name email phone")
+      .populate("items.productId", "name images variants");
+
+    return success(
+      res,
+      { order: refreshed, refundId: refundResult.id, refundAmount },
+      `Refund of INR ${refundAmount} processed successfully.`
+    );
+  } catch (err) {
+    console.error("[Refund] Unexpected error:", err.message);
+    return error(res, err.message);
+  }
 };

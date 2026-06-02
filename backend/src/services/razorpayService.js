@@ -40,4 +40,26 @@ const verifySignature = (razorpayOrderId, razorpayPaymentId, signature) => {
   }
 };
 
-module.exports = { createOrder, verifySignature };
+/**
+ * Process a full or partial refund via Razorpay
+ * @param {String} paymentId  - razorpay payment ID (pay_XXXX)
+ * @param {Number} amount     - Refund amount in INR (will be converted to paisa)
+ * @param {Object} notes      - Optional notes/metadata for Razorpay dashboard
+ */
+const processRefund = async (paymentId, amount, notes = {}) => {
+  if (!razorpay) {
+    throw new Error("Razorpay is not configured. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET.");
+  }
+  try {
+    const refund = await razorpay.payments.refund(paymentId, {
+      amount: Math.round(amount * 100), // convert INR → paisa
+      notes
+    });
+    return refund;
+  } catch (err) {
+    console.error("[Razorpay] Refund failed:", err.message);
+    throw new Error("Razorpay refund failed: " + (err.error?.description || err.message));
+  }
+};
+
+module.exports = { createOrder, verifySignature, processRefund };

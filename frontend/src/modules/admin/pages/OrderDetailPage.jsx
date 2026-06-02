@@ -5,9 +5,11 @@ import {
     CreditCard,
     MapPin,
     Package,
+    RefreshCw,
     Tag,
     Truck,
-    User
+    User,
+    X
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -86,6 +88,12 @@ const OrderDetailPage = () => {
         estimatedDelivery: ''
     });
     const [voidTagInputs, setVoidTagInputs] = useState({});
+
+    // Refund modal state
+    const [showRefundModal, setShowRefundModal] = useState(false);
+    const [refundAmount, setRefundAmount] = useState('');
+    const [refundReason, setRefundReason] = useState('');
+    const [isRefunding, setIsRefunding] = useState(false);
 
     useEffect(() => {
         const fetchOrder = async () => {
@@ -180,6 +188,38 @@ const OrderDetailPage = () => {
         }
     };
 
+    const handleRefund = async () => {
+        if (!order) return;
+        setIsRefunding(true);
+        try {
+            const payload = {};
+            const parsedAmount = parseFloat(refundAmount);
+            if (refundAmount && !isNaN(parsedAmount) && parsedAmount > 0) {
+                payload.amount = parsedAmount;
+            }
+            if (refundReason.trim()) payload.reason = refundReason.trim();
+
+            const res = await adminService.processRefund(order._id, payload);
+            if (!res.success) {
+                toast.error(res.message || 'Refund failed.');
+                return;
+            }
+            setOrder(res.order || await refreshOrder());
+            setShowRefundModal(false);
+            setRefundAmount('');
+            setRefundReason('');
+            toast.success(res.message || 'Refund processed successfully!');
+        } finally {
+            setIsRefunding(false);
+        }
+    };
+
+    const openRefundModal = () => {
+        setRefundAmount(String(order?.totalAmount || ''));
+        setRefundReason('');
+        setShowRefundModal(true);
+    };
+
     const handleSaveShipping = async () => {
         if (!order) return;
 
@@ -247,6 +287,27 @@ const OrderDetailPage = () => {
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Final Total</p>
                     <p className="text-2xl font-black text-gray-900">{currency(order.totalAmount)}</p>
                 </div>
+                {/* Refund CTA — only for Razorpay paid orders not yet refunded */}
+                {order.paymentMethod === 'razorpay' && order.refundStatus !== 'processed' && (
+                    <button
+                        type="button"
+                        onClick={openRefundModal}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all"
+                    >
+                        <RefreshCw size={14} />
+                        {order.refundStatus === 'failed' ? 'Retry Refund' : 'Issue Refund'}
+                    </button>
+                )}
+                {order.refundStatus === 'processed' && (
+                    <div className="flex flex-col items-end gap-1">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-100">
+                            ✓ Refunded
+                        </span>
+                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+                            {currency(order.refundAmount)} · {order.refundId}
+                        </span>
+                    </div>
+                )}
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -523,6 +584,119 @@ const OrderDetailPage = () => {
                     </div>
                 </div>
             </div>
+
+            {/* ── Refund Modal ─────────────────────────────────────────────────── */}
+            {showRefundModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md border border-gray-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                        {/* Header */}
+                        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                            <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-xl bg-red-50 border border-red-100 flex items-center justify-center">
+                                    <RefreshCw size={16} className="text-red-600" />
+                                </div>
+                                <div>
+                                    <h2 className="text-sm font-black text-gray-900 uppercase tracking-widest">Issue Refund</h2>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Order #{order.orderId}</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setShowRefundModal(false)}
+                                disabled={isRefunding}
+                                className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center transition-colors"
+                            >
+                                <X size={16} className="text-gray-400" />
+                            </button>
+                        </div>
+
+                        {/* Body */}
+                        <div className="p-6 space-y-5">
+                            {/* Payment info banner */}
+                            <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 space-y-1">
+                                <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Razorpay Payment ID</p>
+                                <p className="text-xs font-bold text-amber-900 font-mono">{order.razorpayPaymentId || 'N/A'}</p>
+                            </div>
+
+                            {/* Amount */}
+                            <div className="space-y-1.5">
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                    Refund Amount (INR)
+                                </label>
+                                <div className="relative">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-black text-gray-400">₹</span>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        max={order.totalAmount}
+                                        step="0.01"
+                                        value={refundAmount}
+                                        onChange={(e) => setRefundAmount(e.target.value)}
+                                        placeholder={String(order.totalAmount || '')}
+                                        disabled={isRefunding}
+                                        className="w-full bg-white border border-gray-200 rounded-xl py-3 pl-8 pr-4 text-sm font-bold text-gray-900 focus:outline-none focus:border-[#3E2723] focus:ring-2 focus:ring-[#3E2723]/10 transition-all"
+                                    />
+                                </div>
+                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+                                    Max: {currency(order.totalAmount)} &nbsp;·&nbsp; Leave blank to refund full amount
+                                </p>
+                            </div>
+
+                            {/* Reason */}
+                            <div className="space-y-1.5">
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                    Reason (optional)
+                                </label>
+                                <textarea
+                                    value={refundReason}
+                                    onChange={(e) => setRefundReason(e.target.value)}
+                                    placeholder="e.g. Customer request, defective item, duplicate order..."
+                                    disabled={isRefunding}
+                                    rows={3}
+                                    className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4 text-sm text-gray-900 focus:outline-none focus:border-[#3E2723] focus:ring-2 focus:ring-[#3E2723]/10 transition-all resize-none"
+                                />
+                            </div>
+
+                            {/* Warning */}
+                            <div className="bg-red-50 border border-red-100 rounded-xl p-4">
+                                <p className="text-[10px] font-black text-red-600 uppercase tracking-widest mb-1">⚠ Irreversible Action</p>
+                                <p className="text-xs font-semibold text-red-500 leading-relaxed">
+                                    This will immediately issue a refund via Razorpay. This action cannot be undone. Please verify the amount before proceeding.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="flex gap-3 p-6 pt-0">
+                            <button
+                                type="button"
+                                onClick={() => setShowRefundModal(false)}
+                                disabled={isRefunding}
+                                className="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-[10px] font-black uppercase tracking-widest text-gray-600 hover:bg-gray-50 transition-all disabled:opacity-50"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleRefund}
+                                disabled={isRefunding}
+                                className="flex-1 px-4 py-3 rounded-xl bg-red-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+                            >
+                                {isRefunding ? (
+                                    <>
+                                        <RefreshCw size={13} className="animate-spin" />
+                                        Processing...
+                                    </>
+                                ) : (
+                                    <>
+                                        <RefreshCw size={13} />
+                                        Confirm Refund
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

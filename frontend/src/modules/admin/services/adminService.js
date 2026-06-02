@@ -59,6 +59,11 @@ const normalizeAdminOrder = (order) => {
     trackingId: shippingInfo.trackingId || '',
     trackingUrl: shippingInfo.trackingUrl || '',
     estimatedDelivery: shippingInfo.estimatedDelivery || null,
+    // Refund fields
+    refundId:     order.refundId     || null,
+    refundStatus: order.refundStatus || 'none',
+    refundAmount: Number(order.refundAmount || 0),
+    refundedAt:   order.refundedAt   || null,
     address: {
       name: customerName,
       phone: customerPhone,
@@ -606,6 +611,24 @@ export const adminService = {
       return {
         success: false,
         message: err.response?.data?.message || "Failed to update order"
+      };
+    }
+  },
+  processRefund: async (id, payload = {}) => {
+    try {
+      const res = await api.post(`admin/orders/${id}/refund`, payload);
+      return {
+        success: res.data.success,
+        message: res.data.message || 'Refund processed',
+        order: normalizeAdminOrder(res.data.data?.order || res.data.order),
+        refundId: res.data.data?.refundId || null,
+        refundAmount: res.data.data?.refundAmount || 0
+      };
+    } catch (err) {
+      console.error("Admin process refund failed:", err);
+      return {
+        success: false,
+        message: err.response?.data?.message || "Failed to process refund"
       };
     }
   },

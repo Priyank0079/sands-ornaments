@@ -58,6 +58,16 @@ const orderSchema = new mongoose.Schema({
   timeline: [{ status: String, date: { type: Date, default: Date.now }, note: String }],
   notes: String,
 
+  // ── Razorpay Refund ──────────────────────────────────────────────────────────
+  refundId:     { type: String, default: null },
+  refundStatus: {
+    type: String,
+    enum: ["none", "pending", "processed", "failed"],
+    default: "none"
+  },
+  refundAmount:  { type: Number, default: 0 },
+  refundedAt:    { type: Date,   default: null },
+
   // ── Platform commission cache (source of truth lives in Commission ledger) ──
   // This is denormalized for fast reads; recompute from the ledger when in doubt.
   commissionSummary: {
