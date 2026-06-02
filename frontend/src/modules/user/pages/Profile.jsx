@@ -40,7 +40,7 @@ const normalizeAddressPayload = (address) => ({
 
 const Profile = () => {
     const { 
-        user, login, logout, orders, wishlist, addresses, 
+        user, updateProfile, logout, orders, wishlist, addresses, 
         addAddress, removeAddress, setDefaultAddress, defaultAddressId, 
         deleteAccount, notificationsEnabled, toggleNotificationSettings, coupons 
     } = useShop();
@@ -63,6 +63,7 @@ const Profile = () => {
     });
     const [copiedCoupon, setCopiedCoupon] = useState('');
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
         if (user) {
@@ -86,10 +87,44 @@ const Profile = () => {
 
     const handleLogout = () => { logout(); navigate('/'); };
 
-    const handleSave = () => {
-        const updatedUser = { ...user, name: `${formData.firstName} ${formData.lastName}`.trim(), email: formData.email, phone: formData.phone };
-        login(updatedUser);
-        navigate('/profile/profile');
+    const handleSave = async () => {
+        if (isSaving) return;
+        
+        const name = `${formData.firstName} ${formData.lastName}`.trim();
+        if (!name) {
+            toast.error("Name is required");
+            return;
+        }
+
+        const payload = {
+            name,
+            email: formData.email,
+            phone: formData.phone
+        };
+
+        setIsSaving(true);
+        const savePromise = updateProfile(payload);
+
+        toast.promise(savePromise, {
+            loading: 'Saving profile changes...',
+            success: (res) => {
+                if (res.success) {
+                    navigate('/profile/profile');
+                    return 'Profile updated successfully!';
+                } else {
+                    throw new Error(res.message || 'Failed to update profile');
+                }
+            },
+            error: (err) => err.message || 'Failed to update profile'
+        });
+
+        try {
+            await savePromise;
+        } catch (err) {
+            console.error("Save error:", err);
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const handleAddAddress = async (e) => {
@@ -152,6 +187,7 @@ const Profile = () => {
                                     formData={formData}
                                     setFormData={setFormData}
                                     handleSave={handleSave}
+                                    isSaving={isSaving}
                                 />
                             )}
                             {activeTab === 'orders' && (

@@ -364,7 +364,7 @@ const OrderDetailPage = () => {
 
                 <div className="space-y-6">
                     <CommissionBreakdownCard
-                        orderId={order._id || order.id}
+                        orderId={order._id}
                         commissionSummary={order.commissionSummary}
                     />
 

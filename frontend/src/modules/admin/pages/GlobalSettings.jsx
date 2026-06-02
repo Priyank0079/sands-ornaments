@@ -1,93 +1,122 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import {
     Save, Truck, AlertTriangle, MapPin, Phone, Mail, Globe, Check, Edit3,
     RefreshCw, Repeat, CreditCard, Shield, Bell, Plus, Trash2, Tag, Gift,
     Star, Zap, Headset, Upload, X, ChevronDown, Facebook, Twitter, Instagram, Youtube, Layout
 } from 'lucide-react';
 import PageHeader from '../components/common/PageHeader';
+import api from '../../../services/api';
+import toast from 'react-hot-toast';
+
+const DEFAULT_SETTINGS = {
+    productHeader: 'ESTIMATED DELIVERY DATE',
+    returnPolicy: '2 Days Return',
+    exchangePolicy: '10 Days Exchange',
+    codPolicy: 'Cash On Delivery',
+    warrantyText: 'Lifetime Warranty',
+    safetyText: 'Skin Safe Jewellery',
+    platingText: '18k Gold Tone Plated',
+    announcementItems: [
+        { id: 1, icon: 'Truck', text: 'Free Shipping' },
+        { id: 2, icon: 'Shield', text: 'Secure Payments' },
+        { id: 3, icon: 'RefreshCw', text: 'Easy Returns & Refunds' },
+        { id: 4, icon: 'Headset', text: 'Dedicated Support Team' }
+    ],
+    fraudWarning: 'BEWARE OF FRAUD: Sands Ornaments never asks for confidential banking details over phone or email.',
+    address: '123 Silver Arcade, Heritage Marg, Jaipur',
+    phone: '+91 98765 43210',
+    email: 'support@sandsornaments.com',
+    website: 'www.sandsornaments.com',
+
+    // Footer Settings
+    footerTagline: 'Timeless Elegance,',
+    footerSubTagline: 'Handcrafted for You.',
+    footerDescription: "Every piece at Sands tell a story of heritage and modern Grace. Join our community of silver lovers and celebrate life's most precious moments.",
+
+    footerColumn1Title: 'Experience',
+    footerColumn2Title: 'Policies',
+    footerColumn3Title: 'Our World',
+
+    footerExperienceLinks: [
+        { id: 1, name: "Easy Returns", path: "/return-policy" },
+        { id: 2, name: "Contact Us", path: "/help" },
+        { id: 3, name: "FAQs", path: "/help" },
+        { id: 4, name: "Blogs", path: "/blogs" },
+    ],
+    footerPoliciesLinks: [
+        { id: 1, name: "Shipping Policy", path: "/shipping-policy" },
+        { id: 2, name: "Privacy Policy", path: "/privacy" },
+        { id: 3, name: "Cancellation Policy", path: "/cancellation-policy" },
+        { id: 4, name: "Terms & Conditions", path: "/terms" },
+    ],
+    footerWorldLinks: [
+        { id: 1, name: "About Us", path: "/about" },
+        { id: 2, name: "Jewellery Care Guide", path: "/care-guide" },
+        { id: 3, name: "Our Craft", path: "/craft" },
+    ],
+
+    socialLinks: {
+        facebook: '#',
+        twitter: '#',
+        instagram: '#',
+        youtube: '#'
+    },
+
+    footerDeliveryText: 'Safe & Insured Express Worldwide Delivery',
+    footerCopyrightText: 'Sands Ornaments Pvt Ltd. All Rights Reserved.',
+};
 
 const GlobalSettings = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [settings, setSettings] = useState(DEFAULT_SETTINGS);
 
-    // Initial Mock Data
-    const [settings, setSettings] = useState(() => {
-        const saved = localStorage.getItem('siteSettings');
-        const initial = saved ? JSON.parse(saved) : {};
-
-        return {
-            // Defaults (merged with saved)
-            productHeader: 'ESTIMATED DELIVERY DATE',
-            returnPolicy: '2 Days Return',
-            exchangePolicy: '10 Days Exchange',
-            codPolicy: 'Cash On Delivery',
-            warrantyText: 'Lifetime Warranty',
-            safetyText: 'Skin Safe Jewellery',
-            platingText: '18k Gold Tone Plated',
-            announcementItems: [
-                { id: 1, icon: 'Truck', text: 'Free Shipping' },
-                { id: 2, icon: 'Shield', text: 'Secure Payments' },
-                { id: 3, icon: 'RefreshCw', text: 'Easy Returns & Refunds' },
-                { id: 4, icon: 'Headset', text: 'Dedicated Support Team' }
-            ],
-            fraudWarning: 'BEWARE OF FRAUD: Sands Ornaments never asks for confidential banking details over phone or email.',
-            address: '123 Silver Arcade, Heritage Marg, Jaipur',
-            phone: '+91 98765 43210',
-            email: 'support@sandsornaments.com',
-            website: 'www.sandsornaments.com',
-
-            // Footer Settings
-            footerTagline: 'Timeless Elegance,',
-            footerSubTagline: 'Handcrafted for You.',
-            footerDescription: 'Every piece at Sands tell a story of heritage and modern Grace. Join our community of silver lovers and celebrate life\'s most precious moments.',
-
-            footerColumn1Title: 'Experience',
-            footerColumn2Title: 'Policies',
-            footerColumn3Title: 'Our World',
-
-            footerExperienceLinks: [
-                { id: 1, name: "Easy Returns", path: "/return-policy" },
-                { id: 2, name: "Contact Us", path: "/help" },
-                { id: 3, name: "FAQs", path: "/help" },
-                { id: 4, name: "Blogs", path: "/blogs" },
-            ],
-            footerPoliciesLinks: [
-                { id: 1, name: "Shipping Policy", path: "/shipping-policy" },
-                { id: 2, name: "Privacy Policy", path: "/privacy" },
-                { id: 3, name: "Cancellation Policy", path: "/cancellation-policy" },
-                { id: 4, name: "Terms & Conditions", path: "/terms" },
-            ],
-            footerWorldLinks: [
-                { id: 1, name: "About Us", path: "/about" },
-                { id: 2, name: "Jewellery Care Guide", path: "/care-guide" },
-                { id: 3, name: "Store Locator", path: "/about" },
-                { id: 4, name: "Our Craft", path: "/craft" },
-            ],
-
-            socialLinks: {
-                facebook: '#',
-                twitter: '#',
-                instagram: '#',
-                youtube: '#'
-            },
-
-            footerDeliveryText: 'Safe & Insured Express Worldwide Delivery',
-            footerCopyrightText: 'Sands Ornaments Pvt Ltd. All Rights Reserved.',
-
-            ...initial
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const res = await api.get('admin/settings');
+                if (res.data.success && res.data.data?.settings) {
+                    const fetched = res.data.data.settings;
+                    setSettings(prev => ({
+                        ...DEFAULT_SETTINGS,
+                        ...fetched,
+                        socialLinks: {
+                            ...DEFAULT_SETTINGS.socialLinks,
+                            ...(fetched.socialLinks || {})
+                        }
+                    }));
+                }
+            } catch (err) {
+                console.error("Failed to load settings from DB:", err);
+                toast.error("Failed to load settings from server");
+            } finally {
+                setIsLoading(false);
+            }
         };
-    });
+        fetchSettings();
+    }, []);
 
-    const handleSave = () => {
+    const handleSave = async () => {
         setIsSaving(true);
-        // Simulate API Call & Local Storage
-        setTimeout(() => {
-            localStorage.setItem('siteSettings', JSON.stringify(settings));
-            // Dispatch event for immediate update in other components if they listen
-            window.dispatchEvent(new Event('storage'));
+        try {
+            const res = await api.put('admin/settings', settings);
+            if (res.data.success) {
+                toast.success("Global Settings saved to database!");
+                // Also write to local storage as fallback/cross-tab trigger
+                localStorage.setItem('siteSettings', JSON.stringify(res.data.data.settings || settings));
+                window.dispatchEvent(new Event('storage'));
+                setIsEditing(false);
+            } else {
+                toast.error(res.data.message || "Failed to save settings");
+            }
+        } catch (err) {
+            console.error("Failed to save settings to DB:", err);
+            toast.error(err.response?.data?.message || err.message || "Failed to save settings");
+        } finally {
             setIsSaving(false);
-            setIsEditing(false);
-        }, 800);
+        }
     };
 
     const handleChange = (field, value) => {
@@ -153,6 +182,15 @@ const GlobalSettings = () => {
             [listName]: prev[listName].filter(item => item.id !== id)
         }));
     };
+
+    if (isLoading) {
+        return (
+            <div className="flex flex-col justify-center items-center h-[60vh] gap-3">
+                <div className="w-10 h-10 border-4 border-[#3E2723] border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-sm font-bold text-gray-500 uppercase tracking-widest animate-pulse">Loading settings...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="max-w-[1200px] mx-auto space-y-6 md:space-y-8 animate-in fade-in duration-500 pb-20 font-sans">

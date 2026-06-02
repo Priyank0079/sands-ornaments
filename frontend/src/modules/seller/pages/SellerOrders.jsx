@@ -70,7 +70,7 @@ const SellerOrders = () => {
 
         toast.success(res.message || 'Order updated');
         setOrders((prev) => prev.map((order) => (
-            order.id === orderId && res.order ? res.order : order
+            order._id === orderId && res.order ? res.order : order
         )));
     };
 
@@ -165,7 +165,7 @@ const SellerOrders = () => {
             render: (row) => (
                 <div className="flex justify-end gap-2">
                     <button
-                        onClick={() => navigate(`/seller/order-details/${row.id}`)}
+                        onClick={() => navigate(`/seller/order-details/${row._id}`)}
                         className="p-1.5 hover:bg-gray-50 rounded-lg text-gray-400 hover:text-[#3E2723] transition-all"
                         title="View order"
                     >
@@ -174,14 +174,14 @@ const SellerOrders = () => {
                     {row.canManageStatus && row.orderStatus === 'Processing' && (
                         <>
                             <button
-                                onClick={() => handleAction(row.id, 'Confirmed')}
+                                onClick={() => handleAction(row._id, 'Confirmed')}
                                 className="p-1.5 hover:bg-blue-50 rounded-lg text-gray-400 hover:text-blue-600 transition-all"
                                 title="Confirm order"
                             >
                                 <PackageCheck size={16} />
                             </button>
                             <button
-                                onClick={() => handleAction(row.id, 'Cancelled')}
+                                onClick={() => handleAction(row._id, 'Cancelled')}
                                 className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition-all"
                                 title="Cancel order"
                             >
@@ -191,7 +191,7 @@ const SellerOrders = () => {
                     )}
                     {row.canManageStatus && row.orderStatus === 'Confirmed' && (
                         <button
-                            onClick={() => handleAction(row.id, 'Packed')}
+                            onClick={() => handleAction(row._id, 'Packed')}
                             className="p-1.5 hover:bg-violet-50 rounded-lg text-gray-400 hover:text-violet-600 transition-all"
                             title="Mark packed"
                         >
@@ -200,7 +200,7 @@ const SellerOrders = () => {
                     )}
                     {row.canManageStatus && row.orderStatus === 'Packed' && (
                         <button
-                            onClick={() => navigate(`/seller/order-details/${row.id}`)}
+                            onClick={() => navigate(`/seller/order-details/${row._id}`)}
                             className="p-1.5 hover:bg-indigo-50 rounded-lg text-gray-400 hover:text-indigo-600 transition-all"
                             title="Open detail to add shipping info"
                         >

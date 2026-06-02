@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Truck, ShieldCheck, RefreshCw, Headset, Tag, Gift, Star, Bell, Zap, Shield } from 'lucide-react';
+import api from '../../../services/api';
 
 const iconMap = {
     'Truck': Truck,
@@ -23,7 +24,17 @@ const AnnouncementBar = () => {
     ]);
 
     useEffect(() => {
-        const loadSettings = () => {
+        const loadSettings = async () => {
+            try {
+                const res = await api.get('public/settings');
+                if (res.data.success && res.data.data?.settings?.announcementItems?.length > 0) {
+                    setAnnouncements(res.data.data.settings.announcementItems);
+                    return;
+                }
+            } catch (err) {
+                console.warn("Failed to fetch public settings from API, falling back to localStorage/defaults:", err.message);
+            }
+
             const saved = localStorage.getItem('siteSettings');
             if (saved) {
                 const parsed = JSON.parse(saved);

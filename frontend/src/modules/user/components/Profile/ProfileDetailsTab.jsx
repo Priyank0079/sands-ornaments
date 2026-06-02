@@ -7,7 +7,8 @@ const ProfileDetailsTab = ({
     isEditing, 
     formData, 
     setFormData, 
-    handleSave 
+    handleSave,
+    isSaving
 }) => {
     const navigate = useNavigate();
 
@@ -18,9 +19,16 @@ const ProfileDetailsTab = ({
                     <h2 className="text-xl md:text-2xl font-display font-bold text-black text-center md:text-left tracking-wide">Personal Information</h2>
                     <button
                         onClick={() => isEditing ? handleSave() : navigate('/profile/profile/edit')}
-                        className={`hidden md:flex p-2 rounded-full transition-all duration-300 ${isEditing ? 'bg-black text-white' : 'bg-[#F3F4F6] text-[#D39A9F]'} ml-2 flex-shrink-0`}
+                        disabled={isSaving}
+                        className={`hidden md:flex p-2 rounded-full transition-all duration-300 ${isEditing ? 'bg-black text-white' : 'bg-[#F3F4F6] text-[#D39A9F]'} ml-2 flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed`}
                     >
-                        {isEditing ? <Check className="w-5 h-5" /> : <Edit2 className="w-5 h-5" />}
+                        {isSaving ? (
+                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        ) : isEditing ? (
+                            <Check className="w-5 h-5" />
+                        ) : (
+                            <Edit2 className="w-5 h-5" />
+                        )}
                     </button>
                 </div>
 
@@ -29,28 +37,36 @@ const ProfileDetailsTab = ({
                         <form className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                             <div>
                                 <label className="block text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5 md:mb-2 text-left">First Name</label>
-                                <input type="text" value={formData.firstName} onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} className="w-full bg-white border border-gray-100 rounded-xl md:rounded-lg px-4 py-3 md:py-2.5 text-sm focus:border-black focus:ring-1 focus:ring-black transition-all outline-none" placeholder="First Name" />
+                                <input type="text" value={formData.firstName} onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} disabled={isSaving} className="w-full bg-white border border-gray-100 rounded-xl md:rounded-lg px-4 py-3 md:py-2.5 text-sm focus:border-black focus:ring-1 focus:ring-black transition-all outline-none disabled:opacity-60 disabled:bg-gray-50 disabled:cursor-not-allowed" placeholder="First Name" />
                             </div>
                             <div>
                                 <label className="block text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5 md:mb-2 text-left">Last Name</label>
-                                <input type="text" value={formData.lastName} onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} className="w-full bg-white border border-gray-100 rounded-xl md:rounded-lg px-4 py-3 md:py-2.5 text-sm focus:border-black focus:ring-1 focus:ring-black transition-all outline-none" placeholder="Last Name" />
+                                <input type="text" value={formData.lastName} onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} disabled={isSaving} className="w-full bg-white border border-gray-100 rounded-xl md:rounded-lg px-4 py-3 md:py-2.5 text-sm focus:border-black focus:ring-1 focus:ring-black transition-all outline-none disabled:opacity-60 disabled:bg-gray-50 disabled:cursor-not-allowed" placeholder="Last Name" />
                             </div>
                             <div>
                                 <label className="block text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5 md:mb-2 text-left">Email</label>
-                                <input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full bg-white border border-gray-100 rounded-xl md:rounded-lg px-4 py-3 md:py-2.5 text-sm focus:border-black focus:ring-1 focus:ring-black transition-all outline-none" placeholder="Email Address" />
+                                <input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} disabled={isSaving} className="w-full bg-white border border-gray-100 rounded-xl md:rounded-lg px-4 py-3 md:py-2.5 text-sm focus:border-black focus:ring-1 focus:ring-black transition-all outline-none disabled:opacity-60 disabled:bg-gray-50 disabled:cursor-not-allowed" placeholder="Email Address" />
                             </div>
                             <div>
                                 <label className="block text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5 md:mb-2 text-left">Phone Number</label>
-                                <input type="tel" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} className="w-full bg-white border border-gray-100 rounded-xl md:rounded-lg px-4 py-3 md:py-2.5 text-sm focus:border-black focus:ring-1 focus:ring-black transition-all outline-none" placeholder="Phone Number" />
+                                <input type="tel" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} disabled={isSaving} className="w-full bg-white border border-gray-100 rounded-xl md:rounded-lg px-4 py-3 md:py-2.5 text-sm focus:border-black focus:ring-1 focus:ring-black transition-all outline-none disabled:opacity-60 disabled:bg-gray-50 disabled:cursor-not-allowed" placeholder="Phone Number" />
                             </div>
                         </form>
 
                         {/* Mobile Save Button */}
                         <button
                             onClick={handleSave}
-                            className="md:hidden w-full bg-[#3E2723] text-white py-4 rounded-xl font-bold uppercase tracking-[0.2em] text-xs shadow-lg shadow-black/10 active:scale-95 transition-all mt-4"
+                            disabled={isSaving}
+                            className="md:hidden w-full bg-[#3E2723] text-white py-4 rounded-xl font-bold uppercase tracking-[0.2em] text-xs shadow-lg shadow-black/10 active:scale-95 transition-all mt-4 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
-                            Save Changes
+                            {isSaving ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    Saving...
+                                </>
+                            ) : (
+                                "Save Changes"
+                            )}
                         </button>
                     </div>
                 ) : (

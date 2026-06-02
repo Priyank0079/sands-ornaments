@@ -149,6 +149,35 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const updateProfile = async (profileData) => {
+        const originalUser = user;
+        // Optimistically update frontend user state immediately
+        const optimisticUser = {
+            ...user,
+            ...profileData
+        };
+        setUser(optimisticUser);
+
+        try {
+            const res = await api.put('user/profile/me', profileData);
+            if (res.data.success) {
+                const updatedUser = res.data.data?.user || res.data.user;
+                if (updatedUser) {
+                    setUser(updatedUser);
+                    localStorage.setItem('sands_current_user', JSON.stringify(updatedUser));
+                }
+                return { success: true, user: updatedUser, message: res.data.message || "Profile updated successfully" };
+            }
+            // Revert on failure
+            setUser(originalUser);
+            return { success: false, message: res.data.message || "Failed to update profile" };
+        } catch (err) {
+            // Revert on error
+            setUser(originalUser);
+            return { success: false, message: err.response?.data?.message || err.message || "Failed to update profile" };
+        }
+    };
+
     return (
         <AuthContext.Provider value={{ 
             user, 
@@ -159,7 +188,8 @@ export const AuthProvider = ({ children }) => {
             sellerRegister, 
             sellerLogin, 
             logout,
-            deleteAccount 
+            deleteAccount,
+            updateProfile
         }}>
             {children}
         </AuthContext.Provider>

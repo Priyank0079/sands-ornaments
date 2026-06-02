@@ -226,7 +226,7 @@ const OrderListPage = () => {
                                     </td>
                                     <td className="px-6 py-5 text-right">
                                         <button
-                                            onClick={() => navigate(`/admin/orders/${order.id}`)}
+                                            onClick={() => navigate(`/admin/orders/${order._id}`)}
                                             className="px-4 py-2 bg-[#1a1a1a] text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-md shadow-gray-200"
                                         >
                                             View

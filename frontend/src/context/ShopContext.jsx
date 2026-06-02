@@ -27,7 +27,7 @@ import { useNotification } from './NotificationContext';
 export const ShopContext = createContext();
 
 export const ShopProvider = ({ children }) => {
-    const { user, loading: authLoading, logout: authLogout, deleteAccount: authDeleteAccount } = useAuth();
+    const { user, loading: authLoading, logout: authLogout, deleteAccount: authDeleteAccount, updateProfile } = useAuth();
     const isUserRole = user?.role === 'user';
 
     // ── Global UI State ──────────────────────────────────────────────────────
@@ -220,6 +220,7 @@ export const ShopProvider = ({ children }) => {
         deleteAccount,
         logout,
         login,
+        updateProfile,
         getRecommendations,
         getVariantById,
         getPackById,
@@ -261,7 +262,7 @@ export const ShopProvider = ({ children }) => {
         notifCtx.deleteUserNotification, notifCtx.toggleNotificationSettings,
         notifCtx.refreshNotifications,
         // Aggregated
-        placeOrder, deleteAccount, logout, login,
+        placeOrder, deleteAccount, logout, login, updateProfile,
         getRecommendations, getVariantById, getPackById,
         // UI
         user, notification, isPincodeModalOpen, pincode, activeMetal, globalGst,

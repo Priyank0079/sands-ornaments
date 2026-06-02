@@ -5,11 +5,102 @@ const settingSchema = new mongoose.Schema({
   contactEmail: String,
   contactPhone: String,
   address: String,
+  email: String,
+  phone: String,
+  website: { type: String, default: 'www.sandsornaments.com' },
   socialLinks: {
-    facebook: String,
-    instagram: String,
-    twitter: String
+    facebook: { type: String, default: '#' },
+    instagram: { type: String, default: '#' },
+    twitter: { type: String, default: '#' },
+    youtube: { type: String, default: '#' }
   },
+  
+  // Product Page policies
+  productHeader: { type: String, default: 'ESTIMATED DELIVERY DATE' },
+  returnPolicy: { type: String, default: '2 Days Return' },
+  exchangePolicy: { type: String, default: '10 Days Exchange' },
+  codPolicy: { type: String, default: 'Cash On Delivery' },
+  warrantyText: { type: String, default: 'Lifetime Warranty' },
+  safetyText: { type: String, default: 'Skin Safe Jewellery' },
+  platingText: { type: String, default: '18k Gold Tone Plated' },
+
+  // Announcement items
+  announcementItems: {
+    type: [
+      {
+        id: Number,
+        icon: String,
+        text: String,
+        type: { type: String },
+        image: String
+      }
+    ],
+    default: [
+      { id: 1, icon: 'Truck', text: 'Free Shipping' },
+      { id: 2, icon: 'Shield', text: 'Secure Payments' },
+      { id: 3, icon: 'RefreshCw', text: 'Easy Returns & Refunds' },
+      { id: 4, icon: 'Headset', text: 'Dedicated Support Team' }
+    ]
+  },
+
+  // Fraud alerts
+  fraudWarning: { type: String, default: 'BEWARE OF FRAUD: Sands Ornaments never asks for confidential banking details over phone or email.' },
+
+  // Footer Taglines and Texts
+  footerTagline: { type: String, default: 'Timeless Elegance,' },
+  footerSubTagline: { type: String, default: 'Handcrafted for You.' },
+  footerDescription: { type: String, default: "Every piece at Sands tell a story of heritage and modern Grace. Join our community of silver lovers and celebrate life's most precious moments." },
+  
+  footerColumn1Title: { type: String, default: 'Experience' },
+  footerColumn2Title: { type: String, default: 'Policies' },
+  footerColumn3Title: { type: String, default: 'Our World' },
+
+  footerExperienceLinks: {
+    type: [
+      {
+        id: Number,
+        name: String,
+        path: String
+      }
+    ],
+    default: [
+      { id: 1, name: "Easy Returns", path: "/return-policy" },
+      { id: 2, name: "Contact Us", path: "/help" },
+      { id: 3, name: "FAQs", path: "/help" },
+      { id: 4, name: "Blogs", path: "/blogs" }
+    ]
+  },
+  footerPoliciesLinks: {
+    type: [
+      {
+        id: Number,
+        name: String,
+        path: String
+      }
+    ],
+    default: [
+      { id: 1, name: "Shipping Policy", path: "/shipping-policy" },
+      { id: 2, name: "Privacy Policy", path: "/privacy" },
+      { id: 3, name: "Cancellation Policy", path: "/cancellation-policy" },
+      { id: 4, name: "Terms & Conditions", path: "/terms" }
+    ]
+  },
+  footerWorldLinks: {
+    type: [
+      {
+        id: Number,
+        name: String,
+        path: String
+      }
+    ],
+    default: [
+      { id: 1, name: "About Us", path: "/about" },
+      { id: 2, name: "Jewellery Care Guide", path: "/care-guide" },
+      { id: 3, name: "Our Craft", path: "/craft" }
+    ]
+  },
+  footerDeliveryText: { type: String, default: 'Safe & Insured Express Worldwide Delivery' },
+  footerCopyrightText: { type: String, default: 'Sands Ornaments Pvt Ltd. All Rights Reserved.' },
   logo: String,
   favicon: String,
   maintenanceMode: { type: Boolean, default: false },

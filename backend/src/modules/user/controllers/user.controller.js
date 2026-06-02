@@ -18,9 +18,29 @@ exports.getProfile = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
-    const user = await User.findByIdAndUpdate(req.user.userId, req.body, { new: true }).select("-password");
+    const { name, email, phone } = req.body;
+    
+    // Build update payload with allowed fields only to prevent privilege escalation
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+    if (email !== undefined) updateData.email = email;
+    if (phone !== undefined) updateData.phone = phone;
+
+    const user = await User.findByIdAndUpdate(
+      req.user.userId, 
+      { $set: updateData }, 
+      { new: true, runValidators: true }
+    ).select("-password");
+
+    if (!user) return error(res, "User not found", 404);
     return success(res, { user }, "Profile updated successfully");
-  } catch (err) { return error(res, err.message); }
+  } catch (err) { 
+    // Handle Mongoose duplicate key error (for the unique phone field)
+    if (err.code === 11000) {
+      return error(res, "Phone number is already in use by another account", 400);
+    }
+    return error(res, err.message); 
+  }
 };
 
 exports.deleteAccount = async (req, res) => {

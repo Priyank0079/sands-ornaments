@@ -3,6 +3,7 @@ import { Facebook, Twitter, Instagram, Youtube, Truck, Mail, Phone, MapPin, Hear
 import { Link, useLocation } from 'react-router-dom';
 import logo from '@assets/sands-logo.png'; // Using the official logo
 import { normalizeExternalLink, normalizeFooterLink } from '../utils/navigation';
+import api from '../../../services/api';
 
 const Footer = () => {
     const location = useLocation();
@@ -48,14 +49,40 @@ const Footer = () => {
     });
 
     useEffect(() => {
-        const loadSettings = () => {
+        const loadSettings = async () => {
+            try {
+                const res = await api.get('public/settings');
+                if (res.data.success && res.data.data?.settings) {
+                    const fetched = res.data.data.settings;
+                    setSettings(prev => ({
+                        ...prev,
+                        ...fetched,
+                        socialLinks: {
+                            ...prev.socialLinks,
+                            ...(fetched.socialLinks || {})
+                        }
+                    }));
+                    return;
+                }
+            } catch (err) {
+                console.warn("Failed to fetch public footer settings, falling back to localStorage/defaults:", err.message);
+            }
+
             const saved = localStorage.getItem('siteSettings');
             if (saved) {
-                setSettings(prev => ({ ...prev, ...JSON.parse(saved) }));
+                const parsed = JSON.parse(saved);
+                setSettings(prev => ({
+                    ...prev,
+                    ...parsed,
+                    socialLinks: {
+                        ...prev.socialLinks,
+                        ...(parsed.socialLinks || {})
+                    }
+                }));
             }
         };
-        loadSettings();
 
+        loadSettings();
         window.addEventListener('storage', loadSettings);
         return () => window.removeEventListener('storage', loadSettings);
     }, []);
