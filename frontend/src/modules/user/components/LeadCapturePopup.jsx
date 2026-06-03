@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Mail, Phone, ArrowRight, Gift, ShoppingBag } from 'lucide-react';
 import { useAnalytics } from '../../../hooks/useAnalytics';
 import { useShop } from '../../../context/ShopContext';
+import { useAuth } from '../../../context/AuthContext';
 
 const LeadCapturePopup = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -9,11 +10,14 @@ const LeadCapturePopup = () => {
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const { cart } = useShop();
+    const { user, loading: authLoading } = useAuth();
     const { captureLead, track } = useAnalytics();
 
     useEffect(() => {
+        if (authLoading) return;
+
         // Only show for guests with items in cart
-        const isGuest = !localStorage.getItem('user');
+        const isGuest = !user;
         const hasItems = cart.length > 0;
         const hasShown = sessionStorage.getItem('lead_capture_shown');
 
@@ -38,7 +42,13 @@ const LeadCapturePopup = () => {
                 document.removeEventListener('mouseleave', handleMouseOut);
             };
         }
-    }, [cart, track]);
+    }, [authLoading, cart, track, user]);
+
+    useEffect(() => {
+        if (user && isOpen) {
+            setIsOpen(false);
+        }
+    }, [isOpen, user]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
