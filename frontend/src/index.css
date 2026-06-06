@@ -36,6 +36,21 @@ body {
     min-height: 100%;
 }
 
+/* Admin & Seller app-shell layouts use h-screen + overflow-hidden.
+   Override Lenis's `height: auto` so the fixed layout is not broken. */
+.admin-app-shell,
+.seller-app-shell {
+    height: 100dvh;
+    overflow: hidden;
+}
+.admin-app-shell html,
+.admin-app-shell body,
+.seller-app-shell html,
+.seller-app-shell body {
+    height: 100% !important;
+    overflow: hidden !important;
+}
+
 html.lenis,
 html.lenis body {
     height: auto;

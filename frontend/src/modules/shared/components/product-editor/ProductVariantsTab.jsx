@@ -67,6 +67,13 @@ const ProductVariantsTab = ({
                     const availableCount = getAvailableSerialCodes(v).length;
                     const pricing = getPricingForVariant(v, formData, metalRates, gstRate);
                     const isExpanded = expandedVariant === v.id;
+                    const nameError = errors[`variant_${v.id}_name`] || errors[`variant_${idx}_name`];
+                    const weightError = errors[`variant_${v.id}_weight`] || errors[`variant_${idx}_weight`];
+                    const makingError = errors[`variant_${v.id}_makingCharge`] || errors[`variant_${idx}_makingCharge`];
+                    const hallmarkingError = errors[`variant_${v.id}_hallmarkingCharge`] || errors[`variant_${idx}_hallmarkingCharge`];
+                    const diamondPriceError = errors[`variant_${v.id}_diamondPrice`] || errors[`variant_${idx}_diamondPrice`];
+                    const certError = errors[`variant_${v.id}_diamondCertificateCharge`] || errors[`variant_${idx}_diamondCertificateCharge`];
+                    const additionalError = errors[`variant_${v.id}_additionalCharge`] || errors[`variant_${idx}_additionalCharge`];
 
                     return (
                         <div key={v.id} className={`bg-white rounded-[2rem] border transition-all overflow-hidden ${isExpanded ? 'border-amber-200 shadow-xl ring-1 ring-amber-100' : 'border-gray-100 shadow-sm hover:shadow-md'}`}>
@@ -100,7 +107,7 @@ const ProductVariantsTab = ({
                                 <div className="flex items-center gap-3">
                                     {!isViewMode && formData.variants.length > 1 && (
                                         <button 
-                                            type="button"
+                                            type="button" 
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 removeVariant(v.id);
@@ -140,10 +147,10 @@ const ProductVariantsTab = ({
                                                     value={v.name} 
                                                     onChange={(e) => handleVariantChange(v.id, 'name', e.target.value)} 
                                                     disabled={isViewMode} 
-                                                    className="w-full bg-white border border-gray-200 rounded-xl py-3.5 px-5 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm" 
+                                                    className={`w-full bg-white border rounded-xl py-3.5 px-5 text-sm font-bold text-gray-800 outline-none focus:ring-4 transition-all shadow-sm ${nameError ? 'border-red-400 focus:border-red-500 focus:ring-red-200/40' : 'border-gray-200 focus:border-[#3E2723] focus:ring-[#3E2723]/5'}`} 
                                                     placeholder="e.g. Standard, Small, Large" 
                                                 />
-                                                {errors[`variant_${idx}_name`] && <div className="text-[10px] text-red-500 mt-1 ml-1">{errors[`variant_${idx}_name`]}</div>}
+                                                {nameError && <div className="text-[10px] text-red-500 mt-1 ml-1">{nameError}</div>}
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
@@ -170,7 +177,7 @@ const ProductVariantsTab = ({
                                                         value={v.weight ?? ''}
                                                         onChange={(e) => handleVariantChange(v.id, 'weight', e.target.value)}
                                                         disabled={isViewMode}
-                                                        className="flex-1 min-w-0 bg-white border border-gray-200 rounded-xl py-3.5 px-5 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm"
+                                                        className={`flex-1 min-w-0 bg-white border rounded-xl py-3.5 px-5 text-sm font-bold text-gray-800 outline-none focus:ring-4 transition-all shadow-sm ${weightError ? 'border-red-400 focus:border-red-500 focus:ring-red-200/40' : 'border-gray-200 focus:border-[#3E2723] focus:ring-[#3E2723]/5'}`}
                                                         placeholder="0"
                                                     />
                                                     <select
@@ -184,7 +191,7 @@ const ProductVariantsTab = ({
                                                         ))}
                                                     </select>
                                                 </div>
-                                                {errors[`variant_${idx}_weight`] && <div className="text-[10px] text-red-500 mt-1 ml-1">{errors[`variant_${idx}_weight`]}</div>}
+                                                {weightError && <div className="text-[10px] text-red-500 mt-1 ml-1">{weightError}</div>}
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
@@ -218,11 +225,12 @@ const ProductVariantsTab = ({
                                                         value={v.makingCharge} 
                                                         onChange={(e) => handleVariantChange(v.id, 'makingCharge', e.target.value)} 
                                                         disabled={isViewMode} 
-                                                        className="w-full bg-white border border-gray-200 rounded-xl py-3.5 pl-12 pr-5 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm" 
+                                                        className={`w-full bg-white border rounded-xl py-3.5 pl-12 pr-5 text-sm font-bold text-gray-800 outline-none focus:ring-4 transition-all shadow-sm ${makingError ? 'border-red-400 focus:border-red-500 focus:ring-red-200/40' : 'border-gray-200 focus:border-[#3E2723] focus:ring-[#3E2723]/5'}`} 
                                                         placeholder="0" 
                                                     />
                                                     <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 uppercase tracking-widest">Rs</span>
                                                 </div>
+                                                {makingError && <div className="text-[10px] text-red-500 mt-1 ml-1">{makingError}</div>}
                                             </div>
                                             <div className="space-y-3">
                                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
@@ -234,10 +242,11 @@ const ProductVariantsTab = ({
                                                         value={v.hallmarkingCharge ?? '0'} 
                                                         onChange={(e) => handleVariantChange(v.id, 'hallmarkingCharge', e.target.value)} 
                                                         disabled={isViewMode} 
-                                                        className="w-full bg-white border border-gray-200 rounded-xl py-3.5 pl-12 pr-5 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm" 
+                                                        className={`w-full bg-white border rounded-xl py-3.5 pl-12 pr-5 text-sm font-bold text-gray-800 outline-none focus:ring-4 transition-all shadow-sm ${hallmarkingError ? 'border-red-400 focus:border-red-500 focus:ring-red-200/40' : 'border-gray-200 focus:border-[#3E2723] focus:ring-[#3E2723]/5'}`} 
                                                     />
                                                     <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 uppercase tracking-widest">Rs</span>
                                                 </div>
+                                                {hallmarkingError && <div className="text-[10px] text-red-500 mt-1 ml-1">{hallmarkingError}</div>}
                                             </div>
                                             <div className="space-y-3">
                                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
@@ -249,11 +258,12 @@ const ProductVariantsTab = ({
                                                         value={v.diamondPrice ?? '0'}
                                                         onChange={(e) => handleVariantChange(v.id, 'diamondPrice', e.target.value)}
                                                         disabled={isViewMode}
-                                                        className="w-full bg-white border border-gray-200 rounded-xl py-3.5 pl-12 pr-5 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm"
+                                                        className={`w-full bg-white border rounded-xl py-3.5 pl-12 pr-5 text-sm font-bold text-gray-800 outline-none focus:ring-4 transition-all shadow-sm ${diamondPriceError ? 'border-red-400 focus:border-red-500 focus:ring-red-200/40' : 'border-gray-200 focus:border-[#3E2723] focus:ring-[#3E2723]/5'}`}
                                                         placeholder="0"
                                                     />
                                                     <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 uppercase tracking-widest">Rs</span>
                                                 </div>
+                                                {diamondPriceError && <div className="text-[10px] text-red-500 mt-1 ml-1">{diamondPriceError}</div>}
                                             </div>
                                             <div className="space-y-3">
                                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
@@ -265,10 +275,11 @@ const ProductVariantsTab = ({
                                                         value={v.diamondCertificateCharge ?? '0'} 
                                                         onChange={(e) => handleVariantChange(v.id, 'diamondCertificateCharge', e.target.value)} 
                                                         disabled={isViewMode} 
-                                                        className="w-full bg-white border border-gray-200 rounded-xl py-3.5 pl-12 pr-5 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm" 
+                                                        className={`w-full bg-white border rounded-xl py-3.5 pl-12 pr-5 text-sm font-bold text-gray-800 outline-none focus:ring-4 transition-all shadow-sm ${certError ? 'border-red-400 focus:border-red-500 focus:ring-red-200/40' : 'border-gray-200 focus:border-[#3E2723] focus:ring-[#3E2723]/5'}`} 
                                                     />
                                                     <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 uppercase tracking-widest">Rs</span>
                                                 </div>
+                                                {certError && <div className="text-[10px] text-red-500 mt-1 ml-1">{certError}</div>}
                                             </div>
                                             <div className="space-y-3">
                                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
@@ -280,11 +291,12 @@ const ProductVariantsTab = ({
                                                         value={v.additionalCharge ?? '0'}
                                                         onChange={(e) => handleVariantChange(v.id, 'additionalCharge', e.target.value)}
                                                         disabled={isViewMode}
-                                                        className="w-full bg-white border border-gray-200 rounded-xl py-3.5 pl-12 pr-5 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm"
+                                                        className={`w-full bg-white border rounded-xl py-3.5 pl-12 pr-5 text-sm font-bold text-gray-800 outline-none focus:ring-4 transition-all shadow-sm ${additionalError ? 'border-red-400 focus:border-red-500 focus:ring-red-200/40' : 'border-gray-200 focus:border-[#3E2723] focus:ring-[#3E2723]/5'}`}
                                                         placeholder="0"
                                                     />
                                                     <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 uppercase tracking-widest">Rs</span>
                                                 </div>
+                                                {additionalError && <div className="text-[10px] text-red-500 mt-1 ml-1">{additionalError}</div>}
                                             </div>
                                         </div>
                                     </div>

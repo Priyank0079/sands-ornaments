@@ -14,14 +14,22 @@ const AdminLayout = () => {
     }
 
     return (
-        <div className="bg-[#fcfcfc] min-h-screen">
+        <div className="bg-[#fcfcfc]">
+            {/* Sidebar — already fixed left-0 top-0 w-64 h-screen inside AdminSidebar */}
             <AdminSidebar />
-            <div className="pl-64 flex flex-col min-h-screen">
+
+            {/* Header — pinned to top, sits right of the 256px sidebar, NEVER scrolls */}
+            <div style={{ position: 'fixed', top: 0, left: '256px', right: 0, zIndex: 40 }}>
                 <AdminHeader />
-                <main className="flex-1 p-8">
-                    <Outlet />
-                </main>
             </div>
+
+            {/* Main content — starts below header (80px), left of sidebar (256px), scrolls on its own */}
+            <main
+                className="overflow-y-auto p-8 bg-[#fcfcfc]"
+                style={{ position: 'fixed', top: '80px', left: '256px', right: 0, bottom: 0 }}
+            >
+                <Outlet />
+            </main>
         </div>
     );
 };

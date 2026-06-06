@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 import { useHomepageCms } from '../hooks/useHomepageCms';
 
@@ -103,10 +104,10 @@ const AutoBannerSection = () => {
                                 className="w-full h-full object-cover"
                             />
                             
-                            {/* Premium Content Overlay */}
-                            <div className="absolute inset-0 bg-black/20 flex flex-col justify-center items-center text-center px-4">
-                                <div className="max-w-4xl space-y-4 md:space-y-6">
-                                    <motion.p 
+                            {/* Premium Content Overlay - allows clicks to pass through */}
+                            <div className="absolute inset-0 bg-black/20 flex flex-col justify-center items-center text-center px-4 pointer-events-none">
+                                <div className="max-w-4xl space-y-4 md:space-y-6 pointer-events-auto">
+                                    <motion.p
                                         key={`subtitle-${currentIndex}`}
                                         initial={{ opacity: 0, y: -20 }}
                                         animate={{ opacity: 1, y: 0 }}
@@ -116,12 +117,12 @@ const AutoBannerSection = () => {
                                         {slides[currentIndex].subtitle}
                                     </motion.p>
 
-                                    <motion.h2 
+                                    <motion.h2
                                         key={`title-${currentIndex}`}
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: 0.5 }}
-                                        className="text-white text-3xl md:text-7xl font-serif italic leading-tight drop-shadow-2xl"
+                                        className="text-white text-3xl md:text-7xl font-serif italic leading-tight drop-shadow-2xl pointer-events-none"
                                     >
                                         {slides[currentIndex].title}
                                     </motion.h2>
@@ -130,20 +131,42 @@ const AutoBannerSection = () => {
                                         initial={{ opacity: 0, scale: 0.8 }}
                                         animate={{ opacity: 1, scale: 1 }}
                                         transition={{ delay: 0.7 }}
+                                        className="z-30 pointer-events-auto"
                                     >
                                         <Link
                                             to={slides[currentIndex].link || '/shop'}
-                                            className="inline-flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md border border-white/30 px-8 py-3 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-white hover:bg-white hover:text-[#5B1E26] transition-all duration-500 shadow-2xl"
+                                            className="inline-flex items-center justify-center rounded-lg bg-[#A85E6F] hover:bg-[#8E2B45] px-8 py-3 text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] text-white transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 cursor-pointer active:scale-95"
                                         >
                                             {slides[currentIndex].ctaLabel || 'Explore Collection'}
                                         </Link>
                                     </motion.div>
                                 </div>
                             </div>
-                            
-                            {/* Optional Overlay for readability if wanted, but user asked for simple banner */}
-                            <div className="absolute inset-0 bg-black/5 transition-colors group-hover:bg-black/0" />
-                            
+
+                            {/* Overlay for readability - doesn't block clicks */}
+                            <div className="absolute inset-0 bg-black/5 transition-colors group-hover:bg-black/0 pointer-events-none" />
+
+                            {/* Carousel Navigation Arrows */}
+                            <button
+                                onClick={() => setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length)}
+                                className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-20 hover:scale-110 transition-transform"
+                                title="Previous"
+                            >
+                                <div className="bg-white/40 backdrop-blur-md hover:bg-white/60 p-2 md:p-3 rounded-full transition-all duration-300 shadow-lg">
+                                    <ChevronLeft className="w-6 h-6 md:w-7 md:h-7 text-white" strokeWidth={3} />
+                                </div>
+                            </button>
+
+                            <button
+                                onClick={() => setCurrentIndex((prev) => (prev + 1) % slides.length)}
+                                className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-20 hover:scale-110 transition-transform"
+                                title="Next"
+                            >
+                                <div className="bg-white/40 backdrop-blur-md hover:bg-white/60 p-2 md:p-3 rounded-full transition-all duration-300 shadow-lg">
+                                    <ChevronRight className="w-6 h-6 md:w-7 md:h-7 text-white" strokeWidth={3} />
+                                </div>
+                            </button>
+
                             {/* Progress Indicators */}
                             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-3 z-10">
                                 {slides.map((_, index) => (

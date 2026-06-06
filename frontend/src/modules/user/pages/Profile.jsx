@@ -5,6 +5,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import ProfileSidebar from '../components/Profile/ProfileSidebar';
 import DeleteModal from '../../shared/components/DeleteModal';
+import { useResetScroll } from '../../../hooks/useResetScroll';
 
 const ProfileDetailsTab = React.lazy(() => import('../components/Profile/ProfileDetailsTab'));
 const OrdersTab = React.lazy(() => import('../components/Profile/OrdersTab'));
@@ -39,10 +40,11 @@ const normalizeAddressPayload = (address) => ({
 });
 
 const Profile = () => {
-    const { 
-        user, updateProfile, logout, orders, wishlist, addresses, 
-        addAddress, removeAddress, setDefaultAddress, defaultAddressId, 
-        deleteAccount, notificationsEnabled, toggleNotificationSettings, coupons 
+    useResetScroll();
+    const {
+        user, updateProfile, logout, orders, wishlist, addresses,
+        addAddress, removeAddress, setDefaultAddress, defaultAddressId,
+        deleteAccount, notificationsEnabled, toggleNotificationSettings, coupons
     } = useShop();
 
     const safeOrders = Array.isArray(orders) ? orders : [];

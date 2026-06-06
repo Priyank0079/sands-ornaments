@@ -4,22 +4,35 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, ShoppingBag, Gift, ShieldCheck, ArrowLeft, Plus, Minus, X, Truck, Info, Tag, ChevronDown, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CouponsModal from '../components/CouponsModal';
+import { useResetScroll } from '../../../hooks/useResetScroll';
 
 const Cart = () => {
     const { cart, removeFromCart, updateQuantity, coupons, applyCoupon, appliedCoupon, couponDiscount, clearAppliedCoupon } = useShop();
     const navigate = useNavigate();
     const [showCouponModal, setShowCouponModal] = React.useState(false);
+    const [giftWrapItems, setGiftWrapItems] = React.useState({});
+    const [couponSectionExpanded, setCouponSectionExpanded] = React.useState(true);
     const currencyText = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
 
+    useResetScroll();
+
     const subtotal = cart.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
-    const shipping = subtotal > 450 ? 0 : 50;
+    const giftWrapCharge = Object.values(giftWrapItems).filter(Boolean).length * 50;
+    const shipping = (subtotal + giftWrapCharge) > 450 ? 0 : 50;
     const discount = Number(couponDiscount || 0);
-    const total = subtotal + shipping - discount;
+    const total = subtotal + giftWrapCharge + shipping - discount;
     const gstIncluded = cart.reduce((acc, item) => acc + ((Number(item.gst || item.selectedVariant?.gst || 0)) * (item.quantity || 1)), 0);
-    
+
     const variantLabel = (item) => item.selectedVariant?.name || item.selectedVariant?.variantName || '';
     const variantKey = (item) => item.variantId || item.packId || 'default';
     const availableCoupons = coupons ? coupons.filter(c => c.active !== false) : [];
+
+    const handleGiftWrapToggle = (itemKey) => {
+        setGiftWrapItems(prev => ({
+            ...prev,
+            [itemKey]: !prev[itemKey]
+        }));
+    };
 
     const handleApplyCoupon = async (code) => {
         const result = await applyCoupon(code, subtotal, cart);
@@ -166,12 +179,21 @@ const Cart = () => {
                                         <div className="flex-1 text-center text-[10px] font-bold text-gray-500 px-2 uppercase tracking-[0.15em]">15-Day Returns</div>
                                     </div>
 
-                                    {/* Gift Wrap Checkbox */}
-                                    <div className="p-4 bg-white flex items-center gap-3">
-                                        <input type="checkbox" id={`gift-${item.id}`} className="w-5 h-5 rounded accent-[#8E2B45] border-gray-200" />
-                                        <label htmlFor={`gift-${item.id}`} className="text-xs text-gray-500 flex items-center gap-1.5 cursor-pointer font-medium">
-                                            Add <span className="text-[#E77382] font-bold">gift wrap</span> and a personalized message (+ ₹50)
+                                    {/* Gift Wrap Checkbox - WORKING */}
+                                    <div className="p-4 bg-white flex items-center gap-3 border-t border-gray-100">
+                                        <input
+                                            type="checkbox"
+                                            id={`gift-${item.id}`}
+                                            checked={giftWrapItems[variantKey(item)] || false}
+                                            onChange={() => handleGiftWrapToggle(variantKey(item))}
+                                            className="w-5 h-5 rounded accent-[#8E2B45] border-gray-200 cursor-pointer"
+                                        />
+                                        <label htmlFor={`gift-${item.id}`} className="text-xs text-gray-600 flex items-center gap-1.5 cursor-pointer font-medium">
+                                            Add <span className="text-[#E77382] font-bold">gift wrap</span> & message (+ ₹50)
                                         </label>
+                                        {giftWrapItems[variantKey(item)] && (
+                                            <span className="text-[11px] font-bold text-[#2DB37E] ml-auto">✓ Added</span>
+                                        )}
                                     </div>
                                 </motion.div>
                             ))}
@@ -192,40 +214,54 @@ const Cart = () => {
                                             <Info className="w-4 h-4 text-gray-300 hover:text-gray-400 transition-colors cursor-help" />
                                         </div>
                                     </div>
-                                    {discount > 0 && (
-                                        <div className="flex flex-col items-end">
-                                            <span className="text-[9px] text-gray-300 font-bold uppercase tracking-wider mb-1">Original</span>
-                                            <span className="text-sm text-gray-400 line-through font-medium">{currencyText(subtotal + shipping)}</span>
+                                    {(discount > 0 || giftWrapCharge > 0 || shipping > 0) && (
+                                        <div className="flex flex-col items-end text-right">
+                                            {giftWrapCharge > 0 && <p className="text-[9px] text-[#2DB37E] font-bold mb-1">Gift wrap: +{currencyText(giftWrapCharge)}</p>}
+                                            {shipping > 0 && <p className="text-[9px] text-gray-400 font-bold mb-1">Shipping: +{currencyText(shipping)}</p>}
+                                            {discount > 0 && <p className="text-[9px] text-[#E77382] font-bold">Discount: -{currencyText(discount)}</p>}
                                         </div>
                                     )}
                                 </div>
                             </div>
 
-                            {/* Coupons Section - GIVA Style */}
+                            {/* Coupons Section - COLLAPSIBLE */}
                             <div className="pt-5 border-t border-gray-100">
-                                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">Available Coupons</p>
-                                <div className="space-y-1 border border-gray-100 rounded-2xl overflow-hidden">
-                                    {availableCoupons.slice(0, 3).map((coupon) => (
-                                        <div key={coupon.code} className="flex items-center justify-between p-3 bg-white hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0 group cursor-pointer" onClick={() => handleApplyCoupon(coupon.code)}>
-                                            <div className="flex items-center gap-3 min-w-0">
-                                                <div className="w-10 h-10 rounded-full bg-[#FFF8F9] flex items-center justify-center text-[#E77382] shrink-0 border border-[#FDF2F4]">
-                                                    <Tag className="w-4 h-4" />
-                                                </div>
-                                                <div className="min-w-0">
-                                                    <p className="text-[11px] font-black text-gray-900 uppercase tracking-wider truncate">{coupon.code}</p>
-                                                    <p className="text-[10px] text-gray-400 truncate font-medium">{coupon.description || `Save ${coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : currencyText(coupon.discountValue)}`}</p>
-                                                </div>
-                                            </div>
-                                            <ChevronDown className="w-4 h-4 text-gray-300 group-hover:text-[#E77382] transition-colors" />
-                                        </div>
-                                    ))}
-                                    <button 
-                                        onClick={() => setShowCouponModal(true)}
-                                        className="w-full py-3 text-[11px] font-bold text-gray-400 hover:text-[#8E2B45] transition-colors bg-gray-50/50 uppercase tracking-widest"
+                                <button
+                                    onClick={() => setCouponSectionExpanded(!couponSectionExpanded)}
+                                    className="w-full flex items-center justify-between mb-4 hover:opacity-70 transition-opacity"
+                                >
+                                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Available Coupons</p>
+                                    <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${couponSectionExpanded ? '' : '-rotate-90'}`} />
+                                </button>
+                                {couponSectionExpanded && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        className="space-y-1 border border-gray-100 rounded-2xl overflow-hidden"
                                     >
-                                        View All Offers
-                                    </button>
-                                </div>
+                                        {availableCoupons.slice(0, 3).map((coupon) => (
+                                            <div key={coupon.code} className="flex items-center justify-between p-3 bg-white hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0 group cursor-pointer" onClick={() => handleApplyCoupon(coupon.code)}>
+                                                <div className="flex items-center gap-3 min-w-0">
+                                                    <div className="w-10 h-10 rounded-full bg-[#FFF8F9] flex items-center justify-center text-[#E77382] shrink-0 border border-[#FDF2F4]">
+                                                        <Tag className="w-4 h-4" />
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <p className="text-[11px] font-black text-gray-900 uppercase tracking-wider truncate">{coupon.code}</p>
+                                                        <p className="text-[10px] text-gray-400 truncate font-medium">{coupon.description || `Save ${coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : currencyText(coupon.discountValue)}`}</p>
+                                                    </div>
+                                                </div>
+                                                <ChevronDown className="w-4 h-4 text-gray-300 group-hover:text-[#E77382] transition-colors" />
+                                            </div>
+                                        ))}
+                                        <button
+                                            onClick={() => setShowCouponModal(true)}
+                                            className="w-full py-3 text-[11px] font-bold text-gray-400 hover:text-[#8E2B45] transition-colors bg-gray-50/50 uppercase tracking-widest"
+                                        >
+                                            View All Offers
+                                        </button>
+                                    </motion.div>
+                                )}
                             </div>
 
                             {appliedCoupon && (
@@ -243,11 +279,23 @@ const Cart = () => {
 
                             <div className="space-y-3 pt-3">
                                 <p className="text-[10px] text-gray-400 font-medium text-center uppercase tracking-wider">Free Shipping on orders above ₹450</p>
-                                
+
                                 <div className="flex items-center gap-3 px-1">
-                                    <input type="checkbox" id="gift-all" className="w-5 h-5 rounded accent-[#8E2B45] border-gray-200" />
-                                    <label htmlFor="gift-all" className="text-[11px] text-gray-400 leading-tight cursor-pointer font-medium">
-                                        <span className="text-[#E77382] font-bold">Gift wrap</span> all items in this order (+ ₹50 per item)
+                                    <input
+                                        type="checkbox"
+                                        id="gift-all"
+                                        checked={Object.values(giftWrapItems).every(Boolean) && cart.length > 0}
+                                        onChange={(e) => {
+                                            const newGiftWrap = {};
+                                            cart.forEach(item => {
+                                                newGiftWrap[variantKey(item)] = e.target.checked;
+                                            });
+                                            setGiftWrapItems(newGiftWrap);
+                                        }}
+                                        className="w-5 h-5 rounded accent-[#8E2B45] border-gray-200 cursor-pointer"
+                                    />
+                                    <label htmlFor="gift-all" className="text-[11px] text-gray-600 leading-tight cursor-pointer font-medium">
+                                        <span className="text-[#E77382] font-bold">Gift wrap</span> all items (+ ₹50 each)
                                     </label>
                                 </div>
 

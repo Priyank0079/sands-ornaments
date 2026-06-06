@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { 
     Download, CheckCircle2 as SuccessIcon, Copy, QrCode, Barcode as BarcodeIcon, 
@@ -61,6 +61,7 @@ const SharedProductEditor = ({
     const [removeVideo, setRemoveVideo] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [errors, setErrors] = useState({});
+    const [liveErrors, setLiveErrors] = useState({});
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [createdProductData, setCreatedProductData] = useState(null);
     const [gstRate, setGstRate] = useState(3);
@@ -144,6 +145,93 @@ const SharedProductEditor = ({
         silverCategory: '',
         goldCategory: ''
     });
+
+    useEffect(() => {
+        const newErrors = {};
+        
+        // 1. Name
+        if (!formData.name) {
+            newErrors.name = "Name is required";
+        } else if (/\d/.test(formData.name)) {
+            newErrors.name = "Product name should not contain numbers";
+        }
+
+        // 2. HUID
+        if (!formData.huid) {
+            newErrors.huid = "HUID is required";
+        } else if (formData.huid.length !== 6) {
+            newErrors.huid = "HUID must be exactly 6 characters";
+        } else if (/[^a-zA-Z0-9]/.test(formData.huid)) {
+            newErrors.huid = "HUID must be alphanumeric";
+        }
+
+        // 3. Category
+        if (!formData.categories?.[0]?.category) {
+            newErrors.categories = "Category is required.";
+        }
+
+        // 4. Default Weight
+        if (formData.weight !== undefined && formData.weight !== '') {
+            const w = parseFloat(formData.weight);
+            if (isNaN(w) || w <= 0) {
+                newErrors.weight = "Weight must be a positive number";
+            }
+        }
+
+        // 5. Logistics - Shipping Days
+        if (formData.logistics?.estimatedShippingDays !== undefined && formData.logistics?.estimatedShippingDays !== '') {
+            const days = parseInt(formData.logistics.estimatedShippingDays);
+            if (isNaN(days) || days <= 0) {
+                newErrors.estimatedShippingDays = "Estimated shipping days must be a positive number";
+            }
+        }
+
+        // 6. Variants
+        if (formData.variants) {
+            formData.variants.forEach((v, i) => {
+                if (!v.name) {
+                    newErrors[`variant_${v.id}_name`] = "Variant name required";
+                    newErrors[`variant_${i}_name`] = "Variant name required";
+                }
+                
+                if (v.weight === undefined || v.weight === '') {
+                    newErrors[`variant_${v.id}_weight`] = "Weight required";
+                    newErrors[`variant_${i}_weight`] = "Weight required";
+                } else {
+                    const vw = parseFloat(v.weight);
+                    if (isNaN(vw) || vw <= 0) {
+                        newErrors[`variant_${v.id}_weight`] = "Weight must be a positive number";
+                        newErrors[`variant_${i}_weight`] = "Weight must be a positive number";
+                    }
+                }
+
+                // Numeric charges checks
+                const numericFields = [
+                    { name: 'makingCharge', label: 'Making charge' },
+                    { name: 'hallmarkingCharge', label: 'Hallmarking charge' },
+                    { name: 'diamondPrice', label: 'Diamond / Stones price' },
+                    { name: 'diamondCertificateCharge', label: 'Certificate charge' },
+                    { name: 'additionalCharge', label: 'Additional charge' }
+                ];
+                numericFields.forEach(field => {
+                    if (v[field.name] !== undefined && v[field.name] !== '') {
+                        const val = parseFloat(v[field.name]);
+                        if (isNaN(val) || val < 0) {
+                            newErrors[`variant_${v.id}_${field.name}`] = `${field.label} cannot be negative`;
+                            newErrors[`variant_${i}_${field.name}`] = `${field.label} cannot be negative`;
+                        }
+                    }
+                });
+            });
+        }
+
+        setLiveErrors(newErrors);
+    }, [formData]);
+
+    const combinedErrors = useMemo(() => ({
+        ...errors,
+        ...liveErrors
+    }), [errors, liveErrors]);
 
     const setSerialBarcodeRef = (key, node) => {
         if (node) {
@@ -615,8 +703,9 @@ const SharedProductEditor = ({
             if (!v.weight) newErrors[`variant_${i}_weight`] = "Weight required";
         });
 
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
+        const combined = { ...liveErrors, ...newErrors };
+        setErrors(combined);
+        return Object.keys(combined).length === 0;
     };
 
     const handleSubmit = async () => {
@@ -793,7 +882,7 @@ const SharedProductEditor = ({
                         <ProductGeneralTab 
                             formData={formData} 
                             setFormData={setFormData} 
-                            errors={errors} 
+                            errors={combinedErrors} 
                             isViewMode={isViewMode} 
                             categories={categories}
                             handleCategoryChange={(val) => setFormData(prev => ({ ...prev, categories: [{ category: val }] }))}
@@ -805,7 +894,7 @@ const SharedProductEditor = ({
                         <ProductVariantsTab 
                             formData={formData} 
                             setFormData={setFormData} 
-                            errors={errors} 
+                            errors={combinedErrors} 
                             isViewMode={isViewMode} 
                             metalRates={metalRates} 
                             gstRate={gstRate}
@@ -855,6 +944,7 @@ const SharedProductEditor = ({
                         <ProductAdvancedTab 
                             formData={formData} 
                             setFormData={setFormData} 
+                            errors={combinedErrors}
                             isViewMode={isViewMode} 
                             addFaq={addFaq} 
                             removeFaq={removeFaq} 
