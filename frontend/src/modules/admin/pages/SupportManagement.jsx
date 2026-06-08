@@ -67,10 +67,12 @@ const SupportManagement = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
     const [selectedTicket, setSelectedTicket] = useState(null);
+    const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
-    const handleDelete = (id) => {
-        if (window.confirm('Delete this ticket?')) {
-            setTickets(prev => prev.filter(t => t.id !== id));
+    const handleConfirmDelete = () => {
+        if (deleteConfirmId) {
+            setTickets(prev => prev.filter(t => t.id !== deleteConfirmId));
+            setDeleteConfirmId(null);
         }
     };
 
@@ -147,7 +149,7 @@ const SupportManagement = () => {
                         <Eye className="w-4 h-4" />
                     </button>
                     <button
-                        onClick={() => handleDelete(item.id)}
+                        onClick={() => setDeleteConfirmId(item.id)}
                         className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                         title="Delete Ticket"
                     >
@@ -311,6 +313,35 @@ const SupportManagement = () => {
                             >
                                 Close Details
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Custom Delete Confirmation Modal */}
+            {deleteConfirmId && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden border border-gray-100 animate-in zoom-in-95 duration-200">
+                        <div className="p-6 text-center">
+                            <div className="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-4">
+                                <AlertCircle className="w-6 h-6" />
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-900 mb-2">Delete Ticket?</h3>
+                            <p className="text-sm text-gray-500 mb-6 font-medium">Are you sure you want to delete this support ticket? This action cannot be undone.</p>
+                            <div className="flex gap-3 justify-center">
+                                <button
+                                    onClick={() => setDeleteConfirmId(null)}
+                                    className="px-5 py-2.5 bg-gray-50 text-gray-700 font-bold text-xs uppercase tracking-wider rounded-xl border border-gray-200 hover:bg-gray-100 transition-colors w-full"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleConfirmDelete}
+                                    className="px-5 py-2.5 bg-red-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl hover:bg-red-700 transition-colors shadow-sm w-full"
+                                >
+                                    Yes, Delete
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

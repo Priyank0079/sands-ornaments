@@ -5,7 +5,7 @@ import {
     Bell, ChevronRight, ChevronDown, Star, HelpCircle, LogOut, Menu, X, ListTree,
     FileText, MessageSquare, Ticket, Settings, Plus, List, BookOpen,
     Clock, RefreshCw, RefreshCcw, RotateCcw, Boxes, ClipboardList, MapPin, Truck, CheckCircle2, XCircle, Percent,
-    AlertTriangle, FileBarChart, Store, ShieldCheck
+    AlertTriangle, FileBarChart, Store, ShieldCheck, User
 } from 'lucide-react';
 import { adminService } from '../services/adminService';
 import logo from '@assets/sands-logo.png';
@@ -113,7 +113,18 @@ const AdminLayout = ({ children }) => {
     const [notifications, setNotifications] = useState([]);
     const [showPopup, setShowPopup] = useState(false);
     const [latestNotif, setLatestNotif] = useState(null);
+    const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
     const prevCountRef = React.useRef(0);
+
+    React.useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (!event.target.closest('.profile-dropdown-container')) {
+                setIsProfileDropdownOpen(false);
+            }
+        };
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, []);
 
     React.useEffect(() => {
         let mounted = true;
@@ -343,14 +354,54 @@ const AdminLayout = ({ children }) => {
 
                         <div className="h-8 w-px bg-gray-100 mx-1 hidden sm:block" />
 
-                        <div className="flex items-center gap-2 lg:gap-3">
-                            <div className="text-right hidden sm:block font-medium">
-                                <p className="text-[11px] lg:text-sm text-gray-900 font-bold tracking-tight">Admin User</p>
-                                <p className="text-[9px] lg:text-xs text-gray-500 font-black uppercase tracking-widest mt-0.5">Super Admin</p>
-                            </div>
-                            <div className="w-8 h-8 lg:w-10 lg:h-10 bg-[#3E2723] text-white rounded-xl flex items-center justify-center font-black shadow-lg shadow-[#3E2723]/20 border border-white/10">
-                                A
-                            </div>
+                        <div className="relative profile-dropdown-container">
+                            <button 
+                                onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                                className="flex items-center gap-2 lg:gap-3 focus:outline-none group"
+                            >
+                                <div className="text-right hidden sm:block font-medium group-hover:opacity-80 transition-opacity">
+                                    <p className="text-[11px] lg:text-sm text-gray-900 font-bold tracking-tight">Admin User</p>
+                                    <p className="text-[9px] lg:text-xs text-gray-500 font-black uppercase tracking-widest mt-0.5">Super Admin</p>
+                                </div>
+                                <div className="w-8 h-8 lg:w-10 lg:h-10 bg-[#3E2723] text-white rounded-xl flex items-center justify-center font-black shadow-lg shadow-[#3E2723]/20 border border-white/10 group-hover:scale-105 transition-transform">
+                                    A
+                                </div>
+                            </button>
+
+                            {/* Dropdown Menu */}
+                            {isProfileDropdownOpen && (
+                                <div className="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 animate-in fade-in slide-in-from-top-4 duration-200 z-[200]">
+                                    <div className="px-4 py-3 border-b border-gray-100 mb-1 sm:hidden">
+                                        <p className="text-sm text-gray-900 font-bold">Admin User</p>
+                                        <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mt-0.5">Super Admin</p>
+                                    </div>
+                                    <button 
+                                        onClick={() => {
+                                            setIsProfileDropdownOpen(false);
+                                            navigate('/admin/settings');
+                                        }}
+                                        className="w-full text-left px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50 hover:text-[#3E2723] flex items-center gap-3 transition-colors"
+                                    >
+                                        <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center">
+                                            <Settings className="w-4 h-4" />
+                                        </div>
+                                        Global Settings
+                                    </button>
+                                    <div className="h-px bg-gray-100 my-1 mx-2" />
+                                    <button 
+                                        onClick={() => {
+                                            setIsProfileDropdownOpen(false);
+                                            handleLogout();
+                                        }}
+                                        className="w-full text-left px-4 py-2.5 text-sm font-bold text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors"
+                                    >
+                                        <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
+                                            <LogOut className="w-4 h-4" />
+                                        </div>
+                                        Logout
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </header>

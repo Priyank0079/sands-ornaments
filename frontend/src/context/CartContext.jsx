@@ -141,6 +141,38 @@ export const CartProvider = ({ children }) => {
         fetchCart();
     }, [isUserRole, fetchCart]);
 
+    // ── Load user cart when user logs in ───────────────────────────────────
+    useEffect(() => {
+        if (user) {
+            // First, check if cart already has items (just added by user)
+            setCart((prevCart) => {
+                // If cart already has items, keep them
+                if (prevCart.length > 0) {
+                    console.log('🛒 Cart has items, skipping backend fetch');
+                    return prevCart;
+                }
+
+                // If cart is empty, try to load from localStorage
+                const userCartKey = `user_cart_${user.id || user._id}`;
+                const userCart = localStorage.getItem(userCartKey);
+                if (userCart) {
+                    try {
+                        const parsed = JSON.parse(userCart);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            console.log('📦 Loaded cart from localStorage:', parsed.length, 'items');
+                            return parsed;
+                        }
+                    } catch (e) {
+                        console.error('Failed to parse user cart:', e);
+                    }
+                }
+
+                // Otherwise keep empty cart (will fetch from backend if needed)
+                return prevCart;
+            });
+        }
+    }, [user?.id]);
+
     // ── addToCart ────────────────────────────────────────────────────────────
     const addToCart = useCallback((arg1, arg2, arg3) => {
         let productId, variantId, qty = 1, productData = null;
@@ -159,11 +191,16 @@ export const CartProvider = ({ children }) => {
         } else {
             productId = arg2;
             qty = arg3 || 1;
-            // Legacy signature: products list is not available here; product data won't be normalized
             productData = null;
         }
 
-        if (!productId) return;
+        if (!productId) {
+            console.error('No product ID found in addToCart');
+            return;
+        }
+
+        console.log('🛒 Adding to cart:', { productId, variantId, productName: productData?.name });
+
         const requestedQty = Number.isFinite(Number(qty)) ? Math.max(1, Number(qty)) : 1;
         const maxStock = resolveAvailableStock(productData || {}, variantId);
         if (maxStock !== null && maxStock <= 0) {
@@ -174,6 +211,8 @@ export const CartProvider = ({ children }) => {
         analytics.track('add_to_cart', { productId, variantId, quantity: requestedQty, name: productData?.name });
         setCart((prev) => {
             const existing = prev.find((item) => item.id === productId && item.variantId === variantId);
+            let newCart;
+
             if (existing) {
                 const currentStock = resolveAvailableStock(existing, variantId);
                 const limitStock = currentStock !== null ? currentStock : maxStock;
@@ -181,30 +220,35 @@ export const CartProvider = ({ children }) => {
                 if (limitStock !== null && nextQuantity > limitStock) {
                     toast.error(`Only ${limitStock} units available`);
                     const cappedQty = Math.max(1, Math.min(limitStock, nextQuantity));
-                    return prev.map((item) =>
+                    newCart = prev.map((item) =>
                         (item.id === productId && item.variantId === variantId)
                             ? { ...item, quantity: cappedQty, qty: cappedQty }
                             : item
                     );
+                } else {
+                    newCart = prev.map((item) =>
+                        (item.id === productId && item.variantId === variantId) ? { ...item, quantity: nextQuantity, qty: nextQuantity } : item
+                    );
                 }
-                return prev.map((item) =>
-                    (item.id === productId && item.variantId === variantId) ? { ...item, quantity: nextQuantity, qty: nextQuantity } : item
-                );
+            } else {
+                const itemBase = productData || { id: productId, name: 'Product', price: 0, originalPrice: 0, image: '' };
+                const finalQty = maxStock !== null ? Math.min(requestedQty, maxStock) : requestedQty;
+                if (maxStock !== null && requestedQty > maxStock) {
+                    toast.error(`Only ${maxStock} units available`);
+                }
+                newCart = [...prev, {
+                    ...itemBase,
+                    id: productId,
+                    variantId: variantId,
+                    packId: variantId || productId,
+                    gst: Number(itemBase.gst ?? itemBase.selectedVariant?.gst) || 0,
+                    quantity: finalQty,
+                    qty: finalQty
+                }];
             }
-            const itemBase = productData || { id: productId, name: 'Product', price: 0, originalPrice: 0, image: '' };
-            const finalQty = maxStock !== null ? Math.min(requestedQty, maxStock) : requestedQty;
-            if (maxStock !== null && requestedQty > maxStock) {
-                toast.error(`Only ${maxStock} units available`);
-            }
-            return [...prev, {
-                ...itemBase,
-                id: productId,
-                variantId: variantId,
-                packId: variantId || productId,
-                gst: Number(itemBase.gst ?? itemBase.selectedVariant?.gst) || 0,
-                quantity: finalQty,
-                qty: finalQty
-            }];
+
+            console.log('📦 Cart updated:', newCart);
+            return newCart;
         });
         toast.success('Added to bag');
     }, []);

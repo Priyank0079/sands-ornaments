@@ -40,11 +40,16 @@ const CouponListPage = () => {
     const filteredCoupons = useMemo(() => {
         return (coupons || [])
             .filter(c => {
-                const desc = c.description || c.desc || '';
-                const code = c.code || '';
+                const searchStr = searchTerm.toLowerCase();
+                const desc = String(c.description || c.desc || '').toLowerCase();
+                const code = String(c.code || '').toLowerCase();
+                const valueStr = String(c.value !== undefined ? c.value : (c.amount || '')).toLowerCase();
+                const typeStr = String(c.type || '').toLowerCase();
                 return (
-                    code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    desc.toLowerCase().includes(searchTerm.toLowerCase())
+                    code.includes(searchStr) ||
+                    desc.includes(searchStr) ||
+                    valueStr.includes(searchStr) ||
+                    typeStr.includes(searchStr)
                 );
             })
             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -217,7 +222,12 @@ const CouponListPage = () => {
                 />
                 <AdminStatsCard
                     label="Active Campaigns"
-                    value={(coupons || []).filter(c => c.active).length}
+                    value={(coupons || []).filter(c => {
+                        if (!c.active) return false;
+                        if (c.validUntil && new Date(c.validUntil) < new Date()) return false;
+                        if (c.usageLimit && c.usageCount >= c.usageLimit) return false;
+                        return true;
+                    }).length}
                     icon={Activity}
                     color="text-emerald-600"
                     bgColor="bg-emerald-50"

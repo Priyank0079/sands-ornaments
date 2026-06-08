@@ -316,63 +316,65 @@ const ProductVariantsTab = ({
                                             <span className="text-[9px] font-black text-gray-300 uppercase tracking-widest">Step 2</span>
                                         </div>
 
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
-                                            <div className="space-y-3">
-                                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Metal Price</label>
-                                                <div className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-4 px-5 text-sm font-black text-gray-800 shadow-inner flex items-center gap-2">
-                                                    <span className="text-[10px] text-gray-400">Rs</span> {pricing.metalPrice.toFixed(2)}
+                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+                                            <div>
+                                                <label className="text-xs font-medium text-gray-500 mb-1 block">Metal Price</label>
+                                                <div className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2 px-3 text-sm font-semibold text-gray-800 flex items-center gap-1.5">
+                                                    <span className="text-xs text-gray-400">₹</span> {pricing.metalPrice.toFixed(2)}
                                                 </div>
                                             </div>
-                                            <div className="space-y-3">
-                                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Diamond / Stones</label>
-                                                <div className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-4 px-5 text-sm font-black text-gray-800 shadow-inner flex items-center gap-2">
-                                                    <span className="text-[10px] text-gray-400">Rs</span> {pricing.diamondPrice.toFixed(2)}
+                                            <div>
+                                                <label className="text-xs font-medium text-gray-500 mb-1 block">Making Charge</label>
+                                                <div className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2 px-3 text-sm font-semibold text-gray-800 flex items-center gap-1.5">
+                                                    <span className="text-xs text-gray-400">₹</span> {pricing.makingCharge.toFixed(2)}
                                                 </div>
                                             </div>
-                                            <div className="space-y-3">
-                                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Hidden Charges</label>
-                                                <div className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-4 px-5 text-sm font-black text-gray-800 shadow-inner flex items-center gap-2">
-                                                    <span className="text-[10px] text-gray-400">Rs</span> {pricing.hiddenCharge.toFixed(2)}
+                                            <div>
+                                                <label className="text-xs font-medium text-gray-500 mb-1 block">Diamond / Stones</label>
+                                                <div className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2 px-3 text-sm font-semibold text-gray-800 flex items-center gap-1.5">
+                                                    <span className="text-xs text-gray-400">₹</span> {pricing.diamondPrice.toFixed(2)}
                                                 </div>
                                             </div>
-                                            <div className="space-y-3">
-                                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Subtotal</label>
-                                                <div className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-4 px-5 text-sm font-black text-gray-800 shadow-inner flex items-center gap-2">
-                                                    <span className="text-[10px] text-gray-400">Rs</span> {pricing.subtotalBeforeTax.toFixed(2)}
+                                            <div>
+                                                <label className="text-xs font-medium text-gray-500 mb-1 block">Hidden Charges</label>
+                                                <div className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2 px-3 text-sm font-semibold text-gray-800 flex items-center gap-1.5">
+                                                    <span className="text-xs text-gray-400">₹</span> {pricing.hiddenCharge.toFixed(2)}
                                                 </div>
                                             </div>
-                                            <div className="space-y-3">
-                                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">GST ({gstRate}%)</label>
-                                                <div className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-4 px-5 text-sm font-black text-gray-800 shadow-inner flex items-center gap-2">
-                                                    <span className="text-[10px] text-gray-400">Rs</span> {pricing.gstValue.toFixed(2)}
+                                            <div>
+                                                <label className="text-xs font-medium text-gray-500 mb-1 block">Subtotal</label>
+                                                <div className="w-full bg-gray-100 border border-gray-200 rounded-lg py-2 px-3 text-sm font-bold text-gray-900 flex items-center gap-1.5">
+                                                    <span className="text-xs text-gray-500">₹</span> {pricing.subtotalBeforeTax.toFixed(2)}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="text-xs font-medium text-gray-500 mb-1 block">GST ({gstRate}%)</label>
+                                                <div className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2 px-3 text-sm font-semibold text-gray-800 flex items-center gap-1.5">
+                                                    <span className="text-xs text-gray-400">₹</span> {pricing.gstValue.toFixed(2)}
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 items-end">
-                                            <div className="space-y-3">
-                                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Price After GST</label>
-                                                <div className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-4 px-5 text-sm font-black text-gray-800 shadow-inner flex items-center gap-2">
-                                                    <span className="text-[10px] text-gray-400">Rs</span> {pricing.priceAfterTax.toFixed(2)}
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 items-end mt-4">
+                                            <div>
+                                                <label className="text-xs font-medium text-gray-500 mb-1 block">Price After GST</label>
+                                                <div className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2.5 px-3 text-sm font-semibold text-gray-800 flex items-center gap-1.5">
+                                                    <span className="text-xs text-gray-400">₹</span> {pricing.priceAfterTax.toFixed(2)}
                                                 </div>
                                             </div>
-                                            <div className="space-y-3">
-                                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">PG Charge ({pricing.pgChargePercent}%)</label>
-                                                <div className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-4 px-5 text-sm font-black text-gray-800 shadow-inner flex items-center gap-2">
-                                                    <span className="text-[10px] text-gray-400">Rs</span> {pricing.pgChargeAmount.toFixed(2)}
+                                            <div>
+                                                <label className="text-xs font-medium text-gray-500 mb-1 block">PG Charge ({pricing.pgChargePercent}%)</label>
+                                                <div className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2.5 px-3 text-sm font-semibold text-gray-800 flex items-center gap-1.5">
+                                                    <span className="text-xs text-gray-400">₹</span> {pricing.pgChargeAmount.toFixed(2)}
                                                 </div>
                                             </div>
-                                            <div className="space-y-3 sm:col-span-2 md:col-span-1">
-                                                <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                            <div>
+                                                <label className="text-xs font-semibold text-amber-700 mb-1 flex items-center gap-1.5">
                                                     <SuccessIcon size={12} /> Final Variant Price
                                                 </label>
-                                                <div className="relative overflow-hidden rounded-[1.5rem] border-2 border-amber-200 bg-amber-50/30 shadow-lg group h-[60px] flex items-center">
-                                                    <div className="relative px-4 sm:px-6 flex items-center justify-between w-full">
-                                                        <span className="text-[9px] font-black text-amber-800 uppercase tracking-widest">Total</span>
-                                                        <span className="text-base sm:text-lg md:text-xl font-black text-[#3E2723] font-mono tracking-tighter">
-                                                            Rs {pricing.finalPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                                                        </span>
-                                                    </div>
+                                                <div className="w-full bg-amber-50 border-2 border-amber-200 rounded-lg py-2 px-4 text-base font-bold text-amber-900 flex items-center justify-between">
+                                                    <span className="text-xs font-medium text-amber-700">Total</span>
+                                                    <span>₹ {pricing.finalPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                                                 </div>
                                             </div>
                                         </div>

@@ -1,28 +1,27 @@
-import React from 'react';
-import { Plus, ArrowLeft, Trash2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Plus, ArrowLeft, Trash2, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const AddressesTab = ({ 
-    safeAddresses, 
-    showAddressForm, 
-    newAddress, 
-    setNewAddress, 
-    handleAddAddress, 
-    removeAddress, 
-    defaultAddressId, 
-    setDefaultAddress 
+const AddressesTab = ({
+    safeAddresses,
+    showAddressForm,
+    newAddress,
+    setNewAddress,
+    handleAddAddress,
+    removeAddress,
+    defaultAddressId,
+    setDefaultAddress
 }) => {
     const navigate = useNavigate();
+    const [selectedAddress, setSelectedAddress] = useState(null);
 
     return (
         <div className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="flex justify-between items-center mb-4 md:mb-6">
                 <h2 className="text-xl md:text-2xl font-display font-bold text-black tracking-wide">My Addresses</h2>
-                <button onClick={() => showAddressForm ? navigate('/profile/addresses') : navigate('/profile/addresses/add')} className="bg-black text-white px-4 py-2 rounded-lg text-sm hidden md:block hover:bg-[#D39A9F] transition-all">
+                <button onClick={() => showAddressForm ? navigate('/profile/addresses') : navigate('/profile/addresses/add')} className="bg-black text-white px-4 py-2 md:px-6 md:py-2.5 rounded-lg text-sm font-bold hover:bg-[#D39A9F] transition-all flex items-center gap-2">
+                    <Plus className="w-4 h-4" />
                     {showAddressForm ? 'Cancel' : 'Add New'}
-                </button>
-                <button onClick={() => showAddressForm ? navigate('/profile/addresses') : navigate('/profile/addresses/add')} className="md:hidden bg-black text-white p-2 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-1 transition-all">
-                    <Plus className="w-4 h-4" /> Add
                 </button>
             </div>
 
@@ -87,25 +86,119 @@ const AddressesTab = ({
                 </form>
             )}
 
+            {/* Full Address Detail Modal */}
+            {selectedAddress && (
+                <div className="fixed inset-0 bg-black/50 z-[300] flex items-end md:items-center justify-center p-4 animate-in fade-in duration-200">
+                    <div className="bg-white w-full md:w-[90%] md:max-w-md rounded-t-2xl md:rounded-2xl shadow-xl p-6 space-y-4 animate-in slide-in-from-bottom-5 md:slide-in-from-center duration-300">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg md:text-xl font-bold text-black">{selectedAddress.type} Address</h3>
+                            <button onClick={() => setSelectedAddress(null)} className="p-2 hover:bg-gray-100 rounded-lg transition-all">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <div className="space-y-3 border-t border-gray-200 pt-4">
+                            <div>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Name</p>
+                                <p className="text-sm md:text-base font-semibold text-black">{selectedAddress.name}</p>
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Phone</p>
+                                <p className="text-sm md:text-base font-semibold text-black">{selectedAddress.phone || 'N/A'}</p>
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Flat / House / Building</p>
+                                <p className="text-sm md:text-base font-semibold text-black">{selectedAddress.flatNo}</p>
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Area / Street / Sector</p>
+                                <p className="text-sm md:text-base font-semibold text-black">{selectedAddress.area}</p>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">City</p>
+                                    <p className="text-sm md:text-base font-semibold text-black">{selectedAddress.city}</p>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">State</p>
+                                    <p className="text-sm md:text-base font-semibold text-black">{selectedAddress.state}</p>
+                                </div>
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Pincode</p>
+                                <p className="text-sm md:text-base font-semibold text-black">{selectedAddress.pincode}</p>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3 pt-4 border-t border-gray-200">
+                            {defaultAddressId !== (selectedAddress.id || selectedAddress._id) && (
+                                <button
+                                    onClick={() => {
+                                        setDefaultAddress(selectedAddress.id || selectedAddress._id);
+                                        setSelectedAddress(null);
+                                    }}
+                                    className="flex-1 bg-[#D39A9F] text-white py-2.5 rounded-lg font-bold text-sm uppercase hover:bg-[#8E2B45] transition-all active:scale-95"
+                                >
+                                    Set as Default
+                                </button>
+                            )}
+                            <button
+                                onClick={() => {
+                                    removeAddress(selectedAddress.id || selectedAddress._id);
+                                    setSelectedAddress(null);
+                                }}
+                                className="flex-1 bg-red-50 text-red-600 py-2.5 rounded-lg font-bold text-sm uppercase hover:bg-red-100 transition-all active:scale-95"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {safeAddresses.length === 0 ? (
+                <div className="text-center py-12 bg-[#FDF5F6] rounded-2xl border border-[#EBCDD0]">
+                    <p className="text-gray-500 text-sm mb-4">No addresses added yet</p>
+                    <button
+                        onClick={() => navigate('/profile/addresses/add')}
+                        className="bg-[#8E2B45] text-white px-6 py-2.5 rounded-lg font-bold text-sm uppercase hover:bg-[#722F37] transition-all active:scale-95"
+                    >
+                        Add Your First Address
+                    </button>
+                </div>
+            ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                 {safeAddresses.map(addr => {
                     const addressId = addr.id || addr._id;
                     return (
-                        <div key={addressId} className="bg-[#FDF5F6] p-4 md:p-6 rounded-2xl md:rounded-2xl shadow-sm relative border border-[#EBCDD0] md:border-transparent transition-all hover:shadow-md">
+                        <div
+                            key={addressId}
+                            onClick={() => setSelectedAddress(addr)}
+                            className="bg-[#FDF5F6] p-4 md:p-6 rounded-2xl shadow-sm relative border border-[#EBCDD0] md:border-transparent transition-all hover:shadow-md cursor-pointer hover:bg-[#FCE8EC] active:scale-95"
+                        >
                             <div className="flex justify-between mb-2">
                                 <span className="text-[9px] md:text-[10px] font-bold uppercase py-1 px-2 bg-white md:bg-white rounded text-black tracking-wider shadow-sm">{addr.type}</span>
-                                <button onClick={() => removeAddress(addressId)} className="text-red-400 p-1 active:scale-90 hover:text-red-600 transition-all"><Trash2 className="w-4 h-4" /></button>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        removeAddress(addressId);
+                                    }}
+                                    className="text-red-400 p-1 active:scale-90 hover:text-red-600 transition-all"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
                             </div>
                             <h4 className="font-bold text-sm md:text-base text-black mb-1">{addr.name}</h4>
                             <p className="text-xs md:text-sm text-gray-500 leading-relaxed mb-3">
                                 {[addr.flatNo, addr.area, addr.city].filter(Boolean).join(', ')}
                                 {addr.pincode ? ` - ${addr.pincode}` : ''}
                             </p>
-                            {defaultAddressId !== addressId && <button onClick={() => setDefaultAddress(addressId)} className="text-[10px] md:text-xs underline font-bold text-[#D39A9F] hover:text-black transition-colors">Set Default</button>}
+                            <p className="text-[10px] text-[#D39A9F] font-bold cursor-pointer hover:underline">View Full Address →</p>
                         </div>
                     );
                 })}
             </div>
+            )}
         </div>
     );
 };

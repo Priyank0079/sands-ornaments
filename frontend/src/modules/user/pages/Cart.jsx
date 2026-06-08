@@ -113,86 +113,84 @@ const Cart = () => {
                                         <X className="w-5 h-5" strokeWidth={2} />
                                     </button>
 
-                                    <div className="p-5 md:p-6 flex gap-6">
+                                    <div className="p-3 md:p-4 flex gap-4">
                                         {/* Image */}
-                                        <Link to={`/product/${item.id}`} className="w-24 h-24 md:w-40 md:h-40 flex-shrink-0 bg-gray-50 rounded-xl overflow-hidden border border-gray-50">
+                                        <Link to={`/product/${item.id}`} className="w-20 h-20 md:w-28 md:h-28 flex-shrink-0 bg-gray-50 rounded-lg overflow-hidden border border-gray-50">
                                             {item.image ? (
                                                 <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                                             ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-gray-300 text-[10px] font-bold uppercase">No Image</div>
+                                                <div className="w-full h-full flex items-center justify-center text-gray-300 text-[8px] font-medium">No Image</div>
                                             )}
                                         </Link>
 
                                         {/* Details */}
-                                        <div className="flex-grow space-y-3">
-                                            <div className="pr-8">
+                                        <div className="flex-grow space-y-2">
+                                            <div className="pr-6">
                                                 <Link to={`/product/${item.id}`}>
-                                                    <h3 className="text-base md:text-lg font-bold text-gray-900 leading-snug hover:text-[#8E2B45] transition-colors line-clamp-2">{item.name}</h3>
+                                                    <h3 className="text-sm md:text-base font-medium text-gray-900 leading-tight hover:text-[#8E2B45] transition-colors line-clamp-2">{item.name}</h3>
                                                 </Link>
                                                 {variantLabel(item) && (
-                                                    <p className="text-[11px] font-bold text-[#8E2B45] uppercase tracking-wider mt-1">{variantLabel(item)}</p>
+                                                    <p className="text-[10px] font-normal text-gray-500 uppercase tracking-wide mt-0.5">{variantLabel(item)}</p>
                                                 )}
                                             </div>
 
-                                            <div className="flex items-center gap-4">
-                                                <div className="flex flex-col">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-lg md:text-xl font-black text-gray-900">{currencyText(item.price)}</span>
-                                                        {item.originalPrice && (
-                                                            <span className="text-sm text-gray-400 line-through">{currencyText(item.originalPrice)}</span>
-                                                        )}
-                                                    </div>
+                                            <div className="flex items-center justify-between gap-3">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-base md:text-lg font-semibold text-gray-900">{currencyText(item.price)}</span>
+                                                    {item.originalPrice && (
+                                                        <span className="text-xs text-gray-400 line-through">{currencyText(item.originalPrice)}</span>
+                                                    )}
                                                 </div>
 
-                                                {/* Quantity Selector - GIVA Style */}
-                                                <div className="flex items-center gap-4 bg-white border border-gray-200 rounded-lg px-2 py-1 ml-auto">
+                                                {/* Quantity Selector */}
+                                                <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-1.5 py-1">
                                                     <button
                                                         onClick={() => updateQuantity(item.id, -1, variantKey(item))}
                                                         disabled={item.quantity <= 1}
-                                                        className="w-8 h-8 flex items-center justify-center rounded-md border border-[#EBCDD0] text-[#E77382] disabled:opacity-30 transition-all"
+                                                        className="w-6 h-6 flex items-center justify-center rounded border border-gray-200 text-gray-400 disabled:opacity-30 hover:bg-gray-50 transition-all"
                                                     >
-                                                        <Minus className="w-4 h-4" />
+                                                        <Minus className="w-3 h-3" />
                                                     </button>
-                                                    <span className="text-sm font-black text-gray-900 min-w-[20px] text-center">
+                                                    <span className="text-xs font-medium text-gray-900 min-w-[16px] text-center">
                                                         {item.quantity || 1}
                                                     </span>
                                                     <button
                                                         onClick={() => updateQuantity(item.id, 1, variantKey(item))}
-                                                        className="w-8 h-8 flex items-center justify-center rounded-md bg-[#E77382] text-white hover:bg-[#8E2B45] transition-all"
+                                                        className="w-6 h-6 flex items-center justify-center rounded bg-[#E77382] text-white hover:bg-[#8E2B45] transition-all"
                                                     >
-                                                        <Plus className="w-4 h-4" />
+                                                        <Plus className="w-3 h-3" />
                                                     </button>
                                                 </div>
                                             </div>
 
-                                            <div className="flex items-center gap-2 text-[#2DB37E] font-bold text-[11px] md:text-xs">
-                                                <Truck className="w-4 h-4" />
+                                            <div className="flex items-center gap-1.5 text-[#2DB37E] text-[10px] md:text-xs">
+                                                <Truck className="w-3.5 h-3.5" />
                                                 Free Delivery
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* Trust Banner - GIVA Style */}
-                                    <div className="bg-[#FFF8F9] border-t border-[#FDF2F4] flex divide-x divide-[#FDF2F4] py-3.5">
-                                        <div className="flex-1 text-center text-[10px] font-bold text-gray-500 px-2 uppercase tracking-[0.15em]">6-Month Warranty</div>
-                                        <div className="flex-1 text-center text-[10px] font-bold text-gray-500 px-2 uppercase tracking-[0.15em]">Lifetime Plating</div>
-                                        <div className="flex-1 text-center text-[10px] font-bold text-gray-500 px-2 uppercase tracking-[0.15em]">15-Day Returns</div>
+                                    {/* Trust Banner */}
+                                    <div className="bg-[#FFF8F9] border-t border-[#FDF2F4] flex divide-x divide-[#FDF2F4] py-2.5 px-3">
+                                        <div className="flex-1 text-center text-[9px] font-normal text-gray-500 uppercase tracking-[0.1em]">6-Month Warranty</div>
+                                        <div className="flex-1 text-center text-[9px] font-normal text-gray-500 uppercase tracking-[0.1em]">Lifetime Plating</div>
+                                        <div className="flex-1 text-center text-[9px] font-normal text-gray-500 uppercase tracking-[0.1em]">15-Day Returns</div>
                                     </div>
 
-                                    {/* Gift Wrap Checkbox - WORKING */}
-                                    <div className="p-4 bg-white flex items-center gap-3 border-t border-gray-100">
+                                    {/* Gift Wrap */}
+                                    <div className="p-3 bg-white flex items-center gap-2.5 border-t border-gray-100">
                                         <input
                                             type="checkbox"
                                             id={`gift-${item.id}`}
                                             checked={giftWrapItems[variantKey(item)] || false}
                                             onChange={() => handleGiftWrapToggle(variantKey(item))}
-                                            className="w-5 h-5 rounded accent-[#8E2B45] border-gray-200 cursor-pointer"
+                                            className="w-4 h-4 rounded accent-[#8E2B45] border-gray-200 cursor-pointer"
                                         />
-                                        <label htmlFor={`gift-${item.id}`} className="text-xs text-gray-600 flex items-center gap-1.5 cursor-pointer font-medium">
-                                            Add <span className="text-[#E77382] font-bold">gift wrap</span> & message (+ ₹50)
+                                        <label htmlFor={`gift-${item.id}`} className="text-xs text-gray-600 flex items-center gap-1 cursor-pointer font-normal">
+                                            Add <span className="text-[#E77382]">gift wrap</span> & message (+ ₹50)
                                         </label>
                                         {giftWrapItems[variantKey(item)] && (
-                                            <span className="text-[11px] font-bold text-[#2DB37E] ml-auto">✓ Added</span>
+                                            <span className="text-[10px] font-normal text-[#2DB37E] ml-auto">✓ Added</span>
                                         )}
                                     </div>
                                 </motion.div>
@@ -202,35 +200,35 @@ const Cart = () => {
 
                     {/* Summary Section */}
                     <div className="w-full lg:w-[400px] shrink-0">
-                        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-xl shadow-black/5 sticky top-28 space-y-6">
-                            <h2 className="text-xl font-semibold text-gray-800 tracking-tight">Order Summary</h2>
+                        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-lg shadow-black/5 sticky top-28 space-y-4">
+                            <h2 className="text-base font-medium text-gray-800">Order Summary</h2>
 
-                            <div className="space-y-4 pt-2">
-                                <div className="flex justify-between items-end border-b border-gray-50 pb-4">
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] text-gray-400 font-black uppercase tracking-[0.15em] mb-1">Final Amount</span>
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-2xl font-black text-gray-900 tracking-tight">{currencyText(total)}</span>
-                                            <Info className="w-4 h-4 text-gray-300 hover:text-gray-400 transition-colors cursor-help" />
+                            <div className="space-y-2.5 pt-1">
+                                <div className="flex justify-between items-end border-b border-gray-50 pb-3">
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-[9px] text-gray-400 font-normal uppercase tracking-[0.1em]">Final Amount</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xl font-semibold text-gray-900">{currencyText(total)}</span>
+                                            <Info className="w-3.5 h-3.5 text-gray-300 hover:text-gray-400 transition-colors cursor-help" />
                                         </div>
                                     </div>
                                     {(discount > 0 || giftWrapCharge > 0 || shipping > 0) && (
-                                        <div className="flex flex-col items-end text-right">
-                                            {giftWrapCharge > 0 && <p className="text-[9px] text-[#2DB37E] font-bold mb-1">Gift wrap: +{currencyText(giftWrapCharge)}</p>}
-                                            {shipping > 0 && <p className="text-[9px] text-gray-400 font-bold mb-1">Shipping: +{currencyText(shipping)}</p>}
-                                            {discount > 0 && <p className="text-[9px] text-[#E77382] font-bold">Discount: -{currencyText(discount)}</p>}
+                                        <div className="flex flex-col items-end text-right gap-0.5">
+                                            {giftWrapCharge > 0 && <p className="text-[8px] text-[#2DB37E] font-normal">Gift wrap: +{currencyText(giftWrapCharge)}</p>}
+                                            {shipping > 0 && <p className="text-[8px] text-gray-400 font-normal">Shipping: +{currencyText(shipping)}</p>}
+                                            {discount > 0 && <p className="text-[8px] text-[#E77382] font-normal">Discount: -{currencyText(discount)}</p>}
                                         </div>
                                     )}
                                 </div>
                             </div>
 
-                            {/* Coupons Section - COLLAPSIBLE */}
-                            <div className="pt-5 border-t border-gray-100">
+                            {/* Coupons Section */}
+                            <div className="pt-2.5 border-t border-gray-100">
                                 <button
                                     onClick={() => setCouponSectionExpanded(!couponSectionExpanded)}
-                                    className="w-full flex items-center justify-between mb-4 hover:opacity-70 transition-opacity"
+                                    className="w-full flex items-center justify-between mb-2.5 hover:opacity-70 transition-opacity"
                                 >
-                                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Available Coupons</p>
+                                    <p className="text-[10px] font-normal text-gray-400 uppercase tracking-[0.08em]">Available Coupons</p>
                                     <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${couponSectionExpanded ? '' : '-rotate-90'}`} />
                                 </button>
                                 {couponSectionExpanded && (
@@ -241,22 +239,22 @@ const Cart = () => {
                                         className="space-y-1 border border-gray-100 rounded-2xl overflow-hidden"
                                     >
                                         {availableCoupons.slice(0, 3).map((coupon) => (
-                                            <div key={coupon.code} className="flex items-center justify-between p-3 bg-white hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0 group cursor-pointer" onClick={() => handleApplyCoupon(coupon.code)}>
-                                                <div className="flex items-center gap-3 min-w-0">
-                                                    <div className="w-10 h-10 rounded-full bg-[#FFF8F9] flex items-center justify-center text-[#E77382] shrink-0 border border-[#FDF2F4]">
-                                                        <Tag className="w-4 h-4" />
+                                            <div key={coupon.code} className="flex items-center justify-between p-2.5 bg-white hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0 group cursor-pointer" onClick={() => handleApplyCoupon(coupon.code)}>
+                                                <div className="flex items-center gap-2 min-w-0">
+                                                    <div className="w-8 h-8 rounded-full bg-[#FFF8F9] flex items-center justify-center text-[#E77382] shrink-0 border border-[#FDF2F4]">
+                                                        <Tag className="w-3 h-3" />
                                                     </div>
                                                     <div className="min-w-0">
-                                                        <p className="text-[11px] font-black text-gray-900 uppercase tracking-wider truncate">{coupon.code}</p>
-                                                        <p className="text-[10px] text-gray-400 truncate font-medium">{coupon.description || `Save ${coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : currencyText(coupon.discountValue)}`}</p>
+                                                        <p className="text-[10px] font-medium text-gray-900 uppercase tracking-wide truncate">{coupon.code}</p>
+                                                        <p className="text-[8px] text-gray-400 truncate font-normal">{coupon.description || `Save ${coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : currencyText(coupon.discountValue)}`}</p>
                                                     </div>
                                                 </div>
-                                                <ChevronDown className="w-4 h-4 text-gray-300 group-hover:text-[#E77382] transition-colors" />
+                                                <ChevronDown className="w-3.5 h-3.5 text-gray-300 group-hover:text-[#E77382] transition-colors shrink-0" />
                                             </div>
                                         ))}
                                         <button
                                             onClick={() => setShowCouponModal(true)}
-                                            className="w-full py-3 text-[11px] font-bold text-gray-400 hover:text-[#8E2B45] transition-colors bg-gray-50/50 uppercase tracking-widest"
+                                            className="w-full py-2 text-[9px] font-normal text-gray-400 hover:text-[#8E2B45] transition-colors bg-gray-50/50 uppercase tracking-[0.08em]"
                                         >
                                             View All Offers
                                         </button>
@@ -265,22 +263,22 @@ const Cart = () => {
                             </div>
 
                             {appliedCoupon && (
-                                <div className="bg-[#FFF8F9] border border-[#EBCDD0] p-4 rounded-xl flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <Tag className="w-4 h-4 text-[#8E2B45]" />
-                                        <div>
-                                            <p className="text-[11px] font-black text-[#8E2B45] uppercase tracking-wider">{appliedCoupon.code}</p>
-                                            <p className="text-[10px] text-[#E77382] font-medium">{currencyText(discount)} Discount Applied</p>
+                                <div className="bg-[#FFF8F9] border border-[#EBCDD0] p-3 rounded-lg flex items-center justify-between gap-2">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <Tag className="w-3.5 h-3.5 text-[#8E2B45] shrink-0" />
+                                        <div className="min-w-0">
+                                            <p className="text-[10px] font-medium text-[#8E2B45] uppercase tracking-wide truncate">{appliedCoupon.code}</p>
+                                            <p className="text-[9px] text-[#E77382] font-normal">{currencyText(discount)} Discount</p>
                                         </div>
                                     </div>
-                                    <button onClick={clearAppliedCoupon} className="text-[10px] font-black text-gray-400 hover:text-red-500 uppercase tracking-widest">Remove</button>
+                                    <button onClick={clearAppliedCoupon} className="text-[9px] font-normal text-gray-400 hover:text-red-500 uppercase tracking-[0.08em] shrink-0">Remove</button>
                                 </div>
                             )}
 
-                            <div className="space-y-3 pt-3">
-                                <p className="text-[10px] text-gray-400 font-medium text-center uppercase tracking-wider">Free Shipping on orders above ₹450</p>
+                            <div className="space-y-2.5 pt-2">
+                                <p className="text-[9px] text-gray-400 font-normal text-center uppercase tracking-[0.08em]">Free Shipping on orders above ₹450</p>
 
-                                <div className="flex items-center gap-3 px-1">
+                                <div className="flex items-center gap-2">
                                     <input
                                         type="checkbox"
                                         id="gift-all"
@@ -292,23 +290,23 @@ const Cart = () => {
                                             });
                                             setGiftWrapItems(newGiftWrap);
                                         }}
-                                        className="w-5 h-5 rounded accent-[#8E2B45] border-gray-200 cursor-pointer"
+                                        className="w-4 h-4 rounded accent-[#8E2B45] border-gray-200 cursor-pointer"
                                     />
-                                    <label htmlFor="gift-all" className="text-[11px] text-gray-600 leading-tight cursor-pointer font-medium">
-                                        <span className="text-[#E77382] font-bold">Gift wrap</span> all items (+ ₹50 each)
+                                    <label htmlFor="gift-all" className="text-[10px] text-gray-600 cursor-pointer font-normal">
+                                        <span className="text-[#E77382]">Gift wrap</span> all (+ ₹50)
                                     </label>
                                 </div>
 
                                 <Link
                                     to="/checkout"
-                                    className="w-full bg-[#8E2B45] text-white py-3.5 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] hover:bg-[#5B1E26] transition-all flex items-center justify-center gap-3 shadow-xl shadow-[#8E2B45]/20 active:scale-95 group"
+                                    className="w-full bg-[#8E2B45] text-white py-3 rounded-lg font-semibold uppercase tracking-[0.15em] text-[10px] hover:bg-[#5B1E26] transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#8E2B45]/20 active:scale-95"
                                 >
-                                    <Lock className="w-4 h-4" />
-                                    Checkout Securely
+                                    <Lock className="w-3.5 h-3.5" />
+                                    Checkout
                                 </Link>
 
                                 {gstIncluded > 0 && (
-                                    <p className="text-[10px] text-gray-300 text-center font-medium">
+                                    <p className="text-[8px] text-gray-400 text-center font-normal">
                                         Prices include {currencyText(gstIncluded)} GST
                                     </p>
                                 )}

@@ -17,10 +17,22 @@ const SectionManagement = () => {
     const requestSeqRef = useRef(0);
     const seedingRef = useRef({});
 
-    const fetchSections = async () => {
+    const fetchSections = async (isManual = false) => {
         const seq = ++requestSeqRef.current;
         setLoading(true);
         setLoadError('');
+
+        if (isManual) {
+            const defaultsForPage = getSectionDefaultsForPage(activePageKey);
+            defaultsForPage.forEach(section => {
+                const id = section.sectionId || section.sectionKey;
+                localStorage.removeItem(`${id}_draftItems`);
+                localStorage.removeItem(`${id}_draftSection`);
+                localStorage.removeItem(`${id}_draftImages`);
+                localStorage.removeItem(`${id}_draftVideo`);
+            });
+        }
+
         try {
             const defaultsForPage = getSectionDefaultsForPage(activePageKey);
             const allowedSectionKeys = new Set(defaultsForPage.map(section => section.sectionKey || section.sectionId));
@@ -72,12 +84,17 @@ const SectionManagement = () => {
             setLoadError(err?.response?.data?.message || err?.message || 'Failed to load sections');
             toast.error("Failed to load sections");
         } finally {
-            if (seq === requestSeqRef.current) setLoading(false);
+            if (seq === requestSeqRef.current) {
+                setLoading(false);
+                if (isManual && !loadError) {
+                    toast.success("Sections refreshed and drafts cleared");
+                }
+            }
         }
     };
 
     React.useEffect(() => {
-        fetchSections();
+        fetchSections(false);
     }, [activePageKey]);
 
     return (
@@ -90,9 +107,14 @@ const SectionManagement = () => {
                     action={{
                         label: loading ? 'Refreshing...' : 'Refresh',
                         icon: <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />,
-                        onClick: fetchSections
+                        onClick: () => fetchSections(true)
                     }}
                 />
+
+                <div className="mb-6 bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800 shadow-sm">
+                    <p className="font-bold mb-1 uppercase tracking-wider text-xs">⚠️ Important: Image Upload Sizes</p>
+                    <p>To prevent images from being cropped on the user website, please ensure you upload images in the <strong>exact sizes</strong> recommended for each section. Always follow the specific dimension guidelines (e.g., 1920x800px for desktop banners, 800x1000px for mobile banners, 1200x1500px for portrait banners) provided in each editor.</p>
+                </div>
 
                 {loadError && (
                     <div className="mb-6 bg-red-50 border border-red-100 text-red-700 rounded-xl p-4 text-sm">

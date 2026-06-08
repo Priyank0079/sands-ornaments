@@ -463,6 +463,14 @@ const Navbar = () => {
                                         </div>
                                     )}
 
+                                    <Link
+                                        to="/blogs"
+                                        className="text-gray-900 text-base py-3 px-2 hover:text-pink-500 hover:bg-pink-50 rounded-lg transition-all block"
+                                        onClick={() => setIsMenuOpen(false)}
+                                    >
+                                        📖 Blogs
+                                    </Link>
+
                                     <button
                                         onClick={() => toggleSection('more')}
                                         className="flex items-center justify-between py-3 px-2 text-gray-900 text-base hover:text-pink-500 hover:bg-pink-50 rounded-lg transition-all"
