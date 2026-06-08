@@ -83,8 +83,10 @@ export const getMetalRate = (variant, formData, metalRates) => {
 };
 
 export const getMetalPrice = (variant, formData, metalRates) => {
-    const weight = Number(variant?.weight ?? formData.weight) || 0;
-    return roundCurrency(weight * getMetalRate(variant, formData, metalRates));
+    const variantWeight = variant?.weight !== undefined && variant?.weight !== null && variant?.weight !== ""
+        ? Number(variant.weight) || 0
+        : Number(formData.weight) || 0;
+    return roundCurrency(variantWeight * getMetalRate(variant, formData, metalRates));
 };
 
 export const getPaymentGatewayChargePercent = (formData) => (

@@ -294,6 +294,43 @@ const ProductDetails = () => {
     const catalogueProduct = useMemo(() => (products || []).find(p => String(p.id || p._id) === String(id)), [products, id]);
     const [detailProduct, setDetailProduct] = useState(null);
     const [detailLoading, setDetailLoading] = useState(false);
+    const [settings, setSettings] = useState({
+        productHeader: 'ESTIMATED DELIVERY DATE',
+        returnPolicy: '7-Day Returns',
+        exchangePolicy: '10 Days Exchange',
+        codPolicy: 'Cash On Delivery',
+        warrantyText: 'Lifetime Warranty',
+        safetyText: 'Skin Safe Jewellery',
+        platingText: '18k Gold Tone Plated',
+    });
+
+    useEffect(() => {
+        const loadSettings = async () => {
+            try {
+                const res = await api.get('public/settings');
+                if (res.data.success && res.data.data?.settings) {
+                    setSettings(res.data.data.settings);
+                    return;
+                }
+            } catch (err) {
+                console.warn("Failed to fetch public settings from API, falling back to localStorage/defaults:", err.message);
+            }
+
+            const saved = localStorage.getItem('siteSettings');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    setSettings(prev => ({ ...prev, ...parsed }));
+                } catch (e) {
+                    console.error("Failed to parse siteSettings from localStorage", e);
+                }
+            }
+        };
+
+        loadSettings();
+        window.addEventListener('storage', loadSettings);
+        return () => window.removeEventListener('storage', loadSettings);
+    }, []);
 
     // Production-safe priority: API detail -> catalogue.
     const product = useMemo(() => {
@@ -1202,9 +1239,9 @@ const ProductDetails = () => {
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full pt-8 border-t border-gray-50">
                             {[
                                 { icon: <ShieldCheck className="w-5 h-5 text-emerald-600" />, title: "BIS Hallmark", desc: "100% Pure & Certified" },
-                                { icon: <RotateCcw className="w-5 h-5 text-amber-600" />, title: "7-Day Returns", desc: "Easy & Hassle Free" },
-                                { icon: <Truck className="w-5 h-5 text-blue-600" />, title: "Free Delivery", desc: "Fully Insured Shipping" },
-                                { icon: <Lock className="w-5 h-5 text-gray-600" />, title: "Secure Pay", desc: "Encrypted Payments" }
+                                { icon: <RotateCcw className="w-5 h-5 text-amber-600" />, title: settings.returnPolicy || "7-Day Returns", desc: "Easy & Hassle Free" },
+                                { icon: <RefreshCw className="w-5 h-5 text-blue-600" />, title: settings.exchangePolicy || "10 Days Exchange", desc: "Exchange Guarantee" },
+                                { icon: <Lock className="w-5 h-5 text-gray-600" />, title: settings.codPolicy || "Cash On Delivery", desc: "Secure Payment" }
                             ].map((item, idx) => (
                                 <div key={idx} className="flex flex-col items-center gap-2 group cursor-default">
                                     <div className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center transition-all group-hover:bg-white group-hover:shadow-md border border-transparent group-hover:border-gray-100">
@@ -1302,7 +1339,7 @@ const ProductDetails = () => {
 
                     <div className="flex items-center gap-2 pl-2">
                         <Truck className="w-4 h-4 text-[#8E2B45]" />
-                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 hidden lg:block whitespace-nowrap">Deliver To</span>
+                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 hidden lg:block whitespace-nowrap">{settings.productHeader || "Deliver To"}</span>
                     </div>
 
                     <div className="flex w-full md:max-w-xs gap-1.5 bg-gray-50 rounded-lg p-1 border border-transparent focus-within:border-[#8E2B45]/20 focus-within:bg-white transition-all">
@@ -1592,7 +1629,7 @@ const ProductDetails = () => {
                                                     <ShieldCheck className="w-4 h-4 text-emerald-500" />
                                                     Returns
                                                 </h4>
-                                                <p className="text-[11px] text-gray-500 leading-relaxed font-medium">7-day hassle-free returns on all unused and authentic products. See our returns policy for details.</p>
+                                                <p className="text-[11px] text-gray-500 leading-relaxed font-medium">{settings?.returnPolicy || "7-day Returns"} on all unused and authentic products. See our returns policy for details.</p>
                                             </div>
                                         </div>
 

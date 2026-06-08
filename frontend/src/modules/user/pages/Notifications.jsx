@@ -1,16 +1,24 @@
-import React from 'react';
-import { useShop } from '../../../context/ShopContext';
-import { Bell, BellOff, ArrowLeft, Trash2, ShoppingBag } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { useNotification } from '../../../context/NotificationContext';
+import { Bell, BellOff, ArrowLeft, Trash2, ShoppingBag, Check } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Notifications = () => {
-    const { notificationsEnabled, userNotifications, toggleNotificationSettings, deleteUserNotification } = useShop();
+    const { 
+        notificationsEnabled, 
+        userNotifications, 
+        toggleNotificationSettings, 
+        deleteUserNotification,
+        markNotificationRead,
+        unreadCount,
+        fetchNotifications
+    } = useNotification();
     const navigate = useNavigate();
 
-    React.useEffect(() => {
-        
-    }, []);
+    useEffect(() => {
+        fetchNotifications();
+    }, [fetchNotifications]);
 
     // Animation Variants
     const containerVariants = {
@@ -99,8 +107,8 @@ const Notifications = () => {
                         className="space-y-4 md:space-y-6"
                     >
                         <div className="flex items-center justify-between mb-6 px-1">
-                            <span className="text-xs font-bold uppercase tracking-wider text-[#D39A9F]">{userNotifications.length} Unread</span>
-                            <span className="text-xs font-serif italic text-gray-400">Swipe to delete</span>
+                            <span className="text-xs font-bold uppercase tracking-wider text-[#D39A9F]">{unreadCount} Unread</span>
+                            <span className="text-xs font-serif italic text-gray-400">Click card to mark as read</span>
                         </div>
 
                         <AnimatePresence mode='popLayout'>
@@ -110,33 +118,81 @@ const Notifications = () => {
                                     layout
                                     variants={itemVariants}
                                     exit={{ opacity: 0, x: -100, transition: { duration: 0.3 } }}
-                                    className="group relative bg-white p-5 md:p-6 rounded-2xl border border-[#EBCDD0] hover:border-[#D39A9F] shadow-sm hover:shadow-md transition-all duration-300"
+                                    className={`group relative p-5 md:p-6 rounded-2xl border transition-all duration-300 cursor-pointer ${
+                                        !note.isReadByMe 
+                                            ? 'border-[#D39A9F] bg-[#FFFBFB] hover:shadow-md' 
+                                            : 'border-[#EBCDD0]/60 bg-white hover:border-[#D39A9F] shadow-sm hover:shadow-md'
+                                    }`}
+                                    onClick={() => {
+                                        if (!note.isReadByMe) {
+                                            markNotificationRead(note._id || note.id);
+                                        }
+                                        if (note.link) {
+                                            if (note.link.startsWith('http://') || note.link.startsWith('https://')) {
+                                                window.location.href = note.link;
+                                            } else {
+                                                navigate(note.link);
+                                            }
+                                        }
+                                    }}
                                 >
                                     <div className="flex items-start gap-4 md:gap-6 pr-8">
-                                        <div className="p-3 bg-gray-50 rounded-xl text-[#D39A9F] flex-shrink-0">
+                                        <div className={`p-3 rounded-xl flex-shrink-0 ${
+                                            !note.isReadByMe 
+                                                ? 'bg-[#FDF2F2] text-[#D39A9F]' 
+                                                : 'bg-gray-50 text-gray-400'
+                                        }`}>
                                             <Bell className="w-5 h-5 md:w-6 md:h-6" />
                                         </div>
                                         <div className="flex-grow min-w-0">
                                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-1 mb-1 md:mb-2">
-                                                <h3 className="text-base md:text-lg font-display text-black">{note.title}</h3>
+                                                <div className="flex items-center gap-2">
+                                                    <h3 className={`text-base md:text-lg font-display text-black ${!note.isReadByMe ? 'font-semibold' : ''}`}>
+                                                        {note.title}
+                                                    </h3>
+                                                    {!note.isReadByMe && (
+                                                        <span className="w-2 h-2 rounded-full bg-[#D39A9F] inline-block" />
+                                                    )}
+                                                </div>
                                                 <span className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-wider">
                                                     {note.date || (note.createdAt ? new Date(note.createdAt).toLocaleDateString() : '')}
                                                 </span>
                                             </div>
-                                            <p className="text-xs md:text-sm text-gray-600 leading-relaxed font-serif line-clamp-2 group-hover:line-clamp-none transition-all duration-300">
+                                            <p className={`text-xs md:text-sm leading-relaxed font-serif line-clamp-2 group-hover:line-clamp-none transition-all duration-300 ${
+                                                !note.isReadByMe ? 'text-black' : 'text-gray-500'
+                                            }`}>
                                                 {note.message}
                                             </p>
                                         </div>
                                     </div>
 
-                                    {/* Delete Button */}
-                                    <button
-                                        onClick={() => deleteUserNotification(note._id || note.id)}
-                                        className="absolute top-4 right-4 p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100"
-                                        aria-label="Delete notification"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
+                                    {/* Action Buttons */}
+                                    <div className="absolute top-4 right-4 flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                                        {!note.isReadByMe && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    markNotificationRead(note._id || note.id);
+                                                }}
+                                                className="p-2 text-gray-300 hover:text-green-600 hover:bg-green-50 rounded-full transition-all"
+                                                title="Mark as read"
+                                                aria-label="Mark as read"
+                                            >
+                                                <Check className="w-4 h-4" />
+                                            </button>
+                                        )}
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                deleteUserNotification(note._id || note.id);
+                                            }}
+                                            className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
+                                            title="Delete notification"
+                                            aria-label="Delete notification"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 </motion.div>
                             ))}
                         </AnimatePresence>

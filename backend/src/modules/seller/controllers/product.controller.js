@@ -187,6 +187,9 @@ const normalizeAudience = (value) => {
 exports.createProduct = async (req, res) => {
   try {
     const data = { ...req.body };
+    if (data.name && !/^[a-zA-Z0-9 ]+$/.test(data.name)) {
+      return error(res, "Product name must contain only alphanumeric characters and spaces.", 400);
+    }
     const sellerId = req.user.userId;
 
     // Helper to safety parse JSON
@@ -372,6 +375,9 @@ exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
     const data = req.body;
+    if (data.name && !/^[a-zA-Z0-9 ]+$/.test(data.name)) {
+      return error(res, "Product name must contain only alphanumeric characters and spaces.", 400);
+    }
     const sellerId = req.user.userId;
 
     const product = await Product.findOne({ _id: id, sellerId });

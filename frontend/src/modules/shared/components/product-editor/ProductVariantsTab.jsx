@@ -31,10 +31,10 @@ const ProductVariantsTab = ({
     addVariantFaq,
     removeVariantFaq,
     handleVariantFaqChange,
-    clearVariantFaqOverride
+    clearVariantFaqOverride,
+    expandedVariant,
+    setExpandedVariant
 }) => {
-    const [expandedVariant, setExpandedVariant] = React.useState(formData.variants[0]?.id);
-
     const toggleExpand = (id) => {
         setExpandedVariant(expandedVariant === id ? null : id);
     };
@@ -134,7 +134,7 @@ const ProductVariantsTab = ({
                                         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
                                             <div className="space-y-2">
                                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
-                                                    <Tag size={10} className="text-amber-500" /> Variant Name
+                                                    <Tag size={10} className="text-amber-500" /> Variant Name <span className="text-red-500">*</span>
                                                 </label>
                                                 <input 
                                                     value={v.name} 
@@ -162,7 +162,7 @@ const ProductVariantsTab = ({
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
-                                                    <Scale size={10} className="text-amber-500" /> Variant Weight
+                                                    <Scale size={10} className="text-amber-500" /> Variant Weight <span className="text-red-500">*</span>
                                                 </label>
                                                 <div className="flex gap-2">
                                                     <input

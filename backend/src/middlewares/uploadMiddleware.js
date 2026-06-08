@@ -25,7 +25,10 @@ const evidenceUpload  = multer({
   storage: makeStorage("returns", ["jpg", "jpeg", "png", "webp", "mp4", "mov", "webm"]),
   limits: { fileSize: 50 * 1024 * 1024 }
 });
-const sellerUpload    = multer({ storage: makeStorage("sellers"),    limits: { fileSize: 10 * 1024 * 1024 } });
+const sellerUpload    = multer({ 
+  storage: makeStorage("sellers", ["jpg", "jpeg", "png", "webp", "pdf", "doc", "docx"]), 
+  limits: { fileSize: 10 * 1024 * 1024 } 
+});
 const sectionUpload   = multer({ storage: makeStorage("sections"),   limits: { fileSize: 10 * 1024 * 1024 } });
 
 const upload = productUpload; // Alias for generic use

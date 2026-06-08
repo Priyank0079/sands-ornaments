@@ -115,8 +115,7 @@ const AdminNotifications = () => {
                                         </td>
                                     </tr>
                                 ) : notifications.map((notif) => (
-                                    <tr
-                                        key={notif._id}
+                                    <tr key={notif._id}
                                         className={`group hover:bg-gray-50 transition-colors ${!notif.isRead ? 'bg-[#FDFBF7]' : ''}`}
                                     >
                                         <td className="p-4 text-center align-top pt-5">

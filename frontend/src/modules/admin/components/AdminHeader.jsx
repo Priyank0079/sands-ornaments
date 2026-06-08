@@ -13,16 +13,20 @@ const AdminHeader = () => {
         let isMounted = true;
 
         const updateCounts = async () => {
-            const sellers = await adminService.getSellers({ status: 'PENDING' });
-            const users = JSON.parse(localStorage.getItem('users_data') || '[]');
-            const notifs = JSON.parse(localStorage.getItem('admin_notifications') || '[]');
-            
-            const pendingSellers = Array.isArray(sellers) ? sellers.length : 0;
-            const pendingUsers = users.filter(u => u.status === 'Pending' && (u.type === 'retailer' || u.type === 'horeca')).length;
-            const unreadNotifs = notifs.filter(n => n.unread || !n.isRead).length;
+            try {
+                const sellers = await adminService.getSellers({ status: 'PENDING' });
+                const users = JSON.parse(localStorage.getItem('users_data') || '[]');
+                const notifs = await adminService.getAdminNotifications() || [];
+                
+                const pendingSellers = Array.isArray(sellers) ? sellers.length : 0;
+                const pendingUsers = users.filter(u => u.status === 'Pending' && (u.type === 'retailer' || u.type === 'horeca')).length;
+                const unreadNotifs = Array.isArray(notifs) ? notifs.filter(n => !n.isRead).length : 0;
 
-            if (isMounted) {
-                setCounts({ sellers: pendingSellers, customers: pendingUsers, notifications: unreadNotifs });
+                if (isMounted) {
+                    setCounts({ sellers: pendingSellers, customers: pendingUsers, notifications: unreadNotifs });
+                }
+            } catch (err) {
+                console.error("Error updating admin header counts:", err);
             }
         };
         updateCounts();

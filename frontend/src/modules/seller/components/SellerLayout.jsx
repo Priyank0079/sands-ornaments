@@ -6,7 +6,7 @@ const SellerLayout = ({ children }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 1024);
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900 overflow-x-hidden seller-font-reset">
+        <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900 overflow-x-clip seller-font-reset">
             <style>{`
                 .seller-font-reset, .seller-font-reset * {
                     font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
@@ -44,6 +44,7 @@ const SellerLayout = ({ children }) => {
 
             <main className={`flex-grow flex flex-col min-h-screen min-w-0 transition-all duration-500 ease-in-out ${isSidebarOpen ? 'lg:ml-80' : 'lg:ml-20'}`}>
                 <SellerHeader isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
+                <div className="h-16 shrink-0" />
 
                 {/* Page Content */}
                 <div className="flex-grow min-h-0 bg-gray-50 p-4 lg:p-8 space-y-6 relative">

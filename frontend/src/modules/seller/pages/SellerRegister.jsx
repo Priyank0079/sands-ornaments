@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { 
     User, Phone, Mail, Lock, Store, MapPin, Building, Hash, 
-    CreditCard, Landmark, FileUp, ArrowRight, AlertCircle, CheckCircle2, ShieldCheck 
+    CreditCard, Landmark, FileUp, ArrowRight, AlertCircle, CheckCircle2, ShieldCheck,
+    FileText, X
 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import api from '../../../services/api';
@@ -30,7 +31,14 @@ const SellerRegister = () => {
         return window.sessionStorage.getItem('sellerRegisterAcceptTerms') === 'true';
     });
     const [errors, setErrors] = useState({});
-    const allowedDocTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    const allowedDocTypes = [
+        'image/jpeg', 
+        'image/png', 
+        'image/webp',
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
     const maxDocSize = 10 * 1024 * 1024;
 
     const [formData, setFormData] = useState(() => {
@@ -143,8 +151,8 @@ const SellerRegister = () => {
 
         if (selectedFile) {
             if (!allowedDocTypes.includes(selectedFile.type)) {
-                setErrors(prev => ({ ...prev, [name]: 'Only JPG, PNG, or WEBP files are allowed.' }));
-                toast.error('Please upload a JPG, PNG, or WEBP file.');
+                setErrors(prev => ({ ...prev, [name]: 'Only JPG, PNG, WEBP, PDF, or Word files are allowed.' }));
+                toast.error('Please upload a JPG, PNG, WEBP, PDF, or Word file.');
                 return;
             }
             if (selectedFile.size > maxDocSize) {
@@ -178,7 +186,11 @@ const SellerRegister = () => {
         const trimmedIfsc = String(data.ifscCode || '').trim();
 
         if (stepToValidate === 1) {
-            if (!data.fullName?.trim()) nextErrors.fullName = 'Full name is required';
+            if (!data.fullName?.trim()) {
+                nextErrors.fullName = 'Full name is required';
+            } else if (!/^[A-Za-z\s]+$/.test(data.fullName.trim())) {
+                nextErrors.fullName = 'Full name should contain only alphabets';
+            }
             if (!trimmedMobile) {
                 nextErrors.mobileNumber = 'Mobile number is required';
             } else if (!/^\d{10}$/.test(trimmedMobile)) {
@@ -189,14 +201,26 @@ const SellerRegister = () => {
             } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
                 nextErrors.email = 'Enter a valid email address';
             }
-            if (!data.password?.trim()) nextErrors.password = 'Password is required';
+            if (!data.password?.trim()) {
+                nextErrors.password = 'Password is required';
+            } else if (data.password.length < 6) {
+                nextErrors.password = 'Password must be at least 6 characters';
+            }
         }
 
         if (stepToValidate === 2) {
             if (!data.shopName?.trim()) nextErrors.shopName = 'Shop name is required';
             if (!data.shopAddress?.trim()) nextErrors.shopAddress = 'Shop address is required';
-            if (!data.city?.trim()) nextErrors.city = 'City is required';
-            if (!data.state?.trim()) nextErrors.state = 'State is required';
+            if (!data.city?.trim()) {
+                nextErrors.city = 'City is required';
+            } else if (!/^[A-Za-z\s]+$/.test(data.city.trim())) {
+                nextErrors.city = 'City should contain only alphabets';
+            }
+            if (!data.state?.trim()) {
+                nextErrors.state = 'State is required';
+            } else if (!/^[A-Za-z\s]+$/.test(data.state.trim())) {
+                nextErrors.state = 'State should contain only alphabets';
+            }
             if (!trimmedPincode) {
                 nextErrors.pincode = 'Pincode is required';
             } else if (!/^\d{6}$/.test(trimmedPincode)) {
@@ -298,6 +322,79 @@ const SellerRegister = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const renderFileInput = (name, label) => {
+        const file = formData[name];
+        const error = errors[name];
+
+        const handleRemove = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setFormData(prev => ({ ...prev, [name]: null }));
+        };
+
+        const getFilePreview = () => {
+            if (!file) return null;
+            if (file.type.startsWith('image/')) {
+                return (
+                    <div className="relative w-full h-full flex items-center justify-center p-2">
+                        <img 
+                            src={URL.createObjectURL(file)} 
+                            alt="preview" 
+                            className="w-full h-full object-cover rounded-xl"
+                            onLoad={(e) => URL.revokeObjectURL(e.target.src)}
+                        />
+                    </div>
+                );
+            }
+            return (
+                <div className="flex flex-col items-center justify-center p-4 text-center">
+                    <FileText className={`w-10 h-10 ${file.type === 'application/pdf' ? 'text-red-500' : 'text-blue-500'} mb-2`} />
+                    <span className="text-[10px] font-black uppercase text-gray-700 tracking-tight line-clamp-1 w-full px-2">
+                        {file.name}
+                    </span>
+                    <span className="text-[8px] font-bold text-gray-400 mt-1">
+                        {(file.size / (1024 * 1024)).toFixed(2)} MB
+                    </span>
+                </div>
+            );
+        };
+
+        return (
+            <div className="space-y-2">
+                <label className={labelClasses}>{label} <span className="text-red-500">*</span></label>
+                <div className="relative w-full h-36">
+                    {file ? (
+                        <div className="relative w-full h-full bg-[#FDFBF7] border-2 border-solid border-[#8D6E63] rounded-xl overflow-hidden flex flex-col items-center justify-center group shadow-sm transition-all duration-300">
+                            {getFilePreview()}
+                            <button
+                                type="button"
+                                onClick={handleRemove}
+                                className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all opacity-0 group-hover:opacity-100 shadow-md z-10"
+                            >
+                                <X className="w-3.5 h-3.5" />
+                            </button>
+                        </div>
+                    ) : (
+                        <label className="flex flex-col items-center justify-center w-full h-full bg-[#FDFBF7] border-2 border-dashed border-[#EFEBE9] rounded-xl cursor-pointer hover:border-[#8D6E63] transition-all group">
+                            <FileUp className="w-6 h-6 text-gray-400 group-hover:text-[#8D6E63] mb-2 transition-colors" />
+                            <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">Choose File</span>
+                            <span className="text-[7px] text-gray-400 font-medium mt-1">JPG, PNG, WEBP, PDF, DOC (Max 10MB)</span>
+                            <input 
+                                required 
+                                type="file" 
+                                name={name} 
+                                accept="image/jpeg,image/png,image/webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" 
+                                onChange={handleChange} 
+                                className="hidden" 
+                            />
+                        </label>
+                    )}
+                </div>
+                {error && <p className="text-[10px] text-red-500 font-semibold mt-1">{error}</p>}
+            </div>
+        );
     };
 
     const inputClasses = "w-full bg-[#FDFBF7] border border-[#EFEBE9] rounded-xl py-4 px-12 text-sm focus:outline-none focus:border-[#8D6E63] focus:ring-4 focus:ring-[#8D6E63]/5 transition-all shadow-inner";
@@ -494,33 +591,9 @@ const SellerRegister = () => {
                                 <div className="space-y-6">
                                     <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-2">Document Verification</h3>
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <div className="space-y-2">
-                                            <label className={labelClasses}>Aadhar Upload <span className="text-red-500">*</span></label>
-                                            <label className="flex flex-col items-center justify-center w-full h-32 bg-[#FDFBF7] border-2 border-dashed border-[#EFEBE9] rounded-xl cursor-pointer hover:border-[#8D6E63] transition-all group">
-                                                <FileUp className="w-6 h-6 text-gray-400 group-hover:text-[#8D6E63] mb-2" />
-                                                <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">{formData.aadhar ? 'File Selected' : 'Choose File'}</span>
-                                                <input required type="file" name="aadhar" accept="image/jpeg,image/png,image/webp" onChange={handleChange} className="hidden" />
-                                            </label>
-                                            {errors.aadhar && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.aadhar}</p>}
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className={labelClasses}>Shop License <span className="text-red-500">*</span></label>
-                                            <label className="flex flex-col items-center justify-center w-full h-32 bg-[#FDFBF7] border-2 border-dashed border-[#EFEBE9] rounded-xl cursor-pointer hover:border-[#8D6E63] transition-all group">
-                                                <FileUp className="w-6 h-6 text-gray-400 group-hover:text-[#8D6E63] mb-2" />
-                                                <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">{formData.shopLicense ? 'File Selected' : 'Choose File'}</span>
-                                                <input required type="file" name="shopLicense" accept="image/jpeg,image/png,image/webp" onChange={handleChange} className="hidden" />
-                                            </label>
-                                            {errors.shopLicense && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.shopLicense}</p>}
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className={labelClasses}>Certificate Upload <span className="text-red-500">*</span></label>
-                                            <label className="flex flex-col items-center justify-center w-full h-32 bg-[#FDFBF7] border-2 border-dashed border-[#EFEBE9] rounded-xl cursor-pointer hover:border-[#8D6E63] transition-all group">
-                                                <FileUp className="w-6 h-6 text-gray-400 group-hover:text-[#8D6E63] mb-2" />
-                                                <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">{formData.certificate ? 'File Selected' : 'Choose File'}</span>
-                                                <input required type="file" name="certificate" accept="image/jpeg,image/png,image/webp" onChange={handleChange} className="hidden" />
-                                            </label>
-                                            {errors.certificate && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.certificate}</p>}
-                                        </div>
+                                        {renderFileInput("aadhar", "Aadhar Upload")}
+                                        {renderFileInput("shopLicense", "Shop License")}
+                                        {renderFileInput("certificate", "Certificate Upload")}
                                     </div>
                                 </div>
 

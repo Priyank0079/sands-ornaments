@@ -155,6 +155,9 @@ const collectReferencedImageUrls = (productLike = {}) => {
 exports.createProduct = async (req, res) => {
   try {
     const data = { ...req.body };
+    if (data.name && !/^[a-zA-Z0-9 ]+$/.test(data.name)) {
+      return error(res, "Product name must contain only alphanumeric characters and spaces.", 400);
+    }
     if (data.categories) {
       if (Array.isArray(data.categories)) {
         data.categories = data.categories.length > 0 ? [data.categories[0]] : [];
@@ -310,6 +313,9 @@ exports.updateProduct = async (req, res) => {
     const originalReferencedImages = collectReferencedImageUrls(product.toObject ? product.toObject() : product);
 
     const data = { ...req.body };
+    if (data.name && !/^[a-zA-Z0-9 ]+$/.test(data.name)) {
+      return error(res, "Product name must contain only alphanumeric characters and spaces.", 400);
+    }
     if (data.categories) {
       if (Array.isArray(data.categories)) {
         data.categories = data.categories.length > 0 ? [data.categories[0]] : [];

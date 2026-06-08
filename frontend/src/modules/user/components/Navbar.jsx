@@ -1,8 +1,9 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, Heart, ShoppingCart, User, Menu, X, ChevronDown, ChevronRight } from 'lucide-react';
+import { Search, Heart, ShoppingCart, User, Menu, X, ChevronDown, ChevronRight, Bell } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
+import { useNotification } from '../../../context/NotificationContext';
 import logo from '@assets/SANDS JEWELS PINK (1).png';
 import api from '../../../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -19,6 +20,8 @@ const Navbar = () => {
         activeMetal,
         updateActiveMetal
     } = useShop();
+
+    const { unreadCount } = useNotification();
 
     const location = useLocation();
     const navigate = useNavigate();
@@ -264,6 +267,16 @@ const Navbar = () => {
                             <span className="text-[11px] font-bold text-black tracking-wider">WISHLIST</span>
                         </Link>
 
+                        <Link to="/notifications" className="flex flex-col items-center gap-1.5 group relative">
+                            <Bell className="w-7 h-7 text-gray-950" strokeWidth={1.5} />
+                            {unreadCount > 0 && (
+                                <span className="absolute -top-1 right-0 bg-pink-500 text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full animate-pulse">
+                                    {unreadCount}
+                                </span>
+                            )}
+                            <span className="text-[11px] font-bold text-black tracking-wider">INBOX</span>
+                        </Link>
+
                         <Link to="/cart" className="flex flex-col items-center gap-1.5 group relative">
                             <ShoppingCart className="w-7 h-7 text-gray-950" strokeWidth={1.5} />
                             {cart?.length > 0 && (
@@ -292,6 +305,14 @@ const Navbar = () => {
                         </Link>
                         <Link to="/wishlist" className="relative hidden sm:block">
                             <Heart className="w-6 h-6 text-gray-800" />
+                        </Link>
+                        <Link to="/notifications" className="relative">
+                            <Bell className="w-6 h-6 text-gray-800" />
+                            {unreadCount > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-[8px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full">
+                                    {unreadCount}
+                                </span>
+                            )}
                         </Link>
                         <Link to="/cart" className="relative">
                             <ShoppingCart className="w-6 h-6 text-gray-800" />

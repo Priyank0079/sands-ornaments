@@ -36,7 +36,7 @@ const ProductGeneralTab = ({
                 <FormSection title="Basic Information">
                     <div className="space-y-5">
                         <Input
-                            label="Product Name"
+                            label={<span>Product Name <span className="text-red-500">*</span></span>}
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                             placeholder="e.g. Stunning Silver Ring"
@@ -216,7 +216,7 @@ const ProductGeneralTab = ({
             <FormSection title="Visual Narrative & Descriptions">
                 <div className="space-y-8">
                     <div className="space-y-3">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Product Description</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product Description <span className="text-red-500">*</span></label>
                         <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
                             <ReactQuill
                                 theme="snow"

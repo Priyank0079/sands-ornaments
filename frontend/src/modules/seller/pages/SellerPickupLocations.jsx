@@ -69,6 +69,28 @@ const LocationFormModal = ({ location, onClose, onSaved }) => {
       setFormError('Please fill all required fields.');
       return;
     }
+
+    const trimmedPhone = String(form.phone || '').trim();
+    if (!/^\d{10}$/.test(trimmedPhone)) {
+      setFormError('Phone number must be exactly 10 digits.');
+      return;
+    }
+    const trimmedCity = String(form.city || '').trim();
+    if (!/^[A-Za-z\s]+$/.test(trimmedCity)) {
+      setFormError('City should contain only alphabets.');
+      return;
+    }
+    const trimmedState = String(form.state || '').trim();
+    if (!/^[A-Za-z\s]+$/.test(trimmedState)) {
+      setFormError('State should contain only alphabets.');
+      return;
+    }
+    const trimmedPincode = String(form.pincode || '').trim();
+    if (!/^\d{6}$/.test(trimmedPincode)) {
+      setFormError('Pincode must be exactly 6 digits.');
+      return;
+    }
+
     setSaving(true);
     try {
       let saved;

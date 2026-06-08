@@ -17,6 +17,7 @@ const DEFAULT_SETTINGS = {
     warrantyText: 'Lifetime Warranty',
     safetyText: 'Skin Safe Jewellery',
     platingText: '18k Gold Tone Plated',
+    purityText: '925 Fine Silver',
     announcementItems: [
         { id: 1, icon: 'Truck', text: 'Free Shipping' },
         { id: 2, icon: 'Shield', text: 'Secure Payments' },
@@ -302,6 +303,18 @@ const GlobalSettings = () => {
                     <div className="space-y-4">
                         <div>
                             <label className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                                <Star className="w-3 h-3" />
+                                <span>Purity Text (e.g. 925 Fine Silver)</span>
+                            </label>
+                            <input
+                                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 disabled:bg-gray-50 disabled:text-gray-500 transition-all"
+                                value={settings.purityText || ''}
+                                onChange={(e) => handleChange('purityText', e.target.value)}
+                                disabled={!isEditing}
+                            />
+                        </div>
+                        <div>
+                            <label className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
                                 <Shield className="w-3 h-3" />
                                 <span>Warranty Text</span>
                             </label>
@@ -333,6 +346,18 @@ const GlobalSettings = () => {
                                 className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 disabled:bg-gray-50 disabled:text-gray-500 transition-all"
                                 value={settings.platingText}
                                 onChange={(e) => handleChange('platingText', e.target.value)}
+                                disabled={!isEditing}
+                            />
+                        </div>
+                        <div>
+                            <label className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                                <Repeat className="w-3 h-3" />
+                                <span>Return Policy Text</span>
+                            </label>
+                            <input
+                                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 disabled:bg-gray-50 disabled:text-gray-500 transition-all"
+                                value={settings.returnPolicy}
+                                onChange={(e) => handleChange('returnPolicy', e.target.value)}
                                 disabled={!isEditing}
                             />
                         </div>

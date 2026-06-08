@@ -23,6 +23,7 @@ const settingSchema = new mongoose.Schema({
   warrantyText: { type: String, default: 'Lifetime Warranty' },
   safetyText: { type: String, default: 'Skin Safe Jewellery' },
   platingText: { type: String, default: '18k Gold Tone Plated' },
+  purityText: { type: String, default: '925 Fine Silver' },
 
   // Announcement items
   announcementItems: {
