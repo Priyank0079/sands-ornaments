@@ -396,6 +396,7 @@ const CouponFormPage = () => {
                                 value={formData.validUntil}
                                 onChange={handleChange}
                                 error={errors.validUntil}
+                                min={formData.validFrom || new Date().toISOString().split('T')[0]}
                             />
                         </div>
                     </FormSection>
@@ -418,7 +419,7 @@ const CouponFormPage = () => {
                                 value={formData.maxDiscount}
                                 onChange={handleChange}
                                 error={errors.maxDiscount}
-                                disabled={formData.type === 'flat'}
+                                disabled={formData.type !== 'percentage'}
                             />
                             <div className="grid grid-cols-2 gap-4">
                                 <Input

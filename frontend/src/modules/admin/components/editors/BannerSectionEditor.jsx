@@ -17,8 +17,7 @@ const createBannerItem = () => ({
     sortOrder: 0
 });
 
-const BANNER_PREVIEW_ASPECT = 'aspect-[4/5]';
-const RECOMMENDED_BANNER_SIZE = '1200 x 1500 px';
+// Banner dimensions calculated dynamically below based on sectionKey
 
 const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     const sectionKey = sectionData?.sectionKey || sectionData?.id || '';
@@ -27,6 +26,13 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     const isFamilyPromoBanner = sectionKey === 'family-promo-banner' && pageKey === 'shop-family';
     const isGoldPageBanner = pageKey === 'gold-collection';
     const isSingleBannerSection = isWomenPersonalizedBanner || isFamilyPromoBanner;
+
+    const isLandscapeBanner = sectionKey === 'hero-banners' || sectionKey === 'auto-banner-section';
+    const bannerPreviewAspect = isLandscapeBanner ? 'aspect-[21/9] md:aspect-[3/1]' : 'aspect-[4/5]';
+    const recommendedBannerSize = isLandscapeBanner ? '1920 x 800 px' : '1200 x 1500 px';
+    const recommendedRatioText = isLandscapeBanner 
+        ? 'Recommended ratio: 21:9. Upload a wide landscape image to prevent cropping.'
+        : 'Recommended ratio: 4:5. Upload the same size for every banner so the layouts stay aligned.';
 
     const initialItems = useMemo(() => {
         if (Array.isArray(sectionData?.items) && sectionData.items.length > 0) {
@@ -199,10 +205,10 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                 <label className="block text-xs font-semibold text-gray-700 tracking-wide">
                                     Banner Image
                                     <span className="ml-2 text-[10px] font-medium uppercase tracking-[0.2em] text-gray-400">
-                                        {RECOMMENDED_BANNER_SIZE}
+                                        {recommendedBannerSize}
                                     </span>
                                 </label>
-                                <div className={`relative ${BANNER_PREVIEW_ASPECT} rounded-2xl border border-dashed border-gray-300 bg-[#F8F5F2] overflow-hidden`}>
+                                <div className={`relative ${bannerPreviewAspect} rounded-2xl border border-dashed border-gray-300 bg-[#F8F5F2] overflow-hidden`}>
                                     {item.image ? (
                                         <img
                                             src={resolveLegacyCmsAsset(item.image, item.image)}
@@ -219,7 +225,7 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                     )}
                                 </div>
                                 <p className="text-[11px] leading-4 text-gray-500">
-                                    Recommended ratio: 4:5. Upload the same size for every banner so the layouts stay aligned.
+                                    {recommendedRatioText}
                                 </p>
                                 <label className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#3E2723] px-4 py-3 text-xs font-bold uppercase tracking-widest text-white hover:bg-[#2D1B18] transition-all cursor-pointer">
                                     <ImageIcon size={14} />

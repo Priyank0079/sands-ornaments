@@ -4,10 +4,12 @@ import { useShop } from '../../../context/ShopContext';
 import { useAuth } from '../../../context/AuthContext';
 import { Heart, ShoppingCart, Trash2, ArrowLeft } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useResetScroll } from '../../../hooks/useResetScroll';
 
 import ProductCard from '../components/ProductCard';
 
 const WishlistPage = () => {
+    useResetScroll();
     const navigate = useNavigate();
     const { user } = useAuth();
     const { getWishlist, getPackById } = useShop();

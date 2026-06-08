@@ -252,21 +252,22 @@ const Navbar = () => {
 
                     {/* Right Section: Icons */}
                     <div className="flex items-center gap-10 flex-shrink-0">
-                        <Link to={user ? "/profile" : "/login"} className="flex flex-col items-center gap-1.5 group">
-                            <User className="w-7 h-7 text-gray-950" strokeWidth={1.5} />
-                            <span className="text-[11px] font-bold text-black tracking-wider">ACCOUNT</span>
+                        <Link to={user ? "/profile" : "/login"} className={`flex flex-col items-center gap-1.5 group ${(location.pathname.startsWith('/profile') || location.pathname === '/login') ? 'text-[#D39A9F]' : ''}`}>
+                            <User className={`w-7 h-7 ${(location.pathname.startsWith('/profile') || location.pathname === '/login') ? 'text-[#D39A9F]' : 'text-gray-950'}`} strokeWidth={1.5} />
+                            <span className={`text-[11px] font-bold tracking-wider ${(location.pathname.startsWith('/profile') || location.pathname === '/login') ? 'text-[#D39A9F]' : 'text-black'}`}>ACCOUNT</span>
                         </Link>
 
-                        <Link to="/wishlist" className="flex flex-col items-center gap-1.5 group relative">
-                            <Heart className="w-7 h-7 text-gray-950" strokeWidth={1.5} />
+                        <Link to="/wishlist" className={`flex flex-col items-center gap-1.5 group relative ${location.pathname === '/wishlist' ? 'text-[#D39A9F]' : ''}`}>
+                            <Heart className={`w-7 h-7 ${location.pathname === '/wishlist' ? 'text-[#D39A9F]' : 'text-gray-950'}`} strokeWidth={1.5} />
                             {wishlist?.length > 0 && (
                                 <span className="absolute -top-1 right-0 bg-pink-500 text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
                                     {wishlist.length}
                                 </span>
                             )}
-                            <span className="text-[11px] font-bold text-black tracking-wider">WISHLIST</span>
+                            <span className={`text-[11px] font-bold tracking-wider ${location.pathname === '/wishlist' ? 'text-[#D39A9F]' : 'text-black'}`}>WISHLIST</span>
                         </Link>
 
+<<<<<<< HEAD
                         <Link to="/notifications" className="flex flex-col items-center gap-1.5 group relative">
                             <Bell className="w-7 h-7 text-gray-950" strokeWidth={1.5} />
                             {unreadCount > 0 && (
@@ -279,12 +280,16 @@ const Navbar = () => {
 
                         <Link to="/cart" className="flex flex-col items-center gap-1.5 group relative">
                             <ShoppingCart className="w-7 h-7 text-gray-950" strokeWidth={1.5} />
+=======
+                        <Link to="/cart" className={`flex flex-col items-center gap-1.5 group relative ${location.pathname === '/cart' ? 'text-[#D39A9F]' : ''}`}>
+                            <ShoppingCart className={`w-7 h-7 ${location.pathname === '/cart' ? 'text-[#D39A9F]' : 'text-gray-950'}`} strokeWidth={1.5} />
+>>>>>>> 968f3c0d6532b4b7ae19bc687576811151eabd99
                             {cart?.length > 0 && (
                                 <span className="absolute -top-1 right-0 bg-pink-500 text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
                                     {cart.length}
                                 </span>
                             )}
-                            <span className="text-[11px] font-bold text-black tracking-wider">CART</span>
+                            <span className={`text-[11px] font-bold tracking-wider ${location.pathname === '/cart' ? 'text-[#D39A9F]' : 'text-black'}`}>CART</span>
                         </Link>
                     </div>
                 </div>
@@ -483,6 +488,14 @@ const Navbar = () => {
                                             <Link to="/shop?search=exclusive" className="text-gray-700 text-sm py-2 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>Exclusive Collections</Link>
                                         </div>
                                     )}
+
+                                    <Link
+                                        to="/blogs"
+                                        className="text-gray-900 text-base py-3 px-2 hover:text-pink-500 hover:bg-pink-50 rounded-lg transition-all block"
+                                        onClick={() => setIsMenuOpen(false)}
+                                    >
+                                        📖 Blogs
+                                    </Link>
 
                                     <button
                                         onClick={() => toggleSection('more')}

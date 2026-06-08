@@ -13,6 +13,7 @@ const AdminNotifications = () => {
     const navigate = useNavigate();
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
     React.useEffect(() => {
         const fetchNotifs = async () => {
@@ -49,13 +50,16 @@ const AdminNotifications = () => {
         }
     };
 
-    const deleteNotification = async (id) => {
-        const success = await adminService.deleteAdminNotification(id);
+    const handleConfirmDelete = async () => {
+        if (!deleteConfirmId) return;
+        const success = await adminService.deleteAdminNotification(deleteConfirmId);
         if (success) {
-            setNotifications((prev) => prev.filter(n => n._id !== id));
+            setNotifications((prev) => prev.filter(n => n._id !== deleteConfirmId));
+            toast.success("Notification deleted successfully");
         } else {
             toast.error("Failed to delete notification");
         }
+        setDeleteConfirmId(null);
     };
 
     const typeIcons = {
@@ -180,7 +184,7 @@ const AdminNotifications = () => {
                                                     </button>
                                                 )}
                                                 <button
-                                                    onClick={() => deleteNotification(notif._id)}
+                                                    onClick={() => setDeleteConfirmId(notif._id)}
                                                     className="p-2 bg-white border border-gray-200 rounded-lg text-gray-400 hover:text-red-600 hover:border-red-200 transition-all shadow-sm"
                                                     title="Delete"
                                                 >
@@ -205,6 +209,35 @@ const AdminNotifications = () => {
                     )}
                 </div>
             </div>
+
+            {/* Custom Delete Confirmation Modal */}
+            {deleteConfirmId && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden border border-gray-100 animate-in zoom-in-95 duration-200">
+                        <div className="p-6 text-center">
+                            <div className="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-4">
+                                <AlertTriangle className="w-6 h-6" />
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-900 mb-2">Delete Notification?</h3>
+                            <p className="text-sm text-gray-500 mb-6 font-medium">Are you sure you want to delete this notification? This action cannot be undone.</p>
+                            <div className="flex gap-3 justify-center">
+                                <button
+                                    onClick={() => setDeleteConfirmId(null)}
+                                    className="px-5 py-2.5 bg-gray-50 text-gray-700 font-bold text-xs uppercase tracking-wider rounded-xl border border-gray-200 hover:bg-gray-100 transition-colors w-full"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleConfirmDelete}
+                                    className="px-5 py-2.5 bg-red-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl hover:bg-red-700 transition-colors shadow-sm w-full"
+                                >
+                                    Yes, Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

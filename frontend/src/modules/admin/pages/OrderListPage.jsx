@@ -63,6 +63,58 @@ const OrderListPage = () => {
         fetchOrders();
     }, [currentPage, statusParam, debouncedSearch]);
 
+    const handleExport = async () => {
+        const loadingToast = toast.loading('Generating export...');
+        try {
+            const response = await adminService.getOrders({
+                page: 1,
+                limit: Math.max(1000, pagination.total || 1000),
+                status: statusParam !== 'all' ? statusParam : undefined,
+                search: debouncedSearch || undefined
+            });
+            
+            const exportData = response.orders || [];
+            if (exportData.length === 0) {
+                toast.error('No orders to export', { id: loadingToast });
+                return;
+            }
+            
+            const headers = ['Order ID', 'Date', 'Customer Name', 'Email', 'Phone', 'Payment Method', 'Payment Status', 'Items Count', 'Total Value (INR)', 'Order Status', 'Shipping Carrier', 'Tracking ID'];
+            const csvRows = [headers.join(',')];
+            
+            exportData.forEach(order => {
+                const row = [
+                    order.orderId || '',
+                    order.createdAt ? new Date(order.createdAt).toLocaleDateString() : '',
+                    `"${(order.customerName || '').replace(/"/g, '""')}"`,
+                    `"${(order.customerEmail || '').replace(/"/g, '""')}"`,
+                    `"${(order.customerPhone || '').replace(/"/g, '""')}"`,
+                    order.paymentMethod || '',
+                    order.paymentStatus || '',
+                    order.itemCount || 0,
+                    order.totalAmount || 0,
+                    order.orderStatus || '',
+                    order.shippingCarrier || '',
+                    order.trackingId || ''
+                ];
+                csvRows.push(row.join(','));
+            });
+            
+            const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Orders_Export_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            toast.success('Export downloaded successfully', { id: loadingToast });
+        } catch (err) {
+            toast.error('Failed to export orders', { id: loadingToast });
+        }
+    };
+
     // Stats Logic
     const stats = useMemo(() => ({
         total: Number(summaryStats.total || pagination.total || 0),
@@ -96,7 +148,10 @@ const OrderListPage = () => {
                     <h1 className="text-2xl font-bold text-gray-900 uppercase tracking-tight">Order Management</h1>
                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mt-1">Monitor and fulfill customer orders</p>
                 </div>
-                <button className="flex items-center gap-2 px-6 py-3 bg-[#1a1a1a] hover:bg-black text-white rounded-xl transition-all font-bold text-xs uppercase tracking-widest shadow-lg shadow-gray-200 active:scale-95">
+                <button 
+                    onClick={handleExport}
+                    className="flex items-center gap-2 px-6 py-3 bg-[#1a1a1a] hover:bg-black text-white rounded-xl transition-all font-bold text-xs uppercase tracking-widest shadow-lg shadow-gray-200 active:scale-95"
+                >
                     <Download size={16} /> Export Reports
                 </button>
             </div>

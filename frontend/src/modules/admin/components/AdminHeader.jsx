@@ -40,7 +40,7 @@ const AdminHeader = () => {
     const totalPending = counts.sellers + counts.customers + counts.notifications;
 
     return (
-        <header className="h-20 bg-footerBg border-b border-white/5 flex items-center justify-end sticky top-0 z-40 text-left">
+        <header className="h-20 bg-footerBg border-b border-white/5 flex items-center justify-end text-left w-full">
             {/* Right Actions with Dark Background */}
             <div className="h-full bg-white/5 px-8 flex items-center gap-6 border-l border-white/5">
                 <button 

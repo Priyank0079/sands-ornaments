@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Search, HelpCircle, ShoppingBag, Truck, CreditCard, RefreshCw, MessageCircle, ChevronRight, Phone, Mail, Clock, Send, Ticket, ArrowLeft, History, User } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
 import { Link, useNavigate } from 'react-router-dom';
+import { useResetScroll } from '../../../hooks/useResetScroll';
 
 const SupportForm = ({ onCancel, initialOrder = '' }) => {
     const { createTicket, user } = useShop();
@@ -96,6 +97,7 @@ const SupportForm = ({ onCancel, initialOrder = '' }) => {
 };
 
 const HelpCenter = () => {
+    useResetScroll();
     const { user, orders, showNotification } = useShop();
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');

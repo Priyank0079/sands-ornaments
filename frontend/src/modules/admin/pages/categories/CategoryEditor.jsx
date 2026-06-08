@@ -79,7 +79,51 @@ const CategoryEditor = () => {
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+        const newValue = type === 'checkbox' ? checked : value;
+
+        if (name === 'name') {
+            if (/\d/.test(newValue)) {
+                setErrors(prev => ({ ...prev, name: 'Category name cannot contain numbers' }));
+                return; // Prevent input
+            } else if (!newValue.trim()) {
+                setErrors(prev => ({ ...prev, name: 'Category name is required' }));
+            } else {
+                setErrors(prev => {
+                    const next = { ...prev };
+                    delete next.name;
+                    return next;
+                });
+            }
+        }
+
+        if (name === 'sortOrder') {
+            if (newValue !== '' && Number(newValue) < 0) {
+                setErrors(prev => ({ ...prev, sortOrder: 'Sort order cannot be negative' }));
+                return; // Prevent input
+            } else if (newValue === '' || newValue === null || newValue === undefined) {
+                setErrors(prev => ({ ...prev, sortOrder: 'Sort order is required' }));
+            } else {
+                const orderValue = Number(newValue);
+                if (!Number.isNaN(orderValue)) {
+                    const duplicate = allCategories.find(cat => {
+                        const isSame = String(cat._id) === String(id);
+                        const catOrder = Number(cat.sortOrder ?? 0);
+                        return !isSame && catOrder === orderValue;
+                    });
+                    if (duplicate) {
+                        setErrors(prev => ({ ...prev, sortOrder: `Sort order already used by "${duplicate.name}"` }));
+                    } else {
+                        setErrors(prev => {
+                            const next = { ...prev };
+                            delete next.sortOrder;
+                            return next;
+                        });
+                    }
+                }
+            }
+        }
+
+        setFormData(prev => ({ ...prev, [name]: newValue }));
     };
 
     useEffect(() => {
@@ -128,19 +172,27 @@ const CategoryEditor = () => {
 
     const validate = () => {
         const nextErrors = {};
-        if (!formData.name.trim()) nextErrors.name = 'Category name is required';
+        if (!formData.name.trim()) {
+            nextErrors.name = 'Category name is required';
+        } else if (/\d/.test(formData.name)) {
+            nextErrors.name = 'Category name cannot contain numbers';
+        }
+
         if (formData.sortOrder === '' || formData.sortOrder === null || formData.sortOrder === undefined) {
             nextErrors.sortOrder = 'Sort order is required';
-        }
-        const orderValue = Number(formData.sortOrder);
-        if (!Number.isNaN(orderValue)) {
-            const duplicate = allCategories.find(cat => {
-                const isSame = String(cat._id) === String(id);
-                const catOrder = Number(cat.sortOrder ?? 0);
-                return !isSame && catOrder === orderValue;
-            });
-            if (duplicate) {
-                nextErrors.sortOrder = `Sort order already used by "${duplicate.name}"`;
+        } else if (Number(formData.sortOrder) < 0) {
+            nextErrors.sortOrder = 'Sort order cannot be negative';
+        } else {
+            const orderValue = Number(formData.sortOrder);
+            if (!Number.isNaN(orderValue)) {
+                const duplicate = allCategories.find(cat => {
+                    const isSame = String(cat._id) === String(id);
+                    const catOrder = Number(cat.sortOrder ?? 0);
+                    return !isSame && catOrder === orderValue;
+                });
+                if (duplicate) {
+                    nextErrors.sortOrder = `Sort order already used by "${duplicate.name}"`;
+                }
             }
         }
         setErrors(nextErrors);

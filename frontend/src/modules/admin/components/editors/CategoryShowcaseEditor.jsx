@@ -462,6 +462,9 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         } else if (draftItemsString) {
             // If there are draft items but no new products, restore the draft
             setItems(currentItems);
+            // Clear the draft so it doesn't permanently override future loads
+            localStorage.removeItem(`${sectionId}_draftItems`);
+            localStorage.removeItem(`${sectionId}_targetId`);
         }
     }, [initialItemsFromProps, sectionId]);
 
@@ -786,7 +789,7 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             ...(sectionId === 'curated-for-you' ? { limit: 12, productIds: [] } : {}),
             ...(sectionId === 'style-it-your-way' ? { limit: 12, productIds: [] } : {})
         };
-        const nextItems = [...items, newItem];
+        const nextItems = [newItem, ...items];
         setItems(nextItems);
         setEditingId(newItem.id);
         if (!isCategoryDrivenSection && !isWomenCuratedCollections && !isFamilyCuratedCollections && !isGoldExploreCollectionsSection && !isGoldCuratedShowcaseSection && sectionId !== 'price-range-showcase' && !isLuxuryWithinReach && sectionId !== 'new-launch' && sectionId !== 'latest-drop' && sectionId !== 'most-gifted' && sectionId !== 'proposal-rings') {
@@ -973,8 +976,9 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
 
         if (invalid.length > 0) {
             const names = invalid.map(({ category }) => category.name).join(', ');
-            toast.error(`These categories are hidden or inactive: ${names}`);
-            return false;
+            toast(`Warning: These categories are hidden or inactive: ${names}`, { icon: '⚠️', duration: 4000 });
+            // We allow saving so the user doesn't get blocked from making other edits (like deletions)
+            return true;
         }
         return true;
     };

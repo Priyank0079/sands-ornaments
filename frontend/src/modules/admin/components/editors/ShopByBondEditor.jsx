@@ -162,13 +162,19 @@ const ShopByBondEditor = ({ sectionData, onSave, defaultSection = {} }) => {
                 if (cardId) {
                     const target = items.find((item) => item.id === cardId);
                     if (!target || !target.image?.trim() || !target.relationKey || !target.name?.trim() || !target.subtitle?.trim()) {
-                        toast.error('This card needs title, subtitle, and image before saving.');
+                        toast.error('Validation Error: This card needs title, subtitle, and image before saving.');
                         return { success: false };
                     }
                 } else {
-                    const invalid = items.find((item) => !item.image?.trim() || !item.relationKey || !item.name?.trim() || !item.subtitle?.trim());
-                    if (invalid) {
-                        toast.error(`Each relation card needs title, subtitle, and image before saving. Missing: ${invalid.name || 'Card'}`);
+                    const missingImageItem = items.find((item) => !item.image?.trim());
+                    if (missingImageItem) {
+                        toast.error(`Validation Error: Please upload an image for the "${missingImageItem.name || 'Unnamed'}" relation card.`);
+                        return { success: false };
+                    }
+
+                    const missingTextItem = items.find((item) => !item.name?.trim() || !item.subtitle?.trim());
+                    if (missingTextItem) {
+                        toast.error(`Validation Error: Please provide a Title and Subtitle for the "${missingTextItem.name || 'Unnamed'}" relation card.`);
                         return { success: false };
                     }
                 }
@@ -191,9 +197,15 @@ const ShopByBondEditor = ({ sectionData, onSave, defaultSection = {} }) => {
             }
         }
 
-        const invalid = items.find((item) => !item.image?.trim() || !item.bondKey);
-        if (invalid) {
-            toast.error(`Each bond card needs an image and bond type before saving. Missing: ${invalid.name || 'Card'}`);
+        const missingImageItem = items.find((item) => !item.image?.trim());
+        if (missingImageItem) {
+            toast.error(`Validation Error: Please upload an image for the "${missingImageItem.name || 'Unnamed'}" card.`);
+            return;
+        }
+
+        const missingBondItem = items.find((item) => !item.bondKey);
+        if (missingBondItem) {
+            toast.error(`Validation Error: Please select a Bond Type for the "${missingBondItem.name || 'Unnamed'}" card.`);
             return;
         }
 

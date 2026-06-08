@@ -4,6 +4,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../../../services/api';
+import { useResetScroll } from '../../../hooks/useResetScroll';
 
 import CheckoutAuth from '../components/Checkout/CheckoutAuth';
 import CheckoutAddresses from '../components/Checkout/CheckoutAddresses';
@@ -11,6 +12,7 @@ import CheckoutPayment from '../components/Checkout/CheckoutPayment';
 import CheckoutCartSummary from '../components/Checkout/CheckoutCartSummary';
 
 const Checkout = () => {
+    useResetScroll();
     const { cart, placeOrder, addresses, addAddress, defaultAddressId, coupons, applyCoupon, appliedCoupon, couponDiscount, clearAppliedCoupon } = useShop();
     const { user, sendOtp, verifyOtp } = useAuth();
     const navigate = useNavigate();

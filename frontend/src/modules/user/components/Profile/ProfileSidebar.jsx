@@ -81,7 +81,7 @@ const ProfileSidebar = ({
                     <FileText className="w-4 h-4 md:w-5 md:h-5 text-[#8D6E63]" />
                     <span className="font-medium text-sm md:text-base">Return Policy</span>
                 </button>
-                <button onClick={() => navigate('/replacement-policy')} className="w-full flex items-center space-x-3 px-3 md:px-4 py-3 text-gray-600 hover:bg-[#EFEBE9] rounded-xl transition-all">
+                <button onClick={() => navigate('/replacements')} className="w-full flex items-center space-x-3 px-3 md:px-4 py-3 text-gray-600 hover:bg-[#EFEBE9] rounded-xl transition-all">
                     <ShieldCheck className="w-4 h-4 md:w-5 md:h-5 text-[#8D6E63]" />
                     <span className="font-medium text-sm md:text-base">Replacement Policy</span>
                 </button>

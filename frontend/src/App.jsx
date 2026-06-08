@@ -335,8 +335,8 @@ function App() {
               <OrderProvider>
                 <NotificationProvider>
                   <ShopProvider>
-                    <SmoothScrollProvider />
                     <Router>
+                      <SmoothScrollProvider />
                       <ScrollToTop />
                       <AppErrorBoundary>
                         <AppContent />

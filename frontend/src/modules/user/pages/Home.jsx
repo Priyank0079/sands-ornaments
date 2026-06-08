@@ -2,6 +2,7 @@ import React, { lazy, Suspense, useEffect } from 'react';
 import { useShop } from '../../../context/ShopContext';
 import { useHomepageCms } from '../hooks/useHomepageCms';
 import Loader from '../../shared/components/Loader';
+import { useResetScroll } from '../../../hooks/useResetScroll';
 
 // ─── ABOVE-FOLD: eagerly imported — these are visible immediately on page load ───
 import PromoSlider from '../components/PromoSlider';
@@ -51,6 +52,8 @@ const Home = () => {
         error: homepageCmsError,
         refetch: refetchHomepageCms,
     } = useHomepageCms();
+
+    useResetScroll();
 
     useEffect(() => {
         document.title = "Sands Ornaments | Pure 925 Silver Jewellery - Timeless Elegance";

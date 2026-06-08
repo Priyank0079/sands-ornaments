@@ -79,9 +79,15 @@ const CelebrateMenEditor = ({ sectionData, onSave, defaultSection = {} }) => {
     };
 
     const handleSave = async () => {
-        const invalid = items.find((item) => !item.image?.trim() || !item.celebrateKey);
-        if (invalid) {
-            toast.error(`Each celebration card needs an image and type before saving. Missing: ${invalid.name || 'Card'}`);
+        const missingImageItem = items.find((item) => !item.image?.trim());
+        if (missingImageItem) {
+            toast.error(`Validation Error: Please upload an image for the "${missingImageItem.name || 'Unnamed'}" card.`);
+            return;
+        }
+
+        const missingTypeItem = items.find((item) => !item.celebrateKey);
+        if (missingTypeItem) {
+            toast.error(`Validation Error: Please select a Celebration Type for the "${missingTypeItem.name || 'Unnamed'}" card.`);
             return;
         }
 

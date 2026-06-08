@@ -44,7 +44,7 @@ const ReplacementsPage = () => {
                 <p className="text-gray-500 mb-8 max-w-sm">
                     You have not raised any replacement requests yet.
                 </p>
-                <Link to="/profile/orders" className="bg-footerBg text-white px-8 py-3 rounded-xl font-bold hover:bg-opacity-90 transition-all shadow-lg">
+                <Link to="/profile/orders" className="bg-[#8E2B45] text-white px-8 py-3 rounded-xl font-bold hover:bg-[#722F37] transition-all shadow-lg hover:shadow-xl active:scale-95">
                     Go To My Orders
                 </Link>
             </div>

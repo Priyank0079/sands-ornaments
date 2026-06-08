@@ -10,6 +10,7 @@ import api from '../../../services/api';
 import toast from 'react-hot-toast';
 import ProductCard from '../components/ProductCard';
 import { getProductDetailUrl, getProductCardUrl, getProductThumbUrl } from '../../../utils/imageUtils';
+import { useResetScroll } from '../../../hooks/useResetScroll';
 
 import {
     Heart,
@@ -280,6 +281,7 @@ const stripHtml = (html) => {
 };
 
 const ProductDetails = () => {
+    useResetScroll();
     const { id } = useParams();
     const { track } = useAnalytics();
     const navigate = useNavigate();
@@ -909,7 +911,26 @@ const ProductDetails = () => {
                                     </div>
                                 )}
                                 <div className="absolute top-3 right-3 flex flex-col gap-2 z-20">
-                                    <button className="bg-white/90 p-2 rounded-full shadow-md hover:bg-[#D39A9F] hover:text-white text-black transition-all">
+                                    <button
+                                        onClick={async () => {
+                                            const url = window.location.href;
+                                            if (navigator.share) {
+                                                try {
+                                                    await navigator.share({
+                                                        title: product?.name || 'Check out this product',
+                                                        text: `I found this beautiful ${product?.name} on Sands Ornaments!`,
+                                                        url: url
+                                                    });
+                                                } catch (err) {
+                                                    console.log('Share cancelled');
+                                                }
+                                            } else {
+                                                navigator.clipboard.writeText(url);
+                                                toast.success('Link copied to clipboard!');
+                                            }
+                                        }}
+                                        className="bg-white/90 p-2 rounded-full shadow-md hover:bg-[#D39A9F] hover:text-white text-black transition-all"
+                                    >
                                         <Share2 className="w-4 h-4" strokeWidth={1.5} />
                                     </button>
                                 </div>

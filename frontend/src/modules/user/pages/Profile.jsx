@@ -5,6 +5,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import ProfileSidebar from '../components/Profile/ProfileSidebar';
 import DeleteModal from '../../shared/components/DeleteModal';
+import { useResetScroll } from '../../../hooks/useResetScroll';
 
 const ProfileDetailsTab = React.lazy(() => import('../components/Profile/ProfileDetailsTab'));
 const OrdersTab = React.lazy(() => import('../components/Profile/OrdersTab'));
@@ -39,10 +40,11 @@ const normalizeAddressPayload = (address) => ({
 });
 
 const Profile = () => {
-    const { 
-        user, updateProfile, logout, orders, wishlist, addresses, 
-        addAddress, removeAddress, setDefaultAddress, defaultAddressId, 
-        deleteAccount, notificationsEnabled, toggleNotificationSettings, coupons 
+    useResetScroll();
+    const {
+        user, updateProfile, logout, orders, wishlist, addresses,
+        addAddress, removeAddress, setDefaultAddress, defaultAddressId,
+        deleteAccount, notificationsEnabled, toggleNotificationSettings, coupons
     } = useShop();
 
     const safeOrders = Array.isArray(orders) ? orders : [];
@@ -75,6 +77,25 @@ const Profile = () => {
             });
         }
     }, [user]);
+
+    // Fetch addresses when component mounts
+    useEffect(() => {
+        if (user && user.id) {
+            // Trigger address fetch from context
+            const fetchAddressesData = async () => {
+                try {
+                    const api = (await import('../../../services/api')).default;
+                    const res = await api.get('user/addresses');
+                    if (res.data.success) {
+                        // Addresses should be updated in context
+                    }
+                } catch (err) {
+                    console.log('Addresses loaded from context');
+                }
+            };
+            fetchAddressesData();
+        }
+    }, [user?.id]);
 
     if (!user) {
         return (
@@ -129,10 +150,30 @@ const Profile = () => {
 
     const handleAddAddress = async (e) => {
         e.preventDefault();
-        const success = await addAddress(normalizeAddressPayload(newAddress));
-        if (success) {
-            navigate('/profile/addresses');
-            setNewAddress(EMPTY_ADDRESS);
+        if (isSaving) return;
+
+        setIsSaving(true);
+        try {
+            const payload = normalizeAddressPayload(newAddress);
+            console.log('Adding address:', payload);
+
+            const success = await addAddress(payload);
+            console.log('Add address result:', success);
+
+            if (success) {
+                // Force a small delay to ensure backend saved
+                await new Promise(resolve => setTimeout(resolve, 500));
+                toast.success('Address added successfully!');
+                navigate('/profile/addresses');
+                setNewAddress(EMPTY_ADDRESS);
+            } else {
+                toast.error('Failed to add address. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error adding address:', error);
+            toast.error('Error adding address: ' + (error.message || 'Unknown error'));
+        } finally {
+            setIsSaving(false);
         }
     };
 

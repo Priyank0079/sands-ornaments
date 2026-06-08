@@ -196,6 +196,7 @@ const ProductGeneralTab = ({
                                 onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
                                 disabled={isViewMode}
                                 placeholder="0.00"
+                                error={errors.weight}
                             />
                             <Select
                                 label="PG Fee Bearer"

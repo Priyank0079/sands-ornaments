@@ -76,7 +76,13 @@ exports.getOrders = async (req, res) => {
     const parsedLimit = Math.min(100, Math.max(1, Number(limit) || 20));
     const query = {};
 
-    if (status) query.status = status;
+    if (status) {
+      if (status.toLowerCase() === 'pending') {
+        query.status = { $in: [/^pending$/i, /^processing$/i, /^confirmed$/i, /^packed$/i, /^out for delivery$/i, /^return requested$/i] };
+      } else {
+        query.status = { $regex: new RegExp(`^${status}$`, "i") };
+      }
+    }
     if (userId) query.userId = userId;
     if (search) {
       query.$or = [
