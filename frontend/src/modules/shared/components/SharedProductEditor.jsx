@@ -61,11 +61,8 @@ const SharedProductEditor = ({
     const [removeVideo, setRemoveVideo] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [errors, setErrors] = useState({});
-<<<<<<< HEAD
     const [expandedVariant, setExpandedVariant] = useState(null);
-=======
     const [liveErrors, setLiveErrors] = useState({});
->>>>>>> 968f3c0d6532b4b7ae19bc687576811151eabd99
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [createdProductData, setCreatedProductData] = useState(null);
     const [gstRate, setGstRate] = useState(3);
@@ -727,14 +724,9 @@ const SharedProductEditor = ({
             if (!v.weight) newErrors[`variant_${i}_weight`] = `${varLabel}: Weight is required`;
         });
 
-<<<<<<< HEAD
-        setErrors(newErrors);
-        return newErrors;
-=======
         const combined = { ...liveErrors, ...newErrors };
         setErrors(combined);
-        return Object.keys(combined).length === 0;
->>>>>>> 968f3c0d6532b4b7ae19bc687576811151eabd99
+        return combined;
     };
 
     const handleSubmit = async () => {
