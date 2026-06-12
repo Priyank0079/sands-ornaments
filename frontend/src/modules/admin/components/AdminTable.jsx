@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-const AdminTable = ({ columns, data, onRowClick, emptyMessage = "No Data Available", pagination }) => {
+const AdminTable = ({ columns, data, onRowClick, emptyMessage = "No Data Available", pagination, minWidth = '1000px' }) => {
     const isPaged = Boolean(pagination && typeof pagination === 'object');
     const page = isPaged ? Number(pagination.page || 1) : 1;
     const limit = isPaged ? Number(pagination.limit || data.length || 10) : data.length;
@@ -13,7 +13,7 @@ const AdminTable = ({ columns, data, onRowClick, emptyMessage = "No Data Availab
     return (
         <div>
             <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
+                <table className="w-full text-left border-collapse" style={{ minWidth }}>
                     <thead className="bg-white border-b border-gray-200">
                         <tr>
                             {columns.map((col, idx) => (

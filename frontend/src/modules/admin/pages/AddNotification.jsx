@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Send, Users, Bell } from 'lucide-react';
+import { Send, Bell } from 'lucide-react';
 import PageHeader from '../components/common/PageHeader';
 import { adminService } from '../services/adminService';
 import toast from 'react-hot-toast';
@@ -8,12 +8,61 @@ const AddNotification = () => {
     const [formData, setFormData] = useState({
         title: '',
         message: '',
-        audience: 'Send to All Users',
         type: 'GENERAL',
         priority: 'Medium',
         link: ''
     });
     const [submitting, setSubmitting] = useState(false);
+    
+    // Link Builder State
+    const [linkType, setLinkType] = useState('CUSTOM');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [searching, setSearching] = useState(false);
+
+    const handleSearchProducts = async () => {
+        if (!searchQuery.trim()) return;
+        setSearching(true);
+        try {
+            const res = await adminService.getProducts({ search: searchQuery, limit: 10 });
+            setSearchResults(res.products || []);
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to search products");
+        } finally {
+            setSearching(false);
+        }
+    };
+
+    const handleSearchSellers = async () => {
+        setSearching(true);
+        try {
+            const res = await adminService.getSellers({ search: searchQuery });
+            setSearchResults(res || []);
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to search sellers");
+        } finally {
+            setSearching(false);
+        }
+    };
+
+    const handleSearchBlogs = async () => {
+        setSearching(true);
+        try {
+            const res = await adminService.getAdminBlogs();
+            const filtered = (res || []).filter(b => 
+                b.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                b.slug?.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+            setSearchResults(filtered);
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to search blogs");
+        } finally {
+            setSearching(false);
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -32,11 +81,13 @@ const AddNotification = () => {
             setFormData({
                 title: '',
                 message: '',
-                audience: 'Send to All Users',
                 type: 'GENERAL',
                 priority: 'Medium',
                 link: ''
             });
+            setLinkType('CUSTOM');
+            setSearchQuery('');
+            setSearchResults([]);
             return;
         }
 
@@ -85,22 +136,6 @@ const AddNotification = () => {
                             />
                         </div>
 
-                        {/* Audience Field */}
-                        <div className="space-y-1.5">
-                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-1">Audience</label>
-                            <div className="relative">
-                                <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                <select
-                                    className="w-full p-3 pl-10 bg-white border-2 border-gray-100 rounded-lg text-sm font-bold text-gray-900 focus:outline-none focus:border-black transition-all appearance-none cursor-pointer"
-                                    value={formData.audience}
-                                    onChange={(e) => setFormData({ ...formData, audience: e.target.value })}
-                                >
-                                    <option>Send to All Users</option>
-                                    <option>Active Customers</option>
-                                    <option>Recent Registrations</option>
-                                </select>
-                            </div>
-                        </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div className="space-y-1.5">
@@ -133,15 +168,169 @@ const AddNotification = () => {
                             </div>
                         </div>
 
-                        <div className="space-y-1.5">
-                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-1">Link (Optional)</label>
-                            <input
-                                type="text"
-                                placeholder="/shop or /admin/seller-details/..."
-                                className="w-full p-3 bg-white border-2 border-gray-100 rounded-lg text-sm font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-300"
-                                value={formData.link}
-                                onChange={(e) => setFormData({ ...formData, link: e.target.value })}
-                            />
+                        {/* Link Selector / Builder */}
+                        <div className="space-y-3 bg-gray-50 p-5 rounded-xl border border-gray-200">
+                            <div className="flex items-center justify-between">
+                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-1">Link Builder</label>
+                                <span className="text-[10px] font-serif italic text-gray-400">Helper to generate correct URLs</span>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Link Type</label>
+                                    <select
+                                        className="w-full p-2.5 bg-white border-2 border-gray-100 rounded-lg text-xs font-bold text-gray-900 focus:outline-none focus:border-black transition-all"
+                                        value={linkType}
+                                        onChange={(e) => {
+                                            const type = e.target.value;
+                                            setLinkType(type);
+                                            setSearchQuery('');
+                                            setSearchResults([]);
+                                            if (type === 'CUSTOM') {
+                                                setFormData(prev => ({ ...prev, link: '' }));
+                                            } else if (type === 'GENERAL') {
+                                                setFormData(prev => ({ ...prev, link: '/' }));
+                                            } else if (type === 'CATEGORY') {
+                                                setFormData(prev => ({ ...prev, link: '/gold-collection' }));
+                                            }
+                                        }}
+                                    >
+                                        <option value="CUSTOM">Custom Link (Type manually)</option>
+                                        <option value="GENERAL">General Pages</option>
+                                        <option value="CATEGORY">Category / Shop Filters</option>
+                                        <option value="PRODUCT">Specific Product</option>
+                                        <option value="SELLER">Specific Seller</option>
+                                        <option value="BLOG">Specific Blog Post</option>
+                                    </select>
+                                </div>
+
+                                {linkType === 'GENERAL' && (
+                                    <div className="space-y-1.5">
+                                        <label className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Select Page</label>
+                                        <select
+                                            className="w-full p-2.5 bg-white border-2 border-gray-100 rounded-lg text-xs font-bold text-gray-900 focus:outline-none focus:border-black transition-all"
+                                            value={formData.link}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, link: e.target.value }))}
+                                        >
+                                            <option value="/">Home Page</option>
+                                            <option value="/shop">Shop All Products</option>
+                                            <option value="/cart">Shopping Cart</option>
+                                            <option value="/help">Help Center</option>
+                                            <option value="/gift-cards">Gift Cards</option>
+                                            <option value="/blogs">Blogs list</option>
+                                        </select>
+                                    </div>
+                                )}
+
+                                {linkType === 'CATEGORY' && (
+                                    <div className="space-y-1.5">
+                                        <label className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Select Category</label>
+                                        <select
+                                            className="w-full p-2.5 bg-white border-2 border-gray-100 rounded-lg text-xs font-bold text-gray-900 focus:outline-none focus:border-black transition-all"
+                                            value={formData.link}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, link: e.target.value }))}
+                                        >
+                                            <option value="/gold-collection">Gold Collection</option>
+                                            <option value="/shop?metal=silver">Silver Collection</option>
+                                            <option value="/category/men">Men's Collection</option>
+                                            <option value="/category/women">Women's Collection</option>
+                                            <option value="/category/family">Family Collection</option>
+                                        </select>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Search-based builders: Product, Seller, Blog */}
+                            {(linkType === 'PRODUCT' || linkType === 'SELLER' || linkType === 'BLOG') && (
+                                <div className="space-y-3 pt-2 border-t border-gray-200/50">
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            placeholder={`Search ${linkType.toLowerCase()}s...`}
+                                            className="flex-1 p-2 bg-white border border-gray-200 rounded-lg text-xs font-medium text-gray-900 focus:outline-none focus:border-black placeholder:text-gray-300"
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    e.preventDefault();
+                                                    if (linkType === 'PRODUCT') handleSearchProducts();
+                                                    if (linkType === 'SELLER') handleSearchSellers();
+                                                    if (linkType === 'BLOG') handleSearchBlogs();
+                                                }
+                                            }}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if (linkType === 'PRODUCT') handleSearchProducts();
+                                                if (linkType === 'SELLER') handleSearchSellers();
+                                                if (linkType === 'BLOG') handleSearchBlogs();
+                                            }}
+                                            disabled={searching}
+                                            className="px-4 py-2 bg-black text-white text-xs font-bold rounded-lg uppercase tracking-wider hover:bg-gray-800 disabled:bg-gray-400 transition-colors"
+                                        >
+                                            {searching ? '...' : 'Search'}
+                                        </button>
+                                    </div>
+
+                                    {searchResults.length > 0 ? (
+                                        <div className="space-y-1.5">
+                                            <label className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Select Results</label>
+                                            <select
+                                                className="w-full p-2.5 bg-white border-2 border-gray-100 rounded-lg text-xs font-bold text-gray-900 focus:outline-none focus:border-black transition-all"
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    if (!val) return;
+                                                    if (linkType === 'PRODUCT') {
+                                                        setFormData(prev => ({ ...prev, link: `/product/${val}` }));
+                                                    } else if (linkType === 'SELLER') {
+                                                        setFormData(prev => ({ ...prev, link: `/admin/seller-details/${val}` }));
+                                                    } else if (linkType === 'BLOG') {
+                                                        setFormData(prev => ({ ...prev, link: `/blogs/${val}` }));
+                                                    }
+                                                }}
+                                                defaultValue=""
+                                            >
+                                                <option value="" disabled>-- Choose one from search results --</option>
+                                                {searchResults.map((item) => {
+                                                    if (linkType === 'PRODUCT') {
+                                                        return <option key={item._id} value={item._id}>{item.name} ({item.category?.name || 'Gold/Silver'})</option>;
+                                                    } else if (linkType === 'SELLER') {
+                                                        return <option key={item._id} value={item._id}>{item.businessName || item.name} - {item.phone}</option>;
+                                                    } else if (linkType === 'BLOG') {
+                                                        return <option key={item.slug} value={item.slug}>{item.title}</option>;
+                                                    }
+                                                    return null;
+                                                })}
+                                            </select>
+                                        </div>
+                                    ) : searchQuery && !searching && (
+                                        <p className="text-[11px] text-gray-400 italic">No matches found. Try searching again.</p>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Current Generated/Link Input Field */}
+                            <div className="space-y-1.5 pt-2 border-t border-gray-200/50">
+                                <label className="text-[9px] font-bold text-gray-400 uppercase tracking-wider px-1">Selected URL / Path</label>
+                                <input
+                                    type="text"
+                                    placeholder="/shop or /product/... (auto-generated or typed)"
+                                    className="w-full p-3 bg-gray-100 border-2 border-gray-100 rounded-lg text-sm font-semibold text-gray-900 focus:outline-none focus:border-black transition-all"
+                                    value={formData.link}
+                                    onChange={(e) => {
+                                        setFormData(prev => ({ ...prev, link: e.target.value }));
+                                        if (linkType !== 'CUSTOM') setLinkType('CUSTOM');
+                                    }}
+                                    readOnly={linkType !== 'CUSTOM'}
+                                />
+                                <p className="text-[10px] text-gray-400 px-1 leading-snug">
+                                    {linkType === 'CUSTOM' 
+                                        ? "Manual input mode: verify the route is valid (e.g. starts with `/`)." 
+                                        : "Link Builder mode: path is locked. Switch type to custom if you need to edit it."
+                                    }
+                                </p>
+                            </div>
                         </div>
 
                         {/* Preview Box - Optional Visual Aid */}

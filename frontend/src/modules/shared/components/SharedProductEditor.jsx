@@ -61,6 +61,7 @@ const SharedProductEditor = ({
     const [removeVideo, setRemoveVideo] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [errors, setErrors] = useState({});
+    const [expandedVariant, setExpandedVariant] = useState(null);
     const [liveErrors, setLiveErrors] = useState({});
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [createdProductData, setCreatedProductData] = useState(null);
@@ -306,6 +307,12 @@ const SharedProductEditor = ({
     }, []);
 
     useEffect(() => {
+        if (!expandedVariant && formData.variants?.[0]?.id) {
+            setExpandedVariant(formData.variants[0].id);
+        }
+    }, [formData.variants, expandedVariant]);
+
+    useEffect(() => {
         const loadProduct = async () => {
             if (!isEditMode && !isViewMode) {
                 setLoading(false);
@@ -325,6 +332,45 @@ const SharedProductEditor = ({
                         showInNavbar, showInCollection, ...restData
                     } = data;
 
+                    const mappedVariants = data.variants?.map((v, index) => {
+                        const serialCodes = normalizeSerialCodes(v.serialCodes || []);
+                        const prefix = String(data.name || '').toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 4) || 'ITEM';
+                        const availableCount = serialCodes.filter(code => (code.status || 'AVAILABLE') === 'AVAILABLE').length;
+                        const desiredCount = availableCount || Number(v.stock) || 0;
+                        const ensured = serialCodes.length > 0
+                            ? { serialCodes, stock: availableCount }
+                            : syncVariantSerialQuantity({ serialCodes: [] }, index, desiredCount, prefix);
+
+                        return { 
+                            ...v, 
+                            id: v._id || Math.random(),
+                            weight: v.weight ?? data.weight ?? '',
+                            weightUnit: v.weightUnit || data.weightUnit || 'Grams',
+                            makingCharge: (v.makingCharge || 0).toString(),
+                            hallmarkingCharge: (v.hallmarkingCharge || 0).toString(),
+                            diamondCertificateCharge: (
+                                v.diamondCertificateCharge !== undefined && v.diamondCertificateCharge !== null
+                                    ? v.diamondCertificateCharge
+                                    : 0
+                            ).toString(),
+                            additionalCharge: (v.additionalCharge || 0).toString(),
+                            diamondPrice: (v.diamondPrice || 0).toString(),
+                            diamondType: v.diamondType || data.diamondType || 'none',
+                            serialCodes: ensured.serialCodes,
+                            stock: ensured.stock,
+                            variantImages: Array.isArray(v.variantImages) ? v.variantImages : [],
+                            variantFaqs: Array.isArray(v.variantFaqs) ? v.variantFaqs : [],
+                            diamondSpecs: {
+                                carat: v.diamondSpecs?.carat || '',
+                                clarity: v.diamondSpecs?.clarity || '',
+                                color: v.diamondSpecs?.color || '',
+                                cut: v.diamondSpecs?.cut || '',
+                                shape: v.diamondSpecs?.shape || '',
+                                diamondCount: v.diamondSpecs?.diamondCount || 0
+                            }
+                        };
+                    }) || [];
+
                     setFormData(prev => ({
                         ...prev,
                         ...restData,
@@ -335,44 +381,7 @@ const SharedProductEditor = ({
                         paymentGatewayChargeBearer: data.paymentGatewayChargeBearer || 'seller',
                         diamondType: data.diamondType || 'none',
                         categories: normalizedCategories.slice(0, 1),
-                        variants: data.variants?.map((v, index) => {
-                            const serialCodes = normalizeSerialCodes(v.serialCodes || []);
-                            const prefix = String(data.name || '').toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 4) || 'ITEM';
-                            const availableCount = serialCodes.filter(code => (code.status || 'AVAILABLE') === 'AVAILABLE').length;
-                            const desiredCount = availableCount || Number(v.stock) || 0;
-                            const ensured = serialCodes.length > 0
-                                ? { serialCodes, stock: availableCount }
-                                : syncVariantSerialQuantity({ serialCodes: [] }, index, desiredCount, prefix);
-
-                            return { 
-                                ...v, 
-                                id: v._id || Math.random(),
-                                weight: v.weight ?? data.weight ?? '',
-                                weightUnit: v.weightUnit || data.weightUnit || 'Grams',
-                                makingCharge: (v.makingCharge || 0).toString(),
-                                hallmarkingCharge: (v.hallmarkingCharge || 0).toString(),
-                                diamondCertificateCharge: (
-                                    v.diamondCertificateCharge !== undefined && v.diamondCertificateCharge !== null
-                                        ? v.diamondCertificateCharge
-                                        : 0
-                                ).toString(),
-                                additionalCharge: (v.additionalCharge || 0).toString(),
-                                diamondPrice: (v.diamondPrice || 0).toString(),
-                                diamondType: v.diamondType || data.diamondType || 'none',
-                                serialCodes: ensured.serialCodes,
-                                stock: ensured.stock,
-                                variantImages: Array.isArray(v.variantImages) ? v.variantImages : [],
-                                variantFaqs: Array.isArray(v.variantFaqs) ? v.variantFaqs : [],
-                                diamondSpecs: {
-                                    carat: v.diamondSpecs?.carat || '',
-                                    clarity: v.diamondSpecs?.clarity || '',
-                                    color: v.diamondSpecs?.color || '',
-                                    cut: v.diamondSpecs?.cut || '',
-                                    shape: v.diamondSpecs?.shape || '',
-                                    diamondCount: v.diamondSpecs?.diamondCount || 0
-                                }
-                            };
-                        }) || prev.variants,
+                        variants: mappedVariants.length > 0 ? mappedVariants : prev.variants,
                         faqs: data.faqs || [],
                         seo: data.seo || { title: '', description: '', keywords: '' },
                         logistics: data.logistics || { estimatedShippingDays: 3, certificateUrl: '' },
@@ -385,6 +394,10 @@ const SharedProductEditor = ({
                         videoUrl: data.videoUrl || '',
                         isSerialized: true
                     }));
+
+                    if (mappedVariants.length > 0) {
+                        setExpandedVariant(mappedVariants[0].id);
+                    }
 
                     if (data.images) setPreviewImages(data.images);
                     setVideoPreview(data.videoUrl || '');
@@ -694,24 +707,60 @@ const SharedProductEditor = ({
 
     const validateForm = () => {
         const newErrors = {};
-        if (!formData.name) newErrors.name = "Name is required";
-        if (!formData.description) newErrors.description = "Description is required";
-        if (!formData.categories?.[0]?.category) newErrors.categories = "Category is required.";
+        if (!formData.name) {
+            newErrors.name = "Product Name is required";
+        } else if (!/^[a-zA-Z0-9 ]+$/.test(formData.name)) {
+            newErrors.name = "Product Name must contain only alphanumeric characters and spaces";
+        }
+        if (!formData.huid) newErrors.huid = "HUID is required";
+        if (!formData.categories?.[0]?.category) newErrors.categories = "Category is required";
+        
+        const strippedDesc = (formData.description || '').replace(/<[^>]*>/g, '').trim();
+        if (!strippedDesc) newErrors.description = "Product Description is required";
         
         formData.variants.forEach((v, i) => {
-            if (!v.name) newErrors[`variant_${i}_name`] = "Variant name required";
-            if (!v.weight) newErrors[`variant_${i}_weight`] = "Weight required";
+            const varLabel = v.name ? `Variant "${v.name}"` : `Variant #${i + 1}`;
+            if (!v.name) newErrors[`variant_${i}_name`] = `${varLabel}: Name is required`;
+            if (!v.weight) newErrors[`variant_${i}_weight`] = `${varLabel}: Weight is required`;
         });
 
         const combined = { ...liveErrors, ...newErrors };
         setErrors(combined);
-        return Object.keys(combined).length === 0;
+        return combined;
     };
 
     const handleSubmit = async () => {
-        if (!validateForm()) {
-            toast.error("Please fill required fields");
-            setActiveTab('general');
+        const newErrors = validateForm();
+        const errorList = Object.values(newErrors);
+        
+        if (errorList.length > 0) {
+            // Display custom error toast
+            toast.error(
+                <div className="text-left font-sans">
+                    <p className="font-bold text-sm text-red-700">Validation Error</p>
+                    <ul className="list-disc pl-4 mt-2 text-xs text-gray-700 space-y-1">
+                        {errorList.map((err, idx) => (
+                            <li key={idx}>{err}</li>
+                        ))}
+                    </ul>
+                </div>,
+                { duration: 6000 }
+            );
+
+            // Determine redirect behavior
+            const hasGeneralErrors = ['name', 'huid', 'categories', 'description'].some(k => k in newErrors);
+            if (hasGeneralErrors) {
+                setActiveTab('general');
+            } else {
+                // Find first variant error
+                const firstVarErrIdx = formData.variants.findIndex((v, i) => 
+                    `variant_${i}_name` in newErrors || `variant_${i}_weight` in newErrors
+                );
+                if (firstVarErrIdx !== -1) {
+                    setActiveTab('variants');
+                    setExpandedVariant(formData.variants[firstVarErrIdx].id);
+                }
+            }
             return;
         }
 
@@ -914,6 +963,8 @@ const SharedProductEditor = ({
                             removeVariantFaq={removeVariantFaq}
                             handleVariantFaqChange={handleVariantFaqChange}
                             clearVariantFaqOverride={clearVariantFaqOverride}
+                            expandedVariant={expandedVariant}
+                            setExpandedVariant={setExpandedVariant}
                         />
                     )}
 

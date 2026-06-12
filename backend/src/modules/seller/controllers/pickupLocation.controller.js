@@ -37,6 +37,19 @@ exports.createPickupLocation = async (req, res) => {
       return error(res, "Required fields: warehouseName, contactPerson, phone, addressLine1, city, state, pincode", 400);
     }
 
+    if (!/^\d{10}$/.test(String(phone).trim())) {
+      return error(res, "Phone number must be exactly 10 digits", 400);
+    }
+    if (!/^[A-Za-z\s]+$/.test(String(city).trim())) {
+      return error(res, "City should contain only alphabets", 400);
+    }
+    if (!/^[A-Za-z\s]+$/.test(String(state).trim())) {
+      return error(res, "State should contain only alphabets", 400);
+    }
+    if (!/^\d{6}$/.test(String(pincode).trim())) {
+      return error(res, "Pincode must be exactly 6 digits", 400);
+    }
+
     // If this is flagged as default, unset other defaults for this seller
     if (isDefault) {
       await PickupLocation.updateMany({ sellerId }, { isDefault: false });
@@ -124,6 +137,20 @@ exports.updatePickupLocation = async (req, res) => {
       contactPerson, phone, email,
       addressLine1, addressLine2, city, state, pincode, country, isDefault,
     } = req.body;
+
+    // Validate inputs if provided
+    if (phone !== undefined && !/^\d{10}$/.test(String(phone).trim())) {
+      return error(res, "Phone number must be exactly 10 digits", 400);
+    }
+    if (city !== undefined && !/^[A-Za-z\s]+$/.test(String(city).trim())) {
+      return error(res, "City should contain only alphabets", 400);
+    }
+    if (state !== undefined && !/^[A-Za-z\s]+$/.test(String(state).trim())) {
+      return error(res, "State should contain only alphabets", 400);
+    }
+    if (pincode !== undefined && !/^\d{6}$/.test(String(pincode).trim())) {
+      return error(res, "Pincode must be exactly 6 digits", 400);
+    }
 
     // Apply updates
     if (contactPerson) location.contactPerson = contactPerson.trim();

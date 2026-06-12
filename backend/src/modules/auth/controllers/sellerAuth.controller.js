@@ -42,6 +42,9 @@ exports.register = async (req, res) => {
 
     if (!shopName || !String(shopName).trim()) return error(res, "Shop name is required", 400);
     if (!fullName || !String(fullName).trim()) return error(res, "Full name is required", 400);
+    if (!/^[A-Za-z\s]+$/.test(String(fullName).trim())) {
+      return error(res, "Full name should contain only alphabets", 400);
+    }
     if (!normalizedEmail) return error(res, "Email is required", 400);
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) return error(res, "Please enter a valid email address", 400);
     if (!normalizedMobile) return error(res, "Mobile number is required", 400);
@@ -55,7 +58,13 @@ exports.register = async (req, res) => {
     if (!bisNumber || !String(bisNumber).trim()) return error(res, "BIS license number is required", 400);
     if (!shopAddress || !String(shopAddress).trim()) return error(res, "Shop address is required", 400);
     if (!city || !String(city).trim()) return error(res, "City is required", 400);
+    if (!/^[A-Za-z\s]+$/.test(String(city).trim())) {
+      return error(res, "City should contain only alphabets", 400);
+    }
     if (!state || !String(state).trim()) return error(res, "State is required", 400);
+    if (!/^[A-Za-z\s]+$/.test(String(state).trim())) {
+      return error(res, "State should contain only alphabets", 400);
+    }
     if (!pincode || !String(pincode).trim()) return error(res, "Pincode is required", 400);
 
     const existingEmail = normalizedEmail

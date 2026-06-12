@@ -177,11 +177,12 @@ exports.getLedger = async (req, res) => {
 exports.getForOrder = async (req, res) => {
   try {
     const sellerId = req.user.userId;
+    const sellerObjectId = new mongoose.Types.ObjectId(sellerId);
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) return error(res, "Invalid order id", 400);
 
     // Confirm the order actually involves this seller
-    const order = await Order.findOne({ _id: id, "items.sellerId": sellerId })
+    const order = await Order.findOne({ _id: id, "items.sellerId": sellerObjectId })
       .select("orderId commissionSummary status items")
       .lean();
 

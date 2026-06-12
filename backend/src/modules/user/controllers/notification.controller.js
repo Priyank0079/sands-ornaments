@@ -9,15 +9,22 @@ exports.getMyNotifications = async (req, res) => {
   try {
     const userId = req.user.userId;
     
-    // Fetch user-specific + global broadcasts
+    // Fetch user-specific + global broadcasts, excluding those hidden by this user
     const notifications = await Notification.find({
       $or: [
         { userId },
         { isBroadcast: true }
-      ]
-    }).sort({ createdAt: -1 }).limit(50);
+      ],
+      hiddenBy: { $ne: userId }
+    }).sort({ createdAt: -1 }).limit(50).lean();
 
-    return success(res, { notifications });
+    // Map notification to include isReadByMe computed field
+    const mappedNotifications = notifications.map(n => ({
+      ...n,
+      isReadByMe: n.readBy?.some(id => String(id) === String(userId)) ?? n.isRead
+    }));
+
+    return success(res, { notifications: mappedNotifications });
   } catch (err) { return error(res, err.message); }
 };
 
@@ -37,10 +44,31 @@ exports.markAsRead = async (req, res) => {
 
     if (!canAccess) return error(res, "Notification not found", 404);
 
-    notification.isRead = true;
-    await notification.save();
+    await Notification.findByIdAndUpdate(id, { $addToSet: { readBy: userId } });
 
     return success(res, {}, "Marked as read");
+  } catch (err) { return error(res, err.message); }
+};
+
+exports.hideNotification = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return error(res, "Invalid notification id", 400);
+    }
+    const notification = await Notification.findById(id);
+    if (!notification) return error(res, "Notification not found", 404);
+
+    const canAccess =
+      notification.isBroadcast ||
+      String(notification.userId || "") === String(userId);
+
+    if (!canAccess) return error(res, "Notification not found", 404);
+
+    await Notification.findByIdAndUpdate(id, { $addToSet: { hiddenBy: userId } });
+
+    return success(res, {}, "Notification hidden/deleted successfully");
   } catch (err) { return error(res, err.message); }
 };
 

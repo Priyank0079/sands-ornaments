@@ -135,10 +135,10 @@ exports.getProducts = async (req, res) => {
       const tier = normalizeSilverTier(silver_type);
       if (normalized === "silver" && tier) {
         if (tier === "sterling") {
-          query.silverCategory = { $regex: "^(925|925\\s+sterling\\s+silver)$", $options: "i" };
+          query.silverCategory = { $regex: "^925\\s+sterling\\s+silver$", $options: "i" };
         } else if (tier === "fine") {
           // Treat all other silver categories as fine (including empty), but exclude sterling.
-          query.silverCategory = { $not: { $regex: "^(925|925\\s+sterling\\s+silver)$", $options: "i" } };
+          query.silverCategory = { $not: { $regex: "^925\\s+sterling\\s+silver$", $options: "i" } };
         }
       }
     }

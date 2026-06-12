@@ -129,7 +129,7 @@ const SellerHeader = ({ isSidebarOpen, setIsSidebarOpen }) => {
     };
 
     return (
-        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-40 shrink-0 shadow-sm font-sans">
+        <header className={`h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-6 fixed top-0 right-0 z-40 shadow-sm font-sans transition-all duration-500 ease-in-out ${isSidebarOpen ? 'left-0 lg:left-80' : 'left-0 lg:left-20'}`}>
             <div className="flex items-center gap-3 lg:gap-4">
                 <button
                     onClick={() => setIsSidebarOpen(!isSidebarOpen)}

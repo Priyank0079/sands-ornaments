@@ -124,12 +124,13 @@ const buildSellerOrderSummary = (order, sellerId, commissionEntry = null) => {
 exports.getMyOrders = async (req, res) => {
   try {
     const sellerId = req.user.userId;
+    const sellerObjectId = new mongoose.Types.ObjectId(sellerId);
 
     const page = Math.max(1, Number(req.query.page) || 1);
     const limit = Math.min(Number(req.query.limit) || 10, 100);
     const { status, paymentStatus, search } = req.query;
 
-    const query = { "items.sellerId": sellerId };
+    const query = { "items.sellerId": sellerObjectId };
     if (status) {
       query.status = String(status);
     }
@@ -184,7 +185,8 @@ exports.getMyOrderDetail = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return error(res, "Invalid order id", 400);
     }
-    const order = await Order.findOne({ _id: req.params.id, "items.sellerId": sellerId })
+    const sellerObjectId = new mongoose.Types.ObjectId(sellerId);
+    const order = await Order.findOne({ _id: req.params.id, "items.sellerId": sellerObjectId })
       .populate("userId", "fullName email mobileNumber")
       .populate("items.productId", "name images image");
 
@@ -201,6 +203,7 @@ exports.updateOrderStatus = async (req, res) => {
     const { orderId } = req.params;
     const { status, note, shippingInfo, itemVoidTags } = req.body;
     const sellerId = req.user.userId;
+    const sellerObjectId = new mongoose.Types.ObjectId(sellerId);
     const nextStatus = normalizeOrderStatus(status);
     if (!mongoose.Types.ObjectId.isValid(orderId)) {
       return error(res, "Invalid order id", 400);
@@ -208,7 +211,7 @@ exports.updateOrderStatus = async (req, res) => {
 
     if (!nextStatus) return error(res, "Status is required", 400);
 
-    const order = await Order.findOne({ _id: orderId, "items.sellerId": sellerId })
+    const order = await Order.findOne({ _id: orderId, "items.sellerId": sellerObjectId })
       .populate("userId", "fullName email mobileNumber")
       .populate("items.productId", "name images image");
 

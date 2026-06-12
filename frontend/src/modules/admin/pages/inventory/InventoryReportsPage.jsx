@@ -143,7 +143,9 @@ const InventoryReportsPage = () => {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+        setTimeout(() => {
+            URL.revokeObjectURL(url);
+        }, 1000);
         toast.success(`${activeTab === 'category' ? 'Category' : 'Sales'} report exported`);
     };
 
@@ -225,7 +227,8 @@ const InventoryReportsPage = () => {
                         <div className="px-6 py-4 border-b border-gray-100">
                             <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Inventory Ownership</h3>
                         </div>
-                        <table className="w-full text-left">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left min-w-[800px]">
                             <thead className="bg-[#F8FAFC] border-b border-gray-100">
                                 <tr>
                                     <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Owner</th>
@@ -248,12 +251,14 @@ const InventoryReportsPage = () => {
                                     </tr>
                                 ))}
                             </tbody>
-                        </table>
+                            </table>
+                        </div>
                     </div>
 
                     {/* Category Table */}
                     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                        <table className="w-full text-left">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left min-w-[800px]">
                             <thead className="bg-[#F8FAFC] border-b border-gray-100">
                                 <tr>
                                     <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Category</th>
@@ -276,7 +281,8 @@ const InventoryReportsPage = () => {
                                     </tr>
                                 ))}
                             </tbody>
-                        </table>
+                            </table>
+                        </div>
                     </div>
                 </div>
             )}
@@ -308,7 +314,8 @@ const InventoryReportsPage = () => {
 
                     {/* Sales Table */}
                     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                        <table className="w-full text-left">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left min-w-[800px]">
                             <thead className="bg-[#F8FAFC] border-b border-gray-100">
                                 <tr>
                                     <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest w-[40%]">Product Name</th>
@@ -335,7 +342,8 @@ const InventoryReportsPage = () => {
                                     </tr>
                                 ))}
                             </tbody>
-                        </table>
+                            </table>
+                        </div>
                     </div>
                 </div>
             )}

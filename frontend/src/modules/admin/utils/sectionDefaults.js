@@ -73,7 +73,7 @@ import { homeCategoryGridDefaults } from '../../user/utils/homeCategoryGridDefau
 import menHeroDefault from '@assets/hero/modern_gold_fusion.png';
 import womenHeroDefault from '@assets/hero/eternal_diamond_brilliance.png';
 import silverHeroDefault from '@assets/hero/sterling_silver_heritage.png';
-import familyHeroDefault from '@assets/hero/bridal_royal.png';
+import familyHeroDefault from '@assets/hero/modern_gold_fusion.png';
 import heroMasterpieceDefault from '@assets/hero/hero_masterpiece.png';
 import categoryPersonalised from '@assets/categories/personalised.png';
 import categoryMensilver from '@assets/categories/mensilver.png';

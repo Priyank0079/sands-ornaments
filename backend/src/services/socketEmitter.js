@@ -100,10 +100,23 @@ const emitLowStockAlert = (sellerId, productName, variantName, currentStock) => 
   });
 };
 
+/**
+ * Emit a broadcast notification to all connected clients.
+ */
+const emitBroadcastNotification = (notification) => {
+  try {
+    if (!_io) return;
+    _io.emit("broadcast_notification", notification);
+  } catch (err) {
+    console.error("[Socket] Failed to emit broadcast_notification:", err.message);
+  }
+};
+
 module.exports = {
   setIo,
   getIo,
   emitNewOrder,
   emitOrderStatusUpdate,
   emitLowStockAlert,
+  emitBroadcastNotification,
 };

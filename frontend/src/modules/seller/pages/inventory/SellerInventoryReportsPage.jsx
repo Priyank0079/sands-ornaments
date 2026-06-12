@@ -130,7 +130,9 @@ const SellerInventoryReportsPage = () => {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+        setTimeout(() => {
+            URL.revokeObjectURL(url);
+        }, 1000);
         toast.success(`${activeTab === 'category' ? 'Category' : 'Sales'} report exported`);
     };
 
@@ -205,30 +207,32 @@ const SellerInventoryReportsPage = () => {
                     </div>
 
                     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                        <table className="w-full text-left">
-                            <thead className="bg-[#F8FAFC] border-b border-gray-100">
-                                <tr>
-                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Category</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Unique Products</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Total Quantity</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Estimated Value</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-50">
-                                {loading ? (
-                                    <tr><td colSpan="4" className="px-6 py-12 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">Loading report...</td></tr>
-                                ) : categoryData.length === 0 ? (
-                                    <tr><td colSpan="4" className="px-6 py-12 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">No data available</td></tr>
-                                ) : categoryData.map((item, idx) => (
-                                    <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
-                                        <td className="px-6 py-4 text-xs font-black text-gray-900">{item.category}</td>
-                                        <td className="px-6 py-4 text-center text-xs font-bold text-gray-600">{item.uniqueProducts}</td>
-                                        <td className="px-6 py-4 text-center text-xs font-bold text-gray-600">{item.totalQty.toLocaleString()} units</td>
-                                        <td className="px-6 py-4 text-right text-sm font-black text-gray-900">INR {item.value.toLocaleString()}</td>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left min-w-[800px]">
+                                <thead className="bg-[#F8FAFC] border-b border-gray-100">
+                                    <tr>
+                                        <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Category</th>
+                                        <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Unique Products</th>
+                                        <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Total Quantity</th>
+                                        <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Estimated Value</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody className="divide-y divide-gray-50">
+                                    {loading ? (
+                                        <tr><td colSpan="4" className="px-6 py-12 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">Loading report...</td></tr>
+                                    ) : categoryData.length === 0 ? (
+                                        <tr><td colSpan="4" className="px-6 py-12 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">No data available</td></tr>
+                                    ) : categoryData.map((item, idx) => (
+                                        <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
+                                            <td className="px-6 py-4 text-xs font-black text-gray-900">{item.category}</td>
+                                            <td className="px-6 py-4 text-center text-xs font-bold text-gray-600">{item.uniqueProducts}</td>
+                                            <td className="px-6 py-4 text-center text-xs font-bold text-gray-600">{item.totalQty.toLocaleString()} units</td>
+                                            <td className="px-6 py-4 text-right text-sm font-black text-gray-900">INR {item.value.toLocaleString()}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             )}
@@ -257,32 +261,34 @@ const SellerInventoryReportsPage = () => {
                     </div>
 
                     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                        <table className="w-full text-left">
-                            <thead className="bg-[#F8FAFC] border-b border-gray-100">
-                                <tr>
-                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest w-[40%]">Product Name</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Category</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Units Sold</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Avg Price</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Total Revenue</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-50">
-                                {loading ? (
-                                    <tr><td colSpan="5" className="px-6 py-12 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">Loading sales...</td></tr>
-                                ) : salesData.length === 0 ? (
-                                    <tr><td colSpan="5" className="px-6 py-12 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">No sales data yet</td></tr>
-                                ) : salesData.map((item, idx) => (
-                                    <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
-                                        <td className="px-6 py-4 text-xs font-black text-gray-900">{item.name}</td>
-                                        <td className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">{item.category}</td>
-                                        <td className="px-6 py-4 text-center text-xs font-black text-blue-600">{item.sold}</td>
-                                        <td className="px-6 py-4 text-right text-xs font-bold text-gray-500">INR {item.avgPrice}</td>
-                                        <td className="px-6 py-4 text-right text-sm font-black text-emerald-600">INR {item.revenue.toLocaleString()}</td>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left min-w-[800px]">
+                                <thead className="bg-[#F8FAFC] border-b border-gray-100">
+                                    <tr>
+                                        <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest w-[40%]">Product Name</th>
+                                        <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Category</th>
+                                        <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Units Sold</th>
+                                        <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Avg Price</th>
+                                        <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Total Revenue</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody className="divide-y divide-gray-50">
+                                    {loading ? (
+                                        <tr><td colSpan="5" className="px-6 py-12 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">Loading sales...</td></tr>
+                                    ) : salesData.length === 0 ? (
+                                        <tr><td colSpan="5" className="px-6 py-12 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">No sales data yet</td></tr>
+                                    ) : salesData.map((item, idx) => (
+                                        <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
+                                            <td className="px-6 py-4 text-xs font-black text-gray-900">{item.name}</td>
+                                            <td className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">{item.category}</td>
+                                            <td className="px-6 py-4 text-center text-xs font-black text-blue-600">{item.sold}</td>
+                                            <td className="px-6 py-4 text-right text-xs font-bold text-gray-500">INR {item.avgPrice}</td>
+                                            <td className="px-6 py-4 text-right text-sm font-black text-emerald-600">INR {item.revenue.toLocaleString()}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             )}

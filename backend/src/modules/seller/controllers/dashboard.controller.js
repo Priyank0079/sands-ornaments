@@ -2,11 +2,13 @@ const Order = require("../../../models/Order");
 const Product = require("../../../models/Product");
 const Return = require("../../../models/Return");
 const Category = require("../../../models/Category");
+const mongoose = require("mongoose");
 const { success, error } = require("../../../utils/apiResponse");
 
 exports.getSellerStats = async (req, res) => {
   try {
     const sellerId = req.user.userId;
+    const sellerObjectId = new mongoose.Types.ObjectId(sellerId);
 
     // ---------- Products (fast + scalable) ----------
     const [totalProducts, stockAgg, sellerProductIds] = await Promise.all([
@@ -64,14 +66,14 @@ exports.getSellerStats = async (req, res) => {
     fourWeeksAgo.setHours(0, 0, 0, 0);
 
     const ordersAgg = await Order.aggregate([
-      { $match: { "items.sellerId": sellerId } },
+      { $match: { "items.sellerId": sellerObjectId } },
       {
         $addFields: {
           sellerItems: {
             $filter: {
               input: "$items",
               as: "item",
-              cond: { $eq: ["$$item.sellerId", sellerId] }
+              cond: { $eq: ["$$item.sellerId", sellerObjectId] }
             }
           }
         }
@@ -263,15 +265,16 @@ exports.getSellerStats = async (req, res) => {
 exports.getRecentOrders = async (req, res) => {
   try {
     const sellerId = req.user.userId;
+    const sellerObjectId = new mongoose.Types.ObjectId(sellerId);
     const orders = await Order.aggregate([
-      { $match: { "items.sellerId": sellerId } },
+      { $match: { "items.sellerId": sellerObjectId } },
       {
         $addFields: {
           sellerItems: {
             $filter: {
               input: "$items",
               as: "item",
-              cond: { $eq: ["$$item.sellerId", sellerId] }
+              cond: { $eq: ["$$item.sellerId", sellerObjectId] }
             }
           }
         }

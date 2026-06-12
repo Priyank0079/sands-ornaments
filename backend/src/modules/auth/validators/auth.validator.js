@@ -19,7 +19,9 @@ exports.adminLoginSchema = Joi.object({
 
 exports.sellerRegisterSchema = Joi.object({
   shopName: Joi.string().min(3).max(100).required(),
-  fullName: Joi.string().min(3).max(100).required(),
+  fullName: Joi.string().min(3).max(100).pattern(/^[A-Za-z\s]+$/).required().messages({
+    "string.pattern.base": "Full name should contain only alphabets",
+  }),
   email: Joi.string().email().required(),
   mobileNumber: Joi.string().length(10).pattern(/^[0-9]+$/).required(),
   password: Joi.string().min(6).required(),

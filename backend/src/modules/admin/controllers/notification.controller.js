@@ -1,6 +1,7 @@
 const Notification = require("../../../models/Notification");
 const mongoose = require("mongoose");
 const { success, error } = require("../../../utils/apiResponse");
+const socketEmitter = require("../../../services/socketEmitter");
 
 exports.getNotifications = async (req, res) => {
   try {
@@ -110,6 +111,9 @@ exports.broadcastNotification = async (req, res) => {
       link: safeLink,
       isBroadcast: true
     });
+
+    socketEmitter.emitBroadcastNotification(notification);
+
     return success(res, { notification }, "Notification broadcasted successfully", 201);
   } catch (err) { return error(res, err.message); }
 };

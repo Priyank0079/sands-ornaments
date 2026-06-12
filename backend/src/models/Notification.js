@@ -12,6 +12,8 @@ const notificationSchema = new mongoose.Schema({
   link: String,
   isBroadcast: { type: Boolean, default: false, index: true },
   isRead: { type: Boolean, default: false, index: true },
+  readBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true }],
+  hiddenBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true }],
 }, { timestamps: true });
 
 module.exports = mongoose.model("Notification", notificationSchema);

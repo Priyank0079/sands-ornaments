@@ -129,7 +129,9 @@ const SellerStockHistoryPage = () => {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+        setTimeout(() => {
+            URL.revokeObjectURL(url);
+        }, 1000);
         toast.success("Stock history exported");
     };
 
@@ -177,7 +179,7 @@ const SellerStockHistoryPage = () => {
 
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left">
+                    <table className="w-full text-left min-w-[900px]">
                         <thead className="bg-[#F8FAFC] border-b border-gray-100">
                             <tr>
                                 <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Date & Time</th>

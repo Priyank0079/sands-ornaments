@@ -4,8 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ArrowLeft } from 'lucide-react';
 
 // Import assets for banners and purities
-import goldBanner from '@assets/hero/bridal_royal.png';
-import silverBanner from '@assets/hero/spring_silver_campaign.png';
+import goldBanner from '@assets/hero/modern_gold_fusion.png';
+import silverBanner from '@assets/hero/sterling_silver_heritage.png';
 import purity24k from '@assets/categories/sets.png';
 import purity22k from '@assets/categories/bangle.png';
 import purity18k from '@assets/categories/rings.png';
