@@ -42,7 +42,7 @@ const Login = () => {
     const handleSendOtp = async (e) => {
         e.preventDefault();
         if (phoneNumber.length === 10) {
-            const res = await sendOtp(phoneNumber);
+            const res = await sendOtp(phoneNumber, isSignup ? 'signup' : 'login');
             if (res.success) {
                 setLoginStep(2);
             } else {
@@ -60,6 +60,7 @@ const Login = () => {
             const res = await verifyOtp(
                 phoneNumber,
                 enteredOtp,
+                isSignup ? 'signup' : 'login',
                 isSignup
                     ? {
                         name: fullName.trim(),

@@ -27,7 +27,8 @@ const CheckoutCartSummary = ({
     setCouponCode,
     handleApplyCouponValidated,
     availableCoupons,
-    couponSummary
+    couponSummary,
+    gstIncluded
 }) => {
     return (
         <div className="lg:col-span-1">
@@ -152,6 +153,12 @@ const CheckoutCartSummary = ({
                         <span className="font-serif">Shipping</span>
                         <span className="font-sans font-bold">{shipping === 0 ? <span className="text-emerald-600">Free</span> : currencyText(shipping)}</span>
                     </div>
+                    {gstIncluded > 0 && (
+                        <div className="flex justify-between items-center text-gray-500 text-xs">
+                            <span className="font-serif">GST (Included)</span>
+                            <span className="font-sans font-medium">{currencyText(gstIncluded)}</span>
+                        </div>
+                    )}
                     {appliedCoupon && (
                         <div className="flex justify-between items-center text-[#D39A9F]">
                             <span className="font-serif">Coupon Discount</span>

@@ -57,6 +57,7 @@ const Checkout = () => {
     // Calculate totals
     const subtotal = cart.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
     const giftWrapCharge = cart.reduce((acc, item) => acc + (item.giftWrap ? 50 : 0), 0);
+    const gstIncluded = cart.reduce((acc, item) => acc + ((Number(item.gst || item.selectedVariant?.gst || 0)) * (item.quantity || 1)), 0);
     const shipping = (appliedCoupon?.isFreeShipping || (subtotal - discount + giftWrapCharge) > 499) ? 0 : 50;
     const total = Math.max(0, subtotal + giftWrapCharge + shipping - discount - giftCardDiscount);
 
@@ -123,7 +124,7 @@ const Checkout = () => {
     const handleSendOtp = async (e) => {
         e.preventDefault();
         if (phoneNumber.length === 10) {
-            const res = await sendOtp(phoneNumber);
+            const res = await sendOtp(phoneNumber, 'checkout');
             if (res.success) {
                 setLoginStep(2);
             } else {
@@ -138,7 +139,7 @@ const Checkout = () => {
         e.preventDefault();
         const enteredOtp = otp.join('');
         if (enteredOtp.length === 4) {
-            const res = await verifyOtp(phoneNumber, enteredOtp);
+            const res = await verifyOtp(phoneNumber, enteredOtp, 'checkout');
             if (res.success) {
                 setFormData(prev => ({ ...prev, phone: phoneNumber }));
             } else {
@@ -285,6 +286,7 @@ const Checkout = () => {
 
                 <CheckoutCartSummary
                     cart={cart}
+                    gstIncluded={gstIncluded}
                     currencyText={currencyText}
                     cartItemKey={cartItemKey}
                     subtotal={subtotal}

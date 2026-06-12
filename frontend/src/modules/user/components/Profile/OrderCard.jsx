@@ -28,9 +28,11 @@ const OrderCard = ({ order, isExpanded, onToggle }) => {
     const setShowDetails = onToggle || setLocalShow;
 
     const items = Array.isArray(order.items) ? order.items : [];
-    const subtotal = items.reduce((acc, i) => acc + ((i.price || 0) * (i.quantity || 0)), 0);
-    const shipping = order.total - subtotal;
-    const tax = order.total * 0.03;
+    const subtotal = order.subtotal !== undefined ? order.subtotal : items.reduce((acc, i) => acc + ((i.price || 0) * (i.quantity || 0)), 0);
+    const shipping = order.shipping !== undefined ? order.shipping : 0;
+    const discount = order.discount !== undefined ? order.discount : 0;
+    const giftWrapCharge = order.giftWrapCharge !== undefined ? order.giftWrapCharge : 0;
+    const giftCardDiscount = order.giftCardDiscount !== undefined ? order.giftCardDiscount : 0;
     const canRaiseRequest = String(order.status || order.orderStatus || '').trim() === 'Delivered';
     const orderDisplayId = order.displayId || order.orderId || order.id || order._id;
     const orderDisplayShort = String(orderDisplayId || '').replace('ORD-', '');
@@ -77,7 +79,7 @@ const OrderCard = ({ order, isExpanded, onToggle }) => {
                     </div>
                     <div className="text-right">
                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Date</p>
-                        <p className="text-xs font-medium text-gray-600">{new Date(order.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                        <p className="text-xs font-medium text-gray-600">{new Date(order.createdAt || order.date || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
                     </div>
                 </div>
 
@@ -93,7 +95,7 @@ const OrderCard = ({ order, isExpanded, onToggle }) => {
                             </div>
                         </div>
                         <Link
-                            to={`/order-tracking/${order.id}/return`}
+                            to={`/order-tracking/${order.id}`}
                             className="bg-white border border-[#EFEBE9] text-[#3E2723] px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider shadow-sm"
                         >
                             Track
@@ -174,10 +176,13 @@ const OrderCard = ({ order, isExpanded, onToggle }) => {
                                     <p className="text-xs font-bold text-[#3E2723]">{formatCurrency((item.price || 0) * (item.quantity || 0))}</p>
                                 </div>
                             ))}
-                            <div className="border-t border-[#EFEBE9] pt-2 mt-1 space-y-1">
-                                <div className="flex justify-between text-[10px] text-[#8D6E63]"><p>Subtotal</p><p>{formatCurrency(subtotal)}</p></div>
-                                <div className="flex justify-between text-[10px] text-[#8D6E63]"><p>Shipping</p><p>{formatCurrency(shipping)}</p></div>
-                                <div className="flex justify-between text-[10px] font-bold text-[#3E2723] pt-1"><p>Grand Total</p><p>{formatCurrency(order.total)}</p></div>
+                            <div className="border-t border-[#EFEBE9] pt-2 mt-1 space-y-1 text-[10px]">
+                                <div className="flex justify-between text-[#8D6E63]"><p>Subtotal</p><p>{formatCurrency(subtotal)}</p></div>
+                                {discount > 0 && <div className="flex justify-between text-red-500"><p>Discount</p><p>- {formatCurrency(discount)}</p></div>}
+                                {giftWrapCharge > 0 && <div className="flex justify-between text-[#8E2B45]"><p>Gift Wrap</p><p>+ {formatCurrency(giftWrapCharge)}</p></div>}
+                                <div className="flex justify-between text-[#8D6E63]"><p>Shipping</p><p>{shipping === 0 ? 'FREE' : formatCurrency(shipping)}</p></div>
+                                {giftCardDiscount > 0 && <div className="flex justify-between text-emerald-600"><p>Gift Card</p><p>- {formatCurrency(giftCardDiscount)}</p></div>}
+                                <div className="flex justify-between font-bold text-[#3E2723] pt-1"><p>Grand Total</p><p>{formatCurrency(order.total)}</p></div>
                             </div>
                         </div>
                     </div>
@@ -190,7 +195,7 @@ const OrderCard = ({ order, isExpanded, onToggle }) => {
                 <div className="flex flex-wrap items-center justify-between gap-3 p-3 md:p-4 md:px-6 bg-[#FAFAFA] text-[10px] md:text-sm">
                     <div className="flex flex-wrap gap-4 md:gap-8 text-[#3E2723]">
                         <div>
-                            <span className="font-bold block text-gray-900">{new Date(order.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                            <span className="font-bold block text-gray-900">{new Date(order.createdAt || order.date || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                         </div>
                         <div>
                             <span className="text-gray-500 mr-1">Order no.:</span>
@@ -223,7 +228,7 @@ const OrderCard = ({ order, isExpanded, onToggle }) => {
                             </div>
                         </div>
                         <Link
-                            to={`/order-tracking/${order.id}/return`}
+                            to={`/order-tracking/${order.id}`}
                             className="bg-white border border-[#EFEBE9] text-[#3E2723] px-6 py-2 rounded-lg text-sm font-bold uppercase tracking-wider hover:bg-[#FAFAFA] transition-colors"
                         >
                             Track Status
@@ -285,14 +290,28 @@ const OrderCard = ({ order, isExpanded, onToggle }) => {
                                     <span>Sub total</span>
                                     <span>{formatCurrency(subtotal, 2)}</span>
                                 </div>
+                                {discount > 0 && (
+                                    <div className="flex justify-between text-red-500">
+                                        <span>Discount</span>
+                                        <span>- {formatCurrency(discount, 2)}</span>
+                                    </div>
+                                )}
+                                {giftWrapCharge > 0 && (
+                                    <div className="flex justify-between text-[#8E2B45]">
+                                        <span>Gift Wrap</span>
+                                        <span>+ {formatCurrency(giftWrapCharge, 2)}</span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between text-[#8D6E63]">
                                     <span>Shipping cost</span>
-                                    <span>{formatCurrency(shipping, 2)}</span>
+                                    <span>{shipping === 0 ? 'FREE' : formatCurrency(shipping, 2)}</span>
                                 </div>
-                                <div className="flex justify-between text-[#8D6E63]">
-                                    <span>IGST 3.0%</span>
-                                    <span>{formatCurrency(tax, 2)}</span>
-                                </div>
+                                {giftCardDiscount > 0 && (
+                                    <div className="flex justify-between text-emerald-600">
+                                        <span>Gift Card</span>
+                                        <span>- {formatCurrency(giftCardDiscount, 2)}</span>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

@@ -41,20 +41,21 @@ export const AuthProvider = ({ children }) => {
     };
 
     // --- USER AUTH (OTP) ---
-    const sendOtp = async (phone) => {
+    const sendOtp = async (phone, type) => {
         try {
-            const res = await api.post('auth/send-otp', { phone });
+            const res = await api.post('auth/send-otp', { phone, type });
             return res.data;
         } catch (err) {
             return { success: false, message: err.response?.data?.message || "Failed to send OTP" };
         }
     };
 
-    const verifyOtp = async (phone, otp, profileData = {}) => {
+    const verifyOtp = async (phone, otp, type, profileData = {}) => {
         try {
             const payload = {
                 phone,
                 otp,
+                type,
                 ...(profileData?.name ? { name: profileData.name } : {}),
                 ...(profileData?.email ? { email: profileData.email } : {})
             };

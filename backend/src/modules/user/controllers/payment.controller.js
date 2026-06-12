@@ -3,7 +3,7 @@ const razorpay = require("../../../config/razorpay");
 const Order = require("../../../models/Order");
 const Coupon = require("../../../models/Coupon");
 const Notification = require("../../../models/Notification");
-const { _deductStockForOrder, _calculateOrderData } = require("./order.controller");
+const { _deductStockForOrder, _calculateOrderData, enrichUserProfileFromOrder } = require("./order.controller");
 const { success, error } = require("../../../utils/apiResponse");
 const mongoose = require("mongoose");
 const { enqueueEmail } = require("../../../services/emailService");
@@ -129,6 +129,9 @@ exports.verifyPayment = async (req, res) => {
     };
 
     const order = await Order.create(finalOrderData);
+
+    // Enrich guest profile
+    await enrichUserProfileFromOrder(order.userId, order.shippingAddress);
 
     // 3. Post-creation logic: stock deduction and coupon usage
     await _deductStockForOrder(order.items, order.orderId, order.userId);

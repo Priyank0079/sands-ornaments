@@ -11,6 +11,7 @@ const Cart = () => {
     const navigate = useNavigate();
     const [showCouponModal, setShowCouponModal] = React.useState(false);
     const [couponSectionExpanded, setCouponSectionExpanded] = React.useState(true);
+    const [showBreakdown, setShowBreakdown] = React.useState(false);
     const currencyText = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
 
     useResetScroll();
@@ -228,7 +229,64 @@ const Cart = () => {
                                         <span className="text-[9px] text-gray-400 font-normal uppercase tracking-[0.1em]">Final Amount</span>
                                         <div className="flex items-center gap-2">
                                             <span className="text-xl font-semibold text-gray-900">{currencyText(total)}</span>
-                                            <Info className="w-3.5 h-3.5 text-gray-300 hover:text-gray-400 transition-colors cursor-help" />
+                                            <div className="relative flex items-center">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowBreakdown(!showBreakdown)}
+                                                    className="p-1 hover:bg-gray-50 rounded-full transition-colors text-gray-300 hover:text-gray-600 focus:outline-none"
+                                                    title="Price details"
+                                                >
+                                                    <Info className="w-3.5 h-3.5" />
+                                                </button>
+                                                <AnimatePresence>
+                                                    {showBreakdown && (
+                                                        <>
+                                                            {/* Overlay to dismiss */}
+                                                            <div className="fixed inset-0 z-40" onClick={() => setShowBreakdown(false)} />
+                                                            <motion.div
+                                                                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                                                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                                                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                                                                className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-60 bg-white border border-gray-100 rounded-xl p-4 shadow-xl z-50 text-left space-y-2.5 font-sans"
+                                                            >
+                                                                <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider border-b border-gray-50 pb-1.5">Price Details</h3>
+                                                                <div className="space-y-1.5 text-xs text-gray-600">
+                                                                    <div className="flex justify-between">
+                                                                        <span>Subtotal</span>
+                                                                        <span className="font-semibold text-gray-900">{currencyText(subtotal)}</span>
+                                                                    </div>
+                                                                    {discount > 0 && (
+                                                                        <div className="flex justify-between text-red-500">
+                                                                            <span>Coupon Discount</span>
+                                                                            <span>- {currencyText(discount)}</span>
+                                                                        </div>
+                                                                    )}
+                                                                    {giftWrapCharge > 0 && (
+                                                                        <div className="flex justify-between text-[#8E2B45]">
+                                                                            <span>Gift Wrap</span>
+                                                                            <span>+ {currencyText(giftWrapCharge)}</span>
+                                                                        </div>
+                                                                    )}
+                                                                    <div className="flex justify-between">
+                                                                        <span>Shipping</span>
+                                                                        <span className="font-semibold text-gray-900">{shipping === 0 ? 'FREE' : currencyText(shipping)}</span>
+                                                                    </div>
+                                                                    {gstIncluded > 0 && (
+                                                                        <div className="flex justify-between text-gray-400">
+                                                                            <span>GST (Included)</span>
+                                                                            <span>{currencyText(gstIncluded)}</span>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                                <div className="border-t border-gray-50 pt-2 flex justify-between text-xs font-bold text-gray-900">
+                                                                    <span>Total Amount</span>
+                                                                    <span>{currencyText(total)}</span>
+                                                                </div>
+                                                            </motion.div>
+                                                        </>
+                                                    )}
+                                                </AnimatePresence>
+                                            </div>
                                         </div>
                                     </div>
                                     {(discount > 0 || giftWrapCharge > 0 || shipping > 0) && (

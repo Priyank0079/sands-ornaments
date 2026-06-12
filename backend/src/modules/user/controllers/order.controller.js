@@ -5,6 +5,7 @@ const Coupon = require("../../../models/Coupon");
 const StockLog = require("../../../models/StockLog");
 const Seller   = require("../../../models/Seller");
 const GiftCard = require("../../../models/GiftCard");
+const User = require("../../../models/User");
 const { generateOrderId } = require("../../../utils/generateId");
 const { success, error } = require("../../../utils/apiResponse");
 const razorpay = require("../../../config/razorpay");
@@ -222,7 +223,7 @@ const _calculateOrderData = async (userId, userEmail, items, shippingAddress, pa
       variantId:  variant._id,
       name:       product.name,
       sku:        variant.sku || `${product.slug}-${variant.name}`,
-      image:      product.images[0] || "",
+      image:      product.images[0] || (variant.variantImages && variant.variantImages[0]) || "",
       price:      variant.price,
       mrp:        variant.mrp,
       quantity:   item.quantity,
@@ -326,6 +327,9 @@ exports.placeOrder = async (req, res) => {
     }
 
     const order = await Order.create(orderData);
+
+    // Enrich guest profile
+    await enrichUserProfileFromOrder(userId, shippingAddress);
 
     // Notify sellers
     const sellerCounts = new Map();
@@ -440,10 +444,33 @@ exports.placeOrder = async (req, res) => {
   } catch (err) { return error(res, err.message); }
 };
 
+const enrichUserProfileFromOrder = async (userId, shippingAddress) => {
+  try {
+    const user = await User.findById(userId);
+    if (user) {
+      let updated = false;
+      if ((!user.name || user.name === "Guest User") && shippingAddress.firstName) {
+        user.name = `${shippingAddress.firstName} ${shippingAddress.lastName || ""}`.trim();
+        updated = true;
+      }
+      if (!user.email && shippingAddress.email) {
+        user.email = String(shippingAddress.email).trim().toLowerCase();
+        updated = true;
+      }
+      if (updated) {
+        await user.save();
+      }
+    }
+  } catch (err) {
+    console.error("Failed to enrich user profile from order:", err.message);
+  }
+};
+
 // Export the helpers so payment controller can use them
 exports._deductStockForOrder = deductStockForOrder;
 exports._applyCoupon = applyCoupon;
 exports._calculateOrderData = _calculateOrderData;
+exports.enrichUserProfileFromOrder = enrichUserProfileFromOrder;
 
 
 // ─────────────────────────────────────────────────────────────────

@@ -170,39 +170,6 @@ const OrderTracking = () => {
         </div>
     );
 
-    // --- DETAILED VIEW ---
-    if (view) {
-        return (
-            <div className="min-h-screen bg-white font-sans pt-0 md:pt-12 pb-12 selection:bg-[#D39A9F] selection:text-white">
-                <div className="md:hidden bg-white shadow-sm p-4 sticky top-0 z-20 flex items-center gap-4">
-                    <button onClick={() => navigate(`/order-tracking/${orderId}`)} className="p-2 -ml-2 text-black">
-                        <ArrowLeft className="w-5 h-5" />
-                    </button>
-                    <h1 className="text-lg font-bold font-display text-black">{activeTitle}</h1>
-                </div>
-
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-0">
-                    <div className="hidden md:block mb-6">
-                        <button onClick={() => navigate(`/order-tracking/${orderId}`)} className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-black transition-colors group uppercase tracking-widest font-bold text-[10px]">
-                            <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-                            Back to Summary
-                        </button>
-                    </div>
-
-                    <div className="bg-white p-6 md:p-10 rounded-xl shadow-sm border border-gray-100 min-h-[50vh]">
-                        <div className="mb-8 md:mb-12 border-b border-gray-100 pb-6">
-                            <span className="block text-[10px] md:text-xs text-[#D39A9F] uppercase tracking-widest font-bold mb-2">Current Activity</span>
-                            <h2 className="text-2xl md:text-4xl font-display font-bold text-black mb-2">{activeStatusObj.status}</h2>
-                            <p className="text-sm md:text-base text-gray-500 font-serif">{activeStatusObj.date}</p>
-                        </div>
-
-                        <RenderTimeline steps={activeTimelineSteps} />
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
     // --- SUMMARY VIEW ---
     return (
         <div className="min-h-screen bg-white font-sans pt-0 md:pt-12 pb-12 selection:bg-[#D39A9F] selection:text-white">
@@ -230,7 +197,6 @@ const OrderTracking = () => {
                     {/* 1. Return/Exchange Request Card (Latest Activity First) */}
                     {returnRequest && (
                         <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden group hover:shadow-md transition-shadow relative z-10">
-
                             <div className="p-3 md:p-5 border-b border-gray-50 bg-gray-50 flex justify-between items-center">
                                 <div className="flex items-center gap-2.5">
                                     {/* Icon Logic: Spin if processing, Green Check if complete */}
@@ -250,14 +216,8 @@ const OrderTracking = () => {
                                         <h3 className="text-xs md:text-sm font-bold text-black mt-0.5">{currentReturnStatus.status}</h3>
                                     </div>
                                 </div>
-                                <button
-                                    onClick={() => navigate(`/order-tracking/${orderId}/return`)}
-                                    className="bg-white border border-gray-200 text-black px-3 py-1.5 rounded-lg text-[9px] md:text-[10px] font-bold uppercase tracking-wider hover:bg-black hover:text-white transition-colors"
-                                >
-                                    Track Detail
-                                </button>
                             </div>
-                            <div className="p-3 md:p-5 bg-white">
+                            <div className="p-3 md:p-5 bg-white space-y-6">
                                 <div className="flex gap-3 items-center">
                                     {returnRequest.items.map((item, idx) => (
                                         <div key={idx} className="relative">
@@ -278,6 +238,12 @@ const OrderTracking = () => {
                                         </p>
                                     </div>
                                 </div>
+
+                                {/* Inline Return Timeline */}
+                                <div className="border-t border-gray-100 pt-5">
+                                    <h4 className="text-[10px] font-bold text-[#D39A9F] uppercase tracking-widest mb-4">Return Journey</h4>
+                                    <RenderTimeline steps={returnSteps} />
+                                </div>
                             </div>
                         </div>
                     )}
@@ -292,14 +258,8 @@ const OrderTracking = () => {
                                 <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Original Delivery</span>
                                 <h3 className="text-xs md:text-sm font-bold text-black mt-0.5">{currentDeliveryStatus.status}</h3>
                             </div>
-                            <button
-                                onClick={() => navigate(`/order-tracking/${orderId}/detail`)}
-                                className="bg-white border border-gray-200 text-black px-3 py-1.5 rounded-lg text-[9px] md:text-[10px] font-bold uppercase tracking-wider hover:bg-black hover:text-white transition-colors"
-                            >
-                                Track Detail
-                            </button>
                         </div>
-                        <div className="p-3 md:p-5">
+                        <div className="p-3 md:p-5 space-y-6">
                             <div className="flex gap-4 overflow-x-auto pb-1 scrollbar-hide">
                                 {order.items.map((item, idx) => (
                                     <div key={idx} className="flex-shrink-0 w-12 md:w-14">
@@ -316,6 +276,12 @@ const OrderTracking = () => {
                                     <p className="text-xs font-bold text-black">{order.items.length} Items</p>
                                     <p className="text-[10px] text-gray-500 mt-0.5">Total: {formatCurrency(order.total)}</p>
                                 </div>
+                            </div>
+
+                            {/* Inline Original Delivery Timeline */}
+                            <div className="border-t border-gray-100 pt-5">
+                                <h4 className="text-[10px] font-bold text-[#D39A9F] uppercase tracking-widest mb-4">Delivery Journey</h4>
+                                <RenderTimeline steps={deliverySteps} />
                             </div>
                         </div>
                     </div>

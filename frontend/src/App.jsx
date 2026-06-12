@@ -138,6 +138,19 @@ const AppContent = () => {
     // Setup foreground handler
     setupForegroundNotificationHandler((payload) => {
       console.log('Notification received in foreground:', payload);
+      const title = payload.notification?.title || '';
+      const body = payload.notification?.body || '';
+
+      // Skip duplicate toasts for order confirmation
+      if (
+        title.toLowerCase().includes('order placed') ||
+        body.toLowerCase().includes('order placed') ||
+        title.toLowerCase().includes('order confirmed') ||
+        body.toLowerCase().includes('order confirmed')
+      ) {
+        return;
+      }
+
       // Show a toast for foreground notifications
       toast.success(payload.notification.body, {
         icon: '🔔',

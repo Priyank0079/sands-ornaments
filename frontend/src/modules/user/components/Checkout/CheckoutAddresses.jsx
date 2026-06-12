@@ -207,9 +207,15 @@ const CheckoutAddresses = ({
                     <input
                         required
                         type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                         name="pincode"
                         value={formData.pincode}
-                        onChange={handleInputChange}
+                        onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                            e.target.value = val;
+                            handleInputChange(e);
+                        }}
                         className="w-full border border-gray-200 rounded-lg px-4 py-3 focus:border-black focus:ring-1 focus:ring-black outline-none transition-all text-sm bg-white"
                     />
                 </div>

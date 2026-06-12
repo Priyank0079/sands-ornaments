@@ -13,7 +13,7 @@ export const normalizeVariantForCart = (variant = {}, fallbackProduct = {}) => (
     price: Number(variant.price ?? variant.finalPrice) || 0,
     mrp: Number(variant.mrp ?? variant.finalPrice ?? variant.price) || 0,
     finalPrice: Number(variant.finalPrice ?? variant.price) || 0,
-    image: variant.image || fallbackProduct.image || fallbackProduct.images?.[0] || '',
+    image: variant.image || variant.variantImages?.[0] || fallbackProduct.image || fallbackProduct.images?.[0] || '',
     weight: variant.weight ?? fallbackProduct.weight ?? 0,
     weightUnit: variant.weightUnit || fallbackProduct.weightUnit || 'Grams'
 });
@@ -27,7 +27,7 @@ export const normalizeProductForCart = (product = {}, selectedVariant = null) =>
         ...product,
         id: product.id || product._id,
         _id: product._id || product.id,
-        image: product.image || product.images?.[0] || normalizedVariant.image || '',
+        image: product.image || product.images?.[0] || normalizedVariant.image || normalizedVariant.variantImages?.[0] || '',
         images: product.images || (product.image ? [product.image] : []),
         price: normalizedVariant.price,
         originalPrice: normalizedVariant.mrp,

@@ -1,6 +1,12 @@
 const crypto = require("crypto");
 
-const generateOrderId  = () => `ORD-${Date.now()}`;
+const generateOrderId  = () => {
+  const len = 6;
+  const segment = Array.from(crypto.randomBytes(len))
+    .map((b) => SAFE_CHARS[b % SAFE_CHARS.length])
+    .join("");
+  return `ORD-${segment}`;
+};
 const generateReturnId = () => `RET-${Math.floor(100000 + Math.random() * 900000)}`;
 const generateReplId   = () => `REP-${Math.floor(100000 + Math.random() * 900000)}`;
 const generateTicketId = () => `TKT-${Math.floor(100000 + Math.random() * 900000)}`;

@@ -15,10 +15,22 @@ const OTP_MAX_ATTEMPTS = 5; // BUG-06: lockout after this many bad guesses
  */
 exports.sendOtp = async (req, res) => {
   try {
-    const { phone } = req.body;
+    const { phone, type } = req.body;
 
     if (!phone || !/^[6-9]\d{9}$/.test(phone)) {
       return error(res, "Please provide a valid 10-digit Indian mobile number.", 400, "INVALID_PHONE");
+    }
+
+    if (type === "signup") {
+      const existingUser = await User.findOne({ phone });
+      if (existingUser) {
+        return error(res, "Mobile number already registered. Please log in instead.", 400, "PHONE_ALREADY_REGISTERED");
+      }
+    } else if (type === "login") {
+      const existingUser = await User.findOne({ phone });
+      if (!existingUser) {
+        return error(res, "Mobile number is not registered. Please sign up first.", 400, "PHONE_NOT_REGISTERED");
+      }
     }
 
     const defaultOtp = process.env.DEFAULT_OTP || "1234";
@@ -44,11 +56,11 @@ exports.sendOtp = async (req, res) => {
 
 /**
  * POST /api/auth/verify-otp
- * Body: { phone, otp, name?, email? }
+ * Body: { phone, otp, name?, email?, type? }
  */
 exports.verifyOtp = async (req, res) => {
   try {
-    const { phone, otp, name, email } = req.body;
+    const { phone, otp, name, email, type } = req.body;
 
     if (!phone || !otp) {
       return error(res, "Phone and OTP are required.", 400, "MISSING_FIELDS");
@@ -75,6 +87,13 @@ exports.verifyOtp = async (req, res) => {
 
     let user = await User.findOne({ phone });
     const isNewUser = !user;
+
+    if (type === "signup" && !isNewUser) {
+      return error(res, "Mobile number already registered. Please log in instead.", 400, "PHONE_ALREADY_REGISTERED");
+    }
+    if (type === "login" && isNewUser) {
+      return error(res, "Mobile number is not registered. Please sign up first.", 400, "PHONE_NOT_REGISTERED");
+    }
 
     if (isNewUser) {
       user = await User.create({
