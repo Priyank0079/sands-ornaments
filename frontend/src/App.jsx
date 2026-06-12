@@ -112,12 +112,24 @@ import Loader from './modules/shared/components/Loader';
 const LoadingFallback = () => <Loader fullPage={false} />;
 
 import { initializePushNotifications, registerFCMToken, setupForegroundNotificationHandler } from './services/pushNotificationService';
-import toast from 'react-hot-toast';
+import toast, { useToasterStore } from 'react-hot-toast';
 
 const AppContent = () => {
   const location = useLocation();
   const { user, loading } = useAuth();
   usePageTracking();
+
+  const isSellerPath = location.pathname.startsWith('/seller');
+  const { toasts } = useToasterStore();
+
+  React.useEffect(() => {
+    if (isSellerPath) {
+      toasts
+        .filter((t) => t.visible)
+        .slice(0, -1)
+        .forEach((t) => toast.dismiss(t.id));
+    }
+  }, [toasts, isSellerPath]);
 
   React.useEffect(() => {
     // Initialize push notification service worker.
@@ -139,37 +151,8 @@ const AppContent = () => {
     registerFCMToken().catch(err => console.error("FCM registration error:", err));
   }, [loading, user]);
 
-  const [isNavVisible, setIsNavVisible] = React.useState(true);
-  const lastScrollY = React.useRef(0);
-
-  React.useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      
-      // Always show nav at the very top
-      if (currentScrollY <= 50) {
-        setIsNavVisible(true);
-      } 
-      // Hide when scrolling down
-      else if (currentScrollY > lastScrollY.current) {
-        setIsNavVisible(false);
-      } 
-      // Show immediately when scrolling up
-      else {
-        setIsNavVisible(true);
-      }
-      
-      lastScrollY.current = currentScrollY;
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
 
   const isAdminPath = location.pathname.startsWith('/admin');
-  const isSellerPath = location.pathname.startsWith('/seller');
   const isScannerPath = location.pathname === '/scanner';
   const showMetalToggle = location.pathname === '/' || location.pathname === '/gold-collection';
 
@@ -178,9 +161,7 @@ const AppContent = () => {
       {!isAdminPath && !isSellerPath && !isScannerPath && (
         <>
           <div 
-            className={`fixed top-0 left-0 right-0 z-[150] w-full transition-transform duration-300 ease-out ${
-              isNavVisible ? 'translate-y-0' : '-translate-y-full'
-            }`}
+            className="fixed top-0 left-0 right-0 z-[150] w-full"
           >
             <AnnouncementBar />
             <Navbar />

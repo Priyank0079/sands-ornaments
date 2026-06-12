@@ -7,6 +7,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import api from '../../../services/api';
 import sellerCommissionService, { formatINR } from '../services/sellerCommissionService';
+import { sellerService } from '../services/sellerService';
 
 const formatCurrency = (value) => `INR ${Number(value || 0).toLocaleString()}`;
 
@@ -29,6 +30,7 @@ const SellerDashboard = () => {
     const [loadError, setLoadError] = useState('');
     const [commissionTotals, setCommissionTotals] = useState({ confirmed: 0, pending: 0, reversed: 0, net: 0, gross: 0 });
     const [commissionLoading, setCommissionLoading] = useState(true);
+    const [showMetalPricingAlert, setShowMetalPricingAlert] = useState(false);
 
     useEffect(() => {
         const fetchSellerStats = async () => {
@@ -101,6 +103,32 @@ const SellerDashboard = () => {
         fetchCommission();
     }, []);
 
+    useEffect(() => {
+        const checkMetalPricing = async () => {
+            try {
+                const res = await sellerService.getMetalPricing();
+                const rates = res?.metalRates || {};
+                const gold = rates.gold10g || {};
+                const silver = rates.silver10g || {};
+                
+                const hasZeroRates = 
+                    (Number(gold.k14) || 0) === 0 &&
+                    (Number(gold.k18) || 0) === 0 &&
+                    (Number(gold.k22) || 0) === 0 &&
+                    (Number(gold.k24) || 0) === 0 &&
+                    (Number(silver.sterling925) || 0) === 0 &&
+                    (Number(silver.silverOther) || 0) === 0;
+
+                if (hasZeroRates) {
+                    setShowMetalPricingAlert(true);
+                }
+            } catch (err) {
+                console.error("Failed to check metal pricing:", err);
+            }
+        };
+        checkMetalPricing();
+    }, []);
+
     const netPayout = Math.max(0, Number(stats.totalRevenue || 0) - Number(commissionTotals.net || 0));
 
     const statCards = [
@@ -164,6 +192,38 @@ const SellerDashboard = () => {
             </div>
         );
     }
+
+    // Calculate dynamic coordinates for Transaction Frequency (7-day orders count graph)
+    const dailyData = analytics?.dailyOrders || [
+        { date: 'Mon', count: 0 },
+        { date: 'Tue', count: 0 },
+        { date: 'Wed', count: 0 },
+        { date: 'Thu', count: 0 },
+        { date: 'Fri', count: 0 },
+        { date: 'Sat', count: 0 },
+        { date: 'Sun', count: 0 }
+    ];
+
+    const maxDailyOrders = Math.max(...dailyData.map(d => d.count), 1);
+    
+    // Map each of the 7 points to (x, y) coordinates for SVG viewBox "0 0 600 100"
+    const points = dailyData.map((d, index) => {
+        const x = index * 100;
+        const y = 90 - (d.count / maxDailyOrders) * 70; // map y to range 20 to 90
+        return { x, y };
+    });
+
+    const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+    const fillPath = `${linePath} L 600 100 L 0 100 Z`;
+
+    // Calculate dynamic height for Weekly Revenue Velocity
+    const weeklyRevenueData = analytics?.weeklyRevenue || [
+        { week: 'W1', revenue: 0 },
+        { week: 'W2', revenue: 0 },
+        { week: 'W3', revenue: 0 },
+        { week: 'W4', revenue: 0 }
+    ];
+    const maxWeeklyRevenue = Math.max(...weeklyRevenueData.map(w => w.revenue), 1);
 
     return (
         <div className="space-y-6 font-sans pb-20 animate-in fade-in duration-700">
@@ -282,7 +342,7 @@ const SellerDashboard = () => {
                     </div>
 
                     <div className="relative h-64 w-full group">
-                        <svg className="w-full h-full overflow-visible" preserveAspectRatio="none">
+                        <svg className="w-full h-full overflow-visible" viewBox="0 0 600 100" preserveAspectRatio="none">
                             <defs>
                                 <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="0%" stopColor="#3E2723" stopOpacity="0.1" />
@@ -292,13 +352,18 @@ const SellerDashboard = () => {
                             {[0, 25, 50, 75, 100].map((value) => (
                                 <line key={value} x1="0" y1={`${value}%`} x2="100%" y2={`${value}%`} stroke="#F8F9FA" strokeWidth="1" />
                             ))}
-                            <path d="M0,80 Q10,70 20,40 T40,60 T60,20 T80,45 T100,30 L100,100 L0,100 Z" fill="url(#gradient)" className="transition-all duration-700" />
-                            <path d="M0,80 Q10,70 20,40 T40,60 T60,20 T80,45 T100,30" fill="none" stroke="#3E2723" strokeWidth="3" strokeLinecap="round" className="transition-all duration-700" />
+                            {points.length > 0 && (
+                                <>
+                                    <path d={fillPath} fill="url(#gradient)" className="transition-all duration-700" />
+                                    <path d={linePath} fill="none" stroke="#3E2723" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="transition-all duration-700" />
+                                </>
+                            )}
                         </svg>
-                        <div className="absolute inset-0 flex items-end justify-between px-2 pt-10">
-                            {analytics?.dailyOrders?.slice(-7)?.map((day, index) => (
-                                <div key={index} className="flex flex-col items-center gap-2">
-                                    <div className="text-[8px] font-bold text-gray-300 uppercase">{day.date.split(' ')[0]}</div>
+                        <div className="absolute inset-0 flex items-end justify-between px-2 pt-10 pointer-events-none">
+                            {dailyData.map((day, index) => (
+                                <div key={index} className="flex flex-col items-center gap-1">
+                                    <span className="text-[9px] font-bold text-[#3E2723]">{day.count}</span>
+                                    <div className="text-[8px] font-bold text-gray-400 uppercase">{day.date}</div>
                                 </div>
                             ))}
                         </div>
@@ -357,13 +422,13 @@ const SellerDashboard = () => {
                             <IndianRupee size={16} className="text-gray-400" />
                         </div>
                         <div className="flex items-end justify-between h-32 gap-3 px-2">
-                            {analytics?.weeklyRevenue?.map((week, index) => (
+                            {weeklyRevenueData.map((week, index) => (
                                 <div key={index} className="flex-1 group relative">
                                     <div
                                         className="w-full bg-[#EFEBE9] group-hover:bg-[#8D6E63] rounded-t-lg transition-all duration-500"
-                                        style={{ height: `${(week.revenue / 220000) * 100}%` }}
+                                        style={{ height: `${(week.revenue / maxWeeklyRevenue) * 100}%` }}
                                     />
-                                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[8px] font-black opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[8px] font-black opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                                         {formatCurrency(week.revenue)}
                                     </div>
                                     <div className="mt-3 text-[8px] font-black text-gray-300 uppercase text-center">{week.week}</div>
@@ -464,6 +529,36 @@ const SellerDashboard = () => {
                     </div>
                 </div>
             </div>
+            {showMetalPricingAlert && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-300">
+                    <div className="bg-white max-w-md w-full rounded-3xl p-6 shadow-2xl border border-gray-100 flex flex-col items-center text-center animate-in zoom-in-95 duration-300">
+                        <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mb-4">
+                            <AlertCircle size={24} />
+                        </div>
+                        <h3 className="text-lg font-black text-gray-900 uppercase tracking-wide">Configure Metal Pricing</h3>
+                        <p className="text-sm text-gray-600 mt-3 leading-relaxed">
+                            To add a product, first set the metal pricing because if it does not add a metal price it will come as 0 in metal price.
+                        </p>
+                        <div className="mt-6 flex flex-col sm:flex-row gap-3 w-full">
+                            <button
+                                onClick={() => {
+                                    setShowMetalPricingAlert(false);
+                                    navigate('/seller/metal-pricing');
+                                }}
+                                className="flex-1 px-5 py-3 bg-[#3E2723] hover:bg-black text-white text-[10px] font-black uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95"
+                            >
+                                Set Pricing
+                            </button>
+                            <button
+                                onClick={() => setShowMetalPricingAlert(false)}
+                                className="flex-1 px-5 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all"
+                            >
+                                Dismiss
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

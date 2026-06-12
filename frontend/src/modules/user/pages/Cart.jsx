@@ -7,18 +7,17 @@ import CouponsModal from '../components/CouponsModal';
 import { useResetScroll } from '../../../hooks/useResetScroll';
 
 const Cart = () => {
-    const { cart, removeFromCart, updateQuantity, coupons, applyCoupon, appliedCoupon, couponDiscount, clearAppliedCoupon } = useShop();
+    const { cart, removeFromCart, updateQuantity, coupons, applyCoupon, appliedCoupon, couponDiscount, clearAppliedCoupon, toggleGiftWrap, updateGiftMessage } = useShop();
     const navigate = useNavigate();
     const [showCouponModal, setShowCouponModal] = React.useState(false);
-    const [giftWrapItems, setGiftWrapItems] = React.useState({});
     const [couponSectionExpanded, setCouponSectionExpanded] = React.useState(true);
     const currencyText = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
 
     useResetScroll();
 
     const subtotal = cart.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
-    const giftWrapCharge = Object.values(giftWrapItems).filter(Boolean).length * 50;
-    const shipping = (subtotal + giftWrapCharge) > 450 ? 0 : 50;
+    const giftWrapCharge = cart.reduce((acc, item) => acc + (item.giftWrap ? 50 : 0), 0);
+    const shipping = (subtotal - Number(couponDiscount || 0) + giftWrapCharge) > 499 ? 0 : 50;
     const discount = Number(couponDiscount || 0);
     const total = subtotal + giftWrapCharge + shipping - discount;
     const gstIncluded = cart.reduce((acc, item) => acc + ((Number(item.gst || item.selectedVariant?.gst || 0)) * (item.quantity || 1)), 0);
@@ -27,12 +26,7 @@ const Cart = () => {
     const variantKey = (item) => item.variantId || item.packId || 'default';
     const availableCoupons = coupons ? coupons.filter(c => c.active !== false) : [];
 
-    const handleGiftWrapToggle = (itemKey) => {
-        setGiftWrapItems(prev => ({
-            ...prev,
-            [itemKey]: !prev[itemKey]
-        }));
-    };
+    // Gift wrap actions are delegated directly to CartContext
 
     const handleApplyCoupon = async (code) => {
         const result = await applyCoupon(code, subtotal, cart);
@@ -178,19 +172,44 @@ const Cart = () => {
                                     </div>
 
                                     {/* Gift Wrap */}
-                                    <div className="p-3 bg-white flex items-center gap-2.5 border-t border-gray-100">
-                                        <input
-                                            type="checkbox"
-                                            id={`gift-${item.id}`}
-                                            checked={giftWrapItems[variantKey(item)] || false}
-                                            onChange={() => handleGiftWrapToggle(variantKey(item))}
-                                            className="w-4 h-4 rounded accent-[#8E2B45] border-gray-200 cursor-pointer"
-                                        />
-                                        <label htmlFor={`gift-${item.id}`} className="text-xs text-gray-600 flex items-center gap-1 cursor-pointer font-normal">
-                                            Add <span className="text-[#E77382]">gift wrap</span> & message (+ ₹50)
-                                        </label>
-                                        {giftWrapItems[variantKey(item)] && (
-                                            <span className="text-[10px] font-normal text-[#2DB37E] ml-auto">✓ Added</span>
+                                    <div className="p-3 bg-white border-t border-gray-100 space-y-3">
+                                        <div className="flex items-center gap-2.5">
+                                            <input
+                                                type="checkbox"
+                                                id={`gift-${item.id}-${variantKey(item)}`}
+                                                checked={item.giftWrap || false}
+                                                onChange={() => toggleGiftWrap(item.id, variantKey(item))}
+                                                className="w-4 h-4 rounded accent-[#8E2B45] border-gray-200 cursor-pointer"
+                                            />
+                                            <label htmlFor={`gift-${item.id}-${variantKey(item)}`} className="text-xs text-gray-600 flex items-center gap-1 cursor-pointer font-normal">
+                                                Add <span className="text-[#E77382]">gift wrap</span> & message (+ ₹50)
+                                            </label>
+                                            {item.giftWrap && (
+                                                <span className="text-[10px] font-normal text-[#2DB37E] ml-auto flex items-center gap-1">
+                                                    <Gift className="w-3.5 h-3.5" /> Added
+                                                </span>
+                                            )}
+                                        </div>
+                                        {item.giftWrap && (
+                                            <motion.div
+                                                initial={{ opacity: 0, height: 0 }}
+                                                animate={{ opacity: 1, height: 'auto' }}
+                                                exit={{ opacity: 0, height: 0 }}
+                                                className="space-y-1.5"
+                                            >
+                                                <textarea
+                                                    placeholder="Write your custom gift message here (e.g. Happy Birthday!)..."
+                                                    value={item.giftMessage || ''}
+                                                    onChange={(e) => updateGiftMessage(item.id, variantKey(item), e.target.value)}
+                                                    maxLength={200}
+                                                    rows={2}
+                                                    className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-2 text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#8E2B45]/10 resize-none"
+                                                />
+                                                <div className="flex justify-between items-center text-[9px] text-gray-400 px-1">
+                                                    <span>Gift card note attached</span>
+                                                    <span>{item.giftMessage?.length || 0}/200 chars</span>
+                                                </div>
+                                            </motion.div>
                                         )}
                                     </div>
                                 </motion.div>
@@ -276,26 +295,7 @@ const Cart = () => {
                             )}
 
                             <div className="space-y-2.5 pt-2">
-                                <p className="text-[9px] text-gray-400 font-normal text-center uppercase tracking-[0.08em]">Free Shipping on orders above ₹450</p>
-
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        type="checkbox"
-                                        id="gift-all"
-                                        checked={Object.values(giftWrapItems).every(Boolean) && cart.length > 0}
-                                        onChange={(e) => {
-                                            const newGiftWrap = {};
-                                            cart.forEach(item => {
-                                                newGiftWrap[variantKey(item)] = e.target.checked;
-                                            });
-                                            setGiftWrapItems(newGiftWrap);
-                                        }}
-                                        className="w-4 h-4 rounded accent-[#8E2B45] border-gray-200 cursor-pointer"
-                                    />
-                                    <label htmlFor="gift-all" className="text-[10px] text-gray-600 cursor-pointer font-normal">
-                                        <span className="text-[#E77382]">Gift wrap</span> all (+ ₹50)
-                                    </label>
-                                </div>
+                                <p className="text-[9px] text-gray-400 font-normal text-center uppercase tracking-[0.08em]">Free Shipping on orders above ₹499</p>
 
                                 <Link
                                     to="/checkout"

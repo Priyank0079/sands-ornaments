@@ -227,9 +227,14 @@ const _calculateOrderData = async (userId, userEmail, items, shippingAddress, pa
       mrp:        variant.mrp,
       quantity:   item.quantity,
       sellerId:   product.sellerId,
-      categoryId: product.categories?.[0] || undefined
+      categoryId: product.categories?.[0] || undefined,
+      giftWrap:   Boolean(item.giftWrap),
+      giftMessage: item.giftWrap && item.giftMessage ? String(item.giftMessage).slice(0, 200) : ""
     });
   }
+
+  // Calculate gift wrap charges (₹50 per wrapped unique item line)
+  const giftWrapCharge = orderItems.reduce((sum, item) => sum + (item.giftWrap ? 50 : 0), 0);
 
   // 2. Handle Coupon
   let discount = 0;
@@ -243,8 +248,8 @@ const _calculateOrderData = async (userId, userEmail, items, shippingAddress, pa
     isFreeShipping = result.isFreeShipping;
   }
 
-  // Default shipping logic (₹49 if < ₹999, else 0)
-  let shipping = subtotal - discount > 999 ? 0 : 49;
+  // Unified Shipping Logic (Free shipping above ₹499, else ₹50)
+  let shipping = (subtotal - discount + giftWrapCharge) > 499 ? 0 : 50;
   if (isFreeShipping) shipping = 0;
 
   // 3. Apply Gift Cards (partial use supported, multiple cards allowed)
@@ -253,7 +258,7 @@ const _calculateOrderData = async (userId, userEmail, items, shippingAddress, pa
   const validGiftCardCodes = Array.isArray(giftCardCodes) ? giftCardCodes : [];
 
   if (validGiftCardCodes.length > 0) {
-    let remainingToPay = Math.max(0, subtotal - discount + shipping);
+    let remainingToPay = Math.max(0, subtotal - discount + giftWrapCharge + shipping);
     for (const rawCode of validGiftCardCodes) {
       if (remainingToPay <= 0) break;
       const code = String(rawCode || "").toUpperCase().trim();
@@ -268,7 +273,7 @@ const _calculateOrderData = async (userId, userEmail, items, shippingAddress, pa
     }
   }
 
-  const total = Math.max(0, subtotal - discount + shipping - giftCardDiscount);
+  const total = Math.max(0, subtotal - discount + giftWrapCharge + shipping - giftCardDiscount);
 
   return {
     orderId:       generateOrderId(),
@@ -285,6 +290,7 @@ const _calculateOrderData = async (userId, userEmail, items, shippingAddress, pa
     subtotal,
     discount,
     shipping,
+    giftWrapCharge,
     total,
     status:           paymentMethod === "cod" ? "Processing" : "Pending",
     paymentStatus:    paymentMethod === "cod" ? "cod" : "pending",
@@ -314,8 +320,8 @@ exports.placeOrder = async (req, res) => {
         });
         orderData.razorpayOrderId = rpOrder.id;
       } catch (err) {
-        orderData.razorpayOrderId = "rzp_stub_" + Date.now();
         console.error("Razorpay Order Creation Failed:", err.message);
+        return error(res, "Payment gateway initialization failed. Please try again later.", 502, "PAYMENT_GATEWAY_ERROR");
       }
     }
 

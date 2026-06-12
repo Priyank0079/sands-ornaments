@@ -17,6 +17,7 @@ const SellerLogin = () => {
     const [showReset, setShowReset] = useState(false);
     const [resetStep, setResetStep] = useState(1); // 1=email, 2=otp+newpass
     const [resetEmail, setResetEmail] = useState('');
+    const [resetMobile, setResetMobile] = useState('');
     const [resetOtp, setResetOtp] = useState('');
     const [resetPassword, setResetPassword] = useState('');
     const [resetLoading, setResetLoading] = useState(false);
@@ -52,6 +53,7 @@ const SellerLogin = () => {
         setShowReset(true);
         setResetStep(1);
         setResetEmail(loginType === 'email' ? formData.identifier : '');
+        setResetMobile(loginType === 'mobile' ? formData.identifier : '');
         setResetOtp('');
         setResetPassword('');
     };
@@ -59,17 +61,41 @@ const SellerLogin = () => {
     const sendResetOtp = async () => {
         setResetLoading(true);
         try {
-            const email = String(resetEmail || '').trim().toLowerCase();
-            if (!email) {
-                toast.error('Email is required');
-                return;
-            }
-            const res = await api.post('auth/seller/send-reset-otp', { email });
-            if (res.data?.success) {
-                toast.success(res.data?.message || 'OTP sent');
-                setResetStep(2);
+            if (loginType === 'email') {
+                const email = String(resetEmail || '').trim().toLowerCase();
+                if (!email) {
+                    toast.error('Email is required');
+                    return;
+                }
+                const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                if (!emailRegex.test(email)) {
+                    toast.error('Enter a valid email address');
+                    return;
+                }
+                const res = await api.post('auth/seller/send-reset-otp', { email });
+                if (res.data?.success) {
+                    toast.success(res.data?.message || 'OTP sent to email');
+                    setResetStep(2);
+                } else {
+                    toast.error(res.data?.message || 'Failed to send OTP');
+                }
             } else {
-                toast.error(res.data?.message || 'Failed to send OTP');
+                const mobile = String(resetMobile || '').trim();
+                if (!mobile) {
+                    toast.error('Mobile number is required');
+                    return;
+                }
+                if (!/^\d{10}$/.test(mobile)) {
+                    toast.error('Enter a valid 10-digit mobile number');
+                    return;
+                }
+                const res = await api.post('auth/seller/send-reset-mobile-otp', { mobileNumber: mobile });
+                if (res.data?.success) {
+                    toast.success(res.data?.message || 'OTP sent to mobile');
+                    setResetStep(2);
+                } else {
+                    toast.error(res.data?.message || 'Failed to send OTP');
+                }
             }
         } catch (err) {
             toast.error(err.response?.data?.message || 'Failed to send OTP');
@@ -81,20 +107,45 @@ const SellerLogin = () => {
     const resetSellerPassword = async () => {
         setResetLoading(true);
         try {
-            const email = String(resetEmail || '').trim().toLowerCase();
             const otp = String(resetOtp || '').trim();
             const newPassword = String(resetPassword || '').trim();
-            if (!email || !otp || !newPassword) {
-                toast.error('Email, OTP, and new password are required');
+            if (!otp || !newPassword) {
+                toast.error('OTP and new password are required');
                 return;
             }
-            const res = await api.post('auth/seller/reset-password', { email, otp, newPassword });
-            if (res.data?.success) {
-                toast.success(res.data?.message || 'Password updated');
-                setShowReset(false);
-                setResetStep(1);
+            if (newPassword.length < 6) {
+                toast.error('Password must be at least 6 characters');
+                return;
+            }
+
+            if (loginType === 'email') {
+                const email = String(resetEmail || '').trim().toLowerCase();
+                if (!email) {
+                    toast.error('Email is required');
+                    return;
+                }
+                const res = await api.post('auth/seller/reset-password', { email, otp, newPassword });
+                if (res.data?.success) {
+                    toast.success(res.data?.message || 'Password updated');
+                    setShowReset(false);
+                    setResetStep(1);
+                } else {
+                    toast.error(res.data?.message || 'Password reset failed');
+                }
             } else {
-                toast.error(res.data?.message || 'Password reset failed');
+                const mobile = String(resetMobile || '').trim();
+                if (!mobile) {
+                    toast.error('Mobile number is required');
+                    return;
+                }
+                const res = await api.post('auth/seller/reset-password-mobile', { mobileNumber: mobile, otp, newPassword });
+                if (res.data?.success) {
+                    toast.success(res.data?.message || 'Password updated');
+                    setShowReset(false);
+                    setResetStep(1);
+                } else {
+                    toast.error(res.data?.message || 'Password reset failed');
+                }
             }
         } catch (err) {
             toast.error(err.response?.data?.message || 'Password reset failed');
@@ -119,7 +170,7 @@ const SellerLogin = () => {
             </div>
 
             {/* Right Logic */}
-            <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-20 overflow-y-auto">
+            <div className="w-full lg:w-1/2 flex-1 flex items-center justify-center p-6 lg:p-20 overflow-y-auto">
                 <div className="w-full max-w-md space-y-10">
                     <div className="text-center space-y-2">
                         <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tight">Merchant Gateway</h2>
@@ -137,14 +188,22 @@ const SellerLogin = () => {
                         <div className="flex gap-2 p-1 bg-gray-100 rounded-xl mb-4">
                             <button 
                                 type="button"
-                                onClick={() => setLoginType('email')} 
+                                onClick={() => {
+                                    setLoginType('email');
+                                    setFormData({ identifier: '', password: '' });
+                                    setError('');
+                                }} 
                                 className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${loginType === 'email' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
                             >
                                 Email
                             </button>
                             <button 
                                 type="button"
-                                onClick={() => setLoginType('mobile')} 
+                                onClick={() => {
+                                    setLoginType('mobile');
+                                    setFormData({ identifier: '', password: '' });
+                                    setError('');
+                                }} 
                                 className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${loginType === 'mobile' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
                             >
                                 Mobile
@@ -208,7 +267,7 @@ const SellerLogin = () => {
 
                     <div className="text-center pt-8 border-t border-gray-100">
                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Don't have a seller account?</p>
-                        <Link to="/seller/register" className="inline-flex items-center gap-3 bg-[#D39A9F] text-white px-8 py-4 rounded-xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-[#C88B90] transition-all shadow-xl shadow-[#D39A9F]/20">
+                        <Link to="/seller/register" className="inline-flex items-center gap-3 border border-[#3E2723] text-[#3E2723] bg-transparent px-8 py-4 rounded-xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-[#3E2723] hover:text-white transition-all shadow-md duration-300 active:scale-[0.98] cursor-pointer">
                             Create New Account <LogIn size={14} />
                         </Link>
                     </div>
@@ -227,7 +286,10 @@ const SellerLogin = () => {
                             <div>
                                 <h3 className="text-sm font-black text-gray-900 uppercase tracking-tight">Reset Password</h3>
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-                                    {resetStep === 1 ? 'Send OTP to email' : 'Verify OTP & set new password'}
+                                    {loginType === 'email'
+                                        ? (resetStep === 1 ? 'Send OTP to email' : 'Verify OTP & set new password')
+                                        : (resetStep === 1 ? 'Send OTP to mobile' : 'Verify OTP & set new password')
+                                    }
                                 </p>
                             </div>
                             <button
@@ -240,16 +302,32 @@ const SellerLogin = () => {
                         </div>
 
                         <div className="p-6 space-y-4">
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Email</label>
-                                <input
-                                    type="email"
-                                    value={resetEmail}
-                                    onChange={(e) => setResetEmail(e.target.value)}
-                                    className="w-full bg-[#FDFBF7] border border-[#EFEBE9] rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-[#8D6E63] focus:ring-4 focus:ring-[#8D6E63]/5 transition-all"
-                                    placeholder="Enter your registered email"
-                                />
-                            </div>
+                            {loginType === 'email' ? (
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Email</label>
+                                    <input
+                                        type="email"
+                                        value={resetEmail}
+                                        onChange={(e) => setResetEmail(e.target.value)}
+                                        className="w-full bg-[#FDFBF7] border border-[#EFEBE9] rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-[#8D6E63] focus:ring-4 focus:ring-[#8D6E63]/5 transition-all"
+                                        placeholder="Enter your registered email"
+                                    />
+                                </div>
+                            ) : (
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Mobile Number</label>
+                                    <input
+                                        type="text"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
+                                        maxLength={10}
+                                        value={resetMobile}
+                                        onChange={(e) => setResetMobile(e.target.value.replace(/\D/g, ''))}
+                                        className="w-full bg-[#FDFBF7] border border-[#EFEBE9] rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-[#8D6E63] focus:ring-4 focus:ring-[#8D6E63]/5 transition-all"
+                                        placeholder="Enter your registered mobile number"
+                                    />
+                                </div>
+                            )}
 
                             {resetStep === 2 && (
                                 <>
@@ -257,6 +335,8 @@ const SellerLogin = () => {
                                         <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">OTP</label>
                                         <input
                                             type="text"
+                                            inputMode="numeric"
+                                            pattern="[0-9]*"
                                             value={resetOtp}
                                             onChange={(e) => setResetOtp(e.target.value)}
                                             className="w-full bg-[#FDFBF7] border border-[#EFEBE9] rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-[#8D6E63] focus:ring-4 focus:ring-[#8D6E63]/5 transition-all"

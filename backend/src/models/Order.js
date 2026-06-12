@@ -18,7 +18,9 @@ const orderSchema = new mongoose.Schema({
     sellerId: { type: mongoose.Schema.Types.Mixed, ref: "Seller", default: null },
     voidTagId: String,
     isGiftCard: { type: Boolean, default: false },
-    personalization: { type: mongoose.Schema.Types.Mixed }
+    personalization: { type: mongoose.Schema.Types.Mixed },
+    giftWrap: { type: Boolean, default: false },
+    giftMessage: { type: String, default: "" }
   }],
   shippingAddress: {
     firstName: String, lastName: String, email: String, phone: String,
@@ -33,6 +35,7 @@ const orderSchema = new mongoose.Schema({
   subtotal: Number,
   discount: Number,
   shipping: Number,
+  giftWrapCharge: { type: Number, default: 0 },
   total: { type: Number, required: true },
   // Gift card redemption — persisted for order history & admin audit
   giftCardDiscount: { type: Number, default: 0 },

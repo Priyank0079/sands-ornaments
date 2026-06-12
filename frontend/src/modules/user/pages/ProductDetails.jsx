@@ -56,6 +56,7 @@ import { useAnalytics } from '../../../hooks/useAnalytics';
 import Loader from '../../shared/components/Loader';
 import { getProductPrice, getProductMRP, formatCurrency } from '../utils/price';
 import RecentlyViewed from '../components/RecentlyViewed';
+import { sanitizeHtml } from '../../../utils/sanitizeHtml';
 
 // Import model shots (angle 2) for maximum hover impact
 import latestRing from '@assets/latest_drop_ring.png';
@@ -912,7 +913,9 @@ const ProductDetails = () => {
                                 )}
                                 <div className="absolute top-3 right-3 flex flex-col gap-2 z-20">
                                     <button
-                                        onClick={async () => {
+                                        onClick={async (e) => {
+                                            e.stopPropagation();
+                                            e.preventDefault();
                                             const url = window.location.href;
                                             if (navigator.share) {
                                                 try {
@@ -1485,7 +1488,7 @@ const ProductDetails = () => {
                                 <AccordionItem title="Product Story" isOpen={openSection === 'description'} onClick={() => toggleSection('description')}>
                                     <div className="py-2">
                                         {product.description ? (
-                                            <div className="prose prose-sm max-w-none text-gray-600 font-medium leading-relaxed" dangerouslySetInnerHTML={{ __html: product.description }} />
+                                            <div className="prose prose-sm max-w-none text-gray-600 font-medium leading-relaxed" dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.description) }} />
                                         ) : (
                                             <div className="text-gray-600 font-medium leading-relaxed space-y-4">
                                                 <p>Elegance meets craftsmanship in this stunning {product.name}. Handcrafted with precision from 925 Sterling Silver, this piece is designed to be a timeless addition to your collection.</p>
@@ -1560,7 +1563,7 @@ const ProductDetails = () => {
                                         </div>
 
                                         {product.specifications && (
-                                            <div className="mt-6 p-6 bg-gray-50/30 rounded-2xl border border-gray-100 prose prose-sm max-w-none text-gray-600 font-medium" dangerouslySetInnerHTML={{ __html: product.specifications }} />
+                                            <div className="mt-6 p-6 bg-gray-50/30 rounded-2xl border border-gray-100 prose prose-sm max-w-none text-gray-600 font-medium" dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.specifications) }} />
                                         )}
                                     </div>
                                 </AccordionItem>
@@ -1606,7 +1609,7 @@ const ProductDetails = () => {
                                 <AccordionItem title="Styling & Tips" isOpen={openSection === 'styling'} onClick={() => toggleSection('styling')}>
                                     <div className="py-4">
                                         {product.stylingTips ? (
-                                            <div className="prose prose-sm max-w-none text-gray-600 font-medium" dangerouslySetInnerHTML={{ __html: product.stylingTips }} />
+                                            <div className="prose prose-sm max-w-none text-gray-600 font-medium" dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.stylingTips) }} />
                                         ) : (
                                             <p className="text-gray-600 font-medium leading-relaxed">Pair this versatile {product.category || 'jewellery'} with both western and ethnic wear to elevate your look. It's designed to be lightweight enough for daily wear yet sophisticated enough for evening gala events.</p>
                                         )}

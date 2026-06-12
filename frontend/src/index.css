@@ -265,3 +265,14 @@ html.lenis body {
 /* hide-scrollbar — moved from MenExploreCollections inline style */
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Override autofill styling to match design system colors */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 50px #FDFBF7 inset !important;
+    -webkit-text-fill-color: #1F1F1F !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+

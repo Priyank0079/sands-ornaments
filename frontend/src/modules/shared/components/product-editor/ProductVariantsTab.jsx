@@ -176,6 +176,16 @@ const ProductVariantsTab = ({
                                                         type="number"
                                                         value={v.weight ?? ''}
                                                         onChange={(e) => handleVariantChange(v.id, 'weight', e.target.value)}
+                                                        onFocus={(e) => {
+                                                            if (e.target.value === '0' || Number(e.target.value) === 0) {
+                                                                handleVariantChange(v.id, 'weight', '');
+                                                            }
+                                                        }}
+                                                        onBlur={(e) => {
+                                                            if (e.target.value === '') {
+                                                                handleVariantChange(v.id, 'weight', '');
+                                                            }
+                                                        }}
                                                         disabled={isViewMode}
                                                         className={`flex-1 min-w-0 bg-white border rounded-xl py-3.5 px-5 text-sm font-bold text-gray-800 outline-none focus:ring-4 transition-all shadow-sm ${weightError ? 'border-red-400 focus:border-red-500 focus:ring-red-200/40' : 'border-gray-200 focus:border-[#3E2723] focus:ring-[#3E2723]/5'}`}
                                                         placeholder="0"
@@ -202,6 +212,16 @@ const ProductVariantsTab = ({
                                                         type="number" 
                                                         value={availableCount} 
                                                         onChange={(e) => updateVariantSerialQuantity(v.id, e.target.value)} 
+                                                        onFocus={(e) => {
+                                                            if (e.target.value === '0' || Number(e.target.value) === 0) {
+                                                                updateVariantSerialQuantity(v.id, '');
+                                                            }
+                                                        }}
+                                                        onBlur={(e) => {
+                                                            if (e.target.value === '') {
+                                                                updateVariantSerialQuantity(v.id, 0);
+                                                            }
+                                                        }}
                                                         disabled={isViewMode} 
                                                         className="w-full bg-white border border-gray-200 rounded-xl py-3.5 px-5 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm" 
                                                         placeholder="0" 
@@ -224,6 +244,16 @@ const ProductVariantsTab = ({
                                                         type="number" 
                                                         value={v.makingCharge} 
                                                         onChange={(e) => handleVariantChange(v.id, 'makingCharge', e.target.value)} 
+                                                        onFocus={(e) => {
+                                                            if (e.target.value === '0' || Number(e.target.value) === 0) {
+                                                                handleVariantChange(v.id, 'makingCharge', '');
+                                                            }
+                                                        }}
+                                                        onBlur={(e) => {
+                                                            if (e.target.value === '') {
+                                                                handleVariantChange(v.id, 'makingCharge', '0');
+                                                            }
+                                                        }}
                                                         disabled={isViewMode} 
                                                         className={`w-full bg-white border rounded-xl py-3.5 pl-12 pr-5 text-sm font-bold text-gray-800 outline-none focus:ring-4 transition-all shadow-sm ${makingError ? 'border-red-400 focus:border-red-500 focus:ring-red-200/40' : 'border-gray-200 focus:border-[#3E2723] focus:ring-[#3E2723]/5'}`} 
                                                         placeholder="0" 
@@ -241,8 +271,19 @@ const ProductVariantsTab = ({
                                                         type="number" 
                                                         value={v.hallmarkingCharge ?? '0'} 
                                                         onChange={(e) => handleVariantChange(v.id, 'hallmarkingCharge', e.target.value)} 
+                                                        onFocus={(e) => {
+                                                            if (e.target.value === '0' || Number(e.target.value) === 0) {
+                                                                handleVariantChange(v.id, 'hallmarkingCharge', '');
+                                                            }
+                                                        }}
+                                                        onBlur={(e) => {
+                                                            if (e.target.value === '') {
+                                                                handleVariantChange(v.id, 'hallmarkingCharge', '0');
+                                                            }
+                                                        }}
                                                         disabled={isViewMode} 
                                                         className={`w-full bg-white border rounded-xl py-3.5 pl-12 pr-5 text-sm font-bold text-gray-800 outline-none focus:ring-4 transition-all shadow-sm ${hallmarkingError ? 'border-red-400 focus:border-red-500 focus:ring-red-200/40' : 'border-gray-200 focus:border-[#3E2723] focus:ring-[#3E2723]/5'}`} 
+                                                        placeholder="0"
                                                     />
                                                     <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 uppercase tracking-widest">Rs</span>
                                                 </div>
@@ -257,6 +298,16 @@ const ProductVariantsTab = ({
                                                         type="number"
                                                         value={v.diamondPrice ?? '0'}
                                                         onChange={(e) => handleVariantChange(v.id, 'diamondPrice', e.target.value)}
+                                                        onFocus={(e) => {
+                                                            if (e.target.value === '0' || Number(e.target.value) === 0) {
+                                                                handleVariantChange(v.id, 'diamondPrice', '');
+                                                            }
+                                                        }}
+                                                        onBlur={(e) => {
+                                                            if (e.target.value === '') {
+                                                                handleVariantChange(v.id, 'diamondPrice', '0');
+                                                            }
+                                                        }}
                                                         disabled={isViewMode}
                                                         className={`w-full bg-white border rounded-xl py-3.5 pl-12 pr-5 text-sm font-bold text-gray-800 outline-none focus:ring-4 transition-all shadow-sm ${diamondPriceError ? 'border-red-400 focus:border-red-500 focus:ring-red-200/40' : 'border-gray-200 focus:border-[#3E2723] focus:ring-[#3E2723]/5'}`}
                                                         placeholder="0"
@@ -274,8 +325,19 @@ const ProductVariantsTab = ({
                                                         type="number" 
                                                         value={v.diamondCertificateCharge ?? '0'} 
                                                         onChange={(e) => handleVariantChange(v.id, 'diamondCertificateCharge', e.target.value)} 
+                                                        onFocus={(e) => {
+                                                            if (e.target.value === '0' || Number(e.target.value) === 0) {
+                                                                handleVariantChange(v.id, 'diamondCertificateCharge', '');
+                                                            }
+                                                        }}
+                                                        onBlur={(e) => {
+                                                            if (e.target.value === '') {
+                                                                handleVariantChange(v.id, 'diamondCertificateCharge', '0');
+                                                            }
+                                                        }}
                                                         disabled={isViewMode} 
                                                         className={`w-full bg-white border rounded-xl py-3.5 pl-12 pr-5 text-sm font-bold text-gray-800 outline-none focus:ring-4 transition-all shadow-sm ${certError ? 'border-red-400 focus:border-red-500 focus:ring-red-200/40' : 'border-gray-200 focus:border-[#3E2723] focus:ring-[#3E2723]/5'}`} 
+                                                        placeholder="0"
                                                     />
                                                     <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 uppercase tracking-widest">Rs</span>
                                                 </div>
@@ -290,6 +352,16 @@ const ProductVariantsTab = ({
                                                         type="number"
                                                         value={v.additionalCharge ?? '0'}
                                                         onChange={(e) => handleVariantChange(v.id, 'additionalCharge', e.target.value)}
+                                                        onFocus={(e) => {
+                                                            if (e.target.value === '0' || Number(e.target.value) === 0) {
+                                                                handleVariantChange(v.id, 'additionalCharge', '');
+                                                            }
+                                                        }}
+                                                        onBlur={(e) => {
+                                                            if (e.target.value === '') {
+                                                                handleVariantChange(v.id, 'additionalCharge', '0');
+                                                            }
+                                                        }}
                                                         disabled={isViewMode}
                                                         className={`w-full bg-white border rounded-xl py-3.5 pl-12 pr-5 text-sm font-bold text-gray-800 outline-none focus:ring-4 transition-all shadow-sm ${additionalError ? 'border-red-400 focus:border-red-500 focus:ring-red-200/40' : 'border-gray-200 focus:border-[#3E2723] focus:ring-[#3E2723]/5'}`}
                                                         placeholder="0"

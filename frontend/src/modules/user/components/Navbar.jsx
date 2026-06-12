@@ -124,7 +124,7 @@ const Navbar = () => {
     };
 
     return (
-        <nav className={`w-full bg-[#FFF0F4] transition-all duration-300 z-[100] font-lato ${isScrolled ? 'shadow-sm' : 'border-b border-pink-100'}`}>
+        <nav className={`w-full bg-[#FFF0F4] transition-all duration-300 font-lato ${isScrolled ? 'border-b border-pink-100' : 'border-b border-pink-100'}`}>
     
             {/* Desktop Header */}
             <div className="hidden lg:block">
@@ -316,6 +316,11 @@ const Navbar = () => {
                         </Link>
                         <Link to="/cart" className="relative">
                             <ShoppingCart className="w-6 h-6 text-gray-800" />
+                            {cart?.length > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-[8px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full">
+                                    {cart.length}
+                                </span>
+                            )}
                         </Link>
                         <button onClick={() => setIsMenuOpen(true)} className="p-1">
                             <Menu className="w-7 h-7 text-gray-800" />

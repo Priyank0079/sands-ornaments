@@ -204,6 +204,8 @@ const Login = () => {
                                     <input
                                         key={index}
                                         type="text"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
                                         maxLength="1"
                                         value={data}
                                         onChange={(e) => handleOtpChange(e.target, index)}
@@ -320,6 +322,8 @@ const Login = () => {
                                             <input
                                                 key={index}
                                                 type="text"
+                                                inputMode="numeric"
+                                                pattern="[0-9]*"
                                                 maxLength="1"
                                                 value={data}
                                                 onChange={(e) => handleOtpChange(e.target, index)}

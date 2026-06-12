@@ -4,6 +4,7 @@ import { ArrowLeft, Calendar } from 'lucide-react';
 import api from '../../../services/api';
 import blogFallback from '@assets/trending_heritage.png';
 import Loader from '../../shared/components/Loader';
+import { sanitizeHtml } from '../../../utils/sanitizeHtml';
 
 const blogFallbackImage = blogFallback;
 
@@ -95,7 +96,7 @@ const BlogDetailPage = () => {
               prose-p:text-gray-600 prose-p:leading-relaxed prose-p:font-serif
               prose-li:text-gray-600 prose-li:font-serif
               prose-strong:text-black prose-strong:font-bold"
-              dangerouslySetInnerHTML={{ __html: blog.content }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(blog.content) }}
             />
           </div>
         </div>

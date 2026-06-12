@@ -374,6 +374,18 @@ const SellerOrderDetail = () => {
                                         <div>
                                             <h4 className="text-lg font-black text-gray-900 uppercase tracking-tight">{item.name || item.productId?.name || 'Jewellery Item'}</h4>
                                             <p className="text-[10px] font-black text-[#8D6E63] uppercase tracking-widest mt-1">SKU: {item.sku || 'Not set'}</p>
+                                            {item.giftWrap && (
+                                                <div className="mt-2 inline-flex flex-col gap-1 bg-[#FFF8F9] border border-[#FDF2F4] rounded-lg px-3 py-1.5 text-left">
+                                                    <span className="text-[9px] font-black text-[#8E2B45] uppercase tracking-wider flex items-center gap-1">
+                                                        🎁 Gift Wrapped (+ ₹50)
+                                                    </span>
+                                                    {item.giftMessage && (
+                                                        <span className="text-[11px] font-serif italic text-gray-700 leading-normal">
+                                                            "{item.giftMessage}"
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="flex flex-wrap gap-10">
                                             <div>

@@ -56,8 +56,9 @@ const Checkout = () => {
 
     // Calculate totals
     const subtotal = cart.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
-    const shipping = subtotal > 499 ? 0 : 50;
-    const total = Math.max(0, subtotal + shipping - discount - giftCardDiscount);
+    const giftWrapCharge = cart.reduce((acc, item) => acc + (item.giftWrap ? 50 : 0), 0);
+    const shipping = (appliedCoupon?.isFreeShipping || (subtotal - discount + giftWrapCharge) > 499) ? 0 : 50;
+    const total = Math.max(0, subtotal + giftWrapCharge + shipping - discount - giftCardDiscount);
 
     // Get active coupons from context
     const availableCoupons = coupons ? coupons.filter(c => c.active !== false) : [];
@@ -287,6 +288,7 @@ const Checkout = () => {
                     currencyText={currencyText}
                     cartItemKey={cartItemKey}
                     subtotal={subtotal}
+                    giftWrapCharge={giftWrapCharge}
                     shipping={shipping}
                     discount={discount}
                     total={total}

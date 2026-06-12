@@ -243,7 +243,9 @@ export const CartProvider = ({ children }) => {
                     packId: variantId || productId,
                     gst: Number(itemBase.gst ?? itemBase.selectedVariant?.gst) || 0,
                     quantity: finalQty,
-                    qty: finalQty
+                    qty: finalQty,
+                    giftWrap: false,
+                    giftMessage: ""
                 }];
             }
 
@@ -314,6 +316,38 @@ export const CartProvider = ({ children }) => {
     }, []);
 
     const getCart = useCallback(() => cart, [cart]);
+
+    const toggleGiftWrap = useCallback((productId, variantId) => {
+        setCart((prev) => prev.map((item) => {
+            const itemVariantKey = item.variantId || item.packId || null;
+            const targetVariantKey = variantId === 'default' ? null : (variantId || null);
+            const resolvedItemVariantKey = itemVariantKey === 'default' ? null : itemVariantKey;
+            if (item.id === productId && (targetVariantKey === null || resolvedItemVariantKey === targetVariantKey)) {
+                const isGiftWrap = !item.giftWrap;
+                return {
+                    ...item,
+                    giftWrap: isGiftWrap,
+                    giftMessage: isGiftWrap ? (item.giftMessage || '') : ''
+                };
+            }
+            return item;
+        }));
+    }, []);
+
+    const updateGiftMessage = useCallback((productId, variantId, message) => {
+        setCart((prev) => prev.map((item) => {
+            const itemVariantKey = item.variantId || item.packId || null;
+            const targetVariantKey = variantId === 'default' ? null : (variantId || null);
+            const resolvedItemVariantKey = itemVariantKey === 'default' ? null : itemVariantKey;
+            if (item.id === productId && (targetVariantKey === null || resolvedItemVariantKey === targetVariantKey)) {
+                return {
+                    ...item,
+                    giftMessage: String(message || '').slice(0, 200)
+                };
+            }
+            return item;
+        }));
+    }, []);
 
     // ── Coupon management ────────────────────────────────────────────────────
     const validateCoupon = useCallback(async (code, cartTotal, items) => {
@@ -508,7 +542,9 @@ export const CartProvider = ({ children }) => {
                     isGiftCard: isGift,
                     personalization: item.personalization || null,
                     price: item.price,
-                    name: item.name
+                    name: item.name,
+                    giftWrap: Boolean(item.giftWrap),
+                    giftMessage: item.giftWrap ? String(item.giftMessage || '') : ''
                 };
             });
 
@@ -584,6 +620,7 @@ export const CartProvider = ({ children }) => {
         addCoupon, updateCoupon, deleteCoupon, toggleCoupon,
         placeOrder, fetchCart, syncGuestCart,
         clearCartOnDelete,
+        toggleGiftWrap, updateGiftMessage
     };
 
     return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

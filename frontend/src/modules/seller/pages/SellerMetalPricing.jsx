@@ -165,6 +165,16 @@ const SellerMetalPricing = () => {
                                     type="number"
                                     value={rates.gold10g?.k14}
                                     onChange={(e) => updateRate('gold10g', 'k14', e.target.value)}
+                                    onFocus={(e) => {
+                                        if (e.target.value === '0' || Number(e.target.value) === 0) {
+                                            updateRate('gold10g', 'k14', '');
+                                        }
+                                    }}
+                                    onBlur={(e) => {
+                                        if (e.target.value === '') {
+                                            updateRate('gold10g', 'k14', 0);
+                                        }
+                                    }}
                                     className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm font-bold text-gray-800 focus:outline-none focus:border-[#3E2723]/40"
                                     placeholder="0"
                                     disabled={loading}
@@ -177,6 +187,16 @@ const SellerMetalPricing = () => {
                                     type="number"
                                     value={rates.gold10g?.k18}
                                     onChange={(e) => updateRate('gold10g', 'k18', e.target.value)}
+                                    onFocus={(e) => {
+                                        if (e.target.value === '0' || Number(e.target.value) === 0) {
+                                            updateRate('gold10g', 'k18', '');
+                                        }
+                                    }}
+                                    onBlur={(e) => {
+                                        if (e.target.value === '') {
+                                            updateRate('gold10g', 'k18', 0);
+                                        }
+                                    }}
                                     className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm font-bold text-gray-800 focus:outline-none focus:border-[#3E2723]/40"
                                     placeholder="0"
                                     disabled={loading}
@@ -189,6 +209,16 @@ const SellerMetalPricing = () => {
                                     type="number"
                                     value={rates.gold10g?.k22}
                                     onChange={(e) => updateRate('gold10g', 'k22', e.target.value)}
+                                    onFocus={(e) => {
+                                        if (e.target.value === '0' || Number(e.target.value) === 0) {
+                                            updateRate('gold10g', 'k22', '');
+                                        }
+                                    }}
+                                    onBlur={(e) => {
+                                        if (e.target.value === '') {
+                                            updateRate('gold10g', 'k22', 0);
+                                        }
+                                    }}
                                     className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm font-bold text-gray-800 focus:outline-none focus:border-[#3E2723]/40"
                                     placeholder="0"
                                     disabled={loading}
@@ -201,6 +231,16 @@ const SellerMetalPricing = () => {
                                     type="number"
                                     value={rates.gold10g?.k24}
                                     onChange={(e) => updateRate('gold10g', 'k24', e.target.value)}
+                                    onFocus={(e) => {
+                                        if (e.target.value === '0' || Number(e.target.value) === 0) {
+                                            updateRate('gold10g', 'k24', '');
+                                        }
+                                    }}
+                                    onBlur={(e) => {
+                                        if (e.target.value === '') {
+                                            updateRate('gold10g', 'k24', 0);
+                                        }
+                                    }}
                                     className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm font-bold text-gray-800 focus:outline-none focus:border-[#3E2723]/40"
                                     placeholder="0"
                                     disabled={loading}
@@ -219,6 +259,16 @@ const SellerMetalPricing = () => {
                                     type="number"
                                     value={rates.silver10g?.sterling925}
                                     onChange={(e) => updateRate('silver10g', 'sterling925', e.target.value)}
+                                    onFocus={(e) => {
+                                        if (e.target.value === '0' || Number(e.target.value) === 0) {
+                                            updateRate('silver10g', 'sterling925', '');
+                                        }
+                                    }}
+                                    onBlur={(e) => {
+                                        if (e.target.value === '') {
+                                            updateRate('silver10g', 'sterling925', 0);
+                                        }
+                                    }}
                                     className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm font-bold text-gray-800 focus:outline-none focus:border-[#3E2723]/40"
                                     placeholder="0"
                                     disabled={loading}
@@ -231,6 +281,16 @@ const SellerMetalPricing = () => {
                                     type="number"
                                     value={rates.silver10g?.silverOther}
                                     onChange={(e) => updateRate('silver10g', 'silverOther', e.target.value)}
+                                    onFocus={(e) => {
+                                        if (e.target.value === '0' || Number(e.target.value) === 0) {
+                                            updateRate('silver10g', 'silverOther', '');
+                                        }
+                                    }}
+                                    onBlur={(e) => {
+                                        if (e.target.value === '') {
+                                            updateRate('silver10g', 'silverOther', 0);
+                                        }
+                                    }}
                                     className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm font-bold text-gray-800 focus:outline-none focus:border-[#3E2723]/40"
                                     placeholder="0"
                                     disabled={loading}

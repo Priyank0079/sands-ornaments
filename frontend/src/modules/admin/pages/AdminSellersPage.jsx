@@ -140,12 +140,36 @@ const AdminSellersPage = () => {
             className: 'w-[10%]',
             render: (row) => (
                 <div className="flex gap-1.5 items-center">
-                    <div title="AADHAR CARD" className={`w-7 h-7 rounded-lg flex items-center justify-center border ${row.documents?.aadharUrl ? 'bg-indigo-50 text-indigo-600 border-indigo-100' : 'bg-gray-50 text-gray-300 border-gray-100'}`}>
-                        <FileText size={14} />
-                    </div>
-                    <div title="SHOP LICENSE" className={`w-7 h-7 rounded-lg flex items-center justify-center border ${row.documents?.shopLicenseUrl ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-gray-50 text-gray-300 border-gray-100'}`}>
-                        <ShieldCheck size={14} />
-                    </div>
+                    {row.documents?.aadharUrl ? (
+                        <a 
+                            href={row.documents.aadharUrl} 
+                            target="_blank" 
+                            rel="noreferrer" 
+                            title="VIEW AADHAR CARD" 
+                            className="w-7 h-7 rounded-lg flex items-center justify-center border bg-indigo-50 text-indigo-600 border-indigo-100 hover:bg-indigo-100 transition-colors cursor-pointer"
+                        >
+                            <FileText size={14} />
+                        </a>
+                    ) : (
+                        <div title="AADHAR CARD (NOT UPLOADED)" className="w-7 h-7 rounded-lg flex items-center justify-center border bg-gray-50 text-gray-300 border-gray-100">
+                            <FileText size={14} />
+                        </div>
+                    )}
+                    {row.documents?.shopLicenseUrl ? (
+                        <a 
+                            href={row.documents.shopLicenseUrl} 
+                            target="_blank" 
+                            rel="noreferrer" 
+                            title="VIEW SHOP LICENSE" 
+                            className="w-7 h-7 rounded-lg flex items-center justify-center border bg-amber-50 text-amber-600 border-amber-100 hover:bg-amber-100 transition-colors cursor-pointer"
+                        >
+                            <ShieldCheck size={14} />
+                        </a>
+                    ) : (
+                        <div title="SHOP LICENSE (NOT UPLOADED)" className="w-7 h-7 rounded-lg flex items-center justify-center border bg-gray-50 text-gray-300 border-gray-100">
+                            <ShieldCheck size={14} />
+                        </div>
+                    )}
                 </div>
             )
         },

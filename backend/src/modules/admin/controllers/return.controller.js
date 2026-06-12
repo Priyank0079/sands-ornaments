@@ -378,7 +378,7 @@ exports.updateReturnStatus = async (req, res) => {
         html:    emailTemplates.returnStatusUpdate({
           returnReq:  refreshed,
           userName:   returnUser.name,
-          newStatus,
+          newStatus:  nextStatus,
           note:       note || "",
           order:      returnOrder,
         }),

@@ -63,6 +63,7 @@ const SharedProductEditor = ({
     const [errors, setErrors] = useState({});
     const [expandedVariant, setExpandedVariant] = useState(null);
     const [liveErrors, setLiveErrors] = useState({});
+    const [hasTriedSubmit, setHasTriedSubmit] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [createdProductData, setCreatedProductData] = useState(null);
     const [gstRate, setGstRate] = useState(3);
@@ -229,10 +230,13 @@ const SharedProductEditor = ({
         setLiveErrors(newErrors);
     }, [formData]);
 
-    const combinedErrors = useMemo(() => ({
-        ...errors,
-        ...liveErrors
-    }), [errors, liveErrors]);
+    const combinedErrors = useMemo(() => {
+        if (!hasTriedSubmit) return {};
+        return {
+            ...errors,
+            ...liveErrors
+        };
+    }, [errors, liveErrors, hasTriedSubmit]);
 
     const setSerialBarcodeRef = (key, node) => {
         if (node) {
@@ -730,6 +734,7 @@ const SharedProductEditor = ({
     };
 
     const handleSubmit = async () => {
+        setHasTriedSubmit(true);
         const newErrors = validateForm();
         const errorList = Object.values(newErrors);
         

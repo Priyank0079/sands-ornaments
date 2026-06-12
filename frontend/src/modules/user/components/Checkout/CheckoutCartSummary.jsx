@@ -6,6 +6,7 @@ const CheckoutCartSummary = ({
     currencyText,
     cartItemKey,
     subtotal,
+    giftWrapCharge,
     shipping,
     discount,
     total,
@@ -50,6 +51,11 @@ const CheckoutCartSummary = ({
                                 <p className="text-sm font-bold text-black line-clamp-2 font-display uppercase tracking-wide text-[11px]">{item.name}</p>
                                 <p className="text-xs text-gray-500 mt-1 font-serif">Qty: {item.quantity || 1}</p>
                                 <p className="text-sm font-bold text-black mt-1">{currencyText(item.price * (item.quantity || 1))}</p>
+                                {item.giftWrap && (
+                                    <p className="text-[10px] text-[#D39A9F] mt-1 flex items-center gap-1 font-sans">
+                                        🎁 Gift wrapped {item.giftMessage ? `("${item.giftMessage}")` : ''}
+                                    </p>
+                                )}
                             </div>
                         </div>
                     ))}
@@ -136,6 +142,12 @@ const CheckoutCartSummary = ({
                         <span className="font-serif">Subtotal</span>
                         <span className="text-black font-bold font-sans">{currencyText(subtotal)}</span>
                     </div>
+                    {giftWrapCharge > 0 && (
+                        <div className="flex justify-between items-center text-[#D39A9F]">
+                            <span className="font-serif">Gift Wrapping</span>
+                            <span className="font-bold font-sans">{currencyText(giftWrapCharge)}</span>
+                        </div>
+                    )}
                     <div className="flex justify-between items-center">
                         <span className="font-serif">Shipping</span>
                         <span className="font-sans font-bold">{shipping === 0 ? <span className="text-emerald-600">Free</span> : currencyText(shipping)}</span>

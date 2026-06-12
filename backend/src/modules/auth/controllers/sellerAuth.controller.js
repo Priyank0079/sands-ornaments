@@ -1,11 +1,13 @@
 const Seller = require("../../../models/Seller");
 const Notification = require("../../../models/Notification");
 const EmailOTP = require("../../../models/EmailOTP");
+const OTP = require("../../../models/OTP");
 const Page = require("../../../models/Page");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { success, error } = require("../../../utils/apiResponse");
 const { sendEmail } = require("../../../services/emailService");
+const { sendOtpSms } = require("../../../services/smsService");
 
 const MIN_SELLER_PASSWORD_LEN = 6;
 const MAX_LOGIN_ATTEMPTS = 5;
@@ -305,6 +307,94 @@ exports.resetPassword = async (req, res) => {
     await seller.save();
 
     await EmailOTP.deleteMany({ email: normalizedEmail, purpose: "seller_password_reset" });
+
+    return success(res, {}, "Password updated successfully");
+  } catch (err) {
+    return error(res, err.message);
+  }
+};
+
+// --- SELLER PASSWORD RESET (MOBILE SMS OTP) ---
+exports.sendResetMobileOtp = async (req, res) => {
+  try {
+    const mobileNumber = String(req.body.mobileNumber || "").trim();
+    if (!mobileNumber) return error(res, "Mobile number is required", 400);
+    if (!/^\d{10}$/.test(mobileNumber)) {
+      return error(res, "Please enter a valid 10-digit mobile number", 400);
+    }
+
+    // Always respond success to avoid account enumeration
+    const seller = await Seller.findOne({ mobileNumber }).select("_id mobileNumber fullName");
+    if (!seller) {
+      return success(res, {}, "If an account exists, an OTP has been sent.");
+    }
+
+    const defaultOtp = process.env.DEFAULT_OTP || "1234";
+    const otp = process.env.USE_REAL_OTP === "true"
+      ? String(Math.floor(100000 + Math.random() * 900000))
+      : defaultOtp;
+
+    await OTP.deleteMany({ phone: mobileNumber, purpose: "seller_password_reset" });
+    await OTP.create({ phone: mobileNumber, otp, purpose: "seller_password_reset", attempts: 0 });
+
+    try {
+      await sendOtpSms(mobileNumber, otp);
+    } catch (smsErr) {
+      console.error("Seller reset OTP SMS failed:", smsErr.message);
+    }
+
+    if (process.env.NODE_ENV !== "production") {
+      console.log(`[DEV Seller Reset Mobile OTP] ${mobileNumber}: ${otp}`);
+    }
+
+    return success(res, {}, "If an account exists, an OTP has been sent.");
+  } catch (err) {
+    return error(res, err.message);
+  }
+};
+
+exports.resetPasswordViaMobile = async (req, res) => {
+  try {
+    const mobileNumber = String(req.body.mobileNumber || "").trim();
+    const otp = String(req.body.otp || "").trim();
+    const newPassword = String(req.body.newPassword || "").trim();
+
+    if (!mobileNumber) return error(res, "Mobile number is required", 400);
+    if (!otp) return error(res, "OTP is required", 400);
+    if (!newPassword) return error(res, "New password is required", 400);
+    if (newPassword.length < MIN_SELLER_PASSWORD_LEN) {
+      return error(res, `Password must be at least ${MIN_SELLER_PASSWORD_LEN} characters`, 400);
+    }
+
+    const otpRecord = await OTP.findOne({ phone: mobileNumber, purpose: "seller_password_reset" });
+    if (!otpRecord) {
+      return error(res, "OTP expired or not found. Please request a new OTP.", 400, "OTP_EXPIRED");
+    }
+
+    if ((Number(otpRecord.attempts) || 0) >= SELLER_RESET_MAX_ATTEMPTS) {
+      await OTP.deleteMany({ phone: mobileNumber, purpose: "seller_password_reset" });
+      return error(res, "Too many failed attempts. Please request a new OTP.", 429, "OTP_MAX_ATTEMPTS");
+    }
+
+    if (String(otpRecord.otp) !== otp) {
+      await OTP.updateOne({ _id: otpRecord._id }, { $inc: { attempts: 1 } });
+      const remaining = SELLER_RESET_MAX_ATTEMPTS - ((Number(otpRecord.attempts) || 0) + 1);
+      return error(res, `Invalid OTP. ${Math.max(0, remaining)} attempt(s) remaining.`, 400, "OTP_INVALID");
+    }
+
+    const seller = await Seller.findOne({ mobileNumber });
+    if (!seller) {
+      await OTP.deleteMany({ phone: mobileNumber, purpose: "seller_password_reset" });
+      return success(res, {}, "Password updated successfully");
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    seller.password = await bcrypt.hash(newPassword, salt);
+    seller.loginAttempts = 0;
+    seller.lockUntil = null;
+    await seller.save();
+
+    await OTP.deleteMany({ phone: mobileNumber, purpose: "seller_password_reset" });
 
     return success(res, {}, "Password updated successfully");
   } catch (err) {

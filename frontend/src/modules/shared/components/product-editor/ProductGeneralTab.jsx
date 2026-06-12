@@ -193,7 +193,17 @@ const ProductGeneralTab = ({
                                 label="Default Weight"
                                 type="number"
                                 value={formData.weight}
-                                onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+                                onChange={(e) => setFormData(prev => ({ ...prev, weight: e.target.value }))}
+                                onFocus={(e) => {
+                                    if (e.target.value === '0' || Number(e.target.value) === 0) {
+                                        setFormData(prev => ({ ...prev, weight: '' }));
+                                    }
+                                }}
+                                onBlur={(e) => {
+                                    if (e.target.value === '') {
+                                        setFormData(prev => ({ ...prev, weight: '' }));
+                                    }
+                                }}
                                 disabled={isViewMode}
                                 placeholder="0.00"
                                 error={errors.weight}

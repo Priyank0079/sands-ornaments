@@ -107,7 +107,7 @@ const PromoSlider = () => {
         >
             <div className="relative w-full h-[200px] sm:h-[220px] md:h-[350px]">
                 <motion.div
-                    className="flex h-full w-full gap-[1.5%]"
+                    className="flex h-full w-full gap-[1.5%] touch-pan-y"
                     animate={{ 
                         x: `calc(4.25% - ${currentIndex * 90}% - ${currentIndex * 1.5}%)` 
                     }}
@@ -118,6 +118,17 @@ const PromoSlider = () => {
                         mass: 0.8
                     }}
                     onAnimationComplete={handleTransitionEnd}
+                    drag="x"
+                    dragConstraints={{ left: 0, right: 0 }}
+                    dragElastic={0.1}
+                    onDragEnd={(e, { offset, velocity }) => {
+                        const swipe = offset.x;
+                        if (swipe < -50) {
+                            nextSlide();
+                        } else if (swipe > 50) {
+                            prevSlide();
+                        }
+                    }}
                 >
                     {extendedSlides.map((slide, idx) => (
                         <div 
