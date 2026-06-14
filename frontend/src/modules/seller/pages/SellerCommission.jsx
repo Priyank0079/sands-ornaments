@@ -91,6 +91,10 @@ const SellerCommission = () => {
     useEffect(() => { loadLedger();  /* eslint-disable-next-line */ }, [appliedFilters, page]);
 
     const handleApplyFilters = () => {
+        if (filters.from && filters.to && new Date(filters.from) > new Date(filters.to)) {
+            toast.error("'To' Date cannot be before 'From' Date");
+            return;
+        }
         setPage(1);
         setAppliedFilters({ ...filters });
     };
@@ -255,6 +259,7 @@ const SellerCommission = () => {
                         <input
                             type="date"
                             value={filters.from}
+                            max={filters.to}
                             onChange={(e) => setFilters({ ...filters, from: e.target.value })}
                             className="mt-1 w-full bg-gray-50 border border-gray-200 rounded-xl py-2.5 px-3 text-xs font-bold text-gray-800 focus:outline-none focus:border-[#3E2723]/40"
                         />
@@ -264,6 +269,7 @@ const SellerCommission = () => {
                         <input
                             type="date"
                             value={filters.to}
+                            min={filters.from}
                             onChange={(e) => setFilters({ ...filters, to: e.target.value })}
                             className="mt-1 w-full bg-gray-50 border border-gray-200 rounded-xl py-2.5 px-3 text-xs font-bold text-gray-800 focus:outline-none focus:border-[#3E2723]/40"
                         />

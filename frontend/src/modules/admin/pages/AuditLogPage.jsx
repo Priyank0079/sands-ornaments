@@ -216,11 +216,22 @@ const AuditLogPage = () => {
   useEffect(() => { fetchStats(); }, [fetchStats]);
   useEffect(() => { fetchLogs(page, filters); }, [fetchLogs, page, filters]);
 
-  const handleSearch = () => { setPage(1); fetchLogs(1, filters); };
+  const handleSearch = () => {
+    if (filters.dateFrom && filters.dateTo && new Date(filters.dateTo) < new Date(filters.dateFrom)) {
+      toast.error("'To' date cannot be before 'From' date");
+      return;
+    }
+    setPage(1);
+    fetchLogs(1, filters);
+  };
 
   const handleFilterChange = (key, val) => setFilters(f => ({ ...f, [key]: val }));
 
   const handleExport = async () => {
+    if (filters.dateFrom && filters.dateTo && new Date(filters.dateTo) < new Date(filters.dateFrom)) {
+      toast.error("'To' date cannot be before 'From' date");
+      return;
+    }
     try {
       setExporting(true);
       const params = {};
@@ -322,6 +333,7 @@ const AuditLogPage = () => {
             value={filters.dateFrom}
             onChange={e => handleFilterChange('dateFrom', e.target.value)}
             className="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-700 outline-none focus:border-indigo-300 transition-all"
+            max={filters.dateTo || undefined}
           />
 
           {/* Date To */}
@@ -331,6 +343,7 @@ const AuditLogPage = () => {
             value={filters.dateTo}
             onChange={e => handleFilterChange('dateTo', e.target.value)}
             className="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-700 outline-none focus:border-indigo-300 transition-all"
+            min={filters.dateFrom || undefined}
           />
 
           {/* Buttons */}

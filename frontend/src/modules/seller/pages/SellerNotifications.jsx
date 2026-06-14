@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Bell, CheckCircle2, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
+import { Bell, CheckCircle2, ChevronLeft, ChevronRight, RefreshCw, Trash2 } from 'lucide-react';
 import { sellerOrderService } from '../services/sellerOrderService';
 import { useNavigate } from 'react-router-dom';
 
@@ -64,7 +64,7 @@ const SellerNotifications = () => {
   return (
     <div className="p-4 lg:p-6 font-sans">
       <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-6 border-b border-gray-50 flex items-center justify-between gap-4">
+        <div className="p-6 border-b border-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center">
               <Bell className="w-5 h-5 text-amber-700" />
@@ -77,7 +77,7 @@ const SellerNotifications = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
             <button
               type="button"
               onClick={() => setOnlyUnread((v) => !v)}
@@ -114,29 +114,52 @@ const SellerNotifications = () => {
               <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest">No notifications</p>
             </div>
           ) : (
-            notifications.map((n) => (
-              <button
-                key={n?._id || n?.id}
-                type="button"
-                onClick={() => openNotification(n)}
-                className="w-full text-left p-6 hover:bg-gray-50 transition-all flex items-start gap-4"
-              >
-                <div className={`w-2.5 h-2.5 rounded-full mt-2 ${n?.isRead ? 'bg-gray-200' : 'bg-amber-500'}`} />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-4">
-                    <p className="text-[11px] font-black text-gray-900 uppercase tracking-tight line-clamp-1">
-                      {n?.title || 'Notification'}
-                    </p>
-                    <p className="text-[9px] font-bold text-gray-400 uppercase whitespace-nowrap">
-                      {new Date(n?.createdAt || Date.now()).toLocaleString()}
-                    </p>
-                  </div>
-                  <p className="text-[10px] font-bold text-gray-500 mt-1 uppercase leading-relaxed line-clamp-2">
-                    {n?.message || ''}
-                  </p>
+            notifications.map((n) => {
+              const id = n?._id || n?.id;
+              return (
+                <div
+                  key={id}
+                  className="w-full p-6 hover:bg-gray-50 transition-all flex items-start justify-between gap-4 group"
+                >
+                  <button
+                    type="button"
+                    onClick={() => openNotification(n)}
+                    className="flex-1 min-w-0 text-left flex items-start gap-4 cursor-pointer focus:outline-none"
+                  >
+                    <div className={`w-2.5 h-2.5 rounded-full mt-2.5 flex-shrink-0 ${n?.isRead ? 'bg-gray-200' : 'bg-amber-500'}`} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4">
+                        <p className="text-[11px] font-black text-gray-900 uppercase tracking-tight line-clamp-1">
+                          {n?.title || 'Notification'}
+                        </p>
+                        <p className="text-[9px] font-bold text-gray-400 uppercase whitespace-nowrap">
+                          {new Date(n?.createdAt || Date.now()).toLocaleString()}
+                        </p>
+                      </div>
+                      <p className="text-[10px] font-bold text-gray-500 mt-1 uppercase leading-relaxed line-clamp-2">
+                        {n?.message || ''}
+                      </p>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      if (id) {
+                        const success = await sellerOrderService.deleteNotification(id);
+                        if (success) {
+                          load();
+                        }
+                      }
+                    }}
+                    className="p-2 rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all self-center flex-shrink-0"
+                    title="Delete notification"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
-              </button>
-            ))
+              );
+            })
           )}
         </div>
 

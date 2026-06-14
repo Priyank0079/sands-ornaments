@@ -18,6 +18,8 @@ const CategoryEditor = () => {
     const [bannerPreviewImage, setBannerPreviewImage] = useState('');
     const [errors, setErrors] = useState({});
     const [allCategories, setAllCategories] = useState([]);
+    const [fileInputKey, setFileInputKey] = useState(Date.now());
+    const [bannerInputKey, setBannerInputKey] = useState(Date.now() + 1);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -153,6 +155,7 @@ const CategoryEditor = () => {
             setFormData(prev => ({ ...prev, deletedImages: [previewImage] }));
         }
         setPreviewImage('');
+        setFileInputKey(Date.now());
     };
 
     const handleBannerImageUpload = (e) => {
@@ -168,6 +171,7 @@ const CategoryEditor = () => {
             setFormData(prev => ({ ...prev, bannerDeletedImages: [bannerPreviewImage] }));
         }
         setBannerPreviewImage('');
+        setBannerInputKey(Date.now());
     };
 
     const validate = () => {
@@ -340,6 +344,7 @@ const CategoryEditor = () => {
                         </div>
                         <div className="space-y-3">
                             <input
+                                key={bannerInputKey}
                                 type="file"
                                 accept="image/*"
                                 onChange={handleBannerImageUpload}
@@ -407,6 +412,7 @@ const CategoryEditor = () => {
                         </div>
                         <div className="space-y-3">
                             <input
+                                key={fileInputKey}
                                 type="file"
                                 accept="image/*"
                                 onChange={handleImageUpload}

@@ -91,6 +91,18 @@ const LocationFormModal = ({ location, onClose, onSaved }) => {
       return;
     }
 
+    const trimmedAddress = String(form.addressLine1 || '').trim();
+    if (trimmedAddress.length < 10) {
+      setFormError('Address Line 1 must be at least 10 characters long.');
+      return;
+    }
+    const hasDigits = /\d/.test(trimmedAddress);
+    const hasAddressKeywords = /(road|plot|house|flat|building|bldg|no|floor|block|ward|street|st|lane|society|apartments|apt)/i.test(trimmedAddress);
+    if (!hasDigits && !hasAddressKeywords) {
+      setFormError('Address Line 1 must contain a house number, flat number, road name, or plot number (e.g. Flat 101 or Road No. 5).');
+      return;
+    }
+
     setSaving(true);
     try {
       let saved;
@@ -153,7 +165,7 @@ const LocationFormModal = ({ location, onClose, onSaved }) => {
             </div>
             <div>
               <label className={labelCls}>Phone <span className="text-red-500">*</span></label>
-              <input name="phone" value={form.phone} onChange={handleChange}
+              <input name="phone" type="tel" inputMode="numeric" pattern="[0-9]*" value={form.phone} onChange={handleChange}
                 placeholder="10-digit mobile" className={inputCls} />
             </div>
           </div>
@@ -186,7 +198,7 @@ const LocationFormModal = ({ location, onClose, onSaved }) => {
             </div>
             <div>
               <label className={labelCls}>Pincode <span className="text-red-500">*</span></label>
-              <input name="pincode" value={form.pincode} onChange={handleChange} placeholder="6 digits" className={inputCls} />
+              <input name="pincode" type="text" inputMode="numeric" pattern="[0-9]*" value={form.pincode} onChange={handleChange} placeholder="6 digits" className={inputCls} />
             </div>
           </div>
 

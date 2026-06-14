@@ -88,7 +88,12 @@ export const CartProvider = ({ children }) => {
             const items = cart.map(item => ({
                 productId: item.id || item._id,
                 variantId: item.variantId,
-                quantity: item.quantity
+                quantity: item.quantity,
+                isGiftCard: Boolean(item.isGiftCard),
+                price: Number(item.price) || 0,
+                name: String(item.name || ''),
+                image: String(item.image || ''),
+                personalization: item.personalization || null
             }));
             if (items.length > 0) {
                 api.put('user/cart', { items }).catch(() => {});
@@ -113,6 +118,21 @@ export const CartProvider = ({ children }) => {
             if (res.data.success) {
                 const backendCart = res.data.data?.cart || [];
                 const mappedCart = backendCart.map(item => {
+                    if (item.isGiftCard) {
+                        return {
+                            id: item.productId,
+                            _id: item.productId,
+                            name: item.name || 'Sands Gift Card',
+                            price: item.price,
+                            image: item.image,
+                            isGiftCard: true,
+                            personalization: item.personalization,
+                            quantity: item.quantity,
+                            qty: item.quantity,
+                            variantId: item.variantId || 'GIFT_CARD_VAR',
+                            packId: item.variantId || 'GIFT_CARD_VAR'
+                        };
+                    }
                     const product = item.productId;
                     if (!product) return null;
                     const selectedVariant = product.variants?.find(v => String(v._id || v.id) === String(item.variantId)) || product.variants?.[0];
@@ -566,7 +586,13 @@ export const CartProvider = ({ children }) => {
                         toast.error(initRes.data.message || 'Payment initiation failed');
                         return null;
                     }
-                    const { rpOrder, orderData } = initRes.data.data;
+                    const { rpOrder, orderData, isZeroTotal, orderId } = initRes.data.data;
+                    if (isZeroTotal) {
+                        setCart([]);
+                        clearAppliedCoupon();
+                        toast.success('Prepaid order confirmed via gift cards successfully!');
+                        return orderId;
+                    }
                     return await handleRazorpayPayment(rpOrder, orderData);
                 } catch (err) {
                     toast.error(err.response?.data?.message || 'Payment initiation failed');

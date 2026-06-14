@@ -4,6 +4,7 @@ import { Gift, Heart, Send, Sparkles, ShieldCheck, Clock, Check, ChevronRight, L
 import { useShop } from '../../../context/ShopContext';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import api from '../../../services/api';
 
 // Import the generated mockup image
 import giftCardMockup from '@assets/sands_gift_card_mockup_1777455722986.png';
@@ -23,6 +24,34 @@ const GiftCardsPage = () => {
         senderName: '',
         message: ''
     });
+
+    // Balance check states
+    const [balanceCode, setBalanceCode] = useState('');
+    const [balanceResult, setBalanceResult] = useState(null);
+    const [checkingBalance, setCheckingBalance] = useState(false);
+
+    const handleCheckBalance = async () => {
+        const code = balanceCode.toUpperCase().trim();
+        if (!code) {
+            toast.error("Please enter a gift card code.");
+            return;
+        }
+        setCheckingBalance(true);
+        setBalanceResult(null);
+        try {
+            const res = await api.get(`user/gift-cards/validate/${code}`);
+            if (res.data.success) {
+                setBalanceResult(res.data.data);
+                toast.success("Balance retrieved successfully!");
+            } else {
+                toast.error(res.data.message || "Failed to retrieve balance.");
+            }
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Gift card code is invalid or expired.");
+        } finally {
+            setCheckingBalance(false);
+        }
+    };
 
     const finalAmount = isCustomAmount ? Number(customAmount) : selectedAmount;
 
@@ -328,6 +357,70 @@ const GiftCardsPage = () => {
                                         <h5 className="text-[11px] font-bold uppercase tracking-widest text-black">Redeemable Site-wide</h5>
                                         <p className="text-[10px] text-gray-400 font-medium">Can be used for any gold or silver jewelry.</p>
                                     </div>
+                                </div>
+                            </div>
+
+                            {/* Check Balance Card */}
+                            <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-xl shadow-black/5 space-y-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-[#8E2B45]/5 flex items-center justify-center">
+                                        <Gift className="w-5 h-5 text-[#8E2B45]" />
+                                    </div>
+                                    <div className="text-left">
+                                        <h5 className="text-[11px] font-bold uppercase tracking-widest text-black">Check Gift Card Balance</h5>
+                                        <p className="text-[10px] text-gray-400 font-medium">Verify remaining balance instantly</p>
+                                    </div>
+                                </div>
+                                <div className="space-y-4">
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            placeholder="SANDS-XXXX-XXXX-XXXX"
+                                            value={balanceCode}
+                                            onChange={(e) => setBalanceCode(e.target.value.toUpperCase())}
+                                            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleCheckBalance(); } }}
+                                            className="flex-1 bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-xs font-mono outline-none focus:ring-2 focus:ring-[#8E2B45]/20 focus:bg-white focus:border-[#8E2B45] transition-all uppercase placeholder:normal-case placeholder:font-sans"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={handleCheckBalance}
+                                            disabled={checkingBalance || !balanceCode.trim()}
+                                            className="bg-black text-white px-5 rounded-xl font-semibold text-xs uppercase tracking-wider hover:bg-[#8E2B45] transition-colors disabled:opacity-50"
+                                        >
+                                            {checkingBalance ? '...' : 'Check'}
+                                        </button>
+                                    </div>
+                                    <AnimatePresence>
+                                        {balanceResult && (
+                                            <motion.div
+                                                initial={{ opacity: 0, height: 0 }}
+                                                animate={{ opacity: 1, height: 'auto' }}
+                                                exit={{ opacity: 0, height: 0 }}
+                                                className="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-4 space-y-3 overflow-hidden text-left"
+                                            >
+                                                <div className="flex justify-between items-center border-b border-emerald-100 pb-2">
+                                                    <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">Card Code</span>
+                                                    <span className="text-xs font-mono font-bold text-emerald-900">{balanceResult.code}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-xs text-emerald-700">Initial Value</span>
+                                                    <span className="text-xs font-bold text-gray-750">₹{balanceResult.value.toLocaleString('en-IN')}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-xs text-emerald-700 font-bold">Remaining Balance</span>
+                                                    <span className="text-base font-bold text-emerald-850">₹{balanceResult.balance.toLocaleString('en-IN')}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-xs text-emerald-700">Status</span>
+                                                    <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                                                        balanceResult.status === 'active' ? 'bg-emerald-100 text-emerald-850' : 'bg-amber-100 text-amber-850'
+                                                    }`}>
+                                                        {balanceResult.status.replace('_', ' ')}
+                                                    </span>
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
                                 </div>
                             </div>
                         </div>

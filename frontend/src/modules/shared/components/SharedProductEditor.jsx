@@ -76,77 +76,100 @@ const SharedProductEditor = ({
     const [showEnhanceModal, setShowEnhanceModal] = useState(false);
     const [enhancedIndices, setEnhancedIndices] = useState(new Set());
 
-    const [formData, setFormData] = useState({
-        name: '',
-        productCode: '',
-        huid: '',
-        material: 'Silver',
-        description: '',
-        specifications: '',
-        supplierInfo: '',
-        stylingTips: '',
-        careTips: '',
-        diamondType: 'none',
-        categories: [],
-        variants: [{ 
-            id: Date.now(), 
-            name: 'Standard', 
-            weight: '', 
-            weightUnit: 'Grams',
-            makingCharge: '0', 
-            hallmarkingCharge: '0',
-            diamondCertificateCharge: '0',
-            additionalCharge: '0',
-            diamondPrice: '0', 
+    const [formData, setFormData] = useState(() => {
+        const initial = {
+            name: '',
+            productCode: '',
+            huid: '',
+            material: 'Silver',
+            description: '',
+            specifications: '',
+            supplierInfo: '',
+            stylingTips: '',
+            careTips: '',
             diamondType: 'none',
-            mrp: '0', 
-            price: '', 
-            stock: 0,
-            serialCodes: [],
-            hiddenCharge: 0,
-            subtotalBeforeTax: 0,
-            gstAmount: 0,
-            priceAfterTax: 0,
-            pgChargePercent: 0,
-            pgChargeAmount: 0,
-            variantCode: '',
-            variantImages: [],
-            variantFaqs: [],
-            diamondSpecs: {
-                carat: '',
-                clarity: '',
-                color: '',
-                cut: '',
-                shape: '',
-                diamondCount: 0
+            categories: [],
+            variants: [{ 
+                id: Date.now(), 
+                name: 'Standard', 
+                weight: '', 
+                weightUnit: 'Grams',
+                makingCharge: '0', 
+                hallmarkingCharge: '0',
+                diamondCertificateCharge: '0',
+                additionalCharge: '0',
+                diamondPrice: '0', 
+                diamondType: 'none',
+                mrp: '0', 
+                price: '', 
+                stock: 0,
+                serialCodes: [],
+                hiddenCharge: 0,
+                subtotalBeforeTax: 0,
+                gstAmount: 0,
+                priceAfterTax: 0,
+                pgChargePercent: 0,
+                pgChargeAmount: 0,
+                variantCode: '',
+                variantImages: [],
+                variantFaqs: [],
+                diamondSpecs: {
+                    carat: '',
+                    clarity: '',
+                    color: '',
+                    cut: '',
+                    shape: '',
+                    diamondCount: 0
+                }
+            }],
+            faqs: [],
+            seo: { title: '', description: '', keywords: '' },
+            logistics: { estimatedShippingDays: 3, certificateUrl: '' },
+            deletedImages: [],
+            tags: { 
+                isNewArrival: false, 
+                isMostGifted: false, 
+                isNewLaunch: false, 
+                isTrending: false, 
+                isPremium: false 
+            },
+            relatedProducts: [],
+            weight: '',
+            weightUnit: 'Grams',
+            paymentGatewayChargeBearer: 'seller',
+            videoUrl: '',
+            status: 'Active',
+            active: true,
+            showInNavbar: true,
+            showInCollection: true,
+            cardLabel: '',
+            cardBadge: '',
+            audience: ['unisex'],
+            silverCategory: '',
+            goldCategory: ''
+        };
+
+        if (typeof window !== 'undefined' && !Boolean(id)) {
+            const saved = localStorage.getItem('sands_seller_add_product_form');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    if (parsed && typeof parsed === 'object') {
+                        return { ...initial, ...parsed };
+                    }
+                } catch (e) {
+                    console.error("Failed to parse saved product form", e);
+                }
             }
-        }],
-        faqs: [],
-        seo: { title: '', description: '', keywords: '' },
-        logistics: { estimatedShippingDays: 3, certificateUrl: '' },
-        deletedImages: [],
-        tags: { 
-            isNewArrival: false, 
-            isMostGifted: false, 
-            isNewLaunch: false, 
-            isTrending: false, 
-            isPremium: false 
-        },
-        relatedProducts: [],
-        weight: '',
-        weightUnit: 'Grams',
-        paymentGatewayChargeBearer: 'seller',
-        videoUrl: '',
-        status: 'Active',
-        active: true,
-        showInNavbar: true,
-        showInCollection: true,
-        cardLabel: '',
-        cardBadge: '',
-        audience: ['unisex'],
-        silverCategory: '',
-        goldCategory: ''
+        }
+        return initial;
     });
+
+    useEffect(() => {
+        if (!isEditMode && !isViewMode) {
+            localStorage.setItem('sands_seller_add_product_form', JSON.stringify(formData));
+        }
+    }, [formData, isEditMode, isViewMode]);
 
     useEffect(() => {
         const newErrors = {};
@@ -224,6 +247,14 @@ const SharedProductEditor = ({
                         }
                     }
                 });
+
+                if (v.diamondSpecs?.diamondCount !== undefined && v.diamondSpecs?.diamondCount !== '') {
+                    const count = parseInt(v.diamondSpecs.diamondCount, 10);
+                    if (isNaN(count) || count < 0) {
+                        newErrors[`variant_${v.id}_diamondCount`] = "Diamond count cannot be negative";
+                        newErrors[`variant_${i}_diamondCount`] = "Diamond count cannot be negative";
+                    }
+                }
             });
         }
 
@@ -841,6 +872,9 @@ const SharedProductEditor = ({
 
             if (response) {
                 toast.success(isEditMode ? "Product updated successfully" : "Product created successfully");
+                if (!isEditMode) {
+                    localStorage.removeItem('sands_seller_add_product_form');
+                }
                 setCreatedProductData(response.data?.data || response.data || response);
                 setShowSuccessModal(true);
             }

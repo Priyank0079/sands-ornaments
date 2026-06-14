@@ -193,7 +193,11 @@ const ProductGeneralTab = ({
                                 label="Default Weight"
                                 type="number"
                                 value={formData.weight}
-                                onChange={(e) => setFormData(prev => ({ ...prev, weight: e.target.value }))}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (val !== '' && Number(val) < 0) return;
+                                    setFormData(prev => ({ ...prev, weight: val }));
+                                }}
                                 onFocus={(e) => {
                                     if (e.target.value === '0' || Number(e.target.value) === 0) {
                                         setFormData(prev => ({ ...prev, weight: '' }));
@@ -207,6 +211,7 @@ const ProductGeneralTab = ({
                                 disabled={isViewMode}
                                 placeholder="0.00"
                                 error={errors.weight}
+                                min={0}
                             />
                             <Select
                                 label="PG Fee Bearer"

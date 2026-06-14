@@ -26,6 +26,7 @@ const Footer = () => {
             { name: "Contact Us", path: "/contact" },
             { name: "FAQs", path: "/help" },
             { name: "Blogs", path: "/blogs" },
+            { name: "Sands Gift Cards", path: "/gift-cards" },
         ],
         footerPoliciesLinks: [
             { name: "Shipping Policy", path: "/shipping-policy" },

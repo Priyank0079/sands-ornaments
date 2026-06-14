@@ -118,8 +118,8 @@ const SellerCommissionCard = ({ orderId, sellerSubtotal = null }) => {
                             Commission for this order has not been recorded yet.
                         </p>
                     ) : (
-                        <div className="border border-gray-100 rounded-2xl overflow-hidden">
-                            <table className="w-full">
+                        <div className="border border-gray-100 rounded-2xl overflow-x-auto">
+                            <table className="w-full min-w-[500px]">
                                 <thead>
                                     <tr className="bg-gray-50 border-b border-gray-100">
                                         <th className="text-left text-[9px] font-black text-gray-400 uppercase tracking-widest py-2 px-3">Date</th>

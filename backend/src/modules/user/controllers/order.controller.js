@@ -183,6 +183,9 @@ const _calculateOrderData = async (userId, userEmail, items, shippingAddress, pa
   for (const item of items) {
     const isGift = item.isGiftCard || String(item.productId || "").startsWith("GIFT_CARD_");
     if (isGift) {
+      if (paymentMethod === "cod") {
+        throw new Error("Gift cards cannot be purchased using Cash on Delivery. Please select an online payment method.");
+      }
       const cardValue = Number(item.price || 500);
       if (cardValue < 500) throw new Error("Gift card minimum value is ₹500");
 
@@ -313,6 +316,9 @@ exports.placeOrder = async (req, res) => {
 
     // 4. Create Razorpay order (no stock deduction yet for online payments)
     if (paymentMethod === "razorpay") {
+      if (orderData.total === 0) {
+        throw new Error("Zero-total prepaid orders must be processed via the checkout verification flow.");
+      }
       try {
         const rpOrder = await razorpay.orders.create({
           amount:   Math.round(orderData.total * 100),
@@ -517,6 +523,26 @@ exports.cancelOrder = async (req, res) => {
     order.status = "Cancelled";
     order.timeline.push({ status: "Cancelled", note: "Cancelled by user" });
     await order.save();
+
+    // Refund any applied gift cards (restoring balance and updating status)
+    if (Array.isArray(order.appliedGiftCards) && order.appliedGiftCards.length > 0) {
+      for (const gc of order.appliedGiftCards) {
+        if (!gc.cardId || !gc.amountUsed) continue;
+        const updatedCard = await GiftCard.findOneAndUpdate(
+          { _id: gc.cardId },
+          {
+            $inc:  { balance: gc.amountUsed },
+            $pull: { redemptions: { orderId: order.orderId } },
+          },
+          { new: true }
+        );
+        if (updatedCard) {
+          const newStatus = updatedCard.balance <= 0 ? "used" : updatedCard.balance < updatedCard.value ? "partially_used" : "active";
+          await GiftCard.updateOne({ _id: gc.cardId }, { status: newStatus });
+          console.log(`[GiftCard] Refunded ₹${gc.amountUsed} back to card ${gc.code} (new balance: ₹${updatedCard.balance}) for cancelled order ${order.orderId}`);
+        }
+      }
+    }
 
     // Reverse platform commission ledger entries (decision F: full reversal).
     // Safe: never let a ledger error block the cancellation itself.

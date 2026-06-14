@@ -242,7 +242,7 @@ const computeOrderCommissions = (order, tiers) => {
     const sellerSubtotal      = toPositiveNumber(entry.subtotal);
     const sellerDiscountShare = toPositiveNumber(entry.discountShare);
     const sellerGiftCardShare = toPositiveNumber(entry.giftCardShare);
-    const taxableAmount = Math.max(0, round(sellerSubtotal - sellerDiscountShare - sellerGiftCardShare));
+    const taxableAmount = Math.max(0, round(sellerSubtotal - sellerDiscountShare));
 
     const { commission, tierLabel } = computeForSellerSubtotal(taxableAmount, activeTiers);
 

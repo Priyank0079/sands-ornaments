@@ -38,7 +38,7 @@ exports.updateCart = async (req, res) => {
 
 exports.addToCart = async (req, res) => {
   try {
-    const { productId, variantId, quantity } = req.body;
+    const { productId, variantId, quantity, isGiftCard, price, name, image, personalization } = req.body;
     
     const user = await User.findById(req.user.userId);
     if (!user) return error(res, "User not found", 404);
@@ -52,7 +52,16 @@ exports.addToCart = async (req, res) => {
     if (existingItemIndex > -1) {
       user.cart[existingItemIndex].quantity += (quantity || 1);
     } else {
-      user.cart.push({ productId, variantId, quantity: quantity || 1 });
+      user.cart.push({ 
+        productId, 
+        variantId, 
+        quantity: quantity || 1,
+        isGiftCard: isGiftCard || false,
+        price: price || 0,
+        name: name || "",
+        image: image || "",
+        personalization: personalization || null
+      });
     }
 
     await user.save();
@@ -64,7 +73,7 @@ exports.addToCart = async (req, res) => {
 
 exports.syncCart = async (req, res) => {
   try {
-    const { guestItems } = req.body; // Expecting array of { id, variantId, quantity }
+    const { guestItems } = req.body; // Expecting array of { id, variantId, quantity, isGiftCard, price, name, image, personalization }
     
     if (!Array.isArray(guestItems)) {
       return error(res, "Guest items must be an array", 400);
@@ -90,7 +99,16 @@ exports.syncCart = async (req, res) => {
         // Summing up is usually safer for "merge"
         mergedCart[existingIndex].quantity += quantity;
       } else {
-        mergedCart.push({ productId, variantId, quantity });
+        mergedCart.push({ 
+          productId, 
+          variantId, 
+          quantity,
+          isGiftCard: guestItem.isGiftCard || false,
+          price: guestItem.price || 0,
+          name: guestItem.name || "",
+          image: guestItem.image || "",
+          personalization: guestItem.personalization || null
+        });
       }
     });
 

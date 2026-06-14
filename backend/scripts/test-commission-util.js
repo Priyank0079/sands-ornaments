@@ -286,7 +286,7 @@ test("discount pushes seller down to lower tier (post-discount basis)", () => {
   assert.strictEqual(rows[0].commissionAmount, 100);
 });
 
-test("entirely paid by gift card → commission is 0", () => {
+test("entirely paid by gift card → commission is unchanged (gift card is tender)", () => {
   const rows = computeOrderCommissions(
     {
       items: [{ sellerId: "A", price: 1000, quantity: 1 }],
@@ -295,8 +295,8 @@ test("entirely paid by gift card → commission is 0", () => {
     },
     DEFAULT_COMMISSION_TIERS
   );
-  assert.strictEqual(rows[0].taxableAmount, 0);
-  assert.strictEqual(rows[0].commissionAmount, 0);
+  assert.strictEqual(rows[0].taxableAmount, 1000);
+  assert.strictEqual(rows[0].commissionAmount, 50);
 });
 
 test("gift-card items in cart are excluded from base", () => {

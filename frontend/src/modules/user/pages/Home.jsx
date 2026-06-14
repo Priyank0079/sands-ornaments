@@ -56,7 +56,7 @@ const Home = () => {
     useResetScroll();
 
     useEffect(() => {
-        document.title = "Sands Ornaments | Pure 925 Silver Jewellery - Timeless Elegance";
+        document.title = "Sands Ornaments | Jewellery - Timeless Elegance";
     }, []);
 
     // ONLY block on shop data (products/categories) — CMS is enhancement-only.

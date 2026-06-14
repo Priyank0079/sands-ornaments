@@ -197,6 +197,29 @@ exports.updateOrderStatus = async (req, res) => {
     });
 
     await order.save();
+
+    if (!isSameStatusUpdate && ["Cancelled", "Returned"].includes(nextStatus)) {
+      if (Array.isArray(order.appliedGiftCards) && order.appliedGiftCards.length > 0) {
+        const GiftCard = require("../../../models/GiftCard");
+        for (const gc of order.appliedGiftCards) {
+          if (!gc.cardId || !gc.amountUsed) continue;
+          const updatedCard = await GiftCard.findOneAndUpdate(
+            { _id: gc.cardId },
+            {
+              $inc:  { balance: gc.amountUsed },
+              $pull: { redemptions: { orderId: order.orderId } },
+            },
+            { new: true }
+          );
+          if (updatedCard) {
+            const newStatus = updatedCard.balance <= 0 ? "used" : updatedCard.balance < updatedCard.value ? "partially_used" : "active";
+            await GiftCard.updateOne({ _id: gc.cardId }, { status: newStatus });
+            console.log(`[GiftCard] Admin Refunded ₹${gc.amountUsed} back to card ${gc.code} (new balance: ₹${updatedCard.balance}) for order ${order.orderId}`);
+          }
+        }
+      }
+    }
+
     const refreshed = await Order.findById(order._id)
       .populate("userId", "name email phone")
       .populate("items.productId", "name images variants");

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, User, LogOut, ShoppingBag, XCircle, RotateCcw, RefreshCw, AlertTriangle, CheckCircle2, Menu, ArrowLeft } from 'lucide-react';
+import { Bell, User, LogOut, ShoppingBag, XCircle, RotateCcw, RefreshCw, AlertTriangle, CheckCircle2, Menu, ArrowLeft, Trash2 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { sellerService } from '../services/sellerService';
 import { sellerOrderService } from '../services/sellerOrderService';
@@ -118,7 +118,8 @@ const SellerHeader = ({ isSidebarOpen, setIsSidebarOpen }) => {
         if (path.includes('dashboard')) return 'Dashboard';
         if (path.includes('products')) return 'Products';
         if (path.includes('add-product')) return 'Add Product';
-        if (path.includes('orders')) return 'Shipments';
+        if (path.includes('orders')) return 'Orders';
+        if (path.includes('shipments')) return 'Shipments';
         if (path.includes('returns')) return 'Returns';
         if (path.includes('replacements')) return 'Replacements';
         if (path.includes('customers')) return 'Customer Management';
@@ -193,23 +194,49 @@ const SellerHeader = ({ isSidebarOpen, setIsSidebarOpen }) => {
                             </div>
                             <div className="max-h-[300px] overflow-y-auto sidebar-scroll">
                                 {notifications.length > 0 ? (
-                                    notifications.map((n, i) => (
-                                        <button
-                                            type="button"
-                                            key={n?._id || n?.id || i}
-                                            onClick={() => handleNotificationClick(n)}
-                                            className="w-full text-left px-6 py-4 hover:bg-gray-50 transition-all border-b border-gray-50 last:border-0 flex gap-4 items-start"
-                                        >
-                                            <div className="p-2 bg-gray-50 rounded-lg shrink-0">{getIcon(n.type)}</div>
-                                            <div className="space-y-1">
-                                                <p className="text-[10px] font-black text-gray-900 uppercase leading-snug">{n.title}</p>
-                                                <p className="text-[9px] font-bold text-gray-400 uppercase leading-relaxed">{n.message}</p>
-                                                <p className="text-[8px] font-medium text-gray-300 mt-1 uppercase tracking-tighter">
-                                                    {new Date(n.createdAt || n.date || Date.now()).toLocaleTimeString()}
-                                                </p>
+                                    notifications.map((n, i) => {
+                                        const id = n?._id || n?.id;
+                                        return (
+                                            <div
+                                                key={id || i}
+                                                className="w-full px-6 py-4 hover:bg-gray-50 transition-all border-b border-gray-50 last:border-0 flex gap-4 items-start justify-between group"
+                                            >
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleNotificationClick(n)}
+                                                    className="flex-1 min-w-0 text-left flex gap-4 items-start focus:outline-none"
+                                                >
+                                                    <div className="p-2 bg-gray-50 rounded-lg shrink-0">{getIcon(n.type)}</div>
+                                                    <div className="flex-1 min-w-0 space-y-1">
+                                                        <div className="flex items-center justify-between gap-2">
+                                                            <p className="text-[10px] font-black text-gray-900 uppercase leading-snug line-clamp-1">{n.title}</p>
+                                                            {!n.isRead && <span className="w-1.5 h-1.5 bg-amber-500 rounded-full shrink-0" />}
+                                                        </div>
+                                                        <p className="text-[9px] font-bold text-gray-400 uppercase leading-relaxed line-clamp-2">{n.message}</p>
+                                                        <p className="text-[8px] font-medium text-gray-300 mt-1 uppercase tracking-tighter">
+                                                            {new Date(n.createdAt || n.date || Date.now()).toLocaleTimeString()}
+                                                        </p>
+                                                    </div>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={async (e) => {
+                                                        e.stopPropagation();
+                                                        if (id) {
+                                                            const success = await sellerOrderService.deleteNotification(id);
+                                                            if (success) {
+                                                                loadNotifications();
+                                                            }
+                                                        }
+                                                    }}
+                                                    className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all self-center shrink-0"
+                                                    title="Delete notification"
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
                                             </div>
-                                        </button>
-                                    ))
+                                        );
+                                    })
                                 ) : (
                                     <div className="p-12 text-center space-y-3">
                                         <CheckCircle2 className="w-8 h-8 text-gray-100 mx-auto" strokeWidth={1} />

@@ -45,19 +45,163 @@ exports.createRazorpayOrder = async (req, res) => {
 };
 
 
+// Helper function to create and process prepaid orders (shared by zero-total bypass and Razorpay verify)
+const createAndProcessPrepaidOrder = async (validatedOrderData, paymentDetails) => {
+  const isDigitalOnly = validatedOrderData.items.every(item => item.isGiftCard);
+
+  const finalOrderData = {
+    ...validatedOrderData,
+    paymentStatus: "paid",
+    paymentDetails: paymentDetails,
+    razorpayOrderId: paymentDetails.razorpay_order_id || undefined,
+    razorpayPaymentId: paymentDetails.razorpay_payment_id || undefined,
+    status: isDigitalOnly ? "Delivered" : "Processing",
+    timeline: [{ 
+      status: isDigitalOnly ? "Delivered" : "Processing", 
+      note: isDigitalOnly ? "Digital Gift Card delivered successfully" : (paymentDetails.gateway === "giftcard_bypass" ? "Prepaid order confirmed via gift cards" : "Payment verified successfully")
+    }]
+  };
+
+  const order = await Order.create(finalOrderData);
+
+  // Enrich guest profile
+  await enrichUserProfileFromOrder(order.userId, order.shippingAddress);
+
+  // 3. Post-creation logic: stock deduction and coupon usage
+  await _deductStockForOrder(order.items, order.orderId, order.userId);
+
+  // Platform commission accrual (per-seller ledger entries, status="pending").
+  try {
+    await accrueCommissionsForOrder(order, { triggeredBy: "payment_verified", safe: true });
+  } catch (e) {
+    console.error("[Commission] Accrual hook error:", e.message);
+  }
+
+  if (order.couponCode) {
+    await Coupon.updateOne(
+      { code: order.couponCode, active: true },
+      {
+        $inc:  { usageCount: 1 },
+        $push: { usedBy: { userId: order.userId, usedAt: new Date() } },
+      }
+    );
+  }
+
+  // 4. Notify sellers
+  const sellerCounts = new Map();
+  for (const item of order.items || []) {
+    const sid = item?.sellerId ? String(item.sellerId) : "";
+    if (!sid) continue;
+    sellerCounts.set(sid, (sellerCounts.get(sid) || 0) + (Number(item.quantity) || 0));
+  }
+  if (sellerCounts.size > 0) {
+    const sellerOrderLink = `/seller/order-details/${order._id}`;
+    const docs = Array.from(sellerCounts.entries()).map(([sid, qty]) => ({
+      sellerId: sid,
+      title: "Payment confirmed",
+      message: `Payment received for order ${order.orderId} (${qty} item${qty === 1 ? "" : "s"}).`,
+      type: "ORDER",
+      priority: "High",
+      link: sellerOrderLink,
+      isBroadcast: false,
+      isRead: false
+    }));
+    try { await Notification.insertMany(docs); } catch (e) { /* ignore */ }
+  }
+
+  // Realtime: emit new_order to admin + sellers
+  try { emitNewOrder(order); } catch (e) { /* non-blocking */ }
+
+  // Atomically redeem gift cards
+  if (Array.isArray(order.appliedGiftCards) && order.appliedGiftCards.length > 0) {
+    for (const gc of order.appliedGiftCards) {
+      if (!gc.cardId || !gc.amountUsed) continue;
+      const updatedCard = await GiftCard.findOneAndUpdate(
+        { _id: gc.cardId, status: { $in: ["active", "partially_used"] }, balance: { $gte: gc.amountUsed } },
+        {
+          $inc:  { balance: -gc.amountUsed },
+          $push: { redemptions: { orderId: order.orderId, amountUsed: gc.amountUsed, redeemedAt: new Date(), redeemedByUserId: order.userId } },
+        },
+        { new: true }
+      );
+      if (updatedCard) {
+        const newStatus = updatedCard.balance <= 0 ? "used" : updatedCard.balance < updatedCard.value ? "partially_used" : "active";
+        await GiftCard.updateOne({ _id: gc.cardId }, { status: newStatus });
+      } else {
+        // Double-spend flag note
+        await Order.updateOne(
+          { _id: order._id },
+          { 
+            $set: { notes: order.notes ? `${order.notes}\n[FLAGGED] Gift card redemption failed for card ${gc.code}` : `[FLAGGED] Gift card redemption failed for card ${gc.code}` } 
+          }
+        );
+      }
+    }
+  }
+
+  // Fulfill any purchased gift cards in this order
+  try {
+    const { fulfillGiftCardsInOrder } = require("./giftCard.controller");
+    await fulfillGiftCardsInOrder(order);
+  } catch (e) {
+    console.error("[GiftCard] Order fulfillment hook error:", e);
+  }
+
+  // -- Email: payment success / confirmation --
+  const paymentRecipient = order.customerEmail || order.shippingAddress && order.shippingAddress.email;
+  if (paymentRecipient) {
+    enqueueEmail({
+      to:      paymentRecipient,
+      subject: "Payment Successful - " + order.orderId + " | Sands Ornaments",
+      html:    emailTemplates.paymentSuccess({ order, userName: order.customerName, paymentId: paymentDetails.razorpay_payment_id || "GIFT_CARD" }),
+      type:    "payment_success",
+    });
+  }
+
+  // -- Email: seller notification --
+  const paySellerMap = new Map();
+  for (const item of order.items || []) {
+    if (!item.sellerId) continue;
+    const k = String(item.sellerId);
+    if (!paySellerMap.has(k)) paySellerMap.set(k, []);
+    paySellerMap.get(k).push(item);
+  }
+  if (paySellerMap.size > 0) {
+    const paySellerIds = Array.from(paySellerMap.keys());
+    const paySellers = await Seller.find({ _id: { $in: paySellerIds } }).select("email shopName fullName");
+    for (const seller of paySellers) {
+      if (!seller.email) continue;
+      enqueueEmail({
+        to:      seller.email,
+        subject: "Payment Confirmed - " + order.orderId + " | Sands Ornaments",
+        html:    emailTemplates.sellerNewOrder({ order, sellerName: seller.shopName || seller.fullName, sellerItems: paySellerMap.get(String(seller._id)) }),
+        type:    "seller_payment_confirmed",
+      });
+    }
+  }
+
+  return order;
+};
+
 // POST /api/user/payment/initiate
 exports.initiatePayment = async (req, res) => {
   try {
-    if (!razorpay) {
-      return error(res, "Payment service is not configured on the server.", 503);
-    }
-
     const { items, shippingAddress, couponCode, giftCardCodes } = req.body;
     const userId = req.user.userId;
     const userEmail = req.user.email;
 
     // Calculate order data (this also validates stock and items)
     const orderData = await _calculateOrderData(userId, userEmail, items, shippingAddress, "razorpay", couponCode, giftCardCodes);
+
+    if (orderData.total === 0) {
+      // Bypass Razorpay entirely for zero-total checkouts
+      const order = await createAndProcessPrepaidOrder(orderData, { gateway: "giftcard_bypass", reason: "Zero total order covered by gift cards" });
+      return success(res, { isZeroTotal: true, orderId: order._id }, "Prepaid order confirmed via gift cards successfully");
+    }
+
+    if (!razorpay) {
+      return error(res, "Payment service is not configured on the server.", 503);
+    }
 
     const options = {
       amount:   Math.round(orderData.total * 100),
@@ -118,126 +262,12 @@ exports.verifyPayment = async (req, res) => {
       giftCardCodes
     );
     
-    const finalOrderData = {
-      ...validatedOrderData,
-      paymentStatus: "paid",
-      paymentDetails: { razorpay_payment_id, razorpay_order_id, razorpay_signature },
-      razorpayOrderId: razorpay_order_id,
-      razorpayPaymentId: razorpay_payment_id,
-      status: "Processing",
-      timeline: [{ status: "Processing", note: "Payment verified successfully" }]
-    };
-
-    const order = await Order.create(finalOrderData);
-
-    // Enrich guest profile
-    await enrichUserProfileFromOrder(order.userId, order.shippingAddress);
-
-    // 3. Post-creation logic: stock deduction and coupon usage
-    await _deductStockForOrder(order.items, order.orderId, order.userId);
-
-    // Platform commission accrual (per-seller ledger entries, status="pending").
-    // Wrapped in `safe: true` so a ledger failure never blocks payment confirmation.
-    try {
-      await accrueCommissionsForOrder(order, { triggeredBy: "payment_verified", safe: true });
-    } catch (e) {
-      console.error("[Commission] Razorpay accrual hook error:", e.message);
-    }
-
-    if (order.couponCode) {
-      await Coupon.updateOne(
-        { code: order.couponCode, active: true },
-        {
-          $inc:  { usageCount: 1 },
-          $push: { usedBy: { userId: order.userId, usedAt: new Date() } },
-        }
-      );
-    }
-
-    // 4. Notify sellers
-    const sellerCounts = new Map();
-    for (const item of order.items || []) {
-      const sid = item?.sellerId ? String(item.sellerId) : "";
-      if (!sid) continue;
-      sellerCounts.set(sid, (sellerCounts.get(sid) || 0) + (Number(item.quantity) || 0));
-    }
-    if (sellerCounts.size > 0) {
-      const sellerOrderLink = `/seller/order-details/${order._id}`;
-      const docs = Array.from(sellerCounts.entries()).map(([sid, qty]) => ({
-        sellerId: sid,
-        title: "Payment confirmed",
-        message: `Payment received for order ${order.orderId} (${qty} item${qty === 1 ? "" : "s"}).`,
-        type: "ORDER",
-        priority: "High",
-        link: sellerOrderLink,
-        isBroadcast: false,
-        isRead: false
-      }));
-      try { await Notification.insertMany(docs); } catch (e) { /* ignore */ }
-    }
-
-    // ── Realtime: emit new_order to admin + sellers (best-effort) ─────────────
-    try { emitNewOrder(order); } catch (e) { /* non-blocking */ }
-
-    // Atomically redeem gift cards for Razorpay order
-    if (Array.isArray(order.appliedGiftCards) && order.appliedGiftCards.length > 0) {
-      for (const gc of order.appliedGiftCards) {
-        if (!gc.cardId || !gc.amountUsed) continue;
-        const updatedCard = await GiftCard.findOneAndUpdate(
-          { _id: gc.cardId, status: { $in: ["active", "partially_used"] }, balance: { $gte: gc.amountUsed } },
-          {
-            $inc:  { balance: -gc.amountUsed },
-            $push: { redemptions: { orderId: order.orderId, amountUsed: gc.amountUsed, redeemedAt: new Date(), redeemedByUserId: order.userId } },
-          },
-          { new: true }
-        );
-        if (updatedCard) {
-          const newStatus = updatedCard.balance <= 0 ? "used" : updatedCard.balance < updatedCard.value ? "partially_used" : "active";
-          await GiftCard.updateOne({ _id: gc.cardId }, { status: newStatus });
-        }
-      }
-    }
-
-    // Fulfill any purchased gift cards in this order
-    try {
-      const { fulfillGiftCardsInOrder } = require("./giftCard.controller");
-      await fulfillGiftCardsInOrder(order);
-    } catch (e) {
-      console.error("[GiftCard] Order fulfillment hook error:", e);
-    }
-
-    // -- Email: payment success (Razorpay) --
-    const paymentRecipient = order.customerEmail || order.shippingAddress && order.shippingAddress.email;
-    if (paymentRecipient) {
-      enqueueEmail({
-        to:      paymentRecipient,
-        subject: "Payment Successful - " + order.orderId + " | Sands Ornaments",
-        html:    emailTemplates.paymentSuccess({ order, userName: order.customerName, paymentId: razorpay_payment_id }),
-        type:    "payment_success",
-      });
-    }
-
-    // -- Email: seller notification (Razorpay) --
-    const paySellerMap = new Map();
-    for (const item of order.items || []) {
-      if (!item.sellerId) continue;
-      const k = String(item.sellerId);
-      if (!paySellerMap.has(k)) paySellerMap.set(k, []);
-      paySellerMap.get(k).push(item);
-    }
-    if (paySellerMap.size > 0) {
-      const paySellerIds = Array.from(paySellerMap.keys());
-      const paySellers = await Seller.find({ _id: { $in: paySellerIds } }).select("email shopName fullName");
-      for (const seller of paySellers) {
-        if (!seller.email) continue;
-        enqueueEmail({
-          to:      seller.email,
-          subject: "Payment Confirmed - " + order.orderId + " | Sands Ornaments",
-          html:    emailTemplates.sellerNewOrder({ order, sellerName: seller.shopName || seller.fullName, sellerItems: paySellerMap.get(String(seller._id)) }),
-          type:    "seller_payment_confirmed",
-        });
-      }
-    }
+    const order = await createAndProcessPrepaidOrder(validatedOrderData, {
+      razorpay_payment_id,
+      razorpay_order_id,
+      razorpay_signature,
+      gateway: "razorpay"
+    });
 
     return success(res, { order }, "Payment verified and order created successfully");
 

@@ -12,7 +12,8 @@ const DataTable = ({
     itemsPerPage = 10,
     // Optional server-side pagination mode: caller supplies already-paginated `data`
     // plus a pagination object controlling page/total and navigation.
-    pagination
+    pagination,
+    loading = false
 }) => {
     const [internalPage, setInternalPage] = useState(1);
     const isServerPaged = Boolean(pagination && typeof pagination === 'object');
@@ -67,6 +68,7 @@ const DataTable = ({
                                         {filters.map((filter, index) => (
                                             <div key={index} className="relative shrink-0 w-full sm:w-auto">
                                                 <select
+                                                    {...(filter.value !== undefined ? { value: filter.value } : {})}
                                                     onChange={(e) => {
                                                         filter.onChange(e.target.value);
                                                         if (isServerPaged) {
@@ -112,7 +114,16 @@ const DataTable = ({
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 text-gray-900">
-                            {paginatedData.length > 0 ? (
+                             {loading ? (
+                                <tr>
+                                    <td colSpan={columns.length} className="px-6 py-12 text-center text-gray-500 font-semibold text-xs">
+                                        <div className="flex items-center justify-center gap-2">
+                                            <div className="w-4 h-4 border-2 border-[#8D6E63]/30 border-t-[#8D6E63] rounded-full animate-spin" />
+                                            Loading...
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : paginatedData.length > 0 ? (
                                 paginatedData.map((item, rowIndex) => (
                                     <tr key={startIndex + rowIndex} className="hover:bg-gray-50/50 transition-colors">
                                         {columns.map((col, colIndex) => (

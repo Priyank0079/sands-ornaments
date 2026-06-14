@@ -255,7 +255,7 @@ exports.getStockHistory = async (req, res) => {
     const total = await StockLog.countDocuments(query);
 
     const logs = await StockLog.find(query)
-      .populate("productId", "name images sellerId")
+      .populate("productId", "name images variants sellerId")
       .populate({ path: "productId", populate: { path: "sellerId", select: "fullName shopName" } })
       .populate("adminId", "name")
       .populate("sellerId", "fullName shopName")
@@ -322,7 +322,12 @@ exports.getLowStockAlerts = async (req, res) => {
           _id: 0,
           productId: "$_id",
           productName: "$name",
-          productImage: { $ifNull: [{ $arrayElemAt: ["$images", 0] }, ""] },
+          productImage: {
+            $ifNull: [
+              { $arrayElemAt: ["$variants.variantImages", 0] },
+              { $ifNull: [{ $arrayElemAt: ["$images", 0] }, ""] }
+            ]
+          },
           categoryName: {
             $ifNull: [{ $arrayElemAt: ["$categoryDocs.name", 0] }, "Uncategorized"]
           },

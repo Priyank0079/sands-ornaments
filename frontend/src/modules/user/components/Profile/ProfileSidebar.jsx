@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Package, MapPin, Heart, CreditCard, Tag, HelpCircle, FileText, ShieldCheck, Bell, BellOff, Shield, LogOut, Trash2, Edit2, Plus } from 'lucide-react';
+import { User, Package, MapPin, Heart, CreditCard, Tag, Gift, HelpCircle, FileText, ShieldCheck, Bell, BellOff, Shield, LogOut, Trash2, Edit2, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const ProfileSidebar = ({ 
@@ -72,6 +72,10 @@ const ProfileSidebar = ({
                     <Tag className="w-4 h-4 md:w-5 md:h-5" />
                     <span className="font-medium text-sm md:text-base">My Coupons</span>
                     {availableCoupons.length > 0 && <span className={`ml-auto text-xs py-0.5 px-2 rounded-full ${activeTab === 'coupons' ? 'bg-white/20' : 'bg-[#F3F4F6]'}`}>{availableCoupons.length}</span>}
+                </button>
+                <button onClick={() => navigate('/profile/gift-cards')} className={`w-full flex items-center space-x-3 px-3 md:px-4 py-3 rounded-xl transition-all ${activeTab === 'gift-cards' ? 'bg-black text-white shadow-md' : 'text-gray-600 hover:bg-[#F3F4F6]'}`}>
+                    <Gift className="w-4 h-4 md:w-5 md:h-5" />
+                    <span className="font-medium text-sm md:text-base">My Gift Cards</span>
                 </button>
                 <button onClick={() => navigate('/help')} className="w-full flex items-center space-x-3 px-3 md:px-4 py-3 text-gray-600 hover:bg-[#F3F4F6] rounded-xl transition-all">
                     <HelpCircle className="w-4 h-4 md:w-5 md:h-5 text-gray-500" />

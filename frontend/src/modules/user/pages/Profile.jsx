@@ -12,6 +12,7 @@ const OrdersTab = React.lazy(() => import('../components/Profile/OrdersTab'));
 const AddressesTab = React.lazy(() => import('../components/Profile/AddressesTab'));
 const PaymentsTab = React.lazy(() => import('../components/Profile/PaymentsTab'));
 const CouponsTab = React.lazy(() => import('../components/Profile/CouponsTab'));
+const GiftCardsTab = React.lazy(() => import('../components/Profile/GiftCardsTab'));
 
 const EMPTY_ADDRESS = {
     name: '',
@@ -246,6 +247,9 @@ const Profile = () => {
                                     copiedCoupon={copiedCoupon}
                                     handleCopyCoupon={handleCopyCoupon}
                                 />
+                            )}
+                            {activeTab === 'gift-cards' && (
+                                <GiftCardsTab />
                             )}
                             {activeTab === 'addresses' && (
                                 <AddressesTab 
