@@ -34,7 +34,6 @@ const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [showMobileSearch, setShowMobileSearch] = useState(false);
     const [expandedSections, setExpandedSections] = useState({});
-
     useEffect(() => {
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 10);
@@ -42,6 +41,29 @@ const Navbar = () => {
         window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
+
+    // Reset search term when navigating away from the shop search route or if query is empty
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const urlSearch = params.get('search') || '';
+        if (location.pathname !== '/shop' || !urlSearch) {
+            setSearchTerm('');
+        } else {
+            setSearchTerm(urlSearch);
+        }
+    }, [location.pathname, location.search]);
+
+    // Prevent background scrolling on mobile when menu is open
+    useEffect(() => {
+        if (isMenuOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [isMenuOpen]);
 
     // Sync the header toggle state with the current route/query
     useEffect(() => {

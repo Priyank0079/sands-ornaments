@@ -71,7 +71,7 @@ const DynamicPage = ({ slug: propSlug }) => {
                 </button>
 
                 <div className="text-center mb-16 md:mb-24 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                    <h1 className="text-5xl md:text-7xl font-display text-black mb-6 leading-tight">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-display text-black mb-6 leading-tight break-words">
                         {page.title}
                     </h1>
                     <div className="w-24 h-0.5 bg-[#3E2723]/10 mx-auto mb-6"></div>

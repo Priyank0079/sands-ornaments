@@ -222,7 +222,7 @@ const CheckoutCartSummary = ({
                             </button>
                         </div>
 
-                        <div className="p-6 space-y-6">
+                        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                             {/* Manual Input */}
                             <div className="flex gap-2">
                                 <input
@@ -230,12 +230,12 @@ const CheckoutCartSummary = ({
                                     placeholder="Enter Coupon Code"
                                     value={couponCode}
                                     onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                                    className="flex-1 border border-gray-200 rounded-lg px-4 py-2.5 outline-none focus:border-black font-medium uppercase placeholder:normal-case"
+                                    className="flex-1 border border-gray-200 rounded-lg px-4 py-2.5 outline-none focus:border-black font-medium uppercase placeholder:normal-case text-xs"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => handleApplyCouponValidated({ code: couponCode })}
-                                    className="bg-black text-white px-6 py-2.5 rounded-lg font-bold text-sm uppercase tracking-wider hover:bg-[#D39A9F] transition-colors"
+                                    className="bg-black text-white px-4 sm:px-6 py-2.5 rounded-lg font-bold text-xs uppercase tracking-wider hover:bg-[#D39A9F] transition-colors"
                                 >
                                     Apply
                                 </button>
@@ -243,27 +243,27 @@ const CheckoutCartSummary = ({
 
                             {/* List */}
                             <div className="space-y-3">
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Best Offers For You</p>
-                                <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
+                                <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest">Best Offers For You</p>
+                                <div className="space-y-3 max-h-[250px] sm:max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
                                     {availableCoupons.map((coupon, idx) => (
                                         <div
                                             key={idx}
-                                            className="border border-gray-200 rounded-xl p-4 hover:border-[#D39A9F] transition-all group relative overflow-hidden"
+                                            className="border border-gray-200 rounded-xl p-3 sm:p-4 hover:border-[#D39A9F] transition-all group relative overflow-hidden"
                                         >
-                                            <div className="flex justify-between items-start mb-2">
-                                                <div className="bg-[#EBCDD0]/30 px-3 py-1 rounded border border-[#EBCDD0] text-[#D39A9F] font-bold text-xs uppercase tracking-wider">
+                                            <div className="flex justify-between items-center gap-2 mb-2">
+                                                <div className="bg-[#EBCDD0]/30 px-2 sm:px-3 py-1 rounded border border-[#EBCDD0] text-[#D39A9F] font-bold text-[10px] sm:text-xs uppercase tracking-wider truncate max-w-[140px] sm:max-w-none">
                                                     {coupon.code}
                                                 </div>
                                                 <button
                                                     type="button"
                                                     onClick={() => handleApplyCouponValidated(coupon)}
-                                                    className="text-black font-bold text-xs uppercase tracking-wider hover:text-[#D39A9F] transition-colors"
+                                                    className="text-black font-bold text-[11px] sm:text-xs uppercase tracking-wider hover:text-[#D39A9F] transition-colors shrink-0 py-1 px-2 hover:bg-gray-50 rounded"
                                                 >
                                                     Apply
                                                 </button>
                                             </div>
-                                            <p className="text-sm font-bold text-black mb-0.5">Save {currencyText(typeof coupon.amount === 'number' ? coupon.amount.toFixed(0) : coupon.amount || coupon.value || 0)}</p>
-                                            <p className="text-xs text-gray-500 font-serif">{couponSummary(coupon)}</p>
+                                            <p className="text-xs sm:text-sm font-bold text-black mb-0.5">Save {currencyText(typeof coupon.amount === 'number' ? coupon.amount.toFixed(0) : coupon.amount || coupon.value || 0)}</p>
+                                            <p className="text-[10px] sm:text-xs text-gray-500 font-serif">{couponSummary(coupon)}</p>
                                         </div>
                                     ))}
                                 </div>

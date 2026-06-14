@@ -70,7 +70,7 @@ const BlogDetailPage = () => {
 
         <div className="text-center mb-10 md:mb-14">
           <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-[#3E2723]/50">{blog.category}</p>
-          <h1 className="mt-4 text-4xl md:text-6xl font-display text-black leading-tight">{blog.title}</h1>
+          <h1 className="mt-4 text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-display text-black leading-tight break-words">{blog.title}</h1>
           <div className="mt-6 flex items-center justify-center gap-4 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-black/30">
             <div className="flex items-center gap-2">
               <Calendar size={14} />
@@ -89,9 +89,9 @@ const BlogDetailPage = () => {
             <img src={blog.coverImage || blogFallbackImage} alt={blog.title} className="w-full h-full object-cover" />
           </div>
 
-          <div className="p-8 md:p-14">
+          <div className="p-5 sm:p-8 md:p-14">
             <div
-              className="prose prose-lg prose-stone max-w-none 
+              className="prose prose-lg prose-stone max-w-none break-words
               prose-headings:font-display prose-headings:text-black 
               prose-p:text-gray-600 prose-p:leading-relaxed prose-p:font-serif
               prose-li:text-gray-600 prose-li:font-serif

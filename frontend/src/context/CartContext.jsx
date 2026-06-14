@@ -23,12 +23,23 @@ export const normalizeProductForCart = (product = {}, selectedVariant = null) =>
         ? normalizeVariantForCart(selectedVariant, product)
         : normalizeVariantForCart(product.variants?.[0] || {}, product);
 
+    const allVariantImages = Array.isArray(product.variants)
+        ? product.variants.flatMap(v => v.variantImages || []).filter(Boolean)
+        : [];
+
+    const resolvedImage = product.image || 
+                          product.images?.[0] || 
+                          normalizedVariant.image || 
+                          normalizedVariant.variantImages?.[0] || 
+                          allVariantImages[0] || 
+                          '';
+
     return {
         ...product,
         id: product.id || product._id,
         _id: product._id || product.id,
-        image: product.image || product.images?.[0] || normalizedVariant.image || normalizedVariant.variantImages?.[0] || '',
-        images: product.images || (product.image ? [product.image] : []),
+        image: resolvedImage,
+        images: product.images || (resolvedImage ? [resolvedImage] : []),
         price: normalizedVariant.price,
         originalPrice: normalizedVariant.mrp,
         gst: Number(normalizedVariant.gst ?? product.gst) || 0,
@@ -136,9 +147,11 @@ export const CartProvider = ({ children }) => {
                     const product = item.productId;
                     if (!product) return null;
                     const selectedVariant = product.variants?.find(v => String(v._id || v.id) === String(item.variantId)) || product.variants?.[0];
+                    const normalized = normalizeProductForCart(product, selectedVariant);
                     return {
-                        ...normalizeProductForCart(product, selectedVariant),
-                        quantity: item.quantity
+                        ...normalized,
+                        quantity: item.quantity,
+                        image: normalized.image || item.image || ''
                     };
                 }).filter(Boolean);
                 setCart(mappedCart);

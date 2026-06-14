@@ -56,7 +56,7 @@ const Home = () => {
     useResetScroll();
 
     useEffect(() => {
-        document.title = "Sands Ornaments | Jewellery - Timeless Elegance";
+        document.title = "SandsJewels | Crafted for Moments That Last";
     }, []);
 
     // ONLY block on shop data (products/categories) — CMS is enhancement-only.

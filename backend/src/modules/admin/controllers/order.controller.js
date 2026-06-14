@@ -8,6 +8,7 @@ const {
 } = require("../../../services/commissionService");
 const { processRefund: razorpayProcessRefund } = require("../../../services/razorpayService");
 const auditLogger = require("../../../utils/auditLogger");
+const { createNotification } = require("../../../services/notificationService");
 
 const ALLOWED_TRANSITIONS = {
   Pending: [],
@@ -227,6 +228,20 @@ exports.updateOrderStatus = async (req, res) => {
     // ── Realtime: notify the customer of their order status change (best-effort) ──
     if (!isSameStatusUpdate) {
       try { emitOrderStatusUpdate(order); } catch (e) { /* non-blocking */ }
+
+      if (nextStatus === "Cancelled" && order.userId) {
+        try {
+          await createNotification({
+            userId: order.userId,
+            title: "Order Cancelled",
+            message: `Your order #${order.orderId} has been cancelled by the administrator.`,
+            type: "CANCEL",
+            link: "/profile/orders"
+          });
+        } catch (err) {
+          console.error("[Notification] Failed to create order cancellation notification:", err.message);
+        }
+      }
     }
 
     // ── Platform commission lifecycle ─────────────────────────────────────────
@@ -355,6 +370,20 @@ exports.processRefund = async (req, res) => {
     });
 
     await order.save();
+
+    if (order.userId) {
+      try {
+        await createNotification({
+          userId: order.userId,
+          title: "Refund Processed",
+          message: `A refund of ₹${refundAmount} has been processed for your order #${order.orderId || order._id}.`,
+          type: "RETURN",
+          link: "/profile/orders"
+        });
+      } catch (err) {
+        console.error("[Notification] Failed to create refund notification:", err.message);
+      }
+    }
 
     // Audit log — non-blocking
     auditLogger.log(req, {

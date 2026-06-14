@@ -194,7 +194,7 @@ const Footer = () => {
                                         <div className="w-10 h-10 bg-[#4A1015] text-white rounded-[14px] flex items-center justify-center group-hover/item:bg-[#C9A24D] transition-all duration-500 shadow-md shadow-[#4A1015]/10">
                                             <MapPin className="w-4 h-4" />
                                         </div>
-                                        <span className="text-[12px] font-serif italic text-gray-500 leading-tight pt-1">{settings.address}</span>
+                                        <span className="text-[13px] font-semibold text-gray-700 hover:text-[#4A1015] transition-colors">{settings.address}</span>
                                     </div>
                                 </div>
 
@@ -239,10 +239,7 @@ const Footer = () => {
                     </div>
 
                     <div className="flex flex-col items-center md:items-end gap-1.5">
-                        <div className="flex gap-6 mb-0.5">
-                            <span className="text-[10px] text-gray-400 hover:text-[#4A1015] cursor-pointer transition-colors font-medium">Privacy Policy</span>
-                            <span className="text-[10px] text-gray-400 hover:text-[#4A1015] cursor-pointer transition-colors font-medium">Terms of Use</span>
-                        </div>
+                        {/*  */}
                         <p className="text-[10px] text-gray-400 uppercase tracking-[0.25em] font-semibold">
                             &copy; {new Date().getFullYear()} {settings.footerCopyrightText}
                         </p>

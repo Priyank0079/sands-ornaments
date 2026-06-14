@@ -247,7 +247,10 @@ const Checkout = () => {
 
     useEffect(() => {
         if (cart.length === 0) {
-            navigate('/cart');
+            const timer = setTimeout(() => {
+                navigate('/cart');
+            }, 500);
+            return () => clearTimeout(timer);
         }
     }, [cart, navigate]);
 

@@ -8,6 +8,7 @@ const { enqueueEmail } = require("../../../services/emailService");
 const emailTemplates = require("../../../services/emailTemplates");
 const { isSerializedVariant, restockSerializedUnits } = require("../../../utils/inventorySync");
 const { reverseCommissionsForOrder } = require("../../../services/commissionService");
+const { createNotification } = require("../../../services/notificationService");
 
 const VALID_STATUSES = [
   "Pending",
@@ -384,6 +385,20 @@ exports.updateReturnStatus = async (req, res) => {
         }),
         type: "return_status_update",
       });
+    }
+
+    if (nextStatus === "Refunded" && returnUser?._id) {
+      try {
+        await createNotification({
+          userId: returnUser._id,
+          title: "Refund Processed",
+          message: `A refund of ₹${refreshed.refund?.amount || 0} has been processed for your return request on order #${returnOrder?.orderId || returnOrder?._id}.`,
+          type: "RETURN",
+          link: "/profile/orders"
+        });
+      } catch (err) {
+        console.error("[Notification] Failed to create return refund notification:", err.message);
+      }
     }
 
     return success(res, { returnReq: refreshed }, `Return ${nextStatus} successfully`);
