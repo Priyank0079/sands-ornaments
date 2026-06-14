@@ -48,9 +48,23 @@ export const OrderProvider = ({ children, showNotification = () => {} }) => {
     // ── Address CRUD ─────────────────────────────────────────────────────────
     const addAddress = useCallback(async (address) => {
         try {
+            // Normalize address fields to match backend Joi validator
+            const normalized = {
+                name: String(address.name || '').trim(),
+                phone: String(address.phone || '').replace(/\D/g, '').slice(-10),
+                flatNo: String(address.flatNo || '').trim(),
+                area: String(address.area || '').trim(),
+                city: String(address.city || '').trim(),
+                district: String(address.district || '').trim(),
+                state: String(address.state || '').trim(),
+                pincode: String(address.pincode || '').replace(/\D/g, '').trim(),
+                type: String(address.type || 'Home').trim() || 'Home',
+                isDefault: Boolean(address.isDefault)
+            };
+
             // Create address object with ID for localStorage fallback
             const addressWithId = {
-                ...address,
+                ...normalized,
                 _id: `addr_${Date.now()}`,
                 id: `addr_${Date.now()}`,
                 createdAt: new Date().toISOString()
@@ -63,7 +77,7 @@ export const OrderProvider = ({ children, showNotification = () => {} }) => {
 
             // Try to save to backend
             try {
-                const res = await api.post('user/addresses', address);
+                const res = await api.post('user/addresses', normalized);
                 if (res.data.success) {
                     // Backend save successful, fetch fresh data
                     await fetchAddresses();
@@ -71,16 +85,26 @@ export const OrderProvider = ({ children, showNotification = () => {} }) => {
                     toast.success('Address added successfully');
                     return true;
                 } else {
-                    // Backend returned error but we already saved locally
                     const { toast } = await import('react-hot-toast');
-                    toast.success('Address saved (offline mode)');
-                    return true;
+                    toast.error(res.data.message || 'Failed to save address');
+                    // Revert optimistic update
+                    setAddresses(addresses);
+                    localStorage.setItem('addresses', JSON.stringify(addresses));
+                    return false;
                 }
             } catch (apiErr) {
-                // Backend API failed but address is in localStorage
-                console.log('Backend API failed, using localStorage fallback', apiErr);
+                console.error('Backend API failed to save address:', apiErr);
+                // Roll back optimistic update if it failed due to server/validation error
+                const isNetworkError = !apiErr.response;
+                if (!isNetworkError) {
+                    setAddresses(addresses);
+                    localStorage.setItem('addresses', JSON.stringify(addresses));
+                    const { toast } = await import('react-hot-toast');
+                    toast.error(apiErr.response?.data?.message || 'Failed to save address to server');
+                    return false;
+                }
                 const { toast } = await import('react-hot-toast');
-                toast.success('Address saved locally. Will sync when online.');
+                toast.success('Address saved locally (offline mode)');
                 return true;
             }
         } catch (err) {
@@ -113,7 +137,22 @@ export const OrderProvider = ({ children, showNotification = () => {} }) => {
 
     const updateAddress = useCallback(async (updatedAddress) => {
         try {
-            const res = await api.patch(`user/addresses/${updatedAddress.id || updatedAddress._id}`, updatedAddress);
+            const normalized = {
+                id: updatedAddress.id || updatedAddress._id,
+                _id: updatedAddress._id || updatedAddress.id,
+                name: String(updatedAddress.name || '').trim(),
+                phone: String(updatedAddress.phone || '').replace(/\D/g, '').slice(-10),
+                flatNo: String(updatedAddress.flatNo || '').trim(),
+                area: String(updatedAddress.area || '').trim(),
+                city: String(updatedAddress.city || '').trim(),
+                district: String(updatedAddress.district || '').trim(),
+                state: String(updatedAddress.state || '').trim(),
+                pincode: String(updatedAddress.pincode || '').replace(/\D/g, '').trim(),
+                type: String(updatedAddress.type || 'Home').trim() || 'Home',
+                isDefault: Boolean(updatedAddress.isDefault)
+            };
+
+            const res = await api.patch(`user/addresses/${normalized.id}`, normalized);
             if (res.data.success) {
                 await fetchAddresses();
                 const { toast } = await import('react-hot-toast');

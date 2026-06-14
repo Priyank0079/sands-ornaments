@@ -484,7 +484,7 @@ export const CartProvider = ({ children }) => {
         const firstName = String(raw.firstName || fullName.split(/\s+/)[0] || '').trim();
         const lastName = String(raw.lastName || fullName.split(/\s+/).slice(1).join(' ') || '').trim();
         const email = String(raw.email || currentUser?.email || '').trim();
-        const phone = String(raw.phone || currentUser?.phone || '').replace(/[^\d]/g, '');
+        const phone = String(raw.phone || currentUser?.phone || '').replace(/\D/g, '').slice(-10);
         return {
             firstName, lastName, email, phone,
             flatNo: String(raw.flatNo || raw.flat || raw.houseNo || raw.streetAddress || '').trim(),

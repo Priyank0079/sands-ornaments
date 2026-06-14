@@ -210,7 +210,7 @@ const Checkout = () => {
         };
 
         const orderId = await placeOrder({
-            addressId: addresses.find(a => a._id === defaultAddressId)?._id,
+            addressId: addressSelection === 'saved' ? selectedSavedAddressId : null,
             shippingAddress,
             paymentMethod: paymentMethod === 'online' ? 'razorpay' : 'cod',
             couponCode: appliedCoupon?.code,
@@ -224,23 +224,37 @@ const Checkout = () => {
     };
 
     useEffect(() => {
-        if (user && addresses.length > 0 && defaultAddressId) {
-            const defaultAddr = addresses.find(a => a._id === defaultAddressId);
-            if (defaultAddr) {
-                setFormData({
-                    firstName: defaultAddr.name.split(' ')[0] || '',
-                    lastName: defaultAddr.name.split(' ').slice(1).join(' ') || '',
+        if (user) {
+            if (addresses.length > 0) {
+                // Find default address or fallback to the first saved address
+                const activeAddress = addresses.find(a => String(a._id) === String(defaultAddressId) || String(a.id) === String(defaultAddressId)) || addresses[0];
+                if (activeAddress) {
+                    setFormData({
+                        firstName: activeAddress.name ? activeAddress.name.split(' ')[0] : '',
+                        lastName: activeAddress.name ? activeAddress.name.split(' ').slice(1).join(' ') : '',
+                        email: user.email || '',
+                        phone: activeAddress.phone || '',
+                        flatNo: activeAddress.flatNo || '',
+                        area: activeAddress.area || '',
+                        city: activeAddress.city || '',
+                        district: activeAddress.district || '',
+                        state: activeAddress.state || '',
+                        pincode: activeAddress.pincode || ''
+                    });
+                    setAddressSelection('saved');
+                    setSelectedSavedAddressId(activeAddress._id || activeAddress.id);
+                }
+            } else {
+                // No saved addresses, but prefill user's own details
+                setFormData(prev => ({
+                    ...prev,
+                    firstName: user.name ? user.name.split(' ')[0] : '',
+                    lastName: user.name ? user.name.split(' ').slice(1).join(' ') : '',
                     email: user.email || '',
-                    phone: defaultAddr.phone,
-                    flatNo: defaultAddr.flatNo || '',
-                    area: defaultAddr.area || '',
-                    city: defaultAddr.city,
-                    district: defaultAddr.district || '',
-                    state: defaultAddr.state || '',
-                    pincode: defaultAddr.pincode
-                });
-                setAddressSelection('saved');
-                setSelectedSavedAddressId(defaultAddr._id);
+                    phone: user.phone || ''
+                }));
+                setAddressSelection('new');
+                setSelectedSavedAddressId(null);
             }
         }
     }, [user, addresses, defaultAddressId]);
