@@ -33,6 +33,7 @@ import { ShieldAlert } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import SellerAnalytics from '../pages/SellerAnalytics';
 import SellerCommission from '../pages/SellerCommission';
+import SellerWallet from '../pages/SellerWallet';
 
 // Protected Route Component for Seller
 const SellerProtectedRoute = ({ children }) => {
@@ -110,6 +111,7 @@ const SellerRoutes = () => {
                             <Route path="/customer-details/:id" element={<SellerCustomerDetail />} />
                             <Route path="/analytics" element={<SellerAnalytics />} />
                             <Route path="/commission" element={<SellerCommission />} />
+                            <Route path="/wallet" element={<SellerWallet />} />
                             <Route path="/notifications" element={<SellerNotifications />} />
                             <Route path="/profile" element={<SellerProfile />} />
                             <Route path="/metal-pricing" element={<SellerMetalPricing />} />

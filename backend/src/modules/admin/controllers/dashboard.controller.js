@@ -1,7 +1,9 @@
-const Order = require("../../../models/Order");
-const User = require("../../../models/User");
+const Order   = require("../../../models/Order");
+const User    = require("../../../models/User");
 const Product = require("../../../models/Product");
-const Seller = require("../../../models/Seller");
+const Seller  = require("../../../models/Seller");
+const Commission     = require("../../../models/Commission");
+const PayoutRequest  = require("../../../models/PayoutRequest");
 const { success, error } = require("../../../utils/apiResponse");
 
 exports.getStats = async (req, res) => {
@@ -79,6 +81,28 @@ exports.getStats = async (req, res) => {
       ]);
     }
 
+    // 6. Admin commission earnings
+    const [commissionEarningsData] = await Commission.aggregate([
+      {
+        $match: {
+          type:   { $in: ["accrual", "backfill"] },
+          status: "confirmed",
+        },
+      },
+      {
+        $group: {
+          _id:  null,
+          totalCommissionsEarned: { $sum: "$commissionAmount" },
+        },
+      },
+    ]);
+    const totalCommissionsEarned = Math.round(commissionEarningsData?.totalCommissionsEarned || 0);
+
+    // 7. Pending payout requests count (action required)
+    const pendingPayoutRequests = await PayoutRequest.countDocuments({
+      status: { $in: ["PENDING", "PROCESSING"] },
+    });
+
     return success(res, {
       summary: { totalOrders, totalUsers, totalProducts, totalRevenue, totalSellers },
       pendingOrders,
@@ -86,7 +110,10 @@ exports.getStats = async (req, res) => {
       includeAnalytics,
       salesOverTime,
       statusDistribution,
-      categoryStats
+      categoryStats,
+      // Admin earnings & wallet alerts
+      totalCommissionsEarned,
+      pendingPayoutRequests,
     }, "Dashboard stats retrieved");
 
   } catch (err) { return error(res, err.message); }

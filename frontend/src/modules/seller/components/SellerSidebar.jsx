@@ -21,7 +21,8 @@ import {
     Bell,
     Truck,
     MapPin,
-    Wallet
+    Wallet,
+    CreditCard
 } from 'lucide-react';
 import logo from '@assets/sands-logo.png';
 import logoName from '@assets/sands-logoname.png';
@@ -73,6 +74,7 @@ const SellerSidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
         { name: 'Customers', icon: Users, path: '/seller/customers' },
         { name: 'Analytics', icon: BarChart3, path: '/seller/analytics' },
         { name: 'Commission', icon: Wallet, path: '/seller/commission' },
+        { name: 'Wallet & Payouts', icon: CreditCard, path: '/seller/wallet' },
         { name: 'Notifications', icon: Bell, path: '/seller/notifications' },
         {
             name: 'Direct Sales',

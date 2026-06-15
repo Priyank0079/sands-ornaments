@@ -26,6 +26,8 @@ const mongoose = require("mongoose");
 const Commission = require("../models/Commission");
 const Order      = require("../models/Order");
 const Setting    = require("../models/Setting");
+const Seller     = require("../models/Seller");
+const WalletTransaction = require("../models/WalletTransaction");
 const { DEFAULT_COMMISSION_TIERS } = require("../constants/commissionTiers");
 const {
   computeOrderCommissions,
@@ -127,6 +129,49 @@ const recomputeOrderSummary = async (orderId, { session } = {}) => {
   };
   await Order.updateOne({ _id: oid }, { $set: { commissionSummary: summary } }, session ? { session } : {});
   return summary;
+};
+
+// ─────────────────────────────────────────────────────────────────────────
+// Wallet helpers (internal)
+// ─────────────────────────────────────────────────────────────────────────
+
+/**
+ * Atomically adjust a seller's walletBalance and write a WalletTransaction entry.
+ *
+ * @param {ObjectId} sellerOid  - seller's ObjectId
+ * @param {number}   delta      - positive = credit, negative = debit
+ * @param {Object}   txnFields  - extra fields merged into the WalletTransaction doc
+ * @param {Object}   opts       - { session }
+ */
+const _adjustWallet = async (sellerOid, delta, txnFields, opts = {}) => {
+  const crypto = require("crypto");
+  const SAFE   = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const seg    = Array.from(crypto.randomBytes(8)).map((b) => SAFE[b % SAFE.length]).join("");
+  const transactionId = `TXN-${seg}-${Date.now()}`;
+
+  // Atomically read current balance and apply delta
+  const updated = await Seller.findByIdAndUpdate(
+    sellerOid,
+    { $inc: { walletBalance: delta } },
+    { new: true, session: opts.session, select: "walletBalance" }
+  );
+  if (!updated) return; // seller not found — skip silently
+
+  const balanceAfter  = updated.walletBalance;
+  const balanceBefore = balanceAfter - delta;
+
+  await WalletTransaction.create(
+    [{
+      transactionId,
+      sellerId:      sellerOid,
+      type:          delta >= 0 ? "CREDIT" : "DEBIT",
+      amount:        Math.abs(delta),
+      balanceBefore: Math.round(balanceBefore),
+      balanceAfter:  Math.round(balanceAfter),
+      ...txnFields,
+    }],
+    opts.session ? { session: opts.session } : {}
+  );
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -374,13 +419,54 @@ const confirmCommissionsForOrder = async (orderId, { session, safe = false } = {
   if (!oid) return _maybeThrow(safe, new Error("confirm: invalid order id"));
 
   try {
+    const opts = session ? { session } : {};
+
+    // Fetch the pending entries so we can credit each seller's wallet.
+    const pendingQuery = Commission.find({
+      orderId: oid,
+      type:    { $in: ["accrual", "backfill"] },
+      status:  "pending",
+    });
+    if (session) pendingQuery.session(session);
+    const pendingEntries = await pendingQuery.lean();
+
+    // Flip status to confirmed.
     const filter = {
       orderId: oid,
       type:    { $in: ["accrual", "backfill"] },
       status:  "pending",
     };
-    const opts = session ? { session } : {};
     const result = await Commission.updateMany(filter, { $set: { status: "confirmed" } }, opts);
+
+    // Credit each seller's wallet — the amount they earn = taxableAmount - commissionAmount.
+    // This is their net payout from the platform for this order.
+    for (const entry of pendingEntries) {
+      const sellerEarning = Math.round(entry.taxableAmount - entry.commissionAmount);
+      if (sellerEarning <= 0) continue;
+      try {
+        await _adjustWallet(
+          entry.sellerId,
+          sellerEarning,
+          {
+            reason:       "commission_confirmed",
+            orderId:      entry.orderId,
+            commissionId: entry._id,
+            description:  `Order ${entry.orderNumber} delivered — ₹${sellerEarning} credited`,
+          },
+          { session }
+        );
+        // Also track lifetime earned.
+        await Seller.findByIdAndUpdate(
+          entry.sellerId,
+          { $inc: { totalCommissionsEarned: sellerEarning } },
+          opts
+        );
+      } catch (walletErr) {
+        console.error("[Commission] wallet credit failed for seller", entry.sellerId, walletErr.message);
+        // Non-fatal — log and continue; the commission row is confirmed regardless.
+      }
+    }
+
     await recomputeOrderSummary(oid, { session });
     return { ok: true, matched: result.matchedCount || 0, modified: result.modifiedCount || 0 };
   } catch (err) {
@@ -447,8 +533,34 @@ const reverseCommissionsForOrder = async (
       const [inserted] = await Commission.create([reversalDoc], opts);
       reversals.push(inserted);
 
+      // Capture status BEFORE mutation so we know if wallet was previously credited.
+      const wasConfirmed = original.status === "confirmed";
       original.status = "reversed";
       await original.save(opts);
+
+      // Debit the seller's wallet only if the commission was already confirmed
+      // (meaning the wallet was previously credited for this order).
+      // Pending commissions were never credited, so no debit needed.
+      if (wasConfirmed) {
+        const previousEarning = Math.round(original.taxableAmount - original.commissionAmount);
+        if (previousEarning > 0) {
+          try {
+            await _adjustWallet(
+              original.sellerId,
+              -previousEarning,
+              {
+                reason:       "commission_reversed",
+                orderId:      original.orderId,
+                commissionId: original._id,
+                description:  `Order ${original.orderNumber} reversed — ₹${previousEarning} debited`,
+              },
+              { session }
+            );
+          } catch (walletErr) {
+            console.error("[Commission] wallet debit failed for seller", original.sellerId, walletErr.message);
+          }
+        }
+      }
     }
 
     await recomputeOrderSummary(oid, { session });
