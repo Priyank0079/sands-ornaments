@@ -121,9 +121,20 @@ exports.getOrderDetail = async (req, res) => {
     }
     const order = await Order.findById(req.params.id)
       .populate("userId", "name email phone")
-      .populate("items.productId", "name images variants")
       .lean();
     if (!order) return error(res, "Order not found", 404);
+
+    const hasValidProducts = order.items && order.items.some(
+      item => item.productId && mongoose.Types.ObjectId.isValid(item.productId)
+    );
+    if (hasValidProducts) {
+      await Order.populate(order, {
+        path: "items.productId",
+        select: "name images variants",
+        model: "Product"
+      });
+    }
+
     return success(res, { order }, "Order details retrieved");
   } catch (err) { return error(res, err.message); }
 };
@@ -223,7 +234,18 @@ exports.updateOrderStatus = async (req, res) => {
 
     const refreshed = await Order.findById(order._id)
       .populate("userId", "name email phone")
-      .populate("items.productId", "name images variants");
+      .lean();
+
+    const hasValidProducts = refreshed.items && refreshed.items.some(
+      item => item.productId && mongoose.Types.ObjectId.isValid(item.productId)
+    );
+    if (hasValidProducts) {
+      await Order.populate(refreshed, {
+        path: "items.productId",
+        select: "name images variants",
+        model: "Product"
+      });
+    }
 
     // ── Realtime: notify the customer of their order status change (best-effort) ──
     if (!isSameStatusUpdate) {
@@ -397,7 +419,18 @@ exports.processRefund = async (req, res) => {
 
     const refreshed = await Order.findById(order._id)
       .populate("userId", "name email phone")
-      .populate("items.productId", "name images variants");
+      .lean();
+
+    const hasValidProducts = refreshed.items && refreshed.items.some(
+      item => item.productId && mongoose.Types.ObjectId.isValid(item.productId)
+    );
+    if (hasValidProducts) {
+      await Order.populate(refreshed, {
+        path: "items.productId",
+        select: "name images variants",
+        model: "Product"
+      });
+    }
 
     return success(
       res,

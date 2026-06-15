@@ -196,9 +196,20 @@ exports.getMyOrderDetail = async (req, res) => {
     const sellerObjectId = new mongoose.Types.ObjectId(sellerId);
     const order = await Order.findOne({ _id: req.params.id, "items.sellerId": sellerObjectId })
       .populate("userId", "fullName email mobileNumber")
-      .populate("items.productId", "name images image variants");
+      .lean();
 
     if (!order) return error(res, "Order not found", 404);
+
+    const hasValidProducts = order.items && order.items.some(
+      item => item.productId && mongoose.Types.ObjectId.isValid(item.productId)
+    );
+    if (hasValidProducts) {
+      await Order.populate(order, {
+        path: "items.productId",
+        select: "name images image variants",
+        model: "Product"
+      });
+    }
 
     const commissionMap = await fetchSellerCommissionMap([order._id], sellerId);
     const sellerOrder = buildSellerOrderSummary(order, sellerId, commissionMap.get(String(order._id)));
@@ -220,10 +231,20 @@ exports.updateOrderStatus = async (req, res) => {
     if (!nextStatus) return error(res, "Status is required", 400);
 
     const order = await Order.findOne({ _id: orderId, "items.sellerId": sellerObjectId })
-      .populate("userId", "fullName email mobileNumber")
-      .populate("items.productId", "name images image variants");
+      .populate("userId", "fullName email mobileNumber");
 
     if (!order) return error(res, "Order not found", 404);
+
+    const hasValidProducts = order.items && order.items.some(
+      item => item.productId && mongoose.Types.ObjectId.isValid(item.productId)
+    );
+    if (hasValidProducts) {
+      await Order.populate(order, {
+        path: "items.productId",
+        select: "name images image variants",
+        model: "Product"
+      });
+    }
 
     const sellerItems = filterSellerItems(order.items, sellerId);
     if (sellerItems.length !== (order.items || []).length) {
@@ -293,7 +314,18 @@ exports.updateOrderStatus = async (req, res) => {
 
     const refreshed = await Order.findById(order._id)
       .populate("userId", "fullName email mobileNumber")
-      .populate("items.productId", "name images image variants");
+      .lean();
+
+    const hasValidProductsRefreshed = refreshed.items && refreshed.items.some(
+      item => item.productId && mongoose.Types.ObjectId.isValid(item.productId)
+    );
+    if (hasValidProductsRefreshed) {
+      await Order.populate(refreshed, {
+        path: "items.productId",
+        select: "name images image variants",
+        model: "Product"
+      });
+    }
 
     // ── Realtime: notify the customer of their order status change (best-effort) ──
     if (!isSameStatusUpdate) {
