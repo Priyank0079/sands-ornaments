@@ -8,6 +8,8 @@ import { WishlistProvider } from './context/WishlistContext';
 import { OrderProvider } from './context/OrderContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { SocketProvider } from './context/SocketContext';
+import { SupportProvider } from './context/SupportContext';
+import SupportChatWidget from './modules/user/components/SupportChatWidget';
 import Navbar from './modules/user/components/Navbar';
 import Footer from './modules/user/components/Footer';
 import ScrollToTop from './ScrollToTop';
@@ -312,6 +314,7 @@ const AppContent = () => {
         <>
           <Footer />
           <WhatsAppFloating />
+          <SupportChatWidget />
         </>
       )}
     </div>
@@ -331,13 +334,15 @@ function App() {
               <OrderProvider>
                 <NotificationProvider>
                   <ShopProvider>
-                    <Router>
-                      <SmoothScrollProvider />
-                      <ScrollToTop />
-                      <AppErrorBoundary>
-                        <AppContent />
-                      </AppErrorBoundary>
-                    </Router>
+                    <SupportProvider>
+                      <Router>
+                        <SmoothScrollProvider />
+                        <ScrollToTop />
+                        <AppErrorBoundary>
+                          <AppContent />
+                        </AppErrorBoundary>
+                      </Router>
+                    </SupportProvider>
                   </ShopProvider>
                 </NotificationProvider>
               </OrderProvider>

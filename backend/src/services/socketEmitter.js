@@ -112,6 +112,37 @@ const emitBroadcastNotification = (notification) => {
   }
 };
 
+/**
+ * Emit a new support ticket notification to admins.
+ */
+const emitSupportTicketCreated = (ticket) => {
+  if (!_io || !ticket) return;
+  emitToRoom("room:admin", "support_ticket_created", ticket);
+};
+
+/**
+ * Emit a support chat message to the user room and admin room.
+ */
+const emitSupportMessage = (ticket, reply) => {
+  if (!_io || !ticket || !reply) return;
+  const payload = {
+    ticketId: ticket.ticketId,
+    _id: String(ticket._id),
+    userId: String(ticket.userId),
+    reply: {
+      from: reply.from,
+      text: reply.text,
+      date: reply.date || new Date()
+    },
+    status: ticket.status
+  };
+  
+  // Send to specific user
+  emitToRoom(`room:user_${ticket.userId}`, "support_message", payload);
+  // Send to admins
+  emitToRoom("room:admin", "support_message", payload);
+};
+
 module.exports = {
   setIo,
   getIo,
@@ -119,4 +150,6 @@ module.exports = {
   emitOrderStatusUpdate,
   emitLowStockAlert,
   emitBroadcastNotification,
+  emitSupportTicketCreated,
+  emitSupportMessage,
 };

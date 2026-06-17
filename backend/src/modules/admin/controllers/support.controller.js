@@ -1,5 +1,6 @@
 const SupportTicket = require("../../../models/SupportTicket");
 const { success, error } = require("../../../utils/apiResponse");
+const socketEmitter = require("../../../services/socketEmitter");
 
 exports.getAllTickets = async (req, res) => {
   try {
@@ -21,11 +22,17 @@ exports.addAdminReply = async (req, res) => {
     const ticket = await SupportTicket.findById(req.params.id);
     if (!ticket) return error(res, "Ticket not found", 404);
 
-    ticket.messages.push({ sender: "admin", message, senderId: req.user.userId });
+    const newReply = { from: "admin", text: message, date: new Date() };
+    ticket.replies.push(newReply);
+    
     if (status) ticket.status = status;
     else ticket.status = "In Progress";
     
     await ticket.save();
+
+    // Emit support message event to user and admin rooms
+    socketEmitter.emitSupportMessage(ticket, newReply);
+
     return success(res, { ticket }, "Reply added and status updated");
   } catch (err) { return error(res, err.message); }
 };
