@@ -538,23 +538,100 @@ const ProductVariantsTab = ({
                                             <div className="space-y-4">
                                                 <div className="flex items-center justify-between">
                                                     <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Variant Signature</label>
-                                                    <button 
-                                                        type="button"
-                                                        onClick={() => handleDownloadAllSerialBarcodes(v)}
-                                                        className="text-[8px] font-black text-blue-600 uppercase tracking-widest hover:underline flex items-center gap-1"
-                                                    >
-                                                        <Download size={10} /> Batch Export
-                                                    </button>
+                                                    {v.variantCode && (
+                                                        <button 
+                                                            type="button"
+                                                            onClick={() => handleDownloadAllSerialBarcodes(v)}
+                                                            className="text-[8px] font-black text-blue-600 uppercase tracking-widest hover:underline flex items-center gap-1 cursor-pointer"
+                                                        >
+                                                            <Download size={10} /> Batch Export
+                                                        </button>
+                                                    )}
                                                 </div>
-                                                <div className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] shadow-inner">
-                                                    Pending Assignment
-                                                </div>
+                                                {v.variantCode ? (
+                                                    <div className="w-full bg-white border border-gray-100 rounded-[1.5rem] p-4 flex flex-col items-center gap-3 shadow-sm">
+                                                        <div className="bg-[#FDFBF7] p-3 rounded-xl border border-[#EFEBE9] w-full flex justify-center">
+                                                            <Barcode 
+                                                                value={v.variantCode} 
+                                                                width={1.2} 
+                                                                height={40} 
+                                                                fontSize={10}
+                                                                background="#FDFBF7"
+                                                            />
+                                                        </div>
+                                                        <span className="text-[10px] font-black text-gray-800 tracking-wider">{v.variantCode}</span>
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] shadow-inner">
+                                                        Pending Assignment
+                                                    </div>
+                                                )}
                                             </div>
                                             <div className="space-y-4">
                                                 <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Visual Identifier</label>
-                                                <div className="w-full aspect-[4/1] bg-gray-50 border border-dashed border-gray-200 rounded-2xl flex items-center justify-center">
-                                                    <p className="text-[8px] font-black text-gray-300 uppercase tracking-[0.3em]">Locked</p>
-                                                </div>
+                                                {v.serialCodes && v.serialCodes.length > 0 ? (
+                                                    <div className="grid grid-cols-1 gap-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                                                        {v.serialCodes.map((codeObj, codeIdx) => {
+                                                            const serialStatus = codeObj.status || 'AVAILABLE';
+                                                            const statusClasses = serialStatus === 'AVAILABLE'
+                                                                ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                                                                : (serialStatus === 'SOLD_ONLINE' || serialStatus === 'SOLD ONLINE'
+                                                                    ? 'bg-blue-50 text-blue-700 border-blue-100'
+                                                                    : 'bg-amber-50 text-amber-700 border-amber-100');
+
+                                                            return (
+                                                                <div key={`${v.id}-serial-${codeIdx}`} className="p-4 rounded-2xl bg-white border border-gray-100 flex flex-col gap-3 shadow-sm">
+                                                                    <div className="flex items-start justify-between gap-3">
+                                                                        <div className="min-w-0 flex-1 space-y-2">
+                                                                            <input
+                                                                                value={codeObj.code}
+                                                                                onChange={(e) => {
+                                                                                    if (isViewMode || serialStatus !== 'AVAILABLE') return;
+                                                                                    const next = formData.variants.map((variantItem) => {
+                                                                                        if (variantItem.id !== v.id) return variantItem;
+                                                                                        const serialCodes = normalizeSerialCodes(variantItem.serialCodes || []);
+                                                                                        serialCodes[codeIdx] = { ...serialCodes[codeIdx], code: e.target.value.toUpperCase() };
+                                                                                        return { ...variantItem, serialCodes };
+                                                                                    });
+                                                                                    setFormData(prev => ({ ...prev, variants: next }));
+                                                                                }}
+                                                                                disabled={isViewMode || serialStatus !== 'AVAILABLE'}
+                                                                                className="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-3 text-[10px] font-mono font-black placeholder:text-gray-300 focus:outline-none focus:border-[#3E2723] transition-all disabled:bg-gray-100 disabled:text-gray-400"
+                                                                            />
+                                                                            <div className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[8px] font-black uppercase tracking-widest ${statusClasses}`}>
+                                                                                {serialStatus.replace('_', ' ')}
+                                                                            </div>
+                                                                        </div>
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => handleDownloadSerialBarcode(codeObj.code)}
+                                                                            className="shrink-0 p-2 bg-white border border-gray-200 rounded-xl text-gray-500 hover:text-[#3E2723] hover:border-[#3E2723] transition-all cursor-pointer"
+                                                                            title="Download unit barcode"
+                                                                        >
+                                                                            <Download size={14} />
+                                                                        </button>
+                                                                    </div>
+                                                                    <div
+                                                                        className="bg-[#FDFBF7] border border-[#EFEBE9] rounded-xl px-3 py-3 overflow-hidden flex justify-center"
+                                                                        ref={(node) => setSerialBarcodeRef(codeObj.code, node)}
+                                                                    >
+                                                                        <Barcode
+                                                                            value={codeObj.code}
+                                                                            width={1.2}
+                                                                            height={30}
+                                                                            fontSize={10}
+                                                                            background="#FDFBF7"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-full aspect-[4/1] bg-gray-50 border border-dashed border-gray-200 rounded-2xl flex items-center justify-center">
+                                                        <p className="text-[8px] font-black text-gray-300 uppercase tracking-[0.2em] text-center">Set stock to generate barcodes</p>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
