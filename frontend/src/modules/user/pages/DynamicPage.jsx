@@ -85,10 +85,10 @@ const DynamicPage = ({ slug: propSlug }) => {
                     )}
                 </div>
 
-                <div className="bg-white rounded-[2.5rem] p-8 md:p-16 shadow-sm border border-[#3E2723]/5 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
+                <div className="bg-white rounded-2xl md:rounded-[2.5rem] p-5 sm:p-8 md:p-16 shadow-sm border border-[#3E2723]/5 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
                     {hasContent ? (
                         <div 
-                            className="prose prose-lg prose-stone max-w-none 
+                            className="prose prose-stone max-w-none md:prose-lg break-words
                             prose-headings:font-display prose-headings:text-black 
                             prose-p:text-gray-600 prose-p:leading-relaxed prose-p:font-serif
                             prose-li:text-gray-600 prose-li:font-serif
