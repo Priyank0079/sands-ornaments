@@ -1,7 +1,7 @@
 {
   "name": "sands-ornaments-backend",
   "version": "1.0.0",
-  "description": "Sands Ornaments - Node.js + Express + MongoDB Backend",
+  "description": "Sands Jewels - Node.js + Express + MongoDB Backend",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

@@ -1,5 +1,5 @@
 /**
- * Admin Payout Controller — Sands Ornaments
+ * Admin Payout Controller — Sands Jewels
  *
  * Endpoints:
  *   GET   /admin/payout/requests           → all payout requests (paginated, filterable)
@@ -11,11 +11,11 @@
  */
 "use strict";
 
-const mongoose          = require("mongoose");
-const PayoutRequest     = require("../../../models/PayoutRequest");
+const mongoose = require("mongoose");
+const PayoutRequest = require("../../../models/PayoutRequest");
 const WalletTransaction = require("../../../models/WalletTransaction");
-const Seller            = require("../../../models/Seller");
-const Commission        = require("../../../models/Commission");
+const Seller = require("../../../models/Seller");
+const Commission = require("../../../models/Commission");
 const { success, error } = require("../../../utils/apiResponse");
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -23,13 +23,19 @@ const { success, error } = require("../../../utils/apiResponse");
 // ─────────────────────────────────────────────────────────────────────────────
 exports.getRequests = async (req, res) => {
   try {
-    const page   = Math.max(1, parseInt(req.query.page  || "1", 10));
-    const limit  = Math.min(100, Math.max(1, parseInt(req.query.limit || "20", 10)));
-    const skip   = (page - 1) * limit;
+    const page = Math.max(1, parseInt(req.query.page || "1", 10));
+    const limit = Math.min(
+      100,
+      Math.max(1, parseInt(req.query.limit || "20", 10)),
+    );
+    const skip = (page - 1) * limit;
     const status = req.query.status?.toUpperCase();
 
     const filter = {};
-    if (status && ["PENDING", "PROCESSING", "APPROVED", "REJECTED"].includes(status)) {
+    if (
+      status &&
+      ["PENDING", "PROCESSING", "APPROVED", "REJECTED"].includes(status)
+    ) {
       filter.status = status;
     }
 
@@ -38,7 +44,10 @@ exports.getRequests = async (req, res) => {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .populate({ path: "sellerId", select: "shopName fullName email mobileNumber bankAccount" })
+        .populate({
+          path: "sellerId",
+          select: "shopName fullName email mobileNumber bankAccount",
+        })
         .lean(),
       PayoutRequest.countDocuments(filter),
     ]);
@@ -49,12 +58,16 @@ exports.getRequests = async (req, res) => {
       PayoutRequest.countDocuments({ status: "PROCESSING" }),
     ]);
 
-    return success(res, {
-      requests,
-      pagination:  { page, limit, total, pages: Math.ceil(total / limit) },
-      actionRequired: pending + processing,
-      statusCounts: { pending, processing },
-    }, "Payout requests fetched");
+    return success(
+      res,
+      {
+        requests,
+        pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+        actionRequired: pending + processing,
+        statusCounts: { pending, processing },
+      },
+      "Payout requests fetched",
+    );
   } catch (err) {
     console.error("[Admin Payout] getRequests:", err.message);
     return error(res, err.message);
@@ -67,14 +80,20 @@ exports.getRequests = async (req, res) => {
 exports.getRequest = async (req, res) => {
   try {
     const payout = await PayoutRequest.findById(req.params.id)
-      .populate({ path: "sellerId", select: "shopName fullName email mobileNumber bankAccount walletBalance" })
+      .populate({
+        path: "sellerId",
+        select:
+          "shopName fullName email mobileNumber bankAccount walletBalance",
+      })
       .populate({ path: "processedBy", select: "name email" })
       .lean();
 
     if (!payout) return error(res, "Payout request not found", 404);
 
     // Fetch related wallet transactions for this payout
-    const transactions = await WalletTransaction.find({ payoutRequestId: payout._id })
+    const transactions = await WalletTransaction.find({
+      payoutRequestId: payout._id,
+    })
       .sort({ createdAt: 1 })
       .lean();
 
@@ -98,16 +117,17 @@ exports.processRequest = async (req, res) => {
       { _id: req.params.id, status: "PENDING" },
       {
         $set: {
-          status:      "PROCESSING",
+          status: "PROCESSING",
           processedBy: adminId,
           processedAt: new Date(),
-          adminNote:   req.body.adminNote || "",
+          adminNote: req.body.adminNote || "",
         },
       },
-      { new: true }
+      { new: true },
     ).populate({ path: "sellerId", select: "shopName fullName email" });
 
-    if (!payout) return error(res, "Payout request not found or already processed", 404);
+    if (!payout)
+      return error(res, "Payout request not found or already processed", 404);
 
     return success(res, { payout }, "Payout marked as PROCESSING");
   } catch (err) {
@@ -131,13 +151,13 @@ exports.approveRequest = async (req, res) => {
       { _id: req.params.id, status: { $in: ["PENDING", "PROCESSING"] } },
       {
         $set: {
-          status:      "APPROVED",
+          status: "APPROVED",
           processedBy: adminId,
           processedAt: new Date(),
-          adminNote:   req.body.adminNote || "",
+          adminNote: req.body.adminNote || "",
         },
       },
-      { new: true, session }
+      { new: true, session },
     );
 
     if (!payout) {
@@ -150,24 +170,31 @@ exports.approveRequest = async (req, res) => {
     const updatedSeller = await Seller.findByIdAndUpdate(
       payout.sellerId,
       { $inc: { totalPaidOut: payout.amount } },
-      { new: true, session, select: "walletBalance totalPaidOut" }
+      { new: true, session, select: "walletBalance totalPaidOut" },
     );
 
     // Write informational wallet transaction (balance unchanged — debited at request time)
     const crypto = require("crypto");
-    const SAFE   = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    const seg    = Array.from(crypto.randomBytes(8)).map((b) => SAFE[b % SAFE.length]).join("");
-    await WalletTransaction.create([{
-      transactionId:   `TXN-${seg}-${Date.now()}`,
-      sellerId:        payout.sellerId,
-      type:            "DEBIT",       // informational — balance was already debited at request time
-      reason:          "payout_approved",
-      amount:          payout.amount,
-      balanceBefore:   Math.round(updatedSeller?.walletBalance || 0),
-      balanceAfter:    Math.round(updatedSeller?.walletBalance || 0),
-      payoutRequestId: payout._id,
-      description:     `Payout ${payout.payoutId} approved by admin`,
-    }], { session });
+    const SAFE = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    const seg = Array.from(crypto.randomBytes(8))
+      .map((b) => SAFE[b % SAFE.length])
+      .join("");
+    await WalletTransaction.create(
+      [
+        {
+          transactionId: `TXN-${seg}-${Date.now()}`,
+          sellerId: payout.sellerId,
+          type: "DEBIT", // informational — balance was already debited at request time
+          reason: "payout_approved",
+          amount: payout.amount,
+          balanceBefore: Math.round(updatedSeller?.walletBalance || 0),
+          balanceAfter: Math.round(updatedSeller?.walletBalance || 0),
+          payoutRequestId: payout._id,
+          description: `Payout ${payout.payoutId} approved by admin`,
+        },
+      ],
+      { session },
+    );
 
     await session.commitTransaction();
     session.endSession();
@@ -180,8 +207,6 @@ exports.approveRequest = async (req, res) => {
     return error(res, err.message);
   }
 };
-
-
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PATCH /admin/payout/requests/:id/reject
@@ -198,13 +223,13 @@ exports.rejectRequest = async (req, res) => {
       { _id: req.params.id, status: { $in: ["PENDING", "PROCESSING"] } },
       {
         $set: {
-          status:      "REJECTED",
+          status: "REJECTED",
           processedBy: adminId,
           processedAt: new Date(),
-          adminNote:   req.body.adminNote || "",
+          adminNote: req.body.adminNote || "",
         },
       },
-      { new: true, session }
+      { new: true, session },
     );
 
     if (!payout) {
@@ -217,35 +242,43 @@ exports.rejectRequest = async (req, res) => {
     const updatedSeller = await Seller.findByIdAndUpdate(
       payout.sellerId,
       { $inc: { walletBalance: payout.amount } },
-      { new: true, session, select: "walletBalance" }
+      { new: true, session, select: "walletBalance" },
     );
 
-    const balanceAfter  = Math.round(updatedSeller.walletBalance);
+    const balanceAfter = Math.round(updatedSeller.walletBalance);
     const balanceBefore = balanceAfter - payout.amount;
 
     // Refund wallet transaction
     const crypto = require("crypto");
-    const SAFE   = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    const seg    = Array.from(crypto.randomBytes(8)).map((b) => SAFE[b % SAFE.length]).join("");
+    const SAFE = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    const seg = Array.from(crypto.randomBytes(8))
+      .map((b) => SAFE[b % SAFE.length])
+      .join("");
     await WalletTransaction.create(
-      [{
-        transactionId:   `TXN-${seg}-${Date.now()}`,
-        sellerId:        payout.sellerId,
-        type:            "CREDIT",
-        reason:          "payout_rejected",
-        amount:          payout.amount,
-        balanceBefore,
-        balanceAfter,
-        payoutRequestId: payout._id,
-        description:     `Payout ${payout.payoutId} rejected — ₹${payout.amount} refunded`,
-      }],
-      { session }
+      [
+        {
+          transactionId: `TXN-${seg}-${Date.now()}`,
+          sellerId: payout.sellerId,
+          type: "CREDIT",
+          reason: "payout_rejected",
+          amount: payout.amount,
+          balanceBefore,
+          balanceAfter,
+          payoutRequestId: payout._id,
+          description: `Payout ${payout.payoutId} rejected — ₹${payout.amount} refunded`,
+        },
+      ],
+      { session },
     );
 
     await session.commitTransaction();
     session.endSession();
 
-    return success(res, { payout, newBalance: balanceAfter }, "Payout rejected and amount refunded to wallet");
+    return success(
+      res,
+      { payout, newBalance: balanceAfter },
+      "Payout rejected and amount refunded to wallet",
+    );
   } catch (err) {
     await session.abortTransaction();
     session.endSession();
@@ -264,7 +297,7 @@ exports.getAdminEarnings = async (req, res) => {
     const [commissionData] = await Commission.aggregate([
       {
         $match: {
-          type:   { $in: ["accrual", "backfill"] },
+          type: { $in: ["accrual", "backfill"] },
           status: "confirmed",
         },
       },
@@ -273,7 +306,7 @@ exports.getAdminEarnings = async (req, res) => {
           _id: null,
           totalCommissions: { $sum: "$commissionAmount" },
           totalTaxableBase: { $sum: "$taxableAmount" },
-          count:            { $sum: 1 },
+          count: { $sum: 1 },
         },
       },
     ]);
@@ -283,9 +316,9 @@ exports.getAdminEarnings = async (req, res) => {
       { $match: { status: "APPROVED" } },
       {
         $group: {
-          _id:         null,
+          _id: null,
           totalPaidOut: { $sum: "$amount" },
-          count:       { $sum: 1 },
+          count: { $sum: 1 },
         },
       },
     ]);
@@ -295,9 +328,9 @@ exports.getAdminEarnings = async (req, res) => {
       { $match: { status: { $in: ["PENDING", "PROCESSING"] } } },
       {
         $group: {
-          _id:    null,
-          total:  { $sum: "$amount" },
-          count:  { $sum: 1 },
+          _id: null,
+          total: { $sum: "$amount" },
+          count: { $sum: 1 },
         },
       },
     ]);
@@ -309,34 +342,40 @@ exports.getAdminEarnings = async (req, res) => {
     const monthlyCommissions = await Commission.aggregate([
       {
         $match: {
-          type:      { $in: ["accrual", "backfill"] },
-          status:    "confirmed",
+          type: { $in: ["accrual", "backfill"] },
+          status: "confirmed",
           createdAt: { $gte: twelveMonthsAgo },
         },
       },
       {
         $group: {
           _id: {
-            year:  { $year: "$createdAt" },
+            year: { $year: "$createdAt" },
             month: { $month: "$createdAt" },
           },
           totalCommissions: { $sum: "$commissionAmount" },
-          count:            { $sum: 1 },
+          count: { $sum: 1 },
         },
       },
       { $sort: { "_id.year": 1, "_id.month": 1 } },
     ]);
 
-    return success(res, {
-      totalCommissionsEarned: Math.round(commissionData?.totalCommissions || 0),
-      totalTaxableBase:       Math.round(commissionData?.totalTaxableBase || 0),
-      confirmedOrdersCount:   commissionData?.count || 0,
-      totalPaidOutToSellers:  Math.round(payoutData?.totalPaidOut || 0),
-      approvedPayoutsCount:   payoutData?.count || 0,
-      pendingPayoutAmount:    Math.round(pendingData?.total || 0),
-      pendingPayoutsCount:    pendingData?.count || 0,
-      monthlyBreakdown:       monthlyCommissions,
-    }, "Admin earnings fetched");
+    return success(
+      res,
+      {
+        totalCommissionsEarned: Math.round(
+          commissionData?.totalCommissions || 0,
+        ),
+        totalTaxableBase: Math.round(commissionData?.totalTaxableBase || 0),
+        confirmedOrdersCount: commissionData?.count || 0,
+        totalPaidOutToSellers: Math.round(payoutData?.totalPaidOut || 0),
+        approvedPayoutsCount: payoutData?.count || 0,
+        pendingPayoutAmount: Math.round(pendingData?.total || 0),
+        pendingPayoutsCount: pendingData?.count || 0,
+        monthlyBreakdown: monthlyCommissions,
+      },
+      "Admin earnings fetched",
+    );
   } catch (err) {
     console.error("[Admin Payout] getAdminEarnings:", err.message);
     return error(res, err.message);

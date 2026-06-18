@@ -1,4 +1,6 @@
-require("dotenv").config({ path: require("path").join(__dirname, "..", ".env") });
+require("dotenv").config({
+  path: require("path").join(__dirname, "..", ".env"),
+});
 
 const mongoose = require("mongoose");
 const Page = require("../src/models/Page");
@@ -6,7 +8,7 @@ const Page = require("../src/models/Page");
 const sellerPrivacyContent = `
 <h2>Merchant Privacy Policy</h2>
 <p>Last updated: June 17, 2026</p>
-<p>Sands Ornaments ("we", "us", or "our") operates the Sands Ornaments Merchant platform. We are committed to protecting the privacy of our sellers and merchants. This Privacy Policy describes how we collect, use, and share information about you when you register and use our seller services.</p>
+<p>Sands Jewels ("we", "us", or "our") operates the Sands Jewels Merchant platform. We are committed to protecting the privacy of our sellers and merchants. This Privacy Policy describes how we collect, use, and share information about you when you register and use our seller services.</p>
 
 <h3>1. Information We Collect</h3>
 <p>When you register as a merchant on our platform, we collect information necessary to establish and manage your business profile, process commissions, and handle payouts:</p>
@@ -61,7 +63,7 @@ const seed = async () => {
       await Page.create({
         title: "Seller Privacy Policy",
         slug,
-        content: sellerPrivacyContent
+        content: sellerPrivacyContent,
       });
       console.log("Seller Privacy Policy seeded successfully.");
     }

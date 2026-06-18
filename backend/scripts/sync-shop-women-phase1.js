@@ -20,16 +20,16 @@ const phase1Sections = [
       {
         itemId: "women-hero-1",
         type: "manual",
-        name: "Sands Ornaments Exclusive",
+        name: "Sands Jewels Exclusive",
         label: "Eternal Radiance",
         subtitle: "Diamonds that capture the light and her heart.",
         image: "women_hero_radiance.png",
         path: "/shop?source=women&category=women",
         tag: "Shop for Women",
         ctaLabel: "Shop Diamonds",
-        sortOrder: 0
-      }
-    ]
+        sortOrder: 0,
+      },
+    ],
   },
   {
     pageKey: "shop-women",
@@ -51,7 +51,7 @@ const phase1Sections = [
         tag: "EVERYDAY ESSENTIALS",
         priceMax: 1299,
         price: "1299",
-        sortOrder: 0
+        sortOrder: 0,
       },
       {
         itemId: "women-under-1499",
@@ -63,7 +63,7 @@ const phase1Sections = [
         tag: "ELEGANT CHARMS",
         priceMax: 1499,
         price: "1499",
-        sortOrder: 1
+        sortOrder: 1,
       },
       {
         itemId: "women-under-1999",
@@ -75,9 +75,9 @@ const phase1Sections = [
         tag: "LUXURY STATEMENTS",
         priceMax: 1999,
         price: "1999",
-        sortOrder: 2
-      }
-    ]
+        sortOrder: 2,
+      },
+    ],
   },
   {
     pageKey: "shop-women",
@@ -89,19 +89,84 @@ const phase1Sections = [
     sortOrder: 3,
     settings: {
       title: "Shop by Category",
-      subtitle: "Handcrafted silver masterpieces, each piece telling a unique story of elegance."
+      subtitle:
+        "Handcrafted silver masterpieces, each piece telling a unique story of elegance.",
     },
     items: [
-      { itemId: "women-rings", type: "manual", name: "Rings", label: "Rings", image: "Rings.png", path: "/shop?source=women&category=rings", sortOrder: 0 },
-      { itemId: "women-earrings", type: "manual", name: "Earrings", label: "Earrings", image: "Earrings.png", path: "/shop?source=women&category=earrings", sortOrder: 1 },
-      { itemId: "women-bracelets", type: "manual", name: "Bracelets", label: "Bracelets", image: "Bracelets.png", path: "/shop?source=women&category=bracelets", sortOrder: 2 },
-      { itemId: "women-pendants", type: "manual", name: "Pendants", label: "Pendants", image: "Pendants.png", path: "/shop?source=women&category=pendants", sortOrder: 3 },
-      { itemId: "women-chains", type: "manual", name: "Chains", label: "Chains", image: "Chains.png", path: "/shop?source=women&category=chains", sortOrder: 4 },
-      { itemId: "women-bangles", type: "manual", name: "Bangles", label: "Bangles", image: "Bangles.png", path: "/shop?source=women&category=bangles", sortOrder: 5 },
-      { itemId: "women-sets", type: "manual", name: "Sets", label: "Sets", image: "Sets.png", path: "/shop?source=women&category=sets", sortOrder: 6 },
-      { itemId: "women-personalised", type: "manual", name: "Personalised", label: "Personalised", image: "Personalised.png", path: "/shop?source=women&category=personalised", sortOrder: 7 }
-    ]
-  }
+      {
+        itemId: "women-rings",
+        type: "manual",
+        name: "Rings",
+        label: "Rings",
+        image: "Rings.png",
+        path: "/shop?source=women&category=rings",
+        sortOrder: 0,
+      },
+      {
+        itemId: "women-earrings",
+        type: "manual",
+        name: "Earrings",
+        label: "Earrings",
+        image: "Earrings.png",
+        path: "/shop?source=women&category=earrings",
+        sortOrder: 1,
+      },
+      {
+        itemId: "women-bracelets",
+        type: "manual",
+        name: "Bracelets",
+        label: "Bracelets",
+        image: "Bracelets.png",
+        path: "/shop?source=women&category=bracelets",
+        sortOrder: 2,
+      },
+      {
+        itemId: "women-pendants",
+        type: "manual",
+        name: "Pendants",
+        label: "Pendants",
+        image: "Pendants.png",
+        path: "/shop?source=women&category=pendants",
+        sortOrder: 3,
+      },
+      {
+        itemId: "women-chains",
+        type: "manual",
+        name: "Chains",
+        label: "Chains",
+        image: "Chains.png",
+        path: "/shop?source=women&category=chains",
+        sortOrder: 4,
+      },
+      {
+        itemId: "women-bangles",
+        type: "manual",
+        name: "Bangles",
+        label: "Bangles",
+        image: "Bangles.png",
+        path: "/shop?source=women&category=bangles",
+        sortOrder: 5,
+      },
+      {
+        itemId: "women-sets",
+        type: "manual",
+        name: "Sets",
+        label: "Sets",
+        image: "Sets.png",
+        path: "/shop?source=women&category=sets",
+        sortOrder: 6,
+      },
+      {
+        itemId: "women-personalised",
+        type: "manual",
+        name: "Personalised",
+        label: "Personalised",
+        image: "Personalised.png",
+        path: "/shop?source=women&category=personalised",
+        sortOrder: 7,
+      },
+    ],
+  },
 ];
 
 const run = async () => {
@@ -114,29 +179,35 @@ const run = async () => {
       await HomepageSection.updateOne(
         { pageKey: section.pageKey, sectionKey: section.sectionKey },
         { $set: section },
-        { upsert: true }
+        { upsert: true },
       );
     }
 
     // eslint-disable-next-line no-await-in-loop
     const existing = await HomepageSection.findOne({
       pageKey: section.pageKey,
-      sectionKey: section.sectionKey
+      sectionKey: section.sectionKey,
     }).lean();
 
     summary.push({
       sectionKey: section.sectionKey,
       mode: applyMode ? "applied" : "dry-run",
       existsInDb: Boolean(existing),
-      itemCountAfter: existing?.items?.length ?? section.items.length
+      itemCountAfter: existing?.items?.length ?? section.items.length,
     });
   }
 
-  console.log(JSON.stringify({
-    mode: applyMode ? "apply" : "dry-run",
-    updatedSections: phase1Sections.length,
-    summary
-  }, null, 2));
+  console.log(
+    JSON.stringify(
+      {
+        mode: applyMode ? "apply" : "dry-run",
+        updatedSections: phase1Sections.length,
+        summary,
+      },
+      null,
+      2,
+    ),
+  );
 
   await mongoose.disconnect();
 };
@@ -150,4 +221,3 @@ run().catch(async (err) => {
   }
   process.exit(1);
 });
-

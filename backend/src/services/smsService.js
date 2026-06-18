@@ -16,12 +16,12 @@ const sendOtpSms = async (phone, otp) => {
   try {
     const url = "https://cloud.smsindiahub.in/vendorsms/pushsms.aspx";
     const params = {
-      APIKey:        process.env.SMS_INDIA_API_KEY,
-      msisdn:        `91${phone}`,
-      sid:           process.env.SMS_INDIA_SENDER_ID,
-      msg:           `Welcome to the ${process.env.APP_NAME || "Sands Ornaments"} powered by SMSINDIAHUB. Your OTP for registration is ${otp}`,
-      fl:            "0",
-      gwid:          "2",
+      APIKey: process.env.SMS_INDIA_API_KEY,
+      msisdn: `91${phone}`,
+      sid: process.env.SMS_INDIA_SENDER_ID,
+      msg: `Welcome to the ${process.env.APP_NAME || "Sands Jewels"} powered by SMSINDIAHUB. Your OTP for registration is ${otp}`,
+      fl: "0",
+      gwid: "2",
       dlttemplateid: process.env.SMS_INDIA_TEMPLATE_ID,
     };
 

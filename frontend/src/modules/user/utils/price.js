@@ -1,5 +1,5 @@
 /**
- * Universal Price Utility for Sands Ornaments
+ * Universal Price Utility for Sands Jewels
  * Centralizes the logic for extracting product prices to avoid ₹0 errors.
  */
 
@@ -9,26 +9,26 @@
  * @returns {number} - The price in rupees.
  */
 export const getProductPrice = (product) => {
-    if (!product) return 0;
+  if (!product) return 0;
 
-    // 1. Check for root level prices (legacy or pre-normalized)
-    const rootCandidates = [
-        product.price,
-        product.finalPrice,
-        product.discountedPrice
-    ]
-    .map(v => Number(v))
-    .filter(v => !isNaN(v) && v > 0);
+  // 1. Check for root level prices (legacy or pre-normalized)
+  const rootCandidates = [
+    product.price,
+    product.finalPrice,
+    product.discountedPrice,
+  ]
+    .map((v) => Number(v))
+    .filter((v) => !isNaN(v) && v > 0);
 
-    // 2. Check variants (modern schema)
-    const variantPrices = (product.variants || [])
-        .map(v => Number(v.price ?? v.finalPrice ?? v.priceAfterTax))
-        .filter(v => !isNaN(v) && v > 0);
+  // 2. Check variants (modern schema)
+  const variantPrices = (product.variants || [])
+    .map((v) => Number(v.price ?? v.finalPrice ?? v.priceAfterTax))
+    .filter((v) => !isNaN(v) && v > 0);
 
-    if (variantPrices.length > 0) return Math.min(...variantPrices);
-    if (rootCandidates.length > 0) return rootCandidates[0];
+  if (variantPrices.length > 0) return Math.min(...variantPrices);
+  if (rootCandidates.length > 0) return rootCandidates[0];
 
-    return 0;
+  return 0;
 };
 
 /**
@@ -37,24 +37,20 @@ export const getProductPrice = (product) => {
  * @returns {number} - The MRP in rupees.
  */
 export const getProductMRP = (product) => {
-    if (!product) return 0;
+  if (!product) return 0;
 
-    const rootCandidates = [
-        product.originalPrice,
-        product.mrp,
-        product.basePrice
-    ]
-    .map(v => Number(v))
-    .filter(v => !isNaN(v) && v > 0);
+  const rootCandidates = [product.originalPrice, product.mrp, product.basePrice]
+    .map((v) => Number(v))
+    .filter((v) => !isNaN(v) && v > 0);
 
-    const variantMRPs = (product.variants || [])
-        .map(v => Number(v.mrp ?? v.price ?? v.finalPrice))
-        .filter(v => !isNaN(v) && v > 0);
+  const variantMRPs = (product.variants || [])
+    .map((v) => Number(v.mrp ?? v.price ?? v.finalPrice))
+    .filter((v) => !isNaN(v) && v > 0);
 
-    if (variantMRPs.length > 0) return Math.max(...variantMRPs);
-    if (rootCandidates.length > 0) return rootCandidates[0];
+  if (variantMRPs.length > 0) return Math.max(...variantMRPs);
+  if (rootCandidates.length > 0) return rootCandidates[0];
 
-    return 0;
+  return 0;
 };
 
 /**
@@ -63,5 +59,5 @@ export const getProductMRP = (product) => {
  * @returns {string} - Formatted currency string like ₹1,234.
  */
 export const formatCurrency = (value) => {
-    return `₹${Number(value || 0).toLocaleString('en-IN')}`;
+  return `₹${Number(value || 0).toLocaleString("en-IN")}`;
 };

@@ -1,5 +1,5 @@
 /**
- * PayoutRequest — Sands Ornaments Wallet System
+ * PayoutRequest — Sands Jewels Wallet System
  *
  * Tracks seller withdrawal requests and their lifecycle.
  *
@@ -17,7 +17,7 @@
 "use strict";
 
 const mongoose = require("mongoose");
-const crypto   = require("crypto");
+const crypto = require("crypto");
 
 const SAFE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
@@ -32,50 +32,50 @@ const payoutRequestSchema = new mongoose.Schema(
   {
     // Human-readable, URL-safe ID (e.g. PAY-AB3DEFGH-1718501234567)
     payoutId: {
-      type:     String,
+      type: String,
       required: true,
-      unique:   true,
-      default:  genPayoutId,
+      unique: true,
+      default: genPayoutId,
     },
 
     sellerId: {
-      type:     mongoose.Schema.Types.ObjectId,
-      ref:      "Seller",
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Seller",
       required: true,
-      index:    true,
+      index: true,
     },
 
     // ── Amounts ─────────────────────────────────────────────────────────
-    amount:        { type: Number, required: true, min: 500 }, // min ₹500
-    balanceBefore: { type: Number, required: true },           // snapshot before deduction
-    balanceAfter:  { type: Number, required: true },           // snapshot after deduction
+    amount: { type: Number, required: true, min: 500 }, // min ₹500
+    balanceBefore: { type: Number, required: true }, // snapshot before deduction
+    balanceAfter: { type: Number, required: true }, // snapshot after deduction
 
     // ── Bank details snapshot at time of request ─────────────────────────
     bankDetails: {
       accountNumber: { type: String, default: "" },
-      ifscCode:      { type: String, default: "" },
+      ifscCode: { type: String, default: "" },
     },
 
     sellerNote: { type: String, default: "" },
 
     // ── Status ───────────────────────────────────────────────────────────
     status: {
-      type:    String,
-      enum:    ["PENDING", "PROCESSING", "APPROVED", "REJECTED"],
+      type: String,
+      enum: ["PENDING", "PROCESSING", "APPROVED", "REJECTED"],
       default: "PENDING",
-      index:   true,
+      index: true,
     },
 
     // ── Admin action ─────────────────────────────────────────────────────
     processedBy: {
-      type:    mongoose.Schema.Types.ObjectId,
-      ref:     "Admin",
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Admin",
       default: null,
     },
-    processedAt: { type: Date,   default: null },
-    adminNote:   { type: String, default: "" },
+    processedAt: { type: Date, default: null },
+    adminNote: { type: String, default: "" },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // ── Indexes ───────────────────────────────────────────────────────────────
@@ -91,12 +91,12 @@ payoutRequestSchema.index({ status: 1, createdAt: -1 });
 payoutRequestSchema.index(
   { sellerId: 1 },
   {
-    name:    "unique_active_payout_per_seller",
-    unique:  true,
+    name: "unique_active_payout_per_seller",
+    unique: true,
     partialFilterExpression: {
       status: { $in: ["PENDING", "PROCESSING"] },
     },
-  }
+  },
 );
 
 module.exports = mongoose.model("PayoutRequest", payoutRequestSchema);

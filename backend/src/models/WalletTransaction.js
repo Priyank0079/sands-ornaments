@@ -1,5 +1,5 @@
 /**
- * WalletTransaction — Sands Ornaments Wallet Ledger
+ * WalletTransaction — Sands Jewels Wallet Ledger
  *
  * Immutable, append-only record of every balance change on a seller wallet.
  * The wallet balance on the Seller document is the running total; this
@@ -15,7 +15,7 @@
 "use strict";
 
 const mongoose = require("mongoose");
-const crypto   = require("crypto");
+const crypto = require("crypto");
 
 const SAFE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
@@ -29,29 +29,29 @@ const genTxnId = () => {
 const walletTransactionSchema = new mongoose.Schema(
   {
     transactionId: {
-      type:     String,
+      type: String,
       required: true,
-      unique:   true,
-      default:  genTxnId,
+      unique: true,
+      default: genTxnId,
     },
 
     sellerId: {
-      type:     mongoose.Schema.Types.ObjectId,
-      ref:      "Seller",
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Seller",
       required: true,
-      index:    true,
+      index: true,
     },
 
     // ── Money movement ───────────────────────────────────────────────────
     type: {
-      type:     String,
-      enum:     ["CREDIT", "DEBIT"],
+      type: String,
+      enum: ["CREDIT", "DEBIT"],
       required: true,
     },
 
     reason: {
-      type:     String,
-      enum:     [
+      type: String,
+      enum: [
         "commission_confirmed",
         "commission_reversed",
         "payout_requested",
@@ -62,18 +62,30 @@ const walletTransactionSchema = new mongoose.Schema(
       required: true,
     },
 
-    amount:        { type: Number, required: true, min: 0 },
+    amount: { type: Number, required: true, min: 0 },
     balanceBefore: { type: Number, required: true },
-    balanceAfter:  { type: Number, required: true },
+    balanceAfter: { type: Number, required: true },
 
     // ── Linked documents ──────────────────────────────────────────────────
-    orderId:         { type: mongoose.Schema.Types.ObjectId, ref: "Order",         default: null },
-    commissionId:    { type: mongoose.Schema.Types.ObjectId, ref: "Commission",    default: null },
-    payoutRequestId: { type: mongoose.Schema.Types.ObjectId, ref: "PayoutRequest", default: null },
+    orderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Order",
+      default: null,
+    },
+    commissionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Commission",
+      default: null,
+    },
+    payoutRequestId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "PayoutRequest",
+      default: null,
+    },
 
     description: { type: String, default: "" },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // ── Indexes ───────────────────────────────────────────────────────────────
