@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { User, Shield, Lock, CheckCircle2, AlertCircle, Building2, Mail, Phone, Landmark, FileText, FileBadge2, ExternalLink, CalendarDays } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { User, Shield, Lock, CheckCircle2, AlertCircle, Building2, Mail, Phone, Landmark, FileText, FileBadge2, ExternalLink, CalendarDays, Trash2 } from 'lucide-react';
 import { sellerService } from '../services/sellerService';
+import { useAuth } from '../../../context/AuthContext';
+import DeleteModal from '../../shared/components/DeleteModal';
 import toast from 'react-hot-toast';
 
 const SellerProfile = () => {
+    const navigate = useNavigate();
+    const { logout } = useAuth();
     const [seller, setSeller] = useState(null);
     const [profile, setProfile] = useState({
         fullName: '',
@@ -29,6 +34,8 @@ const SellerProfile = () => {
     });
     const [savingProfile, setSavingProfile] = useState(false);
     const [savingPassword, setSavingPassword] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deletingAccount, setDeletingAccount] = useState(false);
 
     useEffect(() => {
         let active = true;
@@ -178,6 +185,30 @@ const SellerProfile = () => {
             toast.error(res.message || 'Unable to update password');
         }
         setSavingPassword(false);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (deletingAccount) return { success: false };
+        setDeletingAccount(true);
+        try {
+            const res = await sellerService.deleteAccount();
+            if (res?.success) {
+                // Clear all seller session data
+                sellerService.logout();
+                logout({ silent: true });
+                toast.success("Seller account deleted successfully");
+                navigate('/seller/login');
+                return { success: true };
+            } else {
+                toast.error(res?.message || 'Failed to delete account. Please try again.');
+                return { success: false };
+            }
+        } catch (err) {
+            toast.error('An unexpected error occurred. Please try again.');
+            return { success: false };
+        } finally {
+            setDeletingAccount(false);
+        }
     };
 
     if (!seller) return <div className="p-12 text-center text-gray-400 font-black uppercase tracking-widest">Loading profile...</div>;
@@ -444,8 +475,42 @@ const SellerProfile = () => {
                             </button>
                         </form>
                     </div>
+
+                    {/* ── Danger Zone ─────────────────────────────── */}
+                    <div className="bg-white rounded-[2.5rem] border border-red-100 p-10 shadow-sm relative overflow-hidden">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-3 bg-red-50 rounded-xl">
+                                <Trash2 size={20} className="text-red-500" />
+                            </div>
+                            <h3 className="text-sm font-black uppercase tracking-widest text-gray-900">Danger Zone</h3>
+                        </div>
+
+                        <div className="p-6 bg-red-50/60 rounded-2xl border border-red-100 flex items-start gap-4 mb-8">
+                            <AlertCircle size={18} className="text-red-500 shrink-0 mt-0.5" />
+                            <p className="text-[10px] font-bold text-red-800 leading-relaxed uppercase">
+                                Permanent Action: Deleting your seller account will remove all your products, pickup locations, and store data permanently. This action cannot be undone. Financial and order records are retained for regulatory compliance.
+                            </p>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => setShowDeleteModal(true)}
+                            className="w-full bg-red-600 text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] shadow-xl shadow-red-600/20 hover:bg-red-700 transition-all flex items-center justify-center gap-2 group"
+                        >
+                            <Trash2 size={16} className="group-hover:scale-110 transition-transform" />
+                            Delete Seller Account
+                        </button>
+                    </div>
                 </div>
             </div>
+
+            <DeleteModal
+                isOpen={showDeleteModal}
+                onClose={() => setShowDeleteModal(false)}
+                onConfirm={handleConfirmDelete}
+                title="Delete Seller Account?"
+                description="This is permanent and cannot be undone. Your store, all products, and pickup locations will be deleted immediately."
+            />
         </div>
     );
 };
