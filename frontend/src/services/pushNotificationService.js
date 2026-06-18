@@ -1,4 +1,4 @@
-import { messaging, getToken, onMessage } from '../firebase';
+import { getMessagingInstance, getToken, onMessage } from '../firebase';
 import api from './api';
 
 const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY;
@@ -39,6 +39,12 @@ async function getFCMToken() {
   try {
     const registration = await registerServiceWorker();
     await registration.update(); // Update service worker
+    
+    const messaging = await getMessagingInstance();
+    if (!messaging) {
+      console.log('FCM Messaging is not supported, skipping token retrieval');
+      return null;
+    }
     
     const token = await getToken(messaging, {
       vapidKey: VAPID_KEY,
@@ -112,27 +118,37 @@ async function registerFCMToken(forceUpdate = false) {
 }
 
 // Setup foreground notification handler
-function setupForegroundNotificationHandler(handler) {
-  onMessage(messaging, (payload) => {
-    console.log('📬 Foreground message received:', payload);
+async function setupForegroundNotificationHandler(handler) {
+  try {
+    const messaging = await getMessagingInstance();
+    if (!messaging) {
+      console.log('FCM Messaging is not supported, skipping foreground handler setup');
+      return;
+    }
     
-    // Show browser notification if permission granted
-    if ('Notification' in window && Notification.permission === 'granted') {
-      const notificationTitle = payload.notification.title;
-      const notificationOptions = {
-        body: payload.notification.body,
-        icon: payload.notification.icon || '/favicon.png',
-        data: payload.data
-      };
+    onMessage(messaging, (payload) => {
+      console.log('📬 Foreground message received:', payload);
       
-      new Notification(notificationTitle, notificationOptions);
-    }
-    
-    // Call custom handler (e.g., to update UI or show a toast)
-    if (handler) {
-      handler(payload);
-    }
-  });
+      // Show browser notification if permission granted
+      if ('Notification' in window && Notification.permission === 'granted') {
+        const notificationTitle = payload.notification.title;
+        const notificationOptions = {
+          body: payload.notification.body,
+          icon: payload.notification.icon || '/favicon.png',
+          data: payload.data
+        };
+        
+        new Notification(notificationTitle, notificationOptions);
+      }
+      
+      // Call custom handler (e.g., to update UI or show a toast)
+      if (handler) {
+        handler(payload);
+      }
+    });
+  } catch (error) {
+    console.error('Error setting up foreground notification handler:', error);
+  }
 }
 
 // Initialize push notifications
