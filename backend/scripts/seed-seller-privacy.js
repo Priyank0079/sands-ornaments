@@ -39,7 +39,7 @@ const sellerPrivacyContent = `
 <p>You can update your profile, contact information, and banking details directly through the Seller Dashboard profile settings. For account deletion requests or further queries, contact merchant support.</p>
 
 <h3>6. Contact Us</h3>
-<p>If you have any questions about this Merchant Privacy Policy, please contact our merchant support team at <strong>support@sandsornaments.com</strong>.</p>
+<p>If you have any questions about this Merchant Privacy Policy, please contact our merchant support team at <strong>care@sandsjewels.com</strong> or call us at <strong>+91 91 1334 4051</strong>.</p>
 `;
 
 const seed = async () => {

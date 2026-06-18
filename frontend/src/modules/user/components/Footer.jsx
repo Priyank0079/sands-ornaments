@@ -14,8 +14,8 @@ const Footer = () => {
         footerSubTagline: 'Handcrafted for You.',
         footerDescription: 'Every piece at Sands tell a story of heritage and modern Grace. Join our community of silver lovers and celebrate life\'s most precious moments.',
         address: '123 Silver Arcade, Heritage Marg, Jaipur',
-        phone: '+91 98765 43210',
-        email: 'support@sandsornaments.com',
+        phone: '+91 91 1334 4051',
+        email: 'care@sandsjewels.com',
 
         footerColumn1Title: 'Experience',
         footerColumn2Title: 'Policies',

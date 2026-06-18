@@ -7,7 +7,7 @@ const settingSchema = new mongoose.Schema({
   address: String,
   email: String,
   phone: String,
-  website: { type: String, default: 'www.sandsornaments.com' },
+  website: { type: String, default: 'www.sandsjewels.com' },
   socialLinks: {
     facebook: { type: String, default: '#' },
     instagram: { type: String, default: '#' },

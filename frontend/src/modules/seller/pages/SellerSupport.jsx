@@ -99,7 +99,7 @@ const SellerSupport = () => {
                                 </div>
                                 <div>
                                     <p className="text-gray-400 text-[9px] uppercase tracking-widest font-black">Call Support</p>
-                                    <p className="text-xs md:text-sm font-bold text-black">+91 90083 81564</p>
+                                    <p className="text-xs md:text-sm font-bold text-black">+91 91 1334 4051</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-4">
@@ -108,7 +108,7 @@ const SellerSupport = () => {
                                 </div>
                                 <div>
                                     <p className="text-gray-400 text-[9px] uppercase tracking-widest font-black">Email Support</p>
-                                    <p className="text-xs md:text-sm font-bold text-black">support@sandsornaments.com</p>
+                                    <p className="text-xs md:text-sm font-bold text-black">care@sandsjewels.com</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-4">

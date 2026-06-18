@@ -277,7 +277,7 @@ const HelpCenter = () => {
                                             </div>
                                             <div>
                                                 <p className="text-white/60 text-[10px] md:text-xs uppercase tracking-widest font-bold">Call us</p>
-                                                <p>+91 90083 81564</p>
+                                                <p>+91 91 1334 4051</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-4 text-xs md:text-sm font-medium">
@@ -286,7 +286,7 @@ const HelpCenter = () => {
                                             </div>
                                             <div>
                                                 <p className="text-white/60 text-[10px] md:text-xs uppercase tracking-widest font-bold">Email us</p>
-                                                <p>support@sandsornaments.com</p>
+                                                <p>care@sandsjewels.com</p>
                                             </div>
                                         </div>
                                     </div>

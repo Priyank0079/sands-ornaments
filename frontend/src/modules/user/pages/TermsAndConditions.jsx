@@ -76,7 +76,7 @@ const TermsAndConditions = () => {
                             Need clarification?
                         </h4>
                         <p className="text-xs md:text-sm text-gray-500 font-serif">
-                            If you have any questions regarding our terms, please reach out to our support team at <span className="font-bold text-black border-b border-[#EBCDD0]">support@sandsornaments.com</span> or visit our help center.
+                            If you have any questions regarding our terms, please reach out to our support team at <span className="font-bold text-black border-b border-[#EBCDD0]">care@sandsjewels.com</span> or visit our help center.
                         </p>
                     </div>
                 </div>

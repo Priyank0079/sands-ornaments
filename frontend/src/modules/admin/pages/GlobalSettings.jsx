@@ -26,9 +26,9 @@ const DEFAULT_SETTINGS = {
     ],
     fraudWarning: 'BEWARE OF FRAUD: Sands Ornaments never asks for confidential banking details over phone or email.',
     address: '123 Silver Arcade, Heritage Marg, Jaipur',
-    phone: '+91 98765 43210',
-    email: 'support@sandsornaments.com',
-    website: 'www.sandsornaments.com',
+    phone: '+91 91 1334 4051',
+    email: 'care@sandsjewels.com',
+    website: 'www.sandsjewels.com',
 
     // Footer Settings
     footerTagline: 'Timeless Elegance,',
