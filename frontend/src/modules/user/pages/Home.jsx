@@ -3,6 +3,7 @@ import { useShop } from '../../../context/ShopContext';
 import { useHomepageCms } from '../hooks/useHomepageCms';
 import Loader from '../../shared/components/Loader';
 import { useResetScroll } from '../../../hooks/useResetScroll';
+import LazySection from '../../../components/LazySection';
 
 // ─── ABOVE-FOLD: eagerly imported — these are visible immediately on page load ───
 import PromoSlider from '../components/PromoSlider';
@@ -36,13 +37,13 @@ const SectionFallback = () => (
     <div style={{ minHeight: '200px' }} aria-hidden="true" />
 );
 
-// contentVisibility:auto skips layout/paint of off-screen sections
+// Wrap off-screen sections in LazySection with 500px rootMargin to load only when scrolling close
 const SectionShell = ({ children }) => (
-    <div style={{ contentVisibility: 'auto', containIntrinsicSize: '900px' }}>
+    <LazySection minHeight="250px">
         <Suspense fallback={<SectionFallback />}>
             {children}
         </Suspense>
-    </div>
+    </LazySection>
 );
 
 const Home = () => {

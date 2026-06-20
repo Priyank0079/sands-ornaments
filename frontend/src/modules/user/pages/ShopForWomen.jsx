@@ -1,15 +1,19 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, lazy, Suspense } from "react";
 import WomenHeroCarousel from "../components/women/WomenHeroCarousel";
-import WomenCategoriesGrid from "../components/women/WomenCategoriesGrid";
-import WomenCuratedCollections from "../components/women/WomenCuratedCollections";
-import WomenOccasionCarousel from "../components/women/WomenOccasionCarousel";
-import WomenDiscoverHue from "../components/women/WomenDiscoverHue";
-import WomenPromoBanners from "../components/women/WomenPromoBanners";
-import WomenProductsListing from "../components/women/WomenProductsListing";
-import WomenProductCategories from "../components/women/WomenProductCategories";
-import WomenPersonalisedBanner from "../components/women/WomenPersonalisedBanner";
 import WomenPriceRange from "../components/women/WomenPriceRange";
-import WomenFeatureBanner from "../components/women/WomenFeatureBanner";
+import WomenProductCategories from "../components/women/WomenProductCategories";
+import WomenCategoriesGrid from "../components/women/WomenCategoriesGrid";
+import LazySection from "../../../components/LazySection";
+
+// Lazy loaded below-fold components
+const WomenCuratedCollections = lazy(() => import("../components/women/WomenCuratedCollections"));
+const WomenOccasionCarousel = lazy(() => import("../components/women/WomenOccasionCarousel"));
+const WomenPersonalisedBanner = lazy(() => import("../components/women/WomenPersonalisedBanner"));
+const WomenDiscoverHue = lazy(() => import("../components/women/WomenDiscoverHue"));
+const WomenPromoBanners = lazy(() => import("../components/women/WomenPromoBanners"));
+const WomenFeatureBanner = lazy(() => import("../components/women/WomenFeatureBanner"));
+const WomenProductsListing = lazy(() => import("../components/women/WomenProductsListing"));
+
 import Loader from "../../shared/components/Loader";
 import { usePublicCmsPage } from "../hooks/usePublicCmsPage";
 
@@ -70,17 +74,30 @@ const ShopForWomen = () => {
       <WomenPriceRange sectionData={sectionMap["price-range-showcase"]} />
       <WomenProductCategories sectionData={sectionMap["product-categories"]} />
       <WomenCategoriesGrid sectionData={sectionMap["categories-grid"]} />
-      <WomenCuratedCollections
-        sectionData={sectionMap["curated-collections"]}
-      />
-      <WomenOccasionCarousel sectionData={sectionMap["occasion-carousel"]} />
-      <WomenPersonalisedBanner
-        sectionData={sectionMap["personalized-banner"]}
-      />
-      <WomenDiscoverHue sectionData={sectionMap["discover-hue"]} />
-      <WomenPromoBanners sectionData={sectionMap["promo-banners"]} />
-      <WomenFeatureBanner />
-      <WomenProductsListing sectionData={sectionMap["products-listing"]} />
+      
+      <Suspense fallback={<div className="h-40" />}>
+        <LazySection minHeight="300px">
+          <WomenCuratedCollections sectionData={sectionMap["curated-collections"]} />
+        </LazySection>
+        <LazySection minHeight="300px">
+          <WomenOccasionCarousel sectionData={sectionMap["occasion-carousel"]} />
+        </LazySection>
+        <LazySection minHeight="200px">
+          <WomenPersonalisedBanner sectionData={sectionMap["personalized-banner"]} />
+        </LazySection>
+        <LazySection minHeight="300px">
+          <WomenDiscoverHue sectionData={sectionMap["discover-hue"]} />
+        </LazySection>
+        <LazySection minHeight="300px">
+          <WomenPromoBanners sectionData={sectionMap["promo-banners"]} />
+        </LazySection>
+        <LazySection minHeight="300px">
+          <WomenFeatureBanner />
+        </LazySection>
+        <LazySection minHeight="300px">
+          <WomenProductsListing sectionData={sectionMap["products-listing"]} />
+        </LazySection>
+      </Suspense>
     </div>
   );
 };

@@ -180,7 +180,7 @@ const MenFeaturedProducts = ({ sectionData }) => {
         <section className="py-4 md:py-16 bg-white overflow-hidden">
             <div className="container mx-auto px-4 max-w-[1400px]">
                 <div className="text-center mb-6 md:mb-12">
-                    <h2 className="text-[30px] md:text-[40px] font-medium text-gray-900 tracking-tight" style={{ fontFamily: "'Inter', sans-serif" }}>
+                    <h2 className="text-[30px] md:text-[40px] font-medium text-gray-900 tracking-tight" style={{ fontFamily: "'Lato', sans-serif" }}>
                         {resolvedSettings.title}
                     </h2>
                 </div>
