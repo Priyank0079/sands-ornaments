@@ -1,5 +1,5 @@
 /**
- * ✉️  Production Email Service — Sands Ornaments
+ * ✉️  Production Email Service — Sands Jewels
  *
  *  Features:
  *    - Auto-detects provider: Brevo (preferred), generic SMTP, Mailtrap (dev)
@@ -17,13 +17,13 @@
 "use strict";
 
 const nodemailer = require("nodemailer");
-const EmailLog   = require("../models/EmailLog");
+const EmailLog = require("../models/EmailLog");
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
 const EMAIL_ENABLED = process.env.EMAIL_ENABLED !== "false";
-const MAX_RETRIES   = 3;
-const RETRY_DELAY   = 1500; // ms base delay; doubles each attempt
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1500; // ms base delay; doubles each attempt
 
 /**
  * Resolve transporter config from env.
@@ -33,8 +33,8 @@ const resolveTransportConfig = () => {
   // Option 1: Brevo SMTP relay
   if (process.env.BREVO_API_KEY) {
     return {
-      host:   "smtp-relay.brevo.com",
-      port:   587,
+      host: "smtp-relay.brevo.com",
+      port: 587,
       secure: false,
       auth: {
         user: process.env.BREVO_SMTP_LOGIN || process.env.SMTP_USER,
@@ -51,13 +51,15 @@ const resolveTransportConfig = () => {
       process.env.SMTP_PASS.includes("your_smtp");
 
     if (isPlaceholder) {
-      console.warn("[Email] ⚠️  SMTP credentials appear to be placeholders. Emails will be silently skipped.");
+      console.warn(
+        "[Email] ⚠️  SMTP credentials appear to be placeholders. Emails will be silently skipped.",
+      );
       return null;
     }
 
     return {
-      host:   process.env.SMTP_HOST,
-      port:   Number(process.env.SMTP_PORT) || 587,
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT) || 587,
       secure: Number(process.env.SMTP_PORT) === 465,
       auth: {
         user: process.env.SMTP_USER,
@@ -70,8 +72,8 @@ const resolveTransportConfig = () => {
   if (process.env.NODE_ENV !== "production") {
     console.info("[Email] 📬 Using Mailtrap sandbox for development.");
     return {
-      host:   "sandbox.smtp.mailtrap.io",
-      port:   2525,
+      host: "sandbox.smtp.mailtrap.io",
+      port: 2525,
       auth: {
         user: process.env.MAILTRAP_USER || "",
         pass: process.env.MAILTRAP_PASS || "",
@@ -91,9 +93,23 @@ const transporter = transportConfig
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const logEmail = async ({ to, subject, type, status, messageId = null, error = null }) => {
+const logEmail = async ({
+  to,
+  subject,
+  type,
+  status,
+  messageId = null,
+  error = null,
+}) => {
   try {
-    await EmailLog.create({ to, subject, type, status, messageId, errorMessage: error });
+    await EmailLog.create({
+      to,
+      subject,
+      type,
+      status,
+      messageId,
+      errorMessage: error,
+    });
   } catch (logErr) {
     console.error("[Email] Failed to write email log:", logErr.message);
   }
@@ -113,14 +129,23 @@ const logEmail = async ({ to, subject, type, status, messageId = null, error = n
  * @param {string[]} [opts.replyTo]
  * @returns {Promise<boolean>}     — true = sent, false = suppressed/failed
  */
-const sendEmail = async ({ to, subject, html, text, type = "general", replyTo } = {}) => {
+const sendEmail = async ({
+  to,
+  subject,
+  html,
+  text,
+  type = "general",
+  replyTo,
+} = {}) => {
   if (!EMAIL_ENABLED) {
     console.info(`[Email] Suppressed (EMAIL_ENABLED=false): ${type} → ${to}`);
     return false;
   }
 
   if (!transporter) {
-    console.warn(`[Email] No transporter configured — skipping: ${type} → ${to}`);
+    console.warn(
+      `[Email] No transporter configured — skipping: ${type} → ${to}`,
+    );
     await logEmail({ to, subject, type, status: "skipped" });
     return false;
   }
@@ -131,11 +156,16 @@ const sendEmail = async ({ to, subject, html, text, type = "general", replyTo } 
   }
 
   const mailOptions = {
-    from:    `Sands Ornaments <${process.env.SMTP_FROM || "noreply@sandsjewels.com"}>`,
+    from: `Sands Jewels <${process.env.SMTP_FROM || "noreply@sandsjewels.com"}>`,
     to,
     subject,
     html,
-    text:    text || html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
+    text:
+      text ||
+      html
+        .replace(/<[^>]+>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim(),
     ...(replyTo ? { replyTo } : {}),
   };
 
@@ -144,20 +174,39 @@ const sendEmail = async ({ to, subject, html, text, type = "general", replyTo } 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
       const info = await transporter.sendMail(mailOptions);
-      console.info(`[Email] ✅ Sent (attempt ${attempt}): ${type} → ${to} | msgId: ${info.messageId}`);
-      await logEmail({ to, subject, type, status: "sent", messageId: info.messageId });
+      console.info(
+        `[Email] ✅ Sent (attempt ${attempt}): ${type} → ${to} | msgId: ${info.messageId}`,
+      );
+      await logEmail({
+        to,
+        subject,
+        type,
+        status: "sent",
+        messageId: info.messageId,
+      });
       return true;
     } catch (err) {
       lastError = err;
-      console.warn(`[Email] ⚠️  Attempt ${attempt}/${MAX_RETRIES} failed for ${type} → ${to}: ${err.message}`);
+      console.warn(
+        `[Email] ⚠️  Attempt ${attempt}/${MAX_RETRIES} failed for ${type} → ${to}: ${err.message}`,
+      );
       if (attempt < MAX_RETRIES) {
         await sleep(RETRY_DELAY * attempt); // exponential back-off
       }
     }
   }
 
-  console.error(`[Email] ❌ All ${MAX_RETRIES} attempts failed for ${type} → ${to}:`, lastError?.message);
-  await logEmail({ to, subject, type, status: "failed", error: lastError?.message });
+  console.error(
+    `[Email] ❌ All ${MAX_RETRIES} attempts failed for ${type} → ${to}:`,
+    lastError?.message,
+  );
+  await logEmail({
+    to,
+    subject,
+    type,
+    status: "failed",
+    error: lastError?.message,
+  });
   return false;
 };
 
@@ -186,7 +235,9 @@ const verifyConnection = async () => {
     console.info("[Email] ✅ SMTP connection verified successfully.");
   } catch (err) {
     console.warn("[Email] ⚠️  SMTP connection check failed:", err.message);
-    console.warn("[Email]     Emails may fail silently. Check SMTP credentials in .env");
+    console.warn(
+      "[Email]     Emails may fail silently. Check SMTP credentials in .env",
+    );
   }
 };
 

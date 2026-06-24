@@ -1,5 +1,5 @@
 /**
- * Seller Payout Controller — Sands Ornaments
+ * Seller Payout Controller — Sands Jewels
  *
  * Endpoints:
  *   GET  /seller/payout/wallet      → wallet balance + totals
@@ -10,9 +10,9 @@
  */
 "use strict";
 
-const mongoose       = require("mongoose");
-const Seller         = require("../../../models/Seller");
-const PayoutRequest  = require("../../../models/PayoutRequest");
+const mongoose = require("mongoose");
+const Seller = require("../../../models/Seller");
+const PayoutRequest = require("../../../models/PayoutRequest");
 const WalletTransaction = require("../../../models/WalletTransaction");
 const { success, error } = require("../../../utils/apiResponse");
 
@@ -25,7 +25,9 @@ exports.getWallet = async (req, res) => {
   try {
     const sellerId = req.user.userId;
     const seller = await Seller.findById(sellerId)
-      .select("walletBalance totalCommissionsEarned totalPaidOut shopName bankAccount")
+      .select(
+        "walletBalance totalCommissionsEarned totalPaidOut shopName bankAccount",
+      )
       .lean();
 
     if (!seller) return error(res, "Seller not found", 404);
@@ -38,16 +40,21 @@ exports.getWallet = async (req, res) => {
       .select("payoutId amount status createdAt")
       .lean();
 
-    return success(res, {
-      walletBalance:          Math.round(seller.walletBalance || 0),
-      totalCommissionsEarned: Math.round(seller.totalCommissionsEarned || 0),
-      totalPaidOut:           Math.round(seller.totalPaidOut || 0),
-      availableForPayout:     Math.max(0, Math.round(seller.walletBalance || 0)),
-      minPayoutAmount:        MIN_PAYOUT,
-      canRequestPayout:       !activePayout && (seller.walletBalance || 0) >= MIN_PAYOUT,
-      activePayout:           activePayout || null,
-      bankAccount:            seller.bankAccount || {},
-    }, "Wallet details fetched");
+    return success(
+      res,
+      {
+        walletBalance: Math.round(seller.walletBalance || 0),
+        totalCommissionsEarned: Math.round(seller.totalCommissionsEarned || 0),
+        totalPaidOut: Math.round(seller.totalPaidOut || 0),
+        availableForPayout: Math.max(0, Math.round(seller.walletBalance || 0)),
+        minPayoutAmount: MIN_PAYOUT,
+        canRequestPayout:
+          !activePayout && (seller.walletBalance || 0) >= MIN_PAYOUT,
+        activePayout: activePayout || null,
+        bankAccount: seller.bankAccount || {},
+      },
+      "Wallet details fetched",
+    );
   } catch (err) {
     console.error("[Payout] getWallet:", err.message);
     return error(res, err.message);
@@ -60,12 +67,18 @@ exports.getWallet = async (req, res) => {
 exports.getTransactions = async (req, res) => {
   try {
     const sellerId = req.user.userId;
-    const page   = Math.max(1, parseInt(req.query.page  || "1", 10));
-    const limit  = Math.min(100, Math.max(1, parseInt(req.query.limit || "20", 10)));
-    const skip   = (page - 1) * limit;
+    const page = Math.max(1, parseInt(req.query.page || "1", 10));
+    const limit = Math.min(
+      100,
+      Math.max(1, parseInt(req.query.limit || "20", 10)),
+    );
+    const skip = (page - 1) * limit;
 
     const filter = { sellerId };
-    if (req.query.type && ["CREDIT", "DEBIT"].includes(req.query.type.toUpperCase())) {
+    if (
+      req.query.type &&
+      ["CREDIT", "DEBIT"].includes(req.query.type.toUpperCase())
+    ) {
       filter.type = req.query.type.toUpperCase();
     }
 
@@ -78,10 +91,14 @@ exports.getTransactions = async (req, res) => {
       WalletTransaction.countDocuments(filter),
     ]);
 
-    return success(res, {
-      transactions,
-      pagination: { page, limit, total, pages: Math.ceil(total / limit) },
-    }, "Transactions fetched");
+    return success(
+      res,
+      {
+        transactions,
+        pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+      },
+      "Transactions fetched",
+    );
   } catch (err) {
     console.error("[Payout] getTransactions:", err.message);
     return error(res, err.message);
@@ -94,9 +111,12 @@ exports.getTransactions = async (req, res) => {
 exports.getMyRequests = async (req, res) => {
   try {
     const sellerId = req.user.userId;
-    const page  = Math.max(1, parseInt(req.query.page  || "1", 10));
-    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit || "10", 10)));
-    const skip  = (page - 1) * limit;
+    const page = Math.max(1, parseInt(req.query.page || "1", 10));
+    const limit = Math.min(
+      50,
+      Math.max(1, parseInt(req.query.limit || "10", 10)),
+    );
+    const skip = (page - 1) * limit;
 
     const [requests, total] = await Promise.all([
       PayoutRequest.find({ sellerId })
@@ -107,10 +127,14 @@ exports.getMyRequests = async (req, res) => {
       PayoutRequest.countDocuments({ sellerId }),
     ]);
 
-    return success(res, {
-      requests,
-      pagination: { page, limit, total, pages: Math.ceil(total / limit) },
-    }, "Payout requests fetched");
+    return success(
+      res,
+      {
+        requests,
+        pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+      },
+      "Payout requests fetched",
+    );
   } catch (err) {
     console.error("[Payout] getMyRequests:", err.message);
     return error(res, err.message);
@@ -152,77 +176,102 @@ exports.createRequest = async (req, res) => {
     if (currentBalance < MIN_PAYOUT) {
       await session.abortTransaction();
       session.endSession();
-      return error(res, `Insufficient balance. Minimum required: ₹${MIN_PAYOUT}`, 400);
+      return error(
+        res,
+        `Insufficient balance. Minimum required: ₹${MIN_PAYOUT}`,
+        400,
+      );
     }
 
     if (amountNum > currentBalance) {
       await session.abortTransaction();
       session.endSession();
-      return error(res, `Amount (₹${amountNum}) exceeds available balance (₹${currentBalance})`, 400);
+      return error(
+        res,
+        `Amount (₹${amountNum}) exceeds available balance (₹${currentBalance})`,
+        400,
+      );
     }
 
     // Check for existing active payout (belt-and-braces alongside unique index)
     const existing = await PayoutRequest.findOne({
       sellerId,
       status: { $in: ["PENDING", "PROCESSING"] },
-    }).session(session).lean();
+    })
+      .session(session)
+      .lean();
 
     if (existing) {
       await session.abortTransaction();
       session.endSession();
-      return error(res, "You already have an active payout request. Please wait for it to be processed.", 400);
+      return error(
+        res,
+        "You already have an active payout request. Please wait for it to be processed.",
+        400,
+      );
     }
 
     // Deduct from wallet
     const updatedSeller = await Seller.findByIdAndUpdate(
       sellerId,
       { $inc: { walletBalance: -amountNum } },
-      { new: true, session, select: "walletBalance" }
+      { new: true, session, select: "walletBalance" },
     );
 
     const balanceBefore = currentBalance;
-    const balanceAfter  = Math.round(updatedSeller.walletBalance);
+    const balanceAfter = Math.round(updatedSeller.walletBalance);
 
     // Create payout request
     const [payoutReq] = await PayoutRequest.create(
-      [{
-        sellerId,
-        amount:        amountNum,
-        balanceBefore,
-        balanceAfter,
-        bankDetails: {
-          accountNumber: seller.bankAccount?.accountNumber || "",
-          ifscCode:      seller.bankAccount?.ifscCode || "",
+      [
+        {
+          sellerId,
+          amount: amountNum,
+          balanceBefore,
+          balanceAfter,
+          bankDetails: {
+            accountNumber: seller.bankAccount?.accountNumber || "",
+            ifscCode: seller.bankAccount?.ifscCode || "",
+          },
+          sellerNote: sellerNote || "",
+          status: "PENDING",
         },
-        sellerNote: sellerNote || "",
-        status: "PENDING",
-      }],
-      { session }
+      ],
+      { session },
     );
 
     // Write wallet transaction ledger entry
     const crypto = require("crypto");
-    const SAFE   = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    const seg    = Array.from(crypto.randomBytes(8)).map((b) => SAFE[b % SAFE.length]).join("");
+    const SAFE = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    const seg = Array.from(crypto.randomBytes(8))
+      .map((b) => SAFE[b % SAFE.length])
+      .join("");
     await WalletTransaction.create(
-      [{
-        transactionId:   `TXN-${seg}-${Date.now()}`,
-        sellerId,
-        type:            "DEBIT",
-        reason:          "payout_requested",
-        amount:          amountNum,
-        balanceBefore,
-        balanceAfter,
-        payoutRequestId: payoutReq._id,
-        description:     `Payout request ${payoutReq.payoutId} for ₹${amountNum}`,
-      }],
-      { session }
+      [
+        {
+          transactionId: `TXN-${seg}-${Date.now()}`,
+          sellerId,
+          type: "DEBIT",
+          reason: "payout_requested",
+          amount: amountNum,
+          balanceBefore,
+          balanceAfter,
+          payoutRequestId: payoutReq._id,
+          description: `Payout request ${payoutReq.payoutId} for ₹${amountNum}`,
+        },
+      ],
+      { session },
     );
 
     await session.commitTransaction();
     session.endSession();
 
-    return success(res, { payout: payoutReq, newBalance: balanceAfter }, "Payout request submitted successfully", 201);
+    return success(
+      res,
+      { payout: payoutReq, newBalance: balanceAfter },
+      "Payout request submitted successfully",
+      201,
+    );
   } catch (err) {
     await session.abortTransaction();
     session.endSession();
@@ -246,12 +295,12 @@ exports.cancelRequest = async (req, res) => {
 
   try {
     const sellerId = req.user.userId;
-    const { id }   = req.params;
+    const { id } = req.params;
 
     const payout = await PayoutRequest.findOne({
-      _id:      id,
+      _id: id,
       sellerId,
-      status:   "PENDING",
+      status: "PENDING",
     }).session(session);
 
     if (!payout) {
@@ -264,33 +313,39 @@ exports.cancelRequest = async (req, res) => {
     const updatedSeller = await Seller.findByIdAndUpdate(
       sellerId,
       { $inc: { walletBalance: payout.amount } },
-      { new: true, session, select: "walletBalance" }
+      { new: true, session, select: "walletBalance" },
     );
 
-    const balanceBefore = Math.round(updatedSeller.walletBalance - payout.amount);
-    const balanceAfter  = Math.round(updatedSeller.walletBalance);
+    const balanceBefore = Math.round(
+      updatedSeller.walletBalance - payout.amount,
+    );
+    const balanceAfter = Math.round(updatedSeller.walletBalance);
 
     // Write refund txn
     const crypto = require("crypto");
-    const SAFE   = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    const seg    = Array.from(crypto.randomBytes(8)).map((b) => SAFE[b % SAFE.length]).join("");
+    const SAFE = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    const seg = Array.from(crypto.randomBytes(8))
+      .map((b) => SAFE[b % SAFE.length])
+      .join("");
     await WalletTransaction.create(
-      [{
-        transactionId:   `TXN-${seg}-${Date.now()}`,
-        sellerId,
-        type:            "CREDIT",
-        reason:          "payout_cancelled",
-        amount:          payout.amount,
-        balanceBefore,
-        balanceAfter,
-        payoutRequestId: payout._id,
-        description:     `Payout ${payout.payoutId} cancelled by seller`,
-      }],
-      { session }
+      [
+        {
+          transactionId: `TXN-${seg}-${Date.now()}`,
+          sellerId,
+          type: "CREDIT",
+          reason: "payout_cancelled",
+          amount: payout.amount,
+          balanceBefore,
+          balanceAfter,
+          payoutRequestId: payout._id,
+          description: `Payout ${payout.payoutId} cancelled by seller`,
+        },
+      ],
+      { session },
     );
 
     // Mark as rejected (cancelled by seller shares REJECTED status)
-    payout.status    = "REJECTED";
+    payout.status = "REJECTED";
     payout.adminNote = "Cancelled by seller";
     payout.processedAt = new Date();
     await payout.save({ session });
@@ -298,7 +353,11 @@ exports.cancelRequest = async (req, res) => {
     await session.commitTransaction();
     session.endSession();
 
-    return success(res, { newBalance: balanceAfter }, "Payout request cancelled and amount refunded");
+    return success(
+      res,
+      { newBalance: balanceAfter },
+      "Payout request cancelled and amount refunded",
+    );
   } catch (err) {
     await session.abortTransaction();
     session.endSession();

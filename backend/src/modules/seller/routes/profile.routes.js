@@ -7,6 +7,7 @@ router.use(authenticate, requireRole("seller"));
 
 router.get("/me", profileController.getProfile);
 router.put("/me", profileController.updateProfile);
+router.delete("/me", profileController.deleteAccount);
 router.put("/change-password", profileController.changePassword);
 router.get("/metal-pricing", profileController.getMetalPricing);
 router.patch("/metal-pricing", profileController.updateMetalPricing);

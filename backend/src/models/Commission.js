@@ -1,5 +1,5 @@
 /**
- * 💰 Commission Model — Sands Ornaments
+ * 💰 Commission Model — Sands Jewels
  *
  * Immutable ledger of platform commission charged to sellers.
  *
@@ -19,43 +19,53 @@ const mongoose = require("mongoose");
 
 const tierSnapshotSchema = new mongoose.Schema(
   {
-    minAmount:  { type: Number, required: true, min: 0 },
-    maxAmount:  { type: Number, default: null },           // null = open-ended
+    minAmount: { type: Number, required: true, min: 0 },
+    maxAmount: { type: Number, default: null }, // null = open-ended
     commission: { type: Number, required: true, min: 0 },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const commissionSchema = new mongoose.Schema(
   {
     // ── References ───────────────────────────────────────────────────────
-    orderId:     { type: mongoose.Schema.Types.ObjectId, ref: "Order", required: true, index: true },
+    orderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Order",
+      required: true,
+      index: true,
+    },
     orderNumber: { type: String, required: true, index: true },
-    sellerId:    { type: mongoose.Schema.Types.ObjectId, ref: "Seller", required: true, index: true },
+    sellerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Seller",
+      required: true,
+      index: true,
+    },
 
     // ── Amounts (₹, all rounded to nearest rupee) ────────────────────────
-    sellerSubtotal:      { type: Number, required: true, min: 0 },
+    sellerSubtotal: { type: Number, required: true, min: 0 },
     sellerDiscountShare: { type: Number, default: 0, min: 0 },
     sellerGiftCardShare: { type: Number, default: 0, min: 0 },
-    taxableAmount:       { type: Number, required: true, min: 0 },
-    commissionAmount:    { type: Number, required: true, min: 0 },
+    taxableAmount: { type: Number, required: true, min: 0 },
+    commissionAmount: { type: Number, required: true, min: 0 },
 
     // ── Tier metadata ────────────────────────────────────────────────────
-    tierLabel:    { type: String, default: "" },           // e.g. "1001-5000"
+    tierLabel: { type: String, default: "" }, // e.g. "1001-5000"
     tierSnapshot: { type: [tierSnapshotSchema], default: [] },
 
     // ── Lifecycle ────────────────────────────────────────────────────────
     type: {
-      type:    String,
-      enum:    ["accrual", "reversal", "backfill"],
+      type: String,
+      enum: ["accrual", "reversal", "backfill"],
       default: "accrual",
-      index:   true,
+      index: true,
     },
     status: {
-      type:    String,
-      enum:    ["pending", "confirmed", "reversed"],
+      type: String,
+      enum: ["pending", "confirmed", "reversed"],
       default: "pending",
-      index:   true,
+      index: true,
     },
     triggeredBy: {
       type: String,
@@ -72,10 +82,14 @@ const commissionSchema = new mongoose.Schema(
     },
 
     // ── Audit linkage ────────────────────────────────────────────────────
-    reversesEntryId: { type: mongoose.Schema.Types.ObjectId, ref: "Commission", default: null },
-    reasonNote:      { type: String, default: "" },
+    reversesEntryId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Commission",
+      default: null,
+    },
+    reasonNote: { type: String, default: "" },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // ── Indexes ────────────────────────────────────────────────────────────────
@@ -97,7 +111,7 @@ commissionSchema.index(
       type: { $in: ["accrual", "backfill"] },
       status: { $in: ["pending", "confirmed"] },
     },
-  }
+  },
 );
 
 module.exports = mongoose.model("Commission", commissionSchema);

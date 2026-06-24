@@ -3,21 +3,31 @@ const razorpay = require("../../../config/razorpay");
 const Order = require("../../../models/Order");
 const Coupon = require("../../../models/Coupon");
 const Notification = require("../../../models/Notification");
-const { _deductStockForOrder, _calculateOrderData, enrichUserProfileFromOrder } = require("./order.controller");
+const {
+  _deductStockForOrder,
+  _calculateOrderData,
+  enrichUserProfileFromOrder,
+} = require("./order.controller");
 const { success, error } = require("../../../utils/apiResponse");
 const mongoose = require("mongoose");
 const { enqueueEmail } = require("../../../services/emailService");
 const emailTemplates = require("../../../services/emailTemplates");
-const Seller   = require("../../../models/Seller");
+const Seller = require("../../../models/Seller");
 const GiftCard = require("../../../models/GiftCard");
 const { emitNewOrder } = require("../../../services/socketEmitter");
-const { accrueCommissionsForOrder } = require("../../../services/commissionService");
+const {
+  accrueCommissionsForOrder,
+} = require("../../../services/commissionService");
 
 // POST /api/user/payment/razorpay-order
 exports.createRazorpayOrder = async (req, res) => {
   try {
     if (!razorpay) {
-      return error(res, "Payment service is not configured on the server.", 503);
+      return error(
+        res,
+        "Payment service is not configured on the server.",
+        503,
+      );
     }
 
     const { orderId } = req.body;
@@ -26,7 +36,10 @@ exports.createRazorpayOrder = async (req, res) => {
     }
 
     // BUG-03 FIX: Ensure the order belongs to the requesting user
-    const order = await Order.findOne({ _id: orderId, userId: req.user.userId });
+    const order = await Order.findOne({
+      _id: orderId,
+      userId: req.user.userId,
+    });
     if (!order) return error(res, "Order not found", 404);
 
     if (order.paymentStatus === "paid") {
@@ -34,20 +47,26 @@ exports.createRazorpayOrder = async (req, res) => {
     }
 
     const options = {
-      amount:   Math.round(order.total * 100),
+      amount: Math.round(order.total * 100),
       currency: "INR",
-      receipt:  order.orderId,
+      receipt: order.orderId,
     };
 
     const rpOrder = await razorpay.orders.create(options);
     return success(res, { rpOrder }, "Razorpay order created");
-  } catch (err) { return error(res, err.message); }
+  } catch (err) {
+    return error(res, err.message);
+  }
 };
 
-
 // Helper function to create and process prepaid orders (shared by zero-total bypass and Razorpay verify)
-const createAndProcessPrepaidOrder = async (validatedOrderData, paymentDetails) => {
-  const isDigitalOnly = validatedOrderData.items.every(item => item.isGiftCard);
+const createAndProcessPrepaidOrder = async (
+  validatedOrderData,
+  paymentDetails,
+) => {
+  const isDigitalOnly = validatedOrderData.items.every(
+    (item) => item.isGiftCard,
+  );
 
   const finalOrderData = {
     ...validatedOrderData,
@@ -56,10 +75,16 @@ const createAndProcessPrepaidOrder = async (validatedOrderData, paymentDetails) 
     razorpayOrderId: paymentDetails.razorpay_order_id || undefined,
     razorpayPaymentId: paymentDetails.razorpay_payment_id || undefined,
     status: isDigitalOnly ? "Delivered" : "Processing",
-    timeline: [{ 
-      status: isDigitalOnly ? "Delivered" : "Processing", 
-      note: isDigitalOnly ? "Digital Gift Card delivered successfully" : (paymentDetails.gateway === "giftcard_bypass" ? "Prepaid order confirmed via gift cards" : "Payment verified successfully")
-    }]
+    timeline: [
+      {
+        status: isDigitalOnly ? "Delivered" : "Processing",
+        note: isDigitalOnly
+          ? "Digital Gift Card delivered successfully"
+          : paymentDetails.gateway === "giftcard_bypass"
+            ? "Prepaid order confirmed via gift cards"
+            : "Payment verified successfully",
+      },
+    ],
   };
 
   const order = await Order.create(finalOrderData);
@@ -72,7 +97,10 @@ const createAndProcessPrepaidOrder = async (validatedOrderData, paymentDetails) 
 
   // Platform commission accrual (per-seller ledger entries, status="pending").
   try {
-    await accrueCommissionsForOrder(order, { triggeredBy: "payment_verified", safe: true });
+    await accrueCommissionsForOrder(order, {
+      triggeredBy: "payment_verified",
+      safe: true,
+    });
   } catch (e) {
     console.error("[Commission] Accrual hook error:", e.message);
   }
@@ -81,9 +109,9 @@ const createAndProcessPrepaidOrder = async (validatedOrderData, paymentDetails) 
     await Coupon.updateOne(
       { code: order.couponCode, active: true },
       {
-        $inc:  { usageCount: 1 },
+        $inc: { usageCount: 1 },
         $push: { usedBy: { userId: order.userId, usedAt: new Date() } },
-      }
+      },
     );
   }
 
@@ -92,7 +120,10 @@ const createAndProcessPrepaidOrder = async (validatedOrderData, paymentDetails) 
   for (const item of order.items || []) {
     const sid = item?.sellerId ? String(item.sellerId) : "";
     if (!sid) continue;
-    sellerCounts.set(sid, (sellerCounts.get(sid) || 0) + (Number(item.quantity) || 0));
+    sellerCounts.set(
+      sid,
+      (sellerCounts.get(sid) || 0) + (Number(item.quantity) || 0),
+    );
   }
   if (sellerCounts.size > 0) {
     const sellerOrderLink = `/seller/order-details/${order._id}`;
@@ -104,36 +135,67 @@ const createAndProcessPrepaidOrder = async (validatedOrderData, paymentDetails) 
       priority: "High",
       link: sellerOrderLink,
       isBroadcast: false,
-      isRead: false
+      isRead: false,
     }));
-    try { await Notification.insertMany(docs); } catch (e) { /* ignore */ }
+    try {
+      await Notification.insertMany(docs);
+    } catch (e) {
+      /* ignore */
+    }
   }
 
   // Realtime: emit new_order to admin + sellers
-  try { emitNewOrder(order); } catch (e) { /* non-blocking */ }
+  try {
+    emitNewOrder(order);
+  } catch (e) {
+    /* non-blocking */
+  }
 
   // Atomically redeem gift cards
-  if (Array.isArray(order.appliedGiftCards) && order.appliedGiftCards.length > 0) {
+  if (
+    Array.isArray(order.appliedGiftCards) &&
+    order.appliedGiftCards.length > 0
+  ) {
     for (const gc of order.appliedGiftCards) {
       if (!gc.cardId || !gc.amountUsed) continue;
       const updatedCard = await GiftCard.findOneAndUpdate(
-        { _id: gc.cardId, status: { $in: ["active", "partially_used"] }, balance: { $gte: gc.amountUsed } },
         {
-          $inc:  { balance: -gc.amountUsed },
-          $push: { redemptions: { orderId: order.orderId, amountUsed: gc.amountUsed, redeemedAt: new Date(), redeemedByUserId: order.userId } },
+          _id: gc.cardId,
+          status: { $in: ["active", "partially_used"] },
+          balance: { $gte: gc.amountUsed },
         },
-        { new: true }
+        {
+          $inc: { balance: -gc.amountUsed },
+          $push: {
+            redemptions: {
+              orderId: order.orderId,
+              amountUsed: gc.amountUsed,
+              redeemedAt: new Date(),
+              redeemedByUserId: order.userId,
+            },
+          },
+        },
+        { new: true },
       );
       if (updatedCard) {
-        const newStatus = updatedCard.balance <= 0 ? "used" : updatedCard.balance < updatedCard.value ? "partially_used" : "active";
+        const newStatus =
+          updatedCard.balance <= 0
+            ? "used"
+            : updatedCard.balance < updatedCard.value
+              ? "partially_used"
+              : "active";
         await GiftCard.updateOne({ _id: gc.cardId }, { status: newStatus });
       } else {
         // Double-spend flag note
         await Order.updateOne(
           { _id: order._id },
-          { 
-            $set: { notes: order.notes ? `${order.notes}\n[FLAGGED] Gift card redemption failed for card ${gc.code}` : `[FLAGGED] Gift card redemption failed for card ${gc.code}` } 
-          }
+          {
+            $set: {
+              notes: order.notes
+                ? `${order.notes}\n[FLAGGED] Gift card redemption failed for card ${gc.code}`
+                : `[FLAGGED] Gift card redemption failed for card ${gc.code}`,
+            },
+          },
         );
       }
     }
@@ -148,13 +210,19 @@ const createAndProcessPrepaidOrder = async (validatedOrderData, paymentDetails) 
   }
 
   // -- Email: payment success / confirmation --
-  const paymentRecipient = order.customerEmail || order.shippingAddress && order.shippingAddress.email;
+  const paymentRecipient =
+    order.customerEmail ||
+    (order.shippingAddress && order.shippingAddress.email);
   if (paymentRecipient) {
     enqueueEmail({
-      to:      paymentRecipient,
-      subject: "Payment Successful - " + order.orderId + " | Sands Ornaments",
-      html:    emailTemplates.paymentSuccess({ order, userName: order.customerName, paymentId: paymentDetails.razorpay_payment_id || "GIFT_CARD" }),
-      type:    "payment_success",
+      to: paymentRecipient,
+      subject: "Payment Successful - " + order.orderId + " | Sands Jewels",
+      html: emailTemplates.paymentSuccess({
+        order,
+        userName: order.customerName,
+        paymentId: paymentDetails.razorpay_payment_id || "GIFT_CARD",
+      }),
+      type: "payment_success",
     });
   }
 
@@ -168,14 +236,20 @@ const createAndProcessPrepaidOrder = async (validatedOrderData, paymentDetails) 
   }
   if (paySellerMap.size > 0) {
     const paySellerIds = Array.from(paySellerMap.keys());
-    const paySellers = await Seller.find({ _id: { $in: paySellerIds } }).select("email shopName fullName");
+    const paySellers = await Seller.find({ _id: { $in: paySellerIds } }).select(
+      "email shopName fullName",
+    );
     for (const seller of paySellers) {
       if (!seller.email) continue;
       enqueueEmail({
-        to:      seller.email,
-        subject: "Payment Confirmed - " + order.orderId + " | Sands Ornaments",
-        html:    emailTemplates.sellerNewOrder({ order, sellerName: seller.shopName || seller.fullName, sellerItems: paySellerMap.get(String(seller._id)) }),
-        type:    "seller_payment_confirmed",
+        to: seller.email,
+        subject: "Payment Confirmed - " + order.orderId + " | Sands Jewels",
+        html: emailTemplates.sellerNewOrder({
+          order,
+          sellerName: seller.shopName || seller.fullName,
+          sellerItems: paySellerMap.get(String(seller._id)),
+        }),
+        type: "seller_payment_confirmed",
       });
     }
   }
@@ -191,42 +265,76 @@ exports.initiatePayment = async (req, res) => {
     const userEmail = req.user.email;
 
     // Calculate order data (this also validates stock and items)
-    const orderData = await _calculateOrderData(userId, userEmail, items, shippingAddress, "razorpay", couponCode, giftCardCodes);
+    const orderData = await _calculateOrderData(
+      userId,
+      userEmail,
+      items,
+      shippingAddress,
+      "razorpay",
+      couponCode,
+      giftCardCodes,
+    );
 
     if (orderData.total === 0) {
       // Bypass Razorpay entirely for zero-total checkouts
-      const order = await createAndProcessPrepaidOrder(orderData, { gateway: "giftcard_bypass", reason: "Zero total order covered by gift cards" });
-      return success(res, { isZeroTotal: true, orderId: order._id }, "Prepaid order confirmed via gift cards successfully");
+      const order = await createAndProcessPrepaidOrder(orderData, {
+        gateway: "giftcard_bypass",
+        reason: "Zero total order covered by gift cards",
+      });
+      return success(
+        res,
+        { isZeroTotal: true, orderId: order._id },
+        "Prepaid order confirmed via gift cards successfully",
+      );
     }
 
     if (!razorpay) {
-      return error(res, "Payment service is not configured on the server.", 503);
+      return error(
+        res,
+        "Payment service is not configured on the server.",
+        503,
+      );
     }
 
     const options = {
-      amount:   Math.round(orderData.total * 100),
+      amount: Math.round(orderData.total * 100),
       currency: "INR",
-      receipt:  orderData.orderId,
+      receipt: orderData.orderId,
     };
 
     const rpOrder = await razorpay.orders.create(options);
-    
+
     // Return both the razorpay order and the calculated data so frontend can pass it back for verification
     return success(res, { rpOrder, orderData }, "Razorpay payment initiated");
-  } catch (err) { return error(res, err.message); }
+  } catch (err) {
+    return error(res, err.message);
+  }
 };
-
 
 // POST /api/user/payment/verify
 exports.verifyPayment = async (req, res) => {
   try {
     if (!process.env.RAZORPAY_KEY_SECRET) {
-      return error(res, "Payment verification is not configured on the server.", 503);
+      return error(
+        res,
+        "Payment verification is not configured on the server.",
+        503,
+      );
     }
 
-    const { razorpay_payment_id, razorpay_order_id, razorpay_signature, orderData } = req.body;
+    const {
+      razorpay_payment_id,
+      razorpay_order_id,
+      razorpay_signature,
+      orderData,
+    } = req.body;
 
-    if (!orderData || !razorpay_payment_id || !razorpay_order_id || !razorpay_signature) {
+    if (
+      !orderData ||
+      !razorpay_payment_id ||
+      !razorpay_order_id ||
+      !razorpay_signature
+    ) {
       return error(res, "Missing payment verification details", 400);
     }
 
@@ -240,7 +348,12 @@ exports.verifyPayment = async (req, res) => {
     const isSignatureValid = expectedSignature === razorpay_signature;
 
     if (!isSignatureValid) {
-      return error(res, "Invalid payment signature", 400, "PAYMENT_SIGNATURE_INVALID");
+      return error(
+        res,
+        "Invalid payment signature",
+        400,
+        "PAYMENT_SIGNATURE_INVALID",
+      );
     }
 
     // 2. Signature is valid - Now create the order in DB
@@ -253,23 +366,28 @@ exports.verifyPayment = async (req, res) => {
     const giftCardCodes = orderData.giftCardCodes || [];
 
     const validatedOrderData = await _calculateOrderData(
-      userId, 
-      userEmail, 
-      items, 
-      shippingAddress, 
-      "razorpay", 
+      userId,
+      userEmail,
+      items,
+      shippingAddress,
+      "razorpay",
       couponCode,
-      giftCardCodes
+      giftCardCodes,
     );
-    
+
     const order = await createAndProcessPrepaidOrder(validatedOrderData, {
       razorpay_payment_id,
       razorpay_order_id,
       razorpay_signature,
-      gateway: "razorpay"
+      gateway: "razorpay",
     });
 
-    return success(res, { order }, "Payment verified and order created successfully");
-
-  } catch (err) { return error(res, err.message); }
+    return success(
+      res,
+      { order },
+      "Payment verified and order created successfully",
+    );
+  } catch (err) {
+    return error(res, err.message);
+  }
 };

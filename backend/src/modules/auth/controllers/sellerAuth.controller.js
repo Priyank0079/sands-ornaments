@@ -36,57 +36,86 @@ exports.register = async (req, res) => {
       state,
       pincode,
       bankAccount,
-      acceptTerms
+      acceptTerms,
     } = req.body;
 
-    const normalizedEmail = String(email || "").trim().toLowerCase();
+    const normalizedEmail = String(email || "")
+      .trim()
+      .toLowerCase();
     const normalizedMobile = String(mobileNumber || "").trim();
 
-    if (!shopName || !String(shopName).trim()) return error(res, "Shop name is required", 400);
-    if (!fullName || !String(fullName).trim()) return error(res, "Full name is required", 400);
+    if (!shopName || !String(shopName).trim())
+      return error(res, "Shop name is required", 400);
+    if (!fullName || !String(fullName).trim())
+      return error(res, "Full name is required", 400);
     if (!/^[A-Za-z\s]+$/.test(String(fullName).trim())) {
       return error(res, "Full name should contain only alphabets", 400);
     }
     if (!normalizedEmail) return error(res, "Email is required", 400);
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) return error(res, "Please enter a valid email address", 400);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail))
+      return error(res, "Please enter a valid email address", 400);
     if (!normalizedMobile) return error(res, "Mobile number is required", 400);
-    if (!/^\d{10}$/.test(normalizedMobile)) return error(res, "Mobile number must be 10 digits", 400);
-    if (!password || !String(password).trim()) return error(res, "Password is required", 400);
+    if (!/^\d{10}$/.test(normalizedMobile))
+      return error(res, "Mobile number must be 10 digits", 400);
+    if (!password || !String(password).trim())
+      return error(res, "Password is required", 400);
     if (String(password).trim().length < MIN_SELLER_PASSWORD_LEN) {
-      return error(res, `Password must be at least ${MIN_SELLER_PASSWORD_LEN} characters`, 400);
+      return error(
+        res,
+        `Password must be at least ${MIN_SELLER_PASSWORD_LEN} characters`,
+        400,
+      );
     }
-    if (!gstNumber || !String(gstNumber).trim()) return error(res, "GST number is required", 400);
-    if (!panNumber || !String(panNumber).trim()) return error(res, "PAN number is required", 400);
-    if (!bisNumber || !String(bisNumber).trim()) return error(res, "BIS license number is required", 400);
-    if (!shopAddress || !String(shopAddress).trim()) return error(res, "Shop address is required", 400);
-    if (!city || !String(city).trim()) return error(res, "City is required", 400);
+    if (!gstNumber || !String(gstNumber).trim())
+      return error(res, "GST number is required", 400);
+    if (!panNumber || !String(panNumber).trim())
+      return error(res, "PAN number is required", 400);
+    if (!bisNumber || !String(bisNumber).trim())
+      return error(res, "BIS license number is required", 400);
+    if (!shopAddress || !String(shopAddress).trim())
+      return error(res, "Shop address is required", 400);
+    if (!city || !String(city).trim())
+      return error(res, "City is required", 400);
     if (!/^[A-Za-z\s]+$/.test(String(city).trim())) {
       return error(res, "City should contain only alphabets", 400);
     }
-    if (!state || !String(state).trim()) return error(res, "State is required", 400);
+    if (!state || !String(state).trim())
+      return error(res, "State is required", 400);
     if (!/^[A-Za-z\s]+$/.test(String(state).trim())) {
       return error(res, "State should contain only alphabets", 400);
     }
-    if (!pincode || !String(pincode).trim()) return error(res, "Pincode is required", 400);
+    if (!pincode || !String(pincode).trim())
+      return error(res, "Pincode is required", 400);
 
     const existingEmail = normalizedEmail
       ? await Seller.findOne({ email: normalizedEmail })
       : null;
-    if (existingEmail) return error(res, "Seller with this email already exists", 400);
+    if (existingEmail)
+      return error(res, "Seller with this email already exists", 400);
 
     const existingMobile = normalizedMobile
       ? await Seller.findOne({ mobileNumber: normalizedMobile })
       : null;
-    if (existingMobile) return error(res, "Seller with this mobile number already exists", 400);
+    if (existingMobile)
+      return error(res, "Seller with this mobile number already exists", 400);
 
     const sellerTermsPage = await Page.findOne({ slug: "seller-terms" });
     if (!sellerTermsPage || !String(sellerTermsPage.content || "").trim()) {
-      return error(res, "Seller terms are not configured yet. Please contact support.", 400);
+      return error(
+        res,
+        "Seller terms are not configured yet. Please contact support.",
+        400,
+      );
     }
 
-    const acceptedTerms = acceptTerms === true || acceptTerms === "true" || acceptTerms === "1";
+    const acceptedTerms =
+      acceptTerms === true || acceptTerms === "true" || acceptTerms === "1";
     if (!acceptedTerms) {
-      return error(res, "Please accept the seller terms & conditions to continue.", 400);
+      return error(
+        res,
+        "Please accept the seller terms & conditions to continue.",
+        400,
+      );
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -104,16 +133,22 @@ exports.register = async (req, res) => {
         parsedBankAccount = undefined;
       }
     }
-    if (!parsedBankAccount || !String(parsedBankAccount.accountNumber || "").trim()) {
+    if (
+      !parsedBankAccount ||
+      !String(parsedBankAccount.accountNumber || "").trim()
+    ) {
       return error(res, "Bank account number is required", 400);
     }
     if (!String(parsedBankAccount.ifscCode || "").trim()) {
       return error(res, "Bank IFSC code is required", 400);
     }
 
-    if (!aadharFile?.path) return error(res, "Aadhar document is required", 400);
-    if (!shopLicenseFile?.path) return error(res, "Shop license document is required", 400);
-    if (!certificateFile?.path) return error(res, "Certificate document is required", 400);
+    if (!aadharFile?.path)
+      return error(res, "Aadhar document is required", 400);
+    if (!shopLicenseFile?.path)
+      return error(res, "Shop license document is required", 400);
+    if (!certificateFile?.path)
+      return error(res, "Certificate document is required", 400);
 
     const seller = await Seller.create({
       shopName,
@@ -130,13 +165,14 @@ exports.register = async (req, res) => {
       pincode,
       bankAccount: parsedBankAccount,
       termsAcceptedAt: new Date(),
-      termsVersion: sellerTermsPage.lastUpdated || sellerTermsPage.updatedAt || new Date(),
+      termsVersion:
+        sellerTermsPage.lastUpdated || sellerTermsPage.updatedAt || new Date(),
       documents: {
         aadharUrl: aadharFile?.path || undefined,
         shopLicenseUrl: shopLicenseFile?.path || undefined,
-        certificateUrl: certificateFile?.path || undefined
+        certificateUrl: certificateFile?.path || undefined,
       },
-      status: "PENDING"
+      status: "PENDING",
     });
 
     await Notification.create({
@@ -145,7 +181,7 @@ exports.register = async (req, res) => {
       type: "SELLER_REQUEST",
       priority: "High",
       link: `/admin/seller-details/${seller._id}`,
-      isBroadcast: true
+      isBroadcast: true,
     });
 
     if (process.env.ADMIN_EMAIL) {
@@ -156,32 +192,55 @@ exports.register = async (req, res) => {
           message: `New seller registration received.\n\nName: ${fullName}\nShop: ${shopName}\nEmail: ${normalizedEmail}\nMobile: ${normalizedMobile}\nGST: ${gstNumber || "N/A"}\nPAN: ${panNumber || "N/A"}\nBIS: ${bisNumber || "N/A"}\nLocation: ${city || "N/A"}, ${state || "N/A"}\n\nReview in admin panel.`,
         });
       } catch (mailErr) {
-        console.error("Admin seller registration email failed:", mailErr.message);
+        console.error(
+          "Admin seller registration email failed:",
+          mailErr.message,
+        );
       }
     }
 
-    return success(res, { sellerId: seller._id }, "Registration submitted. Awaiting admin approval.", 201);
-  } catch (err) { return error(res, err.message); }
+    return success(
+      res,
+      { sellerId: seller._id },
+      "Registration submitted. Awaiting admin approval.",
+      201,
+    );
+  } catch (err) {
+    return error(res, err.message);
+  }
 };
 
 exports.login = async (req, res) => {
   try {
     const { email, password, identifier } = req.body;
-    const lookup = String(identifier || email || "").trim().toLowerCase();
+    const lookup = String(identifier || email || "")
+      .trim()
+      .toLowerCase();
 
     const seller = await Seller.findOne({
-      $or: [{ email: lookup }, { mobileNumber: lookup }]
+      $or: [{ email: lookup }, { mobileNumber: lookup }],
     });
     if (!seller) return error(res, "Invalid credentials", 401);
 
     // Brute-force protection: lock account temporarily after repeated failures.
     if (seller.lockUntil && new Date(seller.lockUntil).getTime() > Date.now()) {
-      const mins = Math.ceil((new Date(seller.lockUntil).getTime() - Date.now()) / (60 * 1000));
-      return error(res, `Too many failed attempts. Try again in ${mins} minute(s).`, 429, "SELLER_LOCKED");
+      const mins = Math.ceil(
+        (new Date(seller.lockUntil).getTime() - Date.now()) / (60 * 1000),
+      );
+      return error(
+        res,
+        `Too many failed attempts. Try again in ${mins} minute(s).`,
+        429,
+        "SELLER_LOCKED",
+      );
     }
 
     if (seller.status === "PENDING") {
-      return error(res, "Your seller account is under review. Please wait for admin approval.", 403);
+      return error(
+        res,
+        "Your seller account is under review. Please wait for admin approval.",
+        403,
+      );
     }
 
     if (seller.status === "REJECTED") {
@@ -210,13 +269,15 @@ exports.login = async (req, res) => {
     }
 
     const token = signToken(seller._id);
-    
+
     // Remove password from response
     const sellerObj = seller.toObject();
     delete sellerObj.password;
 
     return success(res, { token, user: sellerObj }, "Seller login successful");
-  } catch (err) { return error(res, err.message); }
+  } catch (err) {
+    return error(res, err.message);
+  }
 };
 
 exports.logout = async (req, res) => {
@@ -226,27 +287,39 @@ exports.logout = async (req, res) => {
 // --- SELLER PASSWORD RESET (EMAIL OTP) ---
 exports.sendResetOtp = async (req, res) => {
   try {
-    const normalizedEmail = String(req.body.email || "").trim().toLowerCase();
+    const normalizedEmail = String(req.body.email || "")
+      .trim()
+      .toLowerCase();
     if (!normalizedEmail) return error(res, "Email is required", 400);
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
       return error(res, "Please enter a valid email address", 400);
     }
 
     // Always respond success to avoid account enumeration.
-    const seller = await Seller.findOne({ email: normalizedEmail }).select("_id email fullName");
+    const seller = await Seller.findOne({ email: normalizedEmail }).select(
+      "_id email fullName",
+    );
     if (!seller) {
       return success(res, {}, "If an account exists, an OTP has been sent.");
     }
 
     const otp = String(Math.floor(100000 + Math.random() * 900000)); // 6 digits
-    await EmailOTP.deleteMany({ email: normalizedEmail, purpose: "seller_password_reset" });
-    await EmailOTP.create({ email: normalizedEmail, otp, purpose: "seller_password_reset", attempts: 0 });
+    await EmailOTP.deleteMany({
+      email: normalizedEmail,
+      purpose: "seller_password_reset",
+    });
+    await EmailOTP.create({
+      email: normalizedEmail,
+      otp,
+      purpose: "seller_password_reset",
+      attempts: 0,
+    });
 
     try {
       await sendEmail({
         email: normalizedEmail,
-        subject: "Sands Ornaments - Seller Password Reset OTP",
-        message: `Hello ${seller.fullName || "Seller"},\n\nYour OTP to reset your seller password is: ${otp}\n\nThis OTP is valid for 10 minutes.\nIf you did not request this, you can ignore this message.\n\nThanks,\nSands Ornaments`
+        subject: "Sands Jewels - Seller Password Reset OTP",
+        message: `Hello ${seller.fullName || "Seller"},\n\nYour OTP to reset your seller password is: ${otp}\n\nThis OTP is valid for 10 minutes.\nIf you did not request this, you can ignore this message.\n\nThanks,\nSands Jewels`,
       });
     } catch (mailErr) {
       // Still return a generic response; log internally.
@@ -265,7 +338,9 @@ exports.sendResetOtp = async (req, res) => {
 
 exports.resetPassword = async (req, res) => {
   try {
-    const normalizedEmail = String(req.body.email || "").trim().toLowerCase();
+    const normalizedEmail = String(req.body.email || "")
+      .trim()
+      .toLowerCase();
     const otp = String(req.body.otp || "").trim();
     const newPassword = String(req.body.newPassword || "").trim();
 
@@ -273,29 +348,61 @@ exports.resetPassword = async (req, res) => {
     if (!otp) return error(res, "OTP is required", 400);
     if (!newPassword) return error(res, "New password is required", 400);
     if (newPassword.length < MIN_SELLER_PASSWORD_LEN) {
-      return error(res, `Password must be at least ${MIN_SELLER_PASSWORD_LEN} characters`, 400);
+      return error(
+        res,
+        `Password must be at least ${MIN_SELLER_PASSWORD_LEN} characters`,
+        400,
+      );
     }
 
-    const otpRecord = await EmailOTP.findOne({ email: normalizedEmail, purpose: "seller_password_reset" });
+    const otpRecord = await EmailOTP.findOne({
+      email: normalizedEmail,
+      purpose: "seller_password_reset",
+    });
     if (!otpRecord) {
-      return error(res, "OTP expired or not found. Please request a new OTP.", 400, "OTP_EXPIRED");
+      return error(
+        res,
+        "OTP expired or not found. Please request a new OTP.",
+        400,
+        "OTP_EXPIRED",
+      );
     }
 
     if ((Number(otpRecord.attempts) || 0) >= SELLER_RESET_MAX_ATTEMPTS) {
-      await EmailOTP.deleteMany({ email: normalizedEmail, purpose: "seller_password_reset" });
-      return error(res, "Too many failed attempts. Please request a new OTP.", 429, "OTP_MAX_ATTEMPTS");
+      await EmailOTP.deleteMany({
+        email: normalizedEmail,
+        purpose: "seller_password_reset",
+      });
+      return error(
+        res,
+        "Too many failed attempts. Please request a new OTP.",
+        429,
+        "OTP_MAX_ATTEMPTS",
+      );
     }
 
     if (String(otpRecord.otp) !== otp) {
-      await EmailOTP.updateOne({ _id: otpRecord._id }, { $inc: { attempts: 1 } });
-      const remaining = SELLER_RESET_MAX_ATTEMPTS - ((Number(otpRecord.attempts) || 0) + 1);
-      return error(res, `Invalid OTP. ${Math.max(0, remaining)} attempt(s) remaining.`, 400, "OTP_INVALID");
+      await EmailOTP.updateOne(
+        { _id: otpRecord._id },
+        { $inc: { attempts: 1 } },
+      );
+      const remaining =
+        SELLER_RESET_MAX_ATTEMPTS - ((Number(otpRecord.attempts) || 0) + 1);
+      return error(
+        res,
+        `Invalid OTP. ${Math.max(0, remaining)} attempt(s) remaining.`,
+        400,
+        "OTP_INVALID",
+      );
     }
 
     const seller = await Seller.findOne({ email: normalizedEmail });
     if (!seller) {
       // Still delete OTP so it can't be replayed
-      await EmailOTP.deleteMany({ email: normalizedEmail, purpose: "seller_password_reset" });
+      await EmailOTP.deleteMany({
+        email: normalizedEmail,
+        purpose: "seller_password_reset",
+      });
       return success(res, {}, "Password updated successfully");
     }
 
@@ -306,7 +413,10 @@ exports.resetPassword = async (req, res) => {
     seller.lockUntil = null;
     await seller.save();
 
-    await EmailOTP.deleteMany({ email: normalizedEmail, purpose: "seller_password_reset" });
+    await EmailOTP.deleteMany({
+      email: normalizedEmail,
+      purpose: "seller_password_reset",
+    });
 
     return success(res, {}, "Password updated successfully");
   } catch (err) {
@@ -324,18 +434,29 @@ exports.sendResetMobileOtp = async (req, res) => {
     }
 
     // Always respond success to avoid account enumeration
-    const seller = await Seller.findOne({ mobileNumber }).select("_id mobileNumber fullName");
+    const seller = await Seller.findOne({ mobileNumber }).select(
+      "_id mobileNumber fullName",
+    );
     if (!seller) {
       return success(res, {}, "If an account exists, an OTP has been sent.");
     }
 
     const defaultOtp = process.env.DEFAULT_OTP || "1234";
-    const otp = process.env.USE_REAL_OTP === "true"
-      ? String(Math.floor(100000 + Math.random() * 900000))
-      : defaultOtp;
+    const otp =
+      process.env.USE_REAL_OTP === "true"
+        ? String(Math.floor(100000 + Math.random() * 900000))
+        : defaultOtp;
 
-    await OTP.deleteMany({ phone: mobileNumber, purpose: "seller_password_reset" });
-    await OTP.create({ phone: mobileNumber, otp, purpose: "seller_password_reset", attempts: 0 });
+    await OTP.deleteMany({
+      phone: mobileNumber,
+      purpose: "seller_password_reset",
+    });
+    await OTP.create({
+      phone: mobileNumber,
+      otp,
+      purpose: "seller_password_reset",
+      attempts: 0,
+    });
 
     try {
       await sendOtpSms(mobileNumber, otp);
@@ -363,28 +484,57 @@ exports.resetPasswordViaMobile = async (req, res) => {
     if (!otp) return error(res, "OTP is required", 400);
     if (!newPassword) return error(res, "New password is required", 400);
     if (newPassword.length < MIN_SELLER_PASSWORD_LEN) {
-      return error(res, `Password must be at least ${MIN_SELLER_PASSWORD_LEN} characters`, 400);
+      return error(
+        res,
+        `Password must be at least ${MIN_SELLER_PASSWORD_LEN} characters`,
+        400,
+      );
     }
 
-    const otpRecord = await OTP.findOne({ phone: mobileNumber, purpose: "seller_password_reset" });
+    const otpRecord = await OTP.findOne({
+      phone: mobileNumber,
+      purpose: "seller_password_reset",
+    });
     if (!otpRecord) {
-      return error(res, "OTP expired or not found. Please request a new OTP.", 400, "OTP_EXPIRED");
+      return error(
+        res,
+        "OTP expired or not found. Please request a new OTP.",
+        400,
+        "OTP_EXPIRED",
+      );
     }
 
     if ((Number(otpRecord.attempts) || 0) >= SELLER_RESET_MAX_ATTEMPTS) {
-      await OTP.deleteMany({ phone: mobileNumber, purpose: "seller_password_reset" });
-      return error(res, "Too many failed attempts. Please request a new OTP.", 429, "OTP_MAX_ATTEMPTS");
+      await OTP.deleteMany({
+        phone: mobileNumber,
+        purpose: "seller_password_reset",
+      });
+      return error(
+        res,
+        "Too many failed attempts. Please request a new OTP.",
+        429,
+        "OTP_MAX_ATTEMPTS",
+      );
     }
 
     if (String(otpRecord.otp) !== otp) {
       await OTP.updateOne({ _id: otpRecord._id }, { $inc: { attempts: 1 } });
-      const remaining = SELLER_RESET_MAX_ATTEMPTS - ((Number(otpRecord.attempts) || 0) + 1);
-      return error(res, `Invalid OTP. ${Math.max(0, remaining)} attempt(s) remaining.`, 400, "OTP_INVALID");
+      const remaining =
+        SELLER_RESET_MAX_ATTEMPTS - ((Number(otpRecord.attempts) || 0) + 1);
+      return error(
+        res,
+        `Invalid OTP. ${Math.max(0, remaining)} attempt(s) remaining.`,
+        400,
+        "OTP_INVALID",
+      );
     }
 
     const seller = await Seller.findOne({ mobileNumber });
     if (!seller) {
-      await OTP.deleteMany({ phone: mobileNumber, purpose: "seller_password_reset" });
+      await OTP.deleteMany({
+        phone: mobileNumber,
+        purpose: "seller_password_reset",
+      });
       return success(res, {}, "Password updated successfully");
     }
 
@@ -394,7 +544,10 @@ exports.resetPasswordViaMobile = async (req, res) => {
     seller.lockUntil = null;
     await seller.save();
 
-    await OTP.deleteMany({ phone: mobileNumber, purpose: "seller_password_reset" });
+    await OTP.deleteMany({
+      phone: mobileNumber,
+      purpose: "seller_password_reset",
+    });
 
     return success(res, {}, "Password updated successfully");
   } catch (err) {

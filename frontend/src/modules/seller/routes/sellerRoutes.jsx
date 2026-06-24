@@ -34,6 +34,8 @@ import { useAuth } from '../../../context/AuthContext';
 import SellerAnalytics from '../pages/SellerAnalytics';
 import SellerCommission from '../pages/SellerCommission';
 import SellerWallet from '../pages/SellerWallet';
+import SellerSupport from '../pages/SellerSupport';
+import DynamicPage from '../../user/pages/DynamicPage';
 
 // Protected Route Component for Seller
 const SellerProtectedRoute = ({ children }) => {
@@ -78,6 +80,8 @@ const SellerRoutes = () => {
         <Routes>
             <Route path="/login" element={<SellerLogin />} />
             <Route path="/register" element={<SellerRegister />} />
+            <Route path="/privacy-policy" element={<DynamicPage slug="seller-privacy-policy" />} />
+            <Route path="/support" element={<SellerSupport />} />
             <Route path="/add-product" element={<Navigate to="/seller/products/new" replace />} />
             
             <Route path="/*" element={

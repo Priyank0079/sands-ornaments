@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, X, Send, History, ChevronLeft, Plus, Headphones, Inbox, HelpCircle } from 'lucide-react';
+import { X, Send, ChevronLeft, Plus, Headphones, Inbox } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useSupport } from '../../../context/SupportContext';
 import { useAuth } from '../../../context/AuthContext';
+import StillNeedHelpCard from './StillNeedHelpCard';
+import toast from 'react-hot-toast';
 
-const SupportChatWidget = () => {
+const SupportChatWidget = ({ inline = false }) => {
   const { user } = useAuth();
-  
-  // Only render for regular authenticated customers, not admin or seller
-  if (!user || user.role !== 'user') return null;
-
+  const navigate = useNavigate();
+  const isCustomer = user?.role === 'user';
   const {
     tickets,
     activeTicket,
@@ -22,7 +23,7 @@ const SupportChatWidget = () => {
     isLoading
   } = useSupport();
 
-  const [view, setView] = useState('list'); // 'list' | 'chat' | 'create'
+  const [view, setView] = useState('hub'); // 'hub' | 'list' | 'chat' | 'create'
   const [subject, setSubject] = useState('');
   const [category, setCategory] = useState('General Inquiry');
   const [message, setMessage] = useState('');
@@ -36,14 +37,30 @@ const SupportChatWidget = () => {
     }
   }, [activeTicket?.replies]);
 
-  // Adjust view depending on active ticket
+  // Open ticket chat when a notification targets a specific ticket
   useEffect(() => {
-    if (activeTicketId) {
+    if (activeTicketId && isOpen) {
       setView('chat');
-    } else {
-      setView('list');
     }
-  }, [activeTicketId]);
+  }, [activeTicketId, isOpen]);
+
+  const handleToggleOpen = () => {
+    if (!isOpen) {
+      setView('hub');
+      setActiveTicketId(null);
+    }
+    setIsOpen(!isOpen);
+  };
+
+  const handleContactSupport = () => {
+    if (isCustomer) {
+      setView('list');
+      return;
+    }
+    toast('Please log in to open a support ticket.', { icon: '🔐' });
+    setIsOpen(false);
+    navigate('/login', { state: { from: '/help-center' } });
+  };
 
   const handleCreateTicketSubmit = async (e) => {
     e.preventDefault();
@@ -85,14 +102,19 @@ const SupportChatWidget = () => {
     }
   };
 
+  const buttonPositionClass = inline
+    ? 'support-floating relative'
+    : 'support-floating fixed bottom-[calc(5rem+3.5rem+0.75rem)] md:bottom-[calc(2rem+4rem+0.75rem)] right-6 z-[10000]';
+
   return (
     <div className="support-chat-widget-container">
-      {/* Floating Button */}
+      {/* Floating Button — visible for all visitors */}
       <motion.button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggleOpen}
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.95 }}
-        className="fixed bottom-36 md:bottom-28 right-6 z-[9999] flex items-center justify-center w-14 h-14 bg-[#9C5B61] text-white rounded-full shadow-[0_10px_25px_rgba(156,91,97,0.4)] hover:bg-[#7A2E3A] transition-colors cursor-pointer group"
+        aria-label="Contact support"
+        className={`${buttonPositionClass} flex items-center justify-center w-14 h-14 bg-[#9C5B61] text-white rounded-full shadow-[0_10px_25px_rgba(156,91,97,0.4)] hover:bg-[#7A2E3A] transition-colors cursor-pointer group shrink-0`}
       >
         <AnimatePresence mode="wait">
           {isOpen ? (
@@ -114,7 +136,7 @@ const SupportChatWidget = () => {
             >
               <Headphones className="w-6 h-6" />
               {/* Unread dot indicator */}
-              {tickets.some(t => t.status === 'In Progress') && (
+              {isCustomer && tickets.some(t => t.status === 'In Progress') && (
                 <span className="absolute -top-1 -right-1 flex h-3 w-3">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
@@ -133,11 +155,44 @@ const SupportChatWidget = () => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed bottom-0 md:bottom-44 right-0 md:right-6 z-[9999] w-full md:w-[380px] h-full md:h-[550px] bg-white md:rounded-3xl shadow-2xl flex flex-col border border-gray-100 overflow-hidden"
+            className={`fixed right-0 md:right-6 z-[10000] w-full shadow-2xl overflow-hidden ${
+              view === 'hub'
+                ? 'bottom-0 md:bottom-[11.5rem] md:w-[340px] md:rounded-3xl p-4 md:p-0 bg-transparent'
+                : 'bottom-0 md:bottom-[11.5rem] md:w-[380px] h-full md:h-[550px] bg-white md:rounded-3xl border border-gray-100 flex flex-col'
+            }`}
           >
+            {view === 'hub' ? (
+              <div className="relative h-full md:h-auto flex flex-col justify-end md:justify-start min-h-0">
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(false)}
+                  className="absolute top-3 right-3 md:top-4 md:right-4 z-20 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+                  aria-label="Close support panel"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+                <StillNeedHelpCard
+                  compact
+                  onContactSupport={handleContactSupport}
+                  className="rounded-t-3xl md:rounded-3xl min-h-[min(100dvh,520px)] md:min-h-0"
+                />
+              </div>
+            ) : (
+              <>
             {/* Header */}
             <div className="bg-[#9C5B61] text-white px-6 py-4 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setView('hub');
+                    setActiveTicketId(null);
+                  }}
+                  className="p-1 hover:bg-white/10 rounded-lg text-white/80 hover:text-white transition-colors"
+                  aria-label="Back to contact options"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
                 <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
                   <Headphones className="w-5 h-5 text-white" />
                 </div>
@@ -392,6 +447,8 @@ const SupportChatWidget = () => {
                 )}
               </AnimatePresence>
             </div>
+              </>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

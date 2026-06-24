@@ -1,5 +1,5 @@
 /**
- * 📧 Email Log Model — Sands Ornaments
+ * 📧 Email Log Model — Sands Jewels
  *    Provides an audit trail for every email attempted by the system.
  *    Admin can query logs at /api/admin/email-logs (future route).
  */
@@ -9,9 +9,9 @@ const mongoose = require("mongoose");
 
 const emailLogSchema = new mongoose.Schema(
   {
-    to:           { type: String, required: true, lowercase: true, trim: true },
-    subject:      { type: String, required: true },
-    type:         {
+    to: { type: String, required: true, lowercase: true, trim: true },
+    subject: { type: String, required: true },
+    type: {
       type: String,
       enum: [
         "order_confirmation",
@@ -33,11 +33,15 @@ const emailLogSchema = new mongoose.Schema(
       ],
       default: "general",
     },
-    status:       { type: String, enum: ["sent", "failed", "skipped"], default: "sent" },
-    messageId:    { type: String, default: null },   // SMTP message ID
+    status: {
+      type: String,
+      enum: ["sent", "failed", "skipped"],
+      default: "sent",
+    },
+    messageId: { type: String, default: null }, // SMTP message ID
     errorMessage: { type: String, default: null },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // TTL: auto-delete logs older than 90 days to prevent DB bloat

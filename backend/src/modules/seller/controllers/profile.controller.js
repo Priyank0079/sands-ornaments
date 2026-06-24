@@ -1,8 +1,12 @@
-const Seller = require("../../../models/Seller");
+﻿const Seller = require("../../../models/Seller");
 const bcrypt = require("bcryptjs");
 const { success, error } = require("../../../utils/apiResponse");
 const Setting = require("../../../models/Setting");
 const Product = require("../../../models/Product");
+const PickupLocation = require("../../../models/PickupLocation");
+const SellerProduct = require("../../../models/SellerProduct");
+const Notification = require("../../../models/Notification");
+const StockLog = require("../../../models/StockLog");
 const { computeVariantPricing, normalizeChargeBearer } = require("../../../utils/metalPricing");
 const { normalizeMetalRates, hasNegativeRate } = require("../../../utils/metalRateNormalization");
 const SellerMetalRateLog = require("../../../models/SellerMetalRateLog");
@@ -319,5 +323,29 @@ exports.updateMetalPricing = async (req, res) => {
         failedProductIds
       }
     }, "Metal pricing updated successfully");
+  } catch (err) { return error(res, err.message); }
+};
+
+exports.deleteAccount = async (req, res) => {
+  try {
+    const sellerId = req.user.userId;
+
+    const seller = await Seller.findById(sellerId);
+    if (!seller) return error(res, "Seller not found", 404);
+
+    // Cascade delete all seller-owned operational data.
+    // Financial/order records (Commission, Order, Shipment, PayoutRequest, WalletTransaction)
+    // are intentionally preserved for audit and customer order history integrity.
+    await Promise.all([
+      Product.deleteMany({ sellerId }),
+      SellerProduct.deleteMany({ sellerId }),
+      PickupLocation.deleteMany({ sellerId }),
+      Notification.deleteMany({ sellerId }),
+      StockLog.deleteMany({ sellerId }),
+      SellerMetalRateLog.deleteMany({ sellerId }),
+      Seller.deleteOne({ _id: sellerId }),
+    ]);
+
+    return success(res, {}, "Seller account deleted successfully");
   } catch (err) { return error(res, err.message); }
 };

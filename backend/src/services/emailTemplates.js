@@ -1,11 +1,11 @@
 /**
- * 📧 Email Templates — Sands Ornaments
+ * 📧 Email Templates — Sands Jewels
  * All transactional HTML email templates live here.
  */
 "use strict";
 
 const BRAND_COLOR = "#C8A882";
-const BRAND_DARK  = "#1a1a1a";
+const BRAND_DARK = "#1a1a1a";
 const BRAND_LIGHT = "#FDF5F6";
 
 // ── Base layout ───────────────────────────────────────────────────────────────
@@ -23,7 +23,7 @@ const layout = (title, bodyHtml) => `<!DOCTYPE html>
         <!-- Header -->
         <tr>
           <td style="background:${BRAND_DARK};padding:28px 40px;text-align:center;">
-            <span style="font-size:22px;font-weight:700;color:#fff;letter-spacing:2px;">SANDS ORNAMENTS</span>
+            <span style="font-size:22px;font-weight:700;color:#fff;letter-spacing:2px;">Sands Jewels</span>
             <p style="color:${BRAND_COLOR};margin:4px 0 0;font-size:12px;letter-spacing:3px;">FINE JEWELLERY</p>
           </td>
         </tr>
@@ -36,7 +36,7 @@ const layout = (title, bodyHtml) => `<!DOCTYPE html>
         <!-- Footer -->
         <tr>
           <td style="background:#f9f4ef;padding:24px 40px;text-align:center;border-top:1px solid #ece8e1;">
-            <p style="margin:0;font-size:12px;color:#888;">© ${new Date().getFullYear()} Sands Ornaments. All rights reserved.</p>
+            <p style="margin:0;font-size:12px;color:#888;">© ${new Date().getFullYear()} Sands Jewels. All rights reserved.</p>
             <p style="margin:6px 0 0;font-size:12px;color:#aaa;">
               Questions? <a href="mailto:support@sandsjewels.com" style="color:${BRAND_COLOR};text-decoration:none;">support@sandsjewels.com</a>
             </p>
@@ -58,10 +58,13 @@ const badge = (text, color = BRAND_COLOR) =>
 const divider = () =>
   `<hr style="border:none;border-top:1px solid #ece8e1;margin:24px 0;"/>`;
 
-const rupees = (n) => `₹${Number(n || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`;
+const rupees = (n) =>
+  `₹${Number(n || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`;
 
 const itemsTable = (items = []) => {
-  const rows = items.map((item) => `
+  const rows = items
+    .map(
+      (item) => `
     <tr>
       <td style="padding:10px 0;border-bottom:1px solid #f0ebe4;">
         <span style="font-size:14px;color:${BRAND_DARK};font-weight:600;">${item.name || "Product"}</span>
@@ -70,7 +73,9 @@ const itemsTable = (items = []) => {
       </td>
       <td style="padding:10px 0;border-bottom:1px solid #f0ebe4;text-align:center;font-size:13px;color:#555;">×${item.quantity}</td>
       <td style="padding:10px 0;border-bottom:1px solid #f0ebe4;text-align:right;font-size:14px;font-weight:600;color:${BRAND_DARK};">${rupees(item.price * item.quantity)}</td>
-    </tr>`).join("");
+    </tr>`,
+    )
+    .join("");
 
   return `
     <table width="100%" cellpadding="0" cellspacing="0">
@@ -171,7 +176,13 @@ const paymentSuccess = ({ order, userName, paymentId }) => {
 /**
  * 3. Order Shipped
  */
-const orderShipped = ({ order, userName, trackingId, courier, trackingUrl }) => {
+const orderShipped = ({
+  order,
+  userName,
+  trackingId,
+  courier,
+  trackingUrl,
+}) => {
   const body = `
     <h2 style="margin:0 0 4px;font-size:22px;color:${BRAND_DARK};">Your Order is on the Way! 🚚</h2>
     <p style="color:#666;margin:0 0 24px;font-size:15px;">Hi ${userName || "there"}, great news — your order has been shipped!</p>
@@ -242,11 +253,20 @@ const returnRequested = ({ returnReq, userName, order }) => {
 /**
  * 6. Return Status Update
  */
-const returnStatusUpdate = ({ returnReq, userName, newStatus, note, order }) => {
+const returnStatusUpdate = ({
+  returnReq,
+  userName,
+  newStatus,
+  note,
+  order,
+}) => {
   const statusColors = {
-    Approved: "#4CAF50", Rejected: "#e57373",
-    "Pickup Scheduled": "#2196F3", "Refund Initiated": "#9C27B0",
-    Refunded: "#009688", Closed: "#888",
+    Approved: "#4CAF50",
+    Rejected: "#e57373",
+    "Pickup Scheduled": "#2196F3",
+    "Refund Initiated": "#9C27B0",
+    Refunded: "#009688",
+    Closed: "#888",
   };
   const color = statusColors[newStatus] || BRAND_COLOR;
 
@@ -328,7 +348,7 @@ const sellerReturnNotif = ({ order, sellerName, item, returnId }) => {
  */
 const welcomeEmail = ({ userName }) => {
   const body = `
-    <h2 style="margin:0 0 4px;font-size:24px;color:${BRAND_DARK};">Welcome to Sands Ornaments ✨</h2>
+    <h2 style="margin:0 0 4px;font-size:24px;color:${BRAND_DARK};">Welcome to Sands Jewels ✨</h2>
     <p style="color:#666;margin:0 0 24px;font-size:15px;">Hi ${userName || "there"}, we're thrilled to have you join our community of fine jewellery lovers.</p>
 
     <div style="background:${BRAND_LIGHT};border-radius:8px;padding:24px;text-align:center;margin-bottom:24px;">
@@ -341,7 +361,7 @@ const welcomeEmail = ({ userName }) => {
       ${btn("Start Shopping", `${process.env.CLIENT_URL || "https://sandsjewels.com"}/shop`)}
     </div>`;
 
-  return layout("Welcome to Sands Ornaments!", body);
+  return layout("Welcome to Sands Jewels!", body);
 };
 
 // ── Exports ───────────────────────────────────────────────────────────────────
@@ -351,17 +371,17 @@ const welcomeEmail = ({ userName }) => {
  */
 const giftCardDelivery = ({ giftCard }) => {
   const shopUrl = process.env.CLIENT_URL || "https://sandsjewels.com";
-  const rupees  = (n) => `₹${Number(n || 0).toLocaleString("en-IN")}`;
+  const rupees = (n) => `₹${Number(n || 0).toLocaleString("en-IN")}`;
 
   const body = `
     <h2 style="margin:0 0 4px;font-size:22px;color:${BRAND_DARK};">You've Received a Gift! 🎁</h2>
     <p style="color:#666;margin:0 0 24px;font-size:15px;">
-      <strong>${giftCard.senderName}</strong> has sent you a Sands Ornaments E-Gift Card.
+      <strong>${giftCard.senderName}</strong> has sent you a Sands Jewels E-Gift Card.
       ${giftCard.personalMessage ? `<br/><em style="color:#888;">"${giftCard.personalMessage}"</em>` : ""}
     </p>
 
     <div style="background:linear-gradient(135deg,#1a1a1a 0%,#3d1a24 100%);border-radius:16px;padding:36px 32px;text-align:center;margin-bottom:28px;">
-      <p style="margin:0;font-size:11px;font-weight:700;color:${BRAND_COLOR};text-transform:uppercase;letter-spacing:3px;">Sands Ornaments</p>
+      <p style="margin:0;font-size:11px;font-weight:700;color:${BRAND_COLOR};text-transform:uppercase;letter-spacing:3px;">Sands Jewels</p>
       <p style="margin:8px 0 24px;font-size:12px;color:#aaa;letter-spacing:1px;">E-Gift Card</p>
       <p style="margin:0;font-size:13px;color:#aaa;text-transform:uppercase;letter-spacing:2px;">Card Value</p>
       <p style="margin:4px 0 28px;font-size:42px;font-weight:700;color:#fff;letter-spacing:-1px;">${rupees(giftCard.value)}</p>
@@ -423,7 +443,7 @@ const giftCardPurchaseConfirmation = ({ giftCard, buyerName }) => {
       ${btn("Send Another Gift", `${shopUrl}/gift-cards`)}
     </div>`;
 
-  return layout("Gift Card Sent — Sands Ornaments", body);
+  return layout("Gift Card Sent — Sands Jewels", body);
 };
 
 module.exports = {

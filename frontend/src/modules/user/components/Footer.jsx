@@ -13,7 +13,7 @@ import {
   Star,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import logo from "@assets/sands-logo.png"; // Using the official logo
+import logo from "@assets/sands-logo.png";
 import {
   normalizeExternalLink,
   normalizeFooterLink,
@@ -32,11 +32,9 @@ const Footer = () => {
     address: "123 Silver Arcade, Heritage Marg, Jaipur",
     phone: "+91 96088 11487",
     email: "support@sandsornaments.com",
-
     footerColumn1Title: "Experience",
     footerColumn2Title: "Policies",
     footerColumn3Title: "Our World",
-
     footerExperienceLinks: [
       { name: "Easy Returns", path: "/returns" },
       { name: "Contact Us", path: "/contact" },
@@ -62,7 +60,7 @@ const Footer = () => {
       youtube: "#",
     },
     footerDeliveryText: "Safe & Insured Express Worldwide Delivery",
-    footerCopyrightText: `Sands Ornaments Pvt Ltd. All Rights Reserved.`,
+    footerCopyrightText: "Sands Ornaments Pvt Ltd. All Rights Reserved.",
   });
 
   useEffect(() => {
@@ -109,26 +107,9 @@ const Footer = () => {
 
   if (isOrderSuccess) return null;
 
-  const renderFooterLink = (link, idx) => {
-    const safePath = normalizeFooterLink(link.path);
-    return (
-      <li key={idx}>
-        <Link
-          to={safePath}
-          className="text-xs text-gray-600 font-medium hover:text-[#4A1015] transition-all hover:pl-2 flex items-center gap-2 group">
-          <span className="w-1 h-1 bg-[#C9A24D] rounded-full opacity-0 group-hover:opacity-100 transition-all"></span>
-          {link.name}
-        </Link>
-      </li>
-    );
-  };
-
   return (
     <footer className="relative bg-[#FCF9F9] pt-12 pb-6 overflow-hidden border-t border-gray-100">
-      {/* Decorative Top Border - Luxury Gradient */}
       <div className="absolute top-0 left-0 w-full h-[4px] bg-gradient-to-r from-[#4A1015] via-[#C9A24D] to-[#4A1015]"></div>
-
-      {/* Subtler Background Accent */}
       <div className="absolute top-0 right-0 w-1/3 h-full bg-white/40 -z-0 skew-x-[-15deg] translate-x-1/2"></div>
 
       <div className="container mx-auto px-4 md:px-8 relative z-10">
@@ -138,7 +119,8 @@ const Footer = () => {
             <div className="space-y-4">
               <Link
                 to="/"
-                className="inline-block transition-transform hover:scale-105 duration-500">
+                className="inline-block transition-transform hover:scale-105 duration-500"
+              >
                 <img
                   src={logo}
                   alt="Sands Ornaments"
@@ -158,7 +140,6 @@ const Footer = () => {
               </div>
             </div>
 
-            {/* Trust Badges - More Compact & Elegant */}
             <div className="flex gap-6 items-center pt-2">
               {[
                 { Icon: ShieldCheck, label: "Secure" },
@@ -167,7 +148,8 @@ const Footer = () => {
               ].map((badge, i) => (
                 <div
                   key={i}
-                  className="flex flex-col items-center gap-1.5 group cursor-default">
+                  className="flex flex-col items-center gap-1.5 group cursor-default"
+                >
                   <div className="w-10 h-10 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center text-[#C9A24D] group-hover:scale-110 group-hover:bg-[#C9A24D] group-hover:text-white transition-all duration-500">
                     <badge.Icon className="w-4.5 h-4.5" />
                   </div>
@@ -179,7 +161,7 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Links Grid - Unified Columns */}
+          {/* Links Grid */}
           <div className="lg:col-span-5 grid grid-cols-2 md:grid-cols-3 gap-8 pt-4">
             {[
               {
@@ -204,7 +186,8 @@ const Footer = () => {
                     <li key={idx}>
                       <Link
                         to={normalizeFooterLink(link.path)}
-                        className="text-[13px] text-gray-500 font-medium hover:text-[#4A1015] transition-all hover:translate-x-1 inline-flex items-center group">
+                        className="text-[13px] text-gray-500 font-medium hover:text-[#4A1015] transition-all hover:translate-x-1 inline-flex items-center group"
+                      >
                         <span className="w-1.5 h-[1px] bg-[#C9A24D] mr-2 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
                         {link.name}
                       </Link>
@@ -215,7 +198,7 @@ const Footer = () => {
             ))}
           </div>
 
-          {/* Contact Card - Compact & Modern */}
+          {/* Contact Card */}
           <div className="lg:col-span-3">
             <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/40 space-y-6 relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-24 h-24 bg-[#4A1015]/5 rounded-bl-full -z-0 group-hover:scale-[2] transition-transform duration-1000"></div>
@@ -227,7 +210,8 @@ const Footer = () => {
                 <div className="space-y-4">
                   <a
                     href={`mailto:${settings.email}`}
-                    className="flex items-center gap-4 group/item">
+                    className="flex items-center gap-4 group/item"
+                  >
                     <div className="w-10 h-10 bg-[#4A1015] text-white rounded-[14px] flex items-center justify-center group-hover/item:bg-[#C9A24D] transition-all duration-500 shadow-md shadow-[#4A1015]/10">
                       <Mail className="w-4 h-4" />
                     </div>
@@ -237,7 +221,8 @@ const Footer = () => {
                   </a>
                   <a
                     href={`tel:${settings.phone}`}
-                    className="flex items-center gap-4 group/item">
+                    className="flex items-center gap-4 group/item"
+                  >
                     <div className="w-10 h-10 bg-[#4A1015] text-white rounded-[14px] flex items-center justify-center group-hover/item:bg-[#C9A24D] transition-all duration-500 shadow-md shadow-[#4A1015]/10">
                       <Phone className="w-4 h-4" />
                     </div>
@@ -274,7 +259,8 @@ const Footer = () => {
                         href={normalizeExternalLink(social.link)}
                         target="_blank"
                         rel="noreferrer"
-                        className="w-9 h-9 bg-gray-50 border border-gray-100 rounded-xl flex items-center justify-center text-gray-400 hover:bg-[#4A1015] hover:text-white hover:-translate-y-1 transition-all duration-500 shadow-sm">
+                        className="w-9 h-9 bg-gray-50 border border-gray-100 rounded-xl flex items-center justify-center text-gray-400 hover:bg-[#4A1015] hover:text-white hover:-translate-y-1 transition-all duration-500 shadow-sm"
+                      >
                         <social.Icon className="w-4 h-4" />
                       </a>
                     ))}
@@ -285,7 +271,6 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Compact Integrated Fraud Banner */}
         <div className="mb-8 border border-red-100/50 bg-white/50 backdrop-blur-sm rounded-2xl py-4 flex items-center justify-center px-6 max-w-4xl mx-auto shadow-sm">
           <div className="flex items-center gap-4">
             <div className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center shrink-0">
@@ -301,7 +286,6 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Bottom Bar: Copyright & Delivery */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-4 border-t border-gray-100/60">
           <div className="flex items-center gap-3 bg-white px-5 py-2 rounded-2xl border border-gray-100 shadow-sm">
             <Truck className="w-4 h-4 text-[#4A1015]" />
@@ -311,7 +295,6 @@ const Footer = () => {
           </div>
 
           <div className="flex flex-col items-center md:items-end gap-1.5">
-            {/*  */}
             <p className="text-[10px] text-gray-400 uppercase tracking-[0.25em] font-semibold">
               &copy; {new Date().getFullYear()} {settings.footerCopyrightText}
             </p>

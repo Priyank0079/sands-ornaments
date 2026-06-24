@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getMessaging, getToken, onMessage } from 'firebase/messaging';
+import { getMessaging, getToken, onMessage, isSupported } from 'firebase/messaging';
 
 // Dummy configuration for now
 const firebaseConfig = {
@@ -13,6 +13,27 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const messaging = getMessaging(app);
 
-export { messaging, getToken, onMessage };
+let messagingInstance = null;
+let isMessagingChecked = false;
+
+export const getMessagingInstance = async () => {
+  if (isMessagingChecked) return messagingInstance;
+  
+  try {
+    const supported = await isSupported();
+    if (supported) {
+      messagingInstance = getMessaging(app);
+    } else {
+      console.log('FCM Messaging is not supported on this browser/environment.');
+    }
+  } catch (err) {
+    console.error('Failed to initialize Firebase Messaging:', err);
+  }
+  
+  isMessagingChecked = true;
+  return messagingInstance;
+};
+
+export { getToken, onMessage };
+

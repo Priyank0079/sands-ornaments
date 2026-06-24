@@ -1,4 +1,5 @@
-# SANDS ORNAMENTS - USER PANEL BUG ANALYSIS REPORT
+# Sands Jewels - USER PANEL BUG ANALYSIS REPORT
+
 **Date:** 2026-06-01  
 **Analysis Type:** Comprehensive User Panel Bug Review
 
@@ -6,22 +7,24 @@
 
 ## EXECUTIVE SUMMARY
 
-| Metric | Count |
-|--------|-------|
-| **Total Bugs Listed** | 54 |
-| **Confirmed Real Bugs** | 42 |
-| **Questionable/Duplicate** | 8 |
-| **Critical Severity** | 12 |
-| **High Severity** | 18 |
-| **Medium Severity** | 10 |
-| **Low Severity** | 4 |
+| Metric                     | Count |
+| -------------------------- | ----- |
+| **Total Bugs Listed**      | 54    |
+| **Confirmed Real Bugs**    | 42    |
+| **Questionable/Duplicate** | 8     |
+| **Critical Severity**      | 12    |
+| **High Severity**          | 18    |
+| **Medium Severity**        | 10    |
+| **Low Severity**           | 4     |
 
 ---
 
 ## BUGS BY CATEGORY & SEVERITY
 
 ### 1. CHECKOUT & CART (9 BUGS)
+
 **Critical Issues:**
+
 - ❌ **COD Payment Not Working** - Order not placed when selecting COD method
   - Status: REAL & CRITICAL
   - Impact: Users cannot complete purchases
@@ -35,6 +38,7 @@
   - Fixable: YES (localStorage/backend sync issue)
 
 **High Issues:**
+
 - ❌ **Gift Wrap Not Working** - Feature disabled/broken
   - Status: REAL & HIGH
   - Impact: Feature completely unavailable
@@ -56,6 +60,7 @@
   - Fixable: YES (validation/backend logic)
 
 **Medium Issues:**
+
 - ⚠️ **Coupon Dropdown Not Opening** - Section collapsed, can't view details
   - Status: REAL & MEDIUM
   - Impact: Cannot see coupon benefits
@@ -84,7 +89,9 @@
 ---
 
 ### 2. SHIPPING/ADDRESS (8 BUGS)
+
 **High Issues:**
+
 - ❌ **First Name Validation Error** - Should accept alphanumeric but rejects valid input
   - Status: REAL & HIGH
   - Impact: Users cannot complete checkout
@@ -117,6 +124,7 @@
   - Fixable: YES (navigation history)
 
 **Medium Issues:**
+
 - ⚠️ **Phone Number Validation** - Should accept 10 digits, may have strict rules
   - Status: QUESTIONABLE - Depends on requirements
   - Impact: Account setup
@@ -125,13 +133,16 @@
 ---
 
 ### 3. HOME PAGE (12 BUGS)
+
 **Critical Issues:**
+
 - ❌ **Advertisement Carousel Not Sliding on Swipe** - Touch gesture not working
   - Status: REAL & HIGH
   - Impact: Mobile users cannot navigate ads
   - Fixable: YES (touch event handler)
 
 **High Issues:**
+
 - ❌ **Refresh Page Redirects to Bottom** - Auto-scroll on page load
   - Status: REAL & HIGH
   - Impact: Poor UX, disorienting navigation
@@ -172,13 +183,16 @@
 ---
 
 ### 4. MY ORDERS / ORDER TRACKING (8 BUGS)
+
 **Critical Issues:**
+
 - ❌ **Unable to Create Support Ticket** - Support feature broken
   - Status: REAL & CRITICAL
   - Impact: Users cannot get help
   - Fixable: DEPENDENT on support module
 
 **High Issues:**
+
 - ❌ **Pop-up Notifications Not Proper** - Sent from backend incorrectly
   - Status: REAL & HIGH
   - Impact: Users miss important notifications
@@ -205,7 +219,9 @@
 ---
 
 ### 5. PRODUCT PAGE (4 BUGS)
+
 **High Issues:**
+
 - ❌ **Pincode Check Shows Invalid Pincode as Available** - Validation logic reversed
   - Status: REAL & HIGH
   - Impact: Incorrect delivery info shown
@@ -228,7 +244,9 @@
 ---
 
 ### 6. ACCOUNT & SETTINGS (10 BUGS)
+
 **High Issues:**
+
 - ❌ **Dashboard Menu Not Highlighted** - Active menu item not showing state
   - Status: REAL & HIGH
   - Impact: Users confused about location
@@ -263,6 +281,7 @@
 ---
 
 ### 7. ADMIN FEATURES (NOT USER PANEL)
+
 - "Product page policies not shown" - ADMIN SETTING
 - "Value prepositions not shown" - ADMIN SETTING
 - "Delete notifications from localhost" - BACKEND/ADMIN
@@ -270,13 +289,16 @@
 ---
 
 ### 8. OTHER ISSUES (5 BUGS)
+
 **Critical Issues:**
+
 - ❌ **Messages Cannot Be Sent** - Messaging feature broken
   - Status: REAL & CRITICAL
   - Impact: Users cannot communicate
   - Fixable: YES (backend/form)
 
 **High Issues:**
+
 - ❌ **Blogs Content Not Visible** - Blog page empty/broken
   - Status: REAL & HIGH
   - Impact: Content not accessible
@@ -291,6 +313,7 @@
 ## BUG SEVERITY BREAKDOWN
 
 ### 🔴 CRITICAL (5 BUGS) - Must Fix First
+
 1. COD Payment not working
 2. Unable to create support tickets
 3. Messages cannot be sent
@@ -298,6 +321,7 @@
 5. Address not added
 
 ### 🟠 HIGH (18 BUGS) - High Priority
+
 - Gift wrap not working
 - Product count increment broken
 - Price not updating on quantity change
@@ -308,6 +332,7 @@
 - Pincode validation reversed
 
 ### 🟡 MEDIUM (10 BUGS) - Medium Priority
+
 - Coupon dropdown/display issues
 - Auto-scroll on page refresh
 - Blinking animations
@@ -316,6 +341,7 @@
 - Background blur on modals
 
 ### 🟢 LOW (4 BUGS) - Nice to Fix
+
 - Copy/messaging clarity
 - Animation refinements
 - UI highlighting states
@@ -325,7 +351,9 @@
 ## FIXABILITY ASSESSMENT
 
 ### Can Fix WITHOUT Disrupting Other Flows: 38 BUGS
+
 ✅ These are isolated UI/UX issues or specific feature fixes
+
 - All validation fixes
 - Navigation/scroll state management
 - Form submission issues
@@ -333,14 +361,18 @@
 - Event handler fixes
 
 ### RISKY - May Affect Other Flows: 4 BUGS
+
 ⚠️ Require careful testing
+
 - Coupon system (may affect pricing calculations)
 - Payment gateway (may affect order system)
 - Address management (may affect checkout flow)
 - Backend notification system (may affect all notifications)
 
 ### DEPENDENT ON BACKEND: 12 BUGS
+
 🔗 Require backend changes
+
 - COD payment
 - Support ticket system
 - Messaging system
@@ -353,6 +385,7 @@
 ## RECOMMENDATIONS
 
 ### PHASE 1: CRITICAL FIXES (1-2 days)
+
 1. **Fix COD Payment** - Prevent order placement block
 2. **Fix Address Management** - Prevent checkout failures
 3. **Fix Coupon Application** - Revenue impact
@@ -360,23 +393,27 @@
 5. **Fix Support Tickets** - Customer support impact
 
 ### PHASE 2: HIGH PRIORITY (2-3 days)
+
 1. **Validation Fixes** - All shipping/address validation
 2. **Navigation Fixes** - All redirect loops and back button issues
 3. **Product Features** - Reviews, image display
 4. **Home Page** - Carousel, refresh, redirects
 
 ### PHASE 3: MEDIUM PRIORITY (2-3 days)
+
 1. **UI/UX Polish** - Highlighting, animations
 2. **Display Issues** - Scroll positions, popup management
 3. **Styling** - Background blur, active states
 
 ### PHASE 4: LOW PRIORITY (1 day)
+
 1. **Copy Updates** - Text messaging clarity
 2. **Animation Refinements** - Icon blinks, transitions
 
 ---
 
 ## TOTAL ESTIMATE
+
 - **Real Bugs:** 42 (CONFIRMED)
 - **Questionable:** 8 (Needs clarification or design review)
 - **Estimated Fix Time:** 8-12 days with proper testing
@@ -385,9 +422,9 @@
 ---
 
 ## NEXT STEPS
+
 1. **Confirm** which bugs are still active in current build
 2. **Prioritize** by business impact (revenue, customer satisfaction)
 3. **Assign** to backend/frontend teams appropriately
 4. **Create** detailed tickets for each bug with reproduction steps
 5. **Test** fixes thoroughly to avoid regressions
-
