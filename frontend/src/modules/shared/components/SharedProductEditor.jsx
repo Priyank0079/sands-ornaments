@@ -806,6 +806,14 @@ const SharedProductEditor = ({
             
             // Clean payload
             const payload = { ...formData };
+            if (payload.logistics) {
+                payload.logistics = {
+                    ...payload.logistics,
+                    estimatedShippingDays: (payload.logistics.estimatedShippingDays === '' || payload.logistics.estimatedShippingDays === undefined || payload.logistics.estimatedShippingDays === null)
+                        ? 3
+                        : parseInt(payload.logistics.estimatedShippingDays)
+                };
+            }
             const cleanVariants = payload.variants.map(v => {
                 const { id: _, ...rest } = v;
                 return rest;

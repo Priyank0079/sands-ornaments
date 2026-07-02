@@ -437,11 +437,17 @@ const ProductAdvancedTab = ({
                                 <div className="relative">
                                     <input 
                                         type="number"
-                                        value={formData.logistics?.estimatedShippingDays || 3}
+                                        value={formData.logistics?.estimatedShippingDays ?? 3}
                                         onChange={(e) => {
                                             const val = e.target.value;
                                             if (val !== '' && Number(val) < 0) return;
-                                            setFormData(prev => ({ ...prev, logistics: { ...prev.logistics, estimatedShippingDays: parseInt(val) || 0 } }));
+                                            setFormData(prev => ({ 
+                                                ...prev, 
+                                                logistics: { 
+                                                    ...prev.logistics, 
+                                                    estimatedShippingDays: val === '' ? '' : parseInt(val) 
+                                                } 
+                                            }));
                                         }}
                                         disabled={isViewMode}
                                         className={`w-full bg-white border rounded-xl py-3.5 px-5 text-sm font-bold text-gray-800 outline-none focus:ring-4 transition-all shadow-sm ${errors.estimatedShippingDays ? 'border-red-400 focus:border-red-500 focus:ring-red-200/40' : 'border-gray-200 focus:border-emerald-500'}`}
