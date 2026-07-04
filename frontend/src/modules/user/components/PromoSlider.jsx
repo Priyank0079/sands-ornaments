@@ -178,28 +178,28 @@ const PromoSlider = () => {
                     ))}
                 </motion.div>
 
+                {/* Sliding Line Indicators - Inside Carousel Bottom Center */}
+                {slides.length > 0 && (
+                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center justify-center gap-2 md:gap-3 z-30">
+                        {slides.map((_, i) => {
+                            const isActive = (currentIndex - 1 + slides.length) % slides.length === i;
+                            return (
+                                <button
+                                    key={i}
+                                    onClick={() => !isTransitioning && setCurrentIndex(i + 1)}
+                                    className={`transition-all duration-500 rounded-full ${
+                                        isActive 
+                                            ? 'w-10 md:w-12 h-1 bg-white' 
+                                            : 'w-4 md:w-5 h-1 bg-white/40 hover:bg-white/70'
+                                    }`}
+                                    aria-label={`Go to slide ${i + 1}`}
+                                />
+                            );
+                        })}
+                    </div>
+                )}
             </div>
 
-            {/* Sliding Line Indicators - Below Carousel */}
-            {slides.length > 1 && (
-                <div className="flex items-center justify-center gap-2 md:gap-3 mt-6 mb-2 relative z-10">
-                    {slides.map((_, i) => {
-                        const isActive = (currentIndex - 1 + slides.length) % slides.length === i;
-                        return (
-                            <button
-                                key={i}
-                                onClick={() => !isTransitioning && setCurrentIndex(i + 1)}
-                                className={`transition-all duration-500 rounded-full ${
-                                    isActive 
-                                        ? 'w-8 md:w-10 h-1 bg-gray-800' 
-                                        : 'w-3 md:w-4 h-1 bg-gray-300 hover:bg-gray-400'
-                                }`}
-                                aria-label={`Go to slide ${i + 1}`}
-                            />
-                        );
-                    })}
-                </div>
-            )}
         </section>
     );
 };
