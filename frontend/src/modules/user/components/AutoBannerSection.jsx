@@ -167,22 +167,32 @@ const AutoBannerSection = () => {
                                 </div>
                             </button>
 
-                            {/* Progress Indicators */}
-                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-3 z-10">
-                                {slides.map((_, index) => (
-                                    <button
-                                        key={index}
-                                        onClick={() => setCurrentIndex(index)}
-                                        className={`h-1.5 transition-all duration-300 ${
-                                            index === currentIndex ? 'w-10 bg-white' : 'w-4 bg-white/40'
-                                        }`}
-                                    />
-                                ))}
-                            </div>
                         </div>
                     </motion.div>
                 </AnimatePresence>
+
             </div>
+
+            {/* Sliding Line Indicators - Below Carousel */}
+            {slides.length > 1 && (
+                <div className="flex items-center justify-center gap-2 md:gap-3 mt-6 mb-2 relative z-10">
+                    {slides.map((_, index) => {
+                        const isActive = index === currentIndex;
+                        return (
+                            <button
+                                key={index}
+                                onClick={() => setCurrentIndex(index)}
+                                className={`transition-all duration-500 rounded-full ${
+                                    isActive 
+                                        ? 'w-8 md:w-10 h-1 bg-gray-800' 
+                                        : 'w-3 md:w-4 h-1 bg-gray-300 hover:bg-gray-400'
+                                }`}
+                                aria-label={`Go to slide ${index + 1}`}
+                            />
+                        );
+                    })}
+                </div>
+            )}
         </section>
     );
 };

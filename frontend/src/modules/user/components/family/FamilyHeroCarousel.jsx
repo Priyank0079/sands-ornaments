@@ -141,6 +141,27 @@ const FamilyHeroCarousel = ({ sectionData }) => {
             {/* Subtle Texture Overlay */}
             <div className="absolute inset-0 opacity-5 pointer-events-none mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/dust.png')]" />
 
+            {/* Sliding Line Indicators */}
+            {slides.length > 1 && (
+                <div className="absolute bottom-3 md:bottom-10 left-1/2 -translate-x-1/2 flex gap-2 md:gap-3 z-30">
+                    {slides.map((_, index) => {
+                        const isActive = index === currentIndex;
+                        return (
+                            <button
+                                key={index}
+                                onClick={() => setCurrentIndex(index)}
+                                className={`transition-all duration-500 rounded-full ${
+                                    isActive 
+                                        ? 'w-8 md:w-10 h-1 bg-white' 
+                                        : 'w-3 md:w-4 h-1 bg-white/30 hover:bg-white/60'
+                                }`}
+                                aria-label={`Go to slide ${index + 1}`}
+                            />
+                        );
+                    })}
+                </div>
+            )}
+
             <style>
                 {`
                     @keyframes slowZoom {

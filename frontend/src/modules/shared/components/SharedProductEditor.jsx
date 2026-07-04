@@ -153,18 +153,9 @@ const SharedProductEditor = ({
         // 1. Name
         if (!formData.name) {
             newErrors.name = "Name is required";
-        } else if (/\d/.test(formData.name)) {
-            newErrors.name = "Product name should not contain numbers";
         }
 
-        // 2. HUID
-        if (!formData.huid) {
-            newErrors.huid = "HUID is required";
-        } else if (formData.huid.length !== 6) {
-            newErrors.huid = "HUID must be exactly 6 characters";
-        } else if (/[^a-zA-Z0-9]/.test(formData.huid)) {
-            newErrors.huid = "HUID must be alphanumeric";
-        }
+        // 2. HUID (Optional - no validation logic required here)
 
         // 3. Category
         if (!formData.categories?.[0]?.category) {
@@ -712,7 +703,6 @@ const SharedProductEditor = ({
         } else if (!/^[a-zA-Z0-9 ]+$/.test(formData.name)) {
             newErrors.name = "Product Name must contain only alphanumeric characters and spaces";
         }
-        if (!formData.huid) newErrors.huid = "HUID is required";
         if (!formData.categories?.[0]?.category) newErrors.categories = "Category is required";
         
         const strippedDesc = (formData.description || '').replace(/<[^>]*>/g, '').trim();

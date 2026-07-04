@@ -971,25 +971,25 @@ const ProductDetails = () => {
                     </div>
 
                     {/* JEWELLERY DETAILS TABBED SECTION - Moved to center below product area */}
-                    <div className="h-[400px] lg:h-[520px] w-full bg-white rounded-[2rem] border border-gray-100 p-6 md:p-10 shadow-sm relative flex flex-col">
+                    <div className="min-h-[280px] lg:h-[520px] w-full bg-white rounded-2xl lg:rounded-[2rem] border border-gray-100 p-4 md:p-10 shadow-sm relative flex flex-col">
                         <div
                             {...detailsScroll.events}
                             ref={detailsScroll.ref}
-                            className={`flex-1 flex flex-col justify-start pt-4 overflow-y-auto custom-scrollbar ${detailsScroll.isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'}`}
+                            className={`flex-1 flex flex-col justify-start pt-2 md:pt-4 overflow-y-auto custom-scrollbar ${detailsScroll.isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'}`}
                         >
-                            <h2 className="text-xl font-bold text-center text-gray-900 mb-6 tracking-tight">Jewellery Details</h2>
+                            <h2 className="text-base md:text-xl font-bold text-center text-gray-900 mb-3 md:mb-6 tracking-tight">Jewellery Details</h2>
 
                             {/* Tab Switcher */}
-                            <div className="bg-white border border-gray-100 rounded-full p-1 grid grid-cols-2 mt-4 mb-10 max-w-[540px] mx-auto shadow-md">
+                            <div className="bg-white border border-gray-100 rounded-full p-0.5 md:p-1 grid grid-cols-2 mb-4 md:mb-10 max-w-[540px] mx-auto shadow-md">
                                 <button
                                     onClick={() => setActiveDetailTab('details')}
-                                    className={`py-3 rounded-full text-[13px] font-medium transition-all duration-500 whitespace-nowrap px-10 ${activeDetailTab === 'details' ? 'bg-[#8E2B45] text-white shadow-lg' : 'text-gray-900 hover:text-[#8E2B45]'}`}
+                                    className={`py-2 md:py-3 rounded-full text-[11px] md:text-[13px] font-medium transition-all duration-500 whitespace-nowrap px-4 md:px-10 ${activeDetailTab === 'details' ? 'bg-[#8E2B45] text-white shadow-lg' : 'text-gray-900 hover:text-[#8E2B45]'}`}
                                 >
                                     Product Details
                                 </button>
                                 <button
                                     onClick={() => setActiveDetailTab('price')}
-                                    className={`py-3 rounded-full text-[13px] font-medium transition-all duration-500 whitespace-nowrap px-10 ${activeDetailTab === 'price' ? 'bg-[#8E2B45] text-white shadow-lg' : 'text-gray-900 hover:text-[#8E2B45]'}`}
+                                    className={`py-2 md:py-3 rounded-full text-[11px] md:text-[13px] font-medium transition-all duration-500 whitespace-nowrap px-4 md:px-10 ${activeDetailTab === 'price' ? 'bg-[#8E2B45] text-white shadow-lg' : 'text-gray-900 hover:text-[#8E2B45]'}`}
                                 >
                                     Price Breakup
                                 </button>
@@ -1016,88 +1016,88 @@ const ProductDetails = () => {
                                 className="animate-in fade-in slide-in-from-bottom-4 duration-700 cursor-grab active:cursor-grabbing touch-pan-y"
                             >
                                 {activeDetailTab === 'details' ? (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
                                         {hasDiamonds && (
-                                            <div className="bg-white rounded-3xl p-8 border border-[#8E2B45]/10 shadow-[0_4px_20px_-4px_rgba(142,43,69,0.05)] flex flex-col items-center text-center">
-                                                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#8E2B45] to-[#5B1E26] flex items-center justify-center mb-8 shadow-lg transform -rotate-3 hover:rotate-0 transition-transform duration-500">
-                                                    <Sparkles className="w-7 h-7 text-white" />
+                                            <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-8 border border-[#8E2B45]/10 shadow-[0_4px_20px_-4px_rgba(142,43,69,0.05)] flex flex-col items-center text-center">
+                                                <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-[#8E2B45] to-[#5B1E26] flex items-center justify-center mb-4 md:mb-8 shadow-lg transform -rotate-3 hover:rotate-0 transition-transform duration-500">
+                                                    <Sparkles className="w-5 h-5 md:w-7 md:h-7 text-white" />
                                                 </div>
-                                                <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-[#8E2B45] mb-10 border-b border-[#8E2B45]/10 pb-2">Diamond Intelligence</h4>
-                                                <div className="grid grid-cols-2 md:grid-cols-3 gap-y-10 gap-x-6 w-full">
+                                                <h4 className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.3em] text-[#8E2B45] mb-4 md:mb-10 border-b border-[#8E2B45]/10 pb-2">Diamond Intelligence</h4>
+                                                <div className="grid grid-cols-3 gap-y-4 md:gap-y-10 gap-x-3 md:gap-x-6 w-full">
                                                     <div className="group transition-all duration-300">
-                                                        <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3 group-hover:bg-[#8E2B45]/5 transition-colors">
-                                                            <Layers className="w-4 h-4 text-gray-400 group-hover:text-[#8E2B45]" />
+                                                        <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-2 md:mb-3 group-hover:bg-[#8E2B45]/5 transition-colors">
+                                                            <Layers className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-400 group-hover:text-[#8E2B45]" />
                                                         </div>
-                                                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Type</span>
-                                                        <span className="text-[13px] font-bold text-gray-900 block capitalize">{String(diamondType).replace('_', ' ')}</span>
+                                                        <span className="text-[7px] md:text-[8px] font-bold text-gray-400 uppercase tracking-widest block mb-0.5 md:mb-1">Type</span>
+                                                        <span className="text-[11px] md:text-[13px] font-bold text-gray-900 block capitalize">{String(diamondType).replace('_', ' ')}</span>
                                                     </div>
                                                     <div className="group transition-all duration-300">
-                                                        <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3 group-hover:bg-[#8E2B45]/5 transition-colors">
-                                                            <Scale className="w-4 h-4 text-gray-400 group-hover:text-[#8E2B45]" />
+                                                        <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-2 md:mb-3 group-hover:bg-[#8E2B45]/5 transition-colors">
+                                                            <Scale className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-400 group-hover:text-[#8E2B45]" />
                                                         </div>
-                                                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Weight</span>
-                                                        <span className="text-[13px] font-bold text-gray-900 block">
+                                                        <span className="text-[7px] md:text-[8px] font-bold text-gray-400 uppercase tracking-widest block mb-0.5 md:mb-1">Weight</span>
+                                                        <span className="text-[11px] md:text-[13px] font-bold text-gray-900 block">
                                                             {currentVariant?.diamondSpecs?.carat || product.diamondWeight || currentVariant?.diamondWeight || '---'}
-                                                            <span className="text-[10px] ml-0.5">Ct</span>
+                                                            <span className="text-[9px] md:text-[10px] ml-0.5">Ct</span>
                                                         </span>
                                                     </div>
                                                     <div className="group transition-all duration-300">
-                                                        <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3 group-hover:bg-[#8E2B45]/5 transition-colors">
-                                                            <Sparkles className="w-4 h-4 text-gray-400 group-hover:text-[#8E2B45]" />
+                                                        <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-2 md:mb-3 group-hover:bg-[#8E2B45]/5 transition-colors">
+                                                            <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-400 group-hover:text-[#8E2B45]" />
                                                         </div>
-                                                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Clarity</span>
-                                                        <span className="text-[13px] font-bold text-gray-900 block">{currentVariant?.diamondSpecs?.clarity || product.diamondClarity || currentVariant?.diamondClarity || '---'}</span>
+                                                        <span className="text-[7px] md:text-[8px] font-bold text-gray-400 uppercase tracking-widest block mb-0.5 md:mb-1">Clarity</span>
+                                                        <span className="text-[11px] md:text-[13px] font-bold text-gray-900 block">{currentVariant?.diamondSpecs?.clarity || product.diamondClarity || currentVariant?.diamondClarity || '---'}</span>
                                                     </div>
                                                     <div className="group transition-all duration-300">
-                                                        <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3 group-hover:bg-[#8E2B45]/5 transition-colors">
-                                                            <Droplets className="w-4 h-4 text-gray-400 group-hover:text-[#8E2B45]" />
+                                                        <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-2 md:mb-3 group-hover:bg-[#8E2B45]/5 transition-colors">
+                                                            <Droplets className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-400 group-hover:text-[#8E2B45]" />
                                                         </div>
-                                                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Color</span>
-                                                        <span className="text-[13px] font-bold text-gray-900 block">{currentVariant?.diamondSpecs?.color || '---'}</span>
+                                                        <span className="text-[7px] md:text-[8px] font-bold text-gray-400 uppercase tracking-widest block mb-0.5 md:mb-1">Color</span>
+                                                        <span className="text-[11px] md:text-[13px] font-bold text-gray-900 block">{currentVariant?.diamondSpecs?.color || '---'}</span>
                                                     </div>
                                                     <div className="group transition-all duration-300">
-                                                        <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3 group-hover:bg-[#8E2B45]/5 transition-colors">
-                                                            <Zap className="w-4 h-4 text-gray-400 group-hover:text-[#8E2B45]" />
+                                                        <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-2 md:mb-3 group-hover:bg-[#8E2B45]/5 transition-colors">
+                                                            <Zap className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-400 group-hover:text-[#8E2B45]" />
                                                         </div>
-                                                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Cut / Shape</span>
-                                                        <span className="text-[13px] font-bold text-gray-900 block">
+                                                        <span className="text-[7px] md:text-[8px] font-bold text-gray-400 uppercase tracking-widest block mb-0.5 md:mb-1">Cut / Shape</span>
+                                                        <span className="text-[11px] md:text-[13px] font-bold text-gray-900 block">
                                                             {currentVariant?.diamondSpecs?.cut || '---'}
                                                             <span className="mx-1 text-gray-200">/</span>
                                                             {currentVariant?.diamondSpecs?.shape || '---'}
                                                         </span>
                                                     </div>
                                                     <div className="group transition-all duration-300">
-                                                        <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3 group-hover:bg-[#8E2B45]/5 transition-colors">
-                                                            <Box className="w-4 h-4 text-gray-400 group-hover:text-[#8E2B45]" />
+                                                        <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-2 md:mb-3 group-hover:bg-[#8E2B45]/5 transition-colors">
+                                                            <Box className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-400 group-hover:text-[#8E2B45]" />
                                                         </div>
-                                                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Count</span>
-                                                        <span className="text-[13px] font-bold text-gray-900 block">{currentVariant?.diamondSpecs?.diamondCount || product.diamondCount || currentVariant?.diamondCount || '---'}</span>
+                                                        <span className="text-[7px] md:text-[8px] font-bold text-gray-400 uppercase tracking-widest block mb-0.5 md:mb-1">Count</span>
+                                                        <span className="text-[11px] md:text-[13px] font-bold text-gray-900 block">{currentVariant?.diamondSpecs?.diamondCount || product.diamondCount || currentVariant?.diamondCount || '---'}</span>
                                                     </div>
                                                 </div>
                                             </div>
                                         )}
 
-                                        <div className={`${hasDiamonds ? '' : 'md:col-span-2 max-w-lg mx-auto w-full'} bg-gray-50 rounded-2xl p-6 border border-gray-100 flex flex-col items-center text-center`}>
-                                            <div className="w-12 h-12 rounded-full bg-[#9C5B61]/10 flex items-center justify-center mb-6">
-                                                <ShieldCheck className="w-6 h-6 text-[#9C5B61]" />
+                                        <div className={`${hasDiamonds ? '' : 'md:col-span-2 max-w-lg mx-auto w-full'} bg-gray-50 rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-100 flex flex-col items-center text-center`}>
+                                            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#9C5B61]/10 flex items-center justify-center mb-3 md:mb-6">
+                                                <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 text-[#9C5B61]" />
                                             </div>
-                                            <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-8">Metal & Authentication</h4>
-                                            <div className="grid grid-cols-2 gap-y-6 gap-x-8 w-full">
-                                                <div className="space-y-1">
-                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Metal</span>
-                                                    <span className="text-xs font-semibold text-gray-900 block">{product.material || product.metal || '925 Silver'}</span>
+                                            <h4 className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-4 md:mb-8">Metal & Authentication</h4>
+                                            <div className="grid grid-cols-2 gap-y-3 md:gap-y-6 gap-x-6 md:gap-x-8 w-full">
+                                                <div className="space-y-0.5 md:space-y-1">
+                                                    <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Metal</span>
+                                                    <span className="text-[11px] md:text-xs font-semibold text-gray-900 block">{product.material || product.metal || '925 Silver'}</span>
                                                 </div>
-                                                <div className="space-y-1">
-                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Purity</span>
-                                                    <span className="text-xs font-semibold text-gray-900 block">{product.silverCategory || product.purity || '---'}</span>
+                                                <div className="space-y-0.5 md:space-y-1">
+                                                    <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Purity</span>
+                                                    <span className="text-[11px] md:text-xs font-semibold text-gray-900 block">{product.silverCategory || product.purity || '---'}</span>
                                                 </div>
-                                                <div className="space-y-1">
-                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Weight</span>
-                                                    <span className="text-xs font-semibold text-gray-900 block">{selectedVariantWeight || product.weight || '---'} {selectedVariantWeightUnit || product.weightUnit || 'g'}</span>
+                                                <div className="space-y-0.5 md:space-y-1">
+                                                    <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Weight</span>
+                                                    <span className="text-[11px] md:text-xs font-semibold text-gray-900 block">{selectedVariantWeight || product.weight || '---'} {selectedVariantWeightUnit || product.weightUnit || 'g'}</span>
                                                 </div>
-                                                <div className="space-y-1">
-                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">HUID</span>
-                                                    <span className="text-xs font-semibold text-emerald-700 block uppercase tracking-tighter">{product.huid || 'SANDS-AUTH'}</span>
+                                                <div className="space-y-0.5 md:space-y-1">
+                                                    <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest block">HUID</span>
+                                                    <span className="text-[11px] md:text-xs font-semibold text-emerald-700 block uppercase tracking-tighter">{product.huid || 'SANDS-AUTH'}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -1107,14 +1107,14 @@ const ProductDetails = () => {
                                         <div
                                             {...tableScroll.events}
                                             ref={tableScroll.ref}
-                                            className={`bg-gray-50/50 rounded-2xl border border-gray-100 overflow-x-auto custom-scrollbar shadow-sm ${tableScroll.isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'}`}
+                                            className={`bg-gray-50/50 rounded-xl md:rounded-2xl border border-gray-100 overflow-x-auto custom-scrollbar shadow-sm ${tableScroll.isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'}`}
                                         >
                                             <table className="w-full text-left border-collapse">
                                                 <thead>
                                                     <tr className="border-b border-gray-100">
-                                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Component</th>
-                                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">Rate/Qty</th>
-                                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">Value</th>
+                                                        <th className="px-3 md:px-6 py-2.5 md:py-4 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-400">Component</th>
+                                                        <th className="px-3 md:px-6 py-2.5 md:py-4 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">Rate/Qty</th>
+                                                        <th className="px-3 md:px-6 py-2.5 md:py-4 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">Value</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-gray-50">
@@ -1125,21 +1125,21 @@ const ProductDetails = () => {
                                                         { label: `GST (${gstPercent}%)`, rate: '-', value: pricingBreakdown.gst }
                                                     ].map((item, idx) => (
                                                         <tr key={idx} className="hover:bg-white transition-colors">
-                                                            <td className="px-6 py-4 text-[11px] font-bold text-gray-700 uppercase tracking-tight">{item.label}</td>
-                                                            <td className="px-6 py-4 text-[11px] font-semibold text-gray-500 text-right">{item.rate}</td>
-                                                            <td className="px-6 py-4 text-[11px] font-bold text-gray-900 text-right">{formatCurrency(item.value)}</td>
+                                                            <td className="px-3 md:px-6 py-2.5 md:py-4 text-[10px] md:text-[11px] font-bold text-gray-700 uppercase tracking-tight">{item.label}</td>
+                                                            <td className="px-3 md:px-6 py-2.5 md:py-4 text-[10px] md:text-[11px] font-semibold text-gray-500 text-right">{item.rate}</td>
+                                                            <td className="px-3 md:px-6 py-2.5 md:py-4 text-[10px] md:text-[11px] font-bold text-gray-900 text-right">{formatCurrency(item.value)}</td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
                                                 <tfoot>
                                                     <tr className="bg-[#8E2B45]/5 border-t border-[#8E2B45]/10">
-                                                        <td colSpan="2" className="px-6 py-5 text-[11px] font-black text-[#8E2B45] uppercase tracking-[0.2em]">Total Price</td>
-                                                        <td className="px-6 py-5 text-lg font-black text-[#8E2B45] text-right">{formatCurrency(pricingBreakdown.finalPrice || variantPrice || 0)}</td>
+                                                        <td colSpan="2" className="px-3 md:px-6 py-3 md:py-5 text-[10px] md:text-[11px] font-black text-[#8E2B45] uppercase tracking-[0.2em]">Total Price</td>
+                                                        <td className="px-3 md:px-6 py-3 md:py-5 text-base md:text-lg font-black text-[#8E2B45] text-right">{formatCurrency(pricingBreakdown.finalPrice || variantPrice || 0)}</td>
                                                     </tr>
                                                 </tfoot>
                                             </table>
                                         </div>
-                                        <p className="mt-4 text-[9px] text-gray-400 text-center font-bold uppercase tracking-widest italic">* Final price includes all applicable taxes and insured shipping.</p>
+                                        <p className="mt-3 md:mt-4 text-[8px] md:text-[9px] text-gray-400 text-center font-bold uppercase tracking-widest italic">* Final price includes all applicable taxes and insured shipping.</p>
                                     </div>
                                 )}
                             </motion.div>
@@ -1312,15 +1312,11 @@ const ProductDetails = () => {
             )}
 
             {/* Mobile Sticky Bottom Action Bar - Always functional */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 p-3 z-[150] md:hidden flex gap-3 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] pb-safe animate-in slide-in-from-bottom duration-500">
-                <div className="flex flex-col justify-center px-2">
-                    <span className="text-[8px] uppercase tracking-wider text-gray-400 font-bold mb-0.5">Total</span>
-                    <span className="text-lg font-bold text-black tracking-tight">{formatCurrency(variantPrice)}</span>
-                </div>
+            <div className="fixed bottom-16 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 px-4 py-2.5 z-[150] md:hidden shadow-[0_-10px_30px_rgba(0,0,0,0.1)] animate-in slide-in-from-bottom duration-500">
                 <button
                     onClick={handleAddToCart}
                     disabled={!canAddToCart}
-                    className={`flex-1 rounded-xl h-11 font-bold uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-xl ${canAddToCart
+                    className={`w-full rounded-xl h-10 font-bold uppercase tracking-[0.15em] text-[11px] flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-lg ${canAddToCart
                         ? 'bg-[#8E2B45] text-white shadow-[#8E2B45]/20 hover:bg-[#5B1E26]'
                         : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                         }`}

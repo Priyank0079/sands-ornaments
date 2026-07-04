@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { Input } from '../common/FormControls';
 import { adminService } from '../../services/adminService';
 import { buildMenShopPath } from '../../../user/utils/menNavigation';
+import { useDraftState } from '../../hooks/useDraftState';
 
 const createItemId = () => `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
@@ -77,16 +78,14 @@ const MenPickYourGlamEditor = ({ sectionData, onSave, defaultSection = {} }) => 
         return normalizeInitialItems(source);
     }, [defaultSection?.items, sectionData?.items]);
 
-    const [settings, setSettings] = useState(initialSettings);
-    const [items, setItems] = useState(initialItems);
+    const [settings, setSettings] = useDraftState(`draft_settings_${sectionData?.sectionKey || sectionData?.id || ''}_${sectionData?.pageKey || ''}`, initialSettings);
+    const [items, setItems] = useDraftState(`draft_items_${sectionData?.sectionKey || sectionData?.id || ''}_${sectionData?.pageKey || ''}`, initialItems);
 
     useEffect(() => {
         setSettings(initialSettings);
     }, [initialSettings]);
 
-    useEffect(() => {
-        setItems(initialItems);
-    }, [initialItems]);
+    
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -248,6 +247,11 @@ const MenPickYourGlamEditor = ({ sectionData, onSave, defaultSection = {} }) => 
                                         Change Image
                                         <input type="file" accept="image/*" className="hidden" onChange={(event) => handleImageUpload(item.id, event.target.files?.[0])} />
                                     </label>
+                                        <div className="text-center mt-2 w-full">
+                                            <p className="text-[9px] text-amber-600 font-bold uppercase tracking-wider bg-amber-50 px-2 py-1 rounded border border-amber-200 inline-block w-full">
+                                                ✨ Recommended: 1080x1080px (1:1)
+                                            </p>
+                                        </div>
                                 </div>
 
                                 <div className="grid grid-cols-1 gap-4">

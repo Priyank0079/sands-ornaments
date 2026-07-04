@@ -188,8 +188,17 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
                     <button
                         onClick={handleWishlist}
                         className={`absolute top-2 right-2 z-20 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm transition-all transform hover:scale-110 ${isWishlisted ? 'text-[#8E2B45]' : 'text-gray-400 hover:text-rose-500'}`}
+                        title="Add to Wishlist"
                     >
                         <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
+                    </button>
+
+                    <button
+                        onClick={handleAddToCart}
+                        className="absolute top-2 right-12 z-20 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm transition-all transform hover:scale-110 text-gray-400 hover:text-[#8E2B45]"
+                        title="Add to Cart"
+                    >
+                        <ShoppingBag className="w-4 h-4" />
                     </button>
 
                     <div className="absolute bottom-2 left-2 z-10 bg-white/95 px-1.5 py-0.5 rounded-sm flex items-center gap-1 shadow-sm border border-gray-100">
@@ -226,8 +235,8 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
                     
                     <div className="w-full">
                         <button 
-                            onClick={handleAddToCart}
-                            className="w-full bg-[#1A1A1A] text-white font-bold text-[11px] py-3 rounded-none hover:bg-black transition-all duration-300 uppercase tracking-[0.15em] active:scale-[0.98]"
+                            onClick={handleProductOpen}
+                            className="w-full bg-[#8E2B45] text-white font-bold text-[11px] py-3 rounded-none hover:bg-[#722237] transition-all duration-300 uppercase tracking-[0.15em] active:scale-[0.98] flex items-center justify-center gap-2"
                         >
                             Shop Now
                         </button>

@@ -57,33 +57,35 @@ const CategoryGrid = () => {
                         <Link
                             key={category.id}
                             to={category.path}
-                            className="flex flex-col items-center group/item cursor-pointer shrink-0 snap-start"
+                            className="flex flex-col group/item cursor-pointer shrink-0 snap-start bg-white rounded-xl shadow-sm hover:shadow-lg border border-gray-100 hover:border-[#fce7e8] overflow-hidden w-[120px] md:w-[160px] transition-all duration-300"
                         >
-                            <div className="relative w-[110px] h-[110px] md:w-[155px] md:h-[155px] mb-3 overflow-hidden rounded-[40px] border border-[#fce7e8] group-hover/item:border-[#9C5B61] transition-all duration-300 shadow-sm">
+                            <div className="relative w-full aspect-square overflow-hidden bg-gray-50">
                                 <img
                                     src={category.image}
                                     alt={category.name}
                                     loading={index < 4 ? 'eager' : 'lazy'}
                                     decoding={index < 4 ? 'sync' : 'async'}
-                                    className="w-full h-full object-cover group-hover/item:scale-105 transition-transform duration-500"
+                                    className="w-full h-full object-cover group-hover/item:scale-110 transition-transform duration-700 ease-out"
                                 />
                                 {category.badge ? (
-                                    <div className="absolute top-2 right-2 bg-[#9C5B61] text-white text-[7px] md:text-[9px] px-2 py-0.5 rounded-full flex items-center gap-1 shadow-md uppercase font-bold tracking-wider">
+                                    <div className="absolute top-2 right-2 bg-[#9C5B61] text-white text-[7px] md:text-[9px] px-2 py-0.5 rounded-full flex items-center gap-1 shadow-md uppercase font-bold tracking-wider z-20">
                                         <span className="text-[10px]">{'\u2728'}</span>
                                         {category.badge}
                                     </div>
                                 ) : null}
 
                                 {/* Sliding Button Overlay */}
-                                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#9C5B61] to-[#D39A9F] py-2 md:py-3.5 transform translate-y-full group-hover/item:translate-y-0 transition-transform duration-500 ease-in-out flex items-center justify-center shadow-[0_-4px_15px_rgba(0,0,0,0.1)]">
-                                    <span className="text-[8px] md:text-[10px] font-black text-white uppercase tracking-[0.3em] flex items-center gap-1">
-                                        Shop Now <ChevronRight className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#9C5B61] to-[#D39A9F] py-2 md:py-3 transform translate-y-full group-hover/item:translate-y-0 transition-transform duration-500 ease-in-out flex items-center justify-center shadow-[0_-4px_15px_rgba(0,0,0,0.1)] z-10">
+                                    <span className="text-[8px] md:text-[9px] font-black text-white uppercase tracking-[0.2em] flex items-center gap-1">
+                                        Explore <ChevronRight className="w-3 h-3 md:w-3" />
                                     </span>
                                 </div>
                             </div>
-                            <span className="text-[13px] md:text-[15px] font-medium text-gray-800 group-hover/item:text-[#9C5B61] transition-colors text-center tracking-tight leading-tight">
-                                {category.name}
-                            </span>
+                            <div className="p-3 text-center bg-white border-t border-gray-50">
+                                <span className="text-[12px] md:text-[14px] font-bold text-gray-800 group-hover/item:text-[#9C5B61] transition-colors tracking-tight">
+                                    {category.name}
+                                </span>
+                            </div>
                         </Link>
                     ))}
                 </div>

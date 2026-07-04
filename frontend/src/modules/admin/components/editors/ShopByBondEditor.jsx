@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { adminService } from '../../services/adminService';
 import { Input } from '../common/FormControls';
 import { resolveLegacyCmsAsset } from '../../../user/utils/legacyCmsAssets';
+import { useDraftState } from '../../hooks/useDraftState';
 
 const HOME_BOND_OPTIONS = [
     { value: 'wife', label: 'Wife' },
@@ -94,8 +95,8 @@ const ShopByBondEditor = ({ sectionData, onSave, defaultSection = {} }) => {
         }));
     }, [defaultSection?.items, isFamilyRelationEditor, sectionData?.items]);
 
-    const [settings, setSettings] = useState(initialSettings);
-    const [items, setItems] = useState(initialItems);
+    const [settings, setSettings] = useDraftState(`draft_settings_${sectionData?.sectionKey || sectionData?.id || ''}_${sectionData?.pageKey || ''}`, initialSettings);
+    const [items, setItems] = useDraftState(`draft_items_${sectionData?.sectionKey || sectionData?.id || ''}_${sectionData?.pageKey || ''}`, initialItems);
     const [saving, setSaving] = useState(false);
     const [editingCardId, setEditingCardId] = useState(null);
 
@@ -347,6 +348,11 @@ const ShopByBondEditor = ({ sectionData, onSave, defaultSection = {} }) => {
                                             }}
                                         />
                                     </label>
+                                        <div className="text-center mt-2 w-full">
+                                            <p className="text-[9px] text-amber-600 font-bold uppercase tracking-wider bg-amber-50 px-2 py-1 rounded border border-amber-200 inline-block w-full">
+                                                ✨ Recommended: 1080x1080px (1:1)
+                                            </p>
+                                        </div>
                                 </div>
 
                                 <div className="grid grid-cols-1 gap-4">

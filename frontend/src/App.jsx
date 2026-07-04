@@ -20,6 +20,7 @@ import SmoothScrollProvider from './components/SmoothScrollProvider';
 import { usePageTracking } from './hooks/useAnalytics';
 import LeadCapturePopup from './modules/user/components/LeadCapturePopup';
 import CookieConsent from './modules/user/components/CookieConsent';
+import MobileBottomNav from './modules/user/components/MobileBottomNav';
 
 // Admin Imports — lazy loaded (only used on /admin/* routes, never by mobile users)
 const AdminLogin = lazy(() => import('./modules/admin/pages/Login'));
@@ -192,7 +193,7 @@ const AppContent = () => {
           <div className={`h-[104px] ${showMetalToggle ? 'md:h-[226px]' : 'md:h-[166px]'} w-full`}></div>
         </>
       )}
-      <main className={`flex-grow ${!isAdminPath && !isSellerPath && !isScannerPath ? 'md:pb-0' : ''}`}>
+      <main className={`flex-grow ${!isAdminPath && !isSellerPath && !isScannerPath ? 'pb-16 md:pb-0' : ''}`}>
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
           {/* User Routes */}
@@ -316,6 +317,7 @@ const AppContent = () => {
         <>
           <Footer />
           <WhatsAppFloating />
+          <MobileBottomNav />
         </>
       )}
     </div>

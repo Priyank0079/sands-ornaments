@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Heart, Star } from 'lucide-react';
+import { Heart, Star, ShoppingBag } from 'lucide-react';
 import { useHomepageCms } from '../hooks/useHomepageCms';
 
 import price999 from '@assets/price_under_999.png';
@@ -122,6 +122,11 @@ const PriceRangeShowcase = () => {
                                             <Heart className="w-4 h-4" />
                                         </div>
 
+                                        {/* Cart Icon */}
+                                        <div className="absolute top-2 right-12 z-20 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm text-gray-400">
+                                            <ShoppingBag className="w-4 h-4" />
+                                        </div>
+
                                         {/* Rating Badge Overlay */}
                                         <div className="absolute bottom-2 left-2 z-10 bg-white/95 px-1.5 py-0.5 rounded-sm flex items-center gap-1 shadow-sm border border-gray-100">
                                             <span className="text-[10px] font-bold text-gray-800">{rating}</span>
@@ -149,8 +154,8 @@ const PriceRangeShowcase = () => {
                                         </div>
                                         
                                         {/* Action Button */}
-                                        <div className="mt-auto">
-                                            <div className="w-full bg-[#1F1F1F] text-white font-bold text-[11px] py-3 rounded-sm group-hover/card:bg-[#C9A24D] transition-all duration-500 uppercase tracking-[0.2em] text-center shadow-lg">
+                                        <div className="mt-auto w-full">
+                                            <div className="w-full bg-[#8E2B45] text-white font-bold text-[11px] py-3 rounded-none group-hover/card:bg-[#722237] transition-all duration-300 uppercase tracking-[0.15em] text-center shadow-lg">
                                                 Shop Now
                                             </div>
                                         </div>

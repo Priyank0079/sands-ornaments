@@ -497,9 +497,9 @@ const ProductVariantsTab = ({
                                                 <span className="text-[8px] font-bold text-gray-400 uppercase">Custom overrides</span>
                                             </div>
                                             <div className="bg-gray-50 rounded-3xl p-4 sm:p-6 border border-gray-100 space-y-4">
-                                                <div className="flex flex-wrap gap-3">
+                                                <div className="flex flex-col gap-3">
                                                     {!isViewMode && (
-                                                        <label className="px-5 py-3 bg-white border border-gray-200 rounded-2xl text-[9px] font-black uppercase tracking-widest text-gray-700 hover:border-[#3E2723] hover:text-[#3E2723] transition-all cursor-pointer shadow-sm">
+                                                        <label className="px-5 py-3 self-start bg-white border border-gray-200 rounded-2xl text-[9px] font-black uppercase tracking-widest text-gray-700 hover:border-[#3E2723] hover:text-[#3E2723] transition-all cursor-pointer shadow-sm">
                                                             <div className="flex items-center gap-2">
                                                                 <ImagePlus size={14} /> Upload Images
                                                             </div>
@@ -512,6 +512,9 @@ const ProductVariantsTab = ({
                                                             />
                                                         </label>
                                                     )}
+                                                    <p className="text-[10px] text-amber-600 font-bold uppercase tracking-widest bg-amber-50 px-2.5 py-1.5 rounded border border-amber-200 w-fit">
+                                                        ✨ Recommended Size: 1080x1080px (1:1 Ratio)
+                                                    </p>
                                                 </div>
                                                 
                                                 <div className="grid grid-cols-3 gap-3">

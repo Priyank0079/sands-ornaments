@@ -3,6 +3,7 @@ import { Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Input, TextArea } from '../common/FormControls';
 import { adminService } from '../../services/adminService';
+import { useDraftState } from '../../hooks/useDraftState';
 
 const ChitChatSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     const initialSettings = useMemo(() => {
@@ -18,7 +19,7 @@ const ChitChatSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         };
     }, [defaultItems, sectionData?.settings]);
 
-    const [settings, setSettings] = useState(initialSettings);
+    const [settings, setSettings] = useDraftState(`draft_settings_${sectionData?.sectionKey || sectionData?.id || ''}_${sectionData?.pageKey || ''}`, initialSettings);
 
     const updateSetting = (field, value) => {
         setSettings((prev) => ({ ...prev, [field]: value }));
@@ -87,6 +88,11 @@ const ChitChatSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                             onChange={(event) => handleImageUpload(event.target.files?.[0])}
                         />
                     </label>
+                                        <div className="text-center mt-2 w-full">
+                                            <p className="text-[9px] text-amber-600 font-bold uppercase tracking-wider bg-amber-50 px-2 py-1 rounded border border-amber-200 inline-block w-full">
+                                                ✨ Recommended: 1080x1080px (1:1)
+                                            </p>
+                                        </div>
                 </div>
 
                 <div className="space-y-4">

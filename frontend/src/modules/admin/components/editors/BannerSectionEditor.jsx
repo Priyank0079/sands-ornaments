@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { adminService } from '../../services/adminService';
 import { FormSection, Input } from '../common/FormControls';
 import { resolveLegacyCmsAsset } from '../../../user/utils/legacyCmsAssets';
+import { useDraftState } from '../../hooks/useDraftState';
 
 const createBannerItem = () => ({
     id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
@@ -60,16 +61,14 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         return [createBannerItem()];
     }, [defaultItems, isSingleBannerSection, sectionData?.items]);
 
-    const [items, setItems] = useState(initialItems);
+    const [items, setItems] = useDraftState(`draft_items_${sectionData?.sectionKey || sectionData?.id || ''}_${sectionData?.pageKey || ''}`, initialItems);
     const [settings, setSettings] = useState({
         autoplayMs: sectionData?.settings?.autoplayMs || 3000
     });
     const [saving, setSaving] = useState(false);
     const [categories, setCategories] = useState([]);
 
-    useEffect(() => {
-        setItems(initialItems);
-    }, [initialItems]);
+    
 
     useEffect(() => {
         setSettings({
@@ -224,9 +223,11 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                         </div>
                                     )}
                                 </div>
-                                <p className="text-[11px] leading-4 text-gray-500">
-                                    {recommendedRatioText}
-                                </p>
+                                <div className="mt-2 inline-block">
+                                    <p className="text-[10px] text-amber-600 font-bold uppercase tracking-widest bg-amber-50 px-2.5 py-1.5 rounded border border-amber-200">
+                                        ✨ {recommendedRatioText}
+                                    </p>
+                                </div>
                                 <label className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#3E2723] px-4 py-3 text-xs font-bold uppercase tracking-widest text-white hover:bg-[#2D1B18] transition-all cursor-pointer">
                                     <ImageIcon size={14} />
                                     Change Image

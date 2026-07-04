@@ -100,7 +100,7 @@ const PromoSlider = () => {
     }, [slides.length]);
 
     return (
-        <section 
+        <section
             className="w-full bg-white pt-0 pb-0 overflow-hidden select-none"
             onMouseEnter={() => setIsSuspended(true)}
             onMouseLeave={() => setIsSuspended(false)}
@@ -108,8 +108,8 @@ const PromoSlider = () => {
             <div className="relative w-full h-[200px] sm:h-[220px] md:h-[350px]">
                 <motion.div
                     className="flex h-full w-full gap-[1.5%]"
-                    animate={{ 
-                        x: `calc(4.25% - ${currentIndex * 90}% - ${currentIndex * 1.5}%)` 
+                    animate={{
+                        x: `calc(4.25% - ${currentIndex * 90}% - ${currentIndex * 1.5}%)`
                     }}
                     transition={{
                         type: "spring",
@@ -120,13 +120,13 @@ const PromoSlider = () => {
                     onAnimationComplete={handleTransitionEnd}
                 >
                     {extendedSlides.map((slide, idx) => (
-                        <div 
+                        <div
                             key={`${idx}-${slide.id}`}
                             className="relative flex-shrink-0 w-[90%] h-full rounded-lg md:rounded-2xl overflow-hidden shadow-2xl bg-gray-50 group"
                         >
                             {/* Professional Gradient Overlay for Text Readability */}
                             <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent pointer-events-none z-[5]" />
-                            
+
                             <img
                                 src={slide.image}
                                 alt={slide.title}
@@ -135,7 +135,7 @@ const PromoSlider = () => {
                                 decoding={idx === 1 ? 'sync' : 'async'}
                                 className="absolute inset-0 w-full h-full object-cover pointer-events-none group-hover:scale-110 transition-transform duration-[4000ms] ease-out"
                             />
-                            
+
                             {/* Subtle Brand Watermark */}
                             <div className="absolute top-3 left-4 md:top-8 md:left-12 z-20">
                                 <span className="bg-white/10 backdrop-blur-md border border-white/20 text-white text-[8px] md:text-[10px] font-bold uppercase tracking-[0.3em] px-3 py-1.5 rounded-sm">
@@ -157,7 +157,7 @@ const PromoSlider = () => {
                                             {slide.tag}
                                         </span>
                                     </div>
-                                    
+
                                     <h2 className="font-serif text-2xl md:text-5xl font-bold leading-tight mb-1 md:mb-3 drop-shadow-lg max-w-[90%] md:max-w-xl">
                                         {slide.title}
                                     </h2>
@@ -165,7 +165,7 @@ const PromoSlider = () => {
                                     <p className="text-white/80 text-[10px] md:text-base font-light leading-relaxed mb-3 md:mb-6 max-w-md tracking-wide line-clamp-2 md:line-clamp-none">
                                         {slide.subtitle}
                                     </p>
-                                    
+
                                     <Link
                                         to={slide.link}
                                         className="relative group inline-flex items-center justify-center bg-[#9C5B61] text-white hover:bg-white hover:text-[#9C5B61] font-bold text-[10px] md:text-sm uppercase tracking-[0.2em] px-6 py-2.5 md:px-12 md:py-4 transition-all duration-300 overflow-hidden shadow-xl"
@@ -178,21 +178,28 @@ const PromoSlider = () => {
                     ))}
                 </motion.div>
 
-                {/* Tanishq-style Diamond Indicators */}
-                <div className="absolute bottom-3 md:bottom-10 left-1/2 -translate-x-1/2 z-30 flex gap-4">
+            </div>
+
+            {/* Sliding Line Indicators - Below Carousel */}
+            {slides.length > 1 && (
+                <div className="flex items-center justify-center gap-2 md:gap-3 mt-6 mb-2 relative z-10">
                     {slides.map((_, i) => {
                         const isActive = (currentIndex - 1 + slides.length) % slides.length === i;
                         return (
                             <button
                                 key={i}
                                 onClick={() => !isTransitioning && setCurrentIndex(i + 1)}
-                                className={`w-2 h-2 transition-all duration-500 transform rotate-45 border ${isActive ? 'bg-[#9C5B61] border-[#9C5B61] scale-125' : 'bg-transparent border-white/40'}`}
-                                aria-label={`Slide ${i + 1}`}
+                                className={`transition-all duration-500 rounded-full ${
+                                    isActive 
+                                        ? 'w-8 md:w-10 h-1 bg-gray-800' 
+                                        : 'w-3 md:w-4 h-1 bg-gray-300 hover:bg-gray-400'
+                                }`}
+                                aria-label={`Go to slide ${i + 1}`}
                             />
                         );
                     })}
                 </div>
-            </div>
+            )}
         </section>
     );
 };

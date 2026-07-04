@@ -44,7 +44,7 @@ const ProductGeneralTab = ({
                             error={errors.name}
                         />
                         <Input
-                            label={<span>HUID (Hallmark Unique ID) <span className="text-red-500">*</span></span>}
+                            label={<span>HUID (Hallmark Unique ID) <span className="text-gray-400 text-xs font-normal">(Optional)</span></span>}
                             value={formData.huid}
                             onChange={(e) => setFormData({ ...formData, huid: e.target.value.toUpperCase() })}
                             placeholder="e.g. ABC123"

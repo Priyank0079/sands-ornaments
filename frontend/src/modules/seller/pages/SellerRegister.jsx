@@ -97,7 +97,7 @@ const SellerRegister = () => {
             setTermsLoading(true);
             setTermsError('');
             try {
-                const res = await api.get('public/pages/seller-terms');
+                const res = await api.get('/public/pages/seller-terms');
                 const page = res.data?.data?.page || res.data?.page || null;
                 if (page?.content) {
                     setTermsContent(page.content);
@@ -239,7 +239,7 @@ const SellerRegister = () => {
             } else if (!/^[A-Z]{5}\d{4}[A-Z]{1}$/i.test(trimmedPan)) {
                 nextErrors.panNumber = 'Enter a valid PAN number';
             }
-            if (!trimmedBis) nextErrors.bisNumber = 'BIS license number is required';
+            // BIS license number is optional
         }
 
         if (stepToValidate === 4) {
@@ -556,9 +556,9 @@ const SellerRegister = () => {
                                     {errors.panNumber && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.panNumber}</p>}
                                 </div>
                                 <div className="space-y-2">
-                                    <label className={labelClasses}>BIS Hallmark License Number <span className="text-red-500">*</span></label>
+                                    <label className={labelClasses}>BIS Hallmark License Number (Optional)</label>
                                     <div className="relative group">
-                                        <input required name="bisNumber" value={formData.bisNumber} onChange={handleChange} className={inputClasses} placeholder="HM/C-1234567890" />
+                                        <input name="bisNumber" value={formData.bisNumber} onChange={handleChange} className={inputClasses} placeholder="HM/C-1234567890" />
                                         <CheckCircle2 className={iconClasses} />
                                     </div>
                                     {errors.bisNumber && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.bisNumber}</p>}

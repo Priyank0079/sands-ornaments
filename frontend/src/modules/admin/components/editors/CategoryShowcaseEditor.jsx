@@ -44,6 +44,7 @@ import giftWifeSilver from '../../../user/assets/gift_wife_silver.png';
 import giftGfSilver from '../../../user/assets/gift_gf_silver.png';
 import giftMotherSilver from '../../../user/assets/gift_mother_silver.png';
 import giftSisterSilver from '../../../user/assets/gift_sister_silver.png';
+import { useDraftState } from '../../hooks/useDraftState';
 
 const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     const navigate = useNavigate();
@@ -252,8 +253,8 @@ const CategoryShowcaseEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             : sectionData.items)
         : (defaultItems.length > 0 ? defaultItems : defaultFallbackItems);
 
-    const [items, setItems] = useState(initialItemsFromProps);
-    const [settings, setSettings] = useState(sectionData.settings || {});
+    const [items, setItems] = useDraftState(`draft_items_${sectionData?.sectionKey || sectionData?.id || ''}_${sectionData?.pageKey || ''}`, initialItemsFromProps);
+    const [settings, setSettings] = useDraftState(`draft_settings_${sectionData?.sectionKey || sectionData?.id || ''}_${sectionData?.pageKey || ''}`, sectionData.settings || {});
 
     const handleSettingChange = (field, value) => {
         setSettings(prev => ({ ...prev, [field]: value }));

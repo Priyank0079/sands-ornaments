@@ -39,7 +39,7 @@ const ShopByPrice = () => {
         ];
 
     return (
-        <section className="py-8 md:py-16 bg-[#FFFBFB]">
+        <section className="pt-8 pb-0 md:pt-16 md:pb-0 bg-white">
             <div className="container mx-auto px-4 max-w-[1240px]">
                 <div className="flex flex-col items-center mb-8 md:mb-12 text-center">
                     <motion.span

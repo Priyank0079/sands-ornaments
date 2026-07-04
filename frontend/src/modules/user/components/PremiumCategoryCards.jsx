@@ -30,7 +30,7 @@ const PremiumCategoryCards = () => {
     return (
         <section
             ref={containerRef}
-            className="pt-4 pb-2 md:pt-8 md:pb-6 bg-white overflow-visible"
+            className="pt-0 pb-2 md:pt-2 md:pb-6 bg-white overflow-visible"
         >
             <div className="container mx-auto px-4 max-w-[1100px]">
                 {/* Header */}

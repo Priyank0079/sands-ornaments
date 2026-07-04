@@ -103,13 +103,13 @@ const CategoryNav = ({ showMetalToggle = true }) => {
                 {/* Silver / Gold Toggle - Precise SANDS Polish with Navigation logic */}
                 {showMetalToggle && (
                     <div className="flex justify-center pb-1 pt-0 relative">
-                        <div className="p-0.5 rounded-full border border-[#D4B390]/40 flex items-center bg-white shadow-[0_4px_25px_rgba(212,179,144,0.15)] overflow-hidden" style={{ minWidth: '850px' }}>
+                        <div className="p-0.5 w-[400px] rounded-full border border-[#D4B390]/40 flex items-center bg-white shadow-[0_4px_25px_rgba(212,179,144,0.15)] overflow-hidden">
                             <button
                                 onClick={() => {
                                     updateActiveMetal('silver');
                                     navigate('/');
                                 }}
-                                className={`flex-1 py-1 px-16 rounded-full text-[15px] font-bold uppercase tracking-widest transition-all duration-500 transform ${activeMetal === 'silver' ? 'bg-gradient-to-r from-[#434343] via-[#C0C0C0] to-[#434343] text-white shadow-[0_8px_30px_rgba(0,0,0,0.25)] scale-[1.01]' : 'text-[#4A4A4A] hover:bg-gray-50 hover:text-black'}`}
+                                className={`flex-1 py-0.5 px-8 rounded-full text-[13px] font-bold uppercase tracking-widest transition-all duration-500 transform ${activeMetal === 'silver' ? 'bg-gradient-to-r from-[#434343] via-[#C0C0C0] to-[#434343] text-white shadow-[0_8px_30px_rgba(0,0,0,0.25)] scale-[1.01]' : 'text-[#4A4A4A] hover:bg-gray-50 hover:text-black'}`}
                             >
                                 Silver
                             </button>
@@ -118,7 +118,7 @@ const CategoryNav = ({ showMetalToggle = true }) => {
                                     updateActiveMetal('gold');
                                     navigate('/gold-collection');
                                 }}
-                                className={`flex-1 py-1 px-16 rounded-full text-[15px] font-bold uppercase tracking-widest transition-all duration-500 transform ${activeMetal === 'gold' ? 'bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] text-[#3D2B1F] shadow-[0_8px_30px_rgba(191,149,63,0.35)] scale-[1.01]' : 'text-[#4A4A4A] hover:bg-gray-50 hover:text-black'}`}
+                                className={`flex-1 py-0.5 px-8 rounded-full text-[13px] font-bold uppercase tracking-widest transition-all duration-500 transform ${activeMetal === 'gold' ? 'bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] text-[#3D2B1F] shadow-[0_8px_30px_rgba(191,149,63,0.35)] scale-[1.01]' : 'text-[#4A4A4A] hover:bg-gray-50 hover:text-black'}`}
                             >
                                 Gold
                             </button>

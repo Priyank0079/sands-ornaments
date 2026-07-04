@@ -175,6 +175,11 @@ const MenPersonalizedBannerEditor = ({ sectionData, onSave, defaultSection = {} 
                             Change Image
                             <input type="file" accept="image/*" className="hidden" onChange={(event) => handleImageUpload(event.target.files?.[0])} />
                         </label>
+                                        <div className="text-center mt-2 w-full">
+                                            <p className="text-[9px] text-amber-600 font-bold uppercase tracking-wider bg-amber-50 px-2 py-1 rounded border border-amber-200 inline-block w-full">
+                                                ✨ Recommended: 1920x1080px (16:9)
+                                            </p>
+                                        </div>
                     </div>
 
                     <div className="space-y-4">

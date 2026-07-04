@@ -7,6 +7,7 @@ import CategoryNav from '../components/CategoryNav';
 import OfferStrip from '../components/OfferStrip';
 import Footer from '../components/Footer';
 import WhatsAppFloating from '../components/WhatsAppFloating';
+import MobileBottomNav from '../components/MobileBottomNav';
 
 const UserLayout = () => {
     return (
@@ -17,11 +18,12 @@ const UserLayout = () => {
                 <CategoryNav />
                 <OfferStrip />
             </header>
-            <main className="flex-grow">
+            <main className="flex-grow pb-16 md:pb-0">
                 <Outlet />
             </main>
             <Footer />
             <WhatsAppFloating />
+            <MobileBottomNav />
         </div>
     );
 };
