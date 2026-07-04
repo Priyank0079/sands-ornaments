@@ -59,6 +59,8 @@ const CheckoutAuth = ({
                                     <input
                                         key={index}
                                         type="text"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
                                         maxLength="1"
                                         value={data}
                                         onChange={(e) => handleOtpChange(e.target, index)}

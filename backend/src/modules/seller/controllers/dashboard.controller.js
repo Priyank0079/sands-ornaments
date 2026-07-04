@@ -106,7 +106,7 @@ exports.getSellerStats = async (req, res) => {
             { $group: { _id: "$status", count: { $sum: 1 } } }
           ],
           deliveredTotals: [
-            { $match: { status: "Delivered" } },
+            { $match: { $or: [ { paymentStatus: "paid" }, { paymentStatus: "cod", status: "Delivered" } ] } },
             { $group: { _id: null, revenue: { $sum: "$sellerSubtotal" }, units: { $sum: "$sellerUnits" }, deliveredOrders: { $sum: 1 } } }
           ],
           recentOrders: [
@@ -138,14 +138,13 @@ exports.getSellerStats = async (req, res) => {
             { $sort: { _id: 1 } }
           ],
           weeklyRevenue: [
-            { $match: { status: "Delivered", createdAt: { $gte: fourWeeksAgo } } },
+            { $match: { $or: [ { paymentStatus: "paid" }, { paymentStatus: "cod", status: "Delivered" } ], createdAt: { $gte: fourWeeksAgo } } },
             {
-              $group: {
-                _id: { $dateTrunc: { date: "$createdAt", unit: "week" } },
-                revenue: { $sum: "$sellerSubtotal" }
+              $project: {
+                createdAt: 1,
+                sellerSubtotal: 1
               }
-            },
-            { $sort: { _id: 1 } }
+            }
           ]
         }
       }
@@ -177,16 +176,20 @@ exports.getSellerStats = async (req, res) => {
       return { date: day.toLocaleDateString("en-US", { weekday: "short" }), count };
     });
 
-    // Normalize weekly revenue to 4 buckets (stable UI label).
+    // Normalize weekly revenue to 4 buckets (stable UI label) grouped by 7-day relative windows.
     const weeklyRevenue = Array.from({ length: 4 }, (_, index) => {
-      const weekStart = new Date(today);
-      weekStart.setDate(today.getDate() - ((3 - index) * 7));
-      weekStart.setHours(0, 0, 0, 0);
-      const match = weeklyRevenueRaw.find(r => {
-        const d = new Date(r._id);
-        return d.toISOString().slice(0, 10) === weekStart.toISOString().slice(0, 10);
+      const start = new Date(fourWeeksAgo);
+      start.setDate(fourWeeksAgo.getDate() + index * 7);
+      const end = new Date(start);
+      end.setDate(start.getDate() + 7);
+
+      const matchingOrders = weeklyRevenueRaw.filter(order => {
+        const orderDate = new Date(order.createdAt);
+        return orderDate >= start && orderDate < end;
       });
-      return { week: `W${index + 1}`, revenue: Number(match?.revenue || 0) };
+
+      const revenue = matchingOrders.reduce((sum, o) => sum + (Number(o.sellerSubtotal) || 0), 0);
+      return { week: `W${index + 1}`, revenue };
     });
 
     // ---------- Category performance (top 4) ----------

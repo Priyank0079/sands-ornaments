@@ -346,6 +346,18 @@ const OrderDetailPage = () => {
                                                         <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">
                                                             {item.sku || 'No SKU'}
                                                         </div>
+                                                        {item.giftWrap && (
+                                                            <div className="mt-2 inline-flex flex-col gap-1 bg-[#FFF8F9] border border-[#FDF2F4] rounded-lg px-3 py-1.5">
+                                                                <span className="text-[9px] font-black text-[#8E2B45] uppercase tracking-wider flex items-center gap-1">
+                                                                    🎁 Gift Wrapped (+ ₹50)
+                                                                </span>
+                                                                {item.giftMessage && (
+                                                                    <span className="text-[11px] font-serif italic text-gray-700 leading-normal">
+                                                                        "{item.giftMessage}"
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                     <div className="flex flex-col gap-2 ml-4">
                                                         <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
@@ -391,6 +403,12 @@ const OrderDetailPage = () => {
                                 <div className="flex justify-between text-xs font-bold text-emerald-600">
                                     <span>Discount</span>
                                     <span>-{currency(order.discount)}</span>
+                                </div>
+                            )}
+                            {Number(order.giftWrapCharge || 0) > 0 && (
+                                <div className="flex justify-between text-xs font-bold text-gray-500">
+                                    <span>Gift Wrapping</span>
+                                    <span className="text-gray-900">{currency(order.giftWrapCharge)}</span>
                                 </div>
                             )}
                             <div className="flex justify-between text-xs font-bold text-gray-500">

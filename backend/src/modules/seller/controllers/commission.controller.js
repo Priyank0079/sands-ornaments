@@ -28,7 +28,10 @@ const buildDateRangeMatch = (from, to) => {
   }
   if (to) {
     const d = new Date(to);
-    if (!Number.isNaN(d.getTime())) match.$lte = d;
+    if (!Number.isNaN(d.getTime())) {
+      d.setHours(23, 59, 59, 999);
+      match.$lte = d;
+    }
   }
   return Object.keys(match).length === 0 ? {} : { createdAt: match };
 };
@@ -137,7 +140,10 @@ exports.getLedger = async (req, res) => {
       }
       if (req.query.to) {
         const d = new Date(req.query.to);
-        if (!Number.isNaN(d.getTime())) query.createdAt.$lte = d;
+        if (!Number.isNaN(d.getTime())) {
+          d.setHours(23, 59, 59, 999);
+          query.createdAt.$lte = d;
+        }
       }
       if (Object.keys(query.createdAt).length === 0) delete query.createdAt;
     }

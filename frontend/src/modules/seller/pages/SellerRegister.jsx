@@ -31,6 +31,11 @@ const SellerRegister = () => {
         return window.sessionStorage.getItem('sellerRegisterAcceptTerms') === 'true';
     });
     const [errors, setErrors] = useState({});
+    const [previews, setPreviews] = useState({
+        aadhar: '',
+        shopLicense: '',
+        certificate: ''
+    });
     const allowedDocTypes = [
         'image/jpeg', 
         'image/png', 
@@ -145,6 +150,39 @@ const SellerRegister = () => {
         window.sessionStorage.setItem('sellerRegisterAcceptTerms', String(acceptTerms));
     }, [acceptTerms]);
 
+    useEffect(() => {
+        let aadharUrl = '';
+        if (formData.aadhar && formData.aadhar instanceof File && formData.aadhar.type.startsWith('image/')) {
+            aadharUrl = URL.createObjectURL(formData.aadhar);
+        }
+        setPreviews(prev => ({ ...prev, aadhar: aadharUrl }));
+        return () => {
+            if (aadharUrl) URL.revokeObjectURL(aadharUrl);
+        };
+    }, [formData.aadhar]);
+
+    useEffect(() => {
+        let shopLicenseUrl = '';
+        if (formData.shopLicense && formData.shopLicense instanceof File && formData.shopLicense.type.startsWith('image/')) {
+            shopLicenseUrl = URL.createObjectURL(formData.shopLicense);
+        }
+        setPreviews(prev => ({ ...prev, shopLicense: shopLicenseUrl }));
+        return () => {
+            if (shopLicenseUrl) URL.revokeObjectURL(shopLicenseUrl);
+        };
+    }, [formData.shopLicense]);
+
+    useEffect(() => {
+        let certificateUrl = '';
+        if (formData.certificate && formData.certificate instanceof File && formData.certificate.type.startsWith('image/')) {
+            certificateUrl = URL.createObjectURL(formData.certificate);
+        }
+        setPreviews(prev => ({ ...prev, certificate: certificateUrl }));
+        return () => {
+            if (certificateUrl) URL.revokeObjectURL(certificateUrl);
+        };
+    }, [formData.certificate]);
+
     const handleChange = (e) => {
         const { name, value, files } = e.target;
         const selectedFile = files ? files[0] : null;
@@ -169,9 +207,14 @@ const SellerRegister = () => {
             return next;
         });
 
+        let val = value;
+        if (name === 'gstNumber' || name === 'panNumber' || name === 'bisNumber') {
+            val = value.toUpperCase();
+        }
+
         setFormData(prev => ({
             ...prev,
-            [name]: selectedFile || value
+            [name]: selectedFile || val
         }));
     };
 
@@ -198,7 +241,7 @@ const SellerRegister = () => {
             }
             if (!trimmedEmail) {
                 nextErrors.email = 'Email is required';
-            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+            } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(trimmedEmail)) {
                 nextErrors.email = 'Enter a valid email address';
             }
             if (!data.password?.trim()) {
@@ -337,14 +380,16 @@ const SellerRegister = () => {
         const getFilePreview = () => {
             if (!file) return null;
             if (file.type.startsWith('image/')) {
+                const previewUrl = previews[name];
                 return (
                     <div className="relative w-full h-full flex items-center justify-center p-2">
-                        <img 
-                            src={URL.createObjectURL(file)} 
-                            alt="preview" 
-                            className="w-full h-full object-cover rounded-xl"
-                            onLoad={(e) => URL.revokeObjectURL(e.target.src)}
-                        />
+                        {previewUrl && (
+                            <img 
+                                src={previewUrl} 
+                                alt="preview" 
+                                className="w-full h-full object-cover rounded-xl"
+                            />
+                        )}
                     </div>
                 );
             }
@@ -424,7 +469,7 @@ const SellerRegister = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#FDF5F6] flex flex-col lg:flex-row overflow-hidden">
+        <div className="min-h-screen bg-[#FDF5F6] flex flex-col lg:flex-row lg:overflow-hidden">
             {/* Left: Design/Branding */}
             <div className="hidden lg:flex lg:w-1/2 relative bg-[#3E2723] items-center justify-center p-12 overflow-hidden">
                 <img src={loginBg} className="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-overlay scale-110" alt="bg" />
@@ -436,9 +481,9 @@ const SellerRegister = () => {
             </div>
 
             {/* Right: Multi-step Form */}
-            <div className="w-full lg:w-1/2 p-6 lg:p-20 overflow-y-auto">
-                <div className="max-w-xl mx-auto space-y-10">
-                    <div className="flex justify-between items-center">
+            <div className="w-full lg:w-1/2 min-h-screen lg:h-screen flex flex-col justify-center p-6 lg:p-20 lg:overflow-hidden bg-[#FDF5F6]">
+                <div className="max-w-xl w-full mx-auto flex flex-col lg:h-full min-h-0 space-y-8 justify-center">
+                    <div className="flex justify-between items-center shrink-0">
                         <div>
                              <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tight">Partner Onboarding</h2>
                              <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mt-1 space-x-2">
@@ -452,7 +497,8 @@ const SellerRegister = () => {
                         <Link to="/seller/login" className="text-[10px] font-black text-[#8D6E63] uppercase tracking-widest hover:text-[#3E2723] transition-colors border-b-2 border-[#8D6E63]/20 pb-1">Already registered?</Link>
                     </div>
 
-                    <form onSubmit={step === 4 ? handleSubmit : handleNext} className="space-y-8">
+                    <form onSubmit={step === 4 ? handleSubmit : handleNext} className="flex-grow flex flex-col min-h-0 justify-between">
+                        <div className="flex-grow overflow-y-auto pr-2 py-1 custom-scrollbar min-h-0 space-y-6">
                         {step === 1 && (
                             <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
                                 <div className="space-y-2">
@@ -630,8 +676,9 @@ const SellerRegister = () => {
                                 </div>
                             </div>
                         )}
+                        </div>
 
-                        <div className="flex gap-4 pt-10 border-t border-gray-100">
+                        <div className="flex gap-4 pt-6 mt-4 border-t border-gray-100 shrink-0">
                             {step > 1 && (
                                 <button type="button" onClick={() => setStep(step - 1)} className="flex-1 px-8 py-5 rounded-2xl text-[10px] font-black text-white bg-[#D39A9F] uppercase tracking-[0.3em] hover:bg-[#C88B90] transition-all">Back</button>
                             )}

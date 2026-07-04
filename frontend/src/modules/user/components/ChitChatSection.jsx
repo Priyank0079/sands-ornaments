@@ -26,6 +26,13 @@ const ChitChatSection = () => {
         e.preventDefault();
         if (submitting) return;
 
+        // Front-end email validation regex matching the backend pattern
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test((formData.email || "").trim())) {
+            toast.error('Please enter a valid email address.');
+            return;
+        }
+
         setSubmitting(true);
         try {
             const res = await api.post('public/contact', {

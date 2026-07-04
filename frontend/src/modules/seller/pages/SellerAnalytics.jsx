@@ -110,7 +110,7 @@ const SellerAnalytics = () => {
           <h1 className="text-2xl font-black text-gray-900 uppercase tracking-tight">Analytics</h1>
           <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mt-1">Seller-scoped sales intelligence</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
           <div className="flex bg-gray-50 p-1 rounded-xl overflow-x-auto">
             {[
               { key: 'trend', label: 'Sales Trend' },
@@ -157,6 +157,7 @@ const SellerAnalytics = () => {
               columns={trendColumns}
               data={trend}
               emptyMessage={loading ? 'Loading...' : 'No trend data'}
+              minWidth="600px"
             />
           </div>
         </>
@@ -173,6 +174,7 @@ const SellerAnalytics = () => {
               columns={perfColumns}
               data={performance}
               emptyMessage={loading ? 'Loading...' : 'No performance data'}
+              minWidth="600px"
             />
           </div>
         </>

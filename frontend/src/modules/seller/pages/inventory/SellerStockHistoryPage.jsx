@@ -28,25 +28,29 @@ const SellerStockHistoryPage = () => {
                 });
 
                 const logs = result?.logs || [];
-                const normalized = (logs || []).map(log => ({
-                    id: log._id,
-                    date: log.createdAt,
-                    product: {
-                        name: log.productId?.name || 'Unknown',
-                        image: log.productId?.images?.[0] || ''
-                    },
-                    type: log.changeType === 'adjustment'
-                        ? 'Manual Adjustment'
-                        : (log.changeType === 'return' ? 'Return Restock' : (log.changeType === 'sale' ? 'Order Fulfilled' : 'Stock In')),
-                    change: log.change,
-                    effect: { from: log.previousStock, to: log.newStock },
-                    user: log.adminId?.name
-                        ? `Admin (${log.adminId.name})`
-                        : (log.sellerId?.shopName || log.sellerId?.fullName
-                            ? `Seller (${log.sellerId.shopName || log.sellerId.fullName})`
-                            : (log.userId?.name ? `Customer (${log.userId.name})` : 'Seller')),
-                    reason: log.reason || ''
-                }));
+                const normalized = (logs || []).map(log => {
+                    const variantObj = log.productId?.variants?.find(v => String(v._id) === String(log.variantId));
+                    const variantImage = variantObj?.variantImages?.[0] || log.productId?.images?.[0] || '';
+                    return {
+                        id: log._id,
+                        date: log.createdAt,
+                        product: {
+                            name: log.productId?.name || 'Unknown',
+                            image: variantImage
+                        },
+                        type: log.changeType === 'adjustment'
+                            ? 'Manual Adjustment'
+                            : (log.changeType === 'return' ? 'Return Restock' : (log.changeType === 'sale' ? 'Order Fulfilled' : 'Stock In')),
+                        change: log.change,
+                        effect: { from: log.previousStock, to: log.newStock },
+                        user: log.adminId?.name
+                            ? `Admin (${log.adminId.name})`
+                            : (log.sellerId?.shopName || log.sellerId?.fullName
+                                ? `Seller (${log.sellerId.shopName || log.sellerId.fullName})`
+                                : (log.userId?.name ? `Customer (${log.userId.name})` : 'Seller')),
+                        reason: log.reason || ''
+                    };
+                });
                 setHistory(normalized);
                 setPagination(result?.pagination || null);
             } catch (err) {
@@ -93,46 +97,89 @@ const SellerStockHistoryPage = () => {
         return matchesSearch && matchesFilter;
     }), [history, searchTerm, filterType]);
 
-    const exportCsv = () => {
-        if (filteredHistory.length === 0) {
-            toast.error("No stock history available to export");
-            return;
+    const exportCsv = async () => {
+        setLoading(true);
+        try {
+            const changeType = filterType === 'Adjustment'
+                ? 'adjustment'
+                : (filterType === 'Order' ? 'sale' : (filterType === 'Return' ? 'return' : undefined));
+
+            // Fetch history logs using a high limit (1000) to retrieve all records matching filters.
+            const logs = await sellerInventoryService.getStockHistory({
+                limit: 1000,
+                ...(changeType ? { changeType } : {}),
+                ...(searchTerm ? { search: searchTerm } : {})
+            });
+
+            if (!logs || logs.length === 0) {
+                toast.error("No stock history available to export");
+                return;
+            }
+
+            const normalized = logs.map(log => {
+                const variantObj = log.productId?.variants?.find(v => String(v._id) === String(log.variantId));
+                const variantImage = variantObj?.variantImages?.[0] || log.productId?.images?.[0] || '';
+                return {
+                    id: log._id,
+                    date: log.createdAt,
+                    product: {
+                        name: log.productId?.name || 'Unknown',
+                        image: variantImage
+                    },
+                    type: log.changeType === 'adjustment'
+                        ? 'Manual Adjustment'
+                        : (log.changeType === 'return' ? 'Return Restock' : (log.changeType === 'sale' ? 'Order Fulfilled' : 'Stock In')),
+                    change: log.change,
+                    effect: { from: log.previousStock, to: log.newStock },
+                    user: log.adminId?.name
+                        ? `Admin (${log.adminId.name})`
+                        : (log.sellerId?.shopName || log.sellerId?.fullName
+                            ? `Seller (${log.sellerId.shopName || log.sellerId.fullName})`
+                            : (log.userId?.name ? `Customer (${log.userId.name})` : 'Seller')),
+                    reason: log.reason || ''
+                };
+            });
+
+            const rows = [
+                ['Date', 'Time', 'Product', 'Transaction Type', 'Change', 'Previous Stock', 'New Stock', 'Actor', 'Reason'],
+                ...normalized.map((item) => {
+                    const date = new Date(item.date);
+                    return [
+                        date.toLocaleDateString(),
+                        date.toLocaleTimeString(),
+                        item.product.name,
+                        item.type,
+                        item.change,
+                        item.effect.from,
+                        item.effect.to,
+                        item.user,
+                        item.reason
+                    ];
+                })
+            ];
+
+            const csv = rows
+                .map((row) => row.map((value) => `"${String(value ?? '').replace(/"/g, '""')}"`).join(','))
+                .join('\n');
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `seller-stock-history-${Date.now()}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => {
+                URL.revokeObjectURL(url);
+            }, 1000);
+            toast.success("Stock history exported successfully");
+        } catch (err) {
+            console.error("Export CSV failed", err);
+            toast.error("Failed to export CSV");
+        } finally {
+            setLoading(false);
         }
-
-        const rows = [
-            ['Date', 'Time', 'Product', 'Transaction Type', 'Change', 'Previous Stock', 'New Stock', 'Actor', 'Reason'],
-            ...filteredHistory.map((item) => {
-                const date = new Date(item.date);
-                return [
-                    date.toLocaleDateString(),
-                    date.toLocaleTimeString(),
-                    item.product.name,
-                    item.type,
-                    item.change,
-                    item.effect.from,
-                    item.effect.to,
-                    item.user,
-                    item.reason
-                ];
-            })
-        ];
-
-        const csv = rows
-            .map((row) => row.map((value) => `"${String(value ?? '').replace(/"/g, '""')}"`).join(','))
-            .join('\n');
-
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `seller-stock-history-${Date.now()}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        setTimeout(() => {
-            URL.revokeObjectURL(url);
-        }, 1000);
-        toast.success("Stock history exported");
     };
 
     return (

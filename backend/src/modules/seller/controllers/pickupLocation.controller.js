@@ -50,6 +50,16 @@ exports.createPickupLocation = async (req, res) => {
       return error(res, "Pincode must be exactly 6 digits", 400);
     }
 
+    const trimmedAddress = String(addressLine1 || '').trim();
+    if (trimmedAddress.length < 10) {
+      return error(res, "Address Line 1 must be at least 10 characters long.", 400);
+    }
+    const hasDigits = /\d/.test(trimmedAddress);
+    const hasAddressKeywords = /(road|plot|house|flat|building|bldg|no|floor|block|ward|street|st|lane|society|apartments|apt)/i.test(trimmedAddress);
+    if (!hasDigits && !hasAddressKeywords) {
+      return error(res, "Address Line 1 must contain a house number, flat number, road name, or plot number (e.g. Flat 101 or Road No. 5).", 400);
+    }
+
     // If this is flagged as default, unset other defaults for this seller
     if (isDefault) {
       await PickupLocation.updateMany({ sellerId }, { isDefault: false });
@@ -150,6 +160,18 @@ exports.updatePickupLocation = async (req, res) => {
     }
     if (pincode !== undefined && !/^\d{6}$/.test(String(pincode).trim())) {
       return error(res, "Pincode must be exactly 6 digits", 400);
+    }
+
+    if (addressLine1 !== undefined) {
+      const trimmedAddress = String(addressLine1 || '').trim();
+      if (trimmedAddress.length < 10) {
+        return error(res, "Address Line 1 must be at least 10 characters long.", 400);
+      }
+      const hasDigits = /\d/.test(trimmedAddress);
+      const hasAddressKeywords = /(road|plot|house|flat|building|bldg|no|floor|block|ward|street|st|lane|society|apartments|apt)/i.test(trimmedAddress);
+      if (!hasDigits && !hasAddressKeywords) {
+        return error(res, "Address Line 1 must contain a house number, flat number, road name, or plot number (e.g. Flat 101 or Road No. 5).", 400);
+      }
     }
 
     // Apply updates

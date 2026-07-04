@@ -34,7 +34,7 @@ exports.submitContactForm = async (req, res) => {
     });
 
     const mailResult = await sendEmail({
-      email: recipient,
+      to: recipient,
       subject: `New Contact Form Message from ${name}`,
       message:
 `New contact form message received.

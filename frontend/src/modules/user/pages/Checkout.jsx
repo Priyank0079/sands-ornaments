@@ -52,12 +52,31 @@ const Checkout = () => {
     const [giftCardInput, setGiftCardInput] = useState('');
     const [giftCardLoading, setGiftCardLoading] = useState(false);
     const [appliedGiftCards, setAppliedGiftCards] = useState([]);
-    const giftCardDiscount = appliedGiftCards.reduce((acc, gc) => acc + gc.amountUsed, 0);
 
     // Calculate totals
     const subtotal = cart.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
-    const shipping = subtotal > 499 ? 0 : 50;
-    const total = Math.max(0, subtotal + shipping - discount - giftCardDiscount);
+    const giftWrapCharge = cart.reduce((acc, item) => acc + (item.giftWrap ? 50 : 0), 0);
+    const gstIncluded = cart.reduce((acc, item) => acc + ((Number(item.gst || item.selectedVariant?.gst || 0)) * (item.quantity || 1)), 0);
+    const shipping = (appliedCoupon?.isFreeShipping || (subtotal - discount + giftWrapCharge) > 499) ? 0 : 50;
+
+    // Dynamically compute gift card discount based on current remaining balance
+    const hasGiftCard = cart.some(item => item.isGiftCard || String(item.id || '').startsWith('GIFT_CARD_'));
+    let remainingToPay = Math.max(0, subtotal + giftWrapCharge + shipping - discount);
+    const computedGiftCards = appliedGiftCards.map(gc => {
+        const amountUsed = Math.min(gc.balance, remainingToPay);
+        remainingToPay -= amountUsed;
+        return { ...gc, amountUsed };
+    });
+    const giftCardDiscount = computedGiftCards.reduce((acc, gc) => acc + gc.amountUsed, 0);
+    const total = Math.max(0, subtotal + giftWrapCharge + shipping - discount - giftCardDiscount);
+
+    // Force Prepaid if order contains a gift card
+    useEffect(() => {
+        if (hasGiftCard && paymentMethod !== 'online') {
+            setPaymentMethod('online');
+            toast.error('Cash on Delivery is not available for orders containing Gift Cards.');
+        }
+    }, [hasGiftCard, paymentMethod]);
 
     // Get active coupons from context
     const availableCoupons = coupons ? coupons.filter(c => c.active !== false) : [];
@@ -85,18 +104,18 @@ const Checkout = () => {
         if (appliedGiftCards.some(gc => gc.code === code)) {
             toast.error('This gift card is already applied'); return;
         }
+        const currentRemaining = Math.max(0, subtotal + giftWrapCharge + shipping - discount - giftCardDiscount);
+        if (currentRemaining <= 0) {
+            toast.error('Your order total is already fully covered by other discounts');
+            return;
+        }
         setGiftCardLoading(true);
         try {
             const res = await api.get(`user/gift-cards/validate/${code}`);
             if (res.data.success) {
                 const { balance } = res.data.data;
-                const remainingOrderTotal = Math.max(0, subtotal + shipping - discount - giftCardDiscount);
-                const amountUsed = Math.min(balance, remainingOrderTotal);
-                if (amountUsed <= 0) {
-                    toast.error('Your order total is already fully covered by other discounts');
-                    setGiftCardLoading(false); return;
-                }
-                setAppliedGiftCards(prev => [...prev, { code, balance, amountUsed }]);
+                const amountUsed = Math.min(balance, currentRemaining);
+                setAppliedGiftCards(prev => [...prev, { code, balance }]);
                 setGiftCardInput('');
                 toast.success(`Gift card applied! ₹${amountUsed.toLocaleString('en-IN')} will be deducted`);
             } else {
@@ -122,7 +141,7 @@ const Checkout = () => {
     const handleSendOtp = async (e) => {
         e.preventDefault();
         if (phoneNumber.length === 10) {
-            const res = await sendOtp(phoneNumber);
+            const res = await sendOtp(phoneNumber, 'checkout');
             if (res.success) {
                 setLoginStep(2);
             } else {
@@ -137,7 +156,7 @@ const Checkout = () => {
         e.preventDefault();
         const enteredOtp = otp.join('');
         if (enteredOtp.length === 4) {
-            const res = await verifyOtp(phoneNumber, enteredOtp);
+            const res = await verifyOtp(phoneNumber, enteredOtp, 'checkout');
             if (res.success) {
                 setFormData(prev => ({ ...prev, phone: phoneNumber }));
             } else {
@@ -191,7 +210,7 @@ const Checkout = () => {
         };
 
         const orderId = await placeOrder({
-            addressId: addresses.find(a => a._id === defaultAddressId)?._id,
+            addressId: addressSelection === 'saved' ? selectedSavedAddressId : null,
             shippingAddress,
             paymentMethod: paymentMethod === 'online' ? 'razorpay' : 'cod',
             couponCode: appliedCoupon?.code,
@@ -205,30 +224,47 @@ const Checkout = () => {
     };
 
     useEffect(() => {
-        if (user && addresses.length > 0 && defaultAddressId) {
-            const defaultAddr = addresses.find(a => a._id === defaultAddressId);
-            if (defaultAddr) {
-                setFormData({
-                    firstName: defaultAddr.name.split(' ')[0] || '',
-                    lastName: defaultAddr.name.split(' ').slice(1).join(' ') || '',
+        if (user) {
+            if (addresses.length > 0) {
+                // Find default address or fallback to the first saved address
+                const activeAddress = addresses.find(a => String(a._id) === String(defaultAddressId) || String(a.id) === String(defaultAddressId)) || addresses[0];
+                if (activeAddress) {
+                    setFormData({
+                        firstName: activeAddress.name ? activeAddress.name.split(' ')[0] : '',
+                        lastName: activeAddress.name ? activeAddress.name.split(' ').slice(1).join(' ') : '',
+                        email: user.email || '',
+                        phone: activeAddress.phone || '',
+                        flatNo: activeAddress.flatNo || '',
+                        area: activeAddress.area || '',
+                        city: activeAddress.city || '',
+                        district: activeAddress.district || '',
+                        state: activeAddress.state || '',
+                        pincode: activeAddress.pincode || ''
+                    });
+                    setAddressSelection('saved');
+                    setSelectedSavedAddressId(activeAddress._id || activeAddress.id);
+                }
+            } else {
+                // No saved addresses, but prefill user's own details
+                setFormData(prev => ({
+                    ...prev,
+                    firstName: user.name ? user.name.split(' ')[0] : '',
+                    lastName: user.name ? user.name.split(' ').slice(1).join(' ') : '',
                     email: user.email || '',
-                    phone: defaultAddr.phone,
-                    flatNo: defaultAddr.flatNo || '',
-                    area: defaultAddr.area || '',
-                    city: defaultAddr.city,
-                    district: defaultAddr.district || '',
-                    state: defaultAddr.state || '',
-                    pincode: defaultAddr.pincode
-                });
-                setAddressSelection('saved');
-                setSelectedSavedAddressId(defaultAddr._id);
+                    phone: user.phone || ''
+                }));
+                setAddressSelection('new');
+                setSelectedSavedAddressId(null);
             }
         }
     }, [user, addresses, defaultAddressId]);
 
     useEffect(() => {
         if (cart.length === 0) {
-            navigate('/cart');
+            const timer = setTimeout(() => {
+                navigate('/cart');
+            }, 500);
+            return () => clearTimeout(timer);
         }
     }, [cart, navigate]);
 
@@ -279,21 +315,24 @@ const Checkout = () => {
                     <CheckoutPayment
                         paymentMethod={paymentMethod}
                         setPaymentMethod={setPaymentMethod}
+                        hasGiftCard={hasGiftCard}
                     />
                 </div>
 
                 <CheckoutCartSummary
                     cart={cart}
+                    gstIncluded={gstIncluded}
                     currencyText={currencyText}
                     cartItemKey={cartItemKey}
                     subtotal={subtotal}
+                    giftWrapCharge={giftWrapCharge}
                     shipping={shipping}
                     discount={discount}
                     total={total}
                     appliedCoupon={appliedCoupon}
                     setShowCouponModal={setShowCouponModal}
                     removeCoupon={removeCoupon}
-                    appliedGiftCards={appliedGiftCards}
+                    appliedGiftCards={computedGiftCards}
                     giftCardDiscount={giftCardDiscount}
                     giftCardInput={giftCardInput}
                     setGiftCardInput={setGiftCardInput}

@@ -182,6 +182,8 @@ export const ShopProvider = ({ children }) => {
         updateCoupon: cartCtx.updateCoupon,
         deleteCoupon: cartCtx.deleteCoupon,
         toggleCoupon: cartCtx.toggleCoupon,
+        toggleGiftWrap: cartCtx.toggleGiftWrap,
+        updateGiftMessage: cartCtx.updateGiftMessage,
 
         // Wishlist domain
         wishlist: wishlistCtx.wishlist,
@@ -246,6 +248,7 @@ export const ShopProvider = ({ children }) => {
         cartCtx.applyCoupon, cartCtx.clearAppliedCoupon, cartCtx.validateCoupon,
         cartCtx.getActiveCoupons, cartCtx.addCoupon, cartCtx.updateCoupon,
         cartCtx.deleteCoupon, cartCtx.toggleCoupon,
+        cartCtx.toggleGiftWrap, cartCtx.updateGiftMessage,
         // Wishlist
         wishlistCtx.wishlist, wishlistCtx.addToWishlist,
         wishlistCtx.removeFromWishlist, wishlistCtx.toggleWishlist,

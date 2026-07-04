@@ -237,6 +237,7 @@ const SellerProducts = () => {
 
     const filters = [
         {
+            value: selectedCategory,
             options: categoryOptions,
             onChange: (value) => setSelectedCategory(value)
         }
@@ -253,46 +254,41 @@ const SellerProducts = () => {
                 }}
             />
 
-            {loading ? (
-                <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-6 py-12 text-center text-sm font-semibold text-gray-500">
-                    Loading products...
+            <DataTable
+                columns={columns}
+                data={filteredProducts}
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                searchPlaceholder="Search products by name..."
+                filters={filters}
+                itemsPerPage={limit}
+                loading={loading}
+                pagination={{
+                    ...pagination,
+                    onPageChange: (nextPage) => setPage(nextPage)
+                }}
+            >
+                <div className="flex gap-2 items-center">
+                    <button
+                        onClick={() => navigate('/seller/inventory/adjust')}
+                        className="h-10 bg-white border border-gray-200 rounded-full px-4 text-xs font-semibold text-gray-700 hover:bg-[#3E2723] hover:text-white hover:border-[#3E2723] transition-all flex items-center gap-2 shrink-0 shadow-sm"
+                        title="Adjust Stock"
+                    >
+                        <TrendingUp size={14} />
+                        <span className="hidden md:inline">Adjust Stock</span>
+                        <span className="md:hidden">Adjust</span>
+                    </button>
+                    <button
+                        onClick={() => navigate('/seller/offline-sale')}
+                        className="h-10 bg-emerald-50 border border-emerald-200 rounded-full px-4 text-xs font-semibold text-emerald-700 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all flex items-center gap-2 shrink-0 shadow-sm"
+                        title="Offline Sale"
+                    >
+                        <ScanLine size={14} />
+                        <span className="hidden md:inline">Offline Sale</span>
+                        <span className="md:hidden">Offline</span>
+                    </button>
                 </div>
-            ) : (
-                <DataTable
-                    columns={columns}
-                    data={filteredProducts}
-                    searchTerm={searchTerm}
-                    setSearchTerm={setSearchTerm}
-                    searchPlaceholder="Search products by name..."
-                    filters={filters}
-                    itemsPerPage={limit}
-                    pagination={{
-                        ...pagination,
-                        onPageChange: (nextPage) => setPage(nextPage)
-                    }}
-                >
-                    <div className="flex gap-2 items-center">
-                        <button
-                            onClick={() => navigate('/seller/inventory/adjust')}
-                            className="h-10 bg-white border border-gray-200 rounded-full px-4 text-xs font-semibold text-gray-700 hover:bg-[#3E2723] hover:text-white hover:border-[#3E2723] transition-all flex items-center gap-2 shrink-0 shadow-sm"
-                            title="Adjust Stock"
-                        >
-                            <TrendingUp size={14} />
-                            <span className="hidden md:inline">Adjust Stock</span>
-                            <span className="md:hidden">Adjust</span>
-                        </button>
-                        <button
-                            onClick={() => navigate('/seller/offline-sale')}
-                            className="h-10 bg-emerald-50 border border-emerald-200 rounded-full px-4 text-xs font-semibold text-emerald-700 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all flex items-center gap-2 shrink-0 shadow-sm"
-                            title="Offline Sale"
-                        >
-                            <ScanLine size={14} />
-                            <span className="hidden md:inline">Offline Sale</span>
-                            <span className="md:hidden">Offline</span>
-                        </button>
-                    </div>
-                </DataTable>
-            )}
+            </DataTable>
         </div>
     );
 };

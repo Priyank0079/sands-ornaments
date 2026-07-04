@@ -3,6 +3,7 @@ import { Search, Save, RotateCcw, Plus, Minus, CheckCircle2, Package } from 'luc
 import { sellerInventoryService } from '../../services/sellerInventoryService';
 import toast from 'react-hot-toast';
 
+
 const SellerStockAdjustmentPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [products, setProducts] = useState([]);
@@ -21,7 +22,7 @@ const SellerStockAdjustmentPage = () => {
                 category: p.categories?.[0]?.name || 'Uncategorized',
                 stock: v.stock,
                 variantName: v.name,
-                image: p.images?.[0] || ''
+                image: v.variantImages?.[0] || p.images?.[0] || ''
             })));
             setProducts(flattened);
         } catch (err) {
@@ -237,9 +238,9 @@ const SellerStockAdjustmentPage = () => {
             </div>
 
             {pendingCount > 0 && (
-                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white p-4 rounded-2xl shadow-2xl flex items-center gap-6 z-50 animate-in slide-in-from-bottom-6 border border-gray-800 w-[90%] md:w-auto max-w-2xl">
-                    <div className="flex items-center gap-3 border-r border-gray-700 pr-6">
-                        <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center font-black text-xs">
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white p-4 rounded-2xl shadow-2xl flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-6 z-50 animate-in slide-in-from-bottom-6 border border-gray-800 w-[90%] md:w-auto max-w-2xl">
+                    <div className="flex items-center gap-3 border-b sm:border-b-0 sm:border-r border-gray-700 pb-3 sm:pb-0 pr-0 sm:pr-6 justify-center sm:justify-start">
+                        <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center font-black text-xs shrink-0">
                             {pendingCount}
                         </div>
                         <div>
@@ -247,17 +248,17 @@ const SellerStockAdjustmentPage = () => {
                             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Review before syncing</p>
                         </div>
                     </div>
-                    <div className="flex gap-3 flex-1 md:flex-initial">
+                    <div className="flex gap-3 justify-between sm:justify-start">
                         <button
                             onClick={resetAdjustments}
-                            className="px-4 py-2 hover:bg-gray-800 rounded-lg text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors"
+                            className="flex-1 sm:flex-none px-4 py-2 hover:bg-gray-800 rounded-lg text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors text-center"
                         >
                             Reset All
                         </button>
                         <button
                             onClick={handleSave}
                             disabled={saving}
-                            className="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-black uppercase tracking-widest shadow-lg shadow-emerald-900/20 transition-all flex items-center gap-2"
+                            className="flex-1 sm:flex-none px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-black uppercase tracking-widest shadow-lg shadow-emerald-900/20 transition-all flex items-center justify-center gap-2"
                         >
                             {saving ? 'Syncing...' : 'Confirm Updates'} <CheckCircle2 size={16} />
                         </button>

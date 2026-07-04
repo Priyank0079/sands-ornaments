@@ -6,6 +6,7 @@ const CheckoutCartSummary = ({
     currencyText,
     cartItemKey,
     subtotal,
+    giftWrapCharge,
     shipping,
     discount,
     total,
@@ -26,7 +27,8 @@ const CheckoutCartSummary = ({
     setCouponCode,
     handleApplyCouponValidated,
     availableCoupons,
-    couponSummary
+    couponSummary,
+    gstIncluded
 }) => {
     return (
         <div className="lg:col-span-1">
@@ -50,6 +52,11 @@ const CheckoutCartSummary = ({
                                 <p className="text-sm font-bold text-black line-clamp-2 font-display uppercase tracking-wide text-[11px]">{item.name}</p>
                                 <p className="text-xs text-gray-500 mt-1 font-serif">Qty: {item.quantity || 1}</p>
                                 <p className="text-sm font-bold text-black mt-1">{currencyText(item.price * (item.quantity || 1))}</p>
+                                {item.giftWrap && (
+                                    <p className="text-[10px] text-[#D39A9F] mt-1 flex items-center gap-1 font-sans">
+                                        🎁 Gift wrapped {item.giftMessage ? `("${item.giftMessage}")` : ''}
+                                    </p>
+                                )}
                             </div>
                         </div>
                     ))}
@@ -136,10 +143,22 @@ const CheckoutCartSummary = ({
                         <span className="font-serif">Subtotal</span>
                         <span className="text-black font-bold font-sans">{currencyText(subtotal)}</span>
                     </div>
+                    {giftWrapCharge > 0 && (
+                        <div className="flex justify-between items-center text-[#D39A9F]">
+                            <span className="font-serif">Gift Wrapping</span>
+                            <span className="font-bold font-sans">{currencyText(giftWrapCharge)}</span>
+                        </div>
+                    )}
                     <div className="flex justify-between items-center">
                         <span className="font-serif">Shipping</span>
                         <span className="font-sans font-bold">{shipping === 0 ? <span className="text-emerald-600">Free</span> : currencyText(shipping)}</span>
                     </div>
+                    {gstIncluded > 0 && (
+                        <div className="flex justify-between items-center text-gray-500 text-xs">
+                            <span className="font-serif">GST (Included)</span>
+                            <span className="font-sans font-medium">{currencyText(gstIncluded)}</span>
+                        </div>
+                    )}
                     {appliedCoupon && (
                         <div className="flex justify-between items-center text-[#D39A9F]">
                             <span className="font-serif">Coupon Discount</span>
@@ -203,7 +222,7 @@ const CheckoutCartSummary = ({
                             </button>
                         </div>
 
-                        <div className="p-6 space-y-6">
+                        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                             {/* Manual Input */}
                             <div className="flex gap-2">
                                 <input
@@ -211,12 +230,12 @@ const CheckoutCartSummary = ({
                                     placeholder="Enter Coupon Code"
                                     value={couponCode}
                                     onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                                    className="flex-1 border border-gray-200 rounded-lg px-4 py-2.5 outline-none focus:border-black font-medium uppercase placeholder:normal-case"
+                                    className="flex-1 border border-gray-200 rounded-lg px-4 py-2.5 outline-none focus:border-black font-medium uppercase placeholder:normal-case text-xs"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => handleApplyCouponValidated({ code: couponCode })}
-                                    className="bg-black text-white px-6 py-2.5 rounded-lg font-bold text-sm uppercase tracking-wider hover:bg-[#D39A9F] transition-colors"
+                                    className="bg-black text-white px-4 sm:px-6 py-2.5 rounded-lg font-bold text-xs uppercase tracking-wider hover:bg-[#D39A9F] transition-colors"
                                 >
                                     Apply
                                 </button>
@@ -224,27 +243,27 @@ const CheckoutCartSummary = ({
 
                             {/* List */}
                             <div className="space-y-3">
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Best Offers For You</p>
-                                <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
+                                <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest">Best Offers For You</p>
+                                <div className="space-y-3 max-h-[250px] sm:max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
                                     {availableCoupons.map((coupon, idx) => (
                                         <div
                                             key={idx}
-                                            className="border border-gray-200 rounded-xl p-4 hover:border-[#D39A9F] transition-all group relative overflow-hidden"
+                                            className="border border-gray-200 rounded-xl p-3 sm:p-4 hover:border-[#D39A9F] transition-all group relative overflow-hidden"
                                         >
-                                            <div className="flex justify-between items-start mb-2">
-                                                <div className="bg-[#EBCDD0]/30 px-3 py-1 rounded border border-[#EBCDD0] text-[#D39A9F] font-bold text-xs uppercase tracking-wider">
+                                            <div className="flex justify-between items-center gap-2 mb-2">
+                                                <div className="bg-[#EBCDD0]/30 px-2 sm:px-3 py-1 rounded border border-[#EBCDD0] text-[#D39A9F] font-bold text-[10px] sm:text-xs uppercase tracking-wider truncate max-w-[140px] sm:max-w-none">
                                                     {coupon.code}
                                                 </div>
                                                 <button
                                                     type="button"
                                                     onClick={() => handleApplyCouponValidated(coupon)}
-                                                    className="text-black font-bold text-xs uppercase tracking-wider hover:text-[#D39A9F] transition-colors"
+                                                    className="text-black font-bold text-[11px] sm:text-xs uppercase tracking-wider hover:text-[#D39A9F] transition-colors shrink-0 py-1 px-2 hover:bg-gray-50 rounded"
                                                 >
                                                     Apply
                                                 </button>
                                             </div>
-                                            <p className="text-sm font-bold text-black mb-0.5">Save {currencyText(typeof coupon.amount === 'number' ? coupon.amount.toFixed(0) : coupon.amount || coupon.value || 0)}</p>
-                                            <p className="text-xs text-gray-500 font-serif">{couponSummary(coupon)}</p>
+                                            <p className="text-xs sm:text-sm font-bold text-black mb-0.5">Save {currencyText(typeof coupon.amount === 'number' ? coupon.amount.toFixed(0) : coupon.amount || coupon.value || 0)}</p>
+                                            <p className="text-[10px] sm:text-xs text-gray-500 font-serif">{couponSummary(coupon)}</p>
                                         </div>
                                     ))}
                                 </div>

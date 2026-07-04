@@ -1,5 +1,5 @@
 /**
- * 🎁 GiftCard Model — Sands Ornaments
+ * 🎁 GiftCard Model — Sands Jewels
  *
  * Design decisions:
  *  - code is cryptographically unique (SANDS-XXXX-XXXX-XXXX)
@@ -14,50 +14,71 @@ const mongoose = require("mongoose");
 
 const redemptionSchema = new mongoose.Schema(
   {
-    orderId:           { type: String, required: true },
-    amountUsed:        { type: Number, required: true, min: 0 },
-    redeemedAt:        { type: Date,   default: Date.now },
-    redeemedByUserId:  { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+    orderId: { type: String, required: true },
+    amountUsed: { type: Number, required: true, min: 0 },
+    redeemedAt: { type: Date, default: Date.now },
+    redeemedByUserId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const giftCardSchema = new mongoose.Schema(
   {
     code: {
-      type:     String,
+      type: String,
       required: true,
-      unique:   true,
+      unique: true,
       uppercase: true,
-      trim:     true,
-      index:    true,
+      trim: true,
+      index: true,
     },
 
     // Face value and remaining balance
-    value:   { type: Number, required: true, min: 1 },
+    value: { type: Number, required: true, min: 1 },
     balance: { type: Number, required: true, min: 0 },
 
     status: {
-      type:    String,
-      enum:    ["pending", "active", "partially_used", "used", "expired", "disabled"],
+      type: String,
+      enum: [
+        "pending",
+        "active",
+        "partially_used",
+        "used",
+        "expired",
+        "disabled",
+      ],
       default: "active",
-      index:   true,
+      index: true,
     },
 
     // Who bought this card
-    purchasedByUserId: { type: mongoose.Schema.Types.ObjectId, ref: "User",  default: null },
-    purchasedByName:   { type: String, default: "" },
-    purchasedOrderId:  { type: String, default: null }, // order that funded this card
+    purchasedByUserId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    purchasedByName: { type: String, default: "" },
+    purchasedOrderId: { type: String, default: null }, // order that funded this card
 
     // Recipient personalization
-    recipientName:    { type: String, required: true, trim: true },
-    recipientEmail:   { type: String, required: true, trim: true, lowercase: true, index: true },
-    senderName:       { type: String, required: true, trim: true },
-    personalMessage:  { type: String, default: "" },
+    recipientName: { type: String, required: true, trim: true },
+    recipientEmail: {
+      type: String,
+      required: true,
+      trim: true,
+      lowercase: true,
+      index: true,
+    },
+    senderName: { type: String, required: true, trim: true },
+    personalMessage: { type: String, default: "" },
 
     // Email delivery
-    emailSent:   { type: Boolean, default: false },
-    emailSentAt: { type: Date,    default: null },
+    emailSent: { type: Boolean, default: false },
+    emailSentAt: { type: Date, default: null },
 
     // Expiry — null means lifetime validity (no expiry)
     expiresAt: { type: Date, default: null },
@@ -65,7 +86,7 @@ const giftCardSchema = new mongoose.Schema(
     // Full redemption audit trail
     redemptions: [redemptionSchema],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Indexes for common query patterns

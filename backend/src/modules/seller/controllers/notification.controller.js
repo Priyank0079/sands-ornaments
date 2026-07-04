@@ -21,6 +21,8 @@ exports.getMyNotifications = async (req, res) => {
 
     const query = {
       $or: [{ sellerId }, { isBroadcast: true }],
+      type: { $ne: "SELLER_REQUEST" },
+      hiddenBy: { $ne: sellerId }
     };
 
     if (type && typeof type === "string" && String(type).trim()) {
@@ -96,12 +98,38 @@ exports.markAllRead = async (req, res) => {
     await Notification.updateMany(
       {
         $or: [{ sellerId }, { isBroadcast: true }],
+        type: { $ne: "SELLER_REQUEST" },
+        hiddenBy: { $ne: sellerId },
         isRead: false,
       },
       { isRead: true }
     );
 
     return success(res, {}, "All notifications marked as read");
+  } catch (err) {
+    return error(res, err.message);
+  }
+};
+
+exports.hideNotification = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const sellerId = req.user.userId;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return error(res, "Invalid notification id", 400);
+    }
+    const notification = await Notification.findById(id);
+    if (!notification) return error(res, "Notification not found", 404);
+
+    const canAccess =
+      notification.isBroadcast ||
+      String(notification.sellerId || "") === String(sellerId);
+
+    if (!canAccess) return error(res, "Notification not found", 404);
+
+    await Notification.findByIdAndUpdate(id, { $addToSet: { hiddenBy: sellerId } });
+
+    return success(res, {}, "Notification hidden/deleted successfully");
   } catch (err) {
     return error(res, err.message);
   }

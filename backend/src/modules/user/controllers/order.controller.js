@@ -3,24 +3,28 @@ const Order = require("../../../models/Order");
 const Product = require("../../../models/Product");
 const Coupon = require("../../../models/Coupon");
 const StockLog = require("../../../models/StockLog");
-const Seller   = require("../../../models/Seller");
+const Seller = require("../../../models/Seller");
 const GiftCard = require("../../../models/GiftCard");
+const User = require("../../../models/User");
 const { generateOrderId } = require("../../../utils/generateId");
 const { success, error } = require("../../../utils/apiResponse");
 const razorpay = require("../../../config/razorpay");
 const Notification = require("../../../models/Notification");
-const { notifySellerLowStock, DEFAULT_LOW_STOCK_THRESHOLD } = require("../../../services/sellerNotificationService");
+const {
+  notifySellerLowStock,
+  DEFAULT_LOW_STOCK_THRESHOLD,
+} = require("../../../services/sellerNotificationService");
 const { enqueueEmail } = require("../../../services/emailService");
 const emailTemplates = require("../../../services/emailTemplates");
 const { emitNewOrder } = require("../../../services/socketEmitter");
 const {
   accrueCommissionsForOrder,
-  reverseCommissionsForOrder
+  reverseCommissionsForOrder,
 } = require("../../../services/commissionService");
 const {
   isSerializedVariant,
   consumeSerializedStock,
-  restockSerializedUnits
+  restockSerializedUnits,
 } = require("../../../utils/inventorySync");
 
 const toIdSet = (values = []) =>
@@ -32,7 +36,9 @@ const ensureProductOrderable = async (product) => {
   }
 
   if (product.sellerId) {
-    const seller = await Seller.findById(product.sellerId).select("status").lean();
+    const seller = await Seller.findById(product.sellerId)
+      .select("status")
+      .lean();
     if (!seller || seller.status !== "APPROVED") {
       throw new Error(`${product.name} is currently unavailable`);
     }
@@ -45,23 +51,34 @@ const ensureProductOrderable = async (product) => {
  * BUG-12 FIX: centralised coupon validation re-used at order time.
  */
 const applyCoupon = async (couponCode, subtotal, userId, items = []) => {
-  const normalizedCode = String(couponCode || "").trim().toUpperCase();
+  const normalizedCode = String(couponCode || "")
+    .trim()
+    .toUpperCase();
   if (!normalizedCode) return { discount: 0, coupon: null };
 
   const coupon = await Coupon.findOne({ code: normalizedCode, active: true });
   if (!coupon) return { discount: 0, coupon: null };
 
   const now = new Date();
-  if (coupon.validFrom && now < coupon.validFrom) return { discount: 0, coupon: null };
-  if (coupon.validUntil && now > coupon.validUntil) return { discount: 0, coupon: null };
-  if (coupon.usageLimit && coupon.usageCount >= coupon.usageLimit) return { discount: 0, coupon: null };
+  if (coupon.validFrom && now < coupon.validFrom)
+    return { discount: 0, coupon: null };
+  if (coupon.validUntil && now > coupon.validUntil)
+    return { discount: 0, coupon: null };
+  if (coupon.usageLimit && coupon.usageCount >= coupon.usageLimit)
+    return { discount: 0, coupon: null };
 
-  const userUsage = coupon.usedBy.filter(u => u.userId.toString() === userId.toString()).length;
-  if (coupon.perUserLimit && userUsage >= coupon.perUserLimit) return { discount: 0, coupon: null };
+  const userUsage = coupon.usedBy.filter(
+    (u) => u.userId.toString() === userId.toString(),
+  ).length;
+  if (coupon.perUserLimit && userUsage >= coupon.perUserLimit)
+    return { discount: 0, coupon: null };
 
   // New User Eligibility
   if (coupon.userEligibility === "new") {
-    const priorOrders = await Order.countDocuments({ userId, paymentStatus: "paid" });
+    const priorOrders = await Order.countDocuments({
+      userId,
+      paymentStatus: "paid",
+    });
     if (priorOrders > 0) return { discount: 0, coupon: null };
   }
 
@@ -71,36 +88,43 @@ const applyCoupon = async (couponCode, subtotal, userId, items = []) => {
     const categoryIdSet = toIdSet(coupon.applicableCategories);
     const productIdSet = toIdSet(coupon.applicableProducts);
 
-    const applicableItems = items.filter(item => {
+    const applicableItems = items.filter((item) => {
       const itemCategoryId = String(item?.categoryId || "");
       const itemProductId = String(item?.productId || item?.id || "");
-      if (coupon.applicabilityType === "category") return categoryIdSet.has(itemCategoryId);
-      if (coupon.applicabilityType === "product") return productIdSet.has(itemProductId);
+      if (coupon.applicabilityType === "category")
+        return categoryIdSet.has(itemCategoryId);
+      if (coupon.applicabilityType === "product")
+        return productIdSet.has(itemProductId);
       return false;
     });
 
     if (applicableItems.length === 0) return { discount: 0, coupon: null };
-    applicableTotal = applicableItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    applicableTotal = applicableItems.reduce(
+      (acc, item) => acc + item.price * item.quantity,
+      0,
+    );
   }
 
-  if (applicableTotal < coupon.minOrderValue) return { discount: 0, coupon: null };
+  if (applicableTotal < coupon.minOrderValue)
+    return { discount: 0, coupon: null };
 
   let discount = 0;
   if (coupon.type === "flat") {
     discount = coupon.value;
   } else if (coupon.type === "percentage") {
     discount = Math.round((applicableTotal * coupon.value) / 100);
-    if (coupon.maxDiscount && discount > coupon.maxDiscount) discount = coupon.maxDiscount;
+    if (coupon.maxDiscount && discount > coupon.maxDiscount)
+      discount = coupon.maxDiscount;
   } else if (coupon.type === "free_shipping") {
     discount = 0; // Handled by setting shipping to 0 in placeOrder
   }
 
   discount = Math.min(discount, applicableTotal);
 
-  return { 
-    discount, 
-    coupon, 
-    isFreeShipping: coupon.type === "free_shipping" 
+  return {
+    discount,
+    coupon,
+    isFreeShipping: coupon.type === "free_shipping",
   };
 };
 
@@ -110,7 +134,11 @@ const applyCoupon = async (couponCode, subtotal, userId, items = []) => {
  */
 const deductStockForOrder = async (orderItems, orderId, userId) => {
   for (const item of orderItems) {
-    if (item.isGiftCard || String(item.productId || "").startsWith("GIFT_CARD_")) continue;
+    if (
+      item.isGiftCard ||
+      String(item.productId || "").startsWith("GIFT_CARD_")
+    )
+      continue;
 
     const product = await Product.findById(item.productId);
     const variant = product?.variants.id(item.variantId);
@@ -120,7 +148,9 @@ const deductStockForOrder = async (orderItems, orderId, userId) => {
     if (quantity <= 0) continue;
 
     const previousStock = Number(variant.stock) || 0;
-    const variantIndex = product.variants.findIndex(v => String(v._id) === String(item.variantId));
+    const variantIndex = product.variants.findIndex(
+      (v) => String(v._id) === String(item.variantId),
+    );
 
     if (isSerializedVariant(product, variant)) {
       consumeSerializedStock({
@@ -128,11 +158,13 @@ const deductStockForOrder = async (orderItems, orderId, userId) => {
         variant,
         quantity,
         variantIndex,
-        saleStatus: "SOLD_ONLINE"
+        saleStatus: "SOLD_ONLINE",
       });
     } else {
       if (previousStock < quantity) {
-        throw new Error(`Insufficient stock for ${product.name} (${variant.name})`);
+        throw new Error(
+          `Insufficient stock for ${product.name} (${variant.name})`,
+        );
       }
       variant.stock = previousStock - quantity;
     }
@@ -149,7 +181,7 @@ const deductStockForOrder = async (orderItems, orderId, userId) => {
         productName: product.name,
         variantName: variant.name,
         currentStock: Number(variant.stock) || 0,
-        threshold: DEFAULT_LOW_STOCK_THRESHOLD
+        threshold: DEFAULT_LOW_STOCK_THRESHOLD,
       });
     }
 
@@ -166,13 +198,21 @@ const deductStockForOrder = async (orderItems, orderId, userId) => {
   }
 };
 
-
 /**
  * Internal helper to calculate order data without saving to DB.
  * Used by both placeOrder (for COD) and initiatePayment (for Razorpay).
  */
-const _calculateOrderData = async (userId, userEmail, items, shippingAddress, paymentMethod, couponCode, giftCardCodes = []) => {
-  if (!items || !items.length) throw new Error("Order must contain at least one item.");
+const _calculateOrderData = async (
+  userId,
+  userEmail,
+  items,
+  shippingAddress,
+  paymentMethod,
+  couponCode,
+  giftCardCodes = [],
+) => {
+  if (!items || !items.length)
+    throw new Error("Order must contain at least one item.");
   if (!shippingAddress) throw new Error("Shipping address is required.");
 
   let subtotal = 0;
@@ -180,8 +220,14 @@ const _calculateOrderData = async (userId, userEmail, items, shippingAddress, pa
 
   // 1. Validate Items & Stock & Price
   for (const item of items) {
-    const isGift = item.isGiftCard || String(item.productId || "").startsWith("GIFT_CARD_");
+    const isGift =
+      item.isGiftCard || String(item.productId || "").startsWith("GIFT_CARD_");
     if (isGift) {
+      if (paymentMethod === "cod") {
+        throw new Error(
+          "Gift cards cannot be purchased using Cash on Delivery. Please select an online payment method.",
+        );
+      }
       const cardValue = Number(item.price || 500);
       if (cardValue < 500) throw new Error("Gift card minimum value is ₹500");
 
@@ -189,16 +235,16 @@ const _calculateOrderData = async (userId, userEmail, items, shippingAddress, pa
       subtotal += itemTotal;
 
       orderItems.push({
-        productId:       item.productId,
-        variantId:       "GIFT_CARD_VAR",
-        name:            item.name || `Sands E-Gift Card (₹${cardValue})`,
-        sku:             `GIFT-CARD-${cardValue}`,
-        image:           "",
-        price:           cardValue,
-        mrp:             cardValue,
-        quantity:        item.quantity,
-        isGiftCard:      true,
-        personalization: item.personalization || undefined
+        productId: item.productId,
+        variantId: "GIFT_CARD_VAR",
+        name: item.name || `Sands E-Gift Card (₹${cardValue})`,
+        sku: `GIFT-CARD-${cardValue}`,
+        image: "",
+        price: cardValue,
+        mrp: cardValue,
+        quantity: item.quantity,
+        isGiftCard: true,
+        personalization: item.personalization || undefined,
       });
       continue;
     }
@@ -211,25 +257,41 @@ const _calculateOrderData = async (userId, userEmail, items, shippingAddress, pa
     if (!variant) throw new Error(`Variant ${item.variantId} not found`);
 
     if (variant.stock < item.quantity) {
-      throw new Error(`Insufficient stock for ${product.name} (${variant.name})`);
+      throw new Error(
+        `Insufficient stock for ${product.name} (${variant.name})`,
+      );
     }
 
     const itemTotal = variant.price * item.quantity;
     subtotal += itemTotal;
 
     orderItems.push({
-      productId:  product._id,
-      variantId:  variant._id,
-      name:       product.name,
-      sku:        variant.sku || `${product.slug}-${variant.name}`,
-      image:      product.images[0] || "",
-      price:      variant.price,
-      mrp:        variant.mrp,
-      quantity:   item.quantity,
-      sellerId:   product.sellerId,
-      categoryId: product.categories?.[0] || undefined
+      productId: product._id,
+      variantId: variant._id,
+      name: product.name,
+      sku: variant.sku || `${product.slug}-${variant.name}`,
+      image:
+        product.images[0] ||
+        (variant.variantImages && variant.variantImages[0]) ||
+        "",
+      price: variant.price,
+      mrp: variant.mrp,
+      quantity: item.quantity,
+      sellerId: product.sellerId,
+      categoryId: product.categories?.[0] || undefined,
+      giftWrap: Boolean(item.giftWrap),
+      giftMessage:
+        item.giftWrap && item.giftMessage
+          ? String(item.giftMessage).slice(0, 200)
+          : "",
     });
   }
+
+  // Calculate gift wrap charges (₹50 per wrapped unique item line)
+  const giftWrapCharge = orderItems.reduce(
+    (sum, item) => sum + (item.giftWrap ? 50 : 0),
+    0,
+  );
 
   // 2. Handle Coupon
   let discount = 0;
@@ -243,8 +305,8 @@ const _calculateOrderData = async (userId, userEmail, items, shippingAddress, pa
     isFreeShipping = result.isFreeShipping;
   }
 
-  // Default shipping logic (₹49 if < ₹999, else 0)
-  let shipping = subtotal - discount > 999 ? 0 : 49;
+  // Unified Shipping Logic (Free shipping above ₹499, else ₹50)
+  let shipping = subtotal - discount + giftWrapCharge > 499 ? 0 : 50;
   if (isFreeShipping) shipping = 0;
 
   // 3. Apply Gift Cards (partial use supported, multiple cards allowed)
@@ -253,42 +315,58 @@ const _calculateOrderData = async (userId, userEmail, items, shippingAddress, pa
   const validGiftCardCodes = Array.isArray(giftCardCodes) ? giftCardCodes : [];
 
   if (validGiftCardCodes.length > 0) {
-    let remainingToPay = Math.max(0, subtotal - discount + shipping);
+    let remainingToPay = Math.max(
+      0,
+      subtotal - discount + giftWrapCharge + shipping,
+    );
     for (const rawCode of validGiftCardCodes) {
       if (remainingToPay <= 0) break;
-      const code = String(rawCode || "").toUpperCase().trim();
+      const code = String(rawCode || "")
+        .toUpperCase()
+        .trim();
       if (!code) continue;
-      const card = await GiftCard.findOne({ code, status: { $in: ["active", "partially_used"] } });
+      const card = await GiftCard.findOne({
+        code,
+        status: { $in: ["active", "partially_used"] },
+      });
       if (!card || card.balance <= 0) continue;
       if (card.expiresAt && card.expiresAt < new Date()) continue;
       const usable = Math.min(card.balance, remainingToPay);
       giftCardDiscount += usable;
-      remainingToPay   -= usable;
-      appliedGiftCards.push({ cardId: card._id, code: card.code, amountUsed: usable });
+      remainingToPay -= usable;
+      appliedGiftCards.push({
+        cardId: card._id,
+        code: card.code,
+        amountUsed: usable,
+      });
     }
   }
 
-  const total = Math.max(0, subtotal - discount + shipping - giftCardDiscount);
+  const total = Math.max(
+    0,
+    subtotal - discount + giftWrapCharge + shipping - giftCardDiscount,
+  );
 
   return {
-    orderId:       generateOrderId(),
+    orderId: generateOrderId(),
     userId,
-    customerName:  `${shippingAddress.firstName} ${shippingAddress.lastName}`,
+    customerName: `${shippingAddress.firstName} ${shippingAddress.lastName}`,
     customerEmail: shippingAddress.email || userEmail,
     customerPhone: shippingAddress.phone,
-    items:         orderItems,
+    items: orderItems,
     shippingAddress,
     paymentMethod,
-    couponCode:        appliedCoupon ? couponCode.toUpperCase() : undefined,
+    couponCode: appliedCoupon ? couponCode.toUpperCase() : undefined,
     giftCardDiscount,
     appliedGiftCards,
     subtotal,
     discount,
     shipping,
+    giftWrapCharge,
     total,
-    status:           paymentMethod === "cod" ? "Processing" : "Pending",
-    paymentStatus:    paymentMethod === "cod" ? "cod" : "pending",
-    timeline:      [{ status: "Ordered", note: "Order placed successfully" }],
+    status: paymentMethod === "cod" ? "Processing" : "Pending",
+    paymentStatus: paymentMethod === "cod" ? "cod" : "pending",
+    timeline: [{ status: "Ordered", note: "Order placed successfully" }],
   };
 };
 
@@ -297,36 +375,61 @@ const _calculateOrderData = async (userId, userEmail, items, shippingAddress, pa
 // ─────────────────────────────────────────────────────────────────
 exports.placeOrder = async (req, res) => {
   try {
-    const { items, shippingAddress, paymentMethod, couponCode, giftCardCodes } = req.body;
+    const { items, shippingAddress, paymentMethod, couponCode, giftCardCodes } =
+      req.body;
     const userId = req.user.userId;
     const userEmail = req.user.email;
 
     // Use shared helper to prepare order data
-    const orderData = await _calculateOrderData(userId, userEmail, items, shippingAddress, paymentMethod, couponCode, giftCardCodes);
+    const orderData = await _calculateOrderData(
+      userId,
+      userEmail,
+      items,
+      shippingAddress,
+      paymentMethod,
+      couponCode,
+      giftCardCodes,
+    );
 
     // 4. Create Razorpay order (no stock deduction yet for online payments)
     if (paymentMethod === "razorpay") {
+      if (orderData.total === 0) {
+        throw new Error(
+          "Zero-total prepaid orders must be processed via the checkout verification flow.",
+        );
+      }
       try {
         const rpOrder = await razorpay.orders.create({
-          amount:   Math.round(orderData.total * 100),
+          amount: Math.round(orderData.total * 100),
           currency: "INR",
-          receipt:  orderData.orderId,
+          receipt: orderData.orderId,
         });
         orderData.razorpayOrderId = rpOrder.id;
       } catch (err) {
-        orderData.razorpayOrderId = "rzp_stub_" + Date.now();
         console.error("Razorpay Order Creation Failed:", err.message);
+        return error(
+          res,
+          "Payment gateway initialization failed. Please try again later.",
+          502,
+          "PAYMENT_GATEWAY_ERROR",
+        );
       }
     }
 
     const order = await Order.create(orderData);
+
+    // Enrich guest profile
+    await enrichUserProfileFromOrder(userId, shippingAddress);
 
     // Notify sellers
     const sellerCounts = new Map();
     for (const item of orderData.items) {
       const sid = item?.sellerId ? String(item.sellerId) : "";
       if (!sid) continue;
-      sellerCounts.set(sid, (sellerCounts.get(sid) || 0) + (Number(item.quantity) || 0));
+      sellerCounts.set(
+        sid,
+        (sellerCounts.get(sid) || 0) + (Number(item.quantity) || 0),
+      );
     }
     if (sellerCounts.size > 0) {
       const sellerOrderLink = `/seller/order-details/${order._id}`;
@@ -338,13 +441,21 @@ exports.placeOrder = async (req, res) => {
         priority: "Medium",
         link: sellerOrderLink,
         isBroadcast: false,
-        isRead: false
+        isRead: false,
       }));
-      try { await Notification.insertMany(docs); } catch (e) { /* ignore */ }
+      try {
+        await Notification.insertMany(docs);
+      } catch (e) {
+        /* ignore */
+      }
     }
 
     // ── Realtime: emit new_order to admin + sellers (best-effort) ─────────────
-    try { emitNewOrder(order); } catch (e) { /* non-blocking */ }
+    try {
+      emitNewOrder(order);
+    } catch (e) {
+      /* non-blocking */
+    }
 
     // 5. Deduct Stock immediately ONLY for COD
     if (paymentMethod === "cod") {
@@ -353,7 +464,10 @@ exports.placeOrder = async (req, res) => {
       // Platform commission accrual (per-seller ledger entries, status="pending").
       // Wrapped in `safe: true` so a ledger failure never blocks the order itself.
       try {
-        await accrueCommissionsForOrder(order, { triggeredBy: "place_order", safe: true });
+        await accrueCommissionsForOrder(order, {
+          triggeredBy: "place_order",
+          safe: true,
+        });
       } catch (e) {
         console.error("[Commission] COD accrual hook error:", e.message);
       }
@@ -362,26 +476,45 @@ exports.placeOrder = async (req, res) => {
         await Coupon.updateOne(
           { code: order.couponCode, active: true },
           {
-            $inc:  { usageCount: 1 },
+            $inc: { usageCount: 1 },
             $push: { usedBy: { userId, usedAt: new Date() } },
-          }
+          },
         );
       }
 
       // Atomically redeem gift cards for COD order
-      if (Array.isArray(order.appliedGiftCards) && order.appliedGiftCards.length > 0) {
+      if (
+        Array.isArray(order.appliedGiftCards) &&
+        order.appliedGiftCards.length > 0
+      ) {
         for (const gc of order.appliedGiftCards) {
           if (!gc.cardId || !gc.amountUsed) continue;
           const updatedCard = await GiftCard.findOneAndUpdate(
-            { _id: gc.cardId, status: { $in: ["active", "partially_used"] }, balance: { $gte: gc.amountUsed } },
             {
-              $inc:  { balance: -gc.amountUsed },
-              $push: { redemptions: { orderId: order.orderId, amountUsed: gc.amountUsed, redeemedAt: new Date(), redeemedByUserId: order.userId } },
+              _id: gc.cardId,
+              status: { $in: ["active", "partially_used"] },
+              balance: { $gte: gc.amountUsed },
             },
-            { new: true }
+            {
+              $inc: { balance: -gc.amountUsed },
+              $push: {
+                redemptions: {
+                  orderId: order.orderId,
+                  amountUsed: gc.amountUsed,
+                  redeemedAt: new Date(),
+                  redeemedByUserId: order.userId,
+                },
+              },
+            },
+            { new: true },
           );
           if (updatedCard) {
-            const newStatus = updatedCard.balance <= 0 ? "used" : updatedCard.balance < updatedCard.value ? "partially_used" : "active";
+            const newStatus =
+              updatedCard.balance <= 0
+                ? "used"
+                : updatedCard.balance < updatedCard.value
+                  ? "partially_used"
+                  : "active";
             await GiftCard.updateOne({ _id: gc.cardId }, { status: newStatus });
           }
         }
@@ -396,13 +529,18 @@ exports.placeOrder = async (req, res) => {
       }
 
       // -- Email: order confirmation (COD) --
-      const recipientEmail = order.customerEmail || order.shippingAddress && order.shippingAddress.email;
+      const recipientEmail =
+        order.customerEmail ||
+        (order.shippingAddress && order.shippingAddress.email);
       if (recipientEmail) {
         enqueueEmail({
-          to:      recipientEmail,
-          subject: "Order Confirmed - " + order.orderId + " | Sands Ornaments",
-          html:    emailTemplates.orderConfirmation({ order, userName: order.customerName }),
-          type:    "order_confirmation",
+          to: recipientEmail,
+          subject: "Order Confirmed - " + order.orderId + " | Sands Jewels",
+          html: emailTemplates.orderConfirmation({
+            order,
+            userName: order.customerName,
+          }),
+          type: "order_confirmation",
         });
       }
 
@@ -416,40 +554,76 @@ exports.placeOrder = async (req, res) => {
       }
       if (sellerItemMap.size > 0) {
         const sellerIds = Array.from(sellerItemMap.keys());
-        const sellers = await Seller.find({ _id: { $in: sellerIds } }).select("email shopName fullName");
+        const sellers = await Seller.find({ _id: { $in: sellerIds } }).select(
+          "email shopName fullName",
+        );
         for (const seller of sellers) {
           if (!seller.email) continue;
           enqueueEmail({
-            to:      seller.email,
-            subject: "New Order - " + order.orderId + " | Sands Ornaments",
-            html:    emailTemplates.sellerNewOrder({ order, sellerName: seller.shopName || seller.fullName, sellerItems: sellerItemMap.get(String(seller._id)) }),
-            type:    "seller_new_order",
+            to: seller.email,
+            subject: "New Order - " + order.orderId + " | Sands Jewels",
+            html: emailTemplates.sellerNewOrder({
+              order,
+              sellerName: seller.shopName || seller.fullName,
+              sellerItems: sellerItemMap.get(String(seller._id)),
+            }),
+            type: "seller_new_order",
           });
         }
       }
     }
 
     return success(res, { order }, "Order placed successfully", 201);
+  } catch (err) {
+    return error(res, err.message);
+  }
+};
 
-  } catch (err) { return error(res, err.message); }
+const enrichUserProfileFromOrder = async (userId, shippingAddress) => {
+  try {
+    const user = await User.findById(userId);
+    if (user) {
+      let updated = false;
+      if (
+        (!user.name || user.name === "Guest User") &&
+        shippingAddress.firstName
+      ) {
+        user.name =
+          `${shippingAddress.firstName} ${shippingAddress.lastName || ""}`.trim();
+        updated = true;
+      }
+      if (!user.email && shippingAddress.email) {
+        user.email = String(shippingAddress.email).trim().toLowerCase();
+        updated = true;
+      }
+      if (updated) {
+        await user.save();
+      }
+    }
+  } catch (err) {
+    console.error("Failed to enrich user profile from order:", err.message);
+  }
 };
 
 // Export the helpers so payment controller can use them
 exports._deductStockForOrder = deductStockForOrder;
 exports._applyCoupon = applyCoupon;
 exports._calculateOrderData = _calculateOrderData;
-
+exports.enrichUserProfileFromOrder = enrichUserProfileFromOrder;
 
 // ─────────────────────────────────────────────────────────────────
 // GET /api/user/orders
 // ─────────────────────────────────────────────────────────────────
 exports.getOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ userId: req.user.userId }).sort({ createdAt: -1 });
+    const orders = await Order.find({ userId: req.user.userId }).sort({
+      createdAt: -1,
+    });
     return success(res, { orders }, "Order history retrieved");
-  } catch (err) { return error(res, err.message); }
+  } catch (err) {
+    return error(res, err.message);
+  }
 };
-
 
 // ─────────────────────────────────────────────────────────────────
 // GET /api/user/orders/:id
@@ -459,12 +633,16 @@ exports.getOrderDetail = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return error(res, "Invalid order id", 400);
     }
-    const order = await Order.findOne({ _id: req.params.id, userId: req.user.userId });
+    const order = await Order.findOne({
+      _id: req.params.id,
+      userId: req.user.userId,
+    });
     if (!order) return error(res, "Order not found", 404);
     return success(res, { order }, "Order details retrieved");
-  } catch (err) { return error(res, err.message); }
+  } catch (err) {
+    return error(res, err.message);
+  }
 };
-
 
 // ─────────────────────────────────────────────────────────────────
 // POST /api/user/orders/:id/cancel
@@ -474,7 +652,10 @@ exports.cancelOrder = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return error(res, "Invalid order id", 400);
     }
-    const order = await Order.findOne({ _id: req.params.id, userId: req.user.userId });
+    const order = await Order.findOne({
+      _id: req.params.id,
+      userId: req.user.userId,
+    });
     if (!order) return error(res, "Order not found", 404);
 
     if (["Shipped", "Delivered", "Cancelled"].includes(order.status)) {
@@ -485,13 +666,43 @@ exports.cancelOrder = async (req, res) => {
     order.timeline.push({ status: "Cancelled", note: "Cancelled by user" });
     await order.save();
 
+    // Refund any applied gift cards (restoring balance and updating status)
+    if (
+      Array.isArray(order.appliedGiftCards) &&
+      order.appliedGiftCards.length > 0
+    ) {
+      for (const gc of order.appliedGiftCards) {
+        if (!gc.cardId || !gc.amountUsed) continue;
+        const updatedCard = await GiftCard.findOneAndUpdate(
+          { _id: gc.cardId },
+          {
+            $inc: { balance: gc.amountUsed },
+            $pull: { redemptions: { orderId: order.orderId } },
+          },
+          { new: true },
+        );
+        if (updatedCard) {
+          const newStatus =
+            updatedCard.balance <= 0
+              ? "used"
+              : updatedCard.balance < updatedCard.value
+                ? "partially_used"
+                : "active";
+          await GiftCard.updateOne({ _id: gc.cardId }, { status: newStatus });
+          console.log(
+            `[GiftCard] Refunded ₹${gc.amountUsed} back to card ${gc.code} (new balance: ₹${updatedCard.balance}) for cancelled order ${order.orderId}`,
+          );
+        }
+      }
+    }
+
     // Reverse platform commission ledger entries (decision F: full reversal).
     // Safe: never let a ledger error block the cancellation itself.
     try {
       await reverseCommissionsForOrder(order._id, {
         triggeredBy: "order_cancelled",
-        reasonNote:  "Cancelled by user",
-        safe:        true,
+        reasonNote: "Cancelled by user",
+        safe: true,
       });
     } catch (e) {
       console.error("[Commission] User-cancel reversal error:", e.message);
@@ -508,14 +719,16 @@ exports.cancelOrder = async (req, res) => {
         if (quantity <= 0) continue;
 
         const previousStock = Number(variant.stock) || 0;
-        const variantIndex = product.variants.findIndex(v => String(v._id) === String(item.variantId));
+        const variantIndex = product.variants.findIndex(
+          (v) => String(v._id) === String(item.variantId),
+        );
 
         if (isSerializedVariant(product, variant)) {
           restockSerializedUnits({
             product,
             variant,
             quantity,
-            variantIndex
+            variantIndex,
           });
         } else {
           variant.stock = previousStock + quantity;
@@ -532,11 +745,13 @@ exports.cancelOrder = async (req, res) => {
           newStock: variant.stock,
           change: variant.stock - previousStock,
           reason: `Order ${order.orderId} cancelled by user`,
-          userId: req.user.userId
+          userId: req.user.userId,
         });
       }
     }
 
     return success(res, { order }, "Order cancelled successfully");
-  } catch (err) { return error(res, err.message); }
+  } catch (err) {
+    return error(res, err.message);
+  }
 };

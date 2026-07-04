@@ -16,7 +16,7 @@ exports.getSalesTrend = async (req, res) => {
     startDate.setDate(startDate.getDate() - days);
 
     const trend = await Order.aggregate([
-      { $match: { "items.sellerId": sellerObjectId, paymentStatus: "paid", createdAt: { $gte: startDate } } },
+      { $match: { "items.sellerId": sellerObjectId, $or: [ { paymentStatus: "paid" }, { paymentStatus: "cod", status: "Delivered" } ], createdAt: { $gte: startDate } } },
       { $unwind: "$items" },
       { $match: { "items.sellerId": sellerObjectId } },
       {
@@ -42,7 +42,7 @@ exports.getProductPerformance = async (req, res) => {
     const sellerObjectId = new mongoose.Types.ObjectId(sellerId);
 
     const performance = await Order.aggregate([
-      { $match: { "items.sellerId": sellerObjectId, paymentStatus: "paid" } },
+      { $match: { "items.sellerId": sellerObjectId, $or: [ { paymentStatus: "paid" }, { paymentStatus: "cod", status: "Delivered" } ] } },
       { $unwind: "$items" },
       { $match: { "items.sellerId": sellerObjectId } },
       {

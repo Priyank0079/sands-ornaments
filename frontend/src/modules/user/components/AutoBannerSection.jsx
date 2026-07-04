@@ -88,7 +88,17 @@ const AutoBannerSection = () => {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 1 }}
-                        className="absolute inset-0 w-full h-full"
+                        className="absolute inset-0 w-full h-full touch-pan-y"
+                        drag="x"
+                        dragConstraints={{ left: 0, right: 0 }}
+                        dragElastic={0.1}
+                        onDragEnd={(e, { offset }) => {
+                            if (offset.x < -50) {
+                                setCurrentIndex((prev) => (prev + 1) % slides.length);
+                            } else if (offset.x > 50) {
+                                setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length);
+                            }
+                        }}
                     >
                         <div className="w-full h-full relative group">
                             {/* Banner Image with subtle zoom */}

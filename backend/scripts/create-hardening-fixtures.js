@@ -205,7 +205,8 @@ const ensureReturn = async ({ userId, order, product }) => {
       !existing.variantId ||
       String(existing.variantId) !== String(item.variantId) ||
       String(returnReq.orderId) !== String(order._id) ||
-      String(returnReq.userId) !== String(userId);
+      String(returnReq.userId) !== String(userId) ||
+      returnReq.returnNumber !== 99999; // Ensure returnNumber is updated if corrupted
 
     if (needsRepair) {
       await Return.updateOne(
@@ -214,6 +215,7 @@ const ensureReturn = async ({ userId, order, product }) => {
           $set: {
             orderId: order._id,
             userId,
+            returnNumber: 99999,
             items: [{
               productId: item.productId,
               variantId: item.variantId,
@@ -237,7 +239,7 @@ const ensureReturn = async ({ userId, order, product }) => {
   const now = new Date();
   await Return.collection.insertOne({
     returnId: FIXTURE_RETURN_ID,
-    returnNumber: FIXTURE_RETURN_ID,
+    returnNumber: 99999,
     orderId: order._id,
     userId,
     items: [{

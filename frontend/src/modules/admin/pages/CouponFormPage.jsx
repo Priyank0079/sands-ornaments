@@ -83,6 +83,9 @@ const CouponFormPage = () => {
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
+        if (['value', 'minOrderValue', 'maxDiscount', 'usageLimit', 'perUserLimit'].includes(name)) {
+            if (value !== '' && Number(value) < 0) return;
+        }
         setFormData(prev => ({
             ...prev,
             [name]: name === 'code'
@@ -116,6 +119,9 @@ const CouponFormPage = () => {
         if (formData.type === 'percentage' && Number(formData.value) > 100) {
             nextErrors.value = 'Percentage discount cannot exceed 100';
         }
+        if (Number(formData.value || 0) < 0) {
+            nextErrors.value = 'Discount value cannot be negative';
+        }
         if (Number(formData.minOrderValue || 0) < 0) {
             nextErrors.minOrderValue = 'Minimum order cannot be negative';
         }
@@ -125,8 +131,14 @@ const CouponFormPage = () => {
         if (formData.usageLimit !== '' && Number(formData.usageLimit) < 1) {
             nextErrors.usageLimit = 'Usage limit must be at least 1';
         }
+        if (formData.usageLimit !== '' && Number(formData.usageLimit) < 0) {
+            nextErrors.usageLimit = 'Total limit cannot be negative';
+        }
         if (Number(formData.perUserLimit || 0) < 1) {
             nextErrors.perUserLimit = 'Per-user limit must be at least 1';
+        }
+        if (Number(formData.perUserLimit || 0) < 0) {
+            nextErrors.perUserLimit = 'User limit cannot be negative';
         }
         if (formData.userEligibility !== 'new' && formData.applicabilityType === 'category' && formData.targetItems.length === 0) {
             nextErrors.targetItems = 'Select at least one category';
@@ -242,6 +254,7 @@ const CouponFormPage = () => {
                                     error={errors.value}
                                     disabled={formData.type === 'free_shipping'}
                                     placeholder={formData.type === 'percentage' ? 'e.g., 20' : 'e.g., 500'}
+                                    min={0}
                                 />
                             </div>
 
@@ -411,6 +424,7 @@ const CouponFormPage = () => {
                                 value={formData.minOrderValue}
                                 onChange={handleChange}
                                 error={errors.minOrderValue}
+                                min={0}
                             />
                             <Input
                                 label="Max Discount (INR)"
@@ -420,6 +434,7 @@ const CouponFormPage = () => {
                                 onChange={handleChange}
                                 error={errors.maxDiscount}
                                 disabled={formData.type !== 'percentage'}
+                                min={0}
                             />
                             <div className="grid grid-cols-2 gap-4">
                                 <Input
@@ -429,6 +444,7 @@ const CouponFormPage = () => {
                                     value={formData.usageLimit}
                                     onChange={handleChange}
                                     error={errors.usageLimit}
+                                    min={0}
                                 />
                                 <Input
                                     label="User Limit"
@@ -437,6 +453,7 @@ const CouponFormPage = () => {
                                     value={formData.perUserLimit}
                                     onChange={handleChange}
                                     error={errors.perUserLimit}
+                                    min={0}
                                 />
                             </div>
                         </div>

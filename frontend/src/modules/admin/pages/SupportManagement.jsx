@@ -1,105 +1,177 @@
-import React, { useState } from 'react';
-import { Eye, Trash2, Mail, Calendar, Inbox, AlertCircle, ShoppingBag, FileText, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Eye, Trash2, Mail, Calendar, Inbox, AlertCircle, ShoppingBag, FileText, CheckCircle2, Send, Clock, User, MessageSquare, X, Headphones } from 'lucide-react';
 import PageHeader from '../components/common/PageHeader';
 import DataTable from '../components/common/DataTable';
 import AdminStatsCard from '../components/AdminStatsCard';
+import api from '../../../services/api';
+import { useSocket } from '../../../context/SocketContext';
+import toast from 'react-hot-toast';
 
 const SupportManagement = () => {
-    // Mock Data mimicking the "Create Support Ticket" form
-    const [tickets, setTickets] = useState([
-        {
-            id: 'TKT-2024-001',
-            subject: 'Refund not received for returned item',
-            category: 'Payment & Refunds',
-            orderId: '1735123456',
-            message: 'I returned the "Polki Ruby Necklace" 5 days ago, and the app says return delivered, but I have not received the refund in my account yet.',
-            userName: 'Priya Sharma',
-            userEmail: 'priya.s@example.com',
-            status: 'Unread',
-            date: '2024-10-26T10:30:00',
-        },
-        {
-            id: 'TKT-2024-002',
-            subject: 'Wrong size delivered',
-            category: 'Order Issues',
-            orderId: '1735987654',
-            message: 'I ordered size 2.4 bangles but received 2.6. Please arrange for an exchange.',
-            userName: 'Rahul Verma',
-            userEmail: 'rahul.v@example.com',
-            status: 'Unread',
-            date: '2024-10-25T15:45:00',
-        },
-        {
-            id: 'TKT-2024-003',
-            subject: 'General enquiry about bridal sets',
-            category: 'General Enquiry',
-            orderId: '',
-            message: 'Do you provide customization for bridal sets? I want a specific color combination.',
-            userName: 'Sneha Patel',
-            userEmail: 'sneha.p@example.com',
-            status: 'Read',
-            date: '2024-10-24T11:20:00',
-        },
-        {
-            id: 'TKT-2024-004',
-            subject: 'Payment failed but money deducted',
-            category: 'Payment Issue',
-            orderId: '1735112233',
-            message: 'My UPI transaction failed on the checkout page, but the amount was debited from my bank.',
-            userName: 'Amit Kumar',
-            userEmail: 'amit.k@example.com',
-            status: 'Unread',
-            date: '2024-10-23T18:10:00',
-        },
-        {
-            id: 'TKT-2024-005',
-            subject: 'Change delivery address',
-            category: 'Shipping',
-            orderId: '1735445566',
-            message: 'I accidentally put my old address. Please update it to the new one before shipping.',
-            userName: 'Kavita Singh',
-            userEmail: 'kavita.s@example.com',
-            status: 'Read',
-            date: '2024-10-22T09:00:00',
-        }
-    ]);
-
+    const { socket } = useSocket();
+    const [tickets, setTickets] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
     const [selectedTicket, setSelectedTicket] = useState(null);
-    const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+    const [adminReplyText, setAdminReplyText] = useState('');
+    const [ticketStatusUpdate, setTicketStatusUpdate] = useState('In Progress');
+    const repliesEndRef = useRef(null);
 
-    const handleConfirmDelete = () => {
-        if (deleteConfirmId) {
-            setTickets(prev => prev.filter(t => t.id !== deleteConfirmId));
-            setDeleteConfirmId(null);
+    // Fetch all tickets from backend
+    const fetchTickets = async () => {
+        setIsLoading(true);
+        try {
+            const res = await api.get('admin/support');
+            if (res.data.success) {
+                setTickets(res.data.data?.tickets || res.data.tickets || []);
+            }
+        } catch (err) {
+            console.error('Failed to fetch admin support tickets:', err);
+            toast.error('Failed to load support tickets');
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    const handleStatusChange = (id, newStatus) => {
-        setTickets(prev => prev.map(t => t.id === id ? { ...t, status: newStatus } : t));
+    useEffect(() => {
+        fetchTickets();
+    }, []);
+
+    // Socket listeners for real-time support updates
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleNewTicket = (newTicket) => {
+            setTickets(prev => [newTicket, ...prev]);
+            toast.success(`New support ticket created: "${newTicket.subject}"`, {
+                icon: '🎫',
+                duration: 5000
+            });
+        };
+
+        const handleSupportMessage = (data) => {
+            // data contains: { ticketId, _id, userId, reply: { from, text, date }, status }
+            const { _id, reply, status } = data;
+
+            setTickets(prev => prev.map(t => {
+                if (t._id === _id) {
+                    const exists = t.replies.some(r => r.text === reply.text && r.from === reply.from && Math.abs(new Date(r.date) - new Date(reply.date)) < 2000);
+                    if (exists) return t;
+
+                    return {
+                        ...t,
+                        status,
+                        replies: [...t.replies, reply],
+                        updatedAt: new Date().toISOString()
+                    };
+                }
+                return t;
+            }));
+
+            // If the active viewed ticket is the one updated, update the selected ticket state
+            setSelectedTicket(prev => {
+                if (prev && prev._id === _id) {
+                    const exists = prev.replies.some(r => r.text === reply.text && r.from === reply.from && Math.abs(new Date(r.date) - new Date(reply.date)) < 2000);
+                    if (exists) return prev;
+
+                    return {
+                        ...prev,
+                        status,
+                        replies: [...prev.replies, reply]
+                    };
+                }
+                return prev;
+            });
+
+            // Show a notification if user replied
+            if (reply.from === 'user') {
+                toast(`User reply on ticket #${data.ticketId}: "${reply.text.substring(0, 30)}..."`, {
+                    icon: '💬',
+                    duration: 5000
+                });
+            }
+        };
+
+        socket.on('support_ticket_created', handleNewTicket);
+        socket.on('support_message', handleSupportMessage);
+
+        return () => {
+            socket.off('support_ticket_created', handleNewTicket);
+            socket.off('support_message', handleSupportMessage);
+        };
+    }, [socket]);
+
+    // Scroll to bottom of replies when selected ticket changes or gets replies
+    useEffect(() => {
+        if (repliesEndRef.current) {
+            repliesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [selectedTicket?.replies]);
+
+    const handleSendAdminReply = async (e) => {
+        e.preventDefault();
+        if (!adminReplyText.trim() || !selectedTicket) return;
+
+        try {
+            const res = await api.post(`admin/support/${selectedTicket._id}/reply`, {
+                message: adminReplyText,
+                status: ticketStatusUpdate
+            });
+
+            if (res.data.success) {
+                const updatedTicket = res.data.data?.ticket || res.data.ticket;
+                setSelectedTicket(updatedTicket);
+                setTickets(prev => prev.map(t => t._id === updatedTicket._id ? updatedTicket : t));
+                setAdminReplyText('');
+                toast.success('Reply sent successfully');
+            }
+        } catch (err) {
+            console.error('Failed to send admin reply:', err);
+            toast.error(err.response?.data?.message || 'Failed to send reply');
+        }
+    };
+
+    const handleStatusChange = async (id, newStatus) => {
+        try {
+            // We can reuse the reply route but only send status update (or we can just update via API)
+            // For now, let's keep it simple: if changing status, send a status update reply
+            const res = await api.post(`admin/support/${id}/reply`, {
+                message: `Ticket status changed to ${newStatus} by admin.`,
+                status: newStatus
+            });
+            if (res.data.success) {
+                const updatedTicket = res.data.data?.ticket || res.data.ticket;
+                setTickets(prev => prev.map(t => t._id === id ? updatedTicket : t));
+                toast.success(`Ticket status updated to ${newStatus}`);
+            }
+        } catch (err) {
+            console.error('Failed to update ticket status:', err);
+            toast.error('Failed to update status');
+        }
     };
 
     const filteredTickets = tickets.filter(t => {
-        const matchesSearch = t.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            t.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            t.id.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSearch = 
+            t.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            t.userName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            t.ticketId?.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesStatus = statusFilter === 'All' || t.status === statusFilter;
         return matchesSearch && matchesStatus;
     });
 
     // Stats
-    const totalTickets = tickets.length;
-    const unreadTickets = tickets.filter(t => t.status === 'Unread').length;
-    const readTickets = tickets.filter(t => t.status === 'Read').length;
+    const totalTicketsCount = tickets.length;
+    const openTicketsCount = tickets.filter(t => t.status === 'Open').length;
+    const resolvedTicketsCount = tickets.filter(t => t.status === 'Resolved').length;
 
     const columns = [
         {
             header: 'Date',
             render: (item) => (
                 <div className="flex flex-col">
-                    <span className="text-xs font-bold text-gray-900">{new Date(item.date).toLocaleDateString()}</span>
-                    <span className="text-[10px] text-gray-500">{new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    <span className="text-xs font-bold text-gray-900">{new Date(item.updatedAt || item.createdAt).toLocaleDateString()}</span>
+                    <span className="text-[10px] text-gray-500">{new Date(item.updatedAt || item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
             )
         },
@@ -107,7 +179,8 @@ const SupportManagement = () => {
             header: 'User',
             render: (item) => (
                 <div>
-                    <p className="text-xs font-bold text-gray-900">{item.userName}</p>
+                    <p className="text-xs font-bold text-gray-900">{item.userName || 'Customer'}</p>
+                    <p className="text-[10px] text-gray-500">{item.userEmail}</p>
                 </div>
             )
         },
@@ -127,12 +200,17 @@ const SupportManagement = () => {
                 <select
                     value={item.status}
                     onClick={(e) => e.stopPropagation()}
-                    onChange={(e) => handleStatusChange(item.id, e.target.value)}
-                    className={`text-[10px] font-bold uppercase tracking-wider bg-transparent border-none focus:ring-0 cursor-pointer ${item.status === 'Unread' ? 'text-red-600' : 'text-green-600'
-                        }`}
+                    onChange={(e) => handleStatusChange(item._id, e.target.value)}
+                    className={`text-[10px] font-bold uppercase tracking-wider bg-transparent border-none focus:ring-0 cursor-pointer ${
+                        item.status === 'Open' ? 'text-blue-600' :
+                        item.status === 'In Progress' ? 'text-amber-600' :
+                        item.status === 'Resolved' ? 'text-green-600' : 'text-gray-500'
+                    }`}
                 >
-                    <option value="Unread">Unread</option>
-                    <option value="Read">Read</option>
+                    <option value="Open">Open</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Resolved">Resolved</option>
+                    <option value="Closed">Closed</option>
                 </select>
             )
         },
@@ -142,18 +220,14 @@ const SupportManagement = () => {
             render: (item) => (
                 <div className="flex items-center justify-end gap-2">
                     <button
-                        onClick={() => setSelectedTicket(item)}
-                        className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-[#3E2723] hover:bg-[#3E2723]/5 rounded-lg transition-all"
-                        title="View Details"
+                        onClick={() => {
+                            setSelectedTicket(item);
+                            setTicketStatusUpdate(item.status === 'Open' ? 'In Progress' : item.status);
+                        }}
+                        className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-[#3E2723] hover:bg-[#3E2723]/5 rounded-lg transition-all cursor-pointer"
+                        title="View & Reply"
                     >
-                        <Eye className="w-4 h-4" />
-                    </button>
-                    <button
-                        onClick={() => setDeleteConfirmId(item.id)}
-                        className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                        title="Delete Ticket"
-                    >
-                        <Trash2 className="w-4 h-4" />
+                        <MessageSquare className="w-4 h-4" />
                     </button>
                 </div>
             )
@@ -164,8 +238,10 @@ const SupportManagement = () => {
         {
             options: [
                 { label: 'All', value: 'All' },
-                { label: 'Unread', value: 'Unread' },
-                { label: 'Read', value: 'Read' }
+                { label: 'Open', value: 'Open' },
+                { label: 'In Progress', value: 'In Progress' },
+                { label: 'Resolved', value: 'Resolved' },
+                { label: 'Closed', value: 'Closed' }
             ],
             onChange: (val) => setStatusFilter(val)
         }
@@ -178,25 +254,25 @@ const SupportManagement = () => {
                 subtitle="Track and resolve customer support requests"
             />
 
-            {/* 3 Stats Cards: All, Unread, Read */}
+            {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 mb-8 shrink-0">
                 <AdminStatsCard
                     label="Total Tickets"
-                    value={totalTickets}
+                    value={totalTicketsCount}
                     icon={Inbox}
                     color="text-gray-600"
                     bgColor="bg-gray-50"
                 />
                 <AdminStatsCard
-                    label="Unread"
-                    value={unreadTickets}
+                    label="Open Tickets"
+                    value={openTicketsCount}
                     icon={AlertCircle}
-                    color="text-red-500"
-                    bgColor="bg-red-50"
+                    color="text-blue-500"
+                    bgColor="bg-blue-50"
                 />
                 <AdminStatsCard
-                    label="Read"
-                    value={readTickets}
+                    label="Resolved"
+                    value={resolvedTicketsCount}
                     icon={CheckCircle2}
                     color="text-green-500"
                     bgColor="bg-green-50"
@@ -210,138 +286,149 @@ const SupportManagement = () => {
                 setSearchTerm={setSearchTerm}
                 searchPlaceholder="Search tickets..."
                 filters={filters}
+                isLoading={isLoading}
             />
 
-            {/* Ticket Details Modal */}
+            {/* Ticket Details & Chat Modal */}
             {selectedTicket && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden border border-gray-100 animate-in slide-in-from-bottom-5 duration-300">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl h-[80vh] flex flex-col overflow-hidden border border-gray-100 animate-in slide-in-from-bottom-5 duration-300">
                         {/* Header */}
-                        <div className="bg-[#3E2723] px-6 py-4 flex items-center justify-between">
+                        <div className="bg-[#3E2723] px-6 py-4 flex items-center justify-between shrink-0 text-white">
                             <div className="flex items-center gap-3">
                                 <div className="bg-white/10 p-2 rounded-lg">
-                                    <FileText className="w-5 h-5 text-white" />
+                                    <FileText className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-white text-lg">Ticket Details</h3>
-                                    <p className="text-[#D7CCC8] text-xs font-medium">{selectedTicket.id}</p>
+                                    <h3 className="font-bold text-white text-sm">Ticket conversation</h3>
+                                    <p className="text-[#D7CCC8] text-xs font-medium">#{selectedTicket.ticketId}</p>
                                 </div>
                             </div>
                             <button
                                 onClick={() => setSelectedTicket(null)}
-                                className="text-white/60 hover:text-white transition-colors bg-white/5 hover:bg-white/10 p-2 rounded-lg"
+                                className="text-white/60 hover:text-white transition-colors bg-white/5 hover:bg-white/10 p-2 rounded-lg cursor-pointer"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 18 18" /></svg>
+                                <X className="w-4 h-4" />
                             </button>
                         </div>
 
-                        <div className="p-6 overflow-y-auto max-h-[70vh] space-y-6">
-                            {/* Subject & Status */}
-                            <div className="flex items-start justify-between gap-4 pb-6 border-b border-gray-100">
+                        {/* Modal Body: Split into metadata and messages */}
+                        <div className="flex-grow overflow-hidden flex flex-col bg-gray-50/50">
+                            {/* Metadata bar */}
+                            <div className="bg-white border-b border-gray-100 px-6 py-3 flex flex-wrap justify-between items-center gap-4 shrink-0 text-xs text-gray-600">
                                 <div>
-                                    <h2 className="text-xl font-bold text-gray-900 mb-1">{selectedTicket.subject}</h2>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded">{selectedTicket.category}</span>
-                                    </div>
+                                    <span className="font-bold text-gray-900">User:</span> {selectedTicket.userName || 'Customer'} ({selectedTicket.userEmail})
                                 </div>
-                                <div className={`px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider border ${selectedTicket.status === 'Unread' ? 'text-red-700 bg-red-50 border-red-100' :
-                                    'text-green-700 bg-green-50 border-green-100'
-                                    }`}>
-                                    {selectedTicket.status}
+                                {selectedTicket.orderId && (
+                                    <div>
+                                        <span className="font-bold text-gray-900">Order:</span> #{selectedTicket.orderId}
+                                    </div>
+                                )}
+                                <div>
+                                    <span className="font-bold text-gray-900">Category:</span> {selectedTicket.category}
                                 </div>
                             </div>
 
-                            {/* Info Grid */}
-                            <div className="space-y-4">
-                                {/* Row 1: User & Order */}
-                                <div className="grid grid-cols-2 gap-4">
-                                    {/* User */}
-                                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Submitted By</label>
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-[#3E2723] flex items-center justify-center text-white text-sm font-bold">
-                                                {selectedTicket.userName.charAt(0)}
+                            {/* Chat messages thread */}
+                            <div className="flex-grow overflow-y-auto p-6 space-y-4">
+                                {/* Initial message */}
+                                <div className="flex gap-3 items-start max-w-[85%]">
+                                    <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center shrink-0">
+                                        <User className="w-4 h-4 text-gray-600" />
+                                    </div>
+                                    <div>
+                                        <div className="bg-white border border-gray-200/60 p-3.5 rounded-2xl rounded-tl-none text-xs text-gray-800 shadow-sm leading-relaxed">
+                                            <p className="font-bold text-[10px] text-[#9C5B61] mb-1">Customer</p>
+                                            {selectedTicket.message}
+                                        </div>
+                                        <span className="text-[9px] text-gray-400 mt-1 block pl-1">
+                                            {new Date(selectedTicket.createdAt).toLocaleString()}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Replies */}
+                                {selectedTicket.replies?.map((reply, i) => {
+                                    const isAdmin = reply.from === 'admin';
+                                    return (
+                                        <div
+                                            key={i}
+                                            className={`flex gap-3 max-w-[85%] ${
+                                                isAdmin ? 'ml-auto flex-row-reverse' : 'items-start'
+                                            }`}
+                                        >
+                                            <div
+                                                className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                                                    isAdmin ? 'bg-[#3E2723] text-white' : 'bg-gray-300 text-gray-600'
+                                                }`}
+                                            >
+                                                {isAdmin ? (
+                                                    <Headphones className="w-4 h-4" />
+                                                ) : (
+                                                    <User className="w-4 h-4" />
+                                                )}
                                             </div>
                                             <div>
-                                                <p className="text-sm font-bold text-gray-900">{selectedTicket.userName}</p>
-                                                <p className="text-xs text-gray-500 font-medium">{selectedTicket.userEmail}</p>
+                                                <div
+                                                    className={`p-3.5 rounded-2xl text-xs shadow-sm leading-relaxed border ${
+                                                        isAdmin
+                                                          ? 'bg-[#3E2723] text-white rounded-tr-none border-[#3E2723]/10'
+                                                          : 'bg-white text-gray-800 rounded-tl-none border-gray-200/60'
+                                                    }`}
+                                                >
+                                                    <p
+                                                        className={`font-bold text-[10px] mb-1 ${
+                                                            isAdmin ? 'text-[#D7CCC8]' : 'text-[#9C5B61]'
+                                                        }`}
+                                                    >
+                                                        {isAdmin ? 'Admin Support' : 'Customer'}
+                                                    </p>
+                                                    {reply.text}
+                                                </div>
+                                                <span className="text-[9px] text-gray-400 mt-1 block px-1 text-right">
+                                                    {new Date(reply.date).toLocaleString()}
+                                                </span>
                                             </div>
                                         </div>
-                                    </div>
+                                    );
+                                })}
+                                <div ref={repliesEndRef} />
+                            </div>
 
-                                    {/* Order ID */}
-                                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Order Information</label>
-                                        <div className="flex items-center gap-2 h-10">
-                                            {selectedTicket.orderId ? (
-                                                <>
-                                                    <ShoppingBag className="w-5 h-5 text-[#3E2723]" />
-                                                    <div>
-                                                        <p className="text-sm font-bold text-gray-900">Order #{selectedTicket.orderId}</p>
-                                                    </div>
-                                                </>
-                                            ) : (
-                                                <span className="text-sm text-gray-400 italic font-medium">Not linked to a specific order</span>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Message Body */}
-                                <div>
-                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Detailed Message</label>
-                                    <div className="bg-gray-50 p-5 rounded-xl border border-gray-100 text-sm text-gray-800 font-medium leading-relaxed">
-                                        {selectedTicket.message}
+                            {/* Reply Input Form */}
+                            <form onSubmit={handleSendAdminReply} className="bg-white border-t border-gray-200 p-4 shrink-0 flex flex-col gap-3">
+                                <div className="flex gap-4 items-center">
+                                    <div className="flex items-center gap-2 text-xs">
+                                        <span className="font-bold text-gray-700">Set Ticket Status:</span>
+                                        <select
+                                            value={ticketStatusUpdate}
+                                            onChange={(e) => setTicketStatusUpdate(e.target.value)}
+                                            className="bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1 text-xs text-gray-900 focus:outline-none focus:border-[#3E2723]"
+                                        >
+                                            <option value="In Progress">In Progress</option>
+                                            <option value="Resolved">Resolved</option>
+                                            <option value="Closed">Closed</option>
+                                        </select>
                                     </div>
                                 </div>
-                            </div>
-
-                            {/* Timeline/Meta */}
-                            <div className="flex items-center justify-between text-[11px] font-medium text-gray-400 pt-4 border-t border-gray-100">
-                                <div className="flex items-center gap-2">
-                                    <Calendar className="w-3.5 h-3.5" />
-                                    <span>Submitted on: {new Date(selectedTicket.date).toLocaleString()}</span>
+                                <div className="flex gap-2">
+                                    <textarea
+                                        rows="2"
+                                        placeholder="Type support response..."
+                                        value={adminReplyText}
+                                        onChange={(e) => setAdminReplyText(e.target.value)}
+                                        className="flex-grow bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-xs text-gray-900 focus:outline-none focus:border-[#3E2723] resize-none"
+                                    ></textarea>
+                                    <button
+                                        type="submit"
+                                        disabled={!adminReplyText.trim()}
+                                        className="px-5 bg-[#3E2723] hover:bg-[#2D1B18] disabled:opacity-40 disabled:hover:bg-[#3E2723] text-white rounded-xl flex items-center justify-center gap-1.5 transition-all text-xs font-bold cursor-pointer"
+                                    >
+                                        <Send className="w-3.5 h-3.5" />
+                                        Send
+                                    </button>
                                 </div>
-                            </div>
-                        </div>
-
-                        {/* Footer */}
-                        <div className="p-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
-                            <button
-                                onClick={() => setSelectedTicket(null)}
-                                className="px-5 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-700 hover:bg-gray-50 active:scale-95 transition-all w-full md:w-auto"
-                            >
-                                Close Details
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Custom Delete Confirmation Modal */}
-            {deleteConfirmId && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden border border-gray-100 animate-in zoom-in-95 duration-200">
-                        <div className="p-6 text-center">
-                            <div className="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-4">
-                                <AlertCircle className="w-6 h-6" />
-                            </div>
-                            <h3 className="text-lg font-bold text-gray-900 mb-2">Delete Ticket?</h3>
-                            <p className="text-sm text-gray-500 mb-6 font-medium">Are you sure you want to delete this support ticket? This action cannot be undone.</p>
-                            <div className="flex gap-3 justify-center">
-                                <button
-                                    onClick={() => setDeleteConfirmId(null)}
-                                    className="px-5 py-2.5 bg-gray-50 text-gray-700 font-bold text-xs uppercase tracking-wider rounded-xl border border-gray-200 hover:bg-gray-100 transition-colors w-full"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleConfirmDelete}
-                                    className="px-5 py-2.5 bg-red-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl hover:bg-red-700 transition-colors shadow-sm w-full"
-                                >
-                                    Yes, Delete
-                                </button>
-                            </div>
+                            </form>
                         </div>
                     </div>
                 </div>

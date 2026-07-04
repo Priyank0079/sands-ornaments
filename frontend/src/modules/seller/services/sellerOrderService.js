@@ -257,5 +257,16 @@ export const sellerOrderService = {
             console.error('Failed to mark notification as read:', err);
             return false;
         }
+    },
+
+    deleteNotification: async (notificationId) => {
+        try {
+            if (!notificationId) return false;
+            await api.delete(`seller/notifications/${notificationId}`);
+            return true;
+        } catch (err) {
+            console.error('Failed to delete notification:', err);
+            return false;
+        }
     }
 };

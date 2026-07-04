@@ -14,7 +14,7 @@ const ProfileDetailsTab = ({
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
-            <div className="md:bg-white p-0 md:p-8 md:rounded-2xl md:shadow-sm relative border border-[#EBCDD0]">
+            <div className="md:bg-white p-4 sm:p-6 md:p-8 md:rounded-2xl md:shadow-sm relative border border-[#EBCDD0]">
                 <div className="flex justify-center md:justify-between items-center mb-4 md:mb-6">
                     <h2 className="text-xl md:text-2xl font-display font-bold text-black text-center md:text-left tracking-wide">Personal Information</h2>
                     <button

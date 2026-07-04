@@ -8,6 +8,7 @@ import { WishlistProvider } from './context/WishlistContext';
 import { OrderProvider } from './context/OrderContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { SocketProvider } from './context/SocketContext';
+import { SupportProvider } from './context/SupportContext';
 import Navbar from './modules/user/components/Navbar';
 import Footer from './modules/user/components/Footer';
 import ScrollToTop from './ScrollToTop';
@@ -15,12 +16,13 @@ import AppErrorBoundary from './components/AppErrorBoundary';
 import CategoryNav from './modules/user/components/CategoryNav';
 import AnnouncementBar from './modules/user/components/AnnouncementBar';
 import PincodeModal from './modules/user/components/PincodeModal';
-import WhatsAppFloating from './modules/user/components/WhatsAppFloating';
+import FloatingContactStack from './modules/user/components/FloatingContactStack';
 import SmoothScrollProvider from './components/SmoothScrollProvider';
 import { usePageTracking } from './hooks/useAnalytics';
 import LeadCapturePopup from './modules/user/components/LeadCapturePopup';
 import CookieConsent from './modules/user/components/CookieConsent';
 import MobileBottomNav from './modules/user/components/MobileBottomNav';
+import WhatsAppFloating from './modules/user/components/WhatsAppFloating';
 
 // Admin Imports — lazy loaded (only used on /admin/* routes, never by mobile users)
 const AdminLogin = lazy(() => import('./modules/admin/pages/Login'));
@@ -70,6 +72,7 @@ const CommissionReport = lazy(() => import('./modules/admin/pages/CommissionRepo
 const AdminShipments = lazy(() => import('./modules/admin/pages/AdminShipments'));
 const AnalyticsDashboard = lazy(() => import('./modules/admin/pages/AnalyticsDashboard'));
 const AuditLogPage = lazy(() => import('./modules/admin/pages/AuditLogPage'));
+const AdminPayouts = lazy(() => import('./modules/admin/pages/AdminPayouts'));
 
 // Seller Routes — lazy loaded
 const SellerRoutes = lazy(() => import('./modules/seller/routes/sellerRoutes'));
@@ -113,12 +116,24 @@ import Loader from './modules/shared/components/Loader';
 const LoadingFallback = () => <Loader fullPage={false} />;
 
 import { initializePushNotifications, registerFCMToken, setupForegroundNotificationHandler } from './services/pushNotificationService';
-import toast from 'react-hot-toast';
+import toast, { useToasterStore } from 'react-hot-toast';
 
 const AppContent = () => {
   const location = useLocation();
   const { user, loading } = useAuth();
   usePageTracking();
+
+  const isSellerPath = location.pathname.startsWith('/seller');
+  const { toasts } = useToasterStore();
+
+  React.useEffect(() => {
+    if (isSellerPath) {
+      toasts
+        .filter((t) => t.visible)
+        .slice(0, -1)
+        .forEach((t) => toast.dismiss(t.id));
+    }
+  }, [toasts, isSellerPath]);
 
   React.useEffect(() => {
     // Initialize push notification service worker.
@@ -127,6 +142,19 @@ const AppContent = () => {
     // Setup foreground handler
     setupForegroundNotificationHandler((payload) => {
       console.log('Notification received in foreground:', payload);
+      const title = payload.notification?.title || '';
+      const body = payload.notification?.body || '';
+
+      // Skip duplicate toasts for order confirmation
+      if (
+        title.toLowerCase().includes('order placed') ||
+        body.toLowerCase().includes('order placed') ||
+        title.toLowerCase().includes('order confirmed') ||
+        body.toLowerCase().includes('order confirmed')
+      ) {
+        return;
+      }
+
       // Show a toast for foreground notifications
       toast.success(payload.notification.body, {
         icon: '🔔',
@@ -140,37 +168,8 @@ const AppContent = () => {
     registerFCMToken().catch(err => console.error("FCM registration error:", err));
   }, [loading, user]);
 
-  const [isNavVisible, setIsNavVisible] = React.useState(true);
-  const lastScrollY = React.useRef(0);
-
-  React.useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      
-      // Always show nav at the very top
-      if (currentScrollY <= 50) {
-        setIsNavVisible(true);
-      } 
-      // Hide when scrolling down
-      else if (currentScrollY > lastScrollY.current) {
-        setIsNavVisible(false);
-      } 
-      // Show immediately when scrolling up
-      else {
-        setIsNavVisible(true);
-      }
-      
-      lastScrollY.current = currentScrollY;
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
 
   const isAdminPath = location.pathname.startsWith('/admin');
-  const isSellerPath = location.pathname.startsWith('/seller');
   const isScannerPath = location.pathname === '/scanner';
   const showMetalToggle = location.pathname === '/' || location.pathname === '/gold-collection';
 
@@ -179,9 +178,7 @@ const AppContent = () => {
       {!isAdminPath && !isSellerPath && !isScannerPath && (
         <>
           <div 
-            className={`fixed top-0 left-0 right-0 z-[150] w-full transition-transform duration-300 ease-out ${
-              isNavVisible ? 'translate-y-0' : '-translate-y-full'
-            }`}
+            className="fixed top-0 left-0 right-0 z-[150] w-full"
           >
             <AnnouncementBar />
             <Navbar />
@@ -301,6 +298,7 @@ const AppContent = () => {
                   <Route path="/commission/report" element={<CommissionReport />} />
                   <Route path="/shipping" element={<AdminShipments />} />
                   <Route path="/audit-logs" element={<AuditLogPage />} />
+                  <Route path="/payout" element={<AdminPayouts />} />
                 </Routes>
               </AdminLayout>
             </AdminProtectedRoute>
@@ -316,6 +314,7 @@ const AppContent = () => {
       {!isAdminPath && !isSellerPath && !isScannerPath && (
         <>
           <Footer />
+          <FloatingContactStack />
           <WhatsAppFloating />
           <MobileBottomNav />
         </>
@@ -337,13 +336,15 @@ function App() {
               <OrderProvider>
                 <NotificationProvider>
                   <ShopProvider>
-                    <Router>
-                      <SmoothScrollProvider />
-                      <ScrollToTop />
-                      <AppErrorBoundary>
-                        <AppContent />
-                      </AppErrorBoundary>
-                    </Router>
+                    <SupportProvider>
+                      <Router>
+                        <SmoothScrollProvider />
+                        <ScrollToTop />
+                        <AppErrorBoundary>
+                          <AppContent />
+                        </AppErrorBoundary>
+                      </Router>
+                    </SupportProvider>
                   </ShopProvider>
                 </NotificationProvider>
               </OrderProvider>

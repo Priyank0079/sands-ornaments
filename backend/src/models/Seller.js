@@ -88,6 +88,16 @@ const sellerSchema = new mongoose.Schema({
   fcmTokens: { type: [String], default: [] },
   fcmTokenMobile: { type: [String], default: [] },
 
+  // ── Wallet ───────────────────────────────────────────────────────────────
+  // walletBalance: running balance in ₹ (may be slightly negative due to
+  //   commission reversals that overshoot available credit; payout requests
+  //   are blocked when balance < ₹500).
+  walletBalance: { type: Number, default: 0 },
+
+  // Lifetime cumulative metrics (incremented atomically, never decremented).
+  totalCommissionsEarned: { type: Number, default: 0 }, // sum of all confirmed commission credits
+  totalPaidOut:           { type: Number, default: 0 }, // sum of all APPROVED payout amounts
+
 }, { timestamps: true });
 
 module.exports = mongoose.model("Seller", sellerSchema);

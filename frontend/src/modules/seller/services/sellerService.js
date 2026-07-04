@@ -111,5 +111,15 @@ export const sellerService = {
             console.error("Failed to update metal pricing:", err);
             return { success: false, message: err.response?.data?.message || "Metal pricing update failed" };
         }
+    },
+
+    deleteAccount: async () => {
+        try {
+            const res = await api.delete('/seller/profile/me');
+            return res.data;
+        } catch (err) {
+            console.error("Failed to delete seller account:", err);
+            return { success: false, message: err.response?.data?.message || "Account deletion failed" };
+        }
     }
 };

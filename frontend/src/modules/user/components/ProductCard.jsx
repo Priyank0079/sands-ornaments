@@ -110,7 +110,7 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
         addToCart(product);
         setTimeout(() => {
             setFlying(false);
-            navigate('/cart');
+            toast.success('Added to cart!', { icon: '🛒' });
         }, 800);
     };
 

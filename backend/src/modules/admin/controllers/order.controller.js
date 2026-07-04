@@ -8,6 +8,7 @@ const {
 } = require("../../../services/commissionService");
 const { processRefund: razorpayProcessRefund } = require("../../../services/razorpayService");
 const auditLogger = require("../../../utils/auditLogger");
+const { createNotification } = require("../../../services/notificationService");
 
 const ALLOWED_TRANSITIONS = {
   Pending: [],
@@ -120,9 +121,20 @@ exports.getOrderDetail = async (req, res) => {
     }
     const order = await Order.findById(req.params.id)
       .populate("userId", "name email phone")
-      .populate("items.productId", "name images variants")
       .lean();
     if (!order) return error(res, "Order not found", 404);
+
+    const hasValidProducts = order.items && order.items.some(
+      item => item.productId && mongoose.Types.ObjectId.isValid(item.productId)
+    );
+    if (hasValidProducts) {
+      await Order.populate(order, {
+        path: "items.productId",
+        select: "name images variants",
+        model: "Product"
+      });
+    }
+
     return success(res, { order }, "Order details retrieved");
   } catch (err) { return error(res, err.message); }
 };
@@ -197,13 +209,61 @@ exports.updateOrderStatus = async (req, res) => {
     });
 
     await order.save();
+
+    if (!isSameStatusUpdate && ["Cancelled", "Returned"].includes(nextStatus)) {
+      if (Array.isArray(order.appliedGiftCards) && order.appliedGiftCards.length > 0) {
+        const GiftCard = require("../../../models/GiftCard");
+        for (const gc of order.appliedGiftCards) {
+          if (!gc.cardId || !gc.amountUsed) continue;
+          const updatedCard = await GiftCard.findOneAndUpdate(
+            { _id: gc.cardId },
+            {
+              $inc:  { balance: gc.amountUsed },
+              $pull: { redemptions: { orderId: order.orderId } },
+            },
+            { new: true }
+          );
+          if (updatedCard) {
+            const newStatus = updatedCard.balance <= 0 ? "used" : updatedCard.balance < updatedCard.value ? "partially_used" : "active";
+            await GiftCard.updateOne({ _id: gc.cardId }, { status: newStatus });
+            console.log(`[GiftCard] Admin Refunded ₹${gc.amountUsed} back to card ${gc.code} (new balance: ₹${updatedCard.balance}) for order ${order.orderId}`);
+          }
+        }
+      }
+    }
+
     const refreshed = await Order.findById(order._id)
       .populate("userId", "name email phone")
-      .populate("items.productId", "name images variants");
+      .lean();
+
+    const hasValidProducts = refreshed.items && refreshed.items.some(
+      item => item.productId && mongoose.Types.ObjectId.isValid(item.productId)
+    );
+    if (hasValidProducts) {
+      await Order.populate(refreshed, {
+        path: "items.productId",
+        select: "name images variants",
+        model: "Product"
+      });
+    }
 
     // ── Realtime: notify the customer of their order status change (best-effort) ──
     if (!isSameStatusUpdate) {
       try { emitOrderStatusUpdate(order); } catch (e) { /* non-blocking */ }
+
+      if (nextStatus === "Cancelled" && order.userId) {
+        try {
+          await createNotification({
+            userId: order.userId,
+            title: "Order Cancelled",
+            message: `Your order #${order.orderId} has been cancelled by the administrator.`,
+            type: "CANCEL",
+            link: "/profile/orders"
+          });
+        } catch (err) {
+          console.error("[Notification] Failed to create order cancellation notification:", err.message);
+        }
+      }
     }
 
     // ── Platform commission lifecycle ─────────────────────────────────────────
@@ -333,6 +393,20 @@ exports.processRefund = async (req, res) => {
 
     await order.save();
 
+    if (order.userId) {
+      try {
+        await createNotification({
+          userId: order.userId,
+          title: "Refund Processed",
+          message: `A refund of ₹${refundAmount} has been processed for your order #${order.orderId || order._id}.`,
+          type: "RETURN",
+          link: "/profile/orders"
+        });
+      } catch (err) {
+        console.error("[Notification] Failed to create refund notification:", err.message);
+      }
+    }
+
     // Audit log — non-blocking
     auditLogger.log(req, {
       action:      "REFUND",
@@ -345,7 +419,18 @@ exports.processRefund = async (req, res) => {
 
     const refreshed = await Order.findById(order._id)
       .populate("userId", "name email phone")
-      .populate("items.productId", "name images variants");
+      .lean();
+
+    const hasValidProducts = refreshed.items && refreshed.items.some(
+      item => item.productId && mongoose.Types.ObjectId.isValid(item.productId)
+    );
+    if (hasValidProducts) {
+      await Order.populate(refreshed, {
+        path: "items.productId",
+        select: "name images variants",
+        model: "Product"
+      });
+    }
 
     return success(
       res,

@@ -93,7 +93,7 @@ const MenExploreCollections = ({ sectionData }) => {
 
                 {/* Header */}
                 <div className="text-center mb-4 md:mb-6">
-                    <h2 className="text-xl md:text-[28px] font-bold text-gray-900 tracking-tight uppercase" style={{ fontFamily: "'Inter', sans-serif" }}>
+                    <h2 className="text-xl md:text-[28px] font-bold text-gray-900 tracking-tight uppercase" style={{ fontFamily: "'Lato', sans-serif" }}>
                         {resolvedTitle}
                     </h2>
                 </div>

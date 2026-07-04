@@ -119,7 +119,7 @@ const SellerOrderDetail = () => {
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500 font-sans pb-20">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => navigate('/seller/orders')}
@@ -135,7 +135,7 @@ const SellerOrderDetail = () => {
                     </div>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-3 w-full md:w-auto">
                     {canManage && currentStatus === 'Processing' && (
                         <>
                             <button
@@ -361,19 +361,35 @@ const SellerOrderDetail = () => {
                     <div className={cardClasses}>
                         <h3 className={sectionTitleClasses}><Box size={14} className="text-[#3E2723]" /> Seller Items</h3>
                         <div className="space-y-4">
-                            {sellerItems.map((item) => (
-                                <div key={item._id} className="flex gap-6 items-center p-6 bg-[#FDFBF7] rounded-[2rem] border border-[#EFEBE9]">
-                                    <div className="w-24 h-24 bg-white rounded-2xl border border-gray-100 flex items-center justify-center p-3 shadow-inner">
-                                        {item.image || item.productId?.images?.[0] || item.productId?.image ? (
-                                            <img src={item.image || item.productId?.images?.[0] || item.productId?.image} alt={item.name} className="w-full h-full object-contain" />
-                                        ) : (
-                                            <div className="text-[10px] font-black text-gray-300 uppercase text-center">No Image</div>
-                                        )}
-                                    </div>
+                            {sellerItems.map((item) => {
+                                const variant = item.productId?.variants?.find(v => String(v._id) === String(item.variantId));
+                                const variantImg = variant?.variantImages?.[0];
+                                const imgSrc = item.image || variantImg || item.productId?.images?.[0] || item.productId?.image;
+                                return (
+                                    <div key={item._id} className="flex gap-6 items-center p-6 bg-[#FDFBF7] rounded-[2rem] border border-[#EFEBE9]">
+                                        <div className="w-24 h-24 bg-white rounded-2xl border border-gray-100 flex items-center justify-center p-3 shadow-inner">
+                                            {imgSrc ? (
+                                                <img src={imgSrc} alt={item.name} className="w-full h-full object-contain" />
+                                            ) : (
+                                                <div className="text-[10px] font-black text-gray-300 uppercase text-center">No Image</div>
+                                            )}
+                                        </div>
                                     <div className="flex-1 space-y-3">
                                         <div>
                                             <h4 className="text-lg font-black text-gray-900 uppercase tracking-tight">{item.name || item.productId?.name || 'Jewellery Item'}</h4>
                                             <p className="text-[10px] font-black text-[#8D6E63] uppercase tracking-widest mt-1">SKU: {item.sku || 'Not set'}</p>
+                                            {item.giftWrap && (
+                                                <div className="mt-2 inline-flex flex-col gap-1 bg-[#FFF8F9] border border-[#FDF2F4] rounded-lg px-3 py-1.5 text-left">
+                                                    <span className="text-[9px] font-black text-[#8E2B45] uppercase tracking-wider flex items-center gap-1">
+                                                        🎁 Gift Wrapped (+ ₹50)
+                                                    </span>
+                                                    {item.giftMessage && (
+                                                        <span className="text-[11px] font-serif italic text-gray-700 leading-normal">
+                                                            "{item.giftMessage}"
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="flex flex-wrap gap-10">
                                             <div>
@@ -409,7 +425,8 @@ const SellerOrderDetail = () => {
                                         </div>
                                     </div>
                                 </div>
-                            ))}
+                            );
+                            })}
                         </div>
                     </div>
 

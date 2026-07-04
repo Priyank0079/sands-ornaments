@@ -175,10 +175,25 @@ const ProductVariantsTab = ({
                                                     <input
                                                         type="number"
                                                         value={v.weight ?? ''}
-                                                        onChange={(e) => handleVariantChange(v.id, 'weight', e.target.value)}
+                                                        onChange={(e) => {
+                                                            const val = e.target.value;
+                                                            if (val !== '' && Number(val) < 0) return;
+                                                            handleVariantChange(v.id, 'weight', val);
+                                                        }}
+                                                        onFocus={(e) => {
+                                                            if (e.target.value === '0' || Number(e.target.value) === 0) {
+                                                                handleVariantChange(v.id, 'weight', '');
+                                                            }
+                                                        }}
+                                                        onBlur={(e) => {
+                                                            if (e.target.value === '') {
+                                                                handleVariantChange(v.id, 'weight', '');
+                                                            }
+                                                        }}
                                                         disabled={isViewMode}
                                                         className={`flex-1 min-w-0 bg-white border rounded-xl py-3.5 px-5 text-sm font-bold text-gray-800 outline-none focus:ring-4 transition-all shadow-sm ${weightError ? 'border-red-400 focus:border-red-500 focus:ring-red-200/40' : 'border-gray-200 focus:border-[#3E2723] focus:ring-[#3E2723]/5'}`}
                                                         placeholder="0"
+                                                        min={0}
                                                     />
                                                     <select
                                                         value={v.weightUnit || 'Grams'}
@@ -201,10 +216,25 @@ const ProductVariantsTab = ({
                                                     <input 
                                                         type="number" 
                                                         value={availableCount} 
-                                                        onChange={(e) => updateVariantSerialQuantity(v.id, e.target.value)} 
+                                                        onChange={(e) => {
+                                                            const val = e.target.value;
+                                                            if (val !== '' && Number(val) < 0) return;
+                                                            updateVariantSerialQuantity(v.id, val);
+                                                        }} 
+                                                        onFocus={(e) => {
+                                                            if (e.target.value === '0' || Number(e.target.value) === 0) {
+                                                                updateVariantSerialQuantity(v.id, '');
+                                                            }
+                                                        }}
+                                                        onBlur={(e) => {
+                                                            if (e.target.value === '') {
+                                                                updateVariantSerialQuantity(v.id, 0);
+                                                            }
+                                                        }}
                                                         disabled={isViewMode} 
                                                         className="w-full bg-white border border-gray-200 rounded-xl py-3.5 px-5 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm" 
                                                         placeholder="0" 
+                                                        min={0}
                                                     />
                                                     <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1">
                                                         <div className={`w-1.5 h-1.5 rounded-full ${availableCount > 0 ? 'bg-emerald-500 animate-pulse' : 'bg-gray-300'}`} />
@@ -223,10 +253,25 @@ const ProductVariantsTab = ({
                                                     <input 
                                                         type="number" 
                                                         value={v.makingCharge} 
-                                                        onChange={(e) => handleVariantChange(v.id, 'makingCharge', e.target.value)} 
+                                                        onChange={(e) => {
+                                                            const val = e.target.value;
+                                                            if (val !== '' && Number(val) < 0) return;
+                                                            handleVariantChange(v.id, 'makingCharge', val);
+                                                        }} 
+                                                        onFocus={(e) => {
+                                                            if (e.target.value === '0' || Number(e.target.value) === 0) {
+                                                                handleVariantChange(v.id, 'makingCharge', '');
+                                                            }
+                                                        }}
+                                                        onBlur={(e) => {
+                                                            if (e.target.value === '') {
+                                                                handleVariantChange(v.id, 'makingCharge', '0');
+                                                            }
+                                                        }}
                                                         disabled={isViewMode} 
                                                         className={`w-full bg-white border rounded-xl py-3.5 pl-12 pr-5 text-sm font-bold text-gray-800 outline-none focus:ring-4 transition-all shadow-sm ${makingError ? 'border-red-400 focus:border-red-500 focus:ring-red-200/40' : 'border-gray-200 focus:border-[#3E2723] focus:ring-[#3E2723]/5'}`} 
                                                         placeholder="0" 
+                                                        min={0}
                                                     />
                                                     <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 uppercase tracking-widest">Rs</span>
                                                 </div>
@@ -240,9 +285,25 @@ const ProductVariantsTab = ({
                                                     <input 
                                                         type="number" 
                                                         value={v.hallmarkingCharge ?? '0'} 
-                                                        onChange={(e) => handleVariantChange(v.id, 'hallmarkingCharge', e.target.value)} 
+                                                        onChange={(e) => {
+                                                            const val = e.target.value;
+                                                            if (val !== '' && Number(val) < 0) return;
+                                                            handleVariantChange(v.id, 'hallmarkingCharge', val);
+                                                        }} 
+                                                        onFocus={(e) => {
+                                                            if (e.target.value === '0' || Number(e.target.value) === 0) {
+                                                                handleVariantChange(v.id, 'hallmarkingCharge', '');
+                                                            }
+                                                        }}
+                                                        onBlur={(e) => {
+                                                            if (e.target.value === '') {
+                                                                handleVariantChange(v.id, 'hallmarkingCharge', '0');
+                                                            }
+                                                        }}
                                                         disabled={isViewMode} 
                                                         className={`w-full bg-white border rounded-xl py-3.5 pl-12 pr-5 text-sm font-bold text-gray-800 outline-none focus:ring-4 transition-all shadow-sm ${hallmarkingError ? 'border-red-400 focus:border-red-500 focus:ring-red-200/40' : 'border-gray-200 focus:border-[#3E2723] focus:ring-[#3E2723]/5'}`} 
+                                                        placeholder="0"
+                                                        min={0}
                                                     />
                                                     <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 uppercase tracking-widest">Rs</span>
                                                 </div>
@@ -256,10 +317,25 @@ const ProductVariantsTab = ({
                                                     <input
                                                         type="number"
                                                         value={v.diamondPrice ?? '0'}
-                                                        onChange={(e) => handleVariantChange(v.id, 'diamondPrice', e.target.value)}
+                                                        onChange={(e) => {
+                                                            const val = e.target.value;
+                                                            if (val !== '' && Number(val) < 0) return;
+                                                            handleVariantChange(v.id, 'diamondPrice', val);
+                                                        }}
+                                                        onFocus={(e) => {
+                                                            if (e.target.value === '0' || Number(e.target.value) === 0) {
+                                                                handleVariantChange(v.id, 'diamondPrice', '');
+                                                            }
+                                                        }}
+                                                        onBlur={(e) => {
+                                                            if (e.target.value === '') {
+                                                                handleVariantChange(v.id, 'diamondPrice', '0');
+                                                            }
+                                                        }}
                                                         disabled={isViewMode}
                                                         className={`w-full bg-white border rounded-xl py-3.5 pl-12 pr-5 text-sm font-bold text-gray-800 outline-none focus:ring-4 transition-all shadow-sm ${diamondPriceError ? 'border-red-400 focus:border-red-500 focus:ring-red-200/40' : 'border-gray-200 focus:border-[#3E2723] focus:ring-[#3E2723]/5'}`}
                                                         placeholder="0"
+                                                        min={0}
                                                     />
                                                     <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 uppercase tracking-widest">Rs</span>
                                                 </div>
@@ -273,9 +349,25 @@ const ProductVariantsTab = ({
                                                     <input 
                                                         type="number" 
                                                         value={v.diamondCertificateCharge ?? '0'} 
-                                                        onChange={(e) => handleVariantChange(v.id, 'diamondCertificateCharge', e.target.value)} 
+                                                        onChange={(e) => {
+                                                            const val = e.target.value;
+                                                            if (val !== '' && Number(val) < 0) return;
+                                                            handleVariantChange(v.id, 'diamondCertificateCharge', val);
+                                                        }} 
+                                                        onFocus={(e) => {
+                                                            if (e.target.value === '0' || Number(e.target.value) === 0) {
+                                                                handleVariantChange(v.id, 'diamondCertificateCharge', '');
+                                                            }
+                                                        }}
+                                                        onBlur={(e) => {
+                                                            if (e.target.value === '') {
+                                                                handleVariantChange(v.id, 'diamondCertificateCharge', '0');
+                                                            }
+                                                        }}
                                                         disabled={isViewMode} 
                                                         className={`w-full bg-white border rounded-xl py-3.5 pl-12 pr-5 text-sm font-bold text-gray-800 outline-none focus:ring-4 transition-all shadow-sm ${certError ? 'border-red-400 focus:border-red-500 focus:ring-red-200/40' : 'border-gray-200 focus:border-[#3E2723] focus:ring-[#3E2723]/5'}`} 
+                                                        placeholder="0"
+                                                        min={0}
                                                     />
                                                     <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 uppercase tracking-widest">Rs</span>
                                                 </div>
@@ -289,10 +381,25 @@ const ProductVariantsTab = ({
                                                     <input
                                                         type="number"
                                                         value={v.additionalCharge ?? '0'}
-                                                        onChange={(e) => handleVariantChange(v.id, 'additionalCharge', e.target.value)}
+                                                        onChange={(e) => {
+                                                            const val = e.target.value;
+                                                            if (val !== '' && Number(val) < 0) return;
+                                                            handleVariantChange(v.id, 'additionalCharge', val);
+                                                        }}
+                                                        onFocus={(e) => {
+                                                            if (e.target.value === '0' || Number(e.target.value) === 0) {
+                                                                handleVariantChange(v.id, 'additionalCharge', '');
+                                                            }
+                                                        }}
+                                                        onBlur={(e) => {
+                                                            if (e.target.value === '') {
+                                                                handleVariantChange(v.id, 'additionalCharge', '0');
+                                                            }
+                                                        }}
                                                         disabled={isViewMode}
                                                         className={`w-full bg-white border rounded-xl py-3.5 pl-12 pr-5 text-sm font-bold text-gray-800 outline-none focus:ring-4 transition-all shadow-sm ${additionalError ? 'border-red-400 focus:border-red-500 focus:ring-red-200/40' : 'border-gray-200 focus:border-[#3E2723] focus:ring-[#3E2723]/5'}`}
                                                         placeholder="0"
+                                                        min={0}
                                                     />
                                                     <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 uppercase tracking-widest">Rs</span>
                                                 </div>
@@ -431,23 +538,100 @@ const ProductVariantsTab = ({
                                             <div className="space-y-4">
                                                 <div className="flex items-center justify-between">
                                                     <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Variant Signature</label>
-                                                    <button 
-                                                        type="button"
-                                                        onClick={() => handleDownloadAllSerialBarcodes(v)}
-                                                        className="text-[8px] font-black text-blue-600 uppercase tracking-widest hover:underline flex items-center gap-1"
-                                                    >
-                                                        <Download size={10} /> Batch Export
-                                                    </button>
+                                                    {v.variantCode && (
+                                                        <button 
+                                                            type="button"
+                                                            onClick={() => handleDownloadAllSerialBarcodes(v)}
+                                                            className="text-[8px] font-black text-blue-600 uppercase tracking-widest hover:underline flex items-center gap-1 cursor-pointer"
+                                                        >
+                                                            <Download size={10} /> Batch Export
+                                                        </button>
+                                                    )}
                                                 </div>
-                                                <div className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] shadow-inner">
-                                                    Pending Assignment
-                                                </div>
+                                                {v.variantCode ? (
+                                                    <div className="w-full bg-white border border-gray-100 rounded-[1.5rem] p-4 flex flex-col items-center gap-3 shadow-sm">
+                                                        <div className="bg-[#FDFBF7] p-3 rounded-xl border border-[#EFEBE9] w-full flex justify-center">
+                                                            <Barcode 
+                                                                value={v.variantCode} 
+                                                                width={1.2} 
+                                                                height={40} 
+                                                                fontSize={10}
+                                                                background="#FDFBF7"
+                                                            />
+                                                        </div>
+                                                        <span className="text-[10px] font-black text-gray-800 tracking-wider">{v.variantCode}</span>
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] shadow-inner">
+                                                        Pending Assignment
+                                                    </div>
+                                                )}
                                             </div>
                                             <div className="space-y-4">
                                                 <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Visual Identifier</label>
-                                                <div className="w-full aspect-[4/1] bg-gray-50 border border-dashed border-gray-200 rounded-2xl flex items-center justify-center">
-                                                    <p className="text-[8px] font-black text-gray-300 uppercase tracking-[0.3em]">Locked</p>
-                                                </div>
+                                                {v.serialCodes && v.serialCodes.length > 0 ? (
+                                                    <div className="grid grid-cols-1 gap-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                                                        {v.serialCodes.map((codeObj, codeIdx) => {
+                                                            const serialStatus = codeObj.status || 'AVAILABLE';
+                                                            const statusClasses = serialStatus === 'AVAILABLE'
+                                                                ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                                                                : (serialStatus === 'SOLD_ONLINE' || serialStatus === 'SOLD ONLINE'
+                                                                    ? 'bg-blue-50 text-blue-700 border-blue-100'
+                                                                    : 'bg-amber-50 text-amber-700 border-amber-100');
+
+                                                            return (
+                                                                <div key={`${v.id}-serial-${codeIdx}`} className="p-4 rounded-2xl bg-white border border-gray-100 flex flex-col gap-3 shadow-sm">
+                                                                    <div className="flex items-start justify-between gap-3">
+                                                                        <div className="min-w-0 flex-1 space-y-2">
+                                                                            <input
+                                                                                value={codeObj.code}
+                                                                                onChange={(e) => {
+                                                                                    if (isViewMode || serialStatus !== 'AVAILABLE') return;
+                                                                                    const next = formData.variants.map((variantItem) => {
+                                                                                        if (variantItem.id !== v.id) return variantItem;
+                                                                                        const serialCodes = normalizeSerialCodes(variantItem.serialCodes || []);
+                                                                                        serialCodes[codeIdx] = { ...serialCodes[codeIdx], code: e.target.value.toUpperCase() };
+                                                                                        return { ...variantItem, serialCodes };
+                                                                                    });
+                                                                                    setFormData(prev => ({ ...prev, variants: next }));
+                                                                                }}
+                                                                                disabled={isViewMode || serialStatus !== 'AVAILABLE'}
+                                                                                className="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-3 text-[10px] font-mono font-black placeholder:text-gray-300 focus:outline-none focus:border-[#3E2723] transition-all disabled:bg-gray-100 disabled:text-gray-400"
+                                                                            />
+                                                                            <div className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[8px] font-black uppercase tracking-widest ${statusClasses}`}>
+                                                                                {serialStatus.replace('_', ' ')}
+                                                                            </div>
+                                                                        </div>
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => handleDownloadSerialBarcode(codeObj.code)}
+                                                                            className="shrink-0 p-2 bg-white border border-gray-200 rounded-xl text-gray-500 hover:text-[#3E2723] hover:border-[#3E2723] transition-all cursor-pointer"
+                                                                            title="Download unit barcode"
+                                                                        >
+                                                                            <Download size={14} />
+                                                                        </button>
+                                                                    </div>
+                                                                    <div
+                                                                        className="bg-[#FDFBF7] border border-[#EFEBE9] rounded-xl px-3 py-3 overflow-hidden flex justify-center"
+                                                                        ref={(node) => setSerialBarcodeRef(codeObj.code, node)}
+                                                                    >
+                                                                        <Barcode
+                                                                            value={codeObj.code}
+                                                                            width={1.2}
+                                                                            height={30}
+                                                                            fontSize={10}
+                                                                            background="#FDFBF7"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-full aspect-[4/1] bg-gray-50 border border-dashed border-gray-200 rounded-2xl flex items-center justify-center">
+                                                        <p className="text-[8px] font-black text-gray-300 uppercase tracking-[0.2em] text-center">Set stock to generate barcodes</p>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -478,10 +662,15 @@ const ProductVariantsTab = ({
                                                         <input 
                                                             type={spec.type || 'text'}
                                                             value={v.diamondSpecs?.[spec.key] || ''} 
-                                                            onChange={(e) => handleDiamondSpecChange(v.id, spec.key, e.target.value)}
+                                                            onChange={(e) => {
+                                                                const val = e.target.value;
+                                                                if (spec.type === 'number' && val !== '' && Number(val) < 0) return;
+                                                                handleDiamondSpecChange(v.id, spec.key, val);
+                                                            }}
                                                             disabled={isViewMode}
                                                             className="w-full bg-white border border-pink-100 rounded-xl py-2.5 px-4 text-xs font-bold text-gray-800 outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-500/5 transition-all shadow-sm"
                                                             placeholder={spec.placeholder}
+                                                            min={spec.type === 'number' ? 0 : undefined}
                                                         />
                                                     </div>
                                                 ))}

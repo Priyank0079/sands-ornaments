@@ -52,7 +52,7 @@ const AdminSellerDetails = () => {
     const sectionTitleClasses = "text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2";
     const infoLabelClasses = "text-[9px] font-black text-gray-400 uppercase tracking-widest";
     const infoValueClasses = "text-sm font-bold text-gray-900 mt-1 uppercase";
-    const cardClasses = "bg-white rounded-2xl border border-gray-100 p-8 shadow-sm h-full";
+    const cardClasses = "bg-white rounded-2xl border border-gray-100 p-8 shadow-sm";
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
@@ -66,7 +66,7 @@ const AdminSellerDetails = () => {
                     </button>
                     <div>
                         <h1 className="text-2xl font-black text-gray-900 uppercase tracking-tight">SELLER DETAILS</h1>
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mt-1">VERIFICATION WORKFLOW - ID: {seller._id}</p>
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mt-1">VERIFICATION WORKFLOW - ID: {seller._id ? String(seller._id).slice(-8).toUpperCase() : ''}</p>
                     </div>
                 </div>
 
@@ -274,36 +274,60 @@ const AdminSellerDetails = () => {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             <div className="space-y-3">
                                 <p className={infoLabelClasses}>Aadhar Card</p>
-                                <div className="aspect-video bg-gray-50 rounded-xl border border-dashed border-gray-200 flex items-center justify-center group overflow-hidden relative">
-                                    <FileText size={32} className="text-gray-300 group-hover:scale-110 transition-transform" />
-                                    {seller.documents?.aadharUrl ? (
-                                        <a href={seller.documents.aadharUrl} target="_blank" rel="noreferrer" className="absolute bottom-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest underline decoration-dotted hover:text-[#3E2723]">View Full Document</a>
-                                    ) : (
+                                {seller.documents?.aadharUrl ? (
+                                    <a 
+                                        href={seller.documents.aadharUrl} 
+                                        target="_blank" 
+                                        rel="noreferrer" 
+                                        className="aspect-video bg-gray-50 rounded-xl border border-dashed border-gray-200 flex flex-col items-center justify-center group overflow-hidden relative cursor-pointer hover:bg-gray-100/50 transition-all"
+                                    >
+                                        <FileText size={32} className="text-gray-300 group-hover:scale-110 transition-transform" />
+                                        <span className="absolute bottom-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest underline decoration-dotted hover:text-[#3E2723]">View Full Document</span>
+                                    </a>
+                                ) : (
+                                    <div className="aspect-video bg-gray-50 rounded-xl border border-dashed border-gray-200 flex items-center justify-center group overflow-hidden relative">
+                                        <FileText size={32} className="text-gray-300" />
                                         <span className="absolute bottom-4 text-[9px] font-bold text-gray-300 uppercase tracking-widest">Not uploaded</span>
-                                    )}
-                                </div>
+                                    </div>
+                                )}
                             </div>
                             <div className="space-y-3">
                                 <p className={infoLabelClasses}>Shop License</p>
-                                <div className="aspect-video bg-gray-50 rounded-xl border border-dashed border-gray-200 flex items-center justify-center group overflow-hidden relative">
-                                    <ShieldCheck size={32} className="text-gray-300 group-hover:scale-110 transition-transform" />
-                                    {seller.documents?.shopLicenseUrl ? (
-                                        <a href={seller.documents.shopLicenseUrl} target="_blank" rel="noreferrer" className="absolute bottom-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest underline decoration-dotted hover:text-[#3E2723]">View Full Document</a>
-                                    ) : (
+                                {seller.documents?.shopLicenseUrl ? (
+                                    <a 
+                                        href={seller.documents.shopLicenseUrl} 
+                                        target="_blank" 
+                                        rel="noreferrer" 
+                                        className="aspect-video bg-gray-50 rounded-xl border border-dashed border-gray-200 flex flex-col items-center justify-center group overflow-hidden relative cursor-pointer hover:bg-gray-100/50 transition-all"
+                                    >
+                                        <ShieldCheck size={32} className="text-gray-300 group-hover:scale-110 transition-transform" />
+                                        <span className="absolute bottom-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest underline decoration-dotted hover:text-[#3E2723]">View Full Document</span>
+                                    </a>
+                                ) : (
+                                    <div className="aspect-video bg-gray-50 rounded-xl border border-dashed border-gray-200 flex items-center justify-center group overflow-hidden relative">
+                                        <ShieldCheck size={32} className="text-gray-300" />
                                         <span className="absolute bottom-4 text-[9px] font-bold text-gray-300 uppercase tracking-widest">Not uploaded</span>
-                                    )}
-                                </div>
+                                    </div>
+                                )}
                             </div>
                             <div className="space-y-3">
                                 <p className={infoLabelClasses}>Certificate</p>
-                                <div className="aspect-video bg-gray-50 rounded-xl border border-dashed border-gray-200 flex items-center justify-center group overflow-hidden relative">
-                                    <FileText size={32} className="text-gray-300 group-hover:scale-110 transition-transform" />
-                                    {seller.documents?.certificateUrl ? (
-                                        <a href={seller.documents.certificateUrl} target="_blank" rel="noreferrer" className="absolute bottom-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest underline decoration-dotted hover:text-[#3E2723]">View Full Document</a>
-                                    ) : (
+                                {seller.documents?.certificateUrl ? (
+                                    <a 
+                                        href={seller.documents.certificateUrl} 
+                                        target="_blank" 
+                                        rel="noreferrer" 
+                                        className="aspect-video bg-gray-50 rounded-xl border border-dashed border-gray-200 flex flex-col items-center justify-center group overflow-hidden relative cursor-pointer hover:bg-gray-100/50 transition-all"
+                                    >
+                                        <FileText size={32} className="text-gray-300 group-hover:scale-110 transition-transform" />
+                                        <span className="absolute bottom-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest underline decoration-dotted hover:text-[#3E2723]">View Full Document</span>
+                                    </a>
+                                ) : (
+                                    <div className="aspect-video bg-gray-50 rounded-xl border border-dashed border-gray-200 flex items-center justify-center group overflow-hidden relative">
+                                        <FileText size={32} className="text-gray-300" />
                                         <span className="absolute bottom-4 text-[9px] font-bold text-gray-300 uppercase tracking-widest">Not uploaded</span>
-                                    )}
-                                </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

@@ -4,7 +4,7 @@ import api from '../../../services/api';
 import {
     Plus, Ticket, Clock, RotateCcw, AlertTriangle,
     Users, IndianRupee, ShoppingBag,
-    Store, Activity
+    Store, Activity, Wallet, AlertCircle
 } from 'lucide-react';
 import AdminStatsCard from '../components/AdminStatsCard';
 import AdminTable from '../components/AdminTable';
@@ -33,7 +33,9 @@ const AdminDashboard = () => {
         pendingOrders: 0,
         sellers: 0,
         revenue: 0,
-        recent: []
+        recent: [],
+        commissionEarnings: 0,
+        pendingPayoutRequests: 0,
     });
     const [loading, setLoading] = React.useState(true);
     const [errorMessage, setErrorMessage] = React.useState('');
@@ -68,6 +70,8 @@ const AdminDashboard = () => {
                 pendingOrders: Number(payload.pendingOrders ?? pendingFromDistribution ?? 0),
                 sellers: Number(summary.totalSellers || 0),
                 revenue: Number(summary.totalRevenue || 0),
+                commissionEarnings:     Number(payload.totalCommissionsEarned || 0),
+                pendingPayoutRequests:  Number(payload.pendingPayoutRequests  || 0),
                 recent: recentOrders.map((order) => ({
                     id: order.orderId || order._id || 'N/A',
                     date: order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A',
@@ -128,6 +132,7 @@ const AdminDashboard = () => {
         { label: 'TOTAL SELLERS', value: statsData.sellers, icon: Store, color: 'text-indigo-500', bgColor: 'bg-indigo-50' },
         { label: 'TOTAL ORDERS', value: statsData.orders, icon: ShoppingBag, color: 'text-blue-500', bgColor: 'bg-blue-50' },
         { label: 'PENDING ORDERS', value: statsData.pendingOrders, icon: Clock, color: 'text-orange-500', bgColor: 'bg-orange-50', badge: statsData.pendingOrders > 0 ? 'ACTION REQUIRED' : '', badgeColor: 'text-red-500' },
+        { label: 'COMMISSION EARNED', value: formatINR(statsData.commissionEarnings), icon: Wallet, color: 'text-violet-500', bgColor: 'bg-violet-50' },
     ];
 
     const orderColumns = [
@@ -185,6 +190,24 @@ const AdminDashboard = () => {
                 </div>
             )}
 
+            {/* Pending payout requests alert */}
+            {statsData.pendingPayoutRequests > 0 && (
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-amber-50 rounded-2xl p-4 border border-amber-200">
+                    <div className="flex items-center gap-3">
+                        <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
+                        <p className="text-sm font-semibold text-amber-800">
+                            {statsData.pendingPayoutRequests} seller payout request{statsData.pendingPayoutRequests > 1 ? 's' : ''} require your review
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => navigate('/admin/payout')}
+                        className="text-xs font-bold text-amber-700 bg-amber-100 hover:bg-amber-200 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap self-start sm:self-auto"
+                    >
+                        REVIEW NOW
+                    </button>
+                </div>
+            )}
+
             <div>
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 text-left">QUICK MANAGEMENT</p>
                 <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
@@ -233,25 +256,25 @@ const AdminDashboard = () => {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="bg-emerald-50 rounded-2xl border border-emerald-100 shadow-sm p-5">
                         <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Confirmed (Net)</p>
-                        <p className="text-2xl font-black text-emerald-700 mt-2">
+                        <p className="text-lg sm:text-xl md:text-2xl font-black text-emerald-700 mt-2 break-all sm:break-words">
                             {commissionLoading ? '…' : formatINR(commissionTotals.net)}
                         </p>
                     </div>
                     <div className="bg-amber-50 rounded-2xl border border-amber-100 shadow-sm p-5">
                         <p className="text-[10px] font-black text-amber-700 uppercase tracking-widest">Pending Pipeline</p>
-                        <p className="text-2xl font-black text-amber-700 mt-2">
+                        <p className="text-lg sm:text-xl md:text-2xl font-black text-amber-700 mt-2 break-all sm:break-words">
                             {commissionLoading ? '…' : formatINR(commissionTotals.pending)}
                         </p>
                     </div>
                     <div className="bg-rose-50 rounded-2xl border border-rose-100 shadow-sm p-5">
                         <p className="text-[10px] font-black text-rose-700 uppercase tracking-widest">Reversed</p>
-                        <p className="text-2xl font-black text-rose-700 mt-2">
+                        <p className="text-lg sm:text-xl md:text-2xl font-black text-rose-700 mt-2 break-all sm:break-words">
                             {commissionLoading ? '…' : formatINR(commissionTotals.reversed)}
                         </p>
                     </div>
                     <div className="bg-blue-50 rounded-2xl border border-blue-100 shadow-sm p-5">
                         <p className="text-[10px] font-black text-blue-700 uppercase tracking-widest">Gross Accrued</p>
-                        <p className="text-2xl font-black text-blue-700 mt-2">
+                        <p className="text-lg sm:text-xl md:text-2xl font-black text-blue-700 mt-2 break-all sm:break-words">
                             {commissionLoading ? '…' : formatINR(commissionTotals.gross)}
                         </p>
                     </div>

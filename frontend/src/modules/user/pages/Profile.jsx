@@ -12,6 +12,7 @@ const OrdersTab = React.lazy(() => import('../components/Profile/OrdersTab'));
 const AddressesTab = React.lazy(() => import('../components/Profile/AddressesTab'));
 const PaymentsTab = React.lazy(() => import('../components/Profile/PaymentsTab'));
 const CouponsTab = React.lazy(() => import('../components/Profile/CouponsTab'));
+const GiftCardsTab = React.lazy(() => import('../components/Profile/GiftCardsTab'));
 
 const EMPTY_ADDRESS = {
     name: '',
@@ -28,7 +29,7 @@ const EMPTY_ADDRESS = {
 
 const normalizeAddressPayload = (address) => ({
     name: String(address.name || '').trim(),
-    phone: String(address.phone || '').replace(/\D/g, ''),
+    phone: String(address.phone || '').replace(/\D/g, '').slice(-10),
     flatNo: String(address.flatNo || '').trim(),
     area: String(address.area || '').trim(),
     city: String(address.city || '').trim(),
@@ -246,6 +247,9 @@ const Profile = () => {
                                     copiedCoupon={copiedCoupon}
                                     handleCopyCoupon={handleCopyCoupon}
                                 />
+                            )}
+                            {activeTab === 'gift-cards' && (
+                                <GiftCardsTab />
                             )}
                             {activeTab === 'addresses' && (
                                 <AddressesTab 

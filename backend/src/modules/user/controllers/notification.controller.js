@@ -9,12 +9,13 @@ exports.getMyNotifications = async (req, res) => {
   try {
     const userId = req.user.userId;
     
-    // Fetch user-specific + global broadcasts, excluding those hidden by this user
+    // Fetch user-specific + global broadcasts, excluding those hidden by this user or admin-only requests
     const notifications = await Notification.find({
       $or: [
         { userId },
         { isBroadcast: true }
       ],
+      type: { $ne: "SELLER_REQUEST" },
       hiddenBy: { $ne: userId }
     }).sort({ createdAt: -1 }).limit(50).lean();
 

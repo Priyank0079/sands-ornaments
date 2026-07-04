@@ -6,8 +6,14 @@ const User = require("../../../models/User");
 const { success, error } = require("../../../utils/apiResponse");
 const { enqueueEmail } = require("../../../services/emailService");
 const emailTemplates = require("../../../services/emailTemplates");
-const { isSerializedVariant, restockSerializedUnits } = require("../../../utils/inventorySync");
-const { reverseCommissionsForOrder } = require("../../../services/commissionService");
+const {
+  isSerializedVariant,
+  restockSerializedUnits,
+} = require("../../../utils/inventorySync");
+const {
+  reverseCommissionsForOrder,
+} = require("../../../services/commissionService");
+const { createNotification } = require("../../../services/notificationService");
 
 const VALID_STATUSES = [
   "Pending",
@@ -17,7 +23,7 @@ const VALID_STATUSES = [
   "Pickup Completed",
   "Refund Initiated",
   "Refunded",
-  "Closed"
+  "Closed",
 ];
 
 const ALLOWED_TRANSITIONS = {
@@ -28,7 +34,7 @@ const ALLOWED_TRANSITIONS = {
   "Pickup Completed": ["Refund Initiated", "Refunded", "Closed"],
   "Refund Initiated": ["Refunded", "Closed"],
   Refunded: ["Closed"],
-  Closed: []
+  Closed: [],
 };
 
 const STATUSES_THAT_KEEP_ORDER_IN_RETURN_FLOW = [
@@ -36,7 +42,7 @@ const STATUSES_THAT_KEEP_ORDER_IN_RETURN_FLOW = [
   "Approved",
   "Pickup Scheduled",
   "Pickup Completed",
-  "Refund Initiated"
+  "Refund Initiated",
 ];
 const VOID_TAG_REQUIRED_STATUSES = new Set(["Approved", "Rejected"]);
 
@@ -44,7 +50,14 @@ const shouldMarkOrderAsReturned = (currentStatus, nextStatus) => {
   if (nextStatus === "Refunded") return true;
   if (nextStatus !== "Closed") return false;
 
-  return ["Approved", "Pickup Scheduled", "Pickup Completed", "Refund Initiated", "Refunded", "Closed"].includes(currentStatus);
+  return [
+    "Approved",
+    "Pickup Scheduled",
+    "Pickup Completed",
+    "Refund Initiated",
+    "Refunded",
+    "Closed",
+  ].includes(currentStatus);
 };
 
 const buildOrderStatusFromReturnStatus = (currentStatus, nextStatus) => {
@@ -67,7 +80,10 @@ const returnRequiresVoidTagVerification = (returnReq) =>
   (returnReq?.items || []).some((item) => String(item?.voidTagId || "").trim());
 
 const validateVoidTagDecision = ({ returnReq, nextStatus, voidTagStatus }) => {
-  if (!VOID_TAG_REQUIRED_STATUSES.has(nextStatus) || !returnRequiresVoidTagVerification(returnReq)) {
+  if (
+    !VOID_TAG_REQUIRED_STATUSES.has(nextStatus) ||
+    !returnRequiresVoidTagVerification(returnReq)
+  ) {
     return null;
   }
 
@@ -90,15 +106,22 @@ exports.getAllReturns = async (req, res) => {
       page = 1,
       limit = 20,
       sortBy = "createdAt",
-      sortOrder = "desc"
+      sortOrder = "desc",
     } = req.query;
 
     if (status && !VALID_STATUSES.includes(status)) {
-      return error(res, `Invalid status. Must be one of: ${VALID_STATUSES.join(", ")}`, 400);
+      return error(
+        res,
+        `Invalid status. Must be one of: ${VALID_STATUSES.join(", ")}`,
+        400,
+      );
     }
 
     const safePage = Math.max(1, Number.parseInt(page, 10) || 1);
-    const safeLimit = Math.min(100, Math.max(1, Number.parseInt(limit, 10) || 20));
+    const safeLimit = Math.min(
+      100,
+      Math.max(1, Number.parseInt(limit, 10) || 20),
+    );
     const trimmedSearch = String(search || "").trim();
 
     const query = {};
@@ -106,12 +129,23 @@ exports.getAllReturns = async (req, res) => {
       query.status = status;
     }
 
-    const allowedSortFields = new Set(["createdAt", "updatedAt", "requestDate", "status", "returnId"]);
-    const safeSortBy = allowedSortFields.has(String(sortBy)) ? String(sortBy) : "createdAt";
+    const allowedSortFields = new Set([
+      "createdAt",
+      "updatedAt",
+      "requestDate",
+      "status",
+      "returnId",
+    ]);
+    const safeSortBy = allowedSortFields.has(String(sortBy))
+      ? String(sortBy)
+      : "createdAt";
     const safeSortOrder = String(sortOrder).toLowerCase() === "asc" ? 1 : -1;
 
     if (trimmedSearch) {
-      const escapedSearch = trimmedSearch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const escapedSearch = trimmedSearch.replace(
+        /[.*+?^${}()|[\]\\]/g,
+        "\\$&",
+      );
       const searchRegex = new RegExp(escapedSearch, "i");
 
       const [matchedUsers, matchedOrders] = await Promise.all([
@@ -119,10 +153,12 @@ exports.getAllReturns = async (req, res) => {
           $or: [
             { name: searchRegex },
             { email: searchRegex },
-            { phone: searchRegex }
-          ]
-        }).select("_id").lean(),
-        Order.find({ orderId: searchRegex }).select("_id").lean()
+            { phone: searchRegex },
+          ],
+        })
+          .select("_id")
+          .lean(),
+        Order.find({ orderId: searchRegex }).select("_id").lean(),
       ]);
 
       const matchedUserIds = matchedUsers.map((user) => user._id);
@@ -132,7 +168,7 @@ exports.getAllReturns = async (req, res) => {
         { returnId: searchRegex },
         { "evidence.reason": searchRegex },
         { "items.name": searchRegex },
-        { "items.sku": searchRegex }
+        { "items.sku": searchRegex },
       ];
 
       if (matchedUserIds.length > 0) {
@@ -151,22 +187,28 @@ exports.getAllReturns = async (req, res) => {
       .skip((safePage - 1) * safeLimit)
       .limit(safeLimit);
 
-    return success(res, {
-      returns,
-      pagination: {
-        total,
-        page: safePage,
-        limit: safeLimit,
-        pages: Math.max(1, Math.ceil(total / safeLimit))
+    return success(
+      res,
+      {
+        returns,
+        pagination: {
+          total,
+          page: safePage,
+          limit: safeLimit,
+          pages: Math.max(1, Math.ceil(total / safeLimit)),
+        },
+        filters: {
+          status: status || null,
+          search: trimmedSearch,
+          sortBy: safeSortBy,
+          sortOrder: safeSortOrder === 1 ? "asc" : "desc",
+        },
       },
-      filters: {
-        status: status || null,
-        search: trimmedSearch,
-        sortBy: safeSortBy,
-        sortOrder: safeSortOrder === 1 ? "asc" : "desc"
-      }
-    }, "Returns retrieved");
-  } catch (err) { return error(res, err.message); }
+      "Returns retrieved",
+    );
+  } catch (err) {
+    return error(res, err.message);
+  }
 };
 
 exports.getReturnDetail = async (req, res) => {
@@ -176,7 +218,9 @@ exports.getReturnDetail = async (req, res) => {
       .populate("orderId", "orderId paymentStatus total shippingAddress");
     if (!returnReq) return error(res, "Return request not found", 404);
     return success(res, { returnReq }, "Return detail retrieved");
-  } catch (err) { return error(res, err.message); }
+  } catch (err) {
+    return error(res, err.message);
+  }
 };
 
 exports.updateReturnStatus = async (req, res) => {
@@ -191,23 +235,37 @@ exports.updateReturnStatus = async (req, res) => {
       pickupAwb,
       pickupScheduledDate,
       voidTagStatus,
-      voidTagNotes
+      voidTagNotes,
     } = req.body;
-    const returnReq = await Return.findById(req.params.id)
-      .populate("orderId", "orderId paymentStatus total shippingAddress");
+    const returnReq = await Return.findById(req.params.id).populate(
+      "orderId",
+      "orderId paymentStatus total shippingAddress",
+    );
     if (!returnReq) return error(res, "Return request not found", 404);
     if (!VALID_STATUSES.includes(status)) {
-      return error(res, `Invalid status. Must be one of: ${VALID_STATUSES.join(", ")}`, 400);
+      return error(
+        res,
+        `Invalid status. Must be one of: ${VALID_STATUSES.join(", ")}`,
+        400,
+      );
     }
 
     const currentStatus = String(returnReq.status || "").trim();
     const nextStatus = String(status || "").trim();
     const allowed = ALLOWED_TRANSITIONS[currentStatus] || [];
     if (currentStatus !== nextStatus && !allowed.includes(nextStatus)) {
-      return error(res, `Invalid status transition from ${currentStatus} to ${nextStatus}`, 400);
+      return error(
+        res,
+        `Invalid status transition from ${currentStatus} to ${nextStatus}`,
+        400,
+      );
     }
 
-    const voidTagValidationError = validateVoidTagDecision({ returnReq, nextStatus, voidTagStatus });
+    const voidTagValidationError = validateVoidTagDecision({
+      returnReq,
+      nextStatus,
+      voidTagStatus,
+    });
     if (voidTagValidationError) {
       return error(res, voidTagValidationError, 400);
     }
@@ -216,41 +274,55 @@ exports.updateReturnStatus = async (req, res) => {
     if (typeof note === "string" && note.trim()) {
       returnReq.adminComment = note.trim();
     }
-    if (refundAmount !== undefined && refundAmount !== null && refundAmount !== "") {
+    if (
+      refundAmount !== undefined &&
+      refundAmount !== null &&
+      refundAmount !== ""
+    ) {
       returnReq.refund = {
         ...(returnReq.refund || {}),
         amount: Number(refundAmount) || 0,
         initiatedAt: ["Refund Initiated", "Refunded"].includes(nextStatus)
-          ? (returnReq.refund?.initiatedAt || new Date())
-          : returnReq.refund?.initiatedAt
+          ? returnReq.refund?.initiatedAt || new Date()
+          : returnReq.refund?.initiatedAt,
       };
     }
     if (typeof refundMethod === "string" && refundMethod.trim()) {
       returnReq.refund = {
         ...(returnReq.refund || {}),
-        method: refundMethod.trim()
+        method: refundMethod.trim(),
       };
     }
     if (typeof refundTransactionId === "string" && refundTransactionId.trim()) {
       returnReq.refund = {
         ...(returnReq.refund || {}),
-        transactionId: refundTransactionId.trim()
+        transactionId: refundTransactionId.trim(),
       };
     }
-    if (nextStatus === "Pickup Scheduled" || nextStatus === "Pickup Completed") {
+    if (
+      nextStatus === "Pickup Scheduled" ||
+      nextStatus === "Pickup Completed"
+    ) {
       returnReq.pickup = {
         ...(returnReq.pickup || {}),
-        partner: typeof pickupPartner === "string" && pickupPartner.trim() ? pickupPartner.trim() : returnReq.pickup?.partner,
-        awb: typeof pickupAwb === "string" && pickupAwb.trim() ? pickupAwb.trim() : returnReq.pickup?.awb,
-        scheduledDate: pickupScheduledDate || returnReq.pickup?.scheduledDate || new Date(),
-        status: nextStatus === "Pickup Completed" ? "Completed" : "Scheduled"
+        partner:
+          typeof pickupPartner === "string" && pickupPartner.trim()
+            ? pickupPartner.trim()
+            : returnReq.pickup?.partner,
+        awb:
+          typeof pickupAwb === "string" && pickupAwb.trim()
+            ? pickupAwb.trim()
+            : returnReq.pickup?.awb,
+        scheduledDate:
+          pickupScheduledDate || returnReq.pickup?.scheduledDate || new Date(),
+        status: nextStatus === "Pickup Completed" ? "Completed" : "Scheduled",
       };
     }
 
     if (voidTagStatus) {
       returnReq.voidTagVerification = {
         status: voidTagStatus,
-        notes: voidTagNotes || ""
+        notes: voidTagNotes || "",
       };
     }
     returnReq.timeline.push({
@@ -262,13 +334,14 @@ exports.updateReturnStatus = async (req, res) => {
       action: "STATUS_UPDATE",
       comment: note || `Return status updated to ${nextStatus}`,
       by: "admin",
-      date: new Date()
+      date: new Date(),
     });
     await returnReq.save();
 
     const order = returnReq.orderId;
 
-    const needsRestock = nextStatus === "Refunded" && !returnReq.inventory?.restockedAt;
+    const needsRestock =
+      nextStatus === "Refunded" && !returnReq.inventory?.restockedAt;
     if (needsRestock) {
       // Restock each returned item only once when the refund is actually completed
       if (order) {
@@ -282,14 +355,16 @@ exports.updateReturnStatus = async (req, res) => {
             if (!variant) continue;
 
             const previousStock = Number(variant.stock) || 0;
-            const variantIndex = product.variants.findIndex(v => String(v._id) === String(item.variantId));
+            const variantIndex = product.variants.findIndex(
+              (v) => String(v._id) === String(item.variantId),
+            );
 
             if (isSerializedVariant(product, variant)) {
               restockSerializedUnits({
                 product,
                 variant,
                 quantity,
-                variantIndex
+                variantIndex,
               });
             } else {
               variant.stock = previousStock + quantity;
@@ -306,7 +381,7 @@ exports.updateReturnStatus = async (req, res) => {
               newStock: variant.stock,
               change: variant.stock - previousStock,
               reason: `Return ${nextStatus} for order ${order.orderId || order._id}`,
-              adminId: req.user.userId
+              adminId: req.user.userId,
             });
           }
         }
@@ -314,14 +389,17 @@ exports.updateReturnStatus = async (req, res) => {
         returnReq.inventory = {
           ...(returnReq.inventory || {}),
           restockedAt: new Date(),
-          restockedByStatus: nextStatus
+          restockedByStatus: nextStatus,
         };
         await returnReq.save();
       }
     }
 
     if (order) {
-      const nextOrderStatus = buildOrderStatusFromReturnStatus(currentStatus, nextStatus);
+      const nextOrderStatus = buildOrderStatusFromReturnStatus(
+        currentStatus,
+        nextStatus,
+      );
       const orderUpdate = {};
 
       if (nextStatus === "Refunded") {
@@ -340,10 +418,10 @@ exports.updateReturnStatus = async (req, res) => {
               timeline: {
                 status: orderUpdate.status || order.status,
                 note: note || `Return updated to ${nextStatus}`,
-                date: new Date()
-              }
-            }
-          }
+                date: new Date(),
+              },
+            },
+          },
         );
       }
 
@@ -354,11 +432,14 @@ exports.updateReturnStatus = async (req, res) => {
         try {
           await reverseCommissionsForOrder(order._id, {
             triggeredBy: "return_refunded",
-            reasonNote:  `Return ${returnReq.returnId || returnReq._id} refunded`,
-            safe:        true,
+            reasonNote: `Return ${returnReq.returnId || returnReq._id} refunded`,
+            safe: true,
           });
         } catch (e) {
-          console.error("[Commission] Return-refund reversal error:", e.message);
+          console.error(
+            "[Commission] Return-refund reversal error:",
+            e.message,
+          );
         }
       }
     }
@@ -373,19 +454,47 @@ exports.updateReturnStatus = async (req, res) => {
     const userEmail = returnUser && returnUser.email;
     if (userEmail) {
       enqueueEmail({
-        to:      userEmail,
-        subject: "Return Update: " + nextStatus + " - " + (refreshed.returnId || "") + " | Sands Ornaments",
-        html:    emailTemplates.returnStatusUpdate({
-          returnReq:  refreshed,
-          userName:   returnUser.name,
-          newStatus,
-          note:       note || "",
-          order:      returnOrder,
+        to: userEmail,
+        subject:
+          "Return Update: " +
+          nextStatus +
+          " - " +
+          (refreshed.returnId || "") +
+          " | Sands Jewels",
+        html: emailTemplates.returnStatusUpdate({
+          returnReq: refreshed,
+          userName: returnUser.name,
+          newStatus: nextStatus,
+          note: note || "",
+          order: returnOrder,
         }),
         type: "return_status_update",
       });
     }
 
-    return success(res, { returnReq: refreshed }, `Return ${nextStatus} successfully`);
-  } catch (err) { return error(res, err.message); }
+    if (nextStatus === "Refunded" && returnUser?._id) {
+      try {
+        await createNotification({
+          userId: returnUser._id,
+          title: "Refund Processed",
+          message: `A refund of ₹${refreshed.refund?.amount || 0} has been processed for your return request on order #${returnOrder?.orderId || returnOrder?._id}.`,
+          type: "RETURN",
+          link: "/profile/orders",
+        });
+      } catch (err) {
+        console.error(
+          "[Notification] Failed to create return refund notification:",
+          err.message,
+        );
+      }
+    }
+
+    return success(
+      res,
+      { returnReq: refreshed },
+      `Return ${nextStatus} successfully`,
+    );
+  } catch (err) {
+    return error(res, err.message);
+  }
 };

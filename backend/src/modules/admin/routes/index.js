@@ -23,6 +23,7 @@ router.use("/shipping",      require("./shipping.routes"));
 router.use("/gift-cards",    require("./giftCard.routes"));
 router.use("/commission",    require("./commission.routes"));
 router.use("/audit-logs",    require("./auditLog.routes"));
+router.use("/payout",        require("./payout.routes"));
 
 module.exports = router;
 

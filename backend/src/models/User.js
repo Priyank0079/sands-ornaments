@@ -18,9 +18,14 @@ const userSchema = new mongoose.Schema(
     fcmTokenMobile: { type: [String], default: [] },
     wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
     cart: [{
-      productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
-      variantId: { type: mongoose.Schema.Types.ObjectId },
-      quantity: { type: Number, default: 1 }
+      productId: { type: mongoose.Schema.Types.Mixed, ref: "Product" },
+      variantId: { type: mongoose.Schema.Types.Mixed },
+      quantity: { type: Number, default: 1 },
+      isGiftCard: { type: Boolean, default: false },
+      price: { type: Number, default: 0 },
+      name: { type: String, default: "" },
+      image: { type: String, default: "" },
+      personalization: { type: mongoose.Schema.Types.Mixed, default: null }
     }],
   },
   { timestamps: true }

@@ -5,7 +5,7 @@ import {
     Bell, ChevronRight, ChevronDown, Star, HelpCircle, LogOut, Menu, X, ListTree,
     FileText, MessageSquare, Ticket, Settings, Plus, List, BookOpen,
     Clock, RefreshCw, RefreshCcw, RotateCcw, Boxes, ClipboardList, MapPin, Truck, CheckCircle2, XCircle, Percent,
-    AlertTriangle, FileBarChart, Store, ShieldCheck, User
+    AlertTriangle, FileBarChart, Store, ShieldCheck, User, Wallet, CreditCard
 } from 'lucide-react';
 import { adminService } from '../services/adminService';
 import logo from '@assets/sands-logo.png';
@@ -50,6 +50,7 @@ const AdminLayout = ({ children }) => {
         },
         { name: 'Returns', icon: RotateCcw, path: '/admin/returns' },
         { name: 'Replacements', icon: RefreshCw, path: '/admin/replacements' },
+        { name: 'Shipping', icon: Truck, path: '/admin/shipping' },
         {
             name: 'Inventory',
             icon: Boxes,
@@ -63,6 +64,16 @@ const AdminLayout = ({ children }) => {
         },
         { name: 'Sellers', icon: Store, path: '/admin/sellers' },
         { name: 'Users', icon: Users, path: '/admin/users' },
+        {
+            name: 'Commission',
+            icon: Wallet,
+            path: '/admin/commission',
+            subItems: [
+                { name: 'Report', path: '/admin/commission/report', icon: FileBarChart },
+                { name: 'Tier Settings', path: '/admin/commission/tiers', icon: Settings },
+                { name: 'Seller Payouts', path: '/admin/payout', icon: CreditCard }
+            ]
+        },
         { name: 'Reviews', icon: Star, path: '/admin/reviews' },
         {
             name: 'Notifications',
