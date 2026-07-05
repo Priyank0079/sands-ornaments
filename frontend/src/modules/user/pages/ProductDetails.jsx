@@ -2266,9 +2266,7 @@ const ProductDetails = () => {
                 <span className="text-[#D39A9F]">{product.name}</span>
               </h2>
               <p className="text-gray-600 text-sm md:text-base leading-relaxed font-sans">
-                Our jewelry is crafted with pure 925 sterling silver and premium
-                plating. Follow these simple steps to ensure your pieces remain
-                as stunning as the day you first wore them.
+                {settings.careGuideIntro || "Our jewelry is crafted with pure 925 sterling silver and premium plating. Follow these simple steps to ensure your pieces remain as stunning as the day you first wore them."}
               </p>
             </div>
 

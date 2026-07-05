@@ -120,6 +120,7 @@ const DEFAULT_SETTINGS = {
       icon: "Smile",
     },
   ],
+  careGuideIntro: "Our jewelry is crafted with pure 925 sterling silver and premium plating. Follow these simple steps to ensure your pieces remain as stunning as the day you first wore them.",
   footerWorldLinks: [
     { id: 1, name: "About Us", path: "/about" },
     { id: 2, name: "Jewellery Care Guide", path: "/care-guide" },
@@ -730,6 +731,20 @@ const GlobalSettings = () => {
                 <Sparkles className="w-4 h-4 text-[#9C5B61]" />
                 Care Guide Steps
               </h4>
+
+              <div className="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-2">
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">
+                  Care Guide Section Introduction Text
+                </label>
+                <textarea
+                  className="w-full p-3 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-900 disabled:text-gray-500 min-h-[60px] resize-none"
+                  value={settings.careGuideIntro || ""}
+                  onChange={(e) => handleChange("careGuideIntro", e.target.value)}
+                  disabled={!isEditing}
+                  placeholder="Enter the care guide introduction text here..."
+                />
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[0, 1, 2, 3].map((idx) => {
                   const item = (settings.careGuide && settings.careGuide[idx]) || { title: "", desc: "", icon: "Droplets" };

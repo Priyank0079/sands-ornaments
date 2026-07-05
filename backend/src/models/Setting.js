@@ -83,6 +83,10 @@ const settingSchema = new mongoose.Schema(
         },
       ],
     },
+    careGuideIntro: {
+      type: String,
+      default: "Our jewelry is crafted with pure 925 sterling silver and premium plating. Follow these simple steps to ensure your pieces remain as stunning as the day you first wore them.",
+    },
 
     // Announcement items
     announcementItems: {
