@@ -21,7 +21,7 @@ const PremiumCategoryCards = () => {
         {
             id: 'her',
             title: 'For Her',
-            image: womenImg,
+            image: '/Gemini_Generated_Image_42n9yj42n9yj42n9-removebg-preview.png',
             path: '/category/women',
             layout: 'right',
         }
@@ -59,7 +59,7 @@ const PremiumCategoryCards = () => {
                                 ${item.layout === 'left' ? 'left-[2%]' : 'right-[2%]'}`}
                             >
                                 {/* Shop Now Button inside maroon box */}
-                                <div className={`flex items-center gap-3 md:gap-4 ${item.layout === 'right' ? 'flex-row-reverse' : ''}`}>
+                                <div className={`flex items-center gap-3 md:gap-4 ${item.layout === 'right' ? 'flex-row-reverse translate-x-[25px] md:translate-x-[50px]' : '-translate-x-[25px] md:-translate-x-[50px]'}`}>
                                     <span className="text-white text-[15px] md:text-[22px] font-semibold tracking-[0.1em] font-sans drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)] group-hover:tracking-[0.15em] transition-all duration-700">
                                         {item.title}
                                     </span>
@@ -74,7 +74,7 @@ const PremiumCategoryCards = () => {
                             </div>
 
                             {/* Model Image - Scaled for Compactness */}
-                            <div className={`absolute bottom-0 h-[130%] md:h-[150%] z-30 pointer-events-none transition-all duration-1000 group-hover:scale-[1.03] ${item.layout === 'left' ? 'right-0' : 'left-0'}`}>
+                            <div className={`absolute ${item.layout === 'right' ? '-bottom-[28px] md:-bottom-[45px] h-[155%] md:h-[182%]' : 'bottom-0 h-[130%] md:h-[150%]'} z-30 pointer-events-none transition-all duration-1000 group-hover:scale-[1.03] ${item.layout === 'left' ? 'right-0' : 'left-0'}`}>
                                 <img
                                     src={item.image}
                                     alt={item.title}
