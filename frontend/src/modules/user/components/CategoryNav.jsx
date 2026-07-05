@@ -102,7 +102,7 @@ const CategoryNav = ({ showMetalToggle = true }) => {
 
                 {/* Silver / Gold Toggle - Precise SANDS Polish with Navigation logic */}
                 {showMetalToggle && (
-                    <div className="flex justify-center pb-1 pt-0 relative">
+                    <div className="flex justify-center pb-0 pt-0 relative">
                         <div className="p-0.5 w-[400px] rounded-full border border-[#D4B390]/40 flex items-center bg-white shadow-[0_4px_25px_rgba(212,179,144,0.15)] overflow-hidden">
                             <button
                                 onClick={() => {

@@ -187,7 +187,7 @@ const AppContent = () => {
           <PincodeModal />
           <LeadCapturePopup />
           <CookieConsent />
-          <div className={`h-[104px] ${showMetalToggle ? 'md:h-[226px]' : 'md:h-[166px]'} w-full`}></div>
+          <div className={`h-[104px] ${showMetalToggle ? 'md:h-[180px]' : 'md:h-[166px]'} w-full`}></div>
         </>
       )}
       <main className={`flex-grow ${!isAdminPath && !isSellerPath && !isScannerPath ? 'pb-16 md:pb-0' : ''}`}>
@@ -315,7 +315,6 @@ const AppContent = () => {
         <>
           <Footer />
           <FloatingContactStack />
-          <WhatsAppFloating />
           <MobileBottomNav />
         </>
       )}
