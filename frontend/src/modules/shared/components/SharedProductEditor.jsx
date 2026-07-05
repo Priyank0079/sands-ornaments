@@ -43,6 +43,7 @@ const SharedProductEditor = ({
     const navigate = useNavigate();
     const location = useLocation();
     const isAdminMode = editorMode === 'admin';
+    const storageKey = editorMode === 'admin' ? 'sands_admin_add_product_form' : 'sands_seller_add_product_form';
 
     const isViewMode = location.pathname.includes('/view/');
     const isEditMode = Boolean(id) && !isViewMode;
@@ -150,7 +151,7 @@ const SharedProductEditor = ({
         };
 
         if (typeof window !== 'undefined' && !Boolean(id)) {
-            const saved = localStorage.getItem('sands_seller_add_product_form');
+            const saved = localStorage.getItem(storageKey);
             if (saved) {
                 try {
                     const parsed = JSON.parse(saved);
@@ -167,9 +168,9 @@ const SharedProductEditor = ({
 
     useEffect(() => {
         if (!isEditMode && !isViewMode) {
-            localStorage.setItem('sands_seller_add_product_form', JSON.stringify(formData));
+            localStorage.setItem(storageKey, JSON.stringify(formData));
         }
-    }, [formData, isEditMode, isViewMode]);
+    }, [formData, isEditMode, isViewMode, storageKey]);
 
     useEffect(() => {
         const newErrors = {};
@@ -971,7 +972,7 @@ const SharedProductEditor = ({
             if (response) {
                 toast.success(isEditMode ? "Product updated successfully" : "Product created successfully");
                 if (!isEditMode) {
-                    localStorage.removeItem('sands_seller_add_product_form');
+                    localStorage.removeItem(storageKey);
                 }
                 setCreatedProductData(response.data?.data || response.data || response);
                 setShowSuccessModal(true);

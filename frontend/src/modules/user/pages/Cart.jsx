@@ -13,6 +13,12 @@ const Cart = () => {
     const [couponSectionExpanded, setCouponSectionExpanded] = React.useState(true);
     const [showBreakdown, setShowBreakdown] = React.useState(false);
     const currencyText = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`;
+    const couponSaveText = (coupon) => {
+        const type = coupon.type || coupon.discountType;
+        const val = coupon.value || coupon.discountValue || 0;
+        if (type === 'free_shipping') return 'Free Shipping';
+        return `Save ${type === 'percentage' ? `${val}%` : currencyText(val)}`;
+    };
 
     useResetScroll();
 
@@ -323,7 +329,7 @@ const Cart = () => {
                                                     </div>
                                                     <div className="min-w-0">
                                                         <p className="text-[10px] font-medium text-gray-900 uppercase tracking-wide truncate">{coupon.code}</p>
-                                                        <p className="text-[8px] text-gray-400 truncate font-normal">{coupon.description || `Save ${coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : currencyText(coupon.discountValue)}`}</p>
+                                                        <p className="text-[8px] text-gray-400 truncate font-normal">{coupon.description || couponSaveText(coupon)}</p>
                                                     </div>
                                                 </div>
                                                 <ChevronDown className="w-3.5 h-3.5 text-gray-300 group-hover:text-[#E77382] transition-colors shrink-0" />
