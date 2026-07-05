@@ -238,9 +238,9 @@ exports.updateSellerStatus = async (req, res) => {
     if (seller.email) {
       try {
         await sendEmail({
-          email: seller.email,
+          to: seller.email,
           subject: status === "APPROVED" ? "Seller account approved" : "Seller account application update",
-          message:
+          html:
             status === "APPROVED"
               ? `Hi ${seller.fullName}, your seller account for ${seller.shopName} is approved. You can now log in to the seller panel.`
               : `Hi ${seller.fullName}, your seller account application for ${seller.shopName} was rejected. Reason: ${trimmedReason}.`

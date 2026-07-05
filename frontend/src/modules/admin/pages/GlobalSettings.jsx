@@ -29,6 +29,9 @@ import {
   Instagram,
   Youtube,
   Layout,
+  Sparkles,
+  Smile,
+  Droplets,
 } from "lucide-react";
 import PageHeader from "../components/common/PageHeader";
 import api from "../../../services/api";
@@ -77,6 +80,45 @@ const DEFAULT_SETTINGS = {
     { id: 2, name: "Privacy Policy", path: "/privacy" },
     { id: 3, name: "Cancellation Policy", path: "/cancellation-policy" },
     { id: 4, name: "Terms & Conditions", path: "/terms" },
+  ],
+  sandsPromise: [
+    {
+      title: "Authentic 925 Silver",
+      desc: "Certified 925 Sterling Silver with official hallmarking on every single piece.",
+      icon: "ShieldCheck",
+    },
+    {
+      title: "Skin Safe Luxury",
+      desc: "Hypoallergenic, Nickel and Lead-free materials designed for sensitive skin.",
+      icon: "Smile",
+    },
+    {
+      title: "Signature Packaging",
+      desc: "Arrives in our signature velvet-lined box, perfect for gifting and safekeeping.",
+      icon: "Gift",
+    },
+  ],
+  careGuide: [
+    {
+      title: "Stay Dry",
+      desc: "Remove before bathing or swimming to prevent tarnishing.",
+      icon: "Droplets",
+    },
+    {
+      title: "Last Step",
+      desc: "Avoid contact with perfumes, makeup, and hairsprays.",
+      icon: "Sparkles",
+    },
+    {
+      title: "Safe Haven",
+      desc: "Store in individual airtight bags to minimize oxidation.",
+      icon: "ShieldCheck",
+    },
+    {
+      title: "Gentle Clean",
+      desc: "Regularly wipe with a soft cloth to restore its natural glow.",
+      icon: "Smile",
+    },
   ],
   footerWorldLinks: [
     { id: 1, name: "About Us", path: "/about" },
@@ -198,6 +240,28 @@ const GlobalSettings = () => {
   };
 
   // Generic Link List Handlers (for Footer)
+  const handlePromiseChange = (idx, field, value) => {
+    setSettings((prev) => {
+      const updated = [...(prev.sandsPromise || [])];
+      if (!updated[idx]) {
+        updated[idx] = { title: "", desc: "", icon: "ShieldCheck" };
+      }
+      updated[idx] = { ...updated[idx], [field]: value };
+      return { ...prev, sandsPromise: updated };
+    });
+  };
+
+  const handleCareGuideChange = (idx, field, value) => {
+    setSettings((prev) => {
+      const updated = [...(prev.careGuide || [])];
+      if (!updated[idx]) {
+        updated[idx] = { title: "", desc: "", icon: "Droplets" };
+      }
+      updated[idx] = { ...updated[idx], [field]: value };
+      return { ...prev, careGuide: updated };
+    });
+  };
+
   const handleLinkChange = (listName, id, field, value) => {
     setSettings((prev) => ({
       ...prev,
@@ -586,6 +650,133 @@ const GlobalSettings = () => {
                   onChange={(e) => handleChange("email", e.target.value)}
                   disabled={!isEditing}
                 />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Product Page USP & Care Guide Blocks */}
+        <div className="lg:col-span-2 bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-8">
+          <div>
+            <h3 className="text-xl font-serif font-bold text-[#3E2723]">
+              Product USP & Care Guide Configuration
+            </h3>
+            <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mt-1">
+              Customize "The Sands Promise" and "Care Guide" blocks shown on product detail pages.
+            </p>
+          </div>
+
+          <div className="space-y-8">
+            {/* The Sands Promise Section */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider border-b border-gray-100 pb-2 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-[#9C5B61]" />
+                The Sands Promise (USPs)
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[0, 1, 2].map((idx) => {
+                  const item = (settings.sandsPromise && settings.sandsPromise[idx]) || { title: "", desc: "", icon: "ShieldCheck" };
+                  return (
+                    <div key={idx} className="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Card #{idx + 1}</span>
+                        <div className="relative">
+                          <select
+                            className="w-32 py-1.5 pl-3 pr-8 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 appearance-none cursor-pointer"
+                            value={item.icon || "ShieldCheck"}
+                            onChange={(e) => handlePromiseChange(idx, "icon", e.target.value)}
+                            disabled={!isEditing}
+                          >
+                            <option value="ShieldCheck">Shield Check</option>
+                            <option value="Smile">Smile</option>
+                            <option value="Gift">Gift</option>
+                            <option value="Heart">Heart</option>
+                            <option value="Truck">Truck</option>
+                            <option value="Star">Star</option>
+                            <option value="Zap">Zap</option>
+                          </select>
+                          <ChevronDown className="w-3 h-3 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Title</label>
+                          <input
+                            className="w-full p-2.5 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-900 disabled:text-gray-500"
+                            value={item.title || ""}
+                            onChange={(e) => handlePromiseChange(idx, "title", e.target.value)}
+                            disabled={!isEditing}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Description</label>
+                          <textarea
+                            className="w-full p-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-900 disabled:text-gray-500 min-h-[60px] resize-none"
+                            value={item.desc || ""}
+                            onChange={(e) => handlePromiseChange(idx, "desc", e.target.value)}
+                            disabled={!isEditing}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Care Guide Section */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider border-b border-gray-100 pb-2 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-[#9C5B61]" />
+                Care Guide Steps
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[0, 1, 2, 3].map((idx) => {
+                  const item = (settings.careGuide && settings.careGuide[idx]) || { title: "", desc: "", icon: "Droplets" };
+                  return (
+                    <div key={idx} className="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Step #{idx + 1}</span>
+                        <div className="relative">
+                          <select
+                            className="w-32 py-1.5 pl-3 pr-8 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 appearance-none cursor-pointer"
+                            value={item.icon || "Droplets"}
+                            onChange={(e) => handleCareGuideChange(idx, "icon", e.target.value)}
+                            disabled={!isEditing}
+                          >
+                            <option value="Droplets">Droplets</option>
+                            <option value="Sparkles">Sparkles</option>
+                            <option value="ShieldCheck">Shield Check</option>
+                            <option value="Smile">Smile</option>
+                            <option value="Heart">Heart</option>
+                            <option value="Star">Star</option>
+                          </select>
+                          <ChevronDown className="w-3 h-3 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Title</label>
+                          <input
+                            className="w-full p-2.5 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-900 disabled:text-gray-500"
+                            value={item.title || ""}
+                            onChange={(e) => handleCareGuideChange(idx, "title", e.target.value)}
+                            disabled={!isEditing}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Description</label>
+                          <textarea
+                            className="w-full p-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-900 disabled:text-gray-500 min-h-[60px] resize-none"
+                            value={item.desc || ""}
+                            onChange={(e) => handleCareGuideChange(idx, "desc", e.target.value)}
+                            disabled={!isEditing}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>

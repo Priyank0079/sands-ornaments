@@ -53,6 +53,7 @@ import {
   RefreshCw,
   Loader2,
 } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 // Product video is backend-driven (optional) via `product.videoUrl`.
 import { useAnalytics } from "../../../hooks/useAnalytics";
 import Loader from "../../shared/components/Loader";
@@ -1766,50 +1767,40 @@ const ProductDetails = () => {
               </div>
 
               <div className="space-y-8">
-                <div className="flex items-start gap-5 group">
-                  <div className="w-12 h-12 rounded-full bg-gray-50 flex-shrink-0 flex items-center justify-center border border-gray-100 transition-colors group-hover:bg-[#FDF5F6] group-hover:border-[#EBCDD0]/30">
-                    <ShieldCheck className="w-6 h-6 text-[#9C5B61]" />
-                  </div>
-                  <div>
-                    <h4 className="text-[11px] font-bold uppercase tracking-widest text-black mb-1">
-                      Authentic 925 Silver
-                    </h4>
-                    <p className="text-[11px] text-gray-500 leading-relaxed font-medium">
-                      Certified 925 Sterling Silver with official hallmarking on
-                      every single piece.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-5 group">
-                  <div className="w-12 h-12 rounded-full bg-gray-50 flex-shrink-0 flex items-center justify-center border border-gray-100 transition-colors group-hover:bg-[#FDF5F6] group-hover:border-[#EBCDD0]/30">
-                    <Smile className="w-6 h-6 text-[#9C5B61]" />
-                  </div>
-                  <div>
-                    <h4 className="text-[11px] font-bold uppercase tracking-widest text-black mb-1">
-                      Skin Safe Luxury
-                    </h4>
-                    <p className="text-[11px] text-gray-500 leading-relaxed font-medium">
-                      Hypoallergenic, Nickel and Lead-free materials designed
-                      for sensitive skin.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-5 group">
-                  <div className="w-12 h-12 rounded-full bg-gray-50 flex-shrink-0 flex items-center justify-center border border-gray-100 transition-colors group-hover:bg-[#FDF5F6] group-hover:border-[#EBCDD0]/30">
-                    <Gift className="w-6 h-6 text-[#9C5B61]" />
-                  </div>
-                  <div>
-                    <h4 className="text-[11px] font-bold uppercase tracking-widest text-black mb-1">
-                      Signature Packaging
-                    </h4>
-                    <p className="text-[11px] text-gray-500 leading-relaxed font-medium">
-                      Arrives in our signature velvet-lined box, perfect for
-                      gifting and safekeeping.
-                    </p>
-                  </div>
-                </div>
+                {(settings.sandsPromise || [
+                  {
+                    title: "Authentic 925 Silver",
+                    desc: "Certified 925 Sterling Silver with official hallmarking on every single piece.",
+                    icon: "ShieldCheck",
+                  },
+                  {
+                    title: "Skin Safe Luxury",
+                    desc: "Hypoallergenic, Nickel and Lead-free materials designed for sensitive skin.",
+                    icon: "Smile",
+                  },
+                  {
+                    title: "Signature Packaging",
+                    desc: "Arrives in our signature velvet-lined box, perfect for gifting and safekeeping.",
+                    icon: "Gift",
+                  }
+                ]).map((promise, index) => {
+                  const IconComp = LucideIcons[promise.icon] || LucideIcons.ShieldCheck;
+                  return (
+                    <div key={index} className="flex items-start gap-5 group">
+                      <div className="w-12 h-12 rounded-full bg-gray-50 flex-shrink-0 flex items-center justify-center border border-gray-100 transition-colors group-hover:bg-[#FDF5F6] group-hover:border-[#EBCDD0]/30">
+                        <IconComp className="w-6 h-6 text-[#9C5B61]" />
+                      </div>
+                      <div>
+                        <h4 className="text-[11px] font-bold uppercase tracking-widest text-black mb-1">
+                          {promise.title}
+                        </h4>
+                        <p className="text-[11px] text-gray-500 leading-relaxed font-medium">
+                          {promise.desc}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
               {/* Trust Badge */}
@@ -2282,43 +2273,46 @@ const ProductDetails = () => {
             </div>
 
             <div className="mt-12 grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 relative z-10">
-              {[
+              {(settings.careGuide || [
                 {
-                  icon: <Droplets className="w-5 h-5 md:w-6 h-6" />,
+                  icon: "Droplets",
                   title: "Stay Dry",
                   desc: "Remove before bathing or swimming to prevent tarnishing.",
                 },
                 {
-                  icon: <Sparkles className="w-5 h-5 md:w-6 h-6" />,
+                  icon: "Sparkles",
                   title: "Last Step",
                   desc: "Avoid contact with perfumes, makeup, and hairsprays.",
                 },
                 {
-                  icon: <ShieldCheck className="w-5 h-5 md:w-6 h-6" />,
+                  icon: "ShieldCheck",
                   title: "Safe Haven",
                   desc: "Store in individual airtight bags to minimize oxidation.",
                 },
                 {
-                  icon: <Smile className="w-5 h-5 md:w-6 h-6" />,
+                  icon: "Smile",
                   title: "Gentle Clean",
                   desc: "Regularly wipe with a soft cloth to restore its natural glow.",
                 },
-              ].map((card, i) => (
-                <div
-                  key={i}
-                  className="group bg-white/80 backdrop-blur-sm p-6 rounded-[1.5rem] border border-white shadow hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-                >
-                  <div className="w-12 h-12 rounded-2xl bg-[#FDF5F6] flex items-center justify-center text-[#D39A9F] mb-4 group-hover:bg-[#D39A9F] group-hover:text-white transition-colors">
-                    {card.icon}
+              ]).map((card, i) => {
+                const IconComp = LucideIcons[card.icon] || LucideIcons.Droplets;
+                return (
+                  <div
+                    key={i}
+                    className="group bg-white/80 backdrop-blur-sm p-6 rounded-[1.5rem] border border-white shadow hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+                  >
+                    <div className="w-12 h-12 rounded-2xl bg-[#FDF5F6] flex items-center justify-center text-[#D39A9F] mb-4 group-hover:bg-[#D39A9F] group-hover:text-white transition-colors">
+                      <IconComp className="w-5 h-5 md:w-6 h-6" />
+                    </div>
+                    <h4 className="text-xs font-bold text-black uppercase tracking-wider mb-2 font-display">
+                      {card.title}
+                    </h4>
+                    <p className="text-[10px] md:text-xs text-gray-500 font-medium leading-relaxed font-sans">
+                      {card.desc}
+                    </p>
                   </div>
-                  <h4 className="text-xs font-bold text-black uppercase tracking-wider mb-2 font-display">
-                    {card.title}
-                  </h4>
-                  <p className="text-[10px] md:text-xs text-gray-500 font-medium leading-relaxed font-sans">
-                    {card.desc}
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

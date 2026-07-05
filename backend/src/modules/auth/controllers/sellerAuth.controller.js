@@ -194,9 +194,9 @@ exports.register = async (req, res) => {
     if (process.env.ADMIN_EMAIL) {
       try {
         await sendEmail({
-          email: process.env.ADMIN_EMAIL,
+          to: process.env.ADMIN_EMAIL,
           subject: "New seller registration pending approval",
-          message: `New seller registration received.\n\nName: ${fullName}\nShop: ${shopName}\nEmail: ${normalizedEmail}\nMobile: ${normalizedMobile}\nGST: ${gstNumber || "N/A"}\nPAN: ${panNumber || "N/A"}\nBIS Gold: ${bisNumberGold || "N/A"}\nBIS Silver: ${bisNumberSilver || "N/A"}\nDOB: ${dob || "N/A"}\nDistrict: ${district || "N/A"}\nLocation: ${city || "N/A"}, ${state || "N/A"}\n\nReview in admin panel.`,
+          html: `New seller registration received.\n\nName: ${fullName}\nShop: ${shopName}\nEmail: ${normalizedEmail}\nMobile: ${normalizedMobile}\nGST: ${gstNumber || "N/A"}\nPAN: ${panNumber || "N/A"}\nBIS Gold: ${bisNumberGold || "N/A"}\nBIS Silver: ${bisNumberSilver || "N/A"}\nDOB: ${dob || "N/A"}\nDistrict: ${district || "N/A"}\nLocation: ${city || "N/A"}, ${state || "N/A"}\n\nReview in admin panel.`,
         });
       } catch (mailErr) {
         console.error(
@@ -324,9 +324,9 @@ exports.sendResetOtp = async (req, res) => {
 
     try {
       await sendEmail({
-        email: normalizedEmail,
+        to: normalizedEmail,
         subject: "Sands Jewels - Seller Password Reset OTP",
-        message: `Hello ${seller.fullName || "Seller"},\n\nYour OTP to reset your seller password is: ${otp}\n\nThis OTP is valid for 10 minutes.\nIf you did not request this, you can ignore this message.\n\nThanks,\nSands Jewels`,
+        html: `Hello ${seller.fullName || "Seller"},\n\nYour OTP to reset your seller password is: ${otp}\n\nThis OTP is valid for 10 minutes.\nIf you did not request this, you can ignore this message.\n\nThanks,\nSands Jewels`,
       });
     } catch (mailErr) {
       // Still return a generic response; log internally.
