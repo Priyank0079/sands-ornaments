@@ -31,6 +31,10 @@ exports.register = async (req, res) => {
       gstNumber,
       panNumber,
       bisNumber,
+      bisNumberGold,
+      bisNumberSilver,
+      dob,
+      district,
       shopAddress,
       city,
       state,
@@ -70,8 +74,7 @@ exports.register = async (req, res) => {
       return error(res, "GST number is required", 400);
     if (!panNumber || !String(panNumber).trim())
       return error(res, "PAN number is required", 400);
-    if (!bisNumber || !String(bisNumber).trim())
-      return error(res, "BIS license number is required", 400);
+
     if (!shopAddress || !String(shopAddress).trim())
       return error(res, "Shop address is required", 400);
     if (!city || !String(city).trim())
@@ -159,6 +162,10 @@ exports.register = async (req, res) => {
       gstNumber,
       panNumber,
       bisNumber,
+      bisNumberGold,
+      bisNumberSilver,
+      dob: dob ? new Date(dob) : undefined,
+      district,
       shopAddress,
       city,
       state,
@@ -189,7 +196,7 @@ exports.register = async (req, res) => {
         await sendEmail({
           email: process.env.ADMIN_EMAIL,
           subject: "New seller registration pending approval",
-          message: `New seller registration received.\n\nName: ${fullName}\nShop: ${shopName}\nEmail: ${normalizedEmail}\nMobile: ${normalizedMobile}\nGST: ${gstNumber || "N/A"}\nPAN: ${panNumber || "N/A"}\nBIS: ${bisNumber || "N/A"}\nLocation: ${city || "N/A"}, ${state || "N/A"}\n\nReview in admin panel.`,
+          message: `New seller registration received.\n\nName: ${fullName}\nShop: ${shopName}\nEmail: ${normalizedEmail}\nMobile: ${normalizedMobile}\nGST: ${gstNumber || "N/A"}\nPAN: ${panNumber || "N/A"}\nBIS Gold: ${bisNumberGold || "N/A"}\nBIS Silver: ${bisNumberSilver || "N/A"}\nDOB: ${dob || "N/A"}\nDistrict: ${district || "N/A"}\nLocation: ${city || "N/A"}, ${state || "N/A"}\n\nReview in admin panel.`,
         });
       } catch (mailErr) {
         console.error(

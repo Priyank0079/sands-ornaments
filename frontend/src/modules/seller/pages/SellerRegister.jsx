@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { 
     User, Phone, Mail, Lock, Store, MapPin, Building, Hash, 
     CreditCard, Landmark, FileUp, ArrowRight, AlertCircle, CheckCircle2, ShieldCheck,
-    FileText, X
+    FileText, X, CalendarDays
 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import api from '../../../services/api';
@@ -53,14 +53,18 @@ const SellerRegister = () => {
                 mobileNumber: '',
                 email: '',
                 password: '',
+                dob: '',
                 shopName: '',
                 shopAddress: '',
                 city: '',
                 state: '',
+                district: '',
                 pincode: '',
                 gstNumber: '',
                 panNumber: '',
                 bisNumber: '',
+                bisNumberGold: '',
+                bisNumberSilver: '',
                 aadhar: null,
                 shopLicense: null,
                 certificate: null,
@@ -77,16 +81,20 @@ const SellerRegister = () => {
             mobileNumber: parsed?.mobileNumber || '',
             email: parsed?.email || '',
             password: parsed?.password || '',
+            dob: parsed?.dob || '',
             // Business
             shopName: parsed?.shopName || '',
             shopAddress: parsed?.shopAddress || '',
             city: parsed?.city || '',
             state: parsed?.state || '',
+            district: parsed?.district || '',
             pincode: parsed?.pincode || '',
             // Verification
             gstNumber: parsed?.gstNumber || '',
             panNumber: parsed?.panNumber || '',
             bisNumber: parsed?.bisNumber || '',
+            bisNumberGold: parsed?.bisNumberGold || '',
+            bisNumberSilver: parsed?.bisNumberSilver || '',
             // Documents (cannot restore file inputs)
             aadhar: null,
             shopLicense: null,
@@ -208,7 +216,7 @@ const SellerRegister = () => {
         });
 
         let val = value;
-        if (name === 'gstNumber' || name === 'panNumber' || name === 'bisNumber') {
+        if (name === 'gstNumber' || name === 'panNumber' || name === 'bisNumber' || name === 'bisNumberGold' || name === 'bisNumberSilver') {
             val = value.toUpperCase();
         }
 
@@ -533,6 +541,14 @@ const SellerRegister = () => {
                                     </div>
                                     {errors.password && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.password}</p>}
                                 </div>
+                                <div className="space-y-2">
+                                    <label className={labelClasses}>Date of Birth <span className="text-gray-400 text-xs font-normal">(Optional)</span></label>
+                                    <div className="relative group">
+                                        <input type="date" name="dob" value={formData.dob} onChange={handleChange} className={inputClasses} />
+                                        <CalendarDays className={iconClasses} />
+                                    </div>
+                                    {errors.dob && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.dob}</p>}
+                                </div>
                             </div>
                         )}
 
@@ -562,15 +578,23 @@ const SellerRegister = () => {
                                             <Building className={iconClasses} />
                                         </div>
                                         {errors.city && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.city}</p>}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className={labelClasses}>State <span className="text-red-500">*</span></label>
+                                     </div>
+                                     <div className="space-y-2">
+                                        <label className={labelClasses}>District <span className="text-gray-400 text-xs font-normal">(Optional)</span></label>
                                         <div className="relative group">
-                                            <input required name="state" value={formData.state} onChange={handleChange} className={inputClasses} placeholder="Maharashtra" />
-                                            <MapPin className={iconClasses} />
+                                            <input name="district" value={formData.district} onChange={handleChange} className={inputClasses} placeholder="Mumbai Suburban" />
+                                            <Building className={iconClasses} />
                                         </div>
-                                        {errors.state && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.state}</p>}
+                                        {errors.district && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.district}</p>}
+                                     </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className={labelClasses}>State <span className="text-red-500">*</span></label>
+                                    <div className="relative group">
+                                        <input required name="state" value={formData.state} onChange={handleChange} className={inputClasses} placeholder="Maharashtra" />
+                                        <MapPin className={iconClasses} />
                                     </div>
+                                    {errors.state && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.state}</p>}
                                 </div>
                                 <div className="space-y-2">
                                     <label className={labelClasses}>Pincode <span className="text-red-500">*</span></label>
@@ -602,12 +626,20 @@ const SellerRegister = () => {
                                     {errors.panNumber && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.panNumber}</p>}
                                 </div>
                                 <div className="space-y-2">
-                                    <label className={labelClasses}>BIS Hallmark License Number (Optional)</label>
+                                    <label className={labelClasses}>BIS Hallmark License Number of Gold (Optional)</label>
                                     <div className="relative group">
-                                        <input name="bisNumber" value={formData.bisNumber} onChange={handleChange} className={inputClasses} placeholder="HM/C-1234567890" />
+                                        <input name="bisNumberGold" value={formData.bisNumberGold} onChange={handleChange} className={inputClasses} placeholder="HM/C-1234567890" />
                                         <CheckCircle2 className={iconClasses} />
                                     </div>
-                                    {errors.bisNumber && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.bisNumber}</p>}
+                                    {errors.bisNumberGold && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.bisNumberGold}</p>}
+                                </div>
+                                <div className="space-y-2">
+                                    <label className={labelClasses}>BIS Hallmark License Number of Silver (Optional)</label>
+                                    <div className="relative group">
+                                        <input name="bisNumberSilver" value={formData.bisNumberSilver} onChange={handleChange} className={inputClasses} placeholder="HM/C-1234567890" />
+                                        <CheckCircle2 className={iconClasses} />
+                                    </div>
+                                    {errors.bisNumberSilver && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.bisNumberSilver}</p>}
                                 </div>
                             </div>
                         )}

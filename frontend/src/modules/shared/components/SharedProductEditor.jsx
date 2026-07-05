@@ -186,13 +186,7 @@ const SharedProductEditor = ({
             newErrors.categories = "Category is required.";
         }
 
-        // 4. Default Weight
-        if (formData.weight !== undefined && formData.weight !== '') {
-            const w = parseFloat(formData.weight);
-            if (isNaN(w) || w <= 0) {
-                newErrors.weight = "Weight must be a positive number";
-            }
-        }
+
 
         // 5. Logistics - Shipping Days
         if (formData.logistics?.estimatedShippingDays !== undefined && formData.logistics?.estimatedShippingDays !== '') {
@@ -281,7 +275,112 @@ const SharedProductEditor = ({
     const handleDownloadAllSerialBarcodes = (variant) => {
         const codes = (variant.serialCodes || []).map(c => c.code);
         if (codes.length === 0) return;
-        downloadTextFile(codes.join('\n'), `barcodes-${variant.name || 'variant'}.txt`);
+
+        // Create a printable window
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            toast.error("Popup blocker prevented opening the print window. Please allow popups for this site.");
+            return;
+        }
+
+        // Gather all SVGs from the DOM
+        let svgItemsHtml = '';
+        codes.forEach(code => {
+            const container = serialBarcodeRefs.current[code];
+            const svgNode = container?.querySelector?.('svg');
+            if (svgNode) {
+                const serializer = new XMLSerializer();
+                const svgMarkup = serializer.serializeToString(svgNode);
+                svgItemsHtml += `
+                    <div class="barcode-card">
+                        <div class="barcode-svg">${svgMarkup}</div>
+                        <div class="barcode-code">${code}</div>
+                    </div>
+                `;
+            }
+        });
+
+        if (!svgItemsHtml) {
+            toast.error("Barcodes are not loaded in the view yet. Please make sure the variant section is expanded first.");
+            printWindow.close();
+            return;
+        }
+
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>Print Barcodes - ${variant.name || 'variant'}</title>
+                <style>
+                    body {
+                        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+                        margin: 0;
+                        padding: 30px;
+                        background: white;
+                        color: black;
+                        -webkit-print-color-adjust: exact;
+                    }
+                    .grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+                        gap: 20px;
+                    }
+                    .barcode-card {
+                        border: 1px solid #eaeaea;
+                        border-radius: 16px;
+                        padding: 20px;
+                        text-align: center;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        page-break-inside: avoid;
+                        background: #fff;
+                    }
+                    .barcode-svg svg {
+                        width: 140px;
+                        height: auto;
+                    }
+                    .barcode-code {
+                        font-size: 11px;
+                        font-weight: 700;
+                        font-family: monospace;
+                        margin-top: 10px;
+                        letter-spacing: 1px;
+                        color: #333;
+                    }
+                    @media print {
+                        body {
+                            padding: 0;
+                        }
+                        .grid {
+                            grid-template-columns: repeat(3, 1fr);
+                            gap: 15px;
+                        }
+                        .barcode-card {
+                            border: 1px solid #ccc;
+                            box-shadow: none;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <h3 style="margin-top: 0; margin-bottom: 25px; text-transform: uppercase; font-size: 12px; font-weight: 900; letter-spacing: 2px; border-bottom: 2px solid #000; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                    <span>Barcodes Batch - ${variant.name || 'variant'}</span>
+                    <span style="color: #666; font-size: 10px;">${codes.length} Units</span>
+                </h3>
+                <div class="grid">
+                    ${svgItemsHtml}
+                </div>
+                <script>
+                    // Add a tiny delay to ensure SVGs are completely rendered before print dialog opens
+                    setTimeout(() => {
+                        window.print();
+                    }, 500);
+                </script>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
     };
 
     const resolvedProductApi = productApi;
@@ -826,11 +925,12 @@ const SharedProductEditor = ({
             productForm.append('supplierInfo', payload.supplierInfo || '');
             productForm.append('stylingTips', payload.stylingTips || '');
             productForm.append('careTips', payload.careTips || '');
-            productForm.append('diamondType', payload.diamondType);
+            const primaryVariant = payload.variants[0] || {};
+            productForm.append('diamondType', primaryVariant.diamondType || 'none');
             productForm.append('categories', JSON.stringify(categoryIds));
             productForm.append('audience', JSON.stringify(payload.audience || ['unisex']));
-            productForm.append('weight', payload.weight || '');
-            productForm.append('weightUnit', payload.weightUnit || 'Grams');
+            productForm.append('weight', primaryVariant.weight || '');
+            productForm.append('weightUnit', primaryVariant.weightUnit || 'Grams');
             productForm.append('paymentGatewayChargeBearer', payload.paymentGatewayChargeBearer || 'seller');
             productForm.append('silverCategory', payload.silverCategory || '');
             productForm.append('goldCategory', payload.goldCategory || '');

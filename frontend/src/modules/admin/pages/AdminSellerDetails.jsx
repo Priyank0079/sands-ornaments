@@ -199,6 +199,10 @@ const AdminSellerDetails = () => {
                                 <p className={infoLabelClasses}>Email Address</p>
                                 <p className={infoValueClasses}>{seller.email}</p>
                             </div>
+                            <div>
+                                <p className={infoLabelClasses}>Date of Birth</p>
+                                <p className={infoValueClasses}>{seller.dob ? new Date(seller.dob).toLocaleDateString() : 'N/A'}</p>
+                            </div>
                         </div>
                     </div>
 
@@ -237,7 +241,7 @@ const AdminSellerDetails = () => {
                                         <div className="mt-1">
                                             <p className="text-sm font-bold text-gray-900 uppercase leading-relaxed">
                                                 {seller.shopAddress || 'N/A'}<br />
-                                                {seller.city || 'N/A'}, {seller.state || 'N/A'}<br />
+                                                {seller.city || 'N/A'}{seller.district ? `, ${seller.district}` : ''}, {seller.state || 'N/A'}<br />
                                                 PIN: {seller.pincode || 'N/A'}
                                             </p>
                                         </div>
@@ -258,10 +262,14 @@ const AdminSellerDetails = () => {
                                         <p className={infoLabelClasses}>PAN Number</p>
                                         <p className={infoValueClasses}>{seller.panNumber || 'N/A'}</p>
                                     </div>
-                                    <div>
-                                        <p className={infoLabelClasses}>BIS Hallmark License</p>
-                                        <p className={infoValueClasses}>{seller.bisNumber || 'N/A'}</p>
-                                    </div>
+                                     <div>
+                                         <p className={infoLabelClasses}>BIS Hallmark License (Gold)</p>
+                                         <p className={infoValueClasses}>{seller.bisNumberGold || 'N/A'}</p>
+                                     </div>
+                                     <div>
+                                         <p className={infoLabelClasses}>BIS Hallmark License (Silver)</p>
+                                         <p className={infoValueClasses}>{seller.bisNumberSilver || 'N/A'}</p>
+                                     </div>
                                 </div>
                             </div>
                         </div>

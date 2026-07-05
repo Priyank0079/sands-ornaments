@@ -1,4 +1,4 @@
-﻿const Seller = require("../../../models/Seller");
+const Seller = require("../../../models/Seller");
 const bcrypt = require("bcryptjs");
 const { success, error } = require("../../../utils/apiResponse");
 const Setting = require("../../../models/Setting");
@@ -29,6 +29,10 @@ exports.updateProfile = async (req, res) => {
       "gstNumber",
       "panNumber",
       "bisNumber",
+      "bisNumberGold",
+      "bisNumberSilver",
+      "dob",
+      "district",
       "shopAddress",
       "city",
       "state",
@@ -64,6 +68,10 @@ exports.updateProfile = async (req, res) => {
     if (updates.gstNumber !== undefined) updates.gstNumber = upperString(updates.gstNumber);
     if (updates.panNumber !== undefined) updates.panNumber = upperString(updates.panNumber);
     if (updates.bisNumber !== undefined) updates.bisNumber = upperString(updates.bisNumber);
+    if (updates.bisNumberGold !== undefined) updates.bisNumberGold = upperString(updates.bisNumberGold);
+    if (updates.bisNumberSilver !== undefined) updates.bisNumberSilver = upperString(updates.bisNumberSilver);
+    if (updates.dob !== undefined) updates.dob = updates.dob ? new Date(updates.dob) : null;
+    if (updates.district !== undefined) updates.district = trimString(updates.district);
     if (updates.shopAddress !== undefined) updates.shopAddress = trimString(updates.shopAddress);
     if (updates.city !== undefined) updates.city = trimString(updates.city);
     if (updates.state !== undefined) updates.state = trimString(updates.state);
@@ -133,6 +141,10 @@ exports.updateProfile = async (req, res) => {
     if (updates.gstNumber !== undefined && !updates.gstNumber) delete updates.gstNumber;
     if (updates.panNumber !== undefined && !updates.panNumber) delete updates.panNumber;
     if (updates.bisNumber !== undefined && !updates.bisNumber) delete updates.bisNumber;
+    if (updates.bisNumberGold !== undefined && !updates.bisNumberGold) delete updates.bisNumberGold;
+    if (updates.bisNumberSilver !== undefined && !updates.bisNumberSilver) delete updates.bisNumberSilver;
+    if (updates.dob !== undefined && !updates.dob) delete updates.dob;
+    if (updates.district !== undefined && !updates.district) delete updates.district;
 
     if (updates.email) {
       const existingEmail = await Seller.findOne({

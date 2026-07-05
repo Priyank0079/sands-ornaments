@@ -100,58 +100,33 @@ const ProductGeneralTab = ({
                             {errors.categories && <span className="text-xs text-red-500 mt-1 block">{errors.categories}</span>}
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <Select
-                                label="Audience"
-                                value={Array.isArray(formData.audience) ? formData.audience[0] : 'unisex'}
-                                onChange={(e) => setFormData({ ...formData, audience: [e.target.value] })}
-                                options={[
-                                    { label: 'Unisex', value: 'unisex' },
-                                    { label: 'Men', value: 'men' },
-                                    { label: 'Women', value: 'women' },
-                                    { label: 'Family', value: 'family' }
-                                ]}
-                                disabled={isViewMode}
-                            />
-                            <Select
-                                label="Diamond Origin"
-                                value={formData.diamondType || 'none'}
-                                onChange={(e) => setFormData({ ...formData, diamondType: e.target.value })}
-                                options={[
-                                    { label: 'None', value: 'none' },
-                                    { label: 'Lab Grown', value: 'lab_grown' },
-                                    { label: 'Natural', value: 'natural' }
-                                ]}
-                                disabled={isViewMode}
-                            />
-                        </div>
+                        <Select
+                            label="Audience"
+                            value={Array.isArray(formData.audience) ? formData.audience[0] : 'unisex'}
+                            onChange={(e) => setFormData({ ...formData, audience: [e.target.value] })}
+                            options={[
+                                { label: 'Unisex', value: 'unisex' },
+                                { label: 'Men', value: 'men' },
+                                { label: 'Women', value: 'women' },
+                                { label: 'Family', value: 'family' }
+                            ]}
+                            disabled={isViewMode}
+                        />
                     </div>
                 </FormSection>
 
                 <FormSection title="Metal & Weight Protocol">
                     <div className="space-y-5">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <Select
-                                label="Primary Material"
-                                value={formData.material}
-                                onChange={(e) => setFormData({ ...formData, material: e.target.value })}
-                                options={[
-                                    { label: 'Gold', value: 'Gold' },
-                                    { label: 'Silver', value: 'Silver' }
-                                ]}
-                                disabled={isViewMode}
-                            />
-                            <Select
-                                label="Weight Unit"
-                                value={formData.weightUnit}
-                                onChange={(e) => setFormData({ ...formData, weightUnit: e.target.value })}
-                                options={[
-                                    { label: 'Grams', value: 'Grams' },
-                                    { label: 'Milligrams', value: 'Milligrams' }
-                                ]}
-                                disabled={isViewMode}
-                            />
-                        </div>
+                        <Select
+                            label="Primary Material"
+                            value={formData.material}
+                            onChange={(e) => setFormData({ ...formData, material: e.target.value })}
+                            options={[
+                                { label: 'Gold', value: 'Gold' },
+                                { label: 'Silver', value: 'Silver' }
+                            ]}
+                            disabled={isViewMode}
+                        />
 
                         {formData.material === 'Silver' && (
                             <Select
@@ -188,42 +163,16 @@ const ProductGeneralTab = ({
                             />
                         )}
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <Input
-                                label="Default Weight"
-                                type="number"
-                                value={formData.weight}
-                                onChange={(e) => {
-                                    const val = e.target.value;
-                                    if (val !== '' && Number(val) < 0) return;
-                                    setFormData(prev => ({ ...prev, weight: val }));
-                                }}
-                                onFocus={(e) => {
-                                    if (e.target.value === '0' || Number(e.target.value) === 0) {
-                                        setFormData(prev => ({ ...prev, weight: '' }));
-                                    }
-                                }}
-                                onBlur={(e) => {
-                                    if (e.target.value === '') {
-                                        setFormData(prev => ({ ...prev, weight: '' }));
-                                    }
-                                }}
-                                disabled={isViewMode}
-                                placeholder="0.00"
-                                error={errors.weight}
-                                min={0}
-                            />
-                            <Select
-                                label="PG Fee Bearer"
-                                value={formData.paymentGatewayChargeBearer || 'seller'}
-                                onChange={(e) => setFormData({ ...formData, paymentGatewayChargeBearer: e.target.value })}
-                                options={[
-                                    { label: 'Seller / Admin', value: 'seller' },
-                                    { label: 'User', value: 'user' }
-                                ]}
-                                disabled={isViewMode}
-                            />
-                        </div>
+                        <Select
+                            label="PG Fee Bearer"
+                            value={formData.paymentGatewayChargeBearer || 'seller'}
+                            onChange={(e) => setFormData({ ...formData, paymentGatewayChargeBearer: e.target.value })}
+                            options={[
+                                { label: 'Seller / Admin', value: 'seller' },
+                                { label: 'User', value: 'user' }
+                            ]}
+                            disabled={isViewMode}
+                        />
                     </div>
                 </FormSection>
             </div>

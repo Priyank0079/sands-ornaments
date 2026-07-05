@@ -15,5 +15,6 @@ router.use("/notifications", require("./notification.routes"));
 router.use("/pickup-locations", require("./pickupLocation.routes"));
 router.use("/commission", require("./commission.routes"));
 router.use("/payout",     require("./payout.routes"));
+router.use("/support",    require("./support.routes"));
 
 module.exports = router;

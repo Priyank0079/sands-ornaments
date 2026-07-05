@@ -18,6 +18,10 @@ const SellerProfile = () => {
         gstNumber: '',
         panNumber: '',
         bisNumber: '',
+        bisNumberGold: '',
+        bisNumberSilver: '',
+        dob: '',
+        district: '',
         shopAddress: '',
         city: '',
         state: '',
@@ -53,6 +57,10 @@ const SellerProfile = () => {
                 gstNumber: resolved.gstNumber || '',
                 panNumber: resolved.panNumber || '',
                 bisNumber: resolved.bisNumber || '',
+                bisNumberGold: resolved.bisNumberGold || '',
+                bisNumberSilver: resolved.bisNumberSilver || '',
+                dob: resolved.dob ? new Date(resolved.dob).toISOString().split('T')[0] : '',
+                district: resolved.district || '',
                 shopAddress: resolved.shopAddress || '',
                 city: resolved.city || '',
                 state: resolved.state || '',
@@ -98,6 +106,10 @@ const SellerProfile = () => {
             gstNumber: profile.gstNumber.trim().toUpperCase(),
             panNumber: profile.panNumber.trim().toUpperCase(),
             bisNumber: profile.bisNumber.trim().toUpperCase(),
+            bisNumberGold: profile.bisNumberGold.trim().toUpperCase(),
+            bisNumberSilver: profile.bisNumberSilver.trim().toUpperCase(),
+            dob: profile.dob || null,
+            district: profile.district.trim(),
             shopAddress: profile.shopAddress.trim(),
             city: profile.city.trim(),
             state: profile.state.trim(),
@@ -340,6 +352,13 @@ const SellerProfile = () => {
                                         <input name="mobileNumber" value={profile.mobileNumber} onChange={handleProfileChange} className={`${inputClasses} pl-10`} placeholder="Mobile number" inputMode="numeric" maxLength={10} autoComplete="tel" />
                                     </div>
                                 </div>
+                                <div>
+                                    <label className={labelClasses}>Date of Birth (Optional)</label>
+                                    <div className="relative">
+                                        <CalendarDays className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                                        <input name="dob" type="date" value={profile.dob} onChange={handleProfileChange} className={`${inputClasses} pl-10`} />
+                                    </div>
+                                </div>
                                 <div className="md:col-span-2">
                                     <label className={labelClasses}>Shop Address</label>
                                     <input name="shopAddress" value={profile.shopAddress} onChange={handleProfileChange} className={inputClasses} placeholder="Street, area" />
@@ -347,6 +366,10 @@ const SellerProfile = () => {
                                 <div>
                                     <label className={labelClasses}>City</label>
                                     <input name="city" value={profile.city} onChange={handleProfileChange} className={inputClasses} placeholder="City" />
+                                </div>
+                                <div>
+                                    <label className={labelClasses}>District (Optional)</label>
+                                    <input name="district" value={profile.district} onChange={handleProfileChange} className={inputClasses} placeholder="District" />
                                 </div>
                                 <div>
                                     <label className={labelClasses}>State</label>
@@ -358,7 +381,7 @@ const SellerProfile = () => {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label className={labelClasses}>GST Number</label>
                                     <input name="gstNumber" value={profile.gstNumber} onChange={handleProfileChange} className={inputClasses} placeholder="GST" />
@@ -368,8 +391,12 @@ const SellerProfile = () => {
                                     <input name="panNumber" value={profile.panNumber} onChange={handleProfileChange} className={inputClasses} placeholder="PAN" />
                                 </div>
                                 <div>
-                                    <label className={labelClasses}>BIS Number</label>
-                                    <input name="bisNumber" value={profile.bisNumber} onChange={handleProfileChange} className={inputClasses} placeholder="BIS" />
+                                    <label className={labelClasses}>BIS Hallmark License Number of Gold (Optional)</label>
+                                    <input name="bisNumberGold" value={profile.bisNumberGold} onChange={handleProfileChange} className={inputClasses} placeholder="Gold BIS Hallmark" />
+                                </div>
+                                <div>
+                                    <label className={labelClasses}>BIS Hallmark License Number of Silver (Optional)</label>
+                                    <input name="bisNumberSilver" value={profile.bisNumberSilver} onChange={handleProfileChange} className={inputClasses} placeholder="Silver BIS Hallmark" />
                                 </div>
                             </div>
 
