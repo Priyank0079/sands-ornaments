@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const AdminTable = ({ columns, data, onRowClick, emptyMessage = "No Data Available", pagination, minWidth = '1000px' }) => {
@@ -12,8 +12,8 @@ const AdminTable = ({ columns, data, onRowClick, emptyMessage = "No Data Availab
 
     return (
         <div>
-            <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse" style={{ minWidth }}>
+            <div className="overflow-x-auto" style={{ transform: 'rotateX(180deg)' }}>
+                <table className="w-full text-left border-collapse" style={{ minWidth, transform: 'rotateX(180deg)' }}>
                     <thead className="bg-white border-b border-gray-200">
                         <tr>
                             {columns.map((col, idx) => (

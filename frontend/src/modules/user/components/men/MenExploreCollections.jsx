@@ -51,14 +51,23 @@ const MenExploreCollections = ({ sectionData }) => {
             .filter((item) => item?.image)
             .map((item, index) => {
                 const fallbackItem = exploreCollections[index];
+                const baseId = item.itemId || item.id || `men-explore-${index}`;
+                
+                // Force correct paths for predefined components, ignoring old CMS data
+                const forcedPaths = {
+                    'men-explore-edge': buildMenShopPath({ search: 'edge' }),
+                    'men-explore-the-classics': buildMenShopPath({ search: 'classic' }),
+                    'men-explore-iykyk': buildMenShopPath({ search: 'street' })
+                };
+
                 return {
-                    id: item.itemId || item.id || `men-explore-${index}`,
+                    id: baseId,
                     title: item.name || item.label || fallbackItem?.title || '',
                     description: item.subtitle || item.description || fallbackItem?.description || '',
                     image: resolveLegacyCmsAsset(item.image, fallbackItem?.image || ''),
-                    link: item.categoryId
+                    link: forcedPaths[baseId] || (item.categoryId
                         ? buildMenShopPath({ category: item.categoryId })
-                        : (item.path || fallbackItem?.link || buildMenShopPath()),
+                        : (item.path || fallbackItem?.link || buildMenShopPath())),
                     items: (() => {
                         const configuredThumbs = Array.isArray(item.extraImages) ? item.extraImages : [];
                         if (configuredThumbs.length > 0) {

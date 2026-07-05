@@ -54,7 +54,7 @@ const PremiumCategoryCards = () => {
                             className="relative h-[115px] md:h-[180px] bg-[#FDF8F8] rounded-[24px] md:rounded-[48px] cursor-pointer group shadow-sm flex items-center border border-[#F3E0E2]/50"
                         >
                             {/* Maroon Inset Box - More Compact */}
-                            <div 
+                            <div
                                 className={`absolute top-[6%] bottom-[6%] w-[75%] bg-gradient-to-br from-[#8E2B45] via-[#5C1625] to-[#2D060F] rounded-[20px] md:rounded-[44px] flex items-center justify-center p-3 md:p-8 z-10 transition-all duration-500 group-hover:shadow-[0_15px_30px_rgba(74,16,21,0.2)] 
                                 ${item.layout === 'left' ? 'left-[2%]' : 'right-[2%]'}`}
                             >

@@ -718,6 +718,13 @@ const Shop = () => {
       baseProducts = baseProducts.filter((p) =>
         matchesCategory(p, categoryQuery, categoryQueryObj),
       );
+      if (!title || title === "All Jewellery" || title === "Men's Jewellery" || title === "Women's Jewellery") {
+        let prefix = "";
+        if (isMenFlow) prefix = "Men's ";
+        else if (isWomenFlow) prefix = "Women's ";
+        const catName = categoryQueryObj ? categoryQueryObj.name : categoryQuery.charAt(0).toUpperCase() + categoryQuery.slice(1);
+        title = `${prefix}${catName}`;
+      }
     }
 
     if (priceMaxQuery && priceMinQuery) {
