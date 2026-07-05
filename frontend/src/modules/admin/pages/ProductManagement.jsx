@@ -293,7 +293,6 @@ const ProductManagement = () => {
         }
     ];
 
-
     const handleBulkApply = async (config) => {
         const categoryId = selectedCategory === 'all' ? undefined : selectedCategory;
         const success = await adminService.bulkUpdatePrices({
@@ -321,6 +320,7 @@ const ProductManagement = () => {
                     label: "Add New Product",
                     onClick: () => navigate('/admin/products/new')
                 } : undefined}
+                backPath={sellerId ? `/admin/seller-details/${sellerId}` : undefined}
             />
 
             <DataTable
