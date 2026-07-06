@@ -1656,8 +1656,8 @@ const ProductDetails = () => {
                         animation: shimmer 2s infinite;
                     }
                     @media (max-width: 768px) {
-                        .whatsapp-floating {
-                            bottom: 90px !important;
+                        .floating-contact-stack {
+                            bottom: 140px !important;
                         }
                     }
                 `}

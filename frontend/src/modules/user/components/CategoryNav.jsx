@@ -57,7 +57,7 @@ const CategoryNav = ({ showMetalToggle = true }) => {
             <div className="container mx-auto px-4 md:px-12 relative" onMouseLeave={resetMenu}>
                 {/* Navigation Links - Centered and Spaced Out */}
                 <div className="flex justify-center items-center py-1.5">
-                    <ul className="flex items-center gap-12">
+                    <ul className="flex items-center justify-center gap-6 lg:gap-10 flex-wrap">
                         {navItems.map((item) => (
                             <li
                                 key={item.id}
@@ -72,10 +72,10 @@ const CategoryNav = ({ showMetalToggle = true }) => {
                             >
                                 <Link
                                     to={item.path}
-                                    className="text-[15px] font-medium text-gray-900 hover:text-[#9C3D5E] flex items-center gap-1.5 transition-all duration-300 whitespace-nowrap"
+                                    className="text-[12px] font-bold uppercase tracking-[0.08em] font-sans text-gray-800 hover:text-[#9C3D5E] flex items-center gap-1 transition-all duration-300 whitespace-nowrap"
                                 >
                                     {item.name}
-                                    {item.hasChevron && <ChevronDown className="w-4 h-4 text-gray-600" />}
+                                    {item.hasChevron && <ChevronDown className="w-4 h-4 text-gray-500" />}
                                 </Link>
 
                                 {/* Dropdowns Mapping — Positioned to show "Pura Box" (Full width) */}
@@ -102,14 +102,14 @@ const CategoryNav = ({ showMetalToggle = true }) => {
 
                 {/* Silver / Gold Toggle - Precise SANDS Polish with Navigation logic */}
                 {showMetalToggle && (
-                    <div className="flex justify-center pb-1 pt-0 relative">
-                        <div className="p-0.5 w-[400px] rounded-full border border-[#D4B390]/40 flex items-center bg-white shadow-[0_4px_25px_rgba(212,179,144,0.15)] overflow-hidden">
+                    <div className="flex justify-center pb-0 pt-0 relative">
+                        <div className="p-0.5 w-[600px] max-w-[95%] rounded-full border border-[#D4B390]/40 flex items-center bg-white shadow-[0_4px_25px_rgba(212,179,144,0.15)] overflow-hidden">
                             <button
                                 onClick={() => {
                                     updateActiveMetal('silver');
                                     navigate('/');
                                 }}
-                                className={`flex-1 py-0.5 px-8 rounded-full text-[13px] font-bold uppercase tracking-widest transition-all duration-500 transform ${activeMetal === 'silver' ? 'bg-gradient-to-r from-[#434343] via-[#C0C0C0] to-[#434343] text-white shadow-[0_8px_30px_rgba(0,0,0,0.25)] scale-[1.01]' : 'text-[#4A4A4A] hover:bg-gray-50 hover:text-black'}`}
+                                className={`flex-1 py-0.5 px-8 rounded-full text-[13px] font-bold uppercase tracking-widest transition-all duration-500 transform ${activeMetal === 'silver' ? 'bg-gradient-to-r from-gray-800 via-gray-600 to-gray-800 text-white shadow-[0_8px_30px_rgba(0,0,0,0.25)] scale-[1.01]' : 'text-[#4A4A4A] hover:bg-gray-50 hover:text-black'}`}
                             >
                                 Silver
                             </button>
