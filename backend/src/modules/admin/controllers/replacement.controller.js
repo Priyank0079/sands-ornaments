@@ -4,7 +4,7 @@ const Product = require("../../../models/Product");
 const StockLog = require("../../../models/StockLog");
 const User = require("../../../models/User");
 const { success, error } = require("../../../utils/apiResponse");
-const { isSerializedVariant, restockSerializedUnits } = require("../../../utils/inventorySync");
+const { isSerializedVariant, restockSerializedUnits, consumeSerializedStock, normalizeSerialCodes } = require("../../../utils/inventorySync");
 
 const VALID_STATUSES = [
   "Pending",
@@ -205,6 +205,35 @@ exports.updateReplacementStatus = async (req, res) => {
       }
     }
 
+    if (nextStatus === "Replacement Shipped" && !repl.inventory?.shippedProcessedAt) {
+      for (const item of repl.originalItems || []) {
+        const product = await Product.findById(item.productId);
+        if (!product) {
+          return error(res, `Product ${item.name} not found for replacement`, 404);
+        }
+        const variant = product.variants.id(item.variantId);
+        if (!variant) {
+          return error(res, `Variant not found for product ${product.name}`, 404);
+        }
+
+        const quantity = Number(item.qty ?? item.quantity ?? 0);
+        if (quantity <= 0) continue;
+
+        if (isSerializedVariant(product, variant)) {
+          const normalized = normalizeSerialCodes(variant.serialCodes || []);
+          const available = normalized.filter((code) => (code.status || "AVAILABLE") === "AVAILABLE");
+          if (available.length < quantity) {
+            return error(res, `Insufficient serialized stock for replacement item: ${product.name} (${variant.name}). Available: ${available.length}, Required: ${quantity}`, 400);
+          }
+        } else {
+          const currentStock = Number(variant.stock) || 0;
+          if (currentStock < quantity) {
+            return error(res, `Insufficient stock for replacement item: ${product.name} (${variant.name}). Available: ${currentStock}, Required: ${quantity}`, 400);
+          }
+        }
+      }
+    }
+
     repl.status = nextStatus;
     if (typeof note === "string" && note.trim()) {
       repl.adminComment = note.trim();
@@ -298,6 +327,60 @@ exports.updateReplacementStatus = async (req, res) => {
         processedAt: new Date(),
         processedByStatus: nextStatus,
         actionApplied: repl.stockAction
+      };
+      await repl.save();
+    }
+
+    // Deduct stock for new replacement item being shipped
+    const shouldDeductShippingStock =
+      nextStatus === "Replacement Shipped" &&
+      !repl.inventory?.shippedProcessedAt;
+
+    if (shouldDeductShippingStock) {
+      for (const item of repl.originalItems || []) {
+        const quantity = Number(item.qty ?? item.quantity ?? 0);
+        if (item.productId && item.variantId && quantity > 0) {
+          const product = await Product.findById(item.productId);
+          if (!product) continue;
+
+          const variant = product.variants.id(item.variantId);
+          if (!variant) continue;
+
+          const previousStock = Number(variant.stock) || 0;
+          const variantIndex = product.variants.findIndex(v => String(v._id) === String(item.variantId));
+
+          if (isSerializedVariant(product, variant)) {
+            consumeSerializedStock({
+              product,
+              variant,
+              quantity,
+              variantIndex,
+              saleStatus: "SOLD_ONLINE"
+            });
+          } else {
+            variant.stock = previousStock - quantity;
+          }
+
+          variant.sold = (Number(variant.sold) || 0) + quantity;
+          await product.save();
+
+          await StockLog.create({
+            productId: product._id,
+            variantId: variant._id,
+            changeType: "sale",
+            previousStock,
+            newStock: variant.stock,
+            change: variant.stock - previousStock,
+            reason: `Replacement item shipped for ${repl.replacementId || repl._id}`,
+            adminId: req.user.userId
+          });
+        }
+      }
+
+      repl.inventory = {
+        ...(repl.inventory || {}),
+        shippedProcessedAt: new Date(),
+        shippedProcessedStatus: nextStatus
       };
       await repl.save();
     }
