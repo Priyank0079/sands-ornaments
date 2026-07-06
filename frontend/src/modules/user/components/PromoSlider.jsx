@@ -105,7 +105,7 @@ const PromoSlider = () => {
             onMouseEnter={() => setIsSuspended(true)}
             onMouseLeave={() => setIsSuspended(false)}
         >
-            <div className="relative w-full h-[200px] sm:h-[220px] md:h-[350px]">
+            <div className="relative w-full h-[170px] sm:h-[200px] md:h-[350px]">
                 <motion.div
                     className="flex h-full w-full gap-[1.5%]"
                     animate={{
