@@ -19,6 +19,7 @@ const AnalyticsDashboard = () => {
     const navigate = useNavigate();
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const leadsRef = React.useRef(null);
 
     useEffect(() => {
         const fetchAnalytics = async () => {
@@ -67,7 +68,6 @@ const AnalyticsDashboard = () => {
                     bgColor="bg-emerald-50" 
                     badge="LIVE" 
                     badgeColor="text-emerald-600"
-                    onClick={() => navigate('/admin/users')}
                 />
                 <AdminStatsCard 
                     label="TOTAL SESSIONS" 
@@ -75,7 +75,6 @@ const AnalyticsDashboard = () => {
                     icon={Clock} 
                     color="text-orange-500" 
                     bgColor="bg-orange-50" 
-                    onClick={() => navigate('/admin/users')}
                 />
                 <AdminStatsCard 
                     label="CAPTURED LEADS" 
@@ -83,7 +82,7 @@ const AnalyticsDashboard = () => {
                     icon={Target} 
                     color="text-pink-500" 
                     bgColor="bg-pink-50" 
-                    onClick={() => navigate('/admin/users')}
+                    onClick={() => leadsRef.current?.scrollIntoView({ behavior: 'smooth' })}
                 />
             </div>
 
@@ -223,7 +222,7 @@ const AnalyticsDashboard = () => {
             </div>
 
             {/* Recent Leads Table */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div ref={leadsRef} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="p-6 border-b border-gray-50 flex items-center justify-between">
                     <h3 className="text-lg font-medium text-gray-800">Recent Captured Leads</h3>
                     <Target size={18} className="text-gray-400" />
@@ -242,8 +241,7 @@ const AnalyticsDashboard = () => {
                             {data.recentLeads?.map((lead, idx) => (
                                 <tr 
                                     key={idx} 
-                                    onClick={() => navigate('/admin/users')}
-                                    className="hover:bg-gray-50/50 transition-colors cursor-pointer"
+                                    className="hover:bg-gray-50/50 transition-colors"
                                 >
                                     <td className="px-6 py-4">
                                         <div className="flex flex-col">
