@@ -2381,112 +2381,6 @@ const ProductDetails = () => {
         })()}
       </div>
 
-      {/* 2. Reviews Section (Second) - With Filters & Modal */}
-      <div className="mt-8 border-t border-gray-200 pt-10 animate-in fade-in slide-in-from-bottom-8 duration-700 relative pb-32 md:pb-0">
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 md:mb-12 gap-6">
-          <div className="flex items-center gap-3">
-            <div className="flex text-[#D39A9F]">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-6 h-6 fill-current" />
-              ))}
-            </div>
-            <span className="text-xl font-bold text-black flex items-center gap-1">
-              {hasReviews ? `${reviewCount} Reviews` : "No reviews yet"}
-              <ChevronDown className="w-5 h-5 text-gray-400" />
-            </span>
-          </div>
-          <div className="flex gap-3 relative w-full md:w-auto">
-            <button
-              onClick={() => {
-                if (!user) {
-                  const redirectPath = `${window.location.pathname}${window.location.search}`;
-                  toast.error("Please login to write a review");
-                  navigate(
-                    `/login?redirect=${encodeURIComponent(redirectPath)}`,
-                  );
-                  return;
-                }
-                setIsWriteReviewOpen(true);
-                setReviewStep(1);
-              }}
-              className="flex-1 md:flex-none bg-white border border-black px-8 py-4 rounded-xl text-xs font-bold uppercase tracking-[0.2em] text-black hover:bg-black hover:text-white transition-all duration-300 shadow-sm active:scale-95"
-            >
-              Write a review
-            </button>
-            <button
-              onClick={() => setIsReviewFilterOpen(!isReviewFilterOpen)}
-              className={`border border-gray-200 p-4 rounded-xl text-black hover:border-black transition-all duration-300 ${isReviewFilterOpen ? "bg-black text-white" : "bg-white shadow-sm"}`}
-            >
-              <SlidersHorizontal className="w-5 h-5" />
-            </button>
-
-            {/* Filter Dropdown */}
-            {isReviewFilterOpen && (
-              <div className="absolute right-0 top-full mt-3 w-64 bg-white border border-gray-100 rounded-2xl shadow-2xl z-30 p-2 animate-in fade-in zoom-in-95 duration-200">
-                <div className="px-4 py-3 border-b border-gray-50 mb-1">
-                  <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-                    Sort Reviews By
-                  </span>
-                </div>
-                <div className="space-y-1">
-                  {[
-                    "Featured",
-                    "Newest",
-                    "Highest Ratings",
-                    "Lowest Ratings",
-                  ].map((option) => (
-                    <button
-                      key={option}
-                      onClick={() => {
-                        setSortBy(option);
-                        setIsReviewFilterOpen(false);
-                      }}
-                      className={`w-full text-left px-4 py-3 text-sm rounded-xl flex justify-between items-center transition-colors ${sortBy === option ? "bg-[#FDF5F6] text-[#9C5B61] font-bold" : "text-gray-700 hover:bg-gray-50"}`}
-                    >
-                      {option}
-                      {sortBy === option && <Check className="w-4 h-4" />}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-          {sortedReviews.map((review, idx) => (
-            <div
-              key={idx}
-              className="bg-[#FDFBF7]/30 p-6 md:p-8 rounded-[2rem] border border-gray-100/50 shadow-sm hover:shadow-md transition-all duration-500"
-            >
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h4 className="font-bold text-gray-900 font-display">
-                    {review.name}
-                  </h4>
-                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                    {review.date}
-                  </span>
-                </div>
-                <div className="flex text-[#D39A9F]">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`w-4 h-4 ${i < review.rating ? "fill-current" : "text-gray-200"} `}
-                    />
-                  ))}
-                </div>
-              </div>
-              <h5 className="font-bold text-sm text-gray-800 mt-4 leading-tight">
-                {review.title}
-              </h5>
-              <p className="text-gray-600 text-sm mt-2 leading-relaxed font-sans">
-                {review.comment}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
 
       {/* Write Review Modal Overlay */}
       {isWriteReviewOpen && (
@@ -2773,6 +2667,112 @@ const ProductDetails = () => {
       )}
       {/* Recently Viewed Section */}
       <RecentlyViewed />
+      {/* 2. Reviews Section (Second) - With Filters & Modal */}
+      <div className="mt-8 border-t border-gray-200 pt-10 animate-in fade-in slide-in-from-bottom-8 duration-700 relative pb-8 md:pb-0 max-w-4xl mx-auto">
+        <div className="flex flex-col md:flex-row md:items-center justify-center md:justify-between mb-8 md:mb-12 gap-6">
+          <div className="flex items-center gap-3">
+            <div className="flex text-[#D39A9F]">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="w-6 h-6 fill-current" />
+              ))}
+            </div>
+            <span className="text-xl font-bold text-black flex items-center gap-1">
+              {hasReviews ? `${reviewCount} Reviews` : "No reviews yet"}
+              <ChevronDown className="w-5 h-5 text-gray-400" />
+            </span>
+          </div>
+          <div className="flex gap-3 relative w-full md:w-auto">
+            <button
+              onClick={() => {
+                if (!user) {
+                  const redirectPath = `${window.location.pathname}${window.location.search}`;
+                  toast.error("Please login to write a review");
+                  navigate(
+                    `/login?redirect=${encodeURIComponent(redirectPath)}`,
+                  );
+                  return;
+                }
+                setIsWriteReviewOpen(true);
+                setReviewStep(1);
+              }}
+              className="flex-1 md:flex-none bg-white border border-black px-8 py-4 rounded-xl text-xs font-bold uppercase tracking-[0.2em] text-black hover:bg-black hover:text-white transition-all duration-300 shadow-sm active:scale-95"
+            >
+              Write a review
+            </button>
+            <button
+              onClick={() => setIsReviewFilterOpen(!isReviewFilterOpen)}
+              className={`border border-gray-200 p-4 rounded-xl text-black hover:border-black transition-all duration-300 ${isReviewFilterOpen ? "bg-black text-white" : "bg-white shadow-sm"}`}
+            >
+              <SlidersHorizontal className="w-5 h-5" />
+            </button>
+
+            {/* Filter Dropdown */}
+            {isReviewFilterOpen && (
+              <div className="absolute right-0 top-full mt-3 w-64 bg-white border border-gray-100 rounded-2xl shadow-2xl z-30 p-2 animate-in fade-in zoom-in-95 duration-200">
+                <div className="px-4 py-3 border-b border-gray-50 mb-1">
+                  <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                    Sort Reviews By
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  {[
+                    "Featured",
+                    "Newest",
+                    "Highest Ratings",
+                    "Lowest Ratings",
+                  ].map((option) => (
+                    <button
+                      key={option}
+                      onClick={() => {
+                        setSortBy(option);
+                        setIsReviewFilterOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-3 text-sm rounded-xl flex justify-between items-center transition-colors ${sortBy === option ? "bg-[#FDF5F6] text-[#9C5B61] font-bold" : "text-gray-700 hover:bg-gray-50"}`}
+                    >
+                      {option}
+                      {sortBy === option && <Check className="w-4 h-4" />}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+          {sortedReviews.map((review, idx) => (
+            <div
+              key={idx}
+              className="bg-[#FDFBF7]/30 p-6 md:p-8 rounded-[2rem] border border-gray-100/50 shadow-sm hover:shadow-md transition-all duration-500"
+            >
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h4 className="font-bold text-gray-900 font-display">
+                    {review.name}
+                  </h4>
+                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                    {review.date}
+                  </span>
+                </div>
+                <div className="flex text-[#D39A9F]">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`w-4 h-4 ${i < review.rating ? "fill-current" : "text-gray-200"} `}
+                    />
+                  ))}
+                </div>
+              </div>
+              <h5 className="font-bold text-sm text-gray-800 mt-4 leading-tight">
+                {review.title}
+              </h5>
+              <p className="text-gray-600 text-sm mt-2 leading-relaxed font-sans">
+                {review.comment}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* Complete the Look / Pairs Well With (Cross-selling) */}
       {relatedProducts.length > 0 && (

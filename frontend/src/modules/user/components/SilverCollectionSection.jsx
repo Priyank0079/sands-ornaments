@@ -1,4 +1,4 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
@@ -92,6 +92,7 @@ const SILVER_STYLE_CATEGORIES = [
 const SilverCollectionSection = () => {
     const navigate = useNavigate();
     const scrollRef = useRef(null);
+    const [activeIndex, setActiveIndex] = useState(0);
     const { data: homepageSections = {} } = useHomepageCms();
     const sectionData = homepageSections?.['silver-collection'];
 
@@ -119,11 +120,30 @@ const SilverCollectionSection = () => {
         return SILVER_STYLE_CATEGORIES;
     }, [sectionData?.items]);
 
-    const scroll = (direction) => {
+    const handleScroll = () => {
         if (scrollRef.current) {
-            const { scrollLeft } = scrollRef.current;
-            const scrollTo = direction === 'left' ? scrollLeft - 300 : scrollLeft + 300;
-            scrollRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
+            const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+            const maxScroll = scrollWidth - clientWidth;
+            if (maxScroll <= 0) {
+                setActiveIndex(0);
+                return;
+            }
+            const percentage = scrollLeft / maxScroll;
+            const index = Math.round(percentage * (items.length - 1));
+            setActiveIndex(Math.min(index, items.length - 1));
+        }
+    };
+
+    const scrollToDot = (index) => {
+        if (scrollRef.current) {
+            const container = scrollRef.current;
+            const maxScroll = container.scrollWidth - container.clientWidth;
+            const percentage = index / (items.length - 1 || 1);
+            container.scrollTo({
+                left: percentage * maxScroll,
+                behavior: 'smooth'
+            });
+            setActiveIndex(index);
         }
     };
 
@@ -176,7 +196,8 @@ const SilverCollectionSection = () => {
 
                     <div
                         ref={scrollRef}
-                        className="flex flex-nowrap overflow-x-auto scrollbar-hide gap-6 md:gap-12 pb-6 md:pb-10 px-2 snap-x snap-mandatory"
+                        onScroll={handleScroll}
+                        className="flex flex-nowrap overflow-x-auto scrollbar-hide gap-6 md:gap-12 pb-6 md:pb-10 px-2 snap-x snap-mandatory scroll-smooth"
                     >
                         {items.map((cat, idx) => (
                             <motion.div
@@ -208,6 +229,24 @@ const SilverCollectionSection = () => {
                             </motion.div>
                         ))}
                     </div>
+
+                    {/* Carousel Dots */}
+                    {items.length > 1 && (
+                        <div className="flex justify-center items-center gap-2 mt-[-10px]">
+                            {items.map((_, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => scrollToDot(idx)}
+                                    className={`transition-all duration-300 rounded-full ${
+                                        activeIndex === idx 
+                                        ? 'w-6 h-1.5 bg-[#EC7798]' 
+                                        : 'w-1.5 h-1.5 bg-gray-300 hover:bg-gray-400'
+                                    }`}
+                                    aria-label={`Go to item ${idx + 1}`}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
 
             </div>

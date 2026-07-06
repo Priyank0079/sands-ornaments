@@ -1,4 +1,4 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -60,6 +60,7 @@ const collections = [
 const SilverCuratedShowcase = () => {
     const navigate = useNavigate();
     const scrollRef = useRef(null);
+    const [activeIndex, setActiveIndex] = useState(0);
     const { data: homepageSections = {} } = useHomepageCms();
     const sectionData = homepageSections?.['silver-curated'];
 
@@ -94,6 +95,33 @@ const SilverCuratedShowcase = () => {
         }
     };
 
+    const handleScroll = () => {
+        if (scrollRef.current) {
+            const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+            const maxScroll = scrollWidth - clientWidth;
+            if (maxScroll <= 0) {
+                setActiveIndex(0);
+                return;
+            }
+            const percentage = scrollLeft / maxScroll;
+            const index = Math.round(percentage * (items.length - 1));
+            setActiveIndex(Math.min(index, items.length - 1));
+        }
+    };
+
+    const scrollToDot = (index) => {
+        if (scrollRef.current) {
+            const container = scrollRef.current;
+            const maxScroll = container.scrollWidth - container.clientWidth;
+            const percentage = index / (items.length - 1 || 1);
+            container.scrollTo({
+                left: percentage * maxScroll,
+                behavior: 'smooth'
+            });
+            setActiveIndex(index);
+        }
+    };
+
     return (
         <section className="py-8 md:py-14 bg-white select-none overflow-hidden">
             <div className="w-full">
@@ -115,6 +143,7 @@ const SilverCuratedShowcase = () => {
 
                     <div
                         ref={scrollRef}
+                        onScroll={handleScroll}
                         className="flex overflow-x-auto gap-3 md:gap-5 pb-8 hide-scrollbar scroll-smooth snap-x snap-mandatory px-4"
                     >
                         {items.map((item, idx) => (
@@ -158,6 +187,24 @@ const SilverCuratedShowcase = () => {
                             </motion.div>
                         ))}
                     </div>
+
+                    {/* Carousel Dots */}
+                    {items.length > 1 && (
+                        <div className="flex justify-center items-center gap-2 pb-6 mt-2">
+                            {items.map((_, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => scrollToDot(idx)}
+                                    className={`transition-all duration-300 rounded-full ${
+                                        activeIndex === idx 
+                                        ? 'w-6 h-1.5 bg-[#4A1015]' 
+                                        : 'w-1.5 h-1.5 bg-gray-300 hover:bg-gray-400'
+                                    }`}
+                                    aria-label={`Go to item ${idx + 1}`}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
 
