@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, Heart, ShoppingCart, User, Menu, X, ChevronDown, ChevronRight, Bell, Sparkles, Coins, Gem, Droplet, LifeBuoy, Sun, Hexagon, Gift, MoreHorizontal, ShoppingBag } from 'lucide-react';
+import { Search, Heart, ShoppingCart, User, Users, BookOpen, Menu, X, ChevronDown, ChevronRight, Bell, Sparkles, Coins, Gem, Droplet, LifeBuoy, Sun, Hexagon, Gift, MoreHorizontal, ShoppingBag } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
 import { useNotification } from '../../../context/NotificationContext';
 import logo from '@assets/SANDS JEWELS PINK (1).png';
@@ -396,11 +396,10 @@ const Navbar = () => {
                             <motion.div
                                 initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
                                 transition={{ type: 'tween', duration: 0.3 }}
-                                className="fixed top-0 left-0 h-full w-full bg-white z-[9999] flex flex-col"
+                                className="fixed top-0 left-0 h-full w-full bg-[#FDF5F6] z-[9999] flex flex-col"
                             >
                                 {/* Top Header */}
-                                <div className="flex justify-between items-center px-6 pt-6 pb-4">
-                                    <User className="w-6 h-6 text-[#8E2B45]" strokeWidth={1.5} />
+                                <div className="flex justify-end items-center px-6 pt-6 pb-4">
                                     <button onClick={() => setIsMenuOpen(false)} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
                                         <X className="w-5 h-5 text-gray-900 font-bold" strokeWidth={2.5} />
                                     </button>
@@ -408,15 +407,15 @@ const Navbar = () => {
 
                                 {/* Banner/Coupon */}
                                 <div className="px-5 mb-6 mt-2">
-                                    <div className="relative bg-[#FDF5F6] border border-[#EBCDD0] rounded-lg p-5 flex items-center justify-between shadow-sm">
+                                    <div className="relative bg-white border border-[#EBCDD0] rounded-lg p-5 flex items-center justify-between shadow-sm">
                                         {/* Ticket Cutouts */}
-                                        <div className="absolute left-[-8px] top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full border-r border-[#EBCDD0]"></div>
-                                        <div className="absolute right-[-8px] top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full border-l border-[#EBCDD0]"></div>
+                                        <div className="absolute left-[-8px] top-1/2 -translate-y-1/2 w-4 h-4 bg-[#FDF5F6] rounded-full border-r border-[#EBCDD0]"></div>
+                                        <div className="absolute right-[-8px] top-1/2 -translate-y-1/2 w-4 h-4 bg-[#FDF5F6] rounded-full border-l border-[#EBCDD0]"></div>
                                         
                                         <div className="flex items-center gap-5 w-full">
                                             <div className="flex-shrink-0 relative">
                                                 <ShoppingBag className="w-10 h-10 text-[#8E2B45] opacity-80" strokeWidth={1.2} />
-                                                <ShoppingBag className="w-7 h-7 text-[#8E2B45] absolute -bottom-1 -right-2 bg-[#FDF5F6]" strokeWidth={1.5} />
+                                                <ShoppingBag className="w-7 h-7 text-[#8E2B45] absolute -bottom-1 -right-2 bg-white" strokeWidth={1.5} />
                                             </div>
                                             <div className="flex-1">
                                                 <h3 className="text-[17px] font-serif font-bold text-[#8E2B45] leading-tight mb-2 tracking-wide">Welcome to Sands Jewels</h3>
@@ -435,20 +434,20 @@ const Navbar = () => {
                                     {[
                                         { label: 'All Jewellery', path: '/shop', icon: Sparkles },
                                         { label: 'Gold', path: '/gold-collection', icon: Coins },
-                                        { label: 'Diamond', path: '/shop?category=diamond', icon: Gem },
-                                        { label: 'Earrings', path: '/shop?category=earrings', icon: Droplet },
                                         { label: 'Rings', path: '/shop?category=rings', icon: LifeBuoy },
                                         { label: 'Daily Wear', path: '/shop?category=daily-wear', icon: Sun },
-                                        { label: 'Gemstone', path: '/shop?category=gemstone', icon: Hexagon },
                                         { label: 'Wedding', path: '/shop?category=wedding', icon: Heart },
-                                        { label: 'Gifting', path: '/shop?category=gifting', icon: Gift },
+                                        { label: 'Gifts for Him', path: '/category/men', icon: Gift },
+                                        { label: 'Gifts for Her', path: '/category/women', icon: Gift },
+                                        { label: 'Gifts for Family', path: '/category/family', icon: Users },
+                                        { label: 'Blogs', path: '/blogs', icon: BookOpen },
                                         { label: 'More', path: '/shop', icon: MoreHorizontal }
                                     ].map((item, index) => (
                                         <Link 
                                             key={index}
                                             to={item.path}
                                             onClick={() => setIsMenuOpen(false)}
-                                            className="flex items-center justify-between py-4 px-4 text-gray-800 hover:bg-[#FDF5F6] hover:text-[#8E2B45] rounded-xl transition-all group border-b border-gray-100 last:border-0"
+                                            className="flex items-center justify-between py-4 px-4 text-gray-800 hover:bg-white hover:shadow-sm hover:text-[#8E2B45] rounded-xl transition-all group border-b border-[#F0DFE2] last:border-0"
                                         >
                                             <div className="flex items-center gap-5">
                                                 <item.icon className="w-5 h-5 text-gray-600 group-hover:text-[#8E2B45] transition-colors" strokeWidth={1.5} />
