@@ -541,6 +541,7 @@ const ProductDetails = () => {
   const [isLabGrownModalOpen, setIsLabGrownModalOpen] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [isImageZoomed, setIsImageZoomed] = useState(false);
 
   const thumbScroll = useDragScroll();
   const detailsScroll = useDragScroll();
@@ -991,10 +992,10 @@ const ProductDetails = () => {
                 </div>
               )}
 
-              {/* Image Pane - CLEAN IMAGE SWAP (No Zoom) */}
+              {/* Image Pane - ZOOM IN/OUT implementation */}
               <div
-                onClick={() => openLightbox(primaryImage)}
-                className={`${product?.videoUrl ? "w-full md:w-1/2 h-1/2 md:h-full" : "w-full h-full"} relative group overflow-hidden bg-[#F7F2F3] cursor-zoom-in`}
+                onClick={() => setIsImageZoomed(prev => !prev)}
+                className={`${product?.videoUrl ? "w-full md:w-1/2 h-1/2 md:h-full" : "w-full h-full"} relative group overflow-hidden bg-[#F7F2F3] ${isImageZoomed ? 'cursor-zoom-out' : 'cursor-zoom-in'}`}
               >
                 {primaryImage ? (
                   <>
@@ -1004,7 +1005,7 @@ const ProductDetails = () => {
                       alt={product.name}
                       fetchPriority="high"
                       decoding="sync"
-                      className="absolute inset-0 w-full h-full object-cover z-0"
+                      className={`absolute inset-0 w-full h-full object-cover z-0 transition-transform duration-500 ease-out ${isImageZoomed ? 'scale-150' : 'scale-100'}`}
                     />
 
                     {/* Hover Image (2nd gallery image when available; otherwise model fallback) */}
@@ -1014,16 +1015,18 @@ const ProductDetails = () => {
                         alt={`${product.name} look`}
                         loading="lazy"
                         decoding="async"
-                        className="absolute inset-0 w-full h-full object-cover z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-[1200ms] ease-in-out"
+                        className={`absolute inset-0 w-full h-full object-cover z-10 opacity-0 group-hover:opacity-100 transition-all duration-[1200ms] ease-in-out ${isImageZoomed ? 'scale-150' : 'scale-100'}`}
                       />
                     ) : null}
                     {/* Zoom Indicator Icon */}
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/5 z-20 pointer-events-none">
+                    <div className={`absolute inset-0 flex items-center justify-center transition-opacity bg-black/5 z-20 pointer-events-none ${isImageZoomed ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'}`}>
                       <div className="p-3 rounded-full bg-white/80 backdrop-blur shadow-sm transform scale-90 group-hover:scale-100 transition-transform duration-500">
-                        <Maximize2
-                          className="w-5 h-5 text-black"
-                          strokeWidth={1.5}
-                        />
+                        {isImageZoomed ? null : (
+                          <Maximize2
+                            className="w-5 h-5 text-black"
+                            strokeWidth={1.5}
+                          />
+                        )}
                       </div>
                     </div>
                   </>
