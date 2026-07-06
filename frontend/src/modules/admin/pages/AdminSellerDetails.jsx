@@ -77,7 +77,7 @@ const AdminSellerDetails = () => {
                     >
                         View Products
                     </button>
-                    {seller.status === 'PENDING' ? (
+                    {seller.status === 'PENDING' && (
                         <>
                             <button 
                                 onClick={() => setShowRejectModal(true)}
@@ -92,13 +92,37 @@ const AdminSellerDetails = () => {
                                 <CheckCircle size={18} /> Approve Application
                             </button>
                         </>
-                    ) : (
-                        <div className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest border flex items-center gap-2 ${
-                            seller.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-red-50 text-red-600 border-red-100'
-                        }`}>
-                            {seller.status === 'APPROVED' ? <CheckCircle size={18} /> : <XCircle size={18} />}
-                            Status: {seller.status}
-                        </div>
+                    )}
+                    {seller.status === 'REJECTED' && (
+                        <>
+                            <div className="px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest border flex items-center gap-2 bg-red-50 text-red-600 border-red-100">
+                                <XCircle size={18} />
+                                Status: {seller.status}
+                            </div>
+                            <button 
+                                onClick={() => handleAction('APPROVED')}
+                                className="bg-[#3E2723] text-white px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest shadow-xl shadow-[#3E2723]/20 hover:bg-[#2D1B18] transition-all flex items-center gap-2"
+                            >
+                                <CheckCircle size={18} /> Approve Application
+                            </button>
+                        </>
+                    )}
+                    {seller.status === 'APPROVED' && (
+                        <>
+                            <div className="px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest border flex items-center gap-2 bg-emerald-50 text-emerald-600 border-emerald-100">
+                                <CheckCircle size={18} />
+                                Status: {seller.status}
+                            </div>
+                            <button 
+                                onClick={() => {
+                                    setRejectReason('');
+                                    setShowRejectModal(true);
+                                }}
+                                className="bg-red-50 text-red-600 px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest border border-red-100 hover:bg-red-100 transition-all flex items-center gap-2"
+                            >
+                                <XCircle size={18} /> Reject / Suspend
+                            </button>
+                        </>
                     )}
                 </div>
             </div>
