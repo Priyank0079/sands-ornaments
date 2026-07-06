@@ -96,19 +96,9 @@ const GoldExploreCollections = ({ sectionData = null }) => {
         <section className="py-4 md:py-16 bg-white select-none overflow-hidden">
             <div className="container mx-auto px-4 max-w-[1450px]">
                 <div className="relative group/main">
-                    <button
-                        onClick={() => scroll('left')}
-                        className="absolute left-0 top-1/2 -translate-y-1/2 z-30 w-10 h-10 bg-white/90 rounded-full hidden md:flex items-center justify-center shadow-md opacity-0 group-hover/main:opacity-100 transition-opacity border border-gray-100"
-                    >
-                        <ChevronLeft className="w-5 h-5 text-black" />
-                    </button>
+                    
 
-                    <button
-                        onClick={() => scroll('right')}
-                        className="absolute right-0 top-1/2 -translate-y-1/2 z-30 w-10 h-10 bg-white/90 rounded-full hidden md:flex items-center justify-center shadow-md opacity-0 group-hover/main:opacity-100 transition-opacity border border-gray-100"
-                    >
-                        <ChevronRight className="w-5 h-5 text-black" />
-                    </button>
+                    
 
                     <div
                         ref={scrollRef}

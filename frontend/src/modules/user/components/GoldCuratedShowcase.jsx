@@ -117,19 +117,9 @@ const GoldCuratedShowcase = ({ sectionData = null }) => {
         </div>
 
         <div className="relative group/main max-w-[1550px] mx-auto">
-          <button
-            onClick={() => scroll("left")}
-            className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 md:w-12 md:h-12 bg-white/95 backdrop-blur-md rounded-none flex items-center justify-center shadow-lg border border-gray-100 opacity-0 group-hover/main:opacity-100 transition-all duration-300 hover:bg-[#FAF9F0] active:scale-95"
-          >
-            <ChevronLeft className="w-5 h-5 text-[#2A4D35]" />
-          </button>
+          
 
-          <button
-            onClick={() => scroll("right")}
-            className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 md:w-12 md:h-12 bg-white/95 backdrop-blur-md rounded-none flex items-center justify-center shadow-lg border border-gray-100 opacity-0 group-hover/main:opacity-100 transition-all duration-300 hover:bg-[#FAF9F0] active:scale-95"
-          >
-            <ChevronRight className="w-5 h-5 text-[#2A4D35]" />
-          </button>
+          
 
           <div
             ref={scrollRef}

@@ -209,8 +209,8 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
                     </div>
                 </div>
 
-                <div className="flex flex-col items-center px-1.5 py-2 md:px-2 md:py-3">
-                    <div className="flex items-center justify-center gap-1 md:gap-2 mb-1 md:mb-1.5">
+                <div className="flex flex-col items-center px-1.5 py-1.5 md:px-2 md:py-2">
+                    <div className="flex items-center justify-center gap-1 md:gap-2 mb-0.5 md:mb-1">
                         <span className="text-[14px] md:text-[17px] font-bold md:font-extrabold text-gray-900 tracking-tight font-sans">
                             {formatCurrency(effectivePrice)}
                         </span>
@@ -221,22 +221,22 @@ const ProductCard = ({ product, isWishlistPage = false, requireLogin = false, lo
                         )}
                     </div>
                     
-                    <h3 className="text-[9px] md:text-[11px] text-gray-500 line-clamp-1 h-[14px] md:h-[16px] group-hover/card:text-black transition-colors font-normal md:font-medium uppercase tracking-[0.05em] md:tracking-[0.08em] overflow-hidden mb-1 md:mb-2 text-center">
+                    <h3 className="text-[9px] md:text-[11px] text-gray-500 line-clamp-1 group-hover/card:text-black transition-colors font-normal md:font-medium uppercase tracking-[0.05em] md:tracking-[0.08em] overflow-hidden mb-1.5 md:mb-2 text-center">
                         {product.name}
                     </h3>
 
-                    <div className="h-[18px] md:h-[22px] mb-1.5 md:mb-3 flex items-center justify-center">
-                        {(product.priceDrop || (effectiveOriginalPrice > effectivePrice)) && (
+                    {(product.priceDrop || (effectiveOriginalPrice > effectivePrice)) && (
+                        <div className="mb-1.5 md:mb-2 flex items-center justify-center">
                             <span className="px-1.5 md:px-2.5 py-0.5 bg-blue-50 text-blue-600 text-[8px] md:text-[9px] font-bold md:font-black uppercase tracking-widest rounded-full border border-blue-100 shadow-sm">
                                 PRICE DROP!
                             </span>
-                        )}
-                    </div>
+                        </div>
+                    )}
                     
-                    <div className="w-full">
+                    <div className="w-full mt-1 md:mt-2">
                         <button 
                             onClick={handleProductOpen}
-                            className="w-full bg-[#8E2B45] text-white font-semibold md:font-bold text-[9px] md:text-[11px] py-2 md:py-3 rounded-none hover:bg-[#722237] transition-all duration-300 uppercase tracking-[0.1em] md:tracking-[0.15em] active:scale-[0.98] flex items-center justify-center gap-1 md:gap-2"
+                            className="w-full bg-[#8E2B45] text-white font-semibold md:font-bold text-[9px] md:text-[11px] py-1.5 md:py-2 rounded-none hover:bg-[#722237] transition-all duration-300 uppercase tracking-[0.1em] md:tracking-[0.15em] active:scale-[0.98] flex items-center justify-center gap-1 md:gap-2"
                         >
                             Shop Now
                         </button>

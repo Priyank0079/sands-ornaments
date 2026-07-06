@@ -111,18 +111,8 @@ const MenExploreCollections = ({ sectionData }) => {
                 <div className="relative group/main">
 
                     {/* Navigation Arrows */}
-                    <button
-                        onClick={() => scroll('left')}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 z-40 w-12 h-12 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-xl opacity-0 group-hover/main:opacity-100 transition-all hover:bg-white active:scale-90"
-                    >
-                        <ChevronLeft className="w-6 h-6 text-black" />
-                    </button>
-                    <button
-                        onClick={() => scroll('right')}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 z-40 w-12 h-12 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-xl opacity-0 group-hover/main:opacity-100 transition-all hover:bg-white active:scale-90"
-                    >
-                        <ChevronRight className="w-6 h-6 text-black" />
-                    </button>
+                    
+                    
 
                     <div
                         ref={scrollRef}

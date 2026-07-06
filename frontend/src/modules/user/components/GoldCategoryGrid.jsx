@@ -91,12 +91,7 @@ const GoldCategoryGrid = ({ sectionData = null }) => {
                     <span className="text-[#C9A84C] text-xl">*</span>
                 </div>
 
-                <button
-                    onClick={() => scroll('left')}
-                    className="absolute left-6 top-[110px] -translate-y-1/2 z-20 bg-white/90 shadow-lg rounded-full p-2 border border-gray-100 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex items-center justify-center hover:bg-white"
-                >
-                    <ChevronLeft className="w-5 h-5 text-gray-700" />
-                </button>
+                
 
                 <div
                     ref={scrollRef}
@@ -135,12 +130,7 @@ const GoldCategoryGrid = ({ sectionData = null }) => {
                     ))}
                 </div>
 
-                <button
-                    onClick={() => scroll('right')}
-                    className="absolute right-6 top-[110px] -translate-y-1/2 z-20 bg-white/90 shadow-lg rounded-full p-2 border border-gray-100 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex items-center justify-center hover:bg-white"
-                >
-                    <ChevronRight className="w-5 h-5 text-gray-700" />
-                </button>
+                
             </div>
         </div>
     );

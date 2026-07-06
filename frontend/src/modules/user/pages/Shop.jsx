@@ -1069,15 +1069,6 @@ const Shop = () => {
               </h1>
             </div>
 
-            <div className="hidden md:flex items-center gap-2 md:gap-3 shrink-0">
-              <button
-                onClick={() => setIsFilterOpen(true)}
-                className="flex items-center gap-1.5 border border-[#D39A9F] px-4 py-1.5 rounded-lg hover:bg-[#D39A9F] hover:text-white hover:border-[#D39A9F] transition-all text-black text-xs md:text-sm font-medium"
-              >
-                <Filter className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                <span>Filters</span>
-              </button>
-            </div>
 
             {/* Mobile Actions */}
             <div className="flex md:hidden items-center gap-1.5 shrink-0">

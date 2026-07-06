@@ -92,19 +92,9 @@ const MenPickYourGlam = ({ sectionData }) => {
                 <div className="relative flex items-center justify-center">
 
                     {/* Navigation Arrows */}
-                    <button
-                        onClick={prev}
-                        className="absolute left-0 md:left-4 z-40 p-1.5 md:p-2 rounded-full bg-white/60 backdrop-blur-md hover:bg-white transition-all shadow-sm group"
-                    >
-                        <ChevronLeft className="w-4 h-4 md:w-5 md:h-5 text-gray-400 group-hover:text-black" />
-                    </button>
+                    
 
-                    <button
-                        onClick={next}
-                        className="absolute right-0 md:right-4 z-40 p-1.5 md:p-2 rounded-full bg-white/60 backdrop-blur-md hover:bg-white transition-all shadow-sm group"
-                    >
-                        <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-gray-400 group-hover:text-black" />
-                    </button>
+                    
 
                     <div className="w-full flex justify-center">
                         <motion.div

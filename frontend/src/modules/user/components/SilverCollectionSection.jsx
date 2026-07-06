@@ -171,18 +171,8 @@ const SilverCollectionSection = () => {
 
                 <div className="relative group/scroll px-2">
 
-                    <button
-                        onClick={() => scroll('left')}
-                        className="absolute -left-2 top-1/2 -translate-y-24 z-20 w-10 h-10 bg-white/95 rounded-full flex items-center justify-center shadow-lg border border-pink-100 opacity-0 group-hover/scroll:opacity-100 transition-opacity hidden md:flex"
-                    >
-                        <ChevronLeft className="w-6 h-6 text-[#EC7798]" />
-                    </button>
-                    <button
-                        onClick={() => scroll('right')}
-                        className="absolute -right-2 top-1/2 -translate-y-24 z-20 w-10 h-10 bg-white/95 rounded-full flex items-center justify-center shadow-lg border border-pink-100 opacity-0 group-hover/scroll:opacity-100 transition-opacity hidden md:flex"
-                    >
-                        <ChevronRight className="w-6 h-6 text-[#EC7798]" />
-                    </button>
+                    
+                    
 
                     <div
                         ref={scrollRef}

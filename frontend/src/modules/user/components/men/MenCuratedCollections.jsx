@@ -84,20 +84,10 @@ const MenCuratedCollections = ({ sectionData }) => {
                 <div className="relative group/main">
                     
                     {/* Left Scroll Arrow */}
-                    <button 
-                        onClick={() => scroll('left')}
-                        className="absolute left-2 md:left-3 top-1/2 -translate-y-1/2 z-30 w-8 h-8 md:w-11 md:h-11 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg border border-gray-100 opacity-0 group-hover/main:opacity-100 transition-all duration-300 hover:bg-white hover:scale-105 active:scale-95"
-                    >
-                        <ChevronLeft className="w-4 h-4 md:w-5 md:h-5 text-black" />
-                    </button>
+                    
 
                     {/* Right Scroll Arrow */}
-                    <button 
-                        onClick={() => scroll('right')}
-                        className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 z-30 w-8 h-8 md:w-11 md:h-11 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg border border-gray-100 opacity-0 group-hover/main:opacity-100 transition-all duration-300 hover:bg-white hover:scale-105 active:scale-95"
-                    >
-                        <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-black" />
-                    </button>
+                    
 
                     <div 
                         ref={scrollRef}

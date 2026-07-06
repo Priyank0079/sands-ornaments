@@ -126,6 +126,23 @@ const AppContent = () => {
   const isSellerPath = location.pathname.startsWith('/seller');
   const { toasts } = useToasterStore();
 
+  const [isHeaderVisible, setIsHeaderVisible] = React.useState(true);
+  const [lastScrollY, setLastScrollY] = React.useState(0);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY && currentScrollY > 150) {
+        setIsHeaderVisible(false);
+      } else if (currentScrollY < lastScrollY) {
+        setIsHeaderVisible(true);
+      }
+      setLastScrollY(currentScrollY);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
+
   React.useEffect(() => {
     if (isSellerPath) {
       toasts
@@ -178,7 +195,7 @@ const AppContent = () => {
       {!isAdminPath && !isSellerPath && !isScannerPath && (
         <>
           <div 
-            className="fixed top-0 left-0 right-0 z-[150] w-full"
+            className={`fixed top-0 left-0 right-0 z-[150] w-full transition-transform duration-300 ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'}`}
           >
             <AnnouncementBar />
             <Navbar />

@@ -137,7 +137,7 @@ const PriceRangeShowcase = () => {
                                     </div>
 
                                     {/* Content Container (Mimicking ProductCard) */}
-                                    <div className="flex flex-col h-[115px] px-0">
+                                    <div className="flex flex-col px-0 mt-2">
                                         <div className="flex items-baseline gap-2 mb-1">
                                             <span className="text-[15px] font-bold text-gray-900">₹{priceMax?.toLocaleString('en-IN') || '0'}</span>
                                             {originalPrice && (
@@ -147,15 +147,15 @@ const PriceRangeShowcase = () => {
                                         
                                         {/* Removed redundant itemLabel as it is already present in the image */}
 
-                                        <div className="h-[15px] mb-2">
+                                        <div className="h-[15px] mb-1.5 md:mb-2">
                                             <p className="text-[9px] font-bold text-blue-600 uppercase tracking-wider">
                                                 PRICE DROP!
                                             </p>
                                         </div>
                                         
                                         {/* Action Button */}
-                                        <div className="mt-auto w-full">
-                                            <div className="w-full bg-[#8E2B45] text-white font-bold text-[11px] py-3 rounded-none group-hover/card:bg-[#722237] transition-all duration-300 uppercase tracking-[0.15em] text-center shadow-lg">
+                                        <div className="mt-1 md:mt-2 w-full">
+                                            <div className="w-full bg-[#8E2B45] text-white font-bold text-[9px] md:text-[11px] py-1.5 md:py-2 rounded-none group-hover/card:bg-[#722237] transition-all duration-300 uppercase tracking-[0.15em] text-center shadow-lg">
                                                 Shop Now
                                             </div>
                                         </div>

@@ -136,20 +136,8 @@ const StyleItYourWay = () => {
 
                 <div className="relative group/carousel">
                     {/* Navigation Buttons - Absolute Positioned */}
-                    <button
-                        onClick={() => scroll('left')}
-                        className="absolute left-0 top-[40%] -translate-y-1/2 -translate-x-1/2 z-50 p-2.5 bg-white rounded-full shadow-xl text-[#4A1015] hover:bg-[#4A1015] hover:text-white transition-all duration-300 opacity-0 group-hover/carousel:opacity-100 hidden md:flex items-center justify-center border border-gray-100"
-                        title="Scroll Left"
-                    >
-                        <ChevronLeft className="w-5 h-5" />
-                    </button>
-                    <button
-                        onClick={() => scroll('right')}
-                        className="absolute right-0 top-[40%] -translate-y-1/2 translate-x-1/2 z-50 p-2.5 bg-white rounded-full shadow-xl text-[#4A1015] hover:bg-[#4A1015] hover:text-white transition-all duration-300 opacity-0 group-hover/carousel:opacity-100 hidden md:flex items-center justify-center border border-gray-100"
-                        title="Scroll Right"
-                    >
-                        <ChevronRight className="w-5 h-5" />
-                    </button>
+                    
+                    
 
                     {/* Carousel Container */}
                     <div

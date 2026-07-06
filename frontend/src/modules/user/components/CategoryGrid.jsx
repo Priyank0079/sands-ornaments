@@ -1,6 +1,6 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { useHomepageCms } from '../hooks/useHomepageCms';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
 import { homeCategoryGridDefaults } from '../utils/homeCategoryGridDefaults';
@@ -19,6 +19,8 @@ const CategoryGrid = () => {
     const scrollRef = useRef(null);
     const { data: homepageSections = {} } = useHomepageCms();
     const sectionData = homepageSections?.['category-grid'];
+    const [activeIndex, setActiveIndex] = useState(0);
+    const [totalDots, setTotalDots] = useState(0);
 
     const categories = useMemo(() => {
         const dynamicItems = normalizeItems(sectionData?.items || []);
@@ -28,11 +30,29 @@ const CategoryGrid = () => {
         return normalizeItems(homeCategoryGridDefaults);
     }, [sectionData?.items]);
 
-    const scroll = (direction) => {
-        if (!scrollRef.current) return;
-        const { scrollLeft } = scrollRef.current;
-        const nextScrollLeft = direction === 'left' ? scrollLeft - 300 : scrollLeft + 300;
-        scrollRef.current.scrollTo({ left: nextScrollLeft, behavior: 'smooth' });
+    useEffect(() => {
+        const updateDots = () => {
+            if (scrollRef.current) {
+                const { scrollWidth, clientWidth } = scrollRef.current;
+                const pages = Math.ceil(scrollWidth / clientWidth);
+                setTotalDots(pages > 1 ? pages : 0);
+            }
+        };
+        // Small timeout to ensure DOM is fully rendered before calculating width
+        const timer = setTimeout(updateDots, 100);
+        window.addEventListener('resize', updateDots);
+        return () => {
+            clearTimeout(timer);
+            window.removeEventListener('resize', updateDots);
+        };
+    }, [categories]);
+
+    const handleScroll = () => {
+        if (scrollRef.current) {
+            const { scrollLeft, clientWidth } = scrollRef.current;
+            const index = Math.round(scrollLeft / clientWidth);
+            setActiveIndex(index);
+        }
     };
 
     if (categories.length === 0) {
@@ -42,15 +62,9 @@ const CategoryGrid = () => {
     return (
         <div className="w-full bg-white py-3 md:py-6 relative group">
             <div className="container mx-auto px-4 relative">
-                <button
-                    onClick={() => scroll('left')}
-                    className="absolute left-6 top-[75px] -translate-y-1/2 z-20 bg-white/90 shadow-lg rounded-full p-2 border border-gray-100 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex items-center justify-center hover:bg-white"
-                >
-                    <ChevronLeft className="w-5 h-5 text-gray-700" />
-                </button>
-
                 <div
                     ref={scrollRef}
+                    onScroll={handleScroll}
                     className="flex overflow-x-auto scrollbar-hide gap-4 md:gap-7 pb-2 md:pb-4 px-1 md:px-2 snap-x snap-mandatory"
                 >
                     {categories.map((category, index) => (
@@ -90,12 +104,30 @@ const CategoryGrid = () => {
                     ))}
                 </div>
 
-                <button
-                    onClick={() => scroll('right')}
-                    className="absolute right-6 top-[75px] -translate-y-1/2 z-20 bg-white/90 shadow-lg rounded-full p-2 border border-gray-100 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex items-center justify-center hover:bg-white"
-                >
-                    <ChevronRight className="w-5 h-5 text-gray-700" />
-                </button>
+                {/* Pagination Dots */}
+                {totalDots > 1 && (
+                    <div className="flex justify-center items-center gap-2 mt-4 md:mt-6">
+                        {Array.from({ length: totalDots }).map((_, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => {
+                                    if (scrollRef.current) {
+                                        scrollRef.current.scrollTo({
+                                            left: idx * scrollRef.current.clientWidth,
+                                            behavior: 'smooth'
+                                        });
+                                    }
+                                }}
+                                className={`h-2 rounded-full transition-all duration-300 ${
+                                    idx === activeIndex 
+                                        ? 'w-6 bg-[#9C5B61]' 
+                                        : 'w-2 bg-gray-300 hover:bg-gray-400'
+                                }`}
+                                aria-label={`Go to slide ${idx + 1}`}
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );

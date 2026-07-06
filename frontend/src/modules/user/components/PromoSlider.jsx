@@ -178,21 +178,7 @@ const PromoSlider = () => {
                     ))}
                 </motion.div>
 
-                {/* Arrow Controls */}
-                <button
-                    onClick={prevSlide}
-                    className="absolute left-[3%] md:left-[6%] top-1/2 -translate-y-1/2 z-30 p-2 md:p-3 rounded-full bg-black/20 backdrop-blur-sm text-white hover:bg-black/40 hover:scale-110 transition-all border border-white/30 group shadow-lg flex items-center justify-center"
-                    aria-label="Previous slide"
-                >
-                    <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 opacity-90 group-hover:opacity-100" />
-                </button>
-                <button
-                    onClick={nextSlide}
-                    className="absolute right-[3%] md:right-[6%] top-1/2 -translate-y-1/2 z-30 p-2 md:p-3 rounded-full bg-black/20 backdrop-blur-sm text-white hover:bg-black/40 hover:scale-110 transition-all border border-white/30 group shadow-lg flex items-center justify-center"
-                    aria-label="Next slide"
-                >
-                    <ChevronRight className="w-5 h-5 md:w-6 md:h-6 opacity-90 group-hover:opacity-100" />
-                </button>
+                {/* Arrow Controls Removed */}
 
                 {/* Sliding Line Indicators - Inside Carousel Bottom Center */}
                 {slides.length > 0 && (
