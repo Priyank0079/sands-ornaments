@@ -3,6 +3,16 @@ const ContactInquiry = require("../../../models/ContactInquiry");
 const SellerSupportTicket = require("../../../models/SellerSupportTicket");
 const { success, error } = require("../../../utils/apiResponse");
 const socketEmitter = require("../../../services/socketEmitter");
+const { generateUploadSignature } = require("../../../utils/cloudinaryUtils");
+
+exports.getUploadSignature = async (req, res) => {
+  try {
+    const signatureData = generateUploadSignature("sands-ornaments/support");
+    return success(res, signatureData, "Upload signature generated");
+  } catch (err) {
+    return error(res, err.message);
+  }
+};
 
 exports.getAllTickets = async (req, res) => {
   try {
@@ -20,11 +30,11 @@ exports.getAllTickets = async (req, res) => {
 
 exports.addAdminReply = async (req, res) => {
   try {
-    const { message, status } = req.body;
+    const { message, status, attachments } = req.body;
     const ticket = await SupportTicket.findById(req.params.id);
     if (!ticket) return error(res, "Ticket not found", 404);
 
-    const newReply = { from: "admin", text: message, date: new Date() };
+    const newReply = { from: "admin", text: message, attachments: attachments || [], date: new Date() };
     ticket.replies.push(newReply);
     
     if (status) ticket.status = status;
@@ -87,13 +97,15 @@ exports.getAllSellerTickets = async (req, res) => {
 
 exports.addAdminSellerReply = async (req, res) => {
   try {
-    const { message, status } = req.body;
-    if (!message) return error(res, "Message is required", 400);
+    const { message, status, attachments } = req.body;
+    if (!message && (!attachments || attachments.length === 0)) {
+      return error(res, "Message or attachment is required", 400);
+    }
 
     const ticket = await SellerSupportTicket.findById(req.params.id);
     if (!ticket) return error(res, "Ticket not found", 404);
 
-    const newReply = { from: "admin", text: message, date: new Date() };
+    const newReply = { from: "admin", text: message || "", attachments: attachments || [], date: new Date() };
     ticket.replies.push(newReply);
 
     if (status) ticket.status = status;

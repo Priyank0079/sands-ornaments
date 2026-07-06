@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Eye, Trash2, Mail, Calendar, Inbox, AlertCircle, ShoppingBag, FileText, CheckCircle2, Send, Clock, User, MessageSquare, X, Headphones } from 'lucide-react';
+import { Eye, Trash2, Mail, Calendar, Inbox, AlertCircle, ShoppingBag, FileText, CheckCircle2, Send, Clock, User, MessageSquare, X, Headphones, Paperclip } from 'lucide-react';
 import PageHeader from '../components/common/PageHeader';
 import DataTable from '../components/common/DataTable';
 import AdminStatsCard from '../components/AdminStatsCard';
@@ -18,6 +18,86 @@ const SupportManagement = () => {
     const [adminReplyText, setAdminReplyText] = useState('');
     const [ticketStatusUpdate, setTicketStatusUpdate] = useState('In Progress');
     const repliesEndRef = useRef(null);
+    const fileInputRef = useRef(null);
+    const [stagedAttachments, setStagedAttachments] = useState([]);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+
+    // Clear staged files when ticket selection changes
+    useEffect(() => {
+        setStagedAttachments([]);
+    }, [selectedTicket]);
+
+    const handleFileChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const MAX_SIZE = 20 * 1024 * 1024;
+        if (file.size > MAX_SIZE) {
+            toast.error("File size must be under 20MB");
+            return;
+        }
+
+        const isImage = file.type.startsWith("image/");
+        const isVideo = file.type.startsWith("video/");
+        if (!isImage && !isVideo) {
+            toast.error("Only image and video uploads are supported");
+            return;
+        }
+
+        try {
+            setIsUploading(true);
+            setUploadProgress(0);
+            
+            const { uploadToCloudinary } = await import('../../../utils/upload');
+            const attachment = await uploadToCloudinary(
+                file,
+                "admin/support/upload-signature",
+                (progress) => setUploadProgress(progress)
+            );
+
+            setStagedAttachments(prev => [...prev, attachment]);
+            toast.success("File uploaded successfully");
+        } catch (err) {
+            console.error(err);
+            toast.error("Upload failed: " + (err.message || "Unknown error"));
+        } finally {
+            setIsUploading(false);
+            setUploadProgress(0);
+            if (fileInputRef.current) fileInputRef.current.value = "";
+        }
+    };
+
+    const removeStagedAttachment = (idx) => {
+        setStagedAttachments(prev => prev.filter((_, i) => i !== idx));
+    };
+
+    const renderAttachments = (attachments) => {
+        if (!attachments || attachments.length === 0) return null;
+        return (
+            <div className="flex flex-col gap-2 mt-2 max-w-full">
+                {attachments.map((att, idx) => (
+                    <div key={idx} className="relative">
+                        {att.type === 'video' ? (
+                            <video 
+                                src={att.url} 
+                                controls 
+                                preload="none" 
+                                className="max-h-40 rounded-lg border border-gray-200 bg-black" 
+                            />
+                        ) : (
+                            <img 
+                                src={att.url} 
+                                alt={att.name || "attachment"} 
+                                className="max-h-40 rounded-lg border border-gray-200 cursor-pointer object-contain bg-gray-50" 
+                                onClick={() => window.open(att.url, '_blank')}
+                            />
+                        )}
+                    </div>
+                ))}
+            </div>
+        );
+    };
 
     // Fetch all tickets from backend
     const fetchTickets = async () => {
@@ -168,7 +248,7 @@ const SupportManagement = () => {
 
     const handleSendAdminReply = async (e) => {
         e.preventDefault();
-        if (!adminReplyText.trim() || !selectedTicket) return;
+        if ((!adminReplyText.trim() && stagedAttachments.length === 0) || !selectedTicket) return;
 
         try {
             const endpoint = activeTab === 'user' 
@@ -176,7 +256,8 @@ const SupportManagement = () => {
                 : `admin/support/seller/${selectedTicket._id}/reply`;
             const res = await api.post(endpoint, {
                 message: adminReplyText,
-                status: ticketStatusUpdate
+                status: ticketStatusUpdate,
+                attachments: stagedAttachments
             });
 
             if (res.data.success) {
@@ -184,6 +265,7 @@ const SupportManagement = () => {
                 setSelectedTicket(updatedTicket);
                 setTickets(prev => prev.map(t => t._id === updatedTicket._id ? updatedTicket : t));
                 setAdminReplyText('');
+                setStagedAttachments([]);
                 toast.success('Reply sent successfully');
             }
         } catch (err) {
@@ -430,6 +512,7 @@ const SupportManagement = () => {
                                         <div className="bg-white border border-gray-200/60 p-3.5 rounded-2xl rounded-tl-none text-xs text-gray-800 shadow-sm leading-relaxed">
                                             <p className="font-bold text-[10px] text-[#9C5B61] mb-1">{activeTab === 'seller' ? 'Seller' : 'Customer'}</p>
                                             {selectedTicket.message}
+                                            {renderAttachments(selectedTicket.attachments)}
                                         </div>
                                         <span className="text-[9px] text-gray-400 mt-1 block pl-1">
                                             {new Date(selectedTicket.createdAt).toLocaleString()}
@@ -474,6 +557,7 @@ const SupportManagement = () => {
                                                         {isAdmin ? 'Admin Support' : (activeTab === 'seller' ? 'Seller' : 'Customer')}
                                                     </p>
                                                     {reply.text}
+                                                    {renderAttachments(reply.attachments)}
                                                 </div>
                                                 <span className="text-[9px] text-gray-400 mt-1 block px-1 text-right">
                                                     {new Date(reply.date).toLocaleString()}
@@ -501,7 +585,43 @@ const SupportManagement = () => {
                                         </select>
                                     </div>
                                 </div>
-                                <div className="flex gap-2">
+                                {stagedAttachments.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 px-1">
+                                        {stagedAttachments.map((att, idx) => (
+                                            <div key={idx} className="relative group w-12 h-12 bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden">
+                                                {att.type === 'video' ? (
+                                                    <video src={att.url} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <img src={att.url} className="w-full h-full object-cover" />
+                                                )}
+                                                <button 
+                                                    type="button" 
+                                                    onClick={() => removeStagedAttachment(idx)}
+                                                    className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white cursor-pointer"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                {isUploading && (
+                                    <div className="flex items-center gap-3 px-1">
+                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Uploading: {uploadProgress}%</span>
+                                        <div className="flex-grow h-1 bg-gray-100 rounded-full overflow-hidden">
+                                            <div className="h-full bg-[#3E2723] transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
+                                        </div>
+                                    </div>
+                                )}
+                                <div className="flex gap-2 items-center">
+                                    <button
+                                        type="button"
+                                        disabled={isUploading}
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors cursor-pointer shrink-0"
+                                    >
+                                        <Paperclip className="w-4 h-4" />
+                                    </button>
                                     <textarea
                                         rows="2"
                                         placeholder="Type support response..."
@@ -511,8 +631,8 @@ const SupportManagement = () => {
                                     ></textarea>
                                     <button
                                         type="submit"
-                                        disabled={!adminReplyText.trim()}
-                                        className="px-5 bg-[#3E2723] hover:bg-[#2D1B18] disabled:opacity-40 disabled:hover:bg-[#3E2723] text-white rounded-xl flex items-center justify-center gap-1.5 transition-all text-xs font-bold cursor-pointer"
+                                        disabled={!adminReplyText.trim() && stagedAttachments.length === 0}
+                                        className="px-5 py-3.5 bg-[#3E2723] hover:bg-[#2D1B18] disabled:opacity-40 disabled:hover:bg-[#3E2723] text-white rounded-xl flex items-center justify-center gap-1.5 transition-all text-xs font-bold cursor-pointer shrink-0"
                                     >
                                         <Send className="w-3.5 h-3.5" />
                                         Send
@@ -523,6 +643,13 @@ const SupportManagement = () => {
                     </div>
                 </div>
             )}
+        <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleFileChange} 
+            accept="image/*,video/*" 
+            className="hidden" 
+        />
         </div>
     );
 };

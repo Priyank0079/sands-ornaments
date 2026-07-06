@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Send, ChevronLeft, Plus, Headphones, Inbox } from "lucide-react";
+import { createPortal } from "react-dom";
+import { X, Send, ChevronLeft, Plus, Headphones, Inbox, Paperclip, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSupport } from "../../../context/SupportContext";
 import { useAuth } from "../../../context/AuthContext";
@@ -28,6 +29,87 @@ const SupportChatWidget = ({ inline = false }) => {
   const [message, setMessage] = useState("");
   const [replyText, setReplyText] = useState("");
   const messagesEndRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const panelRef = useRef(null);
+  const [stagedAttachments, setStagedAttachments] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  // Clear staged files on view change
+  useEffect(() => {
+    setStagedAttachments([]);
+  }, [view]);
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const MAX_SIZE = 20 * 1024 * 1024;
+    if (file.size > MAX_SIZE) {
+      toast.error("File size must be under 20MB");
+      return;
+    }
+
+    const isImage = file.type.startsWith("image/");
+    const isVideo = file.type.startsWith("video/");
+    if (!isImage && !isVideo) {
+      toast.error("Only image and video uploads are supported");
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+      setUploadProgress(0);
+      
+      const { uploadToCloudinary } = await import("../../../utils/upload");
+      const attachment = await uploadToCloudinary(
+        file,
+        "user/support/upload-signature",
+        (progress) => setUploadProgress(progress)
+      );
+
+      setStagedAttachments(prev => [...prev, attachment]);
+      toast.success("File uploaded successfully");
+    } catch (err) {
+      console.error(err);
+      toast.error("Upload failed: " + (err.message || "Unknown error"));
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const removeStagedAttachment = (idx) => {
+    setStagedAttachments(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const renderAttachments = (attachments) => {
+    if (!attachments || attachments.length === 0) return null;
+    return (
+      <div className="flex flex-col gap-2 mt-2 max-w-full">
+        {attachments.map((att, idx) => (
+          <div key={idx} className="relative">
+            {att.type === 'video' ? (
+              <video 
+                src={att.url} 
+                controls 
+                preload="none" 
+                className="max-h-40 rounded-lg border border-gray-200 bg-black" 
+              />
+            ) : (
+              <img 
+                src={att.url} 
+                alt={att.name || "attachment"} 
+                className="max-h-40 rounded-lg border border-gray-200 cursor-pointer object-contain bg-gray-50" 
+                onClick={() => window.open(att.url, '_blank')}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   // Auto scroll to bottom of chat
   useEffect(() => {
@@ -42,6 +124,23 @@ const SupportChatWidget = ({ inline = false }) => {
       setView("chat");
     }
   }, [activeTicketId, isOpen]);
+
+  // Lock body scroll on mobile when chat is open
+  useEffect(() => {
+    if (isOpen) {
+      const isMobile = window.innerWidth < 768;
+      if (isMobile) {
+        document.body.style.overflow = "hidden";
+      }
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+
 
   const handleToggleOpen = () => {
     if (!isOpen) {
@@ -60,21 +159,23 @@ const SupportChatWidget = ({ inline = false }) => {
 
   const handleCreateTicketSubmit = async (e) => {
     e.preventDefault();
-    if (!subject.trim() || !message.trim()) return;
-    const ticket = await createNewTicket(subject, category, message);
+    if (!subject.trim() || (!message.trim() && stagedAttachments.length === 0)) return;
+    const ticket = await createNewTicket(subject, category, message, '', stagedAttachments);
     if (ticket) {
       setSubject("");
       setMessage("");
+      setStagedAttachments([]);
       setView("chat");
     }
   };
 
   const handleSendReplySubmit = async (e) => {
     e.preventDefault();
-    if (!replyText.trim() || !activeTicketId) return;
-    const success = await sendReply(activeTicketId, replyText);
+    if ((!replyText.trim() && stagedAttachments.length === 0) || !activeTicketId) return;
+    const success = await sendReply(activeTicketId, replyText, stagedAttachments);
     if (success) {
       setReplyText("");
+      setStagedAttachments([]);
     }
   };
 
@@ -147,15 +248,17 @@ const SupportChatWidget = ({ inline = false }) => {
       </motion.button>
 
       {/* Expandable Chat Panel */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed right-0 md:right-6 z-[10000] w-full shadow-2xl overflow-hidden bottom-0 md:bottom-[11.5rem] md:w-[380px] h-full md:h-[550px] bg-white md:rounded-3xl border border-gray-100 flex flex-col">
-            <>
+      {createPortal(
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              ref={panelRef}
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed right-0 md:right-6 z-[10000] w-full shadow-2xl overflow-hidden bottom-0 md:bottom-[11.5rem] md:w-[380px] h-full md:h-[550px] md:max-h-[calc(100vh-13.5rem)] bg-white md:rounded-3xl border border-gray-100 flex flex-col">
+              <>
               {/* Header */}
               <div className="bg-[#9C5B61] text-white px-6 py-4 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-3">
@@ -229,11 +332,12 @@ const SupportChatWidget = ({ inline = false }) => {
                         </div>
 
                         {/* Messages Scroll Thread */}
-                        <div className="flex-grow overflow-y-auto p-4 space-y-4">
+                        <div className="flex-grow overflow-y-auto overscroll-contain p-4 space-y-4">
                           {/* Original Initial message */}
                           <div className="flex flex-col items-start max-w-[85%]">
                             <div className="bg-gray-100 text-gray-800 rounded-2xl rounded-tl-none px-4 py-2.5 text-xs font-medium shadow-sm border border-gray-200/50">
                               {activeTicket.message}
+                              {renderAttachments(activeTicket.attachments)}
                             </div>
                             <span className="text-[9px] text-gray-400 mt-1 pl-1">
                               {new Date(
@@ -259,6 +363,7 @@ const SupportChatWidget = ({ inline = false }) => {
                                       : "bg-[#9C5B61] text-white rounded-tr-none border-[#9C5B61]/10"
                                   }`}>
                                   {reply.text}
+                                  {renderAttachments(reply.attachments)}
                                 </div>
                                 <span className="text-[9px] text-gray-400 mt-1 px-1">
                                   {new Date(
@@ -277,23 +382,61 @@ const SupportChatWidget = ({ inline = false }) => {
                         {/* Chat Input form */}
                         {activeTicket.status !== "Closed" &&
                         activeTicket.status !== "Resolved" ? (
-                          <form
-                            onSubmit={handleSendReplySubmit}
-                            className="bg-white border-t border-gray-100 p-3 flex gap-2 items-center shrink-0">
-                            <input
-                              type="text"
-                              placeholder="Type message..."
-                              value={replyText}
-                              onChange={(e) => setReplyText(e.target.value)}
-                              className="flex-grow bg-gray-50 border border-gray-200 rounded-full px-4 py-2 text-xs text-gray-900 focus:outline-none focus:border-[#9C5B61] transition-all"
-                            />
-                            <button
-                              type="submit"
-                              disabled={!replyText.trim()}
-                              className="w-8 h-8 rounded-full bg-[#9C5B61] text-white flex items-center justify-center hover:bg-[#7A2E3A] disabled:opacity-40 disabled:hover:bg-[#9C5B61] transition-all shrink-0 cursor-pointer">
-                              <Send className="w-3.5 h-3.5" />
-                            </button>
-                          </form>
+                          <div className="flex flex-col shrink-0">
+                            {stagedAttachments.length > 0 && (
+                              <div className="bg-white border-t border-gray-100 px-3 py-2 flex flex-wrap gap-2">
+                                {stagedAttachments.map((att, idx) => (
+                                  <div key={idx} className="relative group w-12 h-12 bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden">
+                                    {att.type === 'video' ? (
+                                      <video src={att.url} className="w-full h-full object-cover" />
+                                    ) : (
+                                      <img src={att.url} className="w-full h-full object-cover" />
+                                    )}
+                                    <button 
+                                      type="button" 
+                                      onClick={() => removeStagedAttachment(idx)}
+                                      className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white cursor-pointer"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            {isUploading && (
+                              <div className="bg-white border-t border-gray-100 px-4 py-2 flex items-center gap-3">
+                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Uploading: {uploadProgress}%</span>
+                                <div className="flex-grow h-1 bg-gray-100 rounded-full overflow-hidden">
+                                  <div className="h-full bg-[#9C5B61] transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
+                                </div>
+                              </div>
+                            )}
+                            <form
+                              onSubmit={handleSendReplySubmit}
+                              className="bg-white border-t border-gray-100 p-3 flex gap-2 items-center">
+                              <button
+                                type="button"
+                                disabled={isUploading}
+                                onClick={() => fileInputRef.current?.click()}
+                                className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors cursor-pointer shrink-0"
+                              >
+                                <Paperclip className="w-4 h-4" />
+                              </button>
+                              <input
+                                type="text"
+                                placeholder="Type message..."
+                                value={replyText}
+                                onChange={(e) => setReplyText(e.target.value)}
+                                className="flex-grow bg-gray-50 border border-gray-200 rounded-full px-4 py-2 text-xs text-gray-900 focus:outline-none focus:border-[#9C5B61] transition-all"
+                              />
+                              <button
+                                type="submit"
+                                disabled={!replyText.trim() && stagedAttachments.length === 0}
+                                className="w-8 h-8 rounded-full bg-[#9C5B61] text-white flex items-center justify-center hover:bg-[#7A2E3A] disabled:opacity-40 disabled:hover:bg-[#9C5B61] transition-all shrink-0 cursor-pointer">
+                                <Send className="w-3.5 h-3.5" />
+                              </button>
+                            </form>
+                          </div>
                         ) : (
                           <div className="bg-white border-t border-gray-100 p-4 text-center text-xs text-gray-400 font-bold shrink-0">
                             This support ticket is resolved/closed.
@@ -320,7 +463,7 @@ const SupportChatWidget = ({ inline = false }) => {
                           </button>
                         </div>
 
-                        <div className="flex-grow overflow-y-auto px-4 pb-4 space-y-3">
+                        <div className="flex-grow overflow-y-auto overscroll-contain px-4 pb-4 space-y-3">
                           <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 pl-1">
                             Your Support History
                           </div>
@@ -397,7 +540,7 @@ const SupportChatWidget = ({ inline = false }) => {
 
                         <form
                           onSubmit={handleCreateTicketSubmit}
-                          className="flex-grow overflow-y-auto p-4 space-y-4 flex flex-col">
+                          className="flex-grow overflow-y-auto overscroll-contain p-4 space-y-4 flex flex-col">
                           <div>
                             <label className="block text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
                               Subject
@@ -441,9 +584,57 @@ const SupportChatWidget = ({ inline = false }) => {
                               className="w-full flex-grow bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 focus:outline-none focus:border-[#9C5B61] resize-none transition-all"></textarea>
                           </div>
 
+                          {/* Attachments Section */}
+                          <div className="space-y-2">
+                            <label className="block text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+                              Attachments (Optional)
+                            </label>
+                            
+                            {stagedAttachments.length > 0 && (
+                              <div className="flex flex-wrap gap-2 py-1">
+                                {stagedAttachments.map((att, idx) => (
+                                  <div key={idx} className="relative group w-12 h-12 bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden">
+                                    {att.type === 'video' ? (
+                                      <video src={att.url} className="w-full h-full object-cover" />
+                                    ) : (
+                                      <img src={att.url} className="w-full h-full object-cover" />
+                                    )}
+                                    <button 
+                                      type="button" 
+                                      onClick={() => removeStagedAttachment(idx)}
+                                      className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white cursor-pointer"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            {isUploading && (
+                              <div className="flex items-center gap-3">
+                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Uploading: {uploadProgress}%</span>
+                                <div className="flex-grow h-1 bg-gray-100 rounded-full overflow-hidden">
+                                  <div className="h-full bg-[#9C5B61] transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
+                                </div>
+                              </div>
+                            )}
+
+                            <button
+                              type="button"
+                              disabled={isUploading}
+                              onClick={() => fileInputRef.current?.click()}
+                              className="px-3 py-1.5 border border-dashed border-gray-300 hover:border-[#9C5B61] hover:text-[#9C5B61] rounded-lg text-[10px] font-bold text-gray-500 flex items-center gap-1.5 transition-all cursor-pointer w-max"
+                            >
+                              <Paperclip className="w-3.5 h-3.5" />
+                              Add Photo/Video
+                            </button>
+                          </div>
+
                           <button
                             type="submit"
-                            className="w-full bg-[#9C5B61] hover:bg-[#7A2E3A] text-white py-3 rounded-xl font-bold transition-all shadow-sm text-xs cursor-pointer mt-auto shrink-0">
+                            disabled={isUploading}
+                            className="w-full bg-[#9C5B61] hover:bg-[#7A2E3A] text-white py-3 rounded-xl font-bold transition-all shadow-sm text-xs cursor-pointer mt-auto shrink-0 disabled:opacity-50">
                             Submit Request
                           </button>
                         </form>
@@ -454,7 +645,16 @@ const SupportChatWidget = ({ inline = false }) => {
             </>
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
+    )}
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={handleFileChange} 
+        accept="image/*,video/*" 
+        className="hidden" 
+      />
     </div>
   );
 };

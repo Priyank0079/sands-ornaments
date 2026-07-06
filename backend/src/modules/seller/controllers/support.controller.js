@@ -2,12 +2,22 @@ const SellerSupportTicket = require("../../../models/SellerSupportTicket");
 const Seller = require("../../../models/Seller");
 const { success, error } = require("../../../utils/apiResponse");
 const socketEmitter = require("../../../services/socketEmitter");
+const { generateUploadSignature } = require("../../../utils/cloudinaryUtils");
+
+exports.getUploadSignature = async (req, res) => {
+  try {
+    const signatureData = generateUploadSignature("sands-ornaments/support");
+    return success(res, signatureData, "Upload signature generated");
+  } catch (err) {
+    return error(res, err.message);
+  }
+};
 
 exports.createTicket = async (req, res) => {
   try {
-    const { subject, category, message } = req.body;
-    if (!subject || !category || !message) {
-      return error(res, "Subject, category, and message are required.", 400);
+    const { subject, category, message, attachments } = req.body;
+    if (!subject || !category || (!message && (!attachments || attachments.length === 0))) {
+      return error(res, "Subject, category, and message/attachments are required.", 400);
     }
 
     const seller = await Seller.findById(req.user.userId);
@@ -22,8 +32,9 @@ exports.createTicket = async (req, res) => {
       sellerEmail: seller.email,
       subject,
       category,
-      message,
-      replies: [{ from: "seller", text: message }],
+      message: message || "",
+      attachments: attachments || [],
+      replies: [{ from: "seller", text: message || "", attachments: attachments || [] }],
       status: "Open"
     });
 
@@ -47,13 +58,15 @@ exports.getMyTickets = async (req, res) => {
 
 exports.addReply = async (req, res) => {
   try {
-    const { message } = req.body;
-    if (!message) return error(res, "Message is required", 400);
+    const { message, attachments } = req.body;
+    if (!message && (!attachments || attachments.length === 0)) {
+      return error(res, "Message or attachment is required", 400);
+    }
 
     const ticket = await SellerSupportTicket.findOne({ _id: req.params.id, sellerId: req.user.userId });
     if (!ticket) return error(res, "Ticket not found", 404);
 
-    const newReply = { from: "seller", text: message, date: new Date() };
+    const newReply = { from: "seller", text: message || "", attachments: attachments || [], date: new Date() };
     ticket.replies.push(newReply);
     ticket.status = "Open"; // reset to Open so admins see it as pending
     await ticket.save();

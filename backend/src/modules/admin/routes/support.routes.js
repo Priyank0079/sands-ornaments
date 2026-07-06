@@ -4,6 +4,7 @@ const authenticate = require("../../../middlewares/authenticate");
 const requireRole = require("../../../middlewares/requireRole");
 
 router.use(authenticate, requireRole("admin"));
+router.get("/upload-signature", supportController.getUploadSignature);
 router.get("/", supportController.getAllTickets);
 router.post("/:id/reply", supportController.addAdminReply);
 
