@@ -717,9 +717,8 @@ const ProductDetails = () => {
           (Number(pricingBreakdown.gst || 0) / pricingSubtotal) * 10000,
         ) / 100
       : 0;
-  const cleanedSupplierInfo = stripHtml(product?.supplierInfo);
   const supplierName =
-    product?.sellerId?.shopName || cleanedSupplierInfo || product?.brand || "";
+    product?.sellerId?.shopName || product?.brand || "Sands Jewels";
 
   // Local currencyText removed
   // Using imported formatCurrency
@@ -1767,24 +1766,27 @@ const ProductDetails = () => {
               </div>
 
               <div className="space-y-8">
-                {(settings.sandsPromise || [
-                  {
-                    title: "Authentic 925 Silver",
-                    desc: "Certified 925 Sterling Silver with official hallmarking on every single piece.",
-                    icon: "ShieldCheck",
-                  },
-                  {
-                    title: "Skin Safe Luxury",
-                    desc: "Hypoallergenic, Nickel and Lead-free materials designed for sensitive skin.",
-                    icon: "Smile",
-                  },
-                  {
-                    title: "Signature Packaging",
-                    desc: "Arrives in our signature velvet-lined box, perfect for gifting and safekeeping.",
-                    icon: "Gift",
-                  }
-                ]).map((promise, index) => {
-                  const IconComp = LucideIcons[promise.icon] || LucideIcons.ShieldCheck;
+                {(
+                  settings.sandsPromise || [
+                    {
+                      title: "Authentic 925 Silver",
+                      desc: "Certified 925 Sterling Silver with official hallmarking on every single piece.",
+                      icon: "ShieldCheck",
+                    },
+                    {
+                      title: "Skin Safe Luxury",
+                      desc: "Hypoallergenic, Nickel and Lead-free materials designed for sensitive skin.",
+                      icon: "Smile",
+                    },
+                    {
+                      title: "Signature Packaging",
+                      desc: "Arrives in our signature velvet-lined box, perfect for gifting and safekeeping.",
+                      icon: "Gift",
+                    },
+                  ]
+                ).map((promise, index) => {
+                  const IconComp =
+                    LucideIcons[promise.icon] || LucideIcons.ShieldCheck;
                   return (
                     <div key={index} className="flex items-start gap-5 group">
                       <div className="w-12 h-12 rounded-full bg-gray-50 flex-shrink-0 flex items-center justify-center border border-gray-100 transition-colors group-hover:bg-[#FDF5F6] group-hover:border-[#EBCDD0]/30">
@@ -2103,52 +2105,63 @@ const ProductDetails = () => {
                   isOpen={openSection === "care"}
                   onClick={() => toggleSection("care")}
                 >
-                  <div className="py-4 space-y-6">
-                    <p className="text-gray-500 font-medium">
-                      To maintain the brilliance of your silver jewellery, we
-                      recommend:
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {[
-                        {
-                          icon: <Droplets className="w-4 h-4" />,
-                          title: "Stay Dry",
-                          desc: "Remove before showering or swimming",
-                        },
-                        {
-                          icon: <Sparkles className="w-4 h-4" />,
-                          title: "Apply First",
-                          desc: "Wear after lotions and perfumes",
-                        },
-                        {
-                          icon: <ShieldCheck className="w-4 h-4" />,
-                          title: "Safe Box",
-                          desc: "Store in an airtight container",
-                        },
-                        {
-                          icon: <Smile className="w-4 h-4" />,
-                          title: "Polish",
-                          desc: "Use a soft micro-fibre cloth",
-                        },
-                      ].map((item, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-center gap-4 p-4 rounded-xl border border-gray-50 bg-gray-50/30 hover:bg-white hover:shadow-sm transition-all"
-                        >
-                          <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#9C5B61] border border-gray-100">
-                            {item.icon}
-                          </div>
-                          <div>
-                            <h5 className="text-[10px] font-bold text-black uppercase tracking-widest">
-                              {item.title}
-                            </h5>
-                            <p className="text-[10px] text-gray-400 font-medium">
-                              {item.desc}
-                            </p>
-                          </div>
+                  <div className="py-4">
+                    {product.careTips ? (
+                      <div
+                        className="prose prose-sm max-w-none text-gray-600 font-medium"
+                        dangerouslySetInnerHTML={{
+                          __html: product.careTips,
+                        }}
+                      />
+                    ) : (
+                      <div className="space-y-6">
+                        <p className="text-gray-500 font-medium">
+                          To maintain the brilliance of your silver jewellery,
+                          we recommend:
+                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {[
+                            {
+                              icon: <Droplets className="w-4 h-4" />,
+                              title: "Stay Dry",
+                              desc: "Remove before showering or swimming",
+                            },
+                            {
+                              icon: <Sparkles className="w-4 h-4" />,
+                              title: "Apply First",
+                              desc: "Wear after lotions and perfumes",
+                            },
+                            {
+                              icon: <ShieldCheck className="w-4 h-4" />,
+                              title: "Safe Box",
+                              desc: "Store in an airtight container",
+                            },
+                            {
+                              icon: <Smile className="w-4 h-4" />,
+                              title: "Polish",
+                              desc: "Use a soft micro-fibre cloth",
+                            },
+                          ].map((item, idx) => (
+                            <div
+                              key={idx}
+                              className="flex items-center gap-4 p-4 rounded-xl border border-gray-50 bg-gray-50/30 hover:bg-white hover:shadow-sm transition-all"
+                            >
+                              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#9C5B61] border border-gray-100">
+                                {item.icon}
+                              </div>
+                              <div>
+                                <h5 className="text-[10px] font-bold text-black uppercase tracking-widest">
+                                  {item.title}
+                                </h5>
+                                <p className="text-[10px] text-gray-400 font-medium">
+                                  {item.desc}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 </AccordionItem>
 
@@ -2266,33 +2279,36 @@ const ProductDetails = () => {
                 <span className="text-[#D39A9F]">{product.name}</span>
               </h2>
               <p className="text-gray-600 text-sm md:text-base leading-relaxed font-sans">
-                {settings.careGuideIntro || "Our jewelry is crafted with pure 925 sterling silver and premium plating. Follow these simple steps to ensure your pieces remain as stunning as the day you first wore them."}
+                {settings.careGuideIntro ||
+                  "Our jewelry is crafted with pure 925 sterling silver and premium plating. Follow these simple steps to ensure your pieces remain as stunning as the day you first wore them."}
               </p>
             </div>
 
             <div className="mt-12 grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 relative z-10">
-              {(settings.careGuide || [
-                {
-                  icon: "Droplets",
-                  title: "Stay Dry",
-                  desc: "Remove before bathing or swimming to prevent tarnishing.",
-                },
-                {
-                  icon: "Sparkles",
-                  title: "Last Step",
-                  desc: "Avoid contact with perfumes, makeup, and hairsprays.",
-                },
-                {
-                  icon: "ShieldCheck",
-                  title: "Safe Haven",
-                  desc: "Store in individual airtight bags to minimize oxidation.",
-                },
-                {
-                  icon: "Smile",
-                  title: "Gentle Clean",
-                  desc: "Regularly wipe with a soft cloth to restore its natural glow.",
-                },
-              ]).map((card, i) => {
+              {(
+                settings.careGuide || [
+                  {
+                    icon: "Droplets",
+                    title: "Stay Dry",
+                    desc: "Remove before bathing or swimming to prevent tarnishing.",
+                  },
+                  {
+                    icon: "Sparkles",
+                    title: "Last Step",
+                    desc: "Avoid contact with perfumes, makeup, and hairsprays.",
+                  },
+                  {
+                    icon: "ShieldCheck",
+                    title: "Safe Haven",
+                    desc: "Store in individual airtight bags to minimize oxidation.",
+                  },
+                  {
+                    icon: "Smile",
+                    title: "Gentle Clean",
+                    desc: "Regularly wipe with a soft cloth to restore its natural glow.",
+                  },
+                ]
+              ).map((card, i) => {
                 const IconComp = LucideIcons[card.icon] || LucideIcons.Droplets;
                 return (
                   <div

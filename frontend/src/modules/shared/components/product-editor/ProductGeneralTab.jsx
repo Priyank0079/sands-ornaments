@@ -194,36 +194,18 @@ const ProductGeneralTab = ({
                             />
                         </div>
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="space-y-3">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Specifications</label>
-                            <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
-                                <ReactQuill
-                                    theme="snow"
-                                    value={formData.specifications}
-                                    onChange={(value) => setFormData((prev) => ({ ...prev, specifications: value }))}
-                                    readOnly={isViewMode}
-                                    modules={quillModules}
-                                    formats={quillFormats}
-                                    style={{ height: '150px', marginBottom: '50px' }}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-3">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Supplier Info</label>
-                            <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
-                                <ReactQuill
-                                    theme="snow"
-                                    value={formData.supplierInfo}
-                                    onChange={(value) => setFormData((prev) => ({ ...prev, supplierInfo: value }))}
-                                    readOnly={isViewMode}
-                                    modules={quillModules}
-                                    formats={quillFormats}
-                                    style={{ height: '150px', marginBottom: '50px' }}
-                                />
-                            </div>
+                    <div className="space-y-3">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Specifications</label>
+                        <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
+                            <ReactQuill
+                                theme="snow"
+                                value={formData.specifications}
+                                onChange={(value) => setFormData((prev) => ({ ...prev, specifications: value }))}
+                                readOnly={isViewMode}
+                                modules={quillModules}
+                                formats={quillFormats}
+                                style={{ height: '150px', marginBottom: '50px' }}
+                            />
                         </div>
                     </div>
 
