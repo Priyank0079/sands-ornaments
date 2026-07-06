@@ -43,15 +43,15 @@ const AnalyticsDashboard = () => {
     const { overview, trafficTrends, deviceStats, browserStats, countryStats, cityStats, topPages, productStats, funnel } = data;
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-700 pb-20">
+        <div className="space-y-4 md:space-y-6 animate-in fade-in duration-700 pb-20">
             {/* Header */}
-            <div className="text-left mb-8">
-                <h1 className="text-2xl font-light text-gray-800 tracking-wide">Visitor Analytics</h1>
-                <p className="text-sm font-light text-gray-500 mt-1">Real-time visitor tracking and engagement metrics</p>
+            <div className="text-left mb-4 md:mb-6">
+                <h1 className="text-xl md:text-2xl font-bold text-gray-900 tracking-tight">Analytics Overview</h1>
+                <p className="text-xs md:text-sm font-medium text-gray-500 mt-1">Comprehensive real-time tracking and audience engagement metrics.</p>
             </div>
 
             {/* Overview Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                 <AdminStatsCard 
                     label="TOTAL VISITORS" 
                     value={overview.totalVisitors} 
@@ -87,31 +87,31 @@ const AnalyticsDashboard = () => {
             </div>
 
             {/* Engagement Metrics */}
-            <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+            <div className="grid grid-cols-2 gap-3 md:gap-4">
+                <div className="bg-white p-4 md:p-5 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
                     <div>
-                        <p className="text-sm font-medium text-gray-500">Bounce Rate</p>
-                        <h4 className="text-2xl font-semibold text-gray-800 mt-1">{overview.bounceRate}%</h4>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Bounce Rate</p>
+                        <h4 className="text-xl md:text-2xl font-bold text-gray-800 mt-1">{overview.bounceRate}%</h4>
                     </div>
-                    <div className="w-12 h-12 bg-rose-50 text-rose-500 rounded-xl flex items-center justify-center">
-                        <ArrowUpRight size={20} className={overview.bounceRate > 50 ? 'rotate-0' : 'rotate-180'} />
+                    <div className="w-10 h-10 bg-rose-50 text-rose-500 rounded-lg flex items-center justify-center">
+                        <ArrowUpRight size={18} className={overview.bounceRate > 50 ? 'rotate-0' : 'rotate-180'} />
                     </div>
                 </div>
-                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+                <div className="bg-white p-4 md:p-5 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
                     <div>
-                        <p className="text-sm font-medium text-gray-500">Avg. Session Duration</p>
-                        <h4 className="text-2xl font-semibold text-gray-800 mt-1">{Math.floor(overview.avgSessionDuration / 60)}m {overview.avgSessionDuration % 60}s</h4>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Avg. Session Duration</p>
+                        <h4 className="text-xl md:text-2xl font-bold text-gray-800 mt-1">{Math.floor(overview.avgSessionDuration / 60)}m {overview.avgSessionDuration % 60}s</h4>
                     </div>
-                    <div className="w-12 h-12 bg-indigo-50 text-indigo-500 rounded-2xl flex items-center justify-center">
-                        <Clock size={20} />
+                    <div className="w-10 h-10 bg-indigo-50 text-indigo-500 rounded-lg flex items-center justify-center">
+                        <Clock size={18} />
                     </div>
                 </div>
             </div>
 
             {/* Traffic Trends */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                <h3 className="text-lg font-medium text-gray-800 mb-6">Traffic Trends (Last 30 Days)</h3>
-                <div className="h-80 w-full">
+            <div className="bg-white p-4 md:p-5 rounded-xl border border-gray-100 shadow-sm">
+                <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wide mb-4">Traffic Trends (Last 30 Days)</h3>
+                <div className="h-64 w-full">
                     <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={trafficTrends}>
                             <defs>
@@ -132,11 +132,11 @@ const AnalyticsDashboard = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                 {/* Device Distribution */}
-                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                    <h3 className="text-lg font-medium text-gray-800 mb-6">Device Distribution</h3>
-                    <div className="h-64">
+                <div className="bg-white p-4 md:p-5 rounded-xl border border-gray-100 shadow-sm">
+                    <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wide mb-4">Device Distribution</h3>
+                    <div className="h-56">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
@@ -161,8 +161,8 @@ const AnalyticsDashboard = () => {
                 </div>
 
                 {/* Conversion Funnel */}
-                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                    <h3 className="text-lg font-medium text-gray-800 mb-6">Conversion Funnel</h3>
+                <div className="bg-white p-4 md:p-5 rounded-xl border border-gray-100 shadow-sm">
+                    <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wide mb-4">Conversion Funnel</h3>
                     <div className="space-y-4">
                         {funnel.map((item, idx) => {
                             const percentage = idx === 0 ? 100 : Math.round((item.count / funnel[0].count) * 100);
@@ -185,10 +185,10 @@ const AnalyticsDashboard = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                 {/* Top Countries */}
-                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                    <h3 className="text-lg font-medium text-gray-800 mb-6">Top Countries</h3>
+                <div className="bg-white p-4 md:p-5 rounded-xl border border-gray-100 shadow-sm">
+                    <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wide mb-4">Top Countries</h3>
                     <div className="space-y-4">
                         {countryStats?.map((item, idx) => (
                             <div key={idx} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition-colors">
@@ -204,8 +204,8 @@ const AnalyticsDashboard = () => {
                 </div>
 
                 {/* Top Cities */}
-                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                    <h3 className="text-lg font-medium text-gray-800 mb-6">Top Cities</h3>
+                <div className="bg-white p-4 md:p-5 rounded-xl border border-gray-100 shadow-sm">
+                    <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wide mb-4">Top Cities</h3>
                     <div className="space-y-4">
                         {cityStats?.map((item, idx) => (
                             <div key={idx} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition-colors">
@@ -222,10 +222,10 @@ const AnalyticsDashboard = () => {
             </div>
 
             {/* Recent Leads Table */}
-            <div ref={leadsRef} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="p-6 border-b border-gray-50 flex items-center justify-between">
-                    <h3 className="text-lg font-medium text-gray-800">Recent Captured Leads</h3>
-                    <Target size={18} className="text-gray-400" />
+            <div ref={leadsRef} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="p-4 md:p-5 border-b border-gray-50 flex items-center justify-between">
+                    <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wide">Recent Captured Leads</h3>
+                    <Target size={16} className="text-gray-400" />
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">

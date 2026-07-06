@@ -77,7 +77,6 @@ const ShopForWomen = () => {
       
       <WomenCuratedCollections sectionData={sectionMap["curated-collections"]} />
         
-        
           <WomenOccasionCarousel sectionData={sectionMap["occasion-carousel"]} />
         
         

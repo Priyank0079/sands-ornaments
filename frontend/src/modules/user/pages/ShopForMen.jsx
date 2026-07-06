@@ -76,7 +76,6 @@ const ShopForMen = () => {
       
       <MenLuxurySection sectionData={sectionMap["luxury-section"]} />
         
-        
           <CelebrateMen sectionData={sectionMap["celebrate-men"]} />
         
         
