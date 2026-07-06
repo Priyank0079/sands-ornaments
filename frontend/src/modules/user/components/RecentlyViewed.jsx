@@ -37,7 +37,7 @@ const RecentlyViewed = () => {
                             navigate(`/product/${item.id}`);
                             window.scrollTo(0, 0);
                         }}
-                        className="min-w-[140px] md:min-w-[240px] group cursor-pointer snap-start"
+                        className="w-[140px] md:w-[220px] shrink-0 group cursor-pointer snap-start"
                     >
                         <div className="aspect-[4/5] rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden bg-[#FDF5F6] border border-gray-100 relative shadow-sm group-hover:shadow-xl transition-all duration-700">
                             <img 
