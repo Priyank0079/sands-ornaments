@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../../../services/api";
 import { useSocket } from "../../../context/SocketContext";
 import toast from "react-hot-toast";
+import { getLenis } from "../../../lib/lenis";
 
 const SellerSupportChatWidget = () => {
   const { socket } = useSocket();
@@ -121,6 +122,34 @@ const SellerSupportChatWidget = () => {
     if (isOpen) {
       fetchTickets();
     }
+  }, [isOpen]);
+
+  // Lock body scroll and stop Lenis smooth scroll when chat is open
+  useEffect(() => {
+    const lenis = getLenis();
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+      document.documentElement.classList.add("lenis-stopped");
+      if (lenis) {
+        lenis.stop();
+      }
+    } else {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+      document.documentElement.classList.remove("lenis-stopped");
+      if (lenis) {
+        lenis.start();
+      }
+    }
+    return () => {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+      document.documentElement.classList.remove("lenis-stopped");
+      if (lenis) {
+        lenis.start();
+      }
+    };
   }, [isOpen]);
 
   const activeTicket = tickets.find((t) => t._id === activeTicketId) || null;
@@ -333,7 +362,7 @@ const SellerSupportChatWidget = () => {
                     </div>
 
                     {/* Scrollable list */}
-                    <div className="flex-grow overflow-y-auto p-4 space-y-2">
+                    <div className="flex-grow overflow-y-auto overscroll-contain p-4 space-y-2">
                       {isLoading && tickets.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-48 text-gray-400">
                           <Loader2 className="w-6 h-6 animate-spin mb-2" />
@@ -425,7 +454,7 @@ const SellerSupportChatWidget = () => {
                     </div>
 
                     {/* Messages Scroll Panel */}
-                    <div className="flex-grow overflow-y-auto p-4 space-y-4">
+                    <div className="flex-grow overflow-y-auto overscroll-contain p-4 space-y-4">
                       {/* Initial message */}
                       <div className="flex flex-col items-end ml-auto max-w-[85%]">
                         <div className="bg-[#3E2723] text-white rounded-2xl rounded-tr-none px-4 py-2.5 text-xs font-medium shadow-sm">
@@ -552,7 +581,7 @@ const SellerSupportChatWidget = () => {
                       Raise Support Request
                     </h3>
 
-                    <form onSubmit={handleCreateTicketSubmit} className="space-y-4 flex-grow flex flex-col">
+                    <form onSubmit={handleCreateTicketSubmit} className="space-y-4 flex-grow flex flex-col overflow-y-auto overscroll-contain">
                       <div className="space-y-1">
                         <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">
                           Category

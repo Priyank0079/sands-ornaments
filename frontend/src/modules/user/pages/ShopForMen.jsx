@@ -74,9 +74,7 @@ const ShopForMen = () => {
       <MenHeroCarousel sectionData={sectionMap["hero-banners"]} />
       <MenCategoriesGrid sectionData={sectionMap["categories-grid"]} />
       
-      }>
-        
-          <MenLuxurySection sectionData={sectionMap["luxury-section"]} />
+      <MenLuxurySection sectionData={sectionMap["luxury-section"]} />
         
         
           <CelebrateMen sectionData={sectionMap["celebrate-men"]} />

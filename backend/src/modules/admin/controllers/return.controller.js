@@ -419,6 +419,15 @@ exports.updateReturnStatus = async (req, res) => {
 
       if (nextOrderStatus) {
         let finalOrderStatus = nextOrderStatus;
+        
+        if (finalOrderStatus === "Delivered") {
+          const { hasOtherActiveClaims } = require("../../../utils/activeClaimsHelper");
+          const otherActive = await hasOtherActiveClaims(order._id, returnReq._id);
+          if (otherActive) {
+            finalOrderStatus = "Return Requested";
+          }
+        }
+
         if (returnedQty > 0) {
           if (returnedQty < totalOrderQty) {
             finalOrderStatus = "Partially Returned";
