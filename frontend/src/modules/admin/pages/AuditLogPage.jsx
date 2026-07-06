@@ -257,26 +257,21 @@ const AuditLogPage = () => {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pb-20 font-sans text-left">
+    <div className="space-y-6 animate-in fade-in duration-500 pb-20 font-sans text-left">
 
       {/* ── Header ── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-200">
-            <ShieldCheck size={20} className="text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black text-gray-900 uppercase tracking-tight">Audit Trail</h1>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Enterprise activity log</p>
-          </div>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 md:mb-6">
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 tracking-tight">Audit Trail</h1>
+          <p className="text-xs md:text-sm font-medium text-gray-500 mt-1">Enterprise activity log.</p>
         </div>
         <button
           id="audit-export-btn"
           onClick={handleExport}
           disabled={exporting}
-          className="flex items-center gap-2 px-5 py-2.5 bg-gray-900 hover:bg-black text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-md transition-all active:scale-95 disabled:opacity-60"
+          className="flex items-center gap-2 px-4 py-2 bg-gray-900 hover:bg-black text-white rounded-lg text-sm font-medium shadow-sm transition-all active:scale-95 disabled:opacity-60"
         >
-          <Download size={14} />
+          <Download size={16} />
           {exporting ? 'Exporting…' : 'Export CSV'}
         </button>
       </div>
