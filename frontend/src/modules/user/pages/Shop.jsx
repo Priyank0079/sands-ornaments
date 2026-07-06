@@ -1052,19 +1052,19 @@ const Shop = () => {
           className={`sticky z-[100] bg-white transition-all duration-300 ${isNavVisible ? "top-[50px] md:top-[141px]" : "top-0"}`}
         >
           {/* Header Section - Back Left, Title Center, Items Right */}
-          <div className="py-2.5 md:py-3 flex flex-row justify-between items-center gap-4 border-b border-[#EBCDD0] px-4 md:px-0">
+          <div className="py-2 md:py-3 flex flex-row justify-between items-center gap-2 md:gap-4 border-b border-[#EBCDD0] px-4 md:px-0">
             {/* Back Button */}
             <button
               onClick={() => navigate(-1)}
-              className="flex items-center gap-1.5 text-black hover:text-[#9C3D5E] transition-all group font-medium uppercase tracking-wide text-[10px] md:text-xs shrink-0"
+              className="flex items-center gap-1 text-black hover:text-[#9C3D5E] transition-all group font-bold uppercase tracking-wide text-[10px] md:text-xs shrink-0 min-w-[50px]"
             >
               <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
               Back
             </button>
 
             {/* Title - Center */}
-            <div className="text-center flex-1">
-              <h1 className="text-lg md:text-2xl font-serif font-medium text-black leading-tight">
+            <div className="text-center flex-1 mx-1 overflow-hidden">
+              <h1 className="text-base md:text-xl font-sans font-bold text-gray-800 leading-tight truncate">
                 {pageTitle}
               </h1>
             </div>
@@ -1080,18 +1080,18 @@ const Shop = () => {
             </div>
 
             {/* Mobile Actions */}
-            <div className="flex md:hidden items-center gap-2">
+            <div className="flex md:hidden items-center gap-1.5 shrink-0">
               <button
                 onClick={() => setIsSortOpen(true)}
-                className="p-1.5 border border-[#EBCDD0] rounded-lg text-black hover:bg-[#EBCDD0] transition-all"
+                className="p-1 border border-[#EBCDD0] rounded-md text-black hover:bg-[#EBCDD0] transition-all"
               >
-                <ArrowUpDown className="w-4 h-4" />
+                <ArrowUpDown className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => setIsFilterOpen(true)}
-                className="flex items-center gap-1.5 bg-[#9C3D5E] text-white px-3 py-1.5 rounded-lg font-medium text-[11px] uppercase tracking-wider"
+                className="flex items-center gap-1 bg-[#9C3D5E] text-white px-2.5 py-1 rounded-md font-bold text-[10px] uppercase tracking-wider"
               >
-                <Filter className="w-3.5 h-3.5" />
+                <Filter className="w-3 h-3" />
                 Filter
               </button>
             </div>

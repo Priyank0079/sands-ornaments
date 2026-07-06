@@ -56,8 +56,8 @@ const CategoryNav = ({ showMetalToggle = true }) => {
         <div className="bg-[#FFF0F4] border-b border-pink-100 hidden md:block w-full">
             <div className="container mx-auto px-4 md:px-12 relative" onMouseLeave={resetMenu}>
                 {/* Navigation Links - Centered and Spaced Out */}
-                <div className="flex justify-center items-center py-1.5">
-                    <ul className="flex items-center justify-center gap-6 lg:gap-10 flex-wrap">
+                <div className="flex justify-center items-center py-1.5 overflow-x-auto no-scrollbar">
+                    <ul className="flex items-center justify-center gap-4 lg:gap-8 flex-nowrap min-w-max px-4">
                         {navItems.map((item) => (
                             <li
                                 key={item.id}
