@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -62,6 +62,7 @@ const ensureGoldCategoryPath = (path, categoryId = "") => {
 const GoldCuratedShowcase = ({ sectionData = null }) => {
   const navigate = useNavigate();
   const scrollRef = useRef(null);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const collections = useMemo(() => {
     const configured = Array.isArray(sectionData?.items)
@@ -97,11 +98,31 @@ const GoldCuratedShowcase = ({ sectionData = null }) => {
         "Premium Gold Collections",
     ).trim() || "Premium Gold Collections";
 
-  const scroll = (direction) => {
-    if (!scrollRef.current) return;
-    const scrollAmount = window.innerWidth > 768 ? 600 : 300;
-    scrollRef.current.scrollLeft +=
-      direction === "left" ? -scrollAmount : scrollAmount;
+  const handleScroll = () => {
+    if (scrollRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+        const maxScroll = scrollWidth - clientWidth;
+        if (maxScroll <= 0) {
+            setActiveIndex(0);
+            return;
+        }
+        const percentage = scrollLeft / maxScroll;
+        const index = Math.round(percentage * (collections.length - 1));
+        setActiveIndex(Math.min(index, collections.length - 1));
+    }
+  };
+
+  const scrollToDot = (index) => {
+    if (scrollRef.current) {
+        const container = scrollRef.current;
+        const maxScroll = container.scrollWidth - container.clientWidth;
+        const percentage = index / (collections.length - 1 || 1);
+        container.scrollTo({
+            left: percentage * maxScroll,
+            behavior: 'smooth'
+        });
+        setActiveIndex(index);
+    }
   };
 
   return (
@@ -123,6 +144,7 @@ const GoldCuratedShowcase = ({ sectionData = null }) => {
 
           <div
             ref={scrollRef}
+            onScroll={handleScroll}
             className="flex overflow-x-auto gap-3 md:gap-5 pb-8 hide-scrollbar scroll-smooth snap-x snap-mandatory px-4"
           >
             {collections.map((item, idx) => (
@@ -154,6 +176,24 @@ const GoldCuratedShowcase = ({ sectionData = null }) => {
               </motion.div>
             ))}
           </div>
+
+          {/* Carousel Dots */}
+          {collections.length > 1 && (
+            <div className="flex justify-center items-center gap-2 pb-6 mt-[-10px]">
+              {collections.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => scrollToDot(idx)}
+                  className={`transition-all duration-300 rounded-full ${
+                    activeIndex === idx 
+                      ? "w-6 h-1.5 bg-[#2A4D35]" 
+                      : "w-1.5 h-1.5 bg-gray-300 hover:bg-gray-400"
+                  }`}
+                  aria-label={`Go to item ${idx + 1}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

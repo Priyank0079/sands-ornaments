@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { resolveLegacyCmsAsset } from '../utils/legacyCmsAssets';
@@ -27,6 +27,7 @@ const GOLD_CATEGORIES = [
 
 const GoldCategoryGrid = ({ sectionData = null }) => {
     const scrollRef = useRef(null);
+    const [activeIndex, setActiveIndex] = useState(0);
 
     const sectionTitle = String(sectionData?.settings?.title || sectionData?.label || 'Shop by Category').trim() || 'Shop by Category';
 
@@ -69,11 +70,31 @@ const GoldCategoryGrid = ({ sectionData = null }) => {
         }));
     }, [sectionData]);
 
-    const scroll = (direction) => {
-        if (!scrollRef.current) return;
-        const { scrollLeft } = scrollRef.current;
-        const scrollTo = direction === 'left' ? scrollLeft - 300 : scrollLeft + 300;
-        scrollRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
+    const handleScroll = () => {
+        if (scrollRef.current) {
+            const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+            const maxScroll = scrollWidth - clientWidth;
+            if (maxScroll <= 0) {
+                setActiveIndex(0);
+                return;
+            }
+            const percentage = scrollLeft / maxScroll;
+            const index = Math.round(percentage * (categories.length - 1));
+            setActiveIndex(Math.min(index, categories.length - 1));
+        }
+    };
+
+    const scrollToDot = (index) => {
+        if (scrollRef.current) {
+            const container = scrollRef.current;
+            const maxScroll = container.scrollWidth - container.clientWidth;
+            const percentage = index / (categories.length - 1 || 1);
+            container.scrollTo({
+                left: percentage * maxScroll,
+                behavior: 'smooth'
+            });
+            setActiveIndex(index);
+        }
     };
 
     return (
@@ -95,7 +116,8 @@ const GoldCategoryGrid = ({ sectionData = null }) => {
 
                 <div
                     ref={scrollRef}
-                    className="flex overflow-x-auto scrollbar-hide gap-3 md:gap-5 pb-2 md:pb-4 px-1 md:px-2 snap-x snap-mandatory"
+                    onScroll={handleScroll}
+                    className="flex overflow-x-auto scrollbar-hide gap-3 md:gap-5 pb-2 md:pb-4 px-1 md:px-2 snap-x snap-mandatory scroll-smooth"
                 >
                     {categories.map((cat) => (
                         <Link
@@ -130,7 +152,23 @@ const GoldCategoryGrid = ({ sectionData = null }) => {
                     ))}
                 </div>
 
-                
+                {/* Carousel Dots */}
+                {categories.length > 1 && (
+                    <div className="flex justify-center items-center gap-2 pb-6 mt-4 md:mt-2">
+                        {categories.map((_, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => scrollToDot(idx)}
+                                className={`transition-all duration-300 rounded-full ${
+                                    activeIndex === idx 
+                                    ? "w-6 h-1.5 bg-[#C9A84C]" 
+                                    : "w-1.5 h-1.5 bg-gray-300 hover:bg-gray-400"
+                                }`}
+                                aria-label={`Go to item ${idx + 1}`}
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );
