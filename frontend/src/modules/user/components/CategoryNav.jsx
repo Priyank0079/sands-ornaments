@@ -56,8 +56,8 @@ const CategoryNav = ({ showMetalToggle = true }) => {
         <div className="bg-[#FFF0F4] border-b border-pink-100 hidden md:block w-full">
             <div className="container mx-auto px-4 md:px-12 relative" onMouseLeave={resetMenu}>
                 {/* Navigation Links - Centered and Spaced Out */}
-                <div className="flex justify-center items-center py-1.5 overflow-x-auto no-scrollbar">
-                    <ul className="flex items-center justify-center gap-4 lg:gap-8 flex-nowrap min-w-max px-4">
+                <div className="flex justify-center items-center py-1.5 w-full">
+                    <ul className="flex items-center justify-between lg:justify-center w-full gap-2 lg:gap-5 xl:gap-8 flex-nowrap px-1">
                         {navItems.map((item) => (
                             <li
                                 key={item.id}
@@ -72,7 +72,7 @@ const CategoryNav = ({ showMetalToggle = true }) => {
                             >
                                 <Link
                                     to={item.path}
-                                    className="text-[12px] font-bold uppercase tracking-[0.08em] font-sans text-gray-800 hover:text-[#9C3D5E] flex items-center gap-1 transition-all duration-300 whitespace-nowrap"
+                                    className="text-[9px] md:text-[10px] xl:text-[12px] font-bold uppercase tracking-tighter md:tracking-normal xl:tracking-[0.08em] font-sans text-gray-800 hover:text-[#9C3D5E] flex items-center gap-0.5 xl:gap-1 transition-all duration-300 whitespace-nowrap"
                                 >
                                     {item.name}
                                     {item.hasChevron && <ChevronDown className="w-4 h-4 text-gray-500" />}
