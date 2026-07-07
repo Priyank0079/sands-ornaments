@@ -893,18 +893,25 @@ const ProductDetails = () => {
   return (
     <div className="bg-white min-h-screen py-8 pb-24 md:pb-8 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out fill-mode-both selection:bg-[#D39A9F] selection:text-white">
       <Helmet>
-        <title>{product.name} | Sands Jewels</title>
+        <title>{product.seo?.title || `${product.name} | Sands Jewels`}</title>
         <meta
           name="description"
           content={
+            product.seo?.description ||
             product.description?.replace(/<[^>]*>?/gm, "").slice(0, 160) ||
             `Buy ${product.name} at Sands Jewels.`
           }
         />
-        <meta property="og:title" content={`${product.name} | Sands Jewels`} />
+        {product.seo?.keywords && (
+          <meta name="keywords" content={product.seo.keywords} />
+        )}
+        <meta property="og:title" content={product.seo?.title || `${product.name} | Sands Jewels`} />
         <meta
           property="og:description"
-          content={`Exclusive ${product.category?.name || "jewellery"} piece starting at ${formatCurrency(variantPrice)}.`}
+          content={
+            product.seo?.description ||
+            `Exclusive ${product.category?.name || "jewellery"} piece starting at ${formatCurrency(variantPrice)}.`
+          }
         />
         <meta property="og:image" content={primaryImage} />
         <meta property="og:url" content={window.location.href} />
