@@ -34,8 +34,8 @@ exports.sellerRegisterSchema = Joi.object({
   bisNumber: Joi.string().allow('', null).optional(),
   bisNumberGold: Joi.string().allow('', null).optional(),
   bisNumberSilver: Joi.string().allow('', null).optional(),
-  dob: Joi.date().allow('', null).optional(),
-  district: Joi.string().allow('', null).optional(),
+  dob: Joi.date().required(),
+  district: Joi.string().required(),
   shopAddress: Joi.string().required(),
   city: Joi.string().pattern(/^[A-Za-z\s]+$/).required().messages({
     "string.pattern.base": "City should contain only alphabets",

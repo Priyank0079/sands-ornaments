@@ -257,6 +257,9 @@ const SellerRegister = () => {
             } else if (data.password.length < 6) {
                 nextErrors.password = 'Password must be at least 6 characters';
             }
+            if (!data.dob) {
+                nextErrors.dob = 'Date of birth is required';
+            }
         }
 
         if (stepToValidate === 2) {
@@ -266,6 +269,9 @@ const SellerRegister = () => {
                 nextErrors.city = 'City is required';
             } else if (!/^[A-Za-z\s]+$/.test(data.city.trim())) {
                 nextErrors.city = 'City should contain only alphabets';
+            }
+            if (!data.district?.trim()) {
+                nextErrors.district = 'District is required';
             }
             if (!data.state?.trim()) {
                 nextErrors.state = 'State is required';
@@ -542,9 +548,9 @@ const SellerRegister = () => {
                                     {errors.password && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.password}</p>}
                                 </div>
                                 <div className="space-y-2">
-                                    <label className={labelClasses}>Date of Birth <span className="text-gray-400 text-xs font-normal">(Optional)</span></label>
+                                    <label className={labelClasses}>Date of Birth <span className="text-red-500">*</span></label>
                                     <div className="relative group">
-                                        <input type="date" name="dob" value={formData.dob} onChange={handleChange} className={inputClasses} />
+                                        <input required type="date" name="dob" value={formData.dob} onChange={handleChange} className={inputClasses} />
                                         <CalendarDays className={iconClasses} />
                                     </div>
                                     {errors.dob && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.dob}</p>}
@@ -580,9 +586,9 @@ const SellerRegister = () => {
                                         {errors.city && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.city}</p>}
                                      </div>
                                      <div className="space-y-2">
-                                        <label className={labelClasses}>District <span className="text-gray-400 text-xs font-normal">(Optional)</span></label>
+                                        <label className={labelClasses}>District <span className="text-red-500">*</span></label>
                                         <div className="relative group">
-                                            <input name="district" value={formData.district} onChange={handleChange} className={inputClasses} placeholder="Mumbai Suburban" />
+                                            <input required name="district" value={formData.district} onChange={handleChange} className={inputClasses} placeholder="Mumbai Suburban" />
                                             <Building className={iconClasses} />
                                         </div>
                                         {errors.district && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.district}</p>}

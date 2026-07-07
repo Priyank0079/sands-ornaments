@@ -74,6 +74,10 @@ exports.register = async (req, res) => {
       return error(res, "GST number is required", 400);
     if (!panNumber || !String(panNumber).trim())
       return error(res, "PAN number is required", 400);
+    if (!dob)
+      return error(res, "Date of Birth (DOB) is required", 400);
+    if (!district || !String(district).trim())
+      return error(res, "District is required", 400);
 
     if (!shopAddress || !String(shopAddress).trim())
       return error(res, "Shop address is required", 400);

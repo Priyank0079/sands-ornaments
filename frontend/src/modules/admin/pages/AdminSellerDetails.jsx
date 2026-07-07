@@ -127,6 +127,34 @@ const AdminSellerDetails = () => {
                 </div>
             </div>
 
+            {seller.duplicateMatches && seller.duplicateMatches.length > 0 && (
+                <div className="bg-rose-50 border border-rose-100 rounded-2xl p-6 flex flex-col gap-3">
+                    <h3 className="text-xs font-black text-rose-800 uppercase tracking-widest flex items-center gap-2">
+                        ⚠️ Duplicate Accounts Flagged
+                    </h3>
+                    <p className="text-xs text-rose-700 font-medium leading-relaxed">
+                        This seller account shares registration details (GST, PAN, or Bank Account) with the following registered seller(s):
+                    </p>
+                    <div className="space-y-2">
+                        {seller.duplicateMatches.map((other, idx) => (
+                            <div key={idx} className="bg-white/80 border border-rose-200/50 rounded-xl p-3 flex items-center justify-between text-xs">
+                                <div>
+                                    <p className="font-bold text-gray-900">{other.fullName} ({other.shopName})</p>
+                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{other.email}</p>
+                                </div>
+                                <div className="flex gap-1 flex-wrap">
+                                    {other.reasons.map((r, i) => (
+                                        <span key={i} className="px-2 py-0.5 bg-rose-100 text-rose-800 rounded-full text-[9px] font-black uppercase tracking-wider">
+                                            {r}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* Rejection Modal */}
             {showRejectModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">

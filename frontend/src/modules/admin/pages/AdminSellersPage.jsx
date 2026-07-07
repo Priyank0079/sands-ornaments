@@ -69,7 +69,17 @@ const AdminSellersPage = () => {
             className: 'w-[18%]',
             render: (row) => (
                 <div className="flex flex-col text-left">
-                    <span className="text-xs font-bold text-gray-900 uppercase tracking-tight">{row.fullName}</span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-xs font-bold text-gray-900 uppercase tracking-tight">{row.fullName}</span>
+                        {row.isDuplicate && (
+                            <span 
+                                title={`Shares registered details with other sellers on: ${row.duplicateMatches.map(m => `${m.reasons.join(', ')} (${m.shopName})`).join(' & ')}`} 
+                                className="px-1.5 py-0.5 bg-rose-50 text-rose-600 border border-rose-100 rounded text-[8px] font-black uppercase tracking-wider flex items-center shrink-0 cursor-help"
+                            >
+                                Duplicate
+                            </span>
+                        )}
+                    </div>
                     <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none mt-0.5">{row.email}</span>
                 </div>
             )

@@ -143,8 +143,12 @@ exports.updateProfile = async (req, res) => {
     if (updates.bisNumber !== undefined && !updates.bisNumber) delete updates.bisNumber;
     if (updates.bisNumberGold !== undefined && !updates.bisNumberGold) delete updates.bisNumberGold;
     if (updates.bisNumberSilver !== undefined && !updates.bisNumberSilver) delete updates.bisNumberSilver;
-    if (updates.dob !== undefined && !updates.dob) delete updates.dob;
-    if (updates.district !== undefined && !updates.district) delete updates.district;
+    if (updates.dob !== undefined && !updates.dob) {
+      return error(res, "Date of birth is required", 400);
+    }
+    if (updates.district !== undefined && !updates.district) {
+      return error(res, "District is required", 400);
+    }
 
     if (updates.email) {
       const existingEmail = await Seller.findOne({
