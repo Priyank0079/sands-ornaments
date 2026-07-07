@@ -68,6 +68,7 @@ const sanitizeVariants = (variants, fallback = {}) => {
 
   return variants.map(v => ({
     name: v.name || "Standard",
+    size: v.size || "",
     variantCode: v.variantCode || "",
     diamondType: normalizeDiamondType(v.diamondType),
     variantImages: Array.isArray(v.variantImages)

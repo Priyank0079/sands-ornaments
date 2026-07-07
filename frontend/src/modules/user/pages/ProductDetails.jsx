@@ -1461,6 +1461,9 @@ const ProductDetails = () => {
           <div className="w-full max-w-xl space-y-8">
             {product.variants && product.variants.length > 1 && (
               <div className="space-y-3">
+                <span className="text-[9px] font-black text-gray-400 uppercase tracking-[0.25em] block text-center mb-1">
+                  Select Size / Option:
+                </span>
                 <div className="flex flex-wrap justify-center gap-2">
                   {product.variants.map((variant) => {
                     const variantId = variant.id || variant._id;
@@ -1478,6 +1481,7 @@ const ProductDetails = () => {
                         }`}
                       >
                         {variant.name}
+                        {variant.size ? ` (Size: ${variant.size})` : ""}
                       </button>
                     );
                   })}
