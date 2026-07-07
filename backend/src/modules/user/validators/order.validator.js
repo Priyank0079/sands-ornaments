@@ -15,7 +15,7 @@ const placeOrderSchema = Joi.object({
   shippingAddress: Joi.object({
     firstName: Joi.string().required(),
     lastName: Joi.string().required(),
-    email: Joi.string().email().required(),
+    email: Joi.string().email().allow("").optional(),
     phone: Joi.string().pattern(/^[6-9]\d{9}$/).required(),
     flatNo: Joi.string().required(),
     area: Joi.string().required(),

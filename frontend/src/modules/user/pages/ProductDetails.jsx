@@ -1680,11 +1680,11 @@ const ProductDetails = () => {
             />
             <button
               onClick={() => {
-                if (localPincode.length === 6) {
+                if (localPincode.length === 6 && /^[1-9][0-9]{5}$/.test(localPincode)) {
                   updatePincode(localPincode);
                   toast.success("Checking availability...");
                 } else {
-                  toast.error("Please enter a 6-digit pincode");
+                  toast.error("Please enter a valid 6-digit pincode");
                 }
               }}
               className="bg-[#8E2B45] text-white px-4 py-1.5 rounded-md font-black text-[9px] uppercase tracking-wider hover:bg-[#5B1E26] transition-all shadow-sm active:scale-95"
@@ -1693,7 +1693,7 @@ const ProductDetails = () => {
             </button>
           </div>
 
-          {pincode ? (
+          {pincode && /^[1-9][0-9]{5}$/.test(pincode) ? (
             <div className="flex flex-col md:flex-row items-center gap-3 md:ml-auto md:border-l md:border-gray-100 md:pl-6 animate-in fade-in slide-in-from-left-2 duration-500">
               <div className="flex items-center gap-2 text-emerald-600">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -1717,6 +1717,15 @@ const ProductDetails = () => {
                   })()}
                 </span>
               </p>
+            </div>
+          ) : pincode ? (
+            <div className="flex flex-col md:flex-row items-center gap-3 md:ml-auto md:border-l md:border-gray-100 md:pl-6 text-rose-600 animate-in fade-in duration-300">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                <span className="text-[10px] font-black uppercase tracking-widest">
+                  Not Serviceable
+                </span>
+              </div>
             </div>
           ) : (
             <div className="flex items-center gap-6 md:ml-auto md:border-l md:border-gray-100 md:pl-6 pr-2 opacity-60">

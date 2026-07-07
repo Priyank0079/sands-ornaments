@@ -237,6 +237,7 @@ const AppContent = () => {
           <Route path="/shipping-policy" element={<DynamicPage slug="shipping-policy" />} />
           <Route path="/cancellation-policy" element={<DynamicPage slug="cancellation-policy" />} />
           <Route path="/return-policy" element={<DynamicPage slug="return-refund-policy" />} />
+          <Route path="/replacement-policy" element={<DynamicPage slug="return-refund-policy" />} />
           <Route path="/care-guide" element={<DynamicPage slug="jewelry-care" />} />
           <Route path="/warranty-info" element={<DynamicPage slug="warranty-info" />} />
           <Route path="/craft" element={<DynamicPage slug="our-craftsmanship" />} />
