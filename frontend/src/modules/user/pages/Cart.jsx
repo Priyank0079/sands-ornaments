@@ -29,7 +29,12 @@ const Cart = () => {
     const total = subtotal + giftWrapCharge + shipping - discount;
     const gstIncluded = cart.reduce((acc, item) => acc + ((Number(item.gst || item.selectedVariant?.gst || 0)) * (item.quantity || 1)), 0);
 
-    const variantLabel = (item) => item.selectedVariant?.name || item.selectedVariant?.variantName || '';
+    const variantLabel = (item) => {
+        const name = item.selectedVariant?.name || item.selectedVariant?.variantName || '';
+        const size = item.selectedVariant?.size ? `Size: ${item.selectedVariant.size}` : '';
+        if (name && size) return `${name} / ${size}`;
+        return name || size;
+    };
     const variantKey = (item) => item.variantId || item.packId || 'default';
     const availableCoupons = coupons ? coupons.filter(c => c.active !== false) : [];
 

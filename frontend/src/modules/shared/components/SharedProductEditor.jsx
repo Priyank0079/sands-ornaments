@@ -93,6 +93,7 @@ const SharedProductEditor = ({
             variants: [{ 
                 id: Date.now(), 
                 name: 'Standard', 
+                size: '', 
                 weight: '', 
                 weightUnit: 'Grams',
                 makingCharge: '0', 
@@ -641,6 +642,7 @@ const SharedProductEditor = ({
             variants: [...prev.variants, { 
                 id: Date.now(), 
                 name: '', 
+                size: '', 
                 weight: prev.weight || '',
                 weightUnit: prev.weightUnit || 'Grams',
                 makingCharge: '0', 

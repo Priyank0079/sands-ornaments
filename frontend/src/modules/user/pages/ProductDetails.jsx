@@ -1288,6 +1288,16 @@ const ProductDetails = () => {
                             </span>
                           </div>
                         )}
+                        {selectedVariant?.size && (
+                          <div className="space-y-0.5 md:space-y-1">
+                            <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest block">
+                              Size
+                            </span>
+                            <span className="text-[11px] md:text-xs font-semibold text-gray-900 block">
+                              {selectedVariant.size}
+                            </span>
+                          </div>
+                        )}
                         <div className="space-y-0.5 md:space-y-1">
                           <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest block">
                             HUID
@@ -1506,7 +1516,10 @@ const ProductDetails = () => {
                   <Ruler size={12} /> Find Your Size
                 </button>
                 <div className="h-3 w-[1px] bg-gray-100" />
-                <button className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] hover:text-[#8E2B45] transition-all">
+                <button
+                  onClick={() => navigate("/shipping-policy")}
+                  className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] hover:text-[#8E2B45] transition-all"
+                >
                   Shipping Policy
                 </button>
               </div>
@@ -1956,6 +1969,10 @@ const ProductDetails = () => {
                             ),
                           },
                           { label: "HUID", value: product.huid || "---" },
+                          selectedVariant?.size && {
+                            label: "Size",
+                            value: selectedVariant.size,
+                          },
                           {
                             label: "Reference",
                             value: selectedVariant?.variantCode || "---",

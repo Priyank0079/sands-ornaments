@@ -154,6 +154,18 @@ const ProductVariantsTab = ({
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                                    <Tag size={10} className="text-amber-500" /> Size <span className="text-gray-300 font-normal">(Optional)</span>
+                                                </label>
+                                                <input 
+                                                    value={v.size || ''} 
+                                                    onChange={(e) => handleVariantChange(v.id, 'size', e.target.value)} 
+                                                    disabled={isViewMode} 
+                                                    className="w-full bg-white border border-gray-200 rounded-xl py-3.5 px-5 text-sm font-bold text-gray-800 outline-none focus:border-[#3E2723] focus:ring-4 focus:ring-[#3E2723]/5 transition-all shadow-sm"
+                                                    placeholder="e.g. 12, 2.4, 18 inches" 
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
                                                     <Sparkles size={10} className="text-amber-500" /> Diamond Type
                                                 </label>
                                                 <select
