@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, Heart, ShoppingCart, User, Menu, X, ChevronDown, ChevronRight, Bell } from 'lucide-react';
+import { Search, Heart, ShoppingCart, User, Users, BookOpen, Menu, X, ChevronDown, ChevronRight, Bell, Sparkles, Coins, Gem, Droplet, LifeBuoy, Sun, Hexagon, Gift, MoreHorizontal, ShoppingBag } from 'lucide-react';
 import { useShop } from '../../../context/ShopContext';
 import { useNotification } from '../../../context/NotificationContext';
 import logo from '@assets/SANDS JEWELS PINK (1).png';
@@ -322,9 +322,7 @@ const Navbar = () => {
                         <button onClick={() => setShowMobileSearch(!showMobileSearch)} className="relative p-1">
                             <Search className="w-6 h-6 text-gray-800" />
                         </button>
-                        <Link to={user ? "/profile" : "/login"} className="relative">
-                            <User className="w-6 h-6 text-gray-800" />
-                        </Link>
+
                         <Link to="/wishlist" className="relative hidden sm:block">
                             <Heart className="w-6 h-6 text-gray-800" />
                         </Link>
@@ -398,141 +396,66 @@ const Navbar = () => {
                             <motion.div
                                 initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
                                 transition={{ type: 'tween', duration: 0.3 }}
-                                className="fixed top-0 left-0 h-full w-[280px] bg-white z-[9999] p-5 shadow-2xl flex flex-col"
+                                className="fixed top-0 left-0 h-full w-full bg-[#FDF5F6] z-[9999] flex flex-col"
                             >
-                                <div className="flex justify-between items-center mb-5 border-b pb-3">
-                                    <span className="text-base tracking-wide uppercase font-medium">Menu</span>
+                                {/* Top Header */}
+                                <div className="flex justify-end items-center px-6 pt-6 pb-4">
                                     <button onClick={() => setIsMenuOpen(false)} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
-                                        <X className="w-6 h-6 text-gray-500" />
+                                        <X className="w-5 h-5 text-gray-900 font-bold" strokeWidth={2.5} />
                                     </button>
                                 </div>
 
-                                <div className="flex bg-gray-100 p-1 rounded-full mb-4">
-                                    <button
-                                        onClick={() => {
-                                            updateActiveMetal('silver');
-                                            navigate('/');
-                                            setIsMenuOpen(false);
-                                        }}
-                                        className={`flex-1 py-1.5 px-3 rounded-full text-[13px] font-medium transition-all duration-300 ${activeMetal === 'silver' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                                    >
-                                        Silver
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            updateActiveMetal('gold');
-                                            navigate('/gold-collection');
-                                            setIsMenuOpen(false);
-                                        }}
-                                        className={`flex-1 py-1.5 px-3 rounded-full text-[13px] font-medium transition-all duration-300 ${activeMetal === 'gold' ? 'bg-white text-[#C9A24D] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                                    >
-                                        Gold
-                                    </button>
+                                {/* Banner/Coupon */}
+                                <div className="px-5 mb-6 mt-2">
+                                    <div className="relative bg-white border border-[#EBCDD0] rounded-lg p-5 flex items-center justify-between shadow-sm">
+                                        {/* Ticket Cutouts */}
+                                        <div className="absolute left-[-8px] top-1/2 -translate-y-1/2 w-4 h-4 bg-[#FDF5F6] rounded-full border-r border-[#EBCDD0]"></div>
+                                        <div className="absolute right-[-8px] top-1/2 -translate-y-1/2 w-4 h-4 bg-[#FDF5F6] rounded-full border-l border-[#EBCDD0]"></div>
+                                        
+                                        <div className="flex items-center gap-5 w-full">
+                                            <div className="flex-shrink-0 relative">
+                                                <ShoppingBag className="w-10 h-10 text-[#8E2B45] opacity-80" strokeWidth={1.2} />
+                                                <ShoppingBag className="w-7 h-7 text-[#8E2B45] absolute -bottom-1 -right-2 bg-white" strokeWidth={1.5} />
+                                            </div>
+                                            <div className="flex-1">
+                                                <h3 className="text-[17px] font-serif font-bold text-[#8E2B45] leading-tight mb-2 tracking-wide">Welcome to Sands Jewels</h3>
+                                                <div className="flex items-center gap-2">
+                                                    <Link to="/login" className="text-[11px] font-bold text-[#8E2B45] hover:underline uppercase tracking-wider" onClick={() => setIsMenuOpen(false)}>LOGIN</Link>
+                                                    <span className="text-gray-300">|</span>
+                                                    <Link to="/login" className="text-[11px] font-bold text-[#8E2B45] hover:underline uppercase tracking-wider" onClick={() => setIsMenuOpen(false)}>SIGN UP</Link>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <nav className="flex flex-col gap-0.5 overflow-y-auto pb-8 no-scrollbar">
-                                    <Link to="/" className="text-gray-800 text-[15px] py-2.5 px-2 hover:text-pink-500 hover:bg-pink-50 rounded-md transition-all" onClick={() => setIsMenuOpen(false)}>Home</Link>
-                                    <Link to="/shop" className="text-gray-800 text-[15px] py-2.5 px-2 hover:text-pink-500 hover:bg-pink-50 rounded-md transition-all" onClick={() => setIsMenuOpen(false)}>Shop All</Link>
-
-                                    <div className="my-1.5 border-t border-gray-100" />
-
-                                    <button
-                                        onClick={() => toggleSection('allType')}
-                                        className="flex items-center justify-between py-2.5 px-2 text-gray-800 text-[15px] hover:text-pink-500 hover:bg-pink-50 rounded-md transition-all"
-                                    >
-                                        ALL TYPE
-                                        <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${expandedSections.allType ? 'rotate-90' : ''}`} />
-                                    </button>
-                                    {expandedSections.allType && (
-                                        <div className="pl-3 flex flex-col gap-0.5 py-1.5 bg-gray-50/50 rounded-md my-0.5">
-                                            {/* Gold Section */}
-                                            <button
-                                                onClick={() => toggleSection('allTypeGold')}
-                                                className="flex items-center justify-between py-2 px-2 text-gray-700 text-[14px] font-medium hover:text-pink-500 rounded transition-all"
-                                            >
-                                                Gold Collection
-                                                <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-300 ${expandedSections.allTypeGold ? 'rotate-90' : ''}`} />
-                                            </button>
-                                            {expandedSections.allTypeGold && (
-                                                <div className="pl-3 flex flex-col gap-1 pb-1.5">
-                                                    <Link to="/shop?metal=gold&karat=24" className="text-gray-500 text-[13.5px] py-1 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>24K Gold</Link>
-                                                    <Link to="/shop?metal=gold&karat=22" className="text-gray-500 text-[13.5px] py-1 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>22K Gold</Link>
-                                                    <Link to="/shop?metal=gold&karat=18" className="text-gray-500 text-[13.5px] py-1 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>18K Gold</Link>
-                                                    <Link to="/shop?metal=gold&karat=14" className="text-gray-500 text-[13.5px] py-1 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>14K Gold</Link>
-                                                </div>
-                                            )}
-
-                                            {/* Silver Section */}
-                                            <button
-                                                onClick={() => toggleSection('allTypeSilver')}
-                                                className="flex items-center justify-between py-2 px-2 text-gray-700 text-[14px] font-medium hover:text-pink-500 rounded transition-all"
-                                            >
-                                                Silver Collection
-                                                <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-300 ${expandedSections.allTypeSilver ? 'rotate-90' : ''}`} />
-                                            </button>
-                                            {expandedSections.allTypeSilver && (
-                                                <div className="pl-3 flex flex-col gap-1 pb-1.5">
-                                                    <Link to="/shop?metal=silver&silver_type=sterling" className="text-gray-500 text-[13.5px] py-1 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>925 Sterling Silver</Link>
-                                                    <Link to="/shop?metal=silver&silver_type=fine" className="text-gray-500 text-[13.5px] py-1 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>Fine Silver</Link>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    <button
-                                        onClick={() => toggleSection('categories')}
-                                        className="flex items-center justify-between py-2.5 px-2 text-gray-800 text-[15px] hover:text-pink-500 hover:bg-pink-50 rounded-md transition-all"
-                                    >
-                                        Shop by Category
-                                        <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${expandedSections.categories ? 'rotate-90' : ''}`} />
-                                    </button>
-                                    {expandedSections.categories && (
-                                        <div className="pl-3 flex flex-col gap-0.5 py-1.5 bg-gray-50/50 rounded-md my-0.5">
-                                            <Link to="/collections" className="text-gray-600 text-[13.5px] py-1.5 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>All Categories</Link>
-                                            <Link to="/category/men" className="text-gray-600 text-[13.5px] py-1.5 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>Men's Collection</Link>
-                                            <Link to="/category/women" className="text-gray-600 text-[13.5px] py-1.5 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>Women's Collection</Link>
-                                            <Link to="/category/family" className="text-gray-600 text-[13.5px] py-1.5 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>Family Collection</Link>
-                                        </div>
-                                    )}
-
-                                    <button
-                                        onClick={() => toggleSection('collections')}
-                                        className="flex items-center justify-between py-2.5 px-2 text-gray-800 text-[15px] hover:text-pink-500 hover:bg-pink-50 rounded-md transition-all"
-                                    >
-                                        Collections & Gifts
-                                        <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${expandedSections.collections ? 'rotate-90' : ''}`} />
-                                    </button>
-                                    {expandedSections.collections && (
-                                        <div className="pl-3 flex flex-col gap-0.5 py-1.5 bg-gray-50/50 rounded-md my-0.5">
-                                            <Link to="/category/men" className="text-gray-600 text-[13.5px] py-1.5 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>Gifts for Him</Link>
-                                            <Link to="/category/women" className="text-gray-600 text-[13.5px] py-1.5 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>Gifts for Her</Link>
-                                            <Link to="/category/family" className="text-gray-600 text-[13.5px] py-1.5 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>Gifts for Family</Link>
-                                            <Link to="/shop?search=exclusive" className="text-gray-600 text-[13.5px] py-1.5 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>Exclusive Collections</Link>
-                                        </div>
-                                    )}
-
-                                    <Link
-                                        to="/blogs"
-                                        className="text-gray-800 text-[15px] py-2.5 px-2 hover:text-pink-500 hover:bg-pink-50 rounded-md transition-all block"
-                                        onClick={() => setIsMenuOpen(false)}
-                                    >
-                                        📖 Blogs
-                                    </Link>
-
-                                    <button
-                                        onClick={() => toggleSection('more')}
-                                        className="flex items-center justify-between py-2.5 px-2 text-gray-800 text-[15px] hover:text-pink-500 hover:bg-pink-50 rounded-md transition-all"
-                                    >
-                                        More at Sands
-                                        <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${expandedSections.more ? 'rotate-90' : ''}`} />
-                                    </button>
-                                    {expandedSections.more && (
-                                        <div className="pl-3 flex flex-col gap-0.5 py-1.5 bg-gray-50/50 rounded-md my-0.5">
-                                            <Link to="/gift-cards" className="text-gray-600 text-[13.5px] py-1.5 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>Gift Cards</Link>
-                                            <Link to="/blogs" className="text-gray-600 text-[13.5px] py-1.5 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>Blogs</Link>
-                                            <Link to="/about" className="text-gray-600 text-[13.5px] py-1.5 px-2 hover:text-pink-500 hover:bg-white rounded transition-all" onClick={() => setIsMenuOpen(false)}>About Us</Link>
-                                        </div>
-                                    )}
+                                {/* Navigation Links */}
+                                <nav className="flex-1 flex flex-col overflow-y-auto no-scrollbar px-3 pb-8">
+                                    {[
+                                        { label: 'All Jewellery', path: '/shop', icon: Sparkles },
+                                        { label: 'Gold', path: '/gold-collection', icon: Coins },
+                                        { label: 'Rings', path: '/shop?category=rings', icon: LifeBuoy },
+                                        { label: 'Daily Wear', path: '/shop?category=daily-wear', icon: Sun },
+                                        { label: 'Wedding', path: '/shop?category=wedding', icon: Heart },
+                                        { label: 'Gifts for Him', path: '/category/men', icon: Gift },
+                                        { label: 'Gifts for Her', path: '/category/women', icon: Gift },
+                                        { label: 'Gifts for Family', path: '/category/family', icon: Users },
+                                        { label: 'Blogs', path: '/blogs', icon: BookOpen },
+                                        { label: 'More', path: '/shop', icon: MoreHorizontal }
+                                    ].map((item, index) => (
+                                        <Link 
+                                            key={index}
+                                            to={item.path}
+                                            onClick={() => setIsMenuOpen(false)}
+                                            className="flex items-center justify-between py-4 px-4 text-gray-800 hover:bg-white hover:shadow-sm hover:text-[#8E2B45] rounded-xl transition-all group border-b border-[#F0DFE2] last:border-0"
+                                        >
+                                            <div className="flex items-center gap-5">
+                                                <item.icon className="w-5 h-5 text-gray-600 group-hover:text-[#8E2B45] transition-colors" strokeWidth={1.5} />
+                                                <span className="text-[15px] font-medium group-hover:font-semibold tracking-wide text-gray-800 group-hover:text-[#8E2B45]">{item.label}</span>
+                                            </div>
+                                            <ChevronRight className="w-4 h-4 text-gray-900 group-hover:text-[#8E2B45] transition-colors" strokeWidth={2.5} />
+                                        </Link>
+                                    ))}
                                 </nav>
                             </motion.div>
                         </>
