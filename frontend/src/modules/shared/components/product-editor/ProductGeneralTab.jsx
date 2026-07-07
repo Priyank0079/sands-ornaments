@@ -257,7 +257,7 @@ const ProductGeneralTab = ({
             {/* Identity & Tracking (Visual Signatures) */}
             {(isViewMode || createdProductData || formData.productCode) && (
                 <FormSection title="Registry Identity">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                    <div className="max-w-md mx-auto">
                         <div className="p-4 sm:p-8 bg-[#FDFBF7] rounded-[2rem] border border-amber-100/50 flex flex-col items-center justify-center text-center shadow-inner">
                              <p className="text-sm font-medium text-amber-700 mb-4">Master Identity</p>
                              <div className="flex items-center gap-4">
@@ -278,54 +278,6 @@ const ProductGeneralTab = ({
                                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                 <span className="text-xs font-medium text-amber-700">Registry Synchronized</span>
                              </div>
-                        </div>
-
-                        <div className="bg-white p-4 sm:p-8 rounded-[2rem] border border-gray-100 space-y-6 shadow-sm flex flex-col items-center justify-center group">
-                            <div className="flex items-center justify-between w-full">
-                                 <span className="text-sm font-medium text-gray-500">Barcode Artifact</span>
-                                 <button 
-                                    onClick={() => downloadImage(formData.barcode || createdProductData?.barcode, `barcode-${formData.productCode}.png`)}
-                                    className="p-2 text-gray-400 hover:text-[#3E2723] hover:bg-gray-50 rounded-xl transition-all"
-                                 >
-                                     <Download size={16} />
-                                 </button>
-                            </div>
-                            <div className="w-full bg-gray-50/50 rounded-2xl flex items-center justify-center p-4 border border-gray-50 transition-colors group-hover:bg-white">
-                                 <Barcode 
-                                    value={formData.productCode || createdProductData?.productCode || 'N/A'} 
-                                    width={1.2} 
-                                    height={45} 
-                                    fontSize={10}
-                                    background="transparent"
-                                 />
-                            </div>
-                        </div>
-
-                        <div className="bg-white p-4 sm:p-8 rounded-[2rem] border border-gray-100 space-y-6 shadow-sm flex flex-col items-center justify-center group">
-                            <div className="flex items-center justify-between w-full">
-                                 <span className="text-sm font-medium text-gray-500">Visual QR Artifact</span>
-                                 <button 
-                                    onClick={() => downloadImage(formData.qrCode || createdProductData?.qrCode || `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${formData.productCode || createdProductData?.productCode}`, `qr-${formData.productCode}.png`)}
-                                    className="p-2 text-gray-400 hover:text-[#3E2723] hover:bg-gray-50 rounded-xl transition-all"
-                                 >
-                                     <Download size={16} />
-                                 </button>
-                            </div>
-                            <div className="w-28 h-28 bg-gray-50/50 rounded-2xl flex items-center justify-center p-3 border border-dashed border-gray-200 group-hover:bg-white transition-colors">
-                                 {(formData.qrCode || createdProductData?.qrCode) ? (
-                                     <img 
-                                        src={formData.qrCode || createdProductData?.qrCode} 
-                                        alt="qr" 
-                                        className="w-full h-full object-contain" 
-                                        onError={(e) => { e.target.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${formData.productCode || createdProductData?.productCode}`; }}
-                                     />
-                                 ) : (
-                                     <div className="flex flex-col items-center text-gray-300">
-                                        <Loader2 className="w-5 h-5 animate-spin mb-2" />
-                                        <span className="text-xs font-medium text-gray-500">Rendering</span>
-                                     </div>
-                                 )}
-                            </div>
                         </div>
                     </div>
                 </FormSection>
