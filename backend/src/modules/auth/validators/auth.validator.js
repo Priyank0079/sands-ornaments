@@ -17,7 +17,7 @@ exports.verifyOtpSchema = Joi.object({
 });
 
 exports.adminLoginSchema = Joi.object({
-  email: Joi.string().email().required(),
+  email: Joi.string().required(),
   password: Joi.string().required(),
 });
 
@@ -72,6 +72,26 @@ exports.sellerSendResetMobileOtpSchema = Joi.object({
 
 exports.sellerResetPasswordMobileSchema = Joi.object({
   mobileNumber: Joi.string().length(10).pattern(/^[0-9]+$/).required(),
+  otp: Joi.string().required(),
+  newPassword: Joi.string().min(6).required(),
+});
+
+exports.adminSendResetOtpSchema = Joi.object({
+  email: Joi.string().email().required(),
+});
+
+exports.adminResetPasswordSchema = Joi.object({
+  email: Joi.string().email().required(),
+  otp: Joi.string().required(),
+  newPassword: Joi.string().min(6).required(),
+});
+
+exports.adminSendResetMobileOtpSchema = Joi.object({
+  mobileNumber: Joi.string().required(),
+});
+
+exports.adminResetPasswordMobileSchema = Joi.object({
+  mobileNumber: Joi.string().required(),
   otp: Joi.string().required(),
   newPassword: Joi.string().min(6).required(),
 });
