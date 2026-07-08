@@ -46,8 +46,8 @@ exports.login = async (req, res) => {
         admin.phone = "+919608811487";
         isChanged = true;
       }
-      const isPasswordMatch = await bcrypt.compare("123456", admin.password || "");
-      if (!isPasswordMatch) {
+      // Only set to 123456 if the admin currently has no password
+      if (!admin.password) {
         const salt = await bcrypt.genSalt(12);
         admin.password = await bcrypt.hash("123456", salt);
         isChanged = true;
