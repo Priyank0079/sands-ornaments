@@ -20,7 +20,9 @@ const ProductGeneralTab = ({
     categories, 
     isViewMode, 
     handleCategoryChange,
-    createdProductData
+    createdProductData,
+    sellerProfile,
+    editorMode
 }) => {
     const [categorySearchQuery, setCategorySearchQuery] = React.useState('');
     const filteredCategories = React.useMemo(() => {
@@ -28,6 +30,16 @@ const ProductGeneralTab = ({
             cat && String(cat.name || '').toLowerCase().includes(categorySearchQuery.toLowerCase())
         );
     }, [categories, categorySearchQuery]);
+
+    const materialOptions = React.useMemo(() => {
+        const options = [];
+        const hasGold = editorMode !== 'seller' || !sellerProfile || !!sellerProfile.bisNumberGold;
+        const hasSilver = editorMode !== 'seller' || !sellerProfile || !!sellerProfile.bisNumberSilver;
+
+        if (hasGold) options.push({ label: 'Gold', value: 'Gold' });
+        if (hasSilver) options.push({ label: 'Silver', value: 'Silver' });
+        return options;
+    }, [sellerProfile, editorMode]);
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -121,10 +133,7 @@ const ProductGeneralTab = ({
                             label="Primary Material"
                             value={formData.material}
                             onChange={(e) => setFormData({ ...formData, material: e.target.value })}
-                            options={[
-                                { label: 'Gold', value: 'Gold' },
-                                { label: 'Silver', value: 'Silver' }
-                            ]}
+                            options={materialOptions}
                             disabled={isViewMode}
                         />
 

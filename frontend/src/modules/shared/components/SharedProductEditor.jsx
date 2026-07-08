@@ -69,6 +69,7 @@ const SharedProductEditor = ({
     const [createdProductData, setCreatedProductData] = useState(null);
     const [gstRate, setGstRate] = useState(3);
     const [metalRates, setMetalRates] = useState({ gold: 0, silver: 0, platinum: 0 });
+    const [sellerProfile, setSellerProfile] = useState(null);
     
     const serialBarcodeRefs = useRef({});
     
@@ -432,6 +433,29 @@ const SharedProductEditor = ({
         };
         loadPricing();
     }, []);
+
+    useEffect(() => {
+        if (editorMode === 'seller') {
+            api.get('/seller/profile/me')
+                .then(res => {
+                    const profile = res.data?.data?.seller || res.data?.seller;
+                    if (profile) setSellerProfile(profile);
+                })
+                .catch(err => console.error("Failed to load profile", err));
+        }
+    }, [editorMode]);
+
+    useEffect(() => {
+        if (editorMode === 'seller' && sellerProfile && !isEditMode && !isViewMode) {
+            const hasGold = !!sellerProfile.bisNumberGold;
+            const hasSilver = !!sellerProfile.bisNumberSilver;
+            if (!hasSilver && hasGold && formData.material === 'Silver') {
+                setFormData(prev => ({ ...prev, material: 'Gold' }));
+            } else if (!hasGold && hasSilver && formData.material === 'Gold') {
+                setFormData(prev => ({ ...prev, material: 'Silver' }));
+            }
+        }
+    }, [sellerProfile, editorMode, isEditMode, isViewMode, formData.material]);
 
     useEffect(() => {
         if (!expandedVariant && formData.variants?.[0]?.id) {
@@ -1052,7 +1076,7 @@ const SharedProductEditor = ({
                         {!isViewMode && (
                             <button
                                 onClick={handleSubmit}
-                                disabled={isSaving}
+                                disabled={isSaving || (editorMode === 'seller' && sellerProfile && !sellerProfile.bisNumberGold && !sellerProfile.bisNumberSilver && !isEditMode && !isViewMode)}
                                 className="px-6 py-2.5 bg-gray-900 text-white rounded-lg text-sm font-medium shadow-sm hover:bg-black transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
                             >
                                 {isSaving ? <Loader2 size={16} className="animate-spin" /> : <SuccessIcon size={16} />}
@@ -1065,84 +1089,107 @@ const SharedProductEditor = ({
 
             {/* Main Content Area */}
             <div className="max-w-[1400px] mx-auto px-4 md:px-8 mt-8">
-                <div className="grid grid-cols-1 gap-8">
-                    {/* Active Tab Component */}
-                    {activeTab === 'general' && (
-                        <ProductGeneralTab 
-                            formData={formData} 
-                            setFormData={setFormData} 
-                            errors={combinedErrors} 
-                            isViewMode={isViewMode} 
-                            categories={categories}
-                            handleCategoryChange={(val) => setFormData(prev => ({ ...prev, categories: [{ category: val }] }))}
-                            createdProductData={createdProductData}
-                        />
-                    )}
+                {editorMode === 'seller' && sellerProfile && !sellerProfile.bisNumberGold && !sellerProfile.bisNumberSilver && !isEditMode && !isViewMode ? (
+                    <div className="bg-white rounded-[2rem] border border-red-100 p-8 sm:p-12 text-center max-w-xl mx-auto shadow-sm space-y-6">
+                        <div className="w-16 h-16 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center mx-auto text-rose-500">
+                            <Info size={32} />
+                        </div>
+                        <div className="space-y-2">
+                            <h3 className="text-xl font-bold text-gray-900 uppercase tracking-tight">BIS Credentials Required</h3>
+                            <p className="text-sm text-gray-500 leading-relaxed font-normal">
+                                You must update either your <strong>BIS Hallmark License Number for Gold</strong> or <strong>Silver</strong> in your profile settings before you can list products.
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => navigate('/seller/profile')}
+                            className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 hover:bg-black text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-all shadow-sm active:scale-95"
+                        >
+                            Go to Profile Settings <ExternalLink size={14} />
+                        </button>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 gap-8">
+                        {/* Active Tab Component */}
+                        {activeTab === 'general' && (
+                            <ProductGeneralTab 
+                                formData={formData} 
+                                setFormData={setFormData} 
+                                errors={combinedErrors} 
+                                isViewMode={isViewMode} 
+                                categories={categories}
+                                handleCategoryChange={(val) => setFormData(prev => ({ ...prev, categories: [{ category: val }] }))}
+                                createdProductData={createdProductData}
+                                sellerProfile={sellerProfile}
+                                editorMode={editorMode}
+                            />
+                        )}
 
-                    {activeTab === 'variants' && (
-                        <ProductVariantsTab 
-                            formData={formData} 
-                            setFormData={setFormData} 
-                            errors={combinedErrors} 
-                            isViewMode={isViewMode} 
-                            metalRates={metalRates} 
-                            gstRate={gstRate}
-                            handleVariantChange={handleVariantChange}
-                            handleDiamondSpecChange={handleDiamondSpecChange}
-                            addVariant={addVariant}
-                            removeVariant={removeVariant}
-                            updateVariantSerialQuantity={updateVariantSerialQuantity}
-                            handleDownloadAllSerialBarcodes={handleDownloadAllSerialBarcodes}
-                            handleDownloadSerialBarcode={handleDownloadSerialBarcode}
-                            setSerialBarcodeRef={setSerialBarcodeRef}
-                            handleVariantImageUpload={handleVariantImageUpload}
-                            handleRemoveVariantUpload={handleRemoveVariantUpload}
-                            variantImagePreviews={variantImagePreviews}
-                            handleRemoveSavedVariantImage={handleRemoveSavedVariantImage}
-                            addVariantFaq={addVariantFaq}
-                            removeVariantFaq={removeVariantFaq}
-                            handleVariantFaqChange={handleVariantFaqChange}
-                            clearVariantFaqOverride={clearVariantFaqOverride}
-                            expandedVariant={expandedVariant}
-                            setExpandedVariant={setExpandedVariant}
-                        />
-                    )}
+                        {activeTab === 'variants' && (
+                            <ProductVariantsTab 
+                                formData={formData} 
+                                setFormData={setFormData} 
+                                errors={combinedErrors} 
+                                isViewMode={isViewMode} 
+                                metalRates={metalRates} 
+                                gstRate={gstRate}
+                                handleVariantChange={handleVariantChange}
+                                handleDiamondSpecChange={handleDiamondSpecChange}
+                                addVariant={addVariant}
+                                removeVariant={removeVariant}
+                                updateVariantSerialQuantity={updateVariantSerialQuantity}
+                                handleDownloadAllSerialBarcodes={handleDownloadAllSerialBarcodes}
+                                handleDownloadSerialBarcode={handleDownloadSerialBarcode}
+                                setSerialBarcodeRef={setSerialBarcodeRef}
+                                handleVariantImageUpload={handleVariantImageUpload}
+                                handleRemoveVariantUpload={handleRemoveVariantUpload}
+                                variantImagePreviews={variantImagePreviews}
+                                handleRemoveSavedVariantImage={handleRemoveSavedVariantImage}
+                                addVariantFaq={addVariantFaq}
+                                removeVariantFaq={removeVariantFaq}
+                                handleVariantFaqChange={handleVariantFaqChange}
+                                clearVariantFaqOverride={clearVariantFaqOverride}
+                                expandedVariant={expandedVariant}
+                                setExpandedVariant={setExpandedVariant}
+                            />
+                        )}
 
-                    {activeTab === 'media' && (
-                        <ProductMediaTab 
-                            formData={formData} 
-                            setFormData={setFormData} 
-                            isViewMode={isViewMode} 
-                            previewImages={previewImages}
-                            handleImageUpload={handleImageUpload}
-                            handleHoverImageUpload={handleHoverImageUpload}
-                            handleRemoveImage={handleRemoveImage}
-                            handleVideoUpload={handleVideoUpload}
-                            handleRemoveVideo={handleRemoveVideo}
-                            resolvedVideoPreview={resolvedVideoPreview}
-                            isImageVideoPreview={isImageVideoPreview}
-                            removeVideo={removeVideo}
-                            enhancingIndex={enhancingIndex}
-                            setEnhancingIndex={setEnhancingIndex}
-                            showEnhanceModal={showEnhanceModal}
-                            setShowEnhanceModal={setShowEnhanceModal}
-                            enhancedIndices={enhancedIndices}
-                            handleEnhancedUpload={handleEnhancedUpload}
-                        />
-                    )}
+                        {activeTab === 'media' && (
+                            <ProductMediaTab 
+                                formData={formData} 
+                                setFormData={setFormData} 
+                                isViewMode={isViewMode} 
+                                previewImages={previewImages}
+                                handleImageUpload={handleImageUpload}
+                                handleHoverImageUpload={handleHoverImageUpload}
+                                handleRemoveImage={handleRemoveImage}
+                                handleVideoUpload={handleVideoUpload}
+                                handleRemoveVideo={handleRemoveVideo}
+                                resolvedVideoPreview={resolvedVideoPreview}
+                                isImageVideoPreview={isImageVideoPreview}
+                                removeVideo={removeVideo}
+                                enhancingIndex={enhancingIndex}
+                                setEnhancingIndex={setEnhancingIndex}
+                                showEnhanceModal={showEnhanceModal}
+                                setShowEnhanceModal={setShowEnhanceModal}
+                                enhancedIndices={enhancedIndices}
+                                handleEnhancedUpload={handleEnhancedUpload}
+                            />
+                        )}
 
-                    {activeTab === 'advanced' && (
-                        <ProductAdvancedTab 
-                            formData={formData} 
-                            setFormData={setFormData} 
-                            errors={combinedErrors}
-                            isViewMode={isViewMode} 
-                            addFaq={addFaq} 
-                            removeFaq={removeFaq} 
-                            handleFaqChange={handleFaqChange} 
-                        />
-                    )}
-                </div>
+                        {activeTab === 'advanced' && (
+                            <ProductAdvancedTab 
+                                formData={formData} 
+                                setFormData={setFormData} 
+                                errors={combinedErrors}
+                                isViewMode={isViewMode} 
+                                addFaq={addFaq} 
+                                removeFaq={removeFaq} 
+                                handleFaqChange={handleFaqChange} 
+                            />
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Success Modal */}
