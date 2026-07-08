@@ -135,7 +135,7 @@ exports.sendResetOtp = async (req, res) => {
       await sendEmail({
         to: email,
         subject: "Sands Jewels Admin Password Reset OTP",
-        text: `Your password reset OTP is ${otp}. This OTP is valid for 15 minutes.`
+        html: `<p>Your password reset OTP is <strong>${otp}</strong>. This OTP is valid for 15 minutes.</p>`
       });
     } catch (mailErr) {
       console.error("Admin reset OTP email failed:", mailErr.message);
@@ -204,10 +204,15 @@ exports.sendResetMobileOtp = async (req, res) => {
     const mobileNumber = String(req.body.mobileNumber || "").trim();
     if (!mobileNumber) return error(res, "Mobile number is required", 400);
 
+    const cleanPhone = mobileNumber.replace(/\D/g, "");
+    const last10 = cleanPhone.slice(-10);
+
     const admin = await User.findOne({
       $or: [
         { phone: mobileNumber },
-        { phone: mobileNumber.replace(/^\+91/, "") }
+        { phone: mobileNumber.replace(/^\+91/, "") },
+        { phone: last10 },
+        { phone: `+91${last10}` }
       ],
       role: "admin"
     });
@@ -230,7 +235,7 @@ exports.sendResetMobileOtp = async (req, res) => {
     });
 
     try {
-      await sendOtpSms(admin.phone, otp);
+      await sendOtpSms(last10, otp);
     } catch (smsErr) {
       console.error("Admin reset OTP SMS failed:", smsErr.message);
     }
@@ -258,10 +263,15 @@ exports.resetPasswordViaMobile = async (req, res) => {
       return error(res, "Password must be at least 6 characters", 400);
     }
 
+    const cleanPhone = mobileNumber.replace(/\D/g, "");
+    const last10 = cleanPhone.slice(-10);
+
     const admin = await User.findOne({
       $or: [
         { phone: mobileNumber },
-        { phone: mobileNumber.replace(/^\+91/, "") }
+        { phone: mobileNumber.replace(/^\+91/, "") },
+        { phone: last10 },
+        { phone: `+91${last10}` }
       ],
       role: "admin"
     });
