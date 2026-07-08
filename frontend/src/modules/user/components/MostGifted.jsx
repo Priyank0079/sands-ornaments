@@ -141,7 +141,7 @@ const MostGifted = () => {
                             </div>
                         </div>
 
-                        <div ref={scrollRef} className="flex gap-6 overflow-x-auto no-scrollbar pb-6 snap-x snap-mandatory">
+                        <div ref={scrollRef} className={`flex gap-6 overflow-x-auto no-scrollbar pb-6 snap-x snap-mandatory ${displayProducts.length === 1 ? 'justify-center' : ''}`}>
                             {displayProducts.map((product) => (
                                 <div key={product.id} className="min-w-[180px] md:min-w-[280px] w-[180px] md:w-[280px] snap-start">
                                     <ProductCard product={product} />
