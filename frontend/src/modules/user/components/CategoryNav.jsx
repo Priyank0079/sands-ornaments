@@ -102,14 +102,33 @@ const CategoryNav = ({ showMetalToggle = true }) => {
 
                 {/* Silver / Gold Toggle - Precise SANDS Polish with Navigation logic */}
                 {showMetalToggle && (
-                    <div className="flex justify-center pb-0 pt-0 relative">
-                        <div className="p-0.5 w-[600px] max-w-[95%] rounded-full border border-[#D4B390]/40 flex items-center bg-white shadow-[0_4px_25px_rgba(212,179,144,0.15)] overflow-hidden">
+                    <div className="flex justify-center pb-1 pt-1 relative">
+                        <div className="p-1 w-[600px] max-w-[95%] rounded-full border border-[#D4B390]/40 flex items-center bg-white shadow-[0_4px_25px_rgba(212,179,144,0.15)] relative">
+                            {/* Animated Background Pill */}
+                            <div className="absolute inset-1 flex" style={{ zIndex: 0 }}>
+                                <motion.div
+                                    layout
+                                    initial={false}
+                                    animate={{
+                                        x: activeMetal === 'gold' ? '100%' : '0%',
+                                        background: activeMetal === 'gold' 
+                                            ? 'linear-gradient(to right, #BF953F, #FCF6BA, #B38728)' 
+                                            : 'linear-gradient(to right, #4B5563, #374151, #1F2937)',
+                                        boxShadow: activeMetal === 'gold'
+                                            ? '0 8px 20px rgba(191,149,63,0.35)'
+                                            : '0 8px 20px rgba(0,0,0,0.25)'
+                                    }}
+                                    transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+                                    className="w-1/2 h-full rounded-full"
+                                />
+                            </div>
+
                             <button
                                 onClick={() => {
                                     updateActiveMetal('silver');
                                     navigate('/');
                                 }}
-                                className={`flex-1 py-0.5 px-8 rounded-full text-[13px] font-bold uppercase tracking-widest transition-all duration-500 transform ${activeMetal === 'silver' ? 'bg-gradient-to-r from-gray-800 via-gray-600 to-gray-800 text-white shadow-[0_8px_30px_rgba(0,0,0,0.25)] scale-[1.01]' : 'text-[#4A4A4A] hover:bg-gray-50 hover:text-black'}`}
+                                className={`relative flex-1 py-1 px-8 rounded-full text-[13px] font-bold uppercase tracking-widest transition-colors duration-300 z-10 ${activeMetal === 'silver' ? 'text-white' : 'text-[#4A4A4A] hover:text-black'}`}
                             >
                                 Silver
                             </button>
@@ -118,7 +137,7 @@ const CategoryNav = ({ showMetalToggle = true }) => {
                                     updateActiveMetal('gold');
                                     navigate('/gold-collection');
                                 }}
-                                className={`flex-1 py-0.5 px-8 rounded-full text-[13px] font-bold uppercase tracking-widest transition-all duration-500 transform ${activeMetal === 'gold' ? 'bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] text-[#3D2B1F] shadow-[0_8px_30px_rgba(191,149,63,0.35)] scale-[1.01]' : 'text-[#4A4A4A] hover:bg-gray-50 hover:text-black'}`}
+                                className={`relative flex-1 py-1 px-8 rounded-full text-[13px] font-bold uppercase tracking-widest transition-colors duration-300 z-10 ${activeMetal === 'gold' ? 'text-[#3D2B1F]' : 'text-[#4A4A4A] hover:text-black'}`}
                             >
                                 Gold
                             </button>
