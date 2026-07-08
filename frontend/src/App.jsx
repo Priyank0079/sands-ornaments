@@ -189,11 +189,12 @@ const AppContent = () => {
 
   const isAdminPath = location.pathname.startsWith('/admin');
   const isScannerPath = location.pathname === '/scanner';
+  const isLoginPath = location.pathname === '/login' || location.pathname === '/signup';
   const showMetalToggle = location.pathname === '/' || location.pathname === '/gold-collection';
 
   return (
     <div className="min-h-screen flex flex-col font-sans text-gray-900 bg-[#FDF5F6]">
-      {!isAdminPath && !isSellerPath && !isScannerPath && (
+      {!isAdminPath && !isSellerPath && !isScannerPath && !isLoginPath && (
         <>
           <div 
             className={`fixed top-0 left-0 right-0 z-[150] w-full transition-transform duration-300 ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'}`}
@@ -208,7 +209,7 @@ const AppContent = () => {
           <div className={`h-[104px] ${showMetalToggle ? 'md:h-[168px]' : 'md:h-[166px]'} w-full`}></div>
         </>
       )}
-      <main className={`flex-grow ${!isAdminPath && !isSellerPath && !isScannerPath ? 'pb-16 md:pb-0' : ''}`}>
+      <main className={`flex-grow ${!isAdminPath && !isSellerPath && !isScannerPath && !isLoginPath ? 'pb-16 md:pb-0' : ''}`}>
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
           {/* User Routes */}
@@ -331,7 +332,7 @@ const AppContent = () => {
         </Routes>
       </Suspense>
       </main>
-      {!isAdminPath && !isSellerPath && !isScannerPath && (
+      {!isAdminPath && !isSellerPath && !isScannerPath && !isLoginPath && (
         <>
           <Footer />
           <FloatingContactStack />
