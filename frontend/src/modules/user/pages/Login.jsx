@@ -70,9 +70,9 @@ const Login = () => {
         isSignup ? "signup" : "login",
         isSignup
           ? {
-              name: fullName.trim(),
-              email: email.trim(),
-            }
+            name: fullName.trim(),
+            email: email.trim(),
+          }
           : {},
       );
       if (res.success) {
@@ -116,7 +116,7 @@ const Login = () => {
       {/* Dynamic Background - Abstract Luxury */}
       <div className="absolute inset-0 z-0 overflow-hidden">
         <div
-          className="absolute inset-0 bg-cover bg-center animate-in fade-in duration-1000 grayscale-[20%]"
+          className="absolute inset-0 bg-cover bg-left-bottom scale-[1.35] origin-bottom-left animate-in fade-in duration-1000 grayscale-[20%]"
           style={{
             backgroundImage: `url(${loginHero})`, // Using existing local hero
           }}
@@ -268,8 +268,8 @@ const Login = () => {
       {/* Desktop View - Split Screen */}
       <div className="w-full max-w-5xl bg-white rounded-3xl overflow-hidden shadow-2xl hidden md:flex flex-col-reverse lg:flex-row relative z-10 min-h-[600px] animate-in slide-in-from-bottom-8 fade-in duration-700">
         {/* Left Side (Desktop) - Form */}
-        <div className="w-full lg:w-1/2 bg-white flex flex-col justify-center items-start p-6 lg:p-8 relative">
-          <div className="max-w-md w-full mt-12 lg:mt-0 text-left">
+        <div className="w-full lg:w-1/2 h-full bg-white flex flex-col justify-center items-center p-6 lg:p-12 relative min-h-[500px]">
+          <div className="max-w-md w-full text-left mx-auto my-auto">
             {/* Logo In-Flow */}
             <img
               src={logo}
@@ -408,10 +408,13 @@ const Login = () => {
 
         {/* Right Side (Desktop) - Image & Branding */}
         <div
-          className="w-full lg:w-1/2 p-12 flex flex-col justify-end items-start relative overflow-hidden bg-cover bg-center group"
-          style={{
-            backgroundImage: `url(${loginHero})`, // Custom Generated Hero Image
-          }}>
+          className="w-full lg:w-1/2 p-12 flex flex-col justify-end items-start relative overflow-hidden group"
+        >
+          {/* Scaled Background Image to hide copyright tag */}
+          <div
+            className="absolute inset-0 bg-cover bg-left-bottom scale-[1.35] origin-bottom-left transition-transform duration-1000 group-hover:scale-[1.40]"
+            style={{ backgroundImage: `url(${loginHero})` }}
+          />
           <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-700"></div>
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
 
