@@ -146,11 +146,14 @@ const Navbar = () => {
     };
 
     return (
-        <nav className={`w-full bg-[#FFF0F4] transition-all duration-300 font-lato ${isScrolled ? 'border-b border-pink-100' : 'border-b border-pink-100'}`}>
-    
+        <nav
+            className={`w-full transition-all duration-300 ${isScrolled ? 'shadow-[0_2px_20px_rgba(0,0,0,0.07)] border-b border-gray-100' : 'border-b border-gray-100'}`}
+            style={{ background: '#FFFFFF', fontFamily: "'Inter', 'Lato', sans-serif" }}
+        >
+
             {/* Desktop Header */}
             <div className="hidden lg:block">
-                <div className="container mx-auto px-4 lg:px-12 py-1.5 flex items-center justify-between gap-10">
+                <div className="container mx-auto px-4 lg:px-12 py-2 flex items-center justify-between gap-10">
 
                     {/* Left Section: Logo & Delivery Box */}
                     <div className="flex items-center gap-6 flex-shrink-0">
@@ -164,23 +167,29 @@ const Navbar = () => {
 
                         <div
                             onClick={() => setIsPincodeModalOpen(true)}
-                            className="flex items-center gap-3 px-3 py-2 border border-pink-100 rounded-lg cursor-pointer bg-white hover:border-pink-200 transition-all"
+                            className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl cursor-pointer transition-all duration-200 group"
+                            style={{ background: 'rgba(0,0,0,0.03)', border: '1px solid #EBEBEB' }}
+                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(156,61,80,0.05)'; e.currentTarget.style.borderColor = 'rgba(156,61,80,0.2)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.03)'; e.currentTarget.style.borderColor = '#EBEBEB'; }}
                         >
-                            <div className="flex-shrink-0">
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-pink-400">
-                                    <path d="M1 3H16V17H1V3Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                    <path d="M16 8L20 8L23 11V17H16V8Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                    <circle cx="5.5" cy="18.5" r="2.5" stroke="currentColor" strokeWidth="1.5" />
-                                    <circle cx="18.5" cy="18.5" r="2.5" stroke="currentColor" strokeWidth="1.5" />
+                            <div
+                                className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
+                                style={{ background: 'linear-gradient(135deg, #9C3D50 0%, #C05B72 100%)' }}
+                            >
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white">
+                                    <path d="M1 3H16V17H1V3Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                                    <path d="M16 8L20 8L23 11V17H16V8Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                                    <circle cx="5.5" cy="18.5" r="2.5" stroke="currentColor" strokeWidth="1.8" />
+                                    <circle cx="18.5" cy="18.5" r="2.5" stroke="currentColor" strokeWidth="1.8" />
                                 </svg>
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-[11px] font-bold text-black leading-tight uppercase tracking-tight">Where to Deliver?</span>
-                                <div className="flex items-center gap-1.5 mt-0.5">
-                                    <span className="text-[12px] text-gray-900 font-semibold">
+                                <span style={{ fontSize: 10, fontWeight: 600, color: '#9C3D50', textTransform: 'uppercase', letterSpacing: '0.06em', lineHeight: 1.2 }}>Where to Deliver?</span>
+                                <div className="flex items-center gap-1 mt-0.5">
+                                    <span style={{ fontSize: 12, fontWeight: 700, color: '#1A1A1A', fontFamily: "'Inter', sans-serif" }}>
                                         {pincode ? `Deliver to ${pincode}` : 'Enter Pincode'}
                                     </span>
-                                    <ChevronDown className="w-3.5 h-3.5 text-gray-700" />
+                                    <ChevronDown className="w-3 h-3" style={{ color: '#9C3D50' }} />
                                 </div>
                             </div>
                         </div>
@@ -188,25 +197,43 @@ const Navbar = () => {
 
                     {/* Middle Section: Wide Search Bar with Dropdown */}
                     <div className="flex-1 max-w-3xl relative">
-                        <input
-                            type="text"
-                            placeholder={placeholders[placeholderIdx]}
-                            value={searchTerm}
-                            onChange={(e) => {
-                                setSearchTerm(e.target.value);
-                                setShowResults(true);
-                            }}
-                            onKeyDown={handleSearchKeyDown}
-                            onBlur={() => setTimeout(() => setShowResults(false), 200)}
-                            onFocus={() => setShowResults(true)}
-                            className="w-full bg-white border border-gray-300 rounded-md py-3 px-6 pr-12 text-[15px] focus:outline-none focus:border-gray-400 transition-all text-gray-950 placeholder-gray-600 font-medium"
-                        />
-                        <button
-                            onClick={submitSearch}
-                            className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-600 hover:text-black transition-colors"
-                        >
-                            <Search className="w-5 h-5 stroke-[2]" />
-                        </button>
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder={placeholders[placeholderIdx]}
+                                value={searchTerm}
+                                onChange={(e) => {
+                                    setSearchTerm(e.target.value);
+                                    setShowResults(true);
+                                }}
+                                onKeyDown={handleSearchKeyDown}
+                                onBlur={() => setTimeout(() => setShowResults(false), 200)}
+                                onFocus={() => setShowResults(true)}
+                                style={{
+                                    width: '100%',
+                                    background: '#F8F8F8',
+                                    border: '1.5px solid #E5E5E5',
+                                    borderRadius: 12,
+                                    padding: '11px 50px 11px 20px',
+                                    fontSize: 14,
+                                    fontFamily: "'Inter', sans-serif",
+                                    fontWeight: 400,
+                                    color: '#1A1A1A',
+                                    outline: 'none',
+                                    transition: 'border-color 0.2s, box-shadow 0.2s',
+                                    boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                                }}
+                                onFocusCapture={e => { e.target.style.borderColor = '#9C3D50'; e.target.style.background = '#FFFFFF'; e.target.style.boxShadow = '0 0 0 3px rgba(156,61,80,0.08)'; }}
+                                onBlurCapture={e => { e.target.style.borderColor = '#E5E5E5'; e.target.style.background = '#F8F8F8'; e.target.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)'; }}
+                            />
+                            <button
+                                onClick={submitSearch}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 transition-colors"
+                                style={{ color: '#9C3D50' }}
+                            >
+                                <Search className="w-[18px] h-[18px]" strokeWidth={2.2} />
+                            </button>
+                        </div>
 
                         {/* Search Results Dropdown */}
                         <AnimatePresence>
@@ -239,10 +266,10 @@ const Navbar = () => {
                                                         className="flex items-center gap-4 p-3 hover:bg-pink-50/50 rounded-lg cursor-pointer transition-colors group"
                                                     >
                                                         <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-50 flex-shrink-0">
-                                                            <img 
-                                                                src={getSearchThumbUrl(product.images?.[0] || product.primaryImage)} 
-                                                                alt={product.name} 
-                                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                                                            <img
+                                                                src={getSearchThumbUrl(product.images?.[0] || product.primaryImage)}
+                                                                alt={product.name}
+                                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                                                             />
                                                         </div>
                                                         <div className="flex-1">
@@ -272,96 +299,329 @@ const Navbar = () => {
                         </AnimatePresence>
                     </div>
 
-                    {/* Right Section: Icons */}
-                    <div className="flex items-center gap-8 flex-shrink-0">
-                        <Link to={user ? "/profile" : "/login"} className={`flex flex-col items-center gap-1 group ${(location.pathname.startsWith('/profile') || location.pathname === '/login') ? 'text-[#D39A9F]' : ''}`}>
-                            <User className={`w-6 h-6 ${(location.pathname.startsWith('/profile') || location.pathname === '/login') ? 'text-[#D39A9F]' : 'text-gray-700'}`} strokeWidth={1.5} />
-                            <span className={`text-[11px] font-bold tracking-wider ${(location.pathname.startsWith('/profile') || location.pathname === '/login') ? 'text-[#D39A9F]' : 'text-gray-800'}`}>ACCOUNT</span>
-                        </Link>
+                    {/* Right Section: Animated Icons */}
+                    <div className="flex items-center gap-2 flex-shrink-0">
 
-                        <Link to="/wishlist" className={`flex flex-col items-center gap-1 group relative ${location.pathname === '/wishlist' ? 'text-[#D39A9F]' : ''}`}>
-                            <Heart className={`w-6 h-6 ${location.pathname === '/wishlist' ? 'text-[#D39A9F]' : 'text-gray-700'}`} strokeWidth={1.5} />
-                            {wishlist?.length > 0 && (
-                                <span className="absolute -top-1 right-0 bg-pink-500 text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
-                                    {wishlist.length}
-                                </span>
-                            )}
-                            <span className={`text-[11px] font-bold tracking-wider ${location.pathname === '/wishlist' ? 'text-[#D39A9F]' : 'text-gray-800'}`}>WISHLIST</span>
-                        </Link>
+                        {/* ── Account ── */}
+                        {(() => {
+                            const isActive = location.pathname.startsWith('/profile') || location.pathname === '/login';
+                            return (
+                                <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.92 }} transition={{ type: 'spring', stiffness: 400, damping: 18 }}>
+                                    <Link to={user ? "/profile" : "/login"} className="flex flex-col items-center gap-1 px-3 py-2 rounded-2xl group relative"
+                                        style={{ minWidth: 58 }}
+                                    >
+                                        {/* Hover glow bg */}
+                                        <motion.div
+                                            className="absolute inset-0 rounded-2xl"
+                                            initial={{ opacity: 0 }}
+                                            whileHover={{ opacity: 1 }}
+                                            style={{ background: 'linear-gradient(135deg,rgba(156,61,80,0.06) 0%,rgba(192,91,114,0.06) 100%)' }}
+                                        />
+                                        {/* Icon chip */}
+                                        <motion.div
+                                            className="w-9 h-9 rounded-xl flex items-center justify-center relative z-10"
+                                            style={{ background: isActive ? 'linear-gradient(135deg,#9C3D50,#C05B72)' : 'rgba(0,0,0,0.045)' }}
+                                            whileHover={!isActive ? { background: 'linear-gradient(135deg,#9C3D50,#C05B72)', scale: 1.08 } : {}}
+                                            transition={{ duration: 0.22 }}
+                                        >
+                                            <motion.div
+                                                animate={isActive ? { rotate: [0, -8, 8, 0] } : {}}
+                                                transition={{ duration: 0.5, delay: 0.1 }}
+                                                whileHover={{ rotate: [0, -10, 10, -6, 0] }}
+                                            >
+                                                <User className="w-[17px] h-[17px]" style={{ color: isActive ? '#fff' : '#4B4B4B' }} strokeWidth={2.1} />
+                                            </motion.div>
+                                        </motion.div>
+                                        {/* Label */}
+                                        <motion.span
+                                            style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', fontFamily: "'Inter',sans-serif", color: isActive ? '#9C3D50' : '#888', position: 'relative', zIndex: 10 }}
+                                            whileHover={{ color: '#9C3D50' }}
+                                        >ACCOUNT</motion.span>
+                                        {/* Active dot */}
+                                        {isActive && (
+                                            <motion.div
+                                                initial={{ scaleX: 0 }} animate={{ scaleX: 1 }}
+                                                style={{ position: 'absolute', bottom: 4, left: '50%', transform: 'translateX(-50%)', width: 16, height: 2.5, borderRadius: 4, background: 'linear-gradient(90deg,#9C3D50,#C05B72)', zIndex: 10 }}
+                                            />
+                                        )}
+                                    </Link>
+                                </motion.div>
+                            );
+                        })()}
 
-                        <Link to="/notifications" className={`flex flex-col items-center gap-1 group relative ${location.pathname === '/notifications' ? 'text-[#D39A9F]' : ''}`}>
-                            <Bell className={`w-6 h-6 ${location.pathname === '/notifications' ? 'text-[#D39A9F]' : 'text-gray-700'}`} strokeWidth={1.5} />
-                            {unreadCount > 0 && (
-                                <span className="absolute -top-1 right-0 bg-pink-500 text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full animate-pulse">
-                                    {unreadCount}
-                                </span>
-                            )}
-                            <span className={`text-[11px] font-bold tracking-wider ${location.pathname === '/notifications' ? 'text-[#D39A9F]' : 'text-gray-800'}`}>INBOX</span>
-                        </Link>
+                        {/* ── Wishlist ── */}
+                        {(() => {
+                            const isActive = location.pathname === '/wishlist';
+                            return (
+                                <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.92 }} transition={{ type: 'spring', stiffness: 400, damping: 18 }}>
+                                    <Link to="/wishlist" className="flex flex-col items-center gap-1 px-3 py-2 rounded-2xl group relative"
+                                        style={{ minWidth: 64 }}
+                                    >
+                                        <motion.div className="absolute inset-0 rounded-2xl" initial={{ opacity: 0 }} whileHover={{ opacity: 1 }}
+                                            style={{ background: 'linear-gradient(135deg,rgba(232,67,147,0.06) 0%,rgba(156,61,80,0.06) 100%)' }}
+                                        />
+                                        <motion.div
+                                            className="w-9 h-9 rounded-xl flex items-center justify-center relative z-10"
+                                            style={{ background: isActive ? 'linear-gradient(135deg,#9C3D50,#C05B72)' : 'rgba(0,0,0,0.045)' }}
+                                            whileHover={!isActive ? { background: 'linear-gradient(135deg,#E84393,#C0184C)', scale: 1.08 } : {}}
+                                            transition={{ duration: 0.22 }}
+                                        >
+                                            {/* Badge */}
+                                            {wishlist?.length > 0 && (
+                                                <motion.span
+                                                    initial={{ scale: 0 }} animate={{ scale: 1 }}
+                                                    transition={{ type: 'spring', stiffness: 500, damping: 20 }}
+                                                    className="absolute -top-1.5 -right-1.5 text-white flex items-center justify-center rounded-full z-20"
+                                                    style={{ width: 15, height: 15, fontSize: 8, fontWeight: 800, background: 'linear-gradient(135deg,#E84393,#C0184C)', boxShadow: '0 2px 6px rgba(232,67,147,0.5)' }}
+                                                >{wishlist.length}</motion.span>
+                                            )}
+                                            <motion.div
+                                                whileHover={{ scale: [1, 1.35, 1.15, 1.25, 1] }}
+                                                transition={{ duration: 0.45, ease: 'easeInOut' }}
+                                            >
+                                                <Heart
+                                                    className="w-[17px] h-[17px]"
+                                                    style={{ color: isActive ? '#fff' : '#4B4B4B' }}
+                                                    strokeWidth={2.1}
+                                                />
+                                            </motion.div>
+                                        </motion.div>
+                                        <motion.span
+                                            style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', fontFamily: "'Inter',sans-serif", color: isActive ? '#9C3D50' : '#888', position: 'relative', zIndex: 10 }}
+                                            whileHover={{ color: '#E84393' }}
+                                        >WISHLIST</motion.span>
+                                        {isActive && (
+                                            <motion.div initial={{ scaleX: 0 }} animate={{ scaleX: 1 }}
+                                                style={{ position: 'absolute', bottom: 4, left: '50%', transform: 'translateX(-50%)', width: 20, height: 2.5, borderRadius: 4, background: 'linear-gradient(90deg,#E84393,#C0184C)', zIndex: 10 }}
+                                            />
+                                        )}
+                                    </Link>
+                                </motion.div>
+                            );
+                        })()}
 
-                        <Link to="/cart" className={`flex flex-col items-center gap-1 group relative ${location.pathname === '/cart' ? 'text-[#D39A9F]' : ''}`}>
-                            <ShoppingCart className={`w-6 h-6 ${location.pathname === '/cart' ? 'text-[#D39A9F]' : 'text-gray-700'}`} strokeWidth={1.5} />
-                            {cart?.length > 0 && (
-                                <span className="absolute -top-1 right-0 bg-pink-500 text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
-                                    {cart.length}
-                                </span>
-                            )}
-                            <span className={`text-[11px] font-bold tracking-wider ${location.pathname === '/cart' ? 'text-[#D39A9F]' : 'text-gray-800'}`}>CART</span>
-                        </Link>
+                        {/* ── Inbox / Bell ── */}
+                        {(() => {
+                            const isActive = location.pathname === '/notifications';
+                            return (
+                                <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.92 }} transition={{ type: 'spring', stiffness: 400, damping: 18 }}>
+                                    <Link to="/notifications" className="flex flex-col items-center gap-1 px-3 py-2 rounded-2xl group relative"
+                                        style={{ minWidth: 54 }}
+                                    >
+                                        <motion.div className="absolute inset-0 rounded-2xl" initial={{ opacity: 0 }} whileHover={{ opacity: 1 }}
+                                            style={{ background: 'linear-gradient(135deg,rgba(156,61,80,0.06) 0%,rgba(192,91,114,0.06) 100%)' }}
+                                        />
+                                        <motion.div
+                                            className="w-9 h-9 rounded-xl flex items-center justify-center relative z-10"
+                                            style={{ background: isActive ? 'linear-gradient(135deg,#9C3D50,#C05B72)' : 'rgba(0,0,0,0.045)' }}
+                                            whileHover={!isActive ? { background: 'linear-gradient(135deg,#9C3D50,#C05B72)', scale: 1.08 } : {}}
+                                            transition={{ duration: 0.22 }}
+                                        >
+                                            {/* Unread badge */}
+                                            {unreadCount > 0 && (
+                                                <motion.span
+                                                    initial={{ scale: 0 }} animate={{ scale: [1, 1.2, 1] }}
+                                                    transition={{ repeat: Infinity, repeatDelay: 3, duration: 0.4 }}
+                                                    className="absolute -top-1.5 -right-1.5 text-white flex items-center justify-center rounded-full z-20"
+                                                    style={{ width: 15, height: 15, fontSize: 8, fontWeight: 800, background: 'linear-gradient(135deg,#E84393,#C0184C)', boxShadow: '0 2px 6px rgba(232,67,147,0.5)' }}
+                                                >{unreadCount}</motion.span>
+                                            )}
+                                            {/* Bell shake on hover */}
+                                            <motion.div
+                                                whileHover={{ rotate: [0, -18, 18, -12, 12, -6, 6, 0], transformOrigin: 'top center' }}
+                                                transition={{ duration: 0.55, ease: 'easeInOut' }}
+                                            >
+                                                <Bell className="w-[17px] h-[17px]" style={{ color: isActive ? '#fff' : '#4B4B4B' }} strokeWidth={2.1} />
+                                            </motion.div>
+                                        </motion.div>
+                                        <motion.span
+                                            style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', fontFamily: "'Inter',sans-serif", color: isActive ? '#9C3D50' : '#888', position: 'relative', zIndex: 10 }}
+                                            whileHover={{ color: '#9C3D50' }}
+                                        >INBOX</motion.span>
+                                        {isActive && (
+                                            <motion.div initial={{ scaleX: 0 }} animate={{ scaleX: 1 }}
+                                                style={{ position: 'absolute', bottom: 4, left: '50%', transform: 'translateX(-50%)', width: 14, height: 2.5, borderRadius: 4, background: 'linear-gradient(90deg,#9C3D50,#C05B72)', zIndex: 10 }}
+                                            />
+                                        )}
+                                    </Link>
+                                </motion.div>
+                            );
+                        })()}
+
+                        {/* ── Cart ── */}
+                        {(() => {
+                            const isActive = location.pathname === '/cart';
+                            return (
+                                <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.92 }} transition={{ type: 'spring', stiffness: 400, damping: 18 }}>
+                                    <Link to="/cart" className="flex flex-col items-center gap-1 px-3 py-2 rounded-2xl group relative"
+                                        style={{ minWidth: 50 }}
+                                    >
+                                        <motion.div className="absolute inset-0 rounded-2xl" initial={{ opacity: 0 }} whileHover={{ opacity: 1 }}
+                                            style={{ background: 'linear-gradient(135deg,rgba(156,61,80,0.06) 0%,rgba(192,91,114,0.06) 100%)' }}
+                                        />
+                                        <motion.div
+                                            className="w-9 h-9 rounded-xl flex items-center justify-center relative z-10"
+                                            style={{ background: isActive ? 'linear-gradient(135deg,#9C3D50,#C05B72)' : 'rgba(0,0,0,0.045)' }}
+                                            whileHover={!isActive ? { background: 'linear-gradient(135deg,#9C3D50,#C05B72)', scale: 1.08 } : {}}
+                                            transition={{ duration: 0.22 }}
+                                        >
+                                            {cart?.length > 0 && (
+                                                <motion.span
+                                                    initial={{ scale: 0 }} animate={{ scale: 1 }}
+                                                    transition={{ type: 'spring', stiffness: 500, damping: 20 }}
+                                                    className="absolute -top-1.5 -right-1.5 text-white flex items-center justify-center rounded-full z-20"
+                                                    style={{ width: 15, height: 15, fontSize: 8, fontWeight: 800, background: 'linear-gradient(135deg,#E84393,#C0184C)', boxShadow: '0 2px 6px rgba(232,67,147,0.5)' }}
+                                                >{cart.length}</motion.span>
+                                            )}
+                                            {/* Cart bounce on hover */}
+                                            <motion.div
+                                                whileHover={{ x: [0, -3, 3, -2, 2, 0], y: [0, -2, 0] }}
+                                                transition={{ duration: 0.45, ease: 'easeInOut' }}
+                                            >
+                                                <ShoppingCart className="w-[17px] h-[17px]" style={{ color: isActive ? '#fff' : '#4B4B4B' }} strokeWidth={2.1} />
+                                            </motion.div>
+                                        </motion.div>
+                                        <motion.span
+                                            style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', fontFamily: "'Inter',sans-serif", color: isActive ? '#9C3D50' : '#888', position: 'relative', zIndex: 10 }}
+                                            whileHover={{ color: '#9C3D50' }}
+                                        >CART</motion.span>
+                                        {isActive && (
+                                            <motion.div initial={{ scaleX: 0 }} animate={{ scaleX: 1 }}
+                                                style={{ position: 'absolute', bottom: 4, left: '50%', transform: 'translateX(-50%)', width: 14, height: 2.5, borderRadius: 4, background: 'linear-gradient(90deg,#9C3D50,#C05B72)', zIndex: 10 }}
+                                            />
+                                        )}
+                                    </Link>
+                                </motion.div>
+                            );
+                        })()}
+
                     </div>
                 </div>
             </div>
 
             {/* Mobile Header */}
             <div className="lg:hidden flex flex-col w-full relative">
-                <div className="flex items-center justify-between px-4 py-1.5 border-b border-pink-100">
-                    <Link to="/" className="block">
-                        <img src={logo} alt="Sands Jewels" className="h-[72px] w-auto object-contain transform scale-[1.35] origin-left" />
-                    </Link>
-                    <div className="flex items-center gap-4 sm:gap-5">
-                        <button onClick={() => setShowMobileSearch(!showMobileSearch)} className="relative p-1">
-                            <Search className="w-6 h-6 text-gray-800" />
-                        </button>
+                <div
+                    className="flex items-center justify-between px-4 py-2"
+                    style={{
+                        background: '#FFFFFF',
+                        borderBottom: '1px solid #F0F0F0',
+                        boxShadow: isScrolled ? '0 2px 12px rgba(0,0,0,0.06)' : 'none',
+                        transition: 'box-shadow 0.3s ease',
+                    }}
+                >
+                    {/* Logo with entrance animation */}
+                    <motion.div
+                        initial={{ opacity: 0, x: -18 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.45, ease: 'easeOut' }}
+                    >
+                        <Link to="/" className="block">
+                            <img
+                                src={logo}
+                                alt="Sands Jewels"
+                                className="h-[68px] w-auto object-contain transform scale-[1.3] origin-left"
+                            />
+                        </Link>
+                    </motion.div>
 
-                        <Link to="/wishlist" className="relative hidden sm:block">
-                            <Heart className="w-6 h-6 text-gray-800" />
-                        </Link>
-                        <Link to="/notifications" className="relative">
-                            <Bell className="w-6 h-6 text-gray-800" />
-                            {unreadCount > 0 && (
-                                <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-[8px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full">
-                                    {unreadCount}
-                                </span>
-                            )}
-                        </Link>
-                        <Link to="/cart" className="relative">
-                            <ShoppingCart className="w-6 h-6 text-gray-800" />
-                            {cart?.length > 0 && (
-                                <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-[8px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full">
-                                    {cart.length}
-                                </span>
-                            )}
-                        </Link>
-                        <button onClick={() => setIsMenuOpen(true)} className="p-1">
-                            <Menu className="w-7 h-7 text-gray-800" />
-                        </button>
-                    </div>
+                    {/* Right Icons */}
+                    <motion.div
+                        className="flex items-center gap-3 sm:gap-4"
+                        initial={{ opacity: 0, x: 18 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.45, ease: 'easeOut', delay: 0.08 }}
+                    >
+                        {/* Search */}
+                        <motion.button
+                            whileTap={{ scale: 0.82 }}
+                            onClick={() => setShowMobileSearch(!showMobileSearch)}
+                            className="relative p-2 rounded-xl transition-colors"
+                            style={{
+                                background: showMobileSearch ? 'rgba(156,61,80,0.08)' : 'rgba(0,0,0,0.04)',
+                            }}
+                        >
+                            <motion.div
+                                animate={{ rotate: showMobileSearch ? 90 : 0 }}
+                                transition={{ duration: 0.25 }}
+                            >
+                                {showMobileSearch
+                                    ? <X className="w-5 h-5" style={{ color: '#9C3D50' }} strokeWidth={2.2} />
+                                    : <Search className="w-5 h-5" style={{ color: '#2C2C2C' }} strokeWidth={2} />}
+                            </motion.div>
+                        </motion.button>
+
+                        {/* Wishlist (tablet+) */}
+                        <motion.div whileTap={{ scale: 0.82 }} className="hidden sm:block">
+                            <Link to="/wishlist" className="relative p-2 rounded-xl block" style={{ background: 'rgba(0,0,0,0.04)' }}>
+                                <Heart className="w-5 h-5" style={{ color: '#2C2C2C' }} strokeWidth={2} />
+                            </Link>
+                        </motion.div>
+
+                        {/* Bell */}
+                        <motion.div whileTap={{ scale: 0.82 }} className="relative">
+                            <Link to="/notifications" className="relative p-2 rounded-xl block" style={{ background: 'rgba(0,0,0,0.04)' }}>
+                                <Bell className="w-5 h-5" style={{ color: '#2C2C2C' }} strokeWidth={2} />
+                                {unreadCount > 0 && (
+                                    <span
+                                        className="absolute -top-0.5 -right-0.5 text-white flex items-center justify-center rounded-full animate-pulse"
+                                        style={{ width: 14, height: 14, fontSize: 8, fontWeight: 800, background: 'linear-gradient(135deg,#E84393,#C0184C)' }}
+                                    >
+                                        {unreadCount}
+                                    </span>
+                                )}
+                            </Link>
+                        </motion.div>
+
+                        {/* Cart */}
+                        <motion.div whileTap={{ scale: 0.82 }} className="relative">
+                            <Link to="/cart" className="relative p-2 rounded-xl block" style={{ background: 'rgba(0,0,0,0.04)' }}>
+                                <ShoppingCart className="w-5 h-5" style={{ color: '#2C2C2C' }} strokeWidth={2} />
+                                {cart?.length > 0 && (
+                                    <span
+                                        className="absolute -top-0.5 -right-0.5 text-white flex items-center justify-center rounded-full"
+                                        style={{ width: 14, height: 14, fontSize: 8, fontWeight: 800, background: 'linear-gradient(135deg,#E84393,#C0184C)' }}
+                                    >
+                                        {cart.length}
+                                    </span>
+                                )}
+                            </Link>
+                        </motion.div>
+
+                        {/* Hamburger */}
+                        <motion.button
+                            whileTap={{ scale: 0.82 }}
+                            onClick={() => setIsMenuOpen(true)}
+                            className="p-2 rounded-xl"
+                            style={{ background: 'rgba(0,0,0,0.04)' }}
+                        >
+                            <Menu className="w-5 h-5" style={{ color: '#2C2C2C' }} strokeWidth={2} />
+                        </motion.button>
+                    </motion.div>
                 </div>
-                
-                {/* Mobile Search Bar */}
+
+                {/* Mobile Search Bar — animated slide-down */}
                 <AnimatePresence>
                     {showMobileSearch && (
                         <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="w-full bg-white border-b border-pink-50 px-4 py-2 absolute top-full left-0 z-50 shadow-md"
+                            key="mobile-search"
+                            initial={{ height: 0, opacity: 0, y: -8 }}
+                            animate={{ height: 'auto', opacity: 1, y: 0 }}
+                            exit={{ height: 0, opacity: 0, y: -8 }}
+                            transition={{ duration: 0.28, ease: 'easeOut' }}
+                            className="w-full overflow-hidden"
+                            style={{
+                                background: '#FFFFFF',
+                                borderBottom: '1px solid #F0F0F0',
+                                boxShadow: '0 4px 16px rgba(0,0,0,0.07)',
+                            }}
                         >
-                            <div className="relative">
+                            <div className="px-4 py-3 relative">
                                 <input
                                     type="text"
                                     placeholder={placeholders[placeholderIdx]}
                                     value={searchTerm}
+                                    autoFocus
                                     onChange={(e) => {
                                         setSearchTerm(e.target.value);
                                         setShowResults(true);
@@ -369,13 +629,25 @@ const Navbar = () => {
                                     onKeyDown={handleSearchKeyDown}
                                     onBlur={() => setTimeout(() => setShowResults(false), 200)}
                                     onFocus={() => setShowResults(true)}
-                                    className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2.5 px-4 pr-10 text-[14px] focus:outline-none focus:border-pink-300 transition-all"
+                                    style={{
+                                        width: '100%',
+                                        background: '#F7F7F7',
+                                        border: '1.5px solid #E8D5DA',
+                                        borderRadius: 12,
+                                        padding: '10px 44px 10px 16px',
+                                        fontSize: 14,
+                                        fontFamily: "'Inter', sans-serif",
+                                        fontWeight: 400,
+                                        color: '#1A1A1A',
+                                        outline: 'none',
+                                    }}
                                 />
                                 <button
                                     onClick={submitSearch}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                                    className="absolute right-7 top-1/2 -translate-y-1/2"
+                                    style={{ color: '#9C3D50' }}
                                 >
-                                    <Search className="w-5 h-5" />
+                                    <Search className="w-[17px] h-[17px]" strokeWidth={2.2} />
                                 </button>
                             </div>
                         </motion.div>
@@ -411,7 +683,7 @@ const Navbar = () => {
                                         {/* Ticket Cutouts */}
                                         <div className="absolute left-[-8px] top-1/2 -translate-y-1/2 w-4 h-4 bg-[#FDF5F6] rounded-full border-r border-[#EBCDD0]"></div>
                                         <div className="absolute right-[-8px] top-1/2 -translate-y-1/2 w-4 h-4 bg-[#FDF5F6] rounded-full border-l border-[#EBCDD0]"></div>
-                                        
+
                                         <div className="flex items-center gap-5 w-full">
                                             <div className="flex-shrink-0 relative">
                                                 <ShoppingBag className="w-10 h-10 text-[#8E2B45] opacity-80" strokeWidth={1.2} />
@@ -443,7 +715,7 @@ const Navbar = () => {
                                         { label: 'Blogs', path: '/blogs', icon: BookOpen },
                                         { label: 'More', path: '/shop', icon: MoreHorizontal }
                                     ].map((item, index) => (
-                                        <Link 
+                                        <Link
                                             key={index}
                                             to={item.path}
                                             onClick={() => setIsMenuOpen(false)}

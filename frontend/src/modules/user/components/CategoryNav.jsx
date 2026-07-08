@@ -53,7 +53,7 @@ const CategoryNav = ({ showMetalToggle = true }) => {
     }, [activeMetal, location.pathname, location.search, updateActiveMetal]);
 
     return (
-        <div className="bg-[#FFF0F4] border-b border-pink-100 hidden md:block w-full">
+        <div className="border-b hidden md:block w-full" style={{ background: '#FFFFFF', borderColor: '#EBEBEB', fontFamily: "'Inter', 'Lato', sans-serif" }}>
             <div className="container mx-auto px-4 md:px-12 relative" onMouseLeave={resetMenu}>
                 {/* Navigation Links - Centered and Spaced Out */}
                 <div className="flex justify-center items-center py-1.5 w-full">
