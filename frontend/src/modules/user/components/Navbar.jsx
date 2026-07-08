@@ -157,11 +157,19 @@ const Navbar = () => {
 
                     {/* Left Section: Logo & Delivery Box */}
                     <div className="flex items-center gap-6 flex-shrink-0">
-                        <Link to="/" className="block">
+                        <Link to="/" className="block group"
+                            style={{ transition: 'transform 0.25s ease' }}
+                            onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
+                            onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                        >
                             <img
                                 src={logo}
                                 alt="Sands Jewels"
-                                className="h-[80px] w-auto object-contain -my-3"
+                                className="h-[90px] w-auto object-contain -my-3"
+                                style={{
+                                    filter: 'brightness(0.52) saturate(2.2) contrast(1.1)',
+                                    imageRendering: 'crisp-edges',
+                                }}
                             />
                         </Link>
 
@@ -521,6 +529,10 @@ const Navbar = () => {
                                 src={logo}
                                 alt="Sands Jewels"
                                 className="h-[68px] w-auto object-contain transform scale-[1.3] origin-left"
+                                style={{
+                                    filter: 'brightness(0.52) saturate(2.2) contrast(1.1)',
+                                    imageRendering: 'crisp-edges',
+                                }}
                             />
                         </Link>
                     </motion.div>
