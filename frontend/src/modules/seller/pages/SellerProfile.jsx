@@ -124,7 +124,7 @@ const SellerProfile = () => {
             toast.error('Full name, shop name, email, and mobile number are required');
             return;
         }
-        if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(normalizedProfile.email)) {
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedProfile.email)) {
             toast.error('Enter a valid email address');
             return;
         }
