@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Search, Heart, User, Sparkles } from 'lucide-react';
+import { Home, Bell, Heart, User, Sparkles } from 'lucide-react';
+import { useNotification } from '../../../context/NotificationContext';
 import { motion } from 'framer-motion';
 
 const MobileBottomNav = () => {
@@ -11,8 +12,10 @@ const MobileBottomNav = () => {
         { name: 'Wishlist', path: '/wishlist', icon: Heart },
     ];
     
+    const { unreadCount } = useNotification();
+
     const rightItems = [
-        { name: 'Search', path: '/search', icon: Search }, // Can redirect to a search page or open search
+        { name: 'Inbox', path: '/notifications', icon: Bell, badge: unreadCount },
         { name: 'Profile', path: '/profile', icon: User },
     ];
 
@@ -53,7 +56,14 @@ const MobileBottomNav = () => {
                                         {isActive && (
                                             <motion.div layoutId="nav-indicator" className="absolute -top-1 w-1 h-1 bg-[#8E2B45] rounded-full" />
                                         )}
-                                        <item.icon className={`w-5 h-5 transition-transform duration-300 ${isActive ? 'fill-current scale-110' : 'scale-100'}`} strokeWidth={isActive ? 2.5 : 2} />
+                                        <div className="relative">
+                                            <item.icon className={`w-5 h-5 transition-transform duration-300 ${isActive ? 'fill-current scale-110' : 'scale-100'}`} strokeWidth={isActive ? 2.5 : 2} />
+                                            {item.badge > 0 && (
+                                                <span className="absolute -top-1 -right-1 flex items-center justify-center rounded-full text-white animate-pulse" style={{ width: 14, height: 14, fontSize: 8, fontWeight: 800, background: 'linear-gradient(135deg,#E84393,#C0184C)' }}>
+                                                    {item.badge}
+                                                </span>
+                                            )}
+                                        </div>
                                         <span className={`text-[10px] tracking-wide ${isActive ? 'font-bold' : 'font-medium'}`}>
                                             {item.name}
                                         </span>
@@ -94,7 +104,14 @@ const MobileBottomNav = () => {
                                         {isActive && (
                                             <motion.div layoutId="nav-indicator" className="absolute -top-1 w-1 h-1 bg-[#8E2B45] rounded-full" />
                                         )}
-                                        <item.icon className={`w-5 h-5 transition-transform duration-300 ${isActive ? 'fill-current scale-110' : 'scale-100'}`} strokeWidth={isActive ? 2.5 : 2} />
+                                        <div className="relative">
+                                            <item.icon className={`w-5 h-5 transition-transform duration-300 ${isActive ? 'fill-current scale-110' : 'scale-100'}`} strokeWidth={isActive ? 2.5 : 2} />
+                                            {item.badge > 0 && (
+                                                <span className="absolute -top-1 -right-1 flex items-center justify-center rounded-full text-white animate-pulse" style={{ width: 14, height: 14, fontSize: 8, fontWeight: 800, background: 'linear-gradient(135deg,#E84393,#C0184C)' }}>
+                                                    {item.badge}
+                                                </span>
+                                            )}
+                                        </div>
                                         <span className={`text-[10px] tracking-wide ${isActive ? 'font-bold' : 'font-medium'}`}>
                                             {item.name}
                                         </span>
