@@ -73,6 +73,7 @@ const AdminShipments = lazy(() => import('./modules/admin/pages/AdminShipments')
 const AnalyticsDashboard = lazy(() => import('./modules/admin/pages/AnalyticsDashboard'));
 const AuditLogPage = lazy(() => import('./modules/admin/pages/AuditLogPage'));
 const AdminPayouts = lazy(() => import('./modules/admin/pages/AdminPayouts'));
+const AdminDirectSales = lazy(() => import('./modules/admin/pages/AdminDirectSales'));
 
 // Seller Routes — lazy loaded
 const SellerRoutes = lazy(() => import('./modules/seller/routes/sellerRoutes'));
@@ -317,6 +318,7 @@ const AppContent = () => {
                   <Route path="/shipping" element={<AdminShipments />} />
                   <Route path="/audit-logs" element={<AuditLogPage />} />
                   <Route path="/payout" element={<AdminPayouts />} />
+                  <Route path="/direct-sales" element={<AdminDirectSales />} />
                 </Routes>
               </AdminLayout>
             </AdminProtectedRoute>
