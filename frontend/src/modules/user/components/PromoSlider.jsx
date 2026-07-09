@@ -105,11 +105,11 @@ const PromoSlider = ({ externalSlides, autoplayInterval }) => {
             onMouseEnter={() => setIsSuspended(true)}
             onMouseLeave={() => setIsSuspended(false)}
         >
-            <div className="relative w-full aspect-[16/9] sm:aspect-[2/1] md:aspect-[4/1] lg:aspect-[5/1]">
+            <div className="relative w-full aspect-[2.5/1] md:aspect-[4.5/1] overflow-hidden group">
                 <motion.div
-                    className="flex h-full w-full gap-[1.5%]"
+                    className="flex h-full w-full"
                     animate={{
-                        x: `calc(4.25% - ${currentIndex * 90}% - ${currentIndex * 1.5}%)`
+                        x: `-${currentIndex * 100}%`
                     }}
                     transition={{
                         type: "spring",
@@ -122,7 +122,7 @@ const PromoSlider = ({ externalSlides, autoplayInterval }) => {
                     {extendedSlides.map((slide, idx) => (
                         <div
                             key={`${idx}-${slide.id}`}
-                            className="relative flex-shrink-0 w-[90%] h-full rounded-lg md:rounded-2xl overflow-hidden shadow-2xl bg-gray-50 group"
+                            className="relative flex-shrink-0 w-full h-full overflow-hidden bg-gray-50 group"
                         >
                             {/* Professional Gradient Overlay for Text Readability */}
                             <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent pointer-events-none z-[5]" />

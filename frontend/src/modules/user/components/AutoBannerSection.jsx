@@ -80,7 +80,7 @@ const AutoBannerSection = () => {
                 <div className="w-12 h-[2px] bg-[#8E2B45]/20 mx-auto mt-4 rounded-full" />
             </div>
 
-            <div className="w-full aspect-[5/1] relative">
+            <div className="w-full aspect-[2.5/1] md:aspect-[5/1] relative">
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={currentIndex}
