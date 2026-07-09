@@ -29,10 +29,10 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     const isSingleBannerSection = isWomenPersonalizedBanner || isFamilyPromoBanner;
 
     const isLandscapeBanner = sectionKey === 'hero-banners' || sectionKey === 'auto-banner-section';
-    const bannerPreviewAspect = isLandscapeBanner ? 'aspect-[21/9] md:aspect-[3/1]' : 'aspect-[4/5]';
+    const bannerPreviewAspect = isLandscapeBanner ? 'aspect-[12/5] md:aspect-[3/1]' : 'aspect-[4/5]';
     const recommendedBannerSize = isLandscapeBanner ? '1920 x 800 px' : '1200 x 1500 px';
     const recommendedRatioText = isLandscapeBanner 
-        ? 'Recommended ratio: 21:9. Upload a wide landscape image to prevent cropping.'
+        ? 'Recommended ratio: 12:5. Upload a wide landscape image to prevent cropping.'
         : 'Recommended ratio: 4:5. Upload the same size for every banner so the layouts stay aligned.';
 
     const initialItems = useMemo(() => {
@@ -212,7 +212,7 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                         <img
                                             src={resolveLegacyCmsAsset(item.image, item.image)}
                                             alt={item.label || `Banner ${index + 1}`}
-                                            className="w-full h-full object-cover"
+                                            className="w-full h-full object-contain"
                                         />
                                     ) : (
                                         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-gray-400">

@@ -500,21 +500,18 @@ const ProductDetails = () => {
 
   // State for Animations
   
-  const [showStickyBar, setShowStickyBar] = useState(false);
-  const mainActionRef = useRef(null);
+  const [isAtBottom, setIsAtBottom] = useState(false);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        // If the main action button is NOT visible, show the sticky bar
-        setShowStickyBar(!entry.isIntersecting);
-      },
-      { root: null, threshold: 0 }
-    );
-    if (mainActionRef.current) {
-      observer.observe(mainActionRef.current);
-    }
-    return () => observer.disconnect();
+    const handleScroll = () => {
+      const scrolledToBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 150;
+      setIsAtBottom(scrolledToBottom);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll();
+
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const [flying, setFlying] = useState(false);
@@ -941,6 +938,55 @@ const ProductDetails = () => {
       )}
 
       <div className="container mx-auto px-4 md:px-6">
+        {/* DESKTOP STICKY CENTRE ACTION BAR */}
+        {!isAtBottom && (
+          <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[150] hidden md:flex pointer-events-none w-full max-w-fit px-4">
+            <div className="pointer-events-auto flex items-center bg-white border border-gray-100 rounded-full p-1.5 shadow-md transition-all animate-in fade-in slide-in-from-bottom-6 duration-500">
+              {/* Price Section */}
+              <div className="flex flex-col items-start px-6 border-r border-gray-100">
+                <span className="text-[9px] text-gray-400 font-medium uppercase tracking-widest mb-0.5">
+                  Price
+                </span>
+                <span className="text-xl font-semibold text-gray-900 tracking-tight">
+                  {formatCurrency(variantPrice)}
+                </span>
+              </div>
+
+              {/* Weight Selector Pill */}
+              <div className="px-6 min-w-[160px]">
+                <div className="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-full cursor-pointer group relative">
+                  <LucideIcons.SlidersHorizontal className="w-3.5 h-3.5 text-gray-400" />
+                  <div className="flex-1 flex items-center gap-1.5 text-[13px] text-gray-600">
+                    <span className="text-gray-400 font-medium">Size:</span>
+                    <select
+                      value={selectedVariantId}
+                      onChange={(e) => setSelectedVariantId(e.target.value)}
+                      className="bg-transparent border-none outline-none font-medium text-black cursor-pointer appearance-none pr-6 relative z-10"
+                    >
+                      {product.variants?.map((v) => (
+                        <option key={v.id || v._id} value={v.id || v._id}>
+                          {is925SterlingSilver
+                            ? v.name
+                            : `${v.weight} ${v.weightUnit || "g"}`}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <LucideIcons.ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-4" />
+                </div>
+              </div>
+
+              {/* Action Button */}
+              <button
+                onClick={handleAddToCart}
+                disabled={!canAddToCart}
+                className={`px-8 py-3 rounded-full font-medium text-[10px] tracking-widest uppercase transition-all active:scale-95 ${canAddToCart ? "bg-[#8E2B45] hover:bg-[#5B1E26] text-white shadow-sm" : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}
+              >
+                {canAddToCart ? "Add to Bag" : "Out of Stock"}
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
           {/* Left: Product Lookbook (Split: Video & Image) */}
@@ -1497,7 +1543,7 @@ const ProductDetails = () => {
             )}
 
             {/* DESKTOP ACTION BUTTONS */}
-            <div ref={mainActionRef} className="hidden md:flex flex-col items-center gap-4">
+            <div className="hidden md:flex flex-col items-center gap-4">
               <button
                 onClick={handleAddToCart}
                 disabled={!canAddToCart}
@@ -1623,7 +1669,8 @@ const ProductDetails = () => {
       )}
 
       {/* Mobile Sticky Bottom Action Bar - Always functional */}
-      <div className="fixed bottom-16 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 px-4 py-2.5 z-[150] md:hidden shadow-[0_-10px_30px_rgba(0,0,0,0.1)] animate-in slide-in-from-bottom duration-500">
+      {!isAtBottom && (
+      <div className="fixed bottom-[90px] left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 px-4 py-2.5 z-[150] md:hidden shadow-[0_-10px_30px_rgba(0,0,0,0.1)] animate-in slide-in-from-bottom duration-500">
         <button
           onClick={handleAddToCart}
           disabled={!canAddToCart}
@@ -1643,6 +1690,7 @@ const ProductDetails = () => {
           )}
         </button>
       </div>
+      )}
 
       <style>
         {`

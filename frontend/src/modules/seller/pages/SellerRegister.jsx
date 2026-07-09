@@ -448,6 +448,7 @@ const SellerRegister = () => {
                                 onChange={handleChange} 
                                 className="hidden" 
                             />
+                            <p className="text-[10px] text-amber-600 font-bold uppercase tracking-widest bg-amber-50 px-2.5 py-1.5 rounded border border-amber-200 mt-2 mb-2 inline-block">✨ Max Size: 5MB (PDF/JPG/PNG)</p>
                         </label>
                     )}
                 </div>

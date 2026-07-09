@@ -706,7 +706,7 @@ const Navbar = () => {
                                     {[
                                         { label: 'All Jewellery', path: '/shop', icon: Sparkles },
                                         { label: 'Gold', path: '/gold-collection', icon: Coins },
-                                        { label: 'Silver', path: '/shop?metal=silver', icon: Gem },
+                                        { label: 'Silver', path: '/', icon: Gem },
                                         { label: 'Rings', path: '/shop?category=rings', icon: LifeBuoy },
                                         { label: 'Daily Wear', path: '/shop?category=daily-wear', icon: Sun },
                                         { label: 'Wedding', path: '/shop?category=wedding', icon: Heart },
@@ -720,13 +720,25 @@ const Navbar = () => {
                                             key={index}
                                             to={item.path}
                                             onClick={() => setIsMenuOpen(false)}
-                                            className="flex items-center justify-between py-4 px-4 text-gray-800 hover:bg-white hover:shadow-sm hover:text-[#8E2B45] rounded-xl transition-all group border-b border-[#F0DFE2] last:border-0"
+                                            className={`flex items-center justify-between py-4 px-4 hover:shadow-sm rounded-xl transition-all group border-b border-[#F0DFE2] last:border-0 relative overflow-hidden ${
+                                                item.label === 'Gold' ? 'bg-gradient-to-r from-amber-50 to-white hover:from-amber-100 border-amber-200' :
+                                                item.label === 'Silver' ? 'bg-gradient-to-r from-slate-50 to-white hover:from-slate-100 border-slate-200' :
+                                                'text-gray-800 hover:bg-white hover:text-[#8E2B45]'
+                                            }`}
                                         >
-                                            <div className="flex items-center gap-5">
-                                                <item.icon className="w-5 h-5 text-gray-600 group-hover:text-[#8E2B45] transition-colors" strokeWidth={1.5} />
-                                                <span className="text-[15px] font-medium group-hover:font-semibold tracking-wide text-gray-800 group-hover:text-[#8E2B45]">{item.label}</span>
+                                            <div className="flex items-center gap-5 relative z-10">
+                                                <item.icon className={`w-5 h-5 transition-colors ${
+                                                    item.label === 'Gold' ? 'text-amber-500 group-hover:text-amber-600 animate-pulse' :
+                                                    item.label === 'Silver' ? 'text-slate-400 group-hover:text-slate-600 animate-pulse' :
+                                                    'text-gray-600 group-hover:text-[#8E2B45]'
+                                                }`} strokeWidth={1.5} />
+                                                <span className={`text-[15px] tracking-wide ${
+                                                    item.label === 'Gold' ? 'text-amber-700 font-bold group-hover:text-amber-800' :
+                                                    item.label === 'Silver' ? 'text-slate-600 font-bold group-hover:text-slate-800' :
+                                                    'font-medium text-gray-800 group-hover:font-semibold group-hover:text-[#8E2B45]'
+                                                }`}>{item.label}</span>
                                             </div>
-                                            <ChevronRight className="w-4 h-4 text-gray-900 group-hover:text-[#8E2B45] transition-colors" strokeWidth={2.5} />
+                                            <ChevronRight className="w-4 h-4 text-gray-900 group-hover:text-[#8E2B45] transition-colors relative z-10" strokeWidth={2.5} />
                                         </Link>
                                     ))}
                                 </nav>
