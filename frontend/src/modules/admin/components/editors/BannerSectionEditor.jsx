@@ -28,12 +28,23 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     const isGoldPageBanner = pageKey === 'gold-collection';
     const isSingleBannerSection = isWomenPersonalizedBanner || isFamilyPromoBanner;
 
-    const isLandscapeBanner = sectionKey === 'hero-banners' || sectionKey === 'auto-banner-section';
-    const bannerPreviewAspect = isLandscapeBanner ? 'aspect-[21/9] md:aspect-[3/1]' : 'aspect-[4/5]';
-    const recommendedBannerSize = isLandscapeBanner ? '1920 x 800 px' : '1200 x 1500 px';
-    const recommendedRatioText = isLandscapeBanner 
-        ? 'Recommended ratio: 21:9. Upload a wide landscape image to prevent cropping.'
-        : 'Recommended ratio: 4:5. Upload the same size for every banner so the layouts stay aligned.';
+    const isHeroBanners = sectionKey === 'hero-banners';
+    const isAutoBannerSection = sectionKey === 'auto-banner-section';
+    const isLandscapeBanner = isHeroBanners || isAutoBannerSection;
+
+    let bannerPreviewAspect = 'aspect-[4/5]';
+    let recommendedBannerSize = '1200 x 1500 px';
+    let recommendedRatioText = 'Recommended ratio: 4:5. Upload the same size for every banner so the layouts stay aligned.';
+
+    if (isHeroBanners) {
+        bannerPreviewAspect = 'aspect-[21/9] md:aspect-[5/1]';
+        recommendedBannerSize = '1920 x 390 px';
+        recommendedRatioText = 'Recommended size: 1920 x 390 px. Upload a wide landscape image matching this size to prevent cropping.';
+    } else if (isAutoBannerSection) {
+        bannerPreviewAspect = 'aspect-[21/9] md:aspect-[32/7]';
+        recommendedBannerSize = '1920 x 420 px';
+        recommendedRatioText = 'Recommended size: 1920 x 420 px. Upload a wide landscape image matching this size to prevent cropping.';
+    }
 
     const initialItems = useMemo(() => {
         if (Array.isArray(sectionData?.items) && sectionData.items.length > 0) {
