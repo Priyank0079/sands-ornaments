@@ -155,33 +155,18 @@ const SellerLogin = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#FDF5F6] flex flex-col lg:flex-row overflow-hidden font-sans">
-            {/* Left Decor */}
-            <div className="hidden lg:flex lg:w-1/2 relative bg-[#3E2723] items-center justify-center p-12">
-                <img src={loginBg} className="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-overlay" alt="bg" />
-                <div className="relative z-10 max-w-lg text-center">
-                    <h1 className="text-6xl font-black text-white uppercase tracking-tighter mb-6 leading-none animate-in slide-in-from-bottom-5 duration-700">
-                        Merchant <br/><span className="text-[#D39A9F]">Command</span>
-                    </h1>
-                    <p className="text-gray-300 text-lg font-medium leading-relaxed animate-in fade-in duration-1000 delay-300">
-                        Manage your orders, inventory, and business performance with our tailored tools.
-                    </p>
+        <div className="min-h-screen bg-[#FDF5F6] flex items-center justify-center p-6 font-sans">
+            <div className="w-full max-w-md bg-white p-8 rounded-3xl shadow-sm border border-gray-100 space-y-8">
+                <div className="text-center space-y-2">
+                    <h2 className="text-2xl font-medium text-gray-900 tracking-tight">Merchant Gateway</h2>
+                    <p className="text-xs font-medium text-gray-400 tracking-wide">Secure authentication</p>
                 </div>
-            </div>
-
-            {/* Right Logic */}
-            <div className="w-full lg:w-1/2 flex-1 flex items-center justify-center p-6 lg:p-20 overflow-y-auto">
-                <div className="w-full max-w-md space-y-10">
-                    <div className="text-center space-y-2">
-                        <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tight">Merchant Gateway</h2>
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em]">Secure authentication for merchants</p>
-                    </div>
 
                     <form onSubmit={handleLogin} className="space-y-6">
                         {error && (
                             <div className="bg-red-50 border border-red-100 p-4 rounded-xl flex items-center gap-3 text-red-600 animate-in shake-1 overflow-hidden">
                                 <AlertCircle size={18} className="shrink-0" />
-                                <span className="text-xs font-bold uppercase tracking-widest leading-relaxed">{error}</span>
+                                <span className="text-xs font-medium tracking-wide leading-relaxed">{error}</span>
                             </div>
                         )}
 
@@ -193,7 +178,7 @@ const SellerLogin = () => {
                                     setFormData({ identifier: '', password: '' });
                                     setError('');
                                 }} 
-                                className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${loginType === 'email' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                                className={`flex-1 py-2 rounded-lg text-[10px] font-medium tracking-wide transition-all ${loginType === 'email' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
                             >
                                 Email
                             </button>
@@ -204,7 +189,7 @@ const SellerLogin = () => {
                                     setFormData({ identifier: '', password: '' });
                                     setError('');
                                 }} 
-                                className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${loginType === 'mobile' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                                className={`flex-1 py-2 rounded-lg text-[10px] font-medium tracking-wide transition-all ${loginType === 'mobile' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
                             >
                                 Mobile
                             </button>
@@ -242,7 +227,7 @@ const SellerLogin = () => {
                                 <button
                                     type="button"
                                     onClick={openReset}
-                                    className="text-[10px] font-black text-[#8D6E63] uppercase tracking-widest hover:text-[#3E2723] transition-colors"
+                                    className="text-[10px] font-medium text-[#8D6E63] tracking-wide hover:text-[#3E2723] transition-colors"
                                 >
                                     Forgot Password?
                                 </button>
@@ -252,7 +237,7 @@ const SellerLogin = () => {
                         <button 
                             disabled={loading}
                             type="submit" 
-                            className="w-full bg-[#3E2723] text-white py-5 rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] shadow-2xl shadow-[#3E2723]/20 hover:bg-[#2D1B18] transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3 group"
+                            className="w-full bg-[#3E2723] text-white py-5 rounded-2xl font-medium tracking-wide text-[10px] shadow-2xl shadow-[#3E2723]/20 hover:bg-[#2D1B18] transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3 group"
                         >
                             {loading ? (
                                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -266,26 +251,25 @@ const SellerLogin = () => {
                     </form>
 
                     <div className="text-center pt-8 border-t border-gray-100">
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Don't have a seller account?</p>
-                        <Link to="/seller/register" className="inline-flex items-center gap-3 border border-[#3E2723] text-[#3E2723] bg-transparent px-8 py-4 rounded-xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-[#3E2723] hover:text-white transition-all shadow-md duration-300 active:scale-[0.98] cursor-pointer">
+                        <p className="text-[10px] font-medium text-gray-400 tracking-wide mb-4">Don't have a seller account?</p>
+                        <Link to="/seller/register" className="inline-flex items-center gap-3 border border-[#3E2723] text-[#3E2723] bg-transparent px-8 py-4 rounded-xl font-medium tracking-wide text-[10px] hover:bg-[#3E2723] hover:text-white transition-all shadow-md duration-300 active:scale-[0.98] cursor-pointer">
                             Create New Account <LogIn size={14} />
                         </Link>
                     </div>
 
                     <div className="flex items-center justify-center gap-2 pt-4">
                         <ShieldCheck size={14} className="text-gray-300" />
-                        <span className="text-[8px] font-black text-gray-300 uppercase tracking-[0.3em]">Encrypted & Secure Session</span>
+                        <span className="text-[8px] font-medium text-gray-300 tracking-wide">Encrypted & Secure Session</span>
                     </div>
                 </div>
-            </div>
 
             {showReset && (
                 <div className="fixed inset-0 z-[200] bg-black/40 flex items-center justify-center p-6">
                     <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-white overflow-hidden font-sans">
                         <div className="p-6 border-b border-gray-50 flex items-center justify-between">
                             <div>
-                                <h3 className="text-sm font-black text-gray-900 uppercase tracking-tight">Reset Password</h3>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
+                                <h3 className="text-sm font-medium text-gray-900 tracking-tight">Reset Password</h3>
+                                <p className="text-[10px] font-medium text-gray-400 tracking-wide mt-1">
                                     {loginType === 'email'
                                         ? (resetStep === 1 ? 'Send OTP to email' : 'Verify OTP & set new password')
                                         : (resetStep === 1 ? 'Send OTP to mobile' : 'Verify OTP & set new password')
@@ -295,7 +279,7 @@ const SellerLogin = () => {
                             <button
                                 type="button"
                                 onClick={() => setShowReset(false)}
-                                className="px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-gray-200 hover:bg-gray-50 transition-all"
+                                className="px-3 py-2 rounded-xl text-[10px] font-medium tracking-wide border border-gray-200 hover:bg-gray-50 transition-all"
                             >
                                 Close
                             </button>
@@ -304,7 +288,7 @@ const SellerLogin = () => {
                         <div className="p-6 space-y-4">
                             {loginType === 'email' ? (
                                 <div className="space-y-1">
-                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Email</label>
+                                    <label className="text-[10px] font-medium text-gray-500 tracking-wide">Email</label>
                                     <input
                                         type="email"
                                         value={resetEmail}
@@ -315,7 +299,7 @@ const SellerLogin = () => {
                                 </div>
                             ) : (
                                 <div className="space-y-1">
-                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Mobile Number</label>
+                                    <label className="text-[10px] font-medium text-gray-500 tracking-wide">Mobile Number</label>
                                     <input
                                         type="text"
                                         inputMode="numeric"
@@ -332,7 +316,7 @@ const SellerLogin = () => {
                             {resetStep === 2 && (
                                 <>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">OTP</label>
+                                        <label className="text-[10px] font-medium text-gray-500 tracking-wide">OTP</label>
                                         <input
                                             type="text"
                                             inputMode="numeric"
@@ -344,7 +328,7 @@ const SellerLogin = () => {
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">New Password</label>
+                                        <label className="text-[10px] font-medium text-gray-500 tracking-wide">New Password</label>
                                         <input
                                             type="password"
                                             value={resetPassword}
@@ -363,7 +347,7 @@ const SellerLogin = () => {
                                     type="button"
                                     disabled={resetLoading}
                                     onClick={sendResetOtp}
-                                    className="bg-[#3E2723] text-white px-6 py-3 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-[#2D1B18] transition-all disabled:opacity-70"
+                                    className="bg-[#3E2723] text-white px-6 py-3 rounded-2xl font-medium tracking-wide text-[10px] hover:bg-[#2D1B18] transition-all disabled:opacity-70"
                                 >
                                     {resetLoading ? 'Sending...' : 'Send OTP'}
                                 </button>
@@ -377,7 +361,7 @@ const SellerLogin = () => {
                                             setResetOtp('');
                                             setResetPassword('');
                                         }}
-                                        className="px-5 py-3 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] border border-gray-200 hover:bg-gray-50 transition-all disabled:opacity-70"
+                                        className="px-5 py-3 rounded-2xl font-medium tracking-wide text-[10px] border border-gray-200 hover:bg-gray-50 transition-all disabled:opacity-70"
                                     >
                                         Back
                                     </button>
@@ -385,7 +369,7 @@ const SellerLogin = () => {
                                         type="button"
                                         disabled={resetLoading}
                                         onClick={resetSellerPassword}
-                                        className="bg-[#3E2723] text-white px-6 py-3 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-[#2D1B18] transition-all disabled:opacity-70"
+                                        className="bg-[#3E2723] text-white px-6 py-3 rounded-2xl font-medium tracking-wide text-[10px] hover:bg-[#2D1B18] transition-all disabled:opacity-70"
                                     >
                                         {resetLoading ? 'Updating...' : 'Update Password'}
                                     </button>

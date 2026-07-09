@@ -294,7 +294,7 @@ const GlobalSettings = () => {
     return (
       <div className="flex flex-col justify-center items-center h-[60vh] gap-3">
         <div className="w-10 h-10 border-4 border-[#3E2723] border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-sm font-bold text-gray-500 uppercase tracking-widest animate-pulse">
+        <p className="text-sm font-medium text-gray-500 tracking-wide animate-pulse">
           Loading settings...
         </p>
       </div>
@@ -316,14 +316,14 @@ const GlobalSettings = () => {
               <button
                 onClick={() => setIsEditing(false)}
                 disabled={isSaving}
-                className="px-6 py-2.5 rounded-xl text-xs md:text-sm font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 transition-all"
+                className="px-6 py-2.5 rounded-xl text-xs md:text-sm font-medium text-gray-500 bg-gray-100 hover:bg-gray-200 transition-all"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
                 disabled={isSaving}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs md:text-sm font-bold bg-[#3E2723] text-white hover:bg-[#5D4037] transition-all shadow-sm active:scale-95"
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs md:text-sm font-medium bg-[#3E2723] text-white hover:bg-[#5D4037] transition-all shadow-sm active:scale-95"
               >
                 {isSaving ? (
                   <Check className="w-4 h-4" />
@@ -336,7 +336,7 @@ const GlobalSettings = () => {
           ) : (
             <button
               onClick={() => setIsEditing(true)}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs md:text-sm font-bold bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 transition-all shadow-sm active:scale-95"
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs md:text-sm font-medium bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 transition-all shadow-sm active:scale-95"
             >
               <Edit3 className="w-4 h-4" />
               <span>Edit Settings</span>
@@ -345,62 +345,62 @@ const GlobalSettings = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5">
         {/* Product Highlights Section */}
-        <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
+        <div className="bg-white p-4 md:p-5 rounded-2xl border border-gray-200 shadow-sm space-y-6">
           <div>
-            <h3 className="text-xl font-serif font-bold text-[#3E2723]">
+            <h3 className="text-xl font-serif font-medium text-[#3E2723]">
               Product Page Policies
             </h3>
-            <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mt-1">
+            <p className="text-xs text-gray-500 font-medium tracking-wide mt-1">
               Manage delivery, return, and payment text
             </p>
           </div>
 
           <div className="space-y-4">
             <div>
-              <label className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+              <label className="flex items-center gap-2 text-[10px] font-medium text-gray-400 tracking-wide mb-2">
                 <Truck className="w-3 h-3" />
                 <span>Section Header Title</span>
               </label>
               <input
-                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 disabled:bg-gray-50 disabled:text-gray-500 transition-all"
+                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 disabled:bg-gray-50 disabled:text-gray-500 transition-all"
                 value={settings.productHeader}
                 onChange={(e) => handleChange("productHeader", e.target.value)}
                 disabled={!isEditing}
               />
             </div>
             <div>
-              <label className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+              <label className="flex items-center gap-2 text-[10px] font-medium text-gray-400 tracking-wide mb-2">
                 <RefreshCw className="w-3 h-3" />
                 <span>Return Policy Text</span>
               </label>
               <input
-                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 disabled:bg-gray-50 disabled:text-gray-500 transition-all"
+                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 disabled:bg-gray-50 disabled:text-gray-500 transition-all"
                 value={settings.returnPolicy}
                 onChange={(e) => handleChange("returnPolicy", e.target.value)}
                 disabled={!isEditing}
               />
             </div>
             <div>
-              <label className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+              <label className="flex items-center gap-2 text-[10px] font-medium text-gray-400 tracking-wide mb-2">
                 <Repeat className="w-3 h-3" />
                 <span>Exchange Policy Text</span>
               </label>
               <input
-                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 disabled:bg-gray-50 disabled:text-gray-500 transition-all"
+                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 disabled:bg-gray-50 disabled:text-gray-500 transition-all"
                 value={settings.exchangePolicy}
                 onChange={(e) => handleChange("exchangePolicy", e.target.value)}
                 disabled={!isEditing}
               />
             </div>
             <div>
-              <label className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+              <label className="flex items-center gap-2 text-[10px] font-medium text-gray-400 tracking-wide mb-2">
                 <CreditCard className="w-3 h-3" />
                 <span>COD / Payment Text</span>
               </label>
               <input
-                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 disabled:bg-gray-50 disabled:text-gray-500 transition-all"
+                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 disabled:bg-gray-50 disabled:text-gray-500 transition-all"
                 value={settings.codPolicy}
                 onChange={(e) => handleChange("codPolicy", e.target.value)}
                 disabled={!isEditing}
@@ -410,72 +410,72 @@ const GlobalSettings = () => {
         </div>
 
         {/* Value Propositions Section */}
-        <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
+        <div className="bg-white p-4 md:p-5 rounded-2xl border border-gray-200 shadow-sm space-y-6">
           <div>
-            <h3 className="text-xl font-serif font-bold text-[#3E2723]">
+            <h3 className="text-xl font-serif font-medium text-[#3E2723]">
               Value Propositions
             </h3>
-            <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mt-1">
+            <p className="text-xs text-gray-500 font-medium tracking-wide mt-1">
               Key benefits shown on pink banner
             </p>
           </div>
 
           <div className="space-y-4">
             <div>
-              <label className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+              <label className="flex items-center gap-2 text-[10px] font-medium text-gray-400 tracking-wide mb-2">
                 <Star className="w-3 h-3" />
                 <span>Purity Text (e.g. 925 Fine Silver)</span>
               </label>
               <input
-                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 disabled:bg-gray-50 disabled:text-gray-500 transition-all"
+                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 disabled:bg-gray-50 disabled:text-gray-500 transition-all"
                 value={settings.purityText || ""}
                 onChange={(e) => handleChange("purityText", e.target.value)}
                 disabled={!isEditing}
               />
             </div>
             <div>
-              <label className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+              <label className="flex items-center gap-2 text-[10px] font-medium text-gray-400 tracking-wide mb-2">
                 <Shield className="w-3 h-3" />
                 <span>Warranty Text</span>
               </label>
               <input
-                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 disabled:bg-gray-50 disabled:text-gray-500 transition-all"
+                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 disabled:bg-gray-50 disabled:text-gray-500 transition-all"
                 value={settings.warrantyText}
                 onChange={(e) => handleChange("warrantyText", e.target.value)}
                 disabled={!isEditing}
               />
             </div>
             <div>
-              <label className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+              <label className="flex items-center gap-2 text-[10px] font-medium text-gray-400 tracking-wide mb-2">
                 <Check className="w-3 h-3" />
                 <span>Safety Feature (e.g. Skin Safe)</span>
               </label>
               <input
-                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 disabled:bg-gray-50 disabled:text-gray-500 transition-all"
+                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 disabled:bg-gray-50 disabled:text-gray-500 transition-all"
                 value={settings.safetyText}
                 onChange={(e) => handleChange("safetyText", e.target.value)}
                 disabled={!isEditing}
               />
             </div>
             <div>
-              <label className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+              <label className="flex items-center gap-2 text-[10px] font-medium text-gray-400 tracking-wide mb-2">
                 <Check className="w-3 h-3" />
                 <span>Plating/Material Text</span>
               </label>
               <input
-                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 disabled:bg-gray-50 disabled:text-gray-500 transition-all"
+                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 disabled:bg-gray-50 disabled:text-gray-500 transition-all"
                 value={settings.platingText}
                 onChange={(e) => handleChange("platingText", e.target.value)}
                 disabled={!isEditing}
               />
             </div>
             <div>
-              <label className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+              <label className="flex items-center gap-2 text-[10px] font-medium text-gray-400 tracking-wide mb-2">
                 <Repeat className="w-3 h-3" />
                 <span>Return Policy Text</span>
               </label>
               <input
-                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 disabled:bg-gray-50 disabled:text-gray-500 transition-all"
+                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 disabled:bg-gray-50 disabled:text-gray-500 transition-all"
                 value={settings.returnPolicy}
                 onChange={(e) => handleChange("returnPolicy", e.target.value)}
                 disabled={!isEditing}
@@ -485,20 +485,20 @@ const GlobalSettings = () => {
         </div>
 
         {/* Announcement Bar Section */}
-        <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
+        <div className="bg-white p-4 md:p-5 rounded-2xl border border-gray-200 shadow-sm space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-xl font-serif font-bold text-[#3E2723]">
+              <h3 className="text-xl font-serif font-medium text-[#3E2723]">
                 Announcement Bar
               </h3>
-              <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mt-1">
+              <p className="text-xs text-gray-500 font-medium tracking-wide mt-1">
                 Manage scrolling items in navbar
               </p>
             </div>
             {isEditing && (
               <button
                 onClick={addAnnouncement}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold bg-[#3E2723]/10 text-[#3E2723] hover:bg-[#3E2723]/20 transition-all"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium bg-[#3E2723]/10 text-[#3E2723] hover:bg-[#3E2723]/20 transition-all"
               >
                 <Plus className="w-4 h-4" />
                 <span>Add Item</span>
@@ -517,7 +517,7 @@ const GlobalSettings = () => {
                   <div className="shrink-0 flex items-center gap-2">
                     <div className="relative">
                       <select
-                        className="w-28 pl-9 pr-8 py-2 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 appearance-none cursor-pointer"
+                        className="w-28 pl-9 pr-8 py-2 bg-white border border-gray-200 rounded-lg text-xs font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 appearance-none cursor-pointer"
                         value={item.icon || "Truck"}
                         onChange={(e) =>
                           handleAnnouncementChange(
@@ -550,7 +550,7 @@ const GlobalSettings = () => {
                   {/* Text Input */}
                   <div className="flex-1">
                     <input
-                      className="w-full px-3 py-2 bg-transparent text-sm font-bold text-gray-900 placeholder-gray-400 focus:outline-none border-b border-transparent focus:border-[#3E2723]/20 transition-colors"
+                      className="w-full px-3 py-2 bg-transparent text-sm font-medium text-gray-900 placeholder-gray-400 focus:outline-none border-b border-transparent focus:border-[#3E2723]/20 transition-colors"
                       value={item.text}
                       onChange={(e) =>
                         handleAnnouncementChange(
@@ -579,23 +579,23 @@ const GlobalSettings = () => {
         </div>
 
         {/* Fraud Alert Section */}
-        <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
+        <div className="bg-white p-4 md:p-5 rounded-2xl border border-gray-200 shadow-sm space-y-6">
           <div>
-            <h3 className="text-xl font-serif font-bold text-[#3E2723]">
+            <h3 className="text-xl font-serif font-medium text-[#3E2723]">
               Fraud & Safety Alerts
             </h3>
-            <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mt-1">
+            <p className="text-xs text-gray-500 font-medium tracking-wide mt-1">
               Important warnings for customers
             </p>
           </div>
 
           <div className="bg-red-50 p-4 rounded-xl border border-red-100">
-            <label className="flex items-center gap-2 text-[10px] font-bold text-red-400 uppercase tracking-widest mb-2">
+            <label className="flex items-center gap-2 text-[10px] font-medium text-red-400 tracking-wide mb-2">
               <AlertTriangle className="w-3 h-3" />
               <span>Global Fraud Warning Text</span>
             </label>
             <textarea
-              className="w-full p-3 bg-white border border-red-200 rounded-xl text-sm font-bold text-red-900 focus:outline-none focus:ring-2 focus:ring-red-500/10 disabled:bg-white disabled:text-gray-500 h-32 resize-none transition-all"
+              className="w-full p-3 bg-white border border-red-200 rounded-xl text-sm font-medium text-red-900 focus:outline-none focus:ring-2 focus:ring-red-500/10 disabled:bg-white disabled:text-gray-500 h-32 resize-none transition-all"
               value={settings.fraudWarning}
               onChange={(e) => handleChange("fraudWarning", e.target.value)}
               disabled={!isEditing}
@@ -604,24 +604,24 @@ const GlobalSettings = () => {
         </div>
 
         {/* Contact Details Section - Full Width */}
-        <div className="lg:col-span-2 bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
+        <div className="lg:col-span-2 bg-white p-4 md:p-5 rounded-2xl border border-gray-200 shadow-sm space-y-6">
           <div>
-            <h3 className="text-xl font-serif font-bold text-[#3E2723]">
+            <h3 className="text-xl font-serif font-medium text-[#3E2723]">
               Company Contact Details
             </h3>
-            <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mt-1">
+            <p className="text-xs text-gray-500 font-medium tracking-wide mt-1">
               Displayed in Footer and Contact Page
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
             <div>
-              <label className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+              <label className="flex items-center gap-2 text-[10px] font-medium text-gray-400 tracking-wide mb-2">
                 <MapPin className="w-3 h-3" />
                 <span>Official Address</span>
               </label>
               <textarea
-                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 disabled:bg-gray-50 disabled:text-gray-500 h-24 resize-none transition-all"
+                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 disabled:bg-gray-50 disabled:text-gray-500 h-24 resize-none transition-all"
                 value={settings.address}
                 onChange={(e) => handleChange("address", e.target.value)}
                 disabled={!isEditing}
@@ -629,24 +629,24 @@ const GlobalSettings = () => {
             </div>
             <div className="space-y-4">
               <div>
-                <label className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                <label className="flex items-center gap-2 text-[10px] font-medium text-gray-400 tracking-wide mb-2">
                   <Phone className="w-3 h-3" />
                   <span>Support Phone</span>
                 </label>
                 <input
-                  className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 disabled:bg-gray-50 disabled:text-gray-500 transition-all"
+                  className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 disabled:bg-gray-50 disabled:text-gray-500 transition-all"
                   value={settings.phone}
                   onChange={(e) => handleChange("phone", e.target.value)}
                   disabled={!isEditing}
                 />
               </div>
               <div>
-                <label className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                <label className="flex items-center gap-2 text-[10px] font-medium text-gray-400 tracking-wide mb-2">
                   <Mail className="w-3 h-3" />
                   <span>Support Email</span>
                 </label>
                 <input
-                  className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 disabled:bg-gray-50 disabled:text-gray-500 transition-all"
+                  className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 disabled:bg-gray-50 disabled:text-gray-500 transition-all"
                   value={settings.email}
                   onChange={(e) => handleChange("email", e.target.value)}
                   disabled={!isEditing}
@@ -657,12 +657,12 @@ const GlobalSettings = () => {
         </div>
 
         {/* Product Page USP & Care Guide Blocks */}
-        <div className="lg:col-span-2 bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-8">
+        <div className="lg:col-span-2 bg-white p-4 md:p-5 rounded-2xl border border-gray-200 shadow-sm space-y-8">
           <div>
-            <h3 className="text-xl font-serif font-bold text-[#3E2723]">
+            <h3 className="text-xl font-serif font-medium text-[#3E2723]">
               Product USP & Care Guide Configuration
             </h3>
-            <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mt-1">
+            <p className="text-xs text-gray-500 font-medium tracking-wide mt-1">
               Customize "The Sands Promise" and "Care Guide" blocks shown on product detail pages.
             </p>
           </div>
@@ -670,20 +670,20 @@ const GlobalSettings = () => {
           <div className="space-y-8">
             {/* The Sands Promise Section */}
             <div className="space-y-4">
-              <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider border-b border-gray-100 pb-2 flex items-center gap-2">
+              <h4 className="text-sm font-medium text-gray-900 tracking-wide border-b border-gray-100 pb-2 flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-[#9C5B61]" />
                 The Sands Promise (USPs)
               </h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {[0, 1, 2].map((idx) => {
                   const item = (settings.sandsPromise && settings.sandsPromise[idx]) || { title: "", desc: "", icon: "ShieldCheck" };
                   return (
                     <div key={idx} className="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-4">
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Card #{idx + 1}</span>
+                        <span className="text-[10px] font-medium text-gray-400 tracking-wide">Card #{idx + 1}</span>
                         <div className="relative">
                           <select
-                            className="w-32 py-1.5 pl-3 pr-8 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 appearance-none cursor-pointer"
+                            className="w-32 py-1.5 pl-3 pr-8 bg-white border border-gray-200 rounded-lg text-xs font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 appearance-none cursor-pointer"
                             value={item.icon || "ShieldCheck"}
                             onChange={(e) => handlePromiseChange(idx, "icon", e.target.value)}
                             disabled={!isEditing}
@@ -701,16 +701,16 @@ const GlobalSettings = () => {
                       </div>
                       <div className="space-y-3">
                         <div>
-                          <label className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Title</label>
+                          <label className="text-[9px] font-medium text-gray-400 tracking-wide mb-1 block">Title</label>
                           <input
-                            className="w-full p-2.5 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-900 disabled:text-gray-500"
+                            className="w-full p-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-900 disabled:text-gray-500"
                             value={item.title || ""}
                             onChange={(e) => handlePromiseChange(idx, "title", e.target.value)}
                             disabled={!isEditing}
                           />
                         </div>
                         <div>
-                          <label className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Description</label>
+                          <label className="text-[9px] font-medium text-gray-400 tracking-wide mb-1 block">Description</label>
                           <textarea
                             className="w-full p-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-900 disabled:text-gray-500 min-h-[60px] resize-none"
                             value={item.desc || ""}
@@ -727,13 +727,13 @@ const GlobalSettings = () => {
 
             {/* Care Guide Section */}
             <div className="space-y-4">
-              <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider border-b border-gray-100 pb-2 flex items-center gap-2">
+              <h4 className="text-sm font-medium text-gray-900 tracking-wide border-b border-gray-100 pb-2 flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-[#9C5B61]" />
                 Care Guide Steps
               </h4>
 
               <div className="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-2">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">
+                <label className="text-[10px] font-medium text-gray-400 tracking-wide block">
                   Care Guide Section Introduction Text
                 </label>
                 <textarea
@@ -745,16 +745,16 @@ const GlobalSettings = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[0, 1, 2, 3].map((idx) => {
                   const item = (settings.careGuide && settings.careGuide[idx]) || { title: "", desc: "", icon: "Droplets" };
                   return (
                     <div key={idx} className="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-4">
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Step #{idx + 1}</span>
+                        <span className="text-[10px] font-medium text-gray-400 tracking-wide">Step #{idx + 1}</span>
                         <div className="relative">
                           <select
-                            className="w-32 py-1.5 pl-3 pr-8 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 appearance-none cursor-pointer"
+                            className="w-32 py-1.5 pl-3 pr-8 bg-white border border-gray-200 rounded-lg text-xs font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#3E2723]/10 appearance-none cursor-pointer"
                             value={item.icon || "Droplets"}
                             onChange={(e) => handleCareGuideChange(idx, "icon", e.target.value)}
                             disabled={!isEditing}
@@ -771,16 +771,16 @@ const GlobalSettings = () => {
                       </div>
                       <div className="space-y-3">
                         <div>
-                          <label className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Title</label>
+                          <label className="text-[9px] font-medium text-gray-400 tracking-wide mb-1 block">Title</label>
                           <input
-                            className="w-full p-2.5 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-900 disabled:text-gray-500"
+                            className="w-full p-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-900 disabled:text-gray-500"
                             value={item.title || ""}
                             onChange={(e) => handleCareGuideChange(idx, "title", e.target.value)}
                             disabled={!isEditing}
                           />
                         </div>
                         <div>
-                          <label className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Description</label>
+                          <label className="text-[9px] font-medium text-gray-400 tracking-wide mb-1 block">Description</label>
                           <textarea
                             className="w-full p-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-900 disabled:text-gray-500 min-h-[60px] resize-none"
                             value={item.desc || ""}
@@ -798,29 +798,29 @@ const GlobalSettings = () => {
         </div>
 
         {/* Footer Configuration Section */}
-        <div className="lg:col-span-2 bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-8">
+        <div className="lg:col-span-2 bg-white p-4 md:p-5 rounded-2xl border border-gray-200 shadow-sm space-y-8">
           <div>
-            <h3 className="text-xl font-serif font-bold text-[#3E2723]">
+            <h3 className="text-xl font-serif font-medium text-[#3E2723]">
               Footer Configuration
             </h3>
-            <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mt-1">
+            <p className="text-xs text-gray-500 font-medium tracking-wide mt-1">
               Fully customize the website footer content
             </p>
           </div>
 
           {/* Footer Brand Identity */}
           <div className="space-y-4 pt-4 border-t border-gray-100">
-            <h4 className="flex items-center gap-2 font-bold text-[#3E2723]">
+            <h4 className="flex items-center gap-2 font-medium text-[#3E2723]">
               <Layout className="w-4 h-4" /> Brand Identity
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-4">
                 <div>
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">
+                  <label className="text-[10px] font-medium text-gray-400 tracking-wide mb-2 block">
                     Footer Tagline
                   </label>
                   <input
-                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 disabled:text-gray-500"
+                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 disabled:text-gray-500"
                     value={settings.footerTagline || ""}
                     onChange={(e) =>
                       handleChange("footerTagline", e.target.value)
@@ -830,11 +830,11 @@ const GlobalSettings = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">
+                  <label className="text-[10px] font-medium text-gray-400 tracking-wide mb-2 block">
                     Footer Sub-Tagline
                   </label>
                   <input
-                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 disabled:text-gray-500"
+                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 disabled:text-gray-500"
                     value={settings.footerSubTagline || ""}
                     onChange={(e) =>
                       handleChange("footerSubTagline", e.target.value)
@@ -845,11 +845,11 @@ const GlobalSettings = () => {
                 </div>
               </div>
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">
+                <label className="text-[10px] font-medium text-gray-400 tracking-wide mb-2 block">
                   Brand Description
                 </label>
                 <textarea
-                  className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 disabled:text-gray-500 h-32 resize-none leading-relaxed"
+                  className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 disabled:text-gray-500 h-32 resize-none leading-relaxed"
                   value={settings.footerDescription || ""}
                   onChange={(e) =>
                     handleChange("footerDescription", e.target.value)
@@ -863,10 +863,10 @@ const GlobalSettings = () => {
 
           {/* Footer Links Columns */}
           <div className="space-y-4 pt-4 border-t border-gray-100">
-            <h4 className="flex items-center gap-2 font-bold text-[#3E2723]">
+            <h4 className="flex items-center gap-2 font-medium text-[#3E2723]">
               <Layout className="w-4 h-4" /> Footer Links
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {[
                 "footerExperienceLinks",
                 "footerPoliciesLinks",
@@ -879,7 +879,7 @@ const GlobalSettings = () => {
                   <div className="flex items-center justify-between mb-2">
                     {isEditing ? (
                       <input
-                        className="font-bold text-[#3E2723] uppercase text-xs bg-white border border-gray-200 rounded px-2 py-1 w-32 focus:outline-none focus:ring-1 focus:ring-[#3E2723]/30"
+                        className="font-medium text-[#3E2723] uppercase text-xs bg-white border border-gray-200 rounded px-2 py-1 w-32 focus:outline-none focus:ring-1 focus:ring-[#3E2723]/30"
                         value={
                           settings[`footerColumn${idx + 1}Title`] ||
                           (idx === 0
@@ -897,7 +897,7 @@ const GlobalSettings = () => {
                         placeholder="Column Title"
                       />
                     ) : (
-                      <h5 className="text-xs font-bold text-[#3E2723] uppercase">
+                      <h5 className="text-xs font-medium text-[#3E2723] uppercase">
                         {settings[`footerColumn${idx + 1}Title`] ||
                           (idx === 0
                             ? "Experience"
@@ -920,7 +920,7 @@ const GlobalSettings = () => {
                       settings[listName].map((link) => (
                         <div key={link.id} className="flex gap-2">
                           <input
-                            className="w-1/2 p-2 text-xs font-bold text-gray-700 bg-white border border-gray-200 rounded-lg disabled:text-gray-500 focus:outline-none focus:ring-1 focus:ring-[#3E2723]/30"
+                            className="w-1/2 p-2 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-lg disabled:text-gray-500 focus:outline-none focus:ring-1 focus:ring-[#3E2723]/30"
                             value={link.name}
                             onChange={(e) =>
                               handleLinkChange(
@@ -934,7 +934,7 @@ const GlobalSettings = () => {
                             placeholder="Link Name"
                           />
                           <input
-                            className="w-1/2 p-2 text-xs font-bold text-gray-700 bg-white border border-gray-200 rounded-lg disabled:text-gray-500 focus:outline-none focus:ring-1 focus:ring-[#3E2723]/30"
+                            className="w-1/2 p-2 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-lg disabled:text-gray-500 focus:outline-none focus:ring-1 focus:ring-[#3E2723]/30"
                             value={link.path}
                             onChange={(e) =>
                               handleLinkChange(
@@ -965,12 +965,12 @@ const GlobalSettings = () => {
 
           {/* Social & Bottom Bar */}
           <div className="space-y-4 pt-4 border-t border-gray-100">
-            <h4 className="flex items-center gap-2 font-bold text-[#3E2723]">
+            <h4 className="flex items-center gap-2 font-medium text-[#3E2723]">
               <Layout className="w-4 h-4" /> Social & Bottom Bar
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-3">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">
+                <label className="text-[10px] font-medium text-gray-400 tracking-wide block">
                   Social Media Links
                 </label>
                 {[
@@ -982,7 +982,7 @@ const GlobalSettings = () => {
                   <div key={social.key} className="flex items-center gap-3">
                     <social.icon className="w-4 h-4 text-gray-400" />
                     <input
-                      className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-xs font-bold text-gray-900 disabled:text-gray-500"
+                      className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium text-gray-900 disabled:text-gray-500"
                       value={settings.socialLinks?.[social.key] || ""}
                       onChange={(e) =>
                         handleNestedChange(
@@ -999,11 +999,11 @@ const GlobalSettings = () => {
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">
+                  <label className="text-[10px] font-medium text-gray-400 tracking-wide mb-2 block">
                     Delivery Text
                   </label>
                   <input
-                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 disabled:text-gray-500"
+                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 disabled:text-gray-500"
                     value={settings.footerDeliveryText || ""}
                     onChange={(e) =>
                       handleChange("footerDeliveryText", e.target.value)
@@ -1012,11 +1012,11 @@ const GlobalSettings = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">
+                  <label className="text-[10px] font-medium text-gray-400 tracking-wide mb-2 block">
                     Copyright Text
                   </label>
                   <input
-                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 disabled:text-gray-500"
+                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 disabled:text-gray-500"
                     value={settings.footerCopyrightText || ""}
                     onChange={(e) =>
                       handleChange("footerCopyrightText", e.target.value)
