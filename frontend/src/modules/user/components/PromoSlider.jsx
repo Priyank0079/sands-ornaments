@@ -48,6 +48,7 @@ const PromoSlider = ({ externalSlides, autoplayInterval }) => {
             .map((item, index) => ({
                 id: item.itemId || item.id || `hero-slide-${index + 1}`,
                 image: item.image,
+                mobileImage: item.mobileImage || null,
                 title: item.label,
                 subtitle: item.subtitle || '',
                 tag: item.tag || item.name || '',
@@ -127,13 +128,23 @@ const PromoSlider = ({ externalSlides, autoplayInterval }) => {
                             {/* Professional Gradient Overlay for Text Readability */}
                             <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent pointer-events-none z-[5]" />
 
+                            {slide.mobileImage && (
+                                <img
+                                    src={slide.mobileImage}
+                                    alt={`${slide.title} Mobile`}
+                                    loading={idx === 1 ? 'eager' : 'lazy'}
+                                    fetchPriority={idx === 1 ? 'high' : 'low'}
+                                    decoding={idx === 1 ? 'sync' : 'async'}
+                                    className="absolute inset-0 w-full h-full object-cover pointer-events-none group-hover:scale-110 transition-transform duration-[4000ms] ease-out block md:hidden"
+                                />
+                            )}
                             <img
                                 src={slide.image}
                                 alt={slide.title}
                                 loading={idx === 1 ? 'eager' : 'lazy'}
                                 fetchPriority={idx === 1 ? 'high' : 'low'}
                                 decoding={idx === 1 ? 'sync' : 'async'}
-                                className="absolute inset-0 w-full h-full object-cover pointer-events-none group-hover:scale-110 transition-transform duration-[4000ms] ease-out"
+                                className={`absolute inset-0 w-full h-full object-cover pointer-events-none group-hover:scale-110 transition-transform duration-[4000ms] ease-out ${slide.mobileImage ? 'hidden md:block' : 'block'}`}
                             />
 
                             {/* Subtle Brand Watermark */}

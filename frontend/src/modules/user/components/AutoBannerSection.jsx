@@ -35,6 +35,7 @@ const AutoBannerSection = () => {
             .map((item, index) => ({
                 id: item.itemId || item.id || `auto-banner-${index + 1}`,
                 image: resolveLegacyCmsAsset(item.image, item.image),
+                mobileImage: item.mobileImage ? resolveLegacyCmsAsset(item.mobileImage, item.mobileImage) : null,
                 title: item.label,
                 subtitle: item.subtitle || '',
                 link: item.path || '/shop',
@@ -102,6 +103,19 @@ const AutoBannerSection = () => {
                     >
                         <div className="w-full h-full relative group">
                             {/* Banner Image with subtle zoom */}
+                            {slides[currentIndex].mobileImage && (
+                                <motion.img 
+                                    key={`img-mob-${currentIndex}`}
+                                    initial={{ scale: 1.1 }}
+                                    animate={{ scale: 1 }}
+                                    transition={{ duration: 5 }}
+                                    src={slides[currentIndex].mobileImage} 
+                                    alt={`${slides[currentIndex].title} Mobile`}
+                                    loading="lazy"
+                                    decoding="async"
+                                    className="w-full h-full object-cover block md:hidden"
+                                />
+                            )}
                             <motion.img 
                                 key={`img-${currentIndex}`}
                                 initial={{ scale: 1.1 }}
@@ -111,7 +125,7 @@ const AutoBannerSection = () => {
                                 alt={slides[currentIndex].title}
                                 loading="lazy"
                                 decoding="async"
-                                className="w-full h-full object-cover"
+                                className={`w-full h-full object-cover ${slides[currentIndex].mobileImage ? 'hidden md:block' : 'block'}`}
                             />
                             
                             {/* Premium Content Overlay - allows clicks to pass through */}
