@@ -308,7 +308,7 @@ const SupportChatPanel = () => {
                     </div>
 
                     {/* Replies */}
-                    {activeTicket.replies?.map((reply, i) => {
+                    {activeTicket.replies?.slice(1).map((reply, i) => {
                       const isAdmin = reply.from === "admin";
                       return (
                         <div

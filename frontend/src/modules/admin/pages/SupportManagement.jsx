@@ -521,7 +521,7 @@ const SupportManagement = () => {
                                 </div>
 
                                 {/* Replies */}
-                                {selectedTicket.replies?.map((reply, i) => {
+                                {selectedTicket.replies?.slice(1).map((reply, i) => {
                                     const isAdmin = reply.from === 'admin';
                                     return (
                                         <div
