@@ -8,6 +8,8 @@ const itemSchema = Joi.object({
   personalization: Joi.any().optional(),
   price: Joi.number().optional(),
   name: Joi.string().optional(),
+  giftWrap: Joi.boolean().optional(),
+  giftMessage: Joi.string().allow("").optional(),
 });
 
 const placeOrderSchema = Joi.object({
