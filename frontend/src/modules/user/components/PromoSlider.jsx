@@ -39,7 +39,7 @@ const SLIDES = [
     }
 ];
 
-const PromoSlider = () => {
+const PromoSlider = ({ externalSlides, autoplayInterval }) => {
     const { data: homepageSections = {} } = useHomepageCms();
     const sectionData = homepageSections?.['hero-banners'];
     const dynamicSlides = Array.isArray(sectionData?.items)
@@ -55,8 +55,8 @@ const PromoSlider = () => {
                 ctaLabel: item.ctaLabel || 'Shop Collection'
             }))
         : [];
-    const slides = dynamicSlides.length > 0 ? dynamicSlides : SLIDES;
-    const autoplayMs = Number(sectionData?.settings?.autoplayMs) || 4000;
+    const slides = (externalSlides && externalSlides.length > 0) ? externalSlides : (dynamicSlides.length > 0 ? dynamicSlides : SLIDES);
+    const autoplayMs = autoplayInterval || Number(sectionData?.settings?.autoplayMs) || 4000;
     const extendedSlides = [slides[slides.length - 1], ...slides, slides[0]];
     const [currentIndex, setCurrentIndex] = useState(1);
     const [isTransitioning, setIsTransitioning] = useState(false);
@@ -101,11 +101,11 @@ const PromoSlider = () => {
 
     return (
         <section
-            className="w-full bg-white pt-0 pb-0 overflow-hidden select-none"
+            className="w-full bg-white pt-4 md:pt-6 pb-6 md:pb-8 overflow-hidden select-none"
             onMouseEnter={() => setIsSuspended(true)}
             onMouseLeave={() => setIsSuspended(false)}
         >
-            <div className="relative w-full h-[170px] sm:h-[200px] md:h-[350px]">
+            <div className="relative w-full aspect-[16/9] sm:aspect-[2/1] md:aspect-[4/1] lg:aspect-[5/1]">
                 <motion.div
                     className="flex h-full w-full gap-[1.5%]"
                     animate={{

@@ -28,23 +28,12 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     const isGoldPageBanner = pageKey === 'gold-collection';
     const isSingleBannerSection = isWomenPersonalizedBanner || isFamilyPromoBanner;
 
-    const isHeroBanners = sectionKey === 'hero-banners';
-    const isAutoBannerSection = sectionKey === 'auto-banner-section';
-    const isLandscapeBanner = isHeroBanners || isAutoBannerSection;
-
-    let bannerPreviewAspect = 'aspect-[4/5]';
-    let recommendedBannerSize = '1200 x 1500 px';
-    let recommendedRatioText = 'Recommended ratio: 4:5. Upload the same size for every banner so the layouts stay aligned.';
-
-    if (isHeroBanners) {
-        bannerPreviewAspect = 'aspect-[21/9] md:aspect-[5/1]';
-        recommendedBannerSize = '1920 x 390 px';
-        recommendedRatioText = 'Recommended size: 1920 x 390 px. Upload a wide landscape image matching this size to prevent cropping.';
-    } else if (isAutoBannerSection) {
-        bannerPreviewAspect = 'aspect-[21/9] md:aspect-[32/7]';
-        recommendedBannerSize = '1920 x 420 px';
-        recommendedRatioText = 'Recommended size: 1920 x 420 px. Upload a wide landscape image matching this size to prevent cropping.';
-    }
+    const isLandscapeBanner = sectionKey === 'hero-banners' || sectionKey === 'auto-banner-section' || sectionKey === 'hero-banners-gold';
+    const bannerPreviewAspect = isLandscapeBanner ? 'aspect-[5/1]' : 'aspect-[4/5]';
+    const recommendedBannerSize = isLandscapeBanner ? '1920 x 384 px (5:1)' : '1200 x 1500 px';
+    const recommendedRatioText = isLandscapeBanner 
+        ? 'Recommended ratio: 5:1. Use this ratio for best results, but other sizes are allowed.'
+        : 'Recommended ratio: 4:5. Upload the same size for every banner so the layouts stay aligned.';
 
     const initialItems = useMemo(() => {
         if (Array.isArray(sectionData?.items) && sectionData.items.length > 0) {
@@ -114,8 +103,27 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
         )));
     };
 
+    const validateImageRatio = (file, expectedRatio, tolerance = 0.05) => {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => {
+                const ratio = img.width / img.height;
+                if (Math.abs(ratio - expectedRatio) > tolerance) {
+                    reject(new Error(`Invalid aspect ratio. Expected ${expectedRatio.toFixed(2)}:1, got ${ratio.toFixed(2)}:1. Please use 1920x384 or similar.`));
+                } else {
+                    resolve();
+                }
+            };
+            img.onerror = () => reject(new Error('Invalid image file.'));
+            img.src = URL.createObjectURL(file);
+        });
+    };
+
     const handleImageUpload = async (id, file) => {
         if (!file) return;
+
+        // Validation removed per request, admin can upload any size
+
         const uploadedUrl = await adminService.uploadSectionImage(file);
         if (!uploadedUrl) {
             toast.error('Image upload failed. Please try again.');
@@ -234,10 +242,22 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                         </div>
                                     )}
                                 </div>
-                                <div className="mt-2 inline-block">
-                                    <p className="text-[10px] text-amber-600 font-bold uppercase tracking-widest bg-amber-50 px-2.5 py-1.5 rounded border border-amber-200">
-                                        ✨ {recommendedRatioText}
-                                    </p>
+                                <div className="mt-2 flex flex-col gap-2">
+                                    <div className="inline-block">
+                                        <p className="inline-block text-[10px] text-amber-600 font-bold uppercase tracking-widest bg-amber-50 px-2.5 py-1.5 rounded border border-amber-200">
+                                            ✨ Recommended ratio: 4.5:1. Use this ratio for best results, but other sizes are allowed.
+                                        </p>
+                                    </div>
+                                    {isLandscapeBanner && (
+                                        <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-600">
+                                            <p className="font-bold text-gray-800 mb-1.5">Accepted sizes (4.5:1 Ratio):</p>
+                                            <ul className="list-disc pl-4 space-y-1">
+                                                <li><strong>1800 x 400 pixels</strong> (Recommended for high-res displays)</li>
+                                                <li><strong>1350 x 300 pixels</strong> (Alternative Size)</li>
+                                                <li><strong>900 x 200 pixels</strong> (Alternative Size)</li>
+                                            </ul>
+                                        </div>
+                                    )}
                                 </div>
                                 <label className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#3E2723] px-4 py-3 text-xs font-bold uppercase tracking-widest text-white hover:bg-[#2D1B18] transition-all cursor-pointer">
                                     <ImageIcon size={14} />
