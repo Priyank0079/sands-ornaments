@@ -101,11 +101,11 @@ const PromoSlider = () => {
 
     return (
         <section
-            className="w-full bg-white pt-0 pb-0 overflow-hidden select-none"
+            className="w-full bg-white pt-4 md:pt-6 pb-6 md:pb-8 overflow-hidden select-none"
             onMouseEnter={() => setIsSuspended(true)}
             onMouseLeave={() => setIsSuspended(false)}
         >
-            <div className="relative w-full h-[170px] sm:h-[200px] md:h-[350px]">
+            <div className="relative w-full aspect-[16/9] sm:aspect-[2/1] md:aspect-[21/9] lg:aspect-[12/5]">
                 <motion.div
                     className="flex h-full w-full gap-[1.5%]"
                     animate={{
@@ -189,11 +189,10 @@ const PromoSlider = () => {
                                 <button
                                     key={i}
                                     onClick={() => !isTransitioning && setCurrentIndex(i + 1)}
-                                    className={`transition-all duration-500 rounded-full ${
-                                        isActive 
-                                            ? 'w-10 md:w-12 h-1 bg-white' 
+                                    className={`transition-all duration-500 rounded-full ${isActive
+                                            ? 'w-10 md:w-12 h-1 bg-white'
                                             : 'w-4 md:w-5 h-1 bg-white/40 hover:bg-white/70'
-                                    }`}
+                                        }`}
                                     aria-label={`Go to slide ${i + 1}`}
                                 />
                             );

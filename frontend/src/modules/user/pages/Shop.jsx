@@ -1437,8 +1437,6 @@ const Shop = () => {
             <div className="space-y-4">
               {[
                 "Newest",
-                "Price: High to Low",
-                "Price: Low to High",
                 "Best Selling",
               ].map((option) => (
                 <button
@@ -1463,6 +1461,31 @@ const Shop = () => {
                   )}
                 </button>
               ))}
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-gray-100">
+                <h3 className="text-lg font-serif font-bold text-black mb-6">
+                  Filter by Price
+                </h3>
+                <div className="px-2">
+                  <input
+                    type="range"
+                    min="1000"
+                    max="50000"
+                    step="1000"
+                    value={priceRange}
+                    onChange={(e) => handlePriceRangeChange(e.target.value)}
+                    className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-[#8E2B45]"
+                  />
+                  <div className="flex justify-between mt-4">
+                    <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">
+                      ₹1,000
+                    </span>
+                    <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">
+                      ₹{priceRange.toLocaleString()}{priceRange >= 50000 ? '+' : ''}
+                    </span>
+                  </div>
+                </div>
             </div>
           </div>
         </>

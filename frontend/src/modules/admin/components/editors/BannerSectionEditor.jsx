@@ -223,7 +223,7 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
                                         <img
                                             src={resolveLegacyCmsAsset(item.image, item.image)}
                                             alt={item.label || `Banner ${index + 1}`}
-                                            className="w-full h-full object-cover"
+                                            className="w-full h-full object-contain"
                                         />
                                     ) : (
                                         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-gray-400">
