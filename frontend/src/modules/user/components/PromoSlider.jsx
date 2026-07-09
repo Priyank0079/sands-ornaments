@@ -101,11 +101,11 @@ const PromoSlider = () => {
 
     return (
         <section
-            className="w-full bg-white pt-4 md:pt-6 pb-6 md:pb-8 overflow-hidden select-none"
+            className="w-full bg-white pt-0 pb-0 overflow-hidden select-none"
             onMouseEnter={() => setIsSuspended(true)}
             onMouseLeave={() => setIsSuspended(false)}
         >
-            <div className="relative w-full aspect-[16/9] sm:aspect-[2/1] md:aspect-[21/9] lg:aspect-[12/5]">
+            <div className="relative w-full h-[170px] sm:h-[200px] md:h-[350px]">
                 <motion.div
                     className="flex h-full w-full gap-[1.5%]"
                     animate={{
