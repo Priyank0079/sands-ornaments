@@ -161,13 +161,13 @@ const Navbar = () => {
                             <img
                                 src={logo}
                                 alt="Sands Jewels"
-                                className="h-[80px] w-auto object-contain -my-3"
+                                className="h-[60px] w-auto object-contain"
                             />
                         </Link>
 
                         <div
                             onClick={() => setIsPincodeModalOpen(true)}
-                            className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl cursor-pointer transition-all duration-200 group"
+                            className="flex items-center gap-2.5 px-3.5 h-[60px] rounded-xl cursor-pointer transition-all duration-200 group"
                             style={{ background: 'rgba(0,0,0,0.03)', border: '1px solid #EBEBEB' }}
                             onMouseEnter={e => { e.currentTarget.style.background = 'rgba(156,61,80,0.05)'; e.currentTarget.style.borderColor = 'rgba(156,61,80,0.2)'; }}
                             onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.03)'; e.currentTarget.style.borderColor = '#EBEBEB'; }}
@@ -307,8 +307,8 @@ const Navbar = () => {
                             const isActive = location.pathname.startsWith('/profile') || location.pathname === '/login';
                             return (
                                 <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.92 }} transition={{ type: 'spring', stiffness: 400, damping: 18 }}>
-                                    <Link to={user ? "/profile" : "/login"} className="flex flex-col items-center gap-1 px-3 py-2 rounded-2xl group relative"
-                                        style={{ minWidth: 58 }}
+                                    <Link to={user ? "/profile" : "/login"} className="flex flex-col items-center justify-center gap-1 px-3 rounded-2xl group relative"
+                                        style={{ minWidth: 58, height: 60 }}
                                     >
                                         {/* Hover glow bg */}
                                         <motion.div
@@ -354,8 +354,8 @@ const Navbar = () => {
                             const isActive = location.pathname === '/wishlist';
                             return (
                                 <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.92 }} transition={{ type: 'spring', stiffness: 400, damping: 18 }}>
-                                    <Link to="/wishlist" className="flex flex-col items-center gap-1 px-3 py-2 rounded-2xl group relative"
-                                        style={{ minWidth: 64 }}
+                                    <Link to="/wishlist" className="flex flex-col items-center justify-center gap-1 px-3 rounded-2xl group relative"
+                                        style={{ minWidth: 64, height: 60 }}
                                     >
                                         <motion.div className="absolute inset-0 rounded-2xl" initial={{ opacity: 0 }} whileHover={{ opacity: 1 }}
                                             style={{ background: 'linear-gradient(135deg,rgba(232,67,147,0.06) 0%,rgba(156,61,80,0.06) 100%)' }}
@@ -405,8 +405,8 @@ const Navbar = () => {
                             const isActive = location.pathname === '/notifications';
                             return (
                                 <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.92 }} transition={{ type: 'spring', stiffness: 400, damping: 18 }}>
-                                    <Link to="/notifications" className="flex flex-col items-center gap-1 px-3 py-2 rounded-2xl group relative"
-                                        style={{ minWidth: 54 }}
+                                    <Link to="/notifications" className="flex flex-col items-center justify-center gap-1 px-3 rounded-2xl group relative"
+                                        style={{ minWidth: 58, height: 60 }}
                                     >
                                         <motion.div className="absolute inset-0 rounded-2xl" initial={{ opacity: 0 }} whileHover={{ opacity: 1 }}
                                             style={{ background: 'linear-gradient(135deg,rgba(156,61,80,0.06) 0%,rgba(192,91,114,0.06) 100%)' }}
@@ -453,8 +453,8 @@ const Navbar = () => {
                             const isActive = location.pathname === '/cart';
                             return (
                                 <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.92 }} transition={{ type: 'spring', stiffness: 400, damping: 18 }}>
-                                    <Link to="/cart" className="flex flex-col items-center gap-1 px-3 py-2 rounded-2xl group relative"
-                                        style={{ minWidth: 50 }}
+                                    <Link to="/cart" className="flex flex-col items-center justify-center gap-1 px-3 rounded-2xl group relative"
+                                        style={{ minWidth: 58, height: 60 }}
                                     >
                                         <motion.div className="absolute inset-0 rounded-2xl" initial={{ opacity: 0 }} whileHover={{ opacity: 1 }}
                                             style={{ background: 'linear-gradient(135deg,rgba(156,61,80,0.06) 0%,rgba(192,91,114,0.06) 100%)' }}

@@ -6,8 +6,8 @@ import { useResetScroll } from '../../../hooks/useResetScroll';
 import LazySection from '../../../components/LazySection';
 
 // ─── ABOVE-FOLD: eagerly imported — these are visible immediately on page load ───
-import PromoSlider from '../components/PromoSlider';
 import CategoryGrid from '../components/CategoryGrid';
+import DynamicPromoBanner from '../components/DynamicPromoBanner';
 import TrustMarkers from '../components/TrustMarkers';
 
 // ─── BELOW-FOLD: lazy loaded — downloaded only when user scrolls toward them ────
@@ -84,7 +84,7 @@ const Home = () => {
             )}
 
             {/* ── ABOVE FOLD: loaded eagerly (visible immediately) ── */}
-            <PromoSlider />
+            <DynamicPromoBanner />
             <CategoryGrid />
             <TrustMarkers />
 
