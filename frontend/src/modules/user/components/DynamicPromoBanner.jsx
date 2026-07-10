@@ -28,7 +28,7 @@ const DynamicPromoBanner = () => {
     const banner = bannerItems[0];
 
     return (
-        <section className="w-full my-6 md:my-10 bg-white">
+        <section className="w-full bg-white">
             <div className="container mx-auto px-4">
                 <Link to={banner.link} className="block w-full">
                     {/* 
