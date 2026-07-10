@@ -16,7 +16,11 @@ const DynamicPromoBanner = () => {
                 image: resolveLegacyCmsAsset(item.image, item.image),
                 mobileImage: item.mobileImage ? resolveLegacyCmsAsset(item.mobileImage, item.mobileImage) : null,
                 link: item.path || '/shop',
-                title: item.label || 'Promo Banner'
+                title: item.label || 'Promo Banner',
+                name: item.name || '',
+                tag: item.tag || '',
+                subtitle: item.subtitle || '',
+                ctaLabel: item.ctaLabel || 'Shop Collection'
             }));
     }, [sectionData?.items]);
 
@@ -43,7 +47,7 @@ const DynamicPromoBanner = () => {
                             <img
                                 src={banner.mobileImage}
                                 alt={banner.title}
-                                className="w-full h-full object-cover block md:hidden"
+                                className="absolute inset-0 w-full h-full object-cover block md:hidden"
                                 loading="lazy"
                                 decoding="async"
                             />
@@ -53,10 +57,46 @@ const DynamicPromoBanner = () => {
                         <img
                             src={banner.image}
                             alt={banner.title}
-                            className={`w-full h-full object-cover ${banner.mobileImage ? 'hidden md:block' : 'block'}`}
+                            className={`absolute inset-0 w-full h-full object-cover ${banner.mobileImage ? 'hidden md:block' : 'block'}`}
                             loading="lazy"
                             decoding="async"
                         />
+
+                        {/* Text Overlay */}
+                        <div className="absolute top-1 left-2 md:top-8 md:left-12 z-20">
+                            <span className="bg-white/10 backdrop-blur-md border border-white/20 text-white text-[4px] sm:text-[6px] md:text-[10px] font-bold uppercase tracking-[0.3em] px-1 py-0.5 md:px-3 md:py-1.5 rounded-sm">
+                                {banner.name || 'A SANDS PRODUCT'}
+                            </span>
+                        </div>
+
+                        <div className="absolute inset-y-0 left-0 w-full md:w-[65%] flex flex-col justify-center px-3 md:px-20 z-10 text-white">
+                            {banner.tag && (
+                                <div className="flex items-center gap-1 md:gap-3 mb-0.5 md:mb-4">
+                                    <div className="w-4 md:w-8 h-[1px] md:h-[2px] bg-[#9C5B61]"></div>
+                                    <span className="text-[5px] sm:text-[7px] md:text-sm text-[#9C5B61] font-bold uppercase tracking-[0.4em]">
+                                        {banner.tag}
+                                    </span>
+                                </div>
+                            )}
+
+                            {banner.title && (
+                                <h2 className="font-serif text-sm sm:text-lg md:text-5xl font-bold leading-none md:leading-tight mb-0.5 md:mb-3 drop-shadow-lg max-w-[90%] md:max-w-xl">
+                                    {banner.title}
+                                </h2>
+                            )}
+
+                            {banner.subtitle && (
+                                <p className="text-white/80 text-[5px] sm:text-[7px] md:text-base font-light leading-tight md:leading-relaxed mb-1 md:mb-6 max-w-md tracking-wide line-clamp-2 md:line-clamp-none">
+                                    {banner.subtitle}
+                                </p>
+                            )}
+
+                            <span
+                                className="relative group inline-flex items-center justify-center bg-[#9C5B61] text-white hover:bg-white hover:text-[#9C5B61] font-bold text-[5px] sm:text-[6px] md:text-sm uppercase tracking-[0.2em] px-2 py-0.5 md:px-12 md:py-4 transition-all duration-300 overflow-hidden shadow-xl w-max"
+                            >
+                                <span className="relative z-10">{banner.ctaLabel}</span>
+                            </span>
+                        </div>
                     </div>
                 </Link>
             </div>
