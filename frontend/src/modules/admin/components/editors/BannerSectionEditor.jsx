@@ -34,11 +34,9 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     
     const bannerPreviewAspect = isDynamicPromoBanner ? 'aspect-[4/1]' : (isLandscapeBanner ? 'aspect-[4/1]' : 'aspect-[4/5]');
     const recommendedBannerSize = isDynamicPromoBanner ? '1920 x 480 px (4:1)' : (isLandscapeBanner ? '1920 x 480 px (4:1)' : '1200 x 1500 px');
-    const recommendedRatioText = isDynamicPromoBanner
+    const recommendedRatioText = isDynamicPromoBanner || isLandscapeBanner
         ? 'Required ratio: 4:1 (e.g. 1920x480). Images must be exactly this ratio.'
-        : (isLandscapeBanner 
-            ? 'Recommended ratio: 4:1 (e.g. 1920x480). Use this ratio for best results.'
-            : 'Recommended ratio: 4:5. Upload the same size for every banner so the layouts stay aligned.');
+        : 'Recommended ratio: 4:5. Upload the same size for every banner so the layouts stay aligned.';
 
     const initialItems = useMemo(() => {
         if (Array.isArray(sectionData?.items) && sectionData.items.length > 0) {
@@ -114,7 +112,7 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
             img.onload = () => {
                 const ratio = img.width / img.height;
                 if (Math.abs(ratio - expectedRatio) > tolerance) {
-                    reject(new Error(`Invalid aspect ratio. Expected ${expectedRatio.toFixed(2)}:1, got ${ratio.toFixed(2)}:1. Please use 1920x384 or similar.`));
+                    reject(new Error(`Invalid aspect ratio. Expected ${expectedRatio.toFixed(2)}:1, got ${ratio.toFixed(2)}:1. Please use exact ${expectedRatio.toFixed(2)}:1 ratio (e.g. 1920x480 for 4:1).`));
                 } else {
                     resolve();
                 }
@@ -127,13 +125,12 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     const handleImageUpload = async (id, file, isMobile = false) => {
         if (!file) return;
 
-        if (isDynamicPromoBanner) {
+        if (isDynamicPromoBanner || isLandscapeBanner) {
             try {
                 const expectedRatio = isMobile ? (16 / 9) : 4;
-                const ratioName = isMobile ? '16:9' : '4:1';
                 await validateImageRatio(file, expectedRatio, 0.05);
             } catch (err) {
-                toast.error(err.message.replace(/1920x384 or similar/, `exact ${isMobile ? '16:9' : '4:1'} ratio`));
+                toast.error(err.message);
                 return;
             }
         }
