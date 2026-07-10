@@ -27,7 +27,7 @@ const BannerSectionEditor = ({ sectionData, onSave, defaultItems = [] }) => {
     const isWomenPersonalizedBanner = sectionKey === 'personalized-banner' && pageKey === 'shop-women';
     const isFamilyPromoBanner = sectionKey === 'family-promo-banner' && pageKey === 'shop-family';
     const isGoldPageBanner = pageKey === 'gold-collection';
-    const isSingleBannerSection = isWomenPersonalizedBanner || isFamilyPromoBanner;
+    const isSingleBannerSection = isWomenPersonalizedBanner || isFamilyPromoBanner || sectionKey === 'dynamic-promo-banner';
 
     const isLandscapeBanner = sectionKey === 'hero-banners' || sectionKey === 'auto-banner-section' || sectionKey === 'hero-banners-gold';
     const isDynamicPromoBanner = sectionKey === 'dynamic-promo-banner';
