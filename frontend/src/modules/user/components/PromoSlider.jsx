@@ -106,7 +106,7 @@ const PromoSlider = ({ externalSlides, autoplayInterval }) => {
             onMouseEnter={() => setIsSuspended(true)}
             onMouseLeave={() => setIsSuspended(false)}
         >
-            <div className="relative w-full aspect-[16/9] md:aspect-[4/1] overflow-hidden group">
+            <div className="relative w-full aspect-[4/1] overflow-hidden group">
                 <motion.div
                     className="flex h-full w-full"
                     animate={{
@@ -148,38 +148,38 @@ const PromoSlider = ({ externalSlides, autoplayInterval }) => {
                             />
 
                             {/* Subtle Brand Watermark */}
-                            <div className="absolute top-3 left-4 md:top-8 md:left-12 z-20">
-                                <span className="bg-white/10 backdrop-blur-md border border-white/20 text-white text-[8px] md:text-[10px] font-bold uppercase tracking-[0.3em] px-3 py-1.5 rounded-sm">
+                            <div className="absolute top-1 left-2 md:top-8 md:left-12 z-20">
+                                <span className="bg-white/10 backdrop-blur-md border border-white/20 text-white text-[4px] sm:text-[6px] md:text-[10px] font-bold uppercase tracking-[0.3em] px-1 py-0.5 md:px-3 md:py-1.5 rounded-sm">
                                     A SANDS PRODUCT
                                 </span>
                             </div>
 
                             {/* Refined Content Overlay - Left-aligned for high-end professional look */}
-                            <div className="absolute inset-y-0 left-0 w-full md:w-[65%] flex flex-col justify-center px-5 md:px-20 z-10">
+                            <div className="absolute inset-y-0 left-0 w-full md:w-[65%] flex flex-col justify-center px-3 md:px-20 z-10">
                                 <motion.div
                                     initial={{ opacity: 0, x: -30 }}
                                     animate={currentIndex === idx ? { opacity: 1, x: 0 } : { opacity: 0, x: -30 }}
                                     transition={{ duration: 0.8, delay: 0.2 }}
                                     className="text-white flex flex-col items-start"
                                 >
-                                    <div className="flex items-center gap-3 mb-2 md:mb-4">
-                                        <div className="w-8 h-[2px] bg-[#9C5B61]"></div>
-                                        <span className="text-[10px] md:text-sm text-[#9C5B61] font-bold uppercase tracking-[0.4em]">
+                                    <div className="flex items-center gap-1 md:gap-3 mb-0.5 md:mb-4">
+                                        <div className="w-4 md:w-8 h-[1px] md:h-[2px] bg-[#9C5B61]"></div>
+                                        <span className="text-[5px] sm:text-[7px] md:text-sm text-[#9C5B61] font-bold uppercase tracking-[0.4em]">
                                             {slide.tag}
                                         </span>
                                     </div>
 
-                                    <h2 className="font-serif text-2xl md:text-5xl font-bold leading-tight mb-1 md:mb-3 drop-shadow-lg max-w-[90%] md:max-w-xl">
+                                    <h2 className="font-serif text-sm sm:text-lg md:text-5xl font-bold leading-none md:leading-tight mb-0.5 md:mb-3 drop-shadow-lg max-w-[90%] md:max-w-xl">
                                         {slide.title}
                                     </h2>
 
-                                    <p className="text-white/80 text-[10px] md:text-base font-light leading-relaxed mb-3 md:mb-6 max-w-md tracking-wide line-clamp-2 md:line-clamp-none">
+                                    <p className="text-white/80 text-[5px] sm:text-[7px] md:text-base font-light leading-tight md:leading-relaxed mb-1 md:mb-6 max-w-md tracking-wide line-clamp-2 md:line-clamp-none">
                                         {slide.subtitle}
                                     </p>
 
                                     <Link
                                         to={slide.link}
-                                        className="relative group inline-flex items-center justify-center bg-[#9C5B61] text-white hover:bg-white hover:text-[#9C5B61] font-bold text-[10px] md:text-sm uppercase tracking-[0.2em] px-6 py-2.5 md:px-12 md:py-4 transition-all duration-300 overflow-hidden shadow-xl"
+                                        className="relative group inline-flex items-center justify-center bg-[#9C5B61] text-white hover:bg-white hover:text-[#9C5B61] font-bold text-[5px] sm:text-[6px] md:text-sm uppercase tracking-[0.2em] px-2 py-0.5 md:px-12 md:py-4 transition-all duration-300 overflow-hidden shadow-xl"
                                     >
                                         <span className="relative z-10">{slide.ctaLabel || 'Shop Collection'}</span>
                                     </Link>
