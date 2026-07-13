@@ -82,7 +82,7 @@ const MenHeroCarousel = ({ sectionData }) => {
     }, [current, resolvedSlides.length]);
 
     return (
-        <section className="relative w-full aspect-[2.5/1] md:aspect-[4/1] overflow-hidden bg-[#111111]">
+        <section className="relative w-full aspect-[4/1] overflow-hidden bg-[#111111]">
             <AnimatePresence mode="wait">
                 <motion.div
                     key={current}
