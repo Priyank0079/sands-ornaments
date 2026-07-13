@@ -78,7 +78,7 @@ const WomenHeroCarousel = ({ sectionData }) => {
     : slide.image;
 
   return (
-    <section className="relative w-full aspect-[4/1] overflow-hidden select-none">
+    <section className="relative w-full aspect-[2.5/1] md:aspect-[4/1] overflow-hidden select-none">
       <div className="absolute inset-0 w-full h-full">
         <div
           className="absolute inset-0 bg-cover bg-center transition-transform duration-[10000ms] hover:scale-105"

@@ -72,7 +72,7 @@ const FamilyHeroCarousel = ({ sectionData }) => {
     const activeImage = brokenSlideIds[activeSlide.id] ? defaultSlides[0].image : activeSlide.image;
 
     return (
-        <section className="relative w-full aspect-[4/1] overflow-hidden select-none bg-[#111]">
+        <section className="relative w-full aspect-[2.5/1] md:aspect-[4/1] overflow-hidden select-none bg-[#111]">
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
