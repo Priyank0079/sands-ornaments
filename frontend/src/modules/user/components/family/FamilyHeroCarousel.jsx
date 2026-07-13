@@ -46,6 +46,7 @@ const FamilyHeroCarousel = ({ sectionData }) => {
                     titleItalic,
                     subtitle: String(item.subtitle || defaultSlides[0].subtitle).trim() || defaultSlides[0].subtitle,
                     image: resolveLegacyCmsAsset(item.image, defaultSlides[0].image),
+                    mobileImage: item.mobileImage ? resolveLegacyCmsAsset(item.mobileImage, defaultSlides[0].image) : null,
                     ctaLabel: String(item.ctaLabel || defaultSlides[0].ctaLabel).trim() || defaultSlides[0].ctaLabel,
                     path: item.path || buildFamilyShopPath()
                 };
@@ -70,9 +71,10 @@ const FamilyHeroCarousel = ({ sectionData }) => {
 
     const activeSlide = slides[currentIndex] || defaultSlides[0];
     const activeImage = brokenSlideIds[activeSlide.id] ? defaultSlides[0].image : activeSlide.image;
+    const sliderAspect = activeSlide.mobileImage ? 'aspect-[2/1] md:aspect-[4/1]' : 'aspect-[4/1]';
 
     return (
-        <section className="relative w-full aspect-[4/1] overflow-hidden select-none bg-[#111]">
+        <section className={`relative w-full overflow-hidden select-none bg-[#111] transition-all duration-300 ${sliderAspect}`}>
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -80,8 +82,18 @@ const FamilyHeroCarousel = ({ sectionData }) => {
                 className="absolute inset-0 w-full h-full"
             >
                 {/* Background Image with slow zoom animation */}
+                {activeSlide.mobileImage && (
+                    <div
+                        className="absolute inset-0 bg-cover bg-center transition-transform duration-[12000ms] scale-100 animate-slow-zoom block md:hidden"
+                        style={{ 
+                            backgroundImage: `url(${activeSlide.mobileImage})`, 
+                            backgroundPosition: 'center',
+                            filter: 'hue-rotate(330deg) brightness(0.85) contrast(1.15) saturate(1.2)' 
+                        }}
+                    />
+                )}
                 <div
-                    className="absolute inset-0 bg-cover bg-center transition-transform duration-[12000ms] scale-100 animate-slow-zoom"
+                    className={`absolute inset-0 bg-cover bg-center transition-transform duration-[12000ms] scale-100 animate-slow-zoom ${activeSlide.mobileImage ? 'hidden md:block' : 'block'}`}
                     style={{ 
                         backgroundImage: `url(${activeImage})`, 
                         backgroundPosition: 'center 40%',

@@ -106,7 +106,7 @@ const PromoSlider = ({ externalSlides, autoplayInterval }) => {
             onMouseEnter={() => setIsSuspended(true)}
             onMouseLeave={() => setIsSuspended(false)}
         >
-            <div className="relative w-full aspect-[4/1] overflow-hidden group">
+            <div className={`relative w-full overflow-hidden group transition-all duration-300 ${extendedSlides[currentIndex]?.mobileImage ? 'aspect-[2/1] md:aspect-[4/1]' : 'aspect-[4/1]'}`}>
                 <motion.div
                     className="flex h-full w-full"
                     animate={{

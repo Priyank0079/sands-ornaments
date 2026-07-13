@@ -47,7 +47,7 @@ const DynamicPromoBanner = () => {
     }
 
     const renderBannerItem = (banner, idx) => {
-        const aspectClass = banner.mobileImage ? 'aspect-[16/9] md:aspect-[4/1]' : 'aspect-[4/1]';
+        const aspectClass = banner.mobileImage ? 'aspect-[2/1] md:aspect-[4/1]' : 'aspect-[4/1]';
         return (
             <Link to={banner.link} className="block w-full">
                 {/* 
@@ -128,7 +128,7 @@ const DynamicPromoBanner = () => {
     }
 
     const activeBanner = bannerItems[currentIndex];
-    const bannerContainerAspect = activeBanner.mobileImage ? 'aspect-[16/9] md:aspect-[4/1]' : 'aspect-[4/1]';
+    const bannerContainerAspect = activeBanner.mobileImage ? 'aspect-[2/1] md:aspect-[4/1]' : 'aspect-[4/1]';
 
     return (
         <section className="w-full bg-white relative">
