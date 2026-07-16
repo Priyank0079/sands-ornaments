@@ -264,6 +264,14 @@ const AdminSellerDetails = () => {
                         </h3>
                         <div className="space-y-6">
                             <div>
+                                <p className={infoLabelClasses}>Bank Name</p>
+                                <p className={infoValueClasses}>{seller.bankAccount?.bankName || 'N/A'}</p>
+                            </div>
+                            <div>
+                                <p className={infoLabelClasses}>Branch Name</p>
+                                <p className={infoValueClasses}>{seller.bankAccount?.branchName || 'N/A'}</p>
+                            </div>
+                            <div>
                                 <p className={infoLabelClasses}>Account Number</p>
                                 <p className={infoValueClasses}>{seller.bankAccount?.accountNumber || 'N/A'}</p>
                             </div>
@@ -307,6 +315,22 @@ const AdminSellerDetails = () => {
                                 </h3>
                                 <div className="space-y-6">
                                     <div>
+                                        <p className={infoLabelClasses}>Firm Type</p>
+                                        <p className={infoValueClasses}>{seller.firmType || 'N/A'}</p>
+                                    </div>
+                                    {seller.firmType === 'Pvt Ltd' && (
+                                        <div>
+                                            <p className={infoLabelClasses}>CIN (Corporate Identification Number)</p>
+                                            <p className={infoValueClasses}>{seller.cin || 'N/A'}</p>
+                                        </div>
+                                    )}
+                                    {seller.firmType === 'LLP' && (
+                                        <div>
+                                            <p className={infoLabelClasses}>LLPIN (LLP Identification Number)</p>
+                                            <p className={infoValueClasses}>{seller.llpin || 'N/A'}</p>
+                                        </div>
+                                    )}
+                                    <div>
                                         <p className={infoLabelClasses}>GST Number</p>
                                         <p className={infoValueClasses}>{seller.gstNumber || 'N/A'}</p>
                                     </div>
@@ -331,7 +355,7 @@ const AdminSellerDetails = () => {
                         <h3 className={sectionTitleClasses}>
                             <FileText size={14} className="text-[#3E2723]" /> Document Verification
                         </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
                             <div className="space-y-3">
                                 <p className={infoLabelClasses}>Aadhar Card</p>
                                 {seller.documents?.aadharUrl ? (
@@ -375,6 +399,103 @@ const AdminSellerDetails = () => {
                                 {seller.documents?.certificateUrl ? (
                                     <a 
                                         href={seller.documents.certificateUrl} 
+                                        target="_blank" 
+                                        rel="noreferrer" 
+                                        className="aspect-video bg-gray-50 rounded-xl border border-dashed border-gray-200 flex flex-col items-center justify-center group overflow-hidden relative cursor-pointer hover:bg-gray-100/50 transition-all"
+                                    >
+                                        <FileText size={32} className="text-gray-300 group-hover:scale-110 transition-transform" />
+                                        <span className="absolute bottom-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest underline decoration-dotted hover:text-[#3E2723]">View Full Document</span>
+                                    </a>
+                                ) : (
+                                    <div className="aspect-video bg-gray-50 rounded-xl border border-dashed border-gray-200 flex items-center justify-center group overflow-hidden relative">
+                                        <FileText size={32} className="text-gray-300" />
+                                        <span className="absolute bottom-4 text-[9px] font-bold text-gray-300 uppercase tracking-widest">Not uploaded</span>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="space-y-3">
+                                <p className={infoLabelClasses}>PAN Card</p>
+                                {seller.documents?.panUrl ? (
+                                    <a 
+                                        href={seller.documents.panUrl} 
+                                        target="_blank" 
+                                        rel="noreferrer" 
+                                        className="aspect-video bg-gray-50 rounded-xl border border-dashed border-gray-200 flex flex-col items-center justify-center group overflow-hidden relative cursor-pointer hover:bg-gray-100/50 transition-all"
+                                    >
+                                        <FileText size={32} className="text-gray-300 group-hover:scale-110 transition-transform" />
+                                        <span className="absolute bottom-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest underline decoration-dotted hover:text-[#3E2723]">View Full Document</span>
+                                    </a>
+                                ) : (
+                                    <div className="aspect-video bg-gray-50 rounded-xl border border-dashed border-gray-200 flex items-center justify-center group overflow-hidden relative">
+                                        <FileText size={32} className="text-gray-300" />
+                                        <span className="absolute bottom-4 text-[9px] font-bold text-gray-300 uppercase tracking-widest">Not uploaded</span>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="space-y-3">
+                                <p className={infoLabelClasses}>GST Certificate</p>
+                                {seller.documents?.gstUrl ? (
+                                    <a 
+                                        href={seller.documents.gstUrl} 
+                                        target="_blank" 
+                                        rel="noreferrer" 
+                                        className="aspect-video bg-gray-50 rounded-xl border border-dashed border-gray-200 flex flex-col items-center justify-center group overflow-hidden relative cursor-pointer hover:bg-gray-100/50 transition-all"
+                                    >
+                                        <FileText size={32} className="text-gray-300 group-hover:scale-110 transition-transform" />
+                                        <span className="absolute bottom-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest underline decoration-dotted hover:text-[#3E2723]">View Full Document</span>
+                                    </a>
+                                ) : (
+                                    <div className="aspect-video bg-gray-50 rounded-xl border border-dashed border-gray-200 flex items-center justify-center group overflow-hidden relative">
+                                        <FileText size={32} className="text-gray-300" />
+                                        <span className="absolute bottom-4 text-[9px] font-bold text-gray-300 uppercase tracking-widest">Not uploaded</span>
+                                    </div>
+                                )}
+                            </div>
+                            {seller.firmType === 'Partnership' && (
+                                <div className="space-y-3">
+                                    <p className={infoLabelClasses}>Partnership Deed</p>
+                                    {seller.documents?.partnershipDeedUrl ? (
+                                        <a 
+                                            href={seller.documents.partnershipDeedUrl} 
+                                            target="_blank" 
+                                            rel="noreferrer" 
+                                            className="aspect-video bg-gray-50 rounded-xl border border-dashed border-gray-200 flex flex-col items-center justify-center group overflow-hidden relative cursor-pointer hover:bg-gray-100/50 transition-all"
+                                        >
+                                            <FileText size={32} className="text-gray-300 group-hover:scale-110 transition-transform" />
+                                            <span className="absolute bottom-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest underline decoration-dotted hover:text-[#3E2723]">View Full Document</span>
+                                        </a>
+                                    ) : (
+                                        <div className="aspect-video bg-gray-50 rounded-xl border border-dashed border-gray-200 flex items-center justify-center group overflow-hidden relative">
+                                            <FileText size={32} className="text-gray-300" />
+                                            <span className="absolute bottom-4 text-[9px] font-bold text-gray-300 uppercase tracking-widest">Not uploaded</span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                            <div className="space-y-3">
+                                <p className={infoLabelClasses}>Visiting Card</p>
+                                {seller.documents?.visitingCardUrl ? (
+                                    <a 
+                                        href={seller.documents.visitingCardUrl} 
+                                        target="_blank" 
+                                        rel="noreferrer" 
+                                        className="aspect-video bg-gray-50 rounded-xl border border-dashed border-gray-200 flex flex-col items-center justify-center group overflow-hidden relative cursor-pointer hover:bg-gray-100/50 transition-all"
+                                    >
+                                        <FileText size={32} className="text-gray-300 group-hover:scale-110 transition-transform" />
+                                        <span className="absolute bottom-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest underline decoration-dotted hover:text-[#3E2723]">View Full Document</span>
+                                    </a>
+                                ) : (
+                                    <div className="aspect-video bg-gray-50 rounded-xl border border-dashed border-gray-200 flex items-center justify-center group overflow-hidden relative">
+                                        <FileText size={32} className="text-gray-300" />
+                                        <span className="absolute bottom-4 text-[9px] font-bold text-gray-300 uppercase tracking-widest">Not uploaded</span>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="space-y-3">
+                                <p className={infoLabelClasses}>Diamond Certificate</p>
+                                {seller.documents?.diamondCertificateUrl ? (
+                                    <a 
+                                        href={seller.documents.diamondCertificateUrl} 
                                         target="_blank" 
                                         rel="noreferrer" 
                                         className="aspect-video bg-gray-50 rounded-xl border border-dashed border-gray-200 flex flex-col items-center justify-center group overflow-hidden relative cursor-pointer hover:bg-gray-100/50 transition-all"

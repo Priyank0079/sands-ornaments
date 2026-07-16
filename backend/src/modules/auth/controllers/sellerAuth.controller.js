@@ -28,18 +28,9 @@ exports.register = async (req, res) => {
       email,
       mobileNumber,
       password,
-      gstNumber,
-      panNumber,
-      bisNumber,
-      bisNumberGold,
-      bisNumberSilver,
-      dob,
-      district,
       shopAddress,
       city,
       state,
-      pincode,
-      bankAccount,
       acceptTerms,
     } = req.body;
 
@@ -70,14 +61,6 @@ exports.register = async (req, res) => {
         400,
       );
     }
-    if (!gstNumber || !String(gstNumber).trim())
-      return error(res, "GST number is required", 400);
-    if (!panNumber || !String(panNumber).trim())
-      return error(res, "PAN number is required", 400);
-    if (!dob)
-      return error(res, "Date of Birth (DOB) is required", 400);
-    if (!district || !String(district).trim())
-      return error(res, "District is required", 400);
 
     if (!shopAddress || !String(shopAddress).trim())
       return error(res, "Shop address is required", 400);
@@ -91,8 +74,6 @@ exports.register = async (req, res) => {
     if (!/^[A-Za-z\s]+$/.test(String(state).trim())) {
       return error(res, "State should contain only alphabets", 400);
     }
-    if (!pincode || !String(pincode).trim())
-      return error(res, "Pincode is required", 400);
 
     const existingEmail = normalizedEmail
       ? await Seller.findOne({ email: normalizedEmail })
@@ -128,79 +109,45 @@ exports.register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const aadharFile = req.files?.aadhar?.[0];
-    const shopLicenseFile = req.files?.shopLicense?.[0];
-    const certificateFile = req.files?.certificate?.[0];
-
-    let parsedBankAccount = bankAccount;
-    if (typeof bankAccount === "string") {
-      try {
-        parsedBankAccount = JSON.parse(bankAccount);
-      } catch (err) {
-        parsedBankAccount = undefined;
-      }
-    }
-    if (
-      !parsedBankAccount ||
-      !String(parsedBankAccount.accountNumber || "").trim()
-    ) {
-      return error(res, "Bank account number is required", 400);
-    }
-    if (!String(parsedBankAccount.ifscCode || "").trim()) {
-      return error(res, "Bank IFSC code is required", 400);
-    }
-
-    if (!aadharFile?.path)
-      return error(res, "Aadhar document is required", 400);
-    if (!shopLicenseFile?.path)
-      return error(res, "Shop license document is required", 400);
-    if (!certificateFile?.path)
-      return error(res, "Certificate document is required", 400);
-
     const seller = await Seller.create({
       shopName,
       fullName,
       email: normalizedEmail,
       mobileNumber: normalizedMobile,
       password: hashedPassword,
-      gstNumber,
-      panNumber,
-      bisNumber,
-      bisNumberGold,
-      bisNumberSilver,
-      dob: dob ? new Date(dob) : undefined,
-      district,
       shopAddress,
       city,
       state,
-      pincode,
-      bankAccount: parsedBankAccount,
       termsAcceptedAt: new Date(),
       termsVersion:
         sellerTermsPage.lastUpdated || sellerTermsPage.updatedAt || new Date(),
-      documents: {
-        aadharUrl: aadharFile?.path || undefined,
-        shopLicenseUrl: shopLicenseFile?.path || undefined,
-        certificateUrl: certificateFile?.path || undefined,
-      },
-      status: "PENDING",
+      status: "PENDING_PROFILE",
     });
 
-    await Notification.create({
-      title: "New seller registration",
-      message: `${fullName} applied with shop ${shopName}. Email: ${email}. Mobile: ${mobileNumber}. Location: ${city || "N/A"}, ${state || "N/A"}.`,
+    const adminNotification = await Notification.create({
+      title: "New seller registered",
+      message: `${fullName} registered with shop ${shopName}. Email: ${email}. Mobile: ${mobileNumber}. Location: ${city || "N/A"}, ${state || "N/A"}.`,
       type: "SELLER_REQUEST",
       priority: "High",
       link: `/admin/seller-details/${seller._id}`,
       isBroadcast: true,
-    });
+    }).catch(() => null);
+
+    if (adminNotification) {
+      try {
+        const { emitBroadcastNotification } = require("../../../services/socketEmitter");
+        emitBroadcastNotification(adminNotification);
+      } catch (err) {
+        console.error("Failed to emit socket notification:", err.message);
+      }
+    }
 
     if (process.env.ADMIN_EMAIL) {
       try {
         await sendEmail({
           to: process.env.ADMIN_EMAIL,
-          subject: "New seller registration pending approval",
-          html: `New seller registration received.\n\nName: ${fullName}\nShop: ${shopName}\nEmail: ${normalizedEmail}\nMobile: ${normalizedMobile}\nGST: ${gstNumber || "N/A"}\nPAN: ${panNumber || "N/A"}\nBIS Gold: ${bisNumberGold || "N/A"}\nBIS Silver: ${bisNumberSilver || "N/A"}\nDOB: ${dob || "N/A"}\nDistrict: ${district || "N/A"}\nLocation: ${city || "N/A"}, ${state || "N/A"}\n\nReview in admin panel.`,
+          subject: "New seller registration received",
+          html: `New seller registration received.\n\nName: ${fullName}\nShop: ${shopName}\nEmail: ${normalizedEmail}\nMobile: ${normalizedMobile}\nLocation: ${city || "N/A"}, ${state || "N/A"}\n\nReview in admin panel.`,
         });
       } catch (mailErr) {
         console.error(
@@ -213,7 +160,7 @@ exports.register = async (req, res) => {
     return success(
       res,
       { sellerId: seller._id },
-      "Registration submitted. Awaiting admin approval.",
+      "Registration successful. Please log in to complete your profile.",
       201,
     );
   } catch (err) {
@@ -244,21 +191,6 @@ exports.login = async (req, res) => {
         429,
         "SELLER_LOCKED",
       );
-    }
-
-    if (seller.status === "PENDING") {
-      return error(
-        res,
-        "Your seller account is under review. Please wait for admin approval.",
-        403,
-      );
-    }
-
-    if (seller.status === "REJECTED") {
-      const rejectionMessage = seller.rejectionReason
-        ? `Your seller account was rejected. Reason: ${seller.rejectionReason}`
-        : "Your seller account was rejected. Please contact support.";
-      return error(res, rejectionMessage, 403);
     }
 
     const isMatch = await bcrypt.compare(password, seller.password);

@@ -22,20 +22,13 @@ exports.adminLoginSchema = Joi.object({
 });
 
 exports.sellerRegisterSchema = Joi.object({
-  shopName: Joi.string().min(3).max(100).required(),
   fullName: Joi.string().min(3).max(100).pattern(/^[A-Za-z\s]+$/).required().messages({
     "string.pattern.base": "Full name should contain only alphabets",
   }),
-  email: Joi.string().email().required(),
   mobileNumber: Joi.string().length(10).pattern(/^[0-9]+$/).required(),
+  email: Joi.string().email().required(),
   password: Joi.string().min(6).required(),
-  gstNumber: Joi.string().required(),
-  panNumber: Joi.string().required(),
-  bisNumber: Joi.string().allow('', null).optional(),
-  bisNumberGold: Joi.string().allow('', null).optional(),
-  bisNumberSilver: Joi.string().allow('', null).optional(),
-  dob: Joi.date().required(),
-  district: Joi.string().required(),
+  shopName: Joi.string().min(3).max(100).required(),
   shopAddress: Joi.string().required(),
   city: Joi.string().pattern(/^[A-Za-z\s]+$/).required().messages({
     "string.pattern.base": "City should contain only alphabets",
@@ -43,11 +36,7 @@ exports.sellerRegisterSchema = Joi.object({
   state: Joi.string().pattern(/^[A-Za-z\s]+$/).required().messages({
     "string.pattern.base": "State should contain only alphabets",
   }),
-  pincode: Joi.string().required(),
-  bankAccount: Joi.string().required(),
   acceptTerms: Joi.any().required(),
-  accountNumber: Joi.string().optional(),
-  ifscCode: Joi.string().optional(),
 });
 
 exports.sellerLoginSchema = Joi.object({
