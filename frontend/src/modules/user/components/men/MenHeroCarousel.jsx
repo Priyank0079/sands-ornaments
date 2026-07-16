@@ -61,7 +61,8 @@ const MenHeroCarousel = ({ sectionData }) => {
                 rightTitle: item.subtitle || '',
                 cta: item.ctaLabel || 'SHOP NOW',
                 link: item.path || buildMenShopPath(),
-                image: resolveLegacyCmsAsset(item.image, defaultSlides[index]?.image || heroMenBold)
+                image: resolveLegacyCmsAsset(item.image, defaultSlides[index]?.image || heroMenBold),
+                mobileImage: item.mobileImage ? resolveLegacyCmsAsset(item.mobileImage, defaultSlides[index]?.image || heroMenBold) : null
             }))
             .filter((item) => item.mainTitle && item.image);
 
@@ -81,8 +82,11 @@ const MenHeroCarousel = ({ sectionData }) => {
         }
     }, [current, resolvedSlides.length]);
 
+    const activeSlide = resolvedSlides[current];
+    const sliderAspect = activeSlide?.mobileImage ? 'aspect-[2/1] md:aspect-[4/1]' : 'aspect-[4/1]';
+
     return (
-        <section className="relative w-full aspect-[4/1] overflow-hidden bg-[#111111]">
+        <section className={`relative w-full overflow-hidden bg-[#111111] transition-all duration-300 ${sliderAspect}`}>
             <AnimatePresence mode="wait">
                 <motion.div
                     key={current}
@@ -93,10 +97,17 @@ const MenHeroCarousel = ({ sectionData }) => {
                     className="absolute inset-0"
                 >
                     {/* Full-width Background Image */}
+                    {resolvedSlides[current].mobileImage && (
+                        <img
+                            src={resolvedSlides[current].mobileImage}
+                            alt="Men Jewelry Model"
+                            className="absolute inset-0 w-full h-full object-cover object-center block md:hidden"
+                        />
+                    )}
                     <img
                         src={resolvedSlides[current].image}
                         alt="Men Jewelry Model"
-                        className="w-full h-full object-cover object-center"
+                        className={`absolute inset-0 w-full h-full object-cover object-center ${resolvedSlides[current].mobileImage ? 'hidden md:block' : 'block'}`}
                     />
 
                     {/* Dark gradient overlays for text legibility */}

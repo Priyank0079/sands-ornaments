@@ -85,6 +85,7 @@ const GoldJewelleryPage = () => {
       .map((item, index) => ({
         id: item.itemId || item.id || `gold-hero-${index + 1}`,
         image: resolveLegacyCmsAsset(item.image, heroGold),
+        mobileImage: item.mobileImage ? resolveLegacyCmsAsset(item.mobileImage, heroGold) : null,
         title:
           String(item?.label || item?.title || "Akshaya Tritiya").trim() ||
           "Akshaya Tritiya",

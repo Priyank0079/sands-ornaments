@@ -49,6 +49,7 @@ const WomenHeroCarousel = ({ sectionData }) => {
           titleItalic,
           subtitle: item.subtitle || defaultSlides[0].subtitle,
           image: resolveLegacyCmsAsset(item.image, defaultSlides[0].image),
+          mobileImage: item.mobileImage ? resolveLegacyCmsAsset(item.mobileImage, defaultSlides[0].image) : null,
           cta: item.ctaLabel || defaultSlides[0].cta,
           path: item.path || buildWomenShopPath({ category: "women" }),
           accent: defaultSlides[0].accent,
@@ -77,11 +78,22 @@ const WomenHeroCarousel = ({ sectionData }) => {
     ? defaultSlides[0].image
     : slide.image;
 
+  const sliderAspect = slide.mobileImage ? 'aspect-[2/1] md:aspect-[4/1]' : 'aspect-[4/1]';
+
   return (
-    <section className="relative w-full aspect-[4/1] overflow-hidden select-none">
+    <section className={`relative w-full overflow-hidden select-none transition-all duration-300 ${sliderAspect}`}>
       <div className="absolute inset-0 w-full h-full">
+        {slide.mobileImage && (
+            <div
+              className="absolute inset-0 bg-cover bg-center transition-transform duration-[10000ms] hover:scale-105 block md:hidden"
+              style={{
+                backgroundImage: `url(${slide.mobileImage})`,
+                backgroundPosition: "center",
+              }}
+            />
+        )}
         <div
-          className="absolute inset-0 bg-cover bg-center transition-transform duration-[10000ms] hover:scale-105"
+          className={`absolute inset-0 bg-cover bg-center transition-transform duration-[10000ms] hover:scale-105 ${slide.mobileImage ? 'hidden md:block' : 'block'}`}
           style={{
             backgroundImage: `url(${activeImage})`,
             backgroundPosition: "center 35%",
