@@ -5,7 +5,7 @@ import PageHeader from '../components/common/PageHeader';
 import AdminStatsCard from '../components/AdminStatsCard';
 import { adminService } from '../services/adminService';
 import { toast } from 'react-hot-toast';
-import { exportToExcelCSV } from '../utils/exportUtils';
+import { exportToExcelCSV } from '../../../utils/exportUtils';
 
 const UserManagement = () => {
     const navigate = useNavigate();

@@ -6,7 +6,7 @@ import DataTable from '../components/common/DataTable';
 import BulkUpdateModal from '../components/BulkUpdateModal';
 import { adminService } from '../services/adminService';
 import toast from 'react-hot-toast';
-import { exportToExcelCSV } from '../utils/exportUtils';
+import { exportToExcelCSV } from '../../../utils/exportUtils';
 
 const ProductManagement = () => {
     const navigate = useNavigate();
