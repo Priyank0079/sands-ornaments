@@ -177,6 +177,28 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const refreshUser = async () => {
+        const path = window.location.pathname;
+        let userKey = 'sands_current_user';
+        if (path.startsWith('/admin')) {
+            userKey = 'sands_admin_user';
+        } else if (path.startsWith('/seller')) {
+            userKey = 'sands_seller_user';
+        }
+        try {
+            const res = await api.get('auth/me');
+            if (res.data.success) {
+                const userData = res.data.data?.user || res.data.user;
+                if (userData) {
+                    setUser(userData);
+                    localStorage.setItem(userKey, JSON.stringify(userData));
+                }
+            }
+        } catch (err) {
+            console.error("Failed to refresh user:", err.message);
+        }
+    };
+
     const updateProfile = async (profileData) => {
         const originalUser = user;
         // Optimistically update frontend user state immediately
@@ -217,7 +239,8 @@ export const AuthProvider = ({ children }) => {
             sellerLogin, 
             logout,
             deleteAccount,
-            updateProfile
+            updateProfile,
+            refreshUser
         }}>
             {children}
         </AuthContext.Provider>

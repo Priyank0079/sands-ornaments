@@ -27,7 +27,7 @@ import toast from "react-hot-toast";
 
 const SellerProfile = () => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, user, refreshUser } = useAuth();
   const [seller, setSeller] = useState(null);
   
   // Profile Text Fields
@@ -147,6 +147,11 @@ const SellerProfile = () => {
     });
 
     sellerService.setCurrentSeller(resolved);
+    
+    // Sync React Auth user context state if status has changed (e.g. approved)
+    if (resolved && resolved.status !== user?.status) {
+      refreshUser();
+    }
     
     // Trigger prompt modal for PENDING_PROFILE or REJECTED statuses
     if (resolved.status === 'PENDING_PROFILE' || resolved.status === 'REJECTED') {
