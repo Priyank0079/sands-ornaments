@@ -168,7 +168,7 @@ const SellerLogin = () => {
                         <span className="text-5xl font-bold text-white tracking-widest font-serif drop-shadow-md">S</span>
                     </div>
                     <div>
-                        <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight font-serif">Sands Ornaments</h2>
+                        <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight font-serif">Sands Jewels</h2>
                         <p className="text-sm sm:text-base font-semibold text-[#8D6E63] tracking-widest uppercase mt-3">Merchant Gateway</p>
                     </div>
                     <div className="hidden md:flex items-center gap-2 pt-8">
