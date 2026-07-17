@@ -155,13 +155,30 @@ const SellerLogin = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#FDF5F6] flex items-center justify-center p-6 font-sans">
-            <div className="w-full max-w-md bg-white p-8 rounded-3xl shadow-sm border border-gray-100 space-y-8">
-                <div className="text-center space-y-2">
-                    <h2 className="text-2xl font-medium text-gray-900 tracking-tight">Merchant Gateway</h2>
-                    <p className="text-xs font-medium text-gray-400 tracking-wide">Secure authentication</p>
+        <div className="min-h-screen flex items-center justify-center p-6 font-sans relative overflow-hidden bg-[#Fdfbf7]">
+            {/* Elegant Sand-themed Background Orbs */}
+            <div className="absolute top-[-20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-gradient-to-br from-[#D7CCC8]/40 to-[#EFEBE9]/40 blur-[100px] pointer-events-none" />
+            <div className="absolute bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-gradient-to-tl from-[#8D6E63]/20 to-[#D7CCC8]/20 blur-[120px] pointer-events-none" />
+            
+            <div className="w-full max-w-4xl bg-white/60 backdrop-blur-2xl p-8 sm:p-12 rounded-[2.5rem] shadow-[0_8px_32px_rgba(141,110,99,0.08)] border border-white/80 relative z-10 flex flex-col md:flex-row gap-10 md:gap-16 items-center">
+                
+                {/* Left Side: Branding */}
+                <div className="flex-1 flex flex-col items-center justify-center text-center space-y-6 md:border-r md:border-[#8D6E63]/20 md:pr-10">
+                    <div className="w-24 h-24 bg-gradient-to-tr from-[#5D4037] via-[#8D6E63] to-[#D7CCC8] rounded-3xl flex items-center justify-center shadow-xl shadow-[#8D6E63]/20 transform -rotate-3 hover:rotate-0 transition-transform duration-500">
+                        <span className="text-5xl font-bold text-white tracking-widest font-serif drop-shadow-md">S</span>
+                    </div>
+                    <div>
+                        <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight font-serif">Sands Jewels</h2>
+                        <p className="text-sm sm:text-base font-semibold text-[#8D6E63] tracking-widest uppercase mt-3">Merchant Gateway</p>
+                    </div>
+                    <div className="hidden md:flex items-center gap-2 pt-8">
+                        <ShieldCheck size={18} className="text-[#8D6E63]" />
+                        <span className="text-xs font-medium text-gray-500 tracking-wide">Encrypted & Secure Session</span>
+                    </div>
                 </div>
 
+                {/* Right Side: Form */}
+                <div className="flex-1 w-full max-w-sm mx-auto space-y-6">
                     <form onSubmit={handleLogin} className="space-y-6">
                         {error && (
                             <div className="bg-red-50 border border-red-100 p-4 rounded-xl flex items-center gap-3 text-red-600 animate-in shake-1 overflow-hidden">
@@ -170,7 +187,7 @@ const SellerLogin = () => {
                             </div>
                         )}
 
-                        <div className="flex gap-2 p-1 bg-gray-100 rounded-xl mb-4">
+                        <div className="flex gap-2 p-1 bg-white/60 rounded-xl mb-4 border border-white">
                             <button 
                                 type="button"
                                 onClick={() => {
@@ -178,7 +195,7 @@ const SellerLogin = () => {
                                     setFormData({ identifier: '', password: '' });
                                     setError('');
                                 }} 
-                                className={`flex-1 py-2 rounded-lg text-[10px] font-medium tracking-wide transition-all ${loginType === 'email' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                                className={`flex-1 py-2.5 rounded-lg text-xs font-medium tracking-wide transition-all ${loginType === 'email' ? 'bg-white text-gray-900 shadow-sm border border-gray-100' : 'text-gray-500 hover:text-gray-700'}`}
                             >
                                 Email
                             </button>
@@ -189,7 +206,7 @@ const SellerLogin = () => {
                                     setFormData({ identifier: '', password: '' });
                                     setError('');
                                 }} 
-                                className={`flex-1 py-2 rounded-lg text-[10px] font-medium tracking-wide transition-all ${loginType === 'mobile' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                                className={`flex-1 py-2.5 rounded-lg text-xs font-medium tracking-wide transition-all ${loginType === 'mobile' ? 'bg-white text-gray-900 shadow-sm border border-gray-100' : 'text-gray-500 hover:text-gray-700'}`}
                             >
                                 Mobile
                             </button>
@@ -237,7 +254,7 @@ const SellerLogin = () => {
                         <button 
                             disabled={loading}
                             type="submit" 
-                            className="w-full bg-[#3E2723] text-white py-5 rounded-2xl font-medium tracking-wide text-[10px] shadow-2xl shadow-[#3E2723]/20 hover:bg-[#2D1B18] transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3 group"
+                            className="w-full bg-[#3E2723] text-white py-4 rounded-2xl font-medium tracking-wide text-xs shadow-xl shadow-[#3E2723]/20 hover:bg-[#2D1B18] transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3 group"
                         >
                             {loading ? (
                                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -250,18 +267,13 @@ const SellerLogin = () => {
                         </button>
                     </form>
 
-                    <div className="text-center pt-8 border-t border-gray-100">
-                        <p className="text-[10px] font-medium text-gray-400 tracking-wide mb-4">Don't have a seller account?</p>
-                        <Link to="/seller/register" className="inline-flex items-center gap-3 border border-[#3E2723] text-[#3E2723] bg-transparent px-8 py-4 rounded-xl font-medium tracking-wide text-[10px] hover:bg-[#3E2723] hover:text-white transition-all shadow-md duration-300 active:scale-[0.98] cursor-pointer">
-                            Create New Account <LogIn size={14} />
+                    <div className="text-center pt-6 border-t border-[#8D6E63]/10">
+                        <Link to="/seller/register" className="inline-flex items-center gap-2 text-[#8D6E63] font-semibold text-xs hover:text-[#3E2723] transition-colors">
+                            Create New Seller Account <LogIn size={14} />
                         </Link>
                     </div>
-
-                    <div className="flex items-center justify-center gap-2 pt-4">
-                        <ShieldCheck size={14} className="text-gray-300" />
-                        <span className="text-[8px] font-medium text-gray-300 tracking-wide">Encrypted & Secure Session</span>
-                    </div>
                 </div>
+            </div>
 
             {showReset && (
                 <div className="fixed inset-0 z-[200] bg-black/40 flex items-center justify-center p-6">
