@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
     Users, MousePointer2, Clock, Target, 
     Smartphone, Monitor, Globe, ArrowUpRight,
-    Search, ShoppingCart, Heart, Activity, MapPin
+    Search, ShoppingCart, Heart, Activity, MapPin, Download
 } from 'lucide-react';
 import { 
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
@@ -12,6 +12,7 @@ import {
 import api from '../../../services/api';
 import AdminStatsCard from '../components/AdminStatsCard';
 import Loader from '../../shared/components/Loader';
+import toast from 'react-hot-toast';
 
 const COLORS = ['#4F46E5', '#10B981', '#F59E0B', '#6366F1', '#EC4899'];
 
@@ -20,6 +21,90 @@ const AnalyticsDashboard = () => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const leadsRef = React.useRef(null);
+
+    const handleExport = () => {
+        if (!data) return;
+        const loadingToast = toast.loading("Generating analytics export...");
+        try {
+            const csvRows = [];
+            const { overview, trafficTrends, deviceStats, funnel, countryStats, topPages } = data;
+            
+            // 1. Overview Section
+            csvRows.push('"ANALYTICS SUMMARY OVERVIEW"');
+            csvRows.push('"Metric","Value"');
+            csvRows.push(`"Total Visitors","${overview.totalVisitors || 0}"`);
+            csvRows.push(`"Active Visitors Now","${overview.activeVisitors || 0}"`);
+            csvRows.push(`"Total Sessions","${overview.totalSessions || 0}"`);
+            csvRows.push(`"Captured Leads","${overview.totalLeads || 0}"`);
+            csvRows.push(`"Bounce Rate","${overview.bounceRate || 0}%"`);
+            csvRows.push(`"Avg Session Duration","${Math.floor((overview.avgSessionDuration || 0) / 60)}m ${(overview.avgSessionDuration || 0) % 60}s"`);
+            csvRows.push(''); // Empty separator
+            
+            // 2. Traffic Trends Section
+            csvRows.push('"TRAFFIC TRENDS (LAST 30 DAYS)"');
+            csvRows.push('"Date","Unique Visitors"');
+            if (trafficTrends && trafficTrends.length > 0) {
+                trafficTrends.forEach(trend => {
+                    csvRows.push(`"${trend.date || ''}","${trend.uniqueVisitors || 0}"`);
+                });
+            }
+            csvRows.push('');
+
+            // 3. Device Distribution
+            csvRows.push('"DEVICE DISTRIBUTION"');
+            csvRows.push('"Device Type","Visitor Count"');
+            if (deviceStats && deviceStats.length > 0) {
+                deviceStats.forEach(device => {
+                    csvRows.push(`"${device._id || 'Unknown'}","${device.count || 0}"`);
+                });
+            }
+            csvRows.push('');
+
+            // 4. Conversion Funnel
+            csvRows.push('"CONVERSION FUNNEL"');
+            csvRows.push('"Funnel Step","Step Count"');
+            if (funnel && funnel.length > 0) {
+                funnel.forEach(step => {
+                    csvRows.push(`"${(step.step || '').replace('_', ' ').toUpperCase()}","${step.count || 0}"`);
+                });
+            }
+            csvRows.push('');
+
+            // 5. Country Traffic
+            csvRows.push('"TOP COUNTRIES"');
+            csvRows.push('"Country","Visitors"');
+            if (countryStats && countryStats.length > 0) {
+                countryStats.forEach(country => {
+                    csvRows.push(`"${country._id || 'Unknown'}","${country.count || 0}"`);
+                });
+            }
+            csvRows.push('');
+
+            // 6. Top Pages
+            csvRows.push('"MOST VISITED PAGES"');
+            csvRows.push('"Page URL","Page Views"');
+            if (topPages && topPages.length > 0) {
+                topPages.forEach(page => {
+                    csvRows.push(`"${page._id || ''}","${page.count || 0}"`);
+                });
+            }
+
+            const csvContent = '\uFEFF' + csvRows.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Analytics_Report_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            toast.success("Analytics report exported successfully", { id: loadingToast });
+        } catch (err) {
+            console.error("Export analytics failed:", err);
+            toast.error("Failed to export analytics", { id: loadingToast });
+        }
+    };
 
     useEffect(() => {
         const fetchAnalytics = async () => {
@@ -45,9 +130,18 @@ const AnalyticsDashboard = () => {
     return (
         <div className="space-y-4 md:space-y-6 animate-in fade-in duration-700 pb-20">
             {/* Header */}
-            <div className="text-left mb-4 md:mb-6">
-                <h1 className="text-xl md:text-2xl font-bold text-gray-900 tracking-tight">Analytics Overview</h1>
-                <p className="text-xs md:text-sm font-medium text-gray-500 mt-1">Comprehensive real-time tracking and audience engagement metrics.</p>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 md:mb-6">
+                <div className="text-left">
+                    <h1 className="text-xl md:text-2xl font-bold text-gray-900 tracking-tight">Analytics Overview</h1>
+                    <p className="text-xs md:text-sm font-medium text-gray-500 mt-1">Comprehensive real-time tracking and audience engagement metrics.</p>
+                </div>
+                <button
+                    onClick={handleExport}
+                    className="flex items-center gap-1.5 px-4 py-2.5 bg-gray-900 hover:bg-black text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-sm active:scale-95 whitespace-nowrap self-start md:self-auto"
+                    title="Export Consolidated Analytics Report"
+                >
+                    <Download size={14} /> Export Report
+                </button>
             </div>
 
             {/* Overview Cards */}
