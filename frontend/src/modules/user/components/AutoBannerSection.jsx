@@ -60,13 +60,13 @@ const AutoBannerSection = () => {
     }, [currentIndex, slides.length]);
 
     return (
-        <section className="w-full relative overflow-hidden bg-white pt-10 md:pt-16 pb-0">
-            <div className="container mx-auto px-4 mb-8 md:mb-12 text-center">
+        <section className="w-full relative overflow-hidden bg-white pt-4 md:pt-6 pb-0">
+            <div className="container mx-auto px-4 mb-3 md:mb-5 text-center">
                 <motion.span 
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    className="text-[#8E2B45] text-[10px] md:text-xs font-bold tracking-[0.4em] uppercase mb-3 block"
+                    className="text-[#8E2B45] text-[10px] md:text-xs font-bold tracking-[0.4em] uppercase mb-1 block"
                 >
                     Premium Narrative
                 </motion.span>
@@ -78,7 +78,7 @@ const AutoBannerSection = () => {
                 >
                     Signature <span className="italic font-light text-[#8E2B45]">Curations</span>
                 </motion.h2>
-                <div className="w-12 h-[2px] bg-[#8E2B45]/20 mx-auto mt-4 rounded-full" />
+                <div className="w-12 h-[2px] bg-[#8E2B45]/20 mx-auto mt-2 rounded-full" />
             </div>
 
             <div className="w-full aspect-[2.5/1] md:aspect-[5/1] relative">

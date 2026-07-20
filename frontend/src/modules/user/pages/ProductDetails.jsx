@@ -342,6 +342,7 @@ const ProductDetails = () => {
   } = useShop();
   const { user } = useAuth();
   const [localPincode, setLocalPincode] = useState(pincode || "");
+  const [showAuthPopup, setShowAuthPopup] = useState(false);
 
   useEffect(() => {
     setLocalPincode(pincode);
@@ -398,6 +399,25 @@ const ProductDetails = () => {
   const product = useMemo(() => {
     return detailProduct || catalogueProduct || null;
   }, [detailProduct, catalogueProduct]);
+
+  const metalType = useMemo(() => {
+    if (!product) return null;
+    const material = String(product?.material || product?.metal || "").trim().toLowerCase();
+    if (material.includes("gold")) return "gold";
+    if (material.includes("silver") || String(product?.name || "").toLowerCase().includes("silver")) return "silver";
+    return null;
+  }, [product]);
+
+  useEffect(() => {
+    if (product) {
+      const timer = setTimeout(() => {
+        setShowAuthPopup(true);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else {
+      setShowAuthPopup(false);
+    }
+  }, [product]);
 
   const is925SterlingSilver = useMemo(() => {
     if (!product) return false;
@@ -3080,6 +3100,61 @@ const ProductDetails = () => {
         onPrev={handleLightboxPrev}
         onNext={handleLightboxNext}
       />
+
+      {/* Dynamic Authenticity Popup */}
+      <AnimatePresence>
+        {showAuthPopup && metalType && (
+          <div 
+            onClick={() => setShowAuthPopup(false)}
+            className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.3 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-[#1A1A1A]/95 text-white w-full max-w-sm rounded-[2rem] p-8 relative border border-white/10 shadow-2xl flex flex-col items-center text-center"
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setShowAuthPopup(false)}
+                className="absolute top-5 right-5 text-white/50 hover:text-white transition-colors"
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
+
+              {/* Badge Icon */}
+              {metalType === "silver" ? (
+                <div className="w-14 h-14 rounded-full bg-[#8E2B45] flex items-center justify-center border border-white/20 mb-4 shadow-lg">
+                  <div className="w-11 h-11 rounded-full border border-dashed border-white/40 flex flex-col items-center justify-center">
+                    <span className="text-[12px] font-black tracking-tight leading-none text-white font-sans">925</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="w-14 h-14 rounded-full bg-amber-600 flex items-center justify-center border border-white/20 mb-4 shadow-lg">
+                  <div className="w-11 h-11 rounded-full border border-dashed border-white/40 flex flex-col items-center justify-center">
+                    <span className="text-[10px] font-black tracking-wider leading-none text-white font-sans">BIS</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Title */}
+              <h3 className="text-base font-bold tracking-wide uppercase mb-2 font-sans">
+                {metalType === "silver" ? "Fine 925 Silver" : "BIS Hallmarked Gold"}
+              </h3>
+
+              {/* Description */}
+              <p className="text-white/80 text-[11px] font-medium leading-relaxed tracking-wide font-sans">
+                {metalType === "silver" 
+                  ? "Get an assured 925 silver authenticity certificate with every piece of our silver jewellery."
+                  : "Get government-certified BIS Hallmarked gold with complete purity assurance."}
+              </p>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
